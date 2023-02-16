@@ -1,0 +1,25 @@
+.cm-editor {
+    height: 20rem;
+    background-color: #000;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.5rem;
+}
+
+.cm-editor.cm-focused {
+    outline: 0;
+    box-shadow: 0 0 0 2pt rgba(180, 180, 180, 0.1);
+}
+
+.cm-editor .cm-content {
+    /*outline: 1px red;*/
+    border-color: red;
+}
+
+.cm-editor .cm-cursor {
+    border-left: 2px solid red;
+}

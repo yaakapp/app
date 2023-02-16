@@ -14,13 +14,18 @@
   -webkit-text-size-adjust: 100%;
 }
 
+div, form, p {
+  width: 100%;
+}
+
 .container {
-  margin: 0;
-  padding-top: 10vh;
+  margin: 0 auto;
+  padding-top: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
+  width: 700px;
 }
 
 .logo {
@@ -37,6 +42,7 @@
 .row {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
 a {
@@ -87,16 +93,20 @@ button {
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
-    background-color: #2f2f2f;
+    background-color: #181818;
   }
 
   a:hover {
     color: #24c8db;
   }
 
-  input,
-  button {
+  input {
     color: #ffffff;
     background-color: #0f0f0f98;
+  }
+
+  button {
+    color: #ffffff;
+    background-color: rgba(137, 98, 255, 0.6);
   }
 }

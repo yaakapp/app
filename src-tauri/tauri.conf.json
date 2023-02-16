@@ -60,10 +60,13 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "title": "tauri-app",
-        "width": 800
+        "width": 1400,
+        "theme": "Dark",
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
       }
     ]
   }

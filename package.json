@@ -10,9 +10,13 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@codemirror/lang-html": "^6.4.2",
+    "@codemirror/lang-javascript": "^6.1.4",
+    "@codemirror/lang-json": "^6.0.1",
+    "@tauri-apps/api": "^1.2.0",
+    "codemirror": "^6.0.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@tauri-apps/api": "^1.2.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^18.7.10",
