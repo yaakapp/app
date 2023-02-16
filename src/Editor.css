@@ -6,10 +6,6 @@
     font-size: 0.8rem;
 }
 
-.cm-editor * {
-    background-color: black !important;
-}
-
 .cm-editor, .iframe-wrapper {
     padding: 0.3rem 0.5rem;
     width: 100%;
@@ -28,11 +24,6 @@ iframe {
 .cm-editor.cm-focused {
     outline: 0;
     box-shadow: 0 0 0 2pt rgba(180, 180, 180, 0.1);
-}
-
-.cm-editor .cm-content {
-    /*outline: 1px red;*/
-    border-color: red;
 }
 
 .cm-editor .cm-cursor {
