@@ -13,10 +13,13 @@ interface Response {
 function App() {
     const [responseBody, setResponseBody] = useState<Response | null>(null);
     const [url, setUrl] = useState("");
+    const [loading, setLoading] = useState(false);
 
     async function sendRequest() {
+        setLoading(true);
         const body = await invoke("send_request", {url: url}) as Response;
         setResponseBody(body);
+        setLoading(false);
     }
 
     return (
@@ -33,7 +36,7 @@ function App() {
                     onChange={(e) => setUrl(e.currentTarget.value)}
                     placeholder="Enter a URL..."
                 />
-                <button type="submit">Send</button>
+                <button type="submit" disabled={loading}>{loading ? 'Sending...' : 'Send'}</button>
             </form>
             {responseBody !== null && (
                 <>
@@ -44,7 +47,12 @@ function App() {
                         &nbsp;&bull;&nbsp;
                         {responseBody?.elapsed2}ms
                     </div>
-                    <Editor value={responseBody?.body}/>
+                    <div className="row">
+                        <Editor value={responseBody?.body}/>
+                        <div className="iframe-wrapper">
+                            <iframe srcDoc={responseBody.body}/>
+                        </div>
+                    </div>
                 </>
             )}
         </div>

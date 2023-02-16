@@ -8,6 +8,6 @@ interface Props {
 export default function Editor(props: Props) {
     const {ref} = useCodeMirror({value: props.value});
     return (
-        <div ref={ref} id="editor-yo" style={{height: '10rem'}}/>
+        <div ref={ref} id="editor-yo" />
     )
 }

@@ -49,7 +49,8 @@ div, form, p {
 }
 
 .row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   justify-content: center;
   width: 100%;
 }
@@ -84,6 +85,13 @@ button {
 
 button {
   cursor: pointer;
+  width: 7rem;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+button:disabled {
+  opacity: 0.7;
 }
 
 button:hover {
