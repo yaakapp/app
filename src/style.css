@@ -14,6 +14,14 @@
   -webkit-text-size-adjust: 100%;
 }
 
+:not(input):not(textarea),
+:not(input):not(textarea)::after,
+:not(input):not(textarea)::before {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
 div, form, p {
   width: 100%;
 }
@@ -25,7 +33,8 @@ div, form, p {
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  width: 700px;
+  width: 80vw;
+  max-width: 800px;
 }
 
 .logo {

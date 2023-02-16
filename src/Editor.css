@@ -23,3 +23,11 @@
 .cm-editor .cm-cursor {
     border-left: 2px solid red;
 }
+
+.cm-editor .cm-selectionBackground {
+    background-color: rgba(180, 180, 180, 0.3);
+}
+
+.cm-editor.cm-focused .cm-selectionBackground {
+    background-color: rgba(180, 180, 180, 0.3);
+}
