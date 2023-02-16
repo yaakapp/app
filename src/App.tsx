@@ -4,6 +4,7 @@ import "./App.css";
 import Editor from "./Editor";
 
 interface Response {
+    url: string;
     body: string;
     status: string;
     elapsed: number;
@@ -12,14 +13,17 @@ interface Response {
 
 function App() {
     const [responseBody, setResponseBody] = useState<Response | null>(null);
-    const [url, setUrl] = useState("");
+    const [url, setUrl] = useState("https://arthorsepod.com");
     const [loading, setLoading] = useState(false);
 
     async function sendRequest() {
         setLoading(true);
-        const body = await invoke("send_request", {url: url}) as Response;
-        setResponseBody(body);
+        const resp = await invoke("send_request", {url: url}) as Response;
+        if (resp.body.includes("<head>")) {
+            resp.body = resp.body.replace(/<head>/ig, `<head><base href="${resp.url}"/>`);
+        }
         setLoading(false);
+        setResponseBody(resp);
     }
 
     return (
@@ -34,6 +38,7 @@ function App() {
                 <input
                     id="greet-input"
                     onChange={(e) => setUrl(e.currentTarget.value)}
+                    value={url}
                     placeholder="Enter a URL..."
                 />
                 <button type="submit" disabled={loading}>{loading ? 'Sending...' : 'Send'}</button>
@@ -50,7 +55,7 @@ function App() {
                     <div className="row">
                         <Editor value={responseBody?.body}/>
                         <div className="iframe-wrapper">
-                            <iframe srcDoc={responseBody.body}/>
+                            <iframe srcDoc={responseBody.body} sandbox="allow-scripts allow-same-origin"/>
                         </div>
                     </div>
                 </>

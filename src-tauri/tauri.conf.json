@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "tauri-app",
-    "version": "0.0.0"
+    "productName": "Twosomnia",
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "co.schier.twosomnia",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -62,7 +62,7 @@
         "fullscreen": false,
         "height": 800,
         "resizable": true,
-        "title": "tauri-app",
+        "title": "Twosomnia",
         "width": 1400,
         "theme": "Dark",
         "titleBarStyle": "Overlay",
