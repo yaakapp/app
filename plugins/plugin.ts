@@ -1,3 +1,3 @@
-Deno.core.print('---------------------------\n');
-Deno.core.print('- 👋 Hello from plugin.ts -\n');
-Deno.core.print('---------------------------\n');
+console.log('---------------------------');
+console.log('- 👋 Hello from plugin.ts -');
+console.log('---------------------------');
