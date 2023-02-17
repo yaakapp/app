@@ -1,67 +1,76 @@
-import {useState} from "react";
-import {invoke} from "@tauri-apps/api/tauri";
-import "./App.css";
-import Editor from "./Editor";
+import { FormEvent, useState } from 'react';
+import { invoke } from '@tauri-apps/api/tauri';
+import Editor from './components/Editor/Editor';
+import { Input } from './components/Input';
+import { Stacks } from './components/Stacks';
+import { Button } from './components/Button';
+import { Grid } from './components/Grid';
 
 interface Response {
-    url: string;
-    body: string;
-    status: string;
-    elapsed: number;
-    elapsed2: number;
+  url: string;
+  body: string;
+  status: string;
+  elapsed: number;
+  elapsed2: number;
 }
 
 function App() {
-    const [responseBody, setResponseBody] = useState<Response | null>(null);
-    const [url, setUrl] = useState("https://arthorsepod.com");
-    const [loading, setLoading] = useState(false);
+  const [responseBody, setResponseBody] = useState<Response | null>(null);
+  const [url, setUrl] = useState('schier.co');
+  const [loading, setLoading] = useState(false);
 
-    async function sendRequest() {
-        setLoading(true);
-        const resp = await invoke("send_request", {url: url}) as Response;
-        if (resp.body.includes("<head>")) {
-            resp.body = resp.body.replace(/<head>/ig, `<head><base href="${resp.url}"/>`);
-        }
-        setLoading(false);
-        setResponseBody(resp);
+  async function sendRequest(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const resp = (await invoke('send_request', { url: url })) as Response;
+    if (resp.body.includes('<head>')) {
+      resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
     }
+    setLoading(false);
+    setResponseBody(resp);
+  }
 
-    return (
-        <div className="container">
-            <h1>Welcome, Friend!</h1>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    sendRequest();
-                }}
-            >
-                <input
-                    id="greet-input"
-                    onChange={(e) => setUrl(e.currentTarget.value)}
-                    value={url}
-                    placeholder="Enter a URL..."
+  return (
+    <div className="absolute top-0 left-0 right-0 bottom-0 overflow-hidden">
+      <div className="w-full h-7 bg-gray-800" data-tauri-drag-region></div>
+      <div className="p-12 bg-gray-900 h-full w-full overflow-auto">
+        <h1 className="text-4xl font-semibold">Welcome, Friend!</h1>
+        <Stacks as="form" className="mt-5 items-end" onSubmit={sendRequest}>
+          <Input
+            name="url"
+            label="Enter URL"
+            className="mr-1"
+            onChange={(e) => setUrl(e.currentTarget.value)}
+            value={url}
+            placeholder="Enter a URL..."
+          />
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Sending...' : 'Send'}
+          </Button>
+        </Stacks>
+        {responseBody !== null && (
+          <>
+            <div className="pt-6">
+              {responseBody?.status}
+              &nbsp;&bull;&nbsp;
+              {responseBody?.elapsed}ms &nbsp;&bull;&nbsp;
+              {responseBody?.elapsed2}ms
+            </div>
+            <Grid cols={2} rows={2} gap={1}>
+              <Editor value={responseBody?.body} />
+              <div className="iframe-wrapper">
+                <iframe
+                  srcDoc={responseBody.body}
+                  sandbox="allow-scripts allow-same-origin"
+                  className="h-full w-full rounded-lg"
                 />
-                <button type="submit" disabled={loading}>{loading ? 'Sending...' : 'Send'}</button>
-            </form>
-            {responseBody !== null && (
-                <>
-                    <div style={{paddingTop: "2rem"}}>
-                        {responseBody?.status}
-                        &nbsp;&bull;&nbsp;
-                        {responseBody?.elapsed}ms
-                        &nbsp;&bull;&nbsp;
-                        {responseBody?.elapsed2}ms
-                    </div>
-                    <div className="row">
-                        <Editor value={responseBody?.body}/>
-                        <div className="iframe-wrapper">
-                            <iframe srcDoc={responseBody.body} sandbox="allow-scripts allow-same-origin"/>
-                        </div>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+              </div>
+            </Grid>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default App;
