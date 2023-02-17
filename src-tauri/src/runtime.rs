@@ -1,6 +1,6 @@
 use deno_ast::{MediaType, ParseParams, SourceTextInfo};
 use deno_core::error::AnyError;
-use deno_core::{Extension, JsRuntime, ModuleSource, ModuleType, RuntimeOptions};
+use deno_core::{op, Extension, JsRuntime, ModuleSource, ModuleType, RuntimeOptions};
 use std::rc::Rc;
 
 use deno_core::futures::FutureExt;
@@ -11,7 +11,9 @@ pub fn run_plugin_sync(file_path: &str) -> Result<(), AnyError> {
 }
 
 pub async fn run_plugin(file_path: &str) -> Result<(), AnyError> {
-    let extension = Extension::builder("pluginjs").ops(vec![]).build();
+    let extension = Extension::builder("runtime")
+        .ops(vec![op_hello::decl()])
+        .build();
 
     // Initialize a runtime instance
     let mut runtime = JsRuntime::new(RuntimeOptions {
@@ -29,6 +31,13 @@ pub async fn run_plugin(file_path: &str) -> Result<(), AnyError> {
     let result = runtime.mod_evaluate(mod_id);
     runtime.run_event_loop(false).await?;
     result.await?
+}
+
+#[op]
+async fn op_hello(name: String) -> Result<String, AnyError> {
+    let contents = format!("Hello {} from Rust!", name);
+    println!("{}", contents);
+    Ok(contents)
 }
 
 struct TsModuleLoader;

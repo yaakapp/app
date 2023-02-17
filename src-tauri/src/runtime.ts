@@ -1,4 +1,6 @@
 (function (globalThis) {
+  Deno.core.initializeAsyncOps();
+
   function argsToMessage(...args) {
     return args.map((arg) => JSON.stringify(arg)).join(' ');
   }
