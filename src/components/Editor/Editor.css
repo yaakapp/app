@@ -1,8 +1,24 @@
-.iframe-wrapper, .cm-editor {
+.cm-editor {
     width: 100%;
-    height: 30rem;
-    border-radius: 0.5rem;
+    height: calc(100vh - 270px);
     overflow: hidden;
+    border-radius: var(--border-radius-lg);
+}
+
+.cm-editor .cm-scroller {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-radius: var(--border-radius-lg);
+    background-color: hsl(var(--color-gray-50));
+}
+
+.cm-editor .cm-line {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+}
+
+.cm-editor * {
+    cursor: text;
 }
 
 .cm-editor.cm-focused {

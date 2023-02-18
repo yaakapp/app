@@ -1,8 +1,24 @@
 import classnames from 'classnames';
-import { ButtonHTMLAttributes } from 'react';
+import { ButtonHTMLAttributes, forwardRef } from 'react';
 
-export function Button({ className, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+  color?: 'primary' | 'secondary';
+};
+
+export const Button = forwardRef(function Button(
+  { className, color = 'primary', ...props }: Props,
+  ref,
+) {
   return (
-    <button className={classnames(className, 'bg-blue-600 h-10 px-5 rounded-lg')} {...props} />
+    <button
+      ref={ref}
+      className={classnames(
+        className,
+        'h-10 px-5 rounded-lg text-white',
+        { 'bg-blue-500': color === 'primary' },
+        { 'bg-violet-500': color === 'secondary' },
+      )}
+      {...props}
+    />
   );
-}
+});

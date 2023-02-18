@@ -3,13 +3,101 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light dark;
+    color-scheme: light dark;
 }
 
 :not(input):not(textarea),
 :not(input):not(textarea)::after,
 :not(input):not(textarea)::before {
-  -webkit-user-select: none;
-  user-select: none;
-  cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+@layer base {
+    :root {
+        /* Colors */
+        --color-white: 255 100% 100%;
+        --color-background: var(--color-white);
+
+        --color-blue-50: 217 91% 95%;
+        --color-blue-100: 217 91% 88%;
+        --color-blue-200: 217 91% 76%;
+        --color-blue-300: 217 91% 70%;
+        --color-blue-400: 217 91% 65%;
+        --color-blue-500: 217 91% 58%;
+        --color-blue-600: 217 91% 43%;
+        --color-blue-700: 217 91% 30%;
+        --color-blue-800: 217 91% 20%;
+        --color-blue-900: 217 91% 10%;
+
+        --color-violet-50: 258 90% 95%;
+        --color-violet-100: 258 90% 88%;
+        --color-violet-200: 258 90% 76%;
+        --color-violet-300: 258 90% 70%;
+        --color-violet-400: 258 90% 65%;
+        --color-violet-500: 258 90% 58%;
+        --color-violet-600: 258 90% 43%;
+        --color-violet-700: 258 90% 30%;
+        --color-violet-800: 258 90% 20%;
+        --color-violet-900: 258 90% 10%;
+
+        --color-gray-50: 217 21% 95%;
+        --color-gray-100: 217 21% 88%;
+        --color-gray-200: 217 21% 76%;
+        --color-gray-300: 217 21% 70%;
+        --color-gray-400: 217 21% 65%;
+        --color-gray-500: 217 21% 58%;
+        --color-gray-600: 217 21% 43%;
+        --color-gray-700: 217 21% 30%;
+        --color-gray-800: 217 21% 20%;
+        --color-gray-900: 217 21% 10%;
+
+        /* Border Radius */
+
+        --border-radius-sm: 0.125rem;
+        --border-radius: 0.25rem;
+        --border-radius-md: 0.375rem;
+        --border-radius-lg: 0.5rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-white: 255 100% 100%;
+            --color-background: 217 21% 7%;
+
+            --color-blue-900: 217 91% 95%;
+            --color-blue-800: 217 91% 88%;
+            --color-blue-700: 217 91% 76%;
+            --color-blue-600: 217 91% 70%;
+            --color-blue-500: 217 91% 65%;
+            --color-blue-400: 217 91% 58%;
+            --color-blue-300: 217 91% 43%;
+            --color-blue-200: 217 91% 30%;
+            --color-blue-100: 217 91% 20%;
+            --color-blue-50: 217 91% 10%;
+
+            --color-violet-900: 258 90% 95%;
+            --color-violet-800: 258 90% 88%;
+            --color-violet-700: 258 90% 76%;
+            --color-violet-600: 258 90% 70%;
+            --color-violet-500: 258 90% 65%;
+            --color-violet-400: 258 90% 58%;
+            --color-violet-300: 258 90% 43%;
+            --color-violet-200: 258 90% 30%;
+            --color-violet-100: 258 90% 20%;
+            --color-violet-50: 258 90% 10%;
+
+            --color-gray-900: 217 21% 95%;
+            --color-gray-800: 217 21% 88%;
+            --color-gray-700: 217 21% 76%;
+            --color-gray-600: 217 21% 70%;
+            --color-gray-500: 217 21% 65%;
+            --color-gray-400: 217 21% 58%;
+            --color-gray-300: 217 21% 43%;
+            --color-gray-200: 217 21% 30%;
+            --color-gray-100: 217 21% 25%;
+            --color-gray-50: 217 21% 15%;
+        }
+    }
 }
