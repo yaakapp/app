@@ -6,7 +6,7 @@ import { Input } from './components/Input';
 import { Stacks } from './components/Stacks';
 import { Button } from './components/Button';
 import { Grid } from './components/Grid';
-import { Dropdown, DropdownMenuRadio } from './components/Dropdown.tsx';
+import { DropdownMenuRadio } from './components/Dropdown';
 
 interface Response {
   url: string;

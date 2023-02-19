@@ -5,7 +5,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   color?: 'primary' | 'secondary';
 };
 
-export const Button = forwardRef(function Button(
+export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
   { className, color = 'primary', ...props }: Props,
   ref,
 ) {

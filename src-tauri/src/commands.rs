@@ -1,4 +1,4 @@
-use http::header::{HeaderName, CONTENT_TYPE, USER_AGENT};
+use http::header::{HeaderName, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
 use reqwest::redirect::Policy;
 use tauri::{AppHandle, Wry};

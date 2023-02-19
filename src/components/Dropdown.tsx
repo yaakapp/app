@@ -8,11 +8,10 @@ import {
   HamburgerMenuIcon,
 } from '@radix-ui/react-icons';
 import { forwardRef, HTMLAttributes, ReactNode, useState } from 'react';
-import { Button } from './Button.tsx';
+import { Button } from './Button';
 import classnames from 'classnames';
-import { HotKey } from './HotKey.tsx';
+import { HotKey } from './HotKey';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface DropdownMenuRadioProps {
   children: ReactNode;
   onValueChange: (value: string) => void;
@@ -20,7 +19,7 @@ interface DropdownMenuRadioProps {
   items: {
     label: string;
     value: string;
-  };
+  }[];
 }
 
 export function DropdownMenuRadio({
@@ -86,7 +85,7 @@ export function Dropdown() {
 
           <DropdownMenuCheckboxItem
             checked={bookmarksChecked}
-            onCheckedChange={setBookmarksChecked}
+            onCheckedChange={(v) => setBookmarksChecked(!!v)}
             rightSlot={<HotKey>⌘B</HotKey>}
             leftSlot={
               <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
@@ -98,7 +97,7 @@ export function Dropdown() {
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={urlsChecked}
-            onCheckedChange={setUrlsChecked}
+            onCheckedChange={(v) => setUrlsChecked(!!v)}
             leftSlot={
               <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
                 <CheckIcon />
@@ -125,34 +124,37 @@ export function Dropdown() {
 
 const dropdownMenuClasses = 'bg-background rounded-md shadow-lg p-1.5 border border-gray-100';
 
-const DropdownMenuPortal = forwardRef(function DropdownMenuPortal(
-  { children }: { children: DropdownMenuContent },
-  ref,
-) {
+interface DropdownMenuPortalProps {
+  children: ReactNode;
+}
+
+function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
   return (
-    <DropdownMenu.Portal ref={ref} asChild container={document.querySelector('#radix-portal')}>
+    <DropdownMenu.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {children}
       </motion.div>
     </DropdownMenu.Portal>
   );
-});
+}
 
-const DropdownMenuContent = forwardRef(function DropdownMenuContent(
-  { className, children, ...props }: DropdownMenu.DropdownMenuContentProps,
-  ref,
-) {
-  return (
-    <DropdownMenu.Content
-      ref={ref}
-      align="start"
-      className={classnames(className, dropdownMenuClasses, 'mt-1')}
-      {...props}
-    >
-      {children}
-    </DropdownMenu.Content>
-  );
-});
+const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuContentProps>(
+  function DropdownMenuContent(
+    { className, children, ...props }: DropdownMenu.DropdownMenuContentProps,
+    ref,
+  ) {
+    return (
+      <DropdownMenu.Content
+        ref={ref}
+        align="start"
+        className={classnames(className, dropdownMenuClasses, 'mt-1')}
+        {...props}
+      >
+        {children}
+      </DropdownMenu.Content>
+    );
+  },
+);
 
 type DropdownMenuItemProps = DropdownMenu.DropdownMenuItemProps & ItemInnerProps;
 
@@ -232,20 +234,22 @@ function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRa
   );
 }
 
-const DropdownMenuSubContent = forwardRef(function DropdownMenuSubContent(
-  { className, ...props }: DropdownMenu.DropdownMenuSubContentProps,
-  ref,
-) {
-  return (
-    <DropdownMenu.SubContent
-      ref={ref}
-      alignOffset={0}
-      sideOffset={4}
-      className={classnames(className, dropdownMenuClasses)}
-      {...props}
-    />
-  );
-});
+const DropdownMenuSubContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuSubContentProps>(
+  function DropdownMenuSubContent(
+    { className, ...props }: DropdownMenu.DropdownMenuSubContentProps,
+    ref,
+  ) {
+    return (
+      <DropdownMenu.SubContent
+        ref={ref}
+        alignOffset={0}
+        sideOffset={4}
+        className={classnames(className, dropdownMenuClasses)}
+        {...props}
+      />
+    );
+  },
+);
 
 function DropdownMenuLabel({ className, children, ...props }: DropdownMenu.DropdownMenuLabelProps) {
   return (
@@ -283,7 +287,7 @@ interface ItemInnerProps extends HTMLAttributes<HTMLDivElement> {
   noHover?: boolean;
 }
 
-const ItemInner = forwardRef(function ItemInner(
+const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
   { leftSlot, rightSlot, children, className, noHover, ...props }: ItemInnerProps,
   ref,
 ) {

@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import {HTMLAttributes} from 'react';
 
 const colsClasses = {
   none: 'grid-cols-none',
