@@ -39,7 +39,7 @@ function App() {
       <Helmet>
         <body className="bg-background" />
       </Helmet>
-      <div className="w-full h-7 bg-gray-100" data-tauri-drag-region="" />
+      <div className="w-full h-7 bg-gray-50" data-tauri-drag-region="" />
       <div className="p-12 h-full w-full overflow-auto">
         <Stacks as="form" className="mt-5 items-end" onSubmit={sendRequest}>
           <DropdownMenuRadio
@@ -79,7 +79,7 @@ function App() {
               {responseBody?.elapsed2}ms
             </div>
             <Grid cols={2} rows={2} gap={1}>
-              <Editor value={responseBody?.body} />
+              <Editor value={responseBody?.body} language="application/json" />
               <div className="iframe-wrapper">
                 <iframe
                   title="Response preview"
