@@ -41,7 +41,6 @@ function App() {
       </Helmet>
       <div className="w-full h-7 bg-gray-100" data-tauri-drag-region="" />
       <div className="p-12 h-full w-full overflow-auto">
-        <h1 className="text-4xl font-semibold">Welcome, Friend!</h1>
         <Stacks as="form" className="mt-5 items-end" onSubmit={sendRequest}>
           <DropdownMenuRadio
             onValueChange={setMethod}
