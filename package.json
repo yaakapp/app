@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build": "rsw build && tsc && vite build",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "lint": "eslint . --ext .ts,.tsx",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "lint": "eslint . --ext .ts,.tsx"
+    "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\""
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.2",
@@ -40,9 +40,12 @@
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^3.0.0",
     "autoprefixer": "^10.4.13",
+    "concurrently": "^7.6.0",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.2.7",
     "typescript": "^4.6.4",
-    "vite": "^4.0.0"
+    "vite": "^4.0.0",
+    "vite-plugin-rsw": "^2.0.11",
+    "vite-plugin-top-level-await": "^1.2.4"
   }
 }

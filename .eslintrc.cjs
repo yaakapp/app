@@ -7,6 +7,7 @@ module.exports = {
         'plugin:@typescript-eslint/recommended',
         'eslint-config-prettier',
     ],
+    ignorePatterns: ['src-tauri/**/*'],
     settings: {
         react: {
             version: 'detect',

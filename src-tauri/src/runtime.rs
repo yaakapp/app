@@ -23,7 +23,7 @@ pub async fn run_plugin(file_path: &str) -> Result<(), AnyError> {
     });
 
     runtime
-        .execute_script("<runtime>", include_str!("runtime.ts"))
+        .execute_script("<runtime>", include_str!("runtime.js"))
         .unwrap();
 
     let main_module = deno_core::resolve_path(file_path)?;

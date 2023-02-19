@@ -1,0 +1,39 @@
+name = "rsw"
+version = "0.1.0"
+
+#! time interval for file changes to trigger wasm-pack build, default `50` milliseconds
+interval = 50
+
+#! link
+#! npm link @see https://docs.npmjs.com/cli/v8/commands/npm-link
+#! yarn link @see https://classic.yarnpkg.com/en/docs/cli/link
+#! pnpm link @see https://pnpm.io/cli/link
+#! The link command will only be executed if `[[crates]] link = true`
+#! cli: `npm` | `yarn` | `pnpm`, default is `npm`
+cli = "npm"
+
+#! ---------------------------
+
+#! rsw new <name>
+[new]
+#! @see https://rustwasm.github.io/docs/wasm-pack/commands/new.html
+#! using: `wasm-pack` | `rsw` | `user`, default is `wasm-pack`
+#! 1. wasm-pack: `rsw new <name> --template <template> --mode <normal|noinstall|force>`
+#! 2. rsw: `rsw new <name>`, built-in templates
+#! 3. user: `rsw new <name>`, if `dir` is not configured, use `wasm-pack new <name>` to initialize the project
+using = "wasm-pack"
+#! this field needs to be configured when `using = "user"`
+#! `using = "wasm-pack"` or `using = "rsw"`, this field will be ignored
+#! copy all files in this directory
+dir = "my-template"
+
+#! ################# NPM Package #################
+
+#! When there is only `name`, other fields will use the default configuration
+
+#! 📦 -------- package: @rsw --------
+ [[crates]]
+ #! npm package name (path: $ROOT/@rsw)
+ name = "@rsw/hello"
+ #! run `npm link`: `true` | `false`, default is `false`
+ link = true

@@ -59,7 +59,7 @@ function App() {
             hideLabel
             name="url"
             label="Enter URL"
-            className="mr-1 w-[30rem]"
+            className="mr-1 w-[20rem]"
             onChange={(e) => setUrl(e.currentTarget.value)}
             value={url}
             placeholder="Enter a URL..."
