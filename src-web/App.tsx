@@ -15,6 +15,7 @@ interface Response {
   status: string;
   elapsed: number;
   elapsed2: number;
+  headers: Record<string, string>;
 }
 
 function App() {
@@ -27,12 +28,15 @@ function App() {
     e.preventDefault();
     setLoading(true);
     const resp = (await invoke('send_request', { method, url })) as Response;
+    console.log('RESP', resp);
     if (resp.body.includes('<head>')) {
       resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
     }
     setLoading(false);
     setResponseBody(resp);
   }
+
+  const contentType = responseBody?.headers['content-type']?.split(';')[0] ?? 'text/plain';
 
   return (
     <>
@@ -79,7 +83,7 @@ function App() {
               {responseBody?.elapsed2}ms
             </div>
             <Grid cols={2} rows={2} gap={1}>
-              <Editor value={responseBody?.body} language="application/json" />
+              <Editor value={responseBody?.body} contentType={contentType} />
               <div className="iframe-wrapper">
                 <iframe
                   title="Response preview"

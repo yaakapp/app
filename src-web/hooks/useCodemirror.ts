@@ -5,7 +5,7 @@ import { json } from '@codemirror/lang-json';
 import { html } from '@codemirror/lang-html';
 import { EditorState } from '@codemirror/state';
 import { tags } from '@lezer/highlight';
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { HighlightStyle, LanguageSupport, syntaxHighlighting } from '@codemirror/language';
 
 const myHighlightStyle = HighlightStyle.define([
   {
@@ -20,7 +20,7 @@ const myHighlightStyle = HighlightStyle.define([
   { tag: tags.comment, color: '#f5d', fontStyle: 'italic' },
 ]);
 
-const syntaxExtensions = {
+const syntaxExtensions: Record<string, LanguageSupport> = {
   'application/json': json(),
   'application/javascript': javascript(),
   'text/html': html(),
@@ -31,10 +31,10 @@ export type EditorLanguage = keyof typeof syntaxExtensions;
 
 export default function useCodeMirror({
   value,
-  language,
+  contentType,
 }: {
   value: string;
-  language: EditorLanguage;
+  contentType: string;
 }) {
   const [cm, setCm] = useState<EditorView | null>(null);
   const ref = useRef(null);
@@ -42,7 +42,7 @@ export default function useCodeMirror({
     if (ref.current === null) return;
 
     const view = new EditorView({
-      extensions: [...extensions, syntaxExtensions[language]],
+      extensions: getExtensions(contentType),
       parent: ref.current,
     });
 
@@ -56,10 +56,15 @@ export default function useCodeMirror({
 
     const newState = EditorState.create({
       doc: value,
-      extensions: [...extensions, syntaxExtensions[language]],
+      extensions: getExtensions(contentType),
     });
     cm.setState(newState);
   }, [cm, value]);
 
   return { ref, cm };
+}
+
+function getExtensions(contentType: string) {
+  const ext = syntaxExtensions[contentType];
+  return ext ? [...extensions, ext] : extensions;
 }

@@ -1,6 +1,7 @@
 use http::header::{HeaderName, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
 use reqwest::redirect::Policy;
+use std::collections::HashMap;
 use tauri::{AppHandle, Wry};
 
 #[derive(serde::Serialize)]
@@ -11,6 +12,7 @@ pub struct CustomResponse {
     method: String,
     elapsed: u128,
     elapsed2: u128,
+    headers: HashMap<String, String>,
 }
 
 #[tauri::command]
@@ -59,8 +61,14 @@ pub async fn send_request(
 
     match resp {
         Ok(v) => {
-            let url2 = v.url().to_string();
+            let url = v.url().to_string();
             let status = v.status().to_string();
+            let method = method.to_string();
+            let headers = v
+                .headers()
+                .iter()
+                .map(|(k, v)| (k.as_str().to_string(), v.to_str().unwrap().to_string()))
+                .collect::<HashMap<String, String>>();
             let body = v.text().await.unwrap();
             let elapsed2 = start.elapsed().as_millis();
             Ok(CustomResponse {
@@ -68,8 +76,9 @@ pub async fn send_request(
                 body,
                 elapsed,
                 elapsed2,
-                method: method.to_string(),
-                url: url2,
+                method,
+                url,
+                headers,
             })
         }
         Err(e) => {
