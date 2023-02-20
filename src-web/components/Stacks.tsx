@@ -51,7 +51,7 @@ export interface VStackProps extends BaseStackProps {
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
   return (
-    <BaseStack className={classnames(className, 'h-full flex-col')} {...props}>
+    <BaseStack className={classnames(className, 'w-full h-full flex-col')} {...props}>
       {space
         ? Children.toArray(children)
             .filter(Boolean) // Remove null/false/undefined children

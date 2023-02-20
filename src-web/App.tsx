@@ -20,7 +20,7 @@ interface Response {
 
 function App() {
   const [error, setError] = useState<string | null>(null);
-  const [responseBody, setResponseBody] = useState<Response | null>(null);
+  const [response, setResponse] = useState<Response | null>(null);
   const [url, setUrl] = useState('https://go-server.schier.dev/debug');
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState<string>('get');
@@ -36,14 +36,14 @@ function App() {
         resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
       }
       setLoading(false);
-      setResponseBody(resp);
+      setResponse(resp);
     } catch (err) {
       setLoading(false);
       setError(`${err}`);
     }
   }
 
-  const contentType = responseBody?.headers['content-type']?.split(';')[0] ?? 'text/plain';
+  const contentType = response?.headers['content-type']?.split(';')[0] ?? 'text/plain';
 
   return (
     <>
@@ -64,12 +64,12 @@ function App() {
             </DropdownMenuRadio>
           </HStack>
         </nav>
-        <div className="h-full w-full overflow-auto">
+        <VStack className="w-full">
           <HStack as={WindowDragRegion} items="center" className="pl-4 pr-1">
             <h5>Hello, Friend!</h5>
             <IconButton icon="gear" className="ml-auto" size="sm" />
           </HStack>
-          <VStack className="p-4 max-w-[40rem] mx-auto" space={3}>
+          <VStack className="p-4 max-w-[35rem] mx-auto" space={3}>
             <HStack as="form" className="items-end" onSubmit={sendRequest} space={2}>
               <DropdownMenuRadio
                 onValueChange={setMethod}
@@ -105,30 +105,30 @@ function App() {
               </HStack>
             </HStack>
             {error && <div className="text-white bg-red-500 px-4 py-1 rounded">{error}</div>}
-            {responseBody !== null && (
+            {response !== null && (
               <>
-                <div>
-                  {responseBody?.method.toUpperCase()}
+                <div className="my-1 italic text-gray-500 text-sm">
+                  {response?.method.toUpperCase()}
                   &nbsp;&bull;&nbsp;
-                  {responseBody?.status}
+                  {response?.status}
                   &nbsp;&bull;&nbsp;
-                  {responseBody?.elapsed}ms &nbsp;&bull;&nbsp;
-                  {responseBody?.elapsed2}ms
+                  {response?.elapsed}ms &nbsp;&bull;&nbsp;
+                  {response?.elapsed2}ms
                 </div>
                 {contentType.includes('html') ? (
                   <iframe
                     title="Response preview"
-                    srcDoc={responseBody.body}
+                    srcDoc={response.body}
                     sandbox="allow-scripts allow-same-origin"
                     className="h-[70vh] w-full rounded-lg"
                   />
-                ) : (
-                  <Editor value={responseBody?.body} contentType={contentType} />
-                )}
+                ) : response?.body ? (
+                  <Editor value={response?.body} contentType={contentType} />
+                ) : null}
               </>
             )}
           </VStack>
-        </div>
+        </VStack>
       </div>
     </>
   );

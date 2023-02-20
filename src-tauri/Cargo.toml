@@ -15,15 +15,15 @@ tauri-build = { version = "1.2", features = [] }
 [dependencies]
 serde_json = { version = "1.0" }
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2", features = ["devtools", "shell-open", "window-start-dragging"] }
+tauri = { version = "1.2", features = ["config-toml", "devtools", "shell-open", "system-tray", "window-start-dragging"] }
 http = { version = "0.2.8" }
 reqwest = { version = "0.11.14", features = ["json"] }
 tokio = { version = "1.25.0", features = ["full"] }
 futures = { version = "0.3.26" }
 deno_core = { version = "0.171.0" }
 deno_ast = { version = "0.24.0", features = ["transpiling"] }
-objc = "0.2.7"
-cocoa = "0.24.1"
+objc = { version = "0.2.7" }
+cocoa = { version = "0.24.1" }
 
 [features]
 # by default Tauri runs in production mode

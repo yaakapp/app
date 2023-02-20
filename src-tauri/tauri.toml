@@ -1,0 +1,73 @@
+[build]
+beforeDevCommand = "npm run dev"
+beforeBuildCommand = "npm run build"
+devPath = "http://localhost:1420"
+distDir = "../dist"
+withGlobalTauri = false
+
+[package]
+productName = "Twosomnia"
+version = "0.0.1"
+
+[tauri.allowlist]
+all = false
+
+[tauri.allowlist.shell]
+all = false
+open = true
+
+[tauri.allowlist.window]
+startDragging = true
+
+[tauri.allowlist.fs]
+scope = [ "$RESOURCE/*" ]
+
+[tauri.bundle]
+active = true
+category = "DeveloperTool"
+copyright = ""
+externalBin = [ ]
+icon = [
+  "icons/32x32.png",
+  "icons/128x128.png",
+  "icons/128x128@2x.png",
+  "icons/icon.icns",
+  "icons/icon.ico"
+]
+identifier = "co.schier.twosomnia"
+longDescription = ""
+resources = [ "plugins/*" ]
+shortDescription = ""
+targets = "all"
+
+[tauri.bundle.deb]
+depends = [ ]
+
+[tauri.bundle.macOS]
+exceptionDomain = ""
+frameworks = [ ]
+
+[tauri.bundle.windows]
+digestAlgorithm = "sha256"
+timestampUrl = ""
+
+[tauri.security]
+
+[tauri.updater]
+active = false
+endpoints = [ ]
+pubkey = ""
+dialog = true
+
+[[tauri.windows]]
+fullscreen = false
+height = 800
+resizable = true
+title = "Twosomnia"
+width = 1_400
+titleBarStyle = "Overlay"
+hiddenTitle = true
+
+[tauri.systemTray]
+iconPath = "icons/icon.png"
+iconAsTemplate = true

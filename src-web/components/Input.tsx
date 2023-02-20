@@ -25,7 +25,7 @@ export function Input({ label, labelClassName, hideLabel, className, name, ...pr
         id={id}
         className={classnames(
           className,
-          'border-2 border-gray-100 bg-gray-50 h-10 pl-3 pr-2 rounded-md text-sm focus:outline-none',
+          'w-0 min-w-[100%] border-2 border-gray-100 bg-gray-50 h-10 pl-3 pr-2 rounded-md text-sm focus:outline-none',
         )}
         {...props}
       />
