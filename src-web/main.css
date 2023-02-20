@@ -14,6 +14,13 @@
     cursor: default;
 }
 
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    background-color: hsl(var(--color-background));
+    overflow: hidden;
+}
+
 @layer base {
     :root {
         /* Colors */
@@ -41,6 +48,17 @@
         --color-violet-700: 258 90% 30%;
         --color-violet-800: 258 90% 20%;
         --color-violet-900: 258 90% 10%;
+
+        --color-red-50: 0 84% 95%;
+        --color-red-100: 0 84% 88%;
+        --color-red-200: 0 84% 76%;
+        --color-red-300: 0 84% 70%;
+        --color-red-400: 0 84% 65%;
+        --color-red-500: 0 84% 58%;
+        --color-red-600: 0 84% 43%;
+        --color-red-700: 0 84% 30%;
+        --color-red-800: 0 84% 20%;
+        --color-red-900: 0 84% 10%;
 
         --color-gray-50: 217 21% 95%;
         --color-gray-100: 217 21% 88%;

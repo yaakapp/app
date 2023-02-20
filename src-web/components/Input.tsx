@@ -12,7 +12,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, labelClassName, hideLabel, className, name, ...props }: Props) {
   const id = `input-${name}`;
   return (
-    <VStack>
+    <VStack className="w-full">
       <label
         htmlFor={name}
         className={classnames(labelClassName, 'font-semibold text-sm uppercase text-gray-700', {
@@ -25,7 +25,7 @@ export function Input({ label, labelClassName, hideLabel, className, name, ...pr
         id={id}
         className={classnames(
           className,
-          'border-2 border-gray-100 bg-gray-50 h-10 pl-5 pr-2 rounded-lg text-sm focus:outline-none',
+          'border-2 border-gray-100 bg-gray-50 h-10 pl-3 pr-2 rounded-md text-sm focus:outline-none',
         )}
         {...props}
       />

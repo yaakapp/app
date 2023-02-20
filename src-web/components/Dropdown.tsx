@@ -14,7 +14,7 @@ import { HotKey } from './HotKey';
 
 interface DropdownMenuRadioProps {
   children: ReactNode;
-  onValueChange: (value: string) => void;
+  onValueChange: ((value: string) => void) | null;
   value: string;
   items: {
     label: string;
@@ -33,7 +33,7 @@ export function DropdownMenuRadio({
       <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
-          <DropdownMenuRadioGroup onValueChange={onValueChange} value={value}>
+          <DropdownMenuRadioGroup onValueChange={onValueChange ?? undefined} value={value}>
             {items.map((item) => (
               <DropdownMenuRadioItem key={item.value} value={item.value}>
                 {item.label}

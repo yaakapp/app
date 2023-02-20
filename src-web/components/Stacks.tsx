@@ -1,21 +1,30 @@
 import React, { Children, Fragment, HTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
 
-const spaceClasses = {
-  '0': 'pt-0',
-  '1': 'pt-1',
+const spaceClassesX = {
+  0: 'pr-0',
+  1: 'pr-1',
+  2: 'pr-2',
+  3: 'pr-3',
+  4: 'pr-4',
 };
 
-type Space = keyof typeof spaceClasses;
+const spaceClassesY = {
+  0: 'pt-0',
+  1: 'pt-1',
+  2: 'pt-2',
+  3: 'pt-3',
+  4: 'pt-4',
+};
 
-interface HStackProps extends BoxProps {
-  space?: Space;
+interface HStackProps extends BaseStackProps {
+  space?: keyof typeof spaceClassesX;
   children: ReactNode;
 }
 
-export function Stacks({ className, space, children, ...props }: HStackProps) {
+export function HStack({ className, space, children, ...props }: HStackProps) {
   return (
-    <BaseStack className={classnames(className, 'flex-row')} {...props}>
+    <BaseStack className={classnames(className, 'w-full flex-row')} {...props}>
       {space
         ? Children.toArray(children)
             .filter(Boolean) // Remove null/false/undefined children
@@ -23,7 +32,7 @@ export function Stacks({ className, space, children, ...props }: HStackProps) {
               <Fragment key={i}>
                 {i > 0 ? (
                   <div
-                    className={classnames(className, spaceClasses[space], 'pointer-events-none')}
+                    className={classnames(spaceClassesX[space], 'pointer-events-none')}
                     aria-hidden
                   />
                 ) : null}
@@ -35,14 +44,14 @@ export function Stacks({ className, space, children, ...props }: HStackProps) {
   );
 }
 
-export interface VStackProps extends BoxProps {
-  space?: Space;
+export interface VStackProps extends BaseStackProps {
+  space?: keyof typeof spaceClassesY;
   children: ReactNode;
 }
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
   return (
-    <BaseStack className={classnames(className, 'flex-col')} {...props}>
+    <BaseStack className={classnames(className, 'h-full flex-col')} {...props}>
       {space
         ? Children.toArray(children)
             .filter(Boolean) // Remove null/false/undefined children
@@ -50,7 +59,7 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
               <Fragment key={i}>
                 {i > 0 ? (
                   <div
-                    className={classnames(spaceClasses[space], 'pointer-events-none')}
+                    className={classnames(spaceClassesY[space], 'pointer-events-none')}
                     aria-hidden
                   />
                 ) : null}
@@ -62,11 +71,23 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
   );
 }
 
-interface BoxProps extends HTMLAttributes<HTMLElement> {
+interface BaseStackProps extends HTMLAttributes<HTMLElement> {
+  items?: 'start' | 'center';
+  justify?: 'start' | 'end';
   as?: React.ElementType;
 }
 
-function BaseStack({ className, as = 'div', ...props }: BoxProps) {
+function BaseStack({ className, items, justify, as = 'div', ...props }: BaseStackProps) {
   const Component = as;
-  return <Component className={classnames(className, 'flex flex-grow-0')} {...props} />;
+  return (
+    <Component
+      className={classnames(className, 'flex flex-grow-0', {
+        'items-center': items === 'center',
+        'items-start': items === 'start',
+        'justify-start': justify === 'start',
+        'justify-end': justify === 'end',
+      })}
+      {...props}
+    />
+  );
 }

@@ -46,8 +46,16 @@ pub async fn send_request(
     let req = client
         .request(m, abs_url.to_string())
         .headers(headers)
-        .build()
-        .unwrap();
+        .build();
+
+    let req = match req {
+        Ok(v) => v,
+        Err(e) => {
+            println!("Error: {}", e);
+            return Err(e.to_string());
+        }
+    };
+
     let resp = client.execute(req).await;
 
     let elapsed = start.elapsed().as_millis();

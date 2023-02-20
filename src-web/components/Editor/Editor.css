@@ -1,6 +1,5 @@
 .cm-editor {
     width: 100%;
-    height: calc(100vh - 270px);
     overflow: hidden;
     border-radius: var(--border-radius-lg);
 }
@@ -11,20 +10,26 @@
 }
 
 .cm-editor .cm-line {
-    padding-left: 1.5em;
+    padding-left: 1em;
     padding-right: 1.5em;
     color: hsl(var(--color-gray-900));
 }
 
 .cm-editor .cm-gutters {
     background-color: transparent;
-    border-right: 1px solid hsl(var(--color-gray-100));
+    border-right: 0;
     color: hsl(var(--color-gray-300));
+}
+
+.cm-editor .cm-foldPlaceholder {
+    background-color: hsl(var(--color-gray-100));
+    border: 1px solid hsl(var(--color-gray-200));
+    padding: 0 0.3em;
 }
 
 .cm-editor .cm-activeLineGutter,
 .cm-editor .cm-activeLine {
-    background-color: hsl(var(--color-gray-100) / 0.5);
+    background-color: hsl(var(--color-gray-50));
 }
 
 .cm-editor * {
@@ -41,9 +46,9 @@
 }
 
 .cm-editor .cm-selectionBackground {
-    background-color: rgba(180, 180, 180, 0.3);
+    background-color: hsl(var(--color-gray-100));
 }
 
 .cm-editor.cm-focused .cm-selectionBackground {
-    background-color: rgba(180, 180, 180, 0.3);
+    background-color: hsl(var(--color-gray-100));
 }

@@ -1,12 +1,15 @@
 import classnames from 'classnames';
 import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { Icon } from './Icon';
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   color?: 'primary' | 'secondary';
+  size?: 'sm' | 'md';
+  forDropdown?: boolean;
 };
 
-export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
-  { className, color = 'primary', ...props }: Props,
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { className, children, size = 'md', forDropdown, color, ...props }: ButtonProps,
   ref,
 ) {
   return (
@@ -14,11 +17,17 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       ref={ref}
       className={classnames(
         className,
-        'h-10 px-5 rounded-lg text-white',
-        { 'bg-blue-500': color === 'primary' },
-        { 'bg-violet-500': color === 'secondary' },
+        'rounded-md text-white flex items-center',
+        { 'h-10 px-4': size === 'md' },
+        { 'h-8 px-3': size === 'sm' },
+        { 'hover:bg-gray-500/[0.1] active:bg-gray-500/[0.15]': color === undefined },
+        { 'bg-blue-500 hover:bg-blue-500/90 active:bg-blue-500/80': color === 'primary' },
+        { 'bg-violet-500 hover:bg-violet-500/90 active:bg-violet-500/80': color === 'secondary' },
       )}
       {...props}
-    />
+    >
+      {children}
+      {forDropdown && <Icon icon="triangle-down" className="ml-1 -mr-1" />}
+    </button>
   );
 });

@@ -1,4 +1,4 @@
-import useCodeMirror, { EditorLanguage } from '../../hooks/useCodemirror';
+import useCodeMirror from '../../hooks/useCodemirror';
 import './Editor.css';
 
 interface Props {

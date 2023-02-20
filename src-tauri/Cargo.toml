@@ -22,6 +22,8 @@ tokio = { version = "1.25.0", features = ["full"] }
 futures = { version = "0.3.26" }
 deno_core = { version = "0.171.0" }
 deno_ast = { version = "0.24.0", features = ["transpiling"] }
+objc = "0.2.7"
+cocoa = "0.24.1"
 
 [features]
 # by default Tauri runs in production mode
