@@ -7,15 +7,13 @@
 #[macro_use]
 extern crate objc;
 
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
+
+use window_ext::WindowExt;
+
 mod commands;
 mod runtime;
 mod window_ext;
-
-use tauri::{
-    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-    WindowEvent,
-};
-use window_ext::WindowExt;
 
 fn main() {
     // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.

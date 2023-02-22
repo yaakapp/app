@@ -8,7 +8,8 @@
     "dev": "vite",
     "lint": "eslint . --ext .ts,.tsx",
     "preview": "vite preview",
-    "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\""
+    "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\"",
+    "tauri-build": "tauri build"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.2",

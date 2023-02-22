@@ -1,5 +1,5 @@
-import classnames from 'classnames';
 import { ButtonHTMLAttributes, forwardRef } from 'react';
+import classnames from 'classnames';
 import { Icon } from './Icon';
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
