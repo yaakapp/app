@@ -15,9 +15,11 @@ export function Input({ label, labelClassName, hideLabel, className, name, ...pr
     <VStack className="w-full">
       <label
         htmlFor={name}
-        className={classnames(labelClassName, 'font-semibold text-sm uppercase text-gray-700', {
-          'sr-only': hideLabel,
-        })}
+        className={classnames(
+          labelClassName,
+          'font-semibold text-sm uppercase text-gray-700',
+          hideLabel && 'sr-only',
+        )}
       >
         {label}
       </label>

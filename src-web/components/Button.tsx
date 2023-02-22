@@ -18,11 +18,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={classnames(
         className,
         'rounded-md text-white flex items-center',
-        { 'h-10 px-4': size === 'md' },
-        { 'h-8 px-3': size === 'sm' },
-        { 'hover:bg-gray-500/[0.1] active:bg-gray-500/[0.15]': color === undefined },
-        { 'bg-blue-500 hover:bg-blue-500/90 active:bg-blue-500/80': color === 'primary' },
-        { 'bg-violet-500 hover:bg-violet-500/90 active:bg-violet-500/80': color === 'secondary' },
+        size === 'md' && 'h-10 px-4',
+        size === 'sm' && 'h-8 px-3',
+        color === undefined && 'hover:bg-gray-500/[0.1] active:bg-gray-500/[0.15]',
+        color === 'primary' && 'bg-blue-500 hover:bg-blue-500/90 active:bg-blue-500/80',
+        color === 'secondary' && 'bg-violet-500 hover:bg-violet-500/90 active:bg-violet-500/80',
       )}
       {...props}
     >
