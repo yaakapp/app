@@ -16,6 +16,7 @@ interface DropdownMenuRadioProps {
   children: ReactNode;
   onValueChange: ((value: string) => void) | null;
   value: string;
+  label?: string;
   items: {
     label: string;
     value: string;
@@ -26,6 +27,7 @@ export function DropdownMenuRadio({
   children,
   items,
   onValueChange,
+  label,
   value,
 }: DropdownMenuRadioProps) {
   return (
@@ -33,6 +35,7 @@ export function DropdownMenuRadio({
       <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
+          {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
           <DropdownMenuRadioGroup onValueChange={onValueChange ?? undefined} value={value}>
             {items.map((item) => (
               <DropdownMenuRadioItem key={item.value} value={item.value}>

@@ -66,7 +66,7 @@ function App() {
         </nav>
         <VStack className="w-full">
           <HStack as={WindowDragRegion} items="center" className="pl-4 pr-1">
-            <h5>Hello, Friend!</h5>
+            <h5 className="pointer-events-none text-gray-800">Send Request</h5>
             <IconButton icon="gear" className="ml-auto" size="sm" />
           </HStack>
           <VStack className="p-4 max-w-[35rem] mx-auto" space={3}>
@@ -74,6 +74,7 @@ function App() {
               <DropdownMenuRadio
                 onValueChange={setMethod}
                 value={method}
+                label="HTTP Method"
                 items={[
                   { label: 'GET', value: 'get' },
                   { label: 'PUT', value: 'put' },
