@@ -300,9 +300,7 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
       className={classnames(
         className,
         'outline-none px-2 py-1.5 flex items-center text-sm text-gray-700',
-        {
-          'focus:bg-gray-50 focus:text-gray-900 rounded': !noHover,
-        },
+        !noHover && 'focus:bg-gray-50 focus:text-gray-900 rounded',
       )}
       {...props}
     >

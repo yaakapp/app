@@ -81,12 +81,14 @@ function BaseStack({ className, items, justify, as = 'div', ...props }: BaseStac
   const Component = as;
   return (
     <Component
-      className={classnames(className, 'flex flex-grow-0', {
-        'items-center': items === 'center',
-        'items-start': items === 'start',
-        'justify-start': justify === 'start',
-        'justify-end': justify === 'end',
-      })}
+      className={classnames(
+        className,
+        'flex flex-grow-0',
+        items === 'center' && 'items-center',
+        items === 'start' && 'items-start',
+        justify === 'start' && 'justify-start',
+        justify === 'end' && 'justify-end',
+      )}
       {...props}
     />
   );
