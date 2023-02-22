@@ -1,34 +1,39 @@
-import { ComponentType } from 'react';
 import {
   ArchiveIcon,
   CameraIcon,
-  ChevronDownIcon,
   GearIcon,
   HomeIcon,
+  PaperPlaneIcon,
   TriangleDownIcon,
+  UpdateIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
+import { NamedExoticComponent } from 'react';
 
-type IconName = 'archive' | 'home' | 'camera' | 'gear' | 'triangle-down';
+type IconName = 'archive' | 'home' | 'camera' | 'gear' | 'triangle-down' | 'paper-plane' | 'update';
 
-const icons: Record<IconName, ComponentType> = {
+const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
+  'paper-plane': PaperPlaneIcon,
+  'triangle-down': TriangleDownIcon,
   archive: ArchiveIcon,
-  home: HomeIcon,
   camera: CameraIcon,
   gear: GearIcon,
-  'triangle-down': TriangleDownIcon,
+  home: HomeIcon,
+  update: UpdateIcon,
 };
 
 export interface IconProps {
   icon: IconName;
   className?: string;
+  size?: 'md';
+  spin?: boolean;
 }
 
-export function Icon({ icon, className }: IconProps) {
+export function Icon({ icon, spin, size = 'md', className }: IconProps) {
   const Component = icons[icon];
   return (
-    <div className={classnames(className, 'flex items-center')}>
-      <Component />
-    </div>
+    <Component
+      className={classnames(className, size === 'md' && 'h-4 w-4', spin && 'animate-spin')}
+    />
   );
 }
