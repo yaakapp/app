@@ -4,11 +4,13 @@ import App from './App';
 import { HelmetProvider } from 'react-helmet-async';
 import { MotionConfig } from 'framer-motion';
 import init, { greet } from 'hello';
+import { invoke } from '@tauri-apps/api'
 
 import './main.css';
 
 await init();
 greet();
+await invoke('load_db');
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

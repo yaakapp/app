@@ -27,7 +27,6 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 };
 
 const extensions = [basicSetup, syntaxHighlighting(myHighlightStyle)];
-export type EditorLanguage = keyof typeof syntaxExtensions;
 
 export default function useCodeMirror({
   value,
