@@ -1,12 +1,28 @@
-.cm-editor {
+.cm-wrapper {
+    height: 100%;
     width: 100%;
-    overflow: hidden;
+    position: relative;
+}
+
+.cm-editor {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     border-radius: var(--border-radius-lg);
+    border: 1px solid hsl(var(--color-gray-50));
+    font-size: 0.9rem;
+}
+
+.cm-editor.cm-focused {
+    outline: none !important;
+    border-color: hsl(var(--color-gray-100));
 }
 
 .cm-editor .cm-scroller {
     border-radius: var(--border-radius-lg);
-    background-color: hsl(var(--color-gray-50) / 0.5);
+    background-color: hsl(var(--color-gray-50));
 }
 
 .cm-editor .cm-line {
@@ -16,7 +32,7 @@
 }
 
 .cm-editor .cm-gutters {
-    background-color: transparent;
+    background-color: hsl(var(--color-gray-50));
     border-right: 0;
     color: hsl(var(--color-gray-300));
 }

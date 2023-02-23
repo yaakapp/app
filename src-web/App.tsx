@@ -7,6 +7,9 @@ import { WindowDragRegion } from './components/WindowDragRegion';
 import { IconButton } from './components/IconButton';
 import { Sidebar } from './components/Sidebar';
 import { UrlBar } from './components/UrlBar';
+import { Input } from './components/Input';
+import { Button } from './components/Button';
+import { Grid } from './components/Grid';
 
 interface Response {
   url: string;
@@ -63,44 +66,49 @@ function App() {
             </DropdownMenuRadio>
           </HStack>
         </Sidebar>
-        <VStack className="w-full">
-          <HStack as={WindowDragRegion} items="center" className="pl-4 pr-1">
-            <h5 className="pointer-events-none text-gray-800">Send Request</h5>
-            <IconButton icon="gear" className="ml-auto" />
-          </HStack>
-          <VStack className="p-4 max-w-[50rem] mx-auto" space={3}>
-            <UrlBar
-              method={method}
-              url={url}
-              onMethodChange={setMethod}
-              onUrlChange={setUrl}
-              sendRequest={sendRequest}
-            />
-            {error && <div className="text-white bg-red-500 px-4 py-1 rounded">{error}</div>}
-            {response !== null && (
-              <>
-                <div className="my-1 italic text-gray-500 text-sm">
-                  {response?.method.toUpperCase()}
-                  &nbsp;&bull;&nbsp;
-                  {response?.status}
-                  &nbsp;&bull;&nbsp;
-                  {response?.elapsed}ms &nbsp;&bull;&nbsp;
-                  {response?.elapsed2}ms
-                </div>
-                {contentType.includes('html') ? (
-                  <iframe
-                    title="Response preview"
-                    srcDoc={response.body}
-                    sandbox="allow-scripts allow-same-origin"
-                    className="h-[70vh] w-full rounded-lg"
-                  />
-                ) : response?.body ? (
-                  <Editor value={response?.body} contentType={contentType} />
-                ) : null}
-              </>
-            )}
+        <Grid cols={2}>
+          <VStack className="w-full">
+            <HStack as={WindowDragRegion} items="center" className="px-3">
+              <UrlBar
+                method={method}
+                url={url}
+                onMethodChange={setMethod}
+                onUrlChange={setUrl}
+                sendRequest={sendRequest}
+              />
+            </HStack>
           </VStack>
-        </VStack>
+          <VStack className="w-full">
+            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1">
+              <div className="my-1 italic text-gray-500 text-sm w-full">
+                {response?.method.toUpperCase()}
+                &nbsp;&bull;&nbsp;
+                {response?.status}
+                &nbsp;&bull;&nbsp;
+                {response?.elapsed}ms &nbsp;&bull;&nbsp;
+                {response?.elapsed2}ms
+              </div>
+              <IconButton icon="gear" className="ml-auto" size="sm" />
+            </HStack>
+            <VStack className="px-3 py-3" space={3}>
+              {error && <div className="text-white bg-red-500 px-3 py-1 rounded">{error}</div>}
+              {response !== null && (
+                <>
+                  {contentType.includes('html') ? (
+                    <iframe
+                      title="Response preview"
+                      srcDoc={response.body}
+                      sandbox="allow-scripts allow-same-origin"
+                      className="h-full w-full rounded-lg"
+                    />
+                  ) : response?.body ? (
+                    <Editor value={response?.body} contentType={contentType} />
+                  ) : null}
+                </>
+              )}
+            </VStack>
+          </VStack>
+        </Grid>
       </div>
     </>
   );
