@@ -46,7 +46,7 @@ export function Input({
           id={id}
           className={classnames(
             className,
-            'bg-transparent pl-3 pr-2 h-full w-0 min-w-[100%] focus:outline-none',
+            'bg-transparent min-w-0 pl-3 pr-2 w-full h-full focus:outline-none',
           )}
           {...props}
         />
