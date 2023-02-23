@@ -12,11 +12,11 @@ const myHighlightStyle = HighlightStyle.define([
     tag: [tags.documentMeta, tags.blockComment, tags.lineComment, tags.docComment, tags.comment],
     color: '#757b93',
   },
-  { tag: tags.name, color: '#4dafff' },
-  { tag: tags.variableName, color: '#4bff4e' },
+  { tag: tags.name, color: '#4699de' },
+  { tag: tags.variableName, color: '#31c434' },
   { tag: tags.attributeName, color: '#b06fff' },
   { tag: tags.attributeValue, color: '#ff964b' },
-  { tag: [tags.keyword, tags.string], color: '#fc6' },
+  { tag: [tags.keyword, tags.string], color: '#e8b045' },
   { tag: tags.comment, color: '#f5d', fontStyle: 'italic' },
 ]);
 

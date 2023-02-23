@@ -15,6 +15,7 @@ module.exports = {
             full: '9999px',
         },
         colors: {
+            transparent: 'transparent',
             white: 'hsl(var(--color-white) / <alpha-value>)',
             background: 'hsl(var(--color-background) / <alpha-value>)',
             gray: color('gray'),

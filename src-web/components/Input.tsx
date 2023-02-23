@@ -1,45 +1,57 @@
-import { InputHTMLAttributes } from 'react';
+import { InputHTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
-import { VStack } from './Stacks';
+import { HStack, VStack } from './Stacks';
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label: string;
   hideLabel?: boolean;
   labelClassName?: string;
-  containerClassName?: string;
+  leftSlot?: ReactNode;
+  rightSlot?: ReactNode;
 }
 
 export function Input({
   label,
-  containerClassName,
   labelClassName,
   hideLabel,
   className,
   name,
+  leftSlot,
+  rightSlot,
   ...props
 }: Props) {
   const id = `input-${name}`;
   return (
-    <VStack className={classnames(containerClassName, 'w-full')}>
-      <label
-        htmlFor={name}
+    <HStack items="center" className="w-full bg-gray-50 h-10 rounded-md text-sm ">
+      {leftSlot}
+      <VStack
         className={classnames(
-          labelClassName,
-          'font-semibold text-sm uppercase text-gray-700',
-          hideLabel && 'sr-only',
+          'w-full border-gray-100/50',
+          leftSlot && 'border-l ml-0.5',
+          rightSlot && 'border-r mr-0.5',
         )}
       >
-        {label}
-      </label>
-      <input
-        id={id}
-        className={classnames(
-          className,
-          'w-0 min-w-[100%] bg-gray-50 h-10 pl-3 pr-2 rounded-md text-sm focus:outline-none',
-        )}
-        {...props}
-      />
-    </VStack>
+        <label
+          htmlFor={name}
+          className={classnames(
+            labelClassName,
+            'font-semibold text-sm uppercase text-gray-700',
+            hideLabel && 'sr-only',
+          )}
+        >
+          {label}
+        </label>
+        <input
+          id={id}
+          className={classnames(
+            className,
+            'bg-transparent pl-3 pr-2 h-full w-0 min-w-[100%] focus:outline-none',
+          )}
+          {...props}
+        />
+      </VStack>
+      {rightSlot}
+    </HStack>
   );
 }

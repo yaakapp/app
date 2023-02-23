@@ -29,32 +29,30 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
 
   return (
     <HStack as="form" className="items-end" onSubmit={handleSendRequest} space={2}>
-      <div className="w-full relative">
-        <div className="flex items-center absolute left-0 top-0 bottom-0">
+      <Input
+        hideLabel
+        name="url"
+        label="Enter URL"
+        className="font-mono pr-12"
+        onChange={(e) => onUrlChange(e.currentTarget.value)}
+        value={url}
+        placeholder="Enter a URL..."
+        leftSlot={
           <DropdownMenuRadio
             onValueChange={onMethodChange}
             value={method.value}
             items={[
               { label: 'GET', value: 'GET' },
               { label: 'PUT', value: 'PUT' },
-              { label: 'PST', value: 'POST' },
+              { label: 'POST', value: 'POST' },
             ]}
           >
             <Button disabled={loading} forDropdown size="sm" className="ml-1 w-22" justify="start">
               {method.label}
             </Button>
           </DropdownMenuRadio>
-        </div>
-        <Input
-          hideLabel
-          name="url"
-          label="Enter URL"
-          className="font-mono pr-12 !pl-20"
-          onChange={(e) => onUrlChange(e.currentTarget.value)}
-          value={url}
-          placeholder="Enter a URL..."
-        />
-        <div className="flex items-center absolute right-0 top-0 bottom-0">
+        }
+        rightSlot={
           <IconButton
             icon={loading ? 'update' : 'paper-plane'}
             spin={loading}
@@ -62,8 +60,8 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
             size="sm"
             className="w-10 mr-1"
           />
-        </div>
-      </div>
+        }
+      />
     </HStack>
   );
 }

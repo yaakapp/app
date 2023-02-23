@@ -11,7 +11,7 @@ type Props = HTMLAttributes<HTMLDivElement>;
 export function Sidebar({ className, ...props }: Props) {
   return (
     <div
-      className={classnames(className, 'w-52 bg-gray-50 h-full border-r border-gray-500/10')}
+      className={classnames(className, 'w-52 bg-gray-50/40 h-full border-gray-500/10')}
       {...props}
     >
       <HStack as={WindowDragRegion} className="pl-24 px-1" items="center" justify="end">
