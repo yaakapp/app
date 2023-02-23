@@ -8,6 +8,7 @@
 extern crate objc;
 
 use std::collections::HashMap;
+use std::fs::create_dir_all;
 use tokio::sync::Mutex;
 
 use http::header::{HeaderName, USER_AGENT};
@@ -37,13 +38,19 @@ fn main() {
             Ok(())
         })
         .setup(|app| {
+            let dir = app.path_resolver().app_data_dir().unwrap();
+            create_dir_all(dir.clone()).expect("Problem creating App directory!");
+            let p = dir.join("db.sqlite");
+            let p_string = p.to_string_lossy().replace(" ", "%20");
+            let url = format!("sqlite://{}?mode=rwc", p_string);
+            println!("DB URL: {}", url);
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
-                    .connect("sqlite://db.sqlite?mode=rwc")
+                    .connect(url.as_str())
                     .await
-                    .unwrap();
+                    .expect("Failed to connect to database");
                 app.manage(Mutex::new(pool));
-
+                println!("CONNECTED!");
                 Ok(())
             })
         })
@@ -91,18 +98,17 @@ pub struct CustomResponse {
 
 #[tauri::command]
 async fn load_db(db_instance: State<'_, Mutex<Pool<Sqlite>>>) -> Result<(), String> {
-    let row = sqlx::query(
+    println!("INITIALIZING DB");
+    sqlx::query(
         "CREATE TABLE IF NOT EXISTS responses (
               id INTEGER PRIMARY KEY,
               body TEXT NOT NULL,
-              status INT NOT NULL",
+              status INT NOT NULL
+        )",
     )
     .execute(&*db_instance.lock().await)
-    .await;
-    match row {
-        Ok(_) => println!("SUCCESS!"),
-        Err(e) => println!("Error: {}", e),
-    }
+    .await
+    .expect("Failed to create table");
 
     Ok(())
 }
