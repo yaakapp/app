@@ -2,20 +2,24 @@ import { InputHTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
 import { HStack, VStack } from './Stacks';
 
-interface Props extends InputHTMLAttributes<HTMLInputElement> {
+interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   name: string;
   label: string;
   hideLabel?: boolean;
   labelClassName?: string;
+  containerClassName?: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
+  size?: 'sm' | 'md';
 }
 
 export function Input({
   label,
-  labelClassName,
   hideLabel,
   className,
+  containerClassName,
+  labelClassName,
+  size = 'md',
   name,
   leftSlot,
   rightSlot,
@@ -23,15 +27,12 @@ export function Input({
 }: Props) {
   const id = `input-${name}`;
   return (
-    <HStack items="center" className="w-full bg-gray-50 h-10 rounded-md text-sm ">
+    <HStack
+      items="center"
+      className={classnames(containerClassName, 'w-full bg-gray-50 rounded-md text-sm')}
+    >
       {leftSlot}
-      <VStack
-        className={classnames(
-          'w-full border-gray-100/50',
-          leftSlot && 'border-l ml-0.5',
-          rightSlot && 'border-r mr-0.5',
-        )}
-      >
+      <VStack className={classnames('w-full border-gray-100/50')}>
         <label
           htmlFor={name}
           className={classnames(
@@ -46,7 +47,11 @@ export function Input({
           id={id}
           className={classnames(
             className,
-            'bg-transparent min-w-0 pl-3 pr-2 w-full h-full focus:outline-none',
+            'bg-transparent min-w-0 pl-3 pr-2 w-full focus:outline-none',
+            leftSlot && 'pl-1',
+            rightSlot && 'pr-1',
+            size === 'md' && 'h-10',
+            size === 'sm' && 'h-8',
           )}
           {...props}
         />
