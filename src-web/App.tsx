@@ -36,6 +36,7 @@ function App() {
         resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
       }
       setResponse(resp);
+      console.log('Response', resp.status, resp.url, { resp });
     } catch (err) {
       setError(`${err}`);
     }
