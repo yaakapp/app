@@ -33,7 +33,12 @@ export function Icon({ icon, spin, size = 'md', className }: IconProps) {
   const Component = icons[icon];
   return (
     <Component
-      className={classnames(className, size === 'md' && 'h-4 w-4', spin && 'animate-spin')}
+      className={classnames(
+        className,
+        'text-gray-800',
+        size === 'md' && 'h-4 w-4',
+        spin && 'animate-spin',
+      )}
     />
   );
 }

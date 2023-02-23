@@ -36,11 +36,6 @@
     cursor: text;
 }
 
-.cm-editor.cm-focused {
-    outline: 0;
-    box-shadow: 0 0 0 2pt rgba(180, 180, 180, 0.1);
-}
-
 .cm-editor .cm-cursor {
     border-left: 2px solid red;
 }
