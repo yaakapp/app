@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import {HTMLAttributes} from 'react';
+import { HTMLAttributes } from 'react';
 
 const colsClasses = {
   none: 'grid-cols-none',
@@ -28,7 +28,12 @@ type Props = HTMLAttributes<HTMLElement> & {
 export function Grid({ className, cols, gap, ...props }: Props) {
   return (
     <div
-      className={classnames(className, 'grid', cols && colsClasses[cols], gap && gapClasses[gap])}
+      className={classnames(
+        className,
+        'grid w-full',
+        cols && colsClasses[cols],
+        gap && gapClasses[gap],
+      )}
       {...props}
     />
   );
