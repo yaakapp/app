@@ -185,7 +185,7 @@ function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRa
       <ItemInner
         leftSlot={
           <DropdownMenu.ItemIndicator>
-            <DotFilledIcon />
+            <CheckIcon />
           </DropdownMenu.ItemIndicator>
         }
         rightSlot={rightSlot}
@@ -263,7 +263,7 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
       )}
       {...props}
     >
-      {leftSlot && <div className="w-7">{leftSlot}</div>}
+      {leftSlot && <div className="w-6">{leftSlot}</div>}
       <div>{children}</div>
       {rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
     </div>

@@ -60,7 +60,7 @@ function App() {
                 onUrlChange={setUrl}
                 sendRequest={sendRequest}
               />
-              <Editor value="" contentType={contentType} />
+              <Editor value={`{\n  "foo": "bar"\n}`} contentType="application/json" />
             </VStack>
           </VStack>
           <VStack className="w-full">
