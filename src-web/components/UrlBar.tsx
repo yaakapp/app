@@ -45,6 +45,10 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
               { label: 'GET', value: 'GET' },
               { label: 'PUT', value: 'PUT' },
               { label: 'POST', value: 'POST' },
+              { label: 'PATCH', value: 'PATCH' },
+              { label: 'DELETE', value: 'DELETE' },
+              { label: 'OPTIONS', value: 'OPTIONS' },
+              { label: 'HEAD', value: 'HEAD' },
             ]}
           >
             <Button disabled={loading} size="sm" className="ml-1" justify="start">
