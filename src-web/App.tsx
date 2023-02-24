@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import Editor from './components/Editor/Editor';
 import { HStack, VStack } from './components/Stacks';
-import { DropdownMenuRadio } from './components/Dropdown';
+import { Dropdown, DropdownMenuRadio } from './components/Dropdown';
 import { WindowDragRegion } from './components/WindowDragRegion';
 import { IconButton } from './components/IconButton';
 import { Sidebar } from './components/Sidebar';
@@ -50,25 +50,10 @@ function App() {
   return (
     <>
       <div className="grid grid-cols-[auto_1fr] h-full">
-        <Sidebar>
-          <HStack as={WindowDragRegion} className="pl-24 px-1" items="center" justify="end">
-            <IconButton icon="archive" />
-            <DropdownMenuRadio
-              onValueChange={null}
-              value={'get'}
-              items={[
-                { label: 'This is a cool one', value: 'get' },
-                { label: 'But this one is better', value: 'put' },
-                { label: 'This one is just alright', value: 'post' },
-              ]}
-            >
-              <IconButton icon="camera" />
-            </DropdownMenuRadio>
-          </HStack>
-        </Sidebar>
+        <Sidebar />
         <Grid cols={2}>
           <VStack className="w-full">
-            <HStack as={WindowDragRegion} items="center" className="px-3">
+            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
               <UrlBar
                 method={method}
                 url={url}
@@ -77,20 +62,38 @@ function App() {
                 sendRequest={sendRequest}
               />
             </HStack>
+            <VStack className="pl-3 px-1.5 py-3" space={3}>
+              <Editor value="" contentType={contentType} />
+            </VStack>
           </VStack>
           <VStack className="w-full">
-            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1">
-              <div className="my-1 italic text-gray-500 text-sm w-full">
-                {response?.method.toUpperCase()}
-                &nbsp;&bull;&nbsp;
-                {response?.status}
-                &nbsp;&bull;&nbsp;
-                {response?.elapsed}ms &nbsp;&bull;&nbsp;
-                {response?.elapsed2}ms
-              </div>
-              <IconButton icon="gear" className="ml-auto" size="sm" />
+            <HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">
+              {response && (
+                <div className="my-1 italic text-gray-500 text-sm w-full pointer-events-none">
+                  {response.method.toUpperCase()}
+                  &nbsp;&bull;&nbsp;
+                  {response.status}
+                  &nbsp;&bull;&nbsp;
+                  {response.elapsed}ms &nbsp;&bull;&nbsp;
+                  {response.elapsed2}ms
+                </div>
+              )}
+              <Dropdown
+                items={[
+                  {
+                    label: 'Clear Response',
+                    onSelect: () => setResponse(null),
+                    disabled: !response,
+                  },
+                  {
+                    label: 'Other Thing',
+                  },
+                ]}
+              >
+                <IconButton icon="gear" className="ml-auto" size="sm" />
+              </Dropdown>
             </HStack>
-            <VStack className="px-3 py-3" space={3}>
+            <VStack className="pr-3 pl-1.5 py-3" space={3}>
               {error && <div className="text-white bg-red-500 px-3 py-1 rounded">{error}</div>}
               {response !== null && (
                 <>

@@ -56,76 +56,26 @@ export function DropdownMenuRadio({
   );
 }
 
-export function Dropdown() {
-  const [bookmarksChecked, setBookmarksChecked] = useState(true);
-  const [urlsChecked, setUrlsChecked] = useState(false);
-  const [person, setPerson] = useState('pedro');
+export interface DropdownProps {
+  children: ReactNode;
+  items: {
+    label: string;
+    onSelect?: () => void;
+    disabled?: boolean;
+  }[];
+}
 
+export function Dropdown({ children, items }: DropdownProps) {
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <Button aria-label="Customise options">
-          <HamburgerMenuIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-
+      <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
-          <DropdownMenuItem rightSlot={<HotKey>⌘T</HotKey>}>New Tab</DropdownMenuItem>
-          <DropdownMenuItem rightSlot={<HotKey>⌘N</HotKey>}>New Window</DropdownMenuItem>
-          <DropdownMenuItem disabled rightSlot={<HotKey>⇧⌘N</HotKey>}>
-            New Private Window
-          </DropdownMenuItem>
-          <DropdownMenu.Sub>
-            <DropdownMenuSubTrigger rightSlot={<ChevronRightIcon />}>
-              More Tools
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem rightSlot={<HotKey>⌘S</HotKey>}>Save Page As…</DropdownMenuItem>
-                <DropdownMenuItem>Create Shortcut…</DropdownMenuItem>
-                <DropdownMenuItem>Name Window…</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Developer Tools</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenu.Sub>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuCheckboxItem
-            checked={bookmarksChecked}
-            onCheckedChange={(v) => setBookmarksChecked(!!v)}
-            rightSlot={<HotKey>⌘B</HotKey>}
-            leftSlot={
-              <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
-                <CheckIcon />
-              </DropdownMenu.ItemIndicator>
-            }
-          >
-            Show Bookmarks
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
-            checked={urlsChecked}
-            onCheckedChange={(v) => setUrlsChecked(!!v)}
-            leftSlot={
-              <DropdownMenu.ItemIndicator className="DropdownMenuItemIndicator">
-                <CheckIcon />
-              </DropdownMenu.ItemIndicator>
-            }
-          >
-            Show Full URLs
-          </DropdownMenuCheckboxItem>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuLabel>People</DropdownMenuLabel>
-          <DropdownMenu.RadioGroup value={person} onValueChange={setPerson}>
-            <DropdownMenuRadioItem value="pedro">Pedro Duarte</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem className="DropdownMenuRadioItem" value="colm">
-              Colm Tuite
-            </DropdownMenuRadioItem>
-          </DropdownMenu.RadioGroup>
+          {items.map((item, i) => (
+            <DropdownMenuItem key={i} onSelect={() => item.onSelect?.()} disabled={item.disabled}>
+              {item.label}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenu.Root>
@@ -157,7 +107,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenu
       <DropdownMenu.Content
         ref={ref}
         align="start"
-        className={classnames(className, dropdownMenuClasses, 'mt-1')}
+        className={classnames(className, dropdownMenuClasses, 'm-0.5')}
         {...props}
       >
         {children}
@@ -173,12 +123,14 @@ function DropdownMenuItem({
   rightSlot,
   className,
   children,
+  disabled,
   ...props
 }: DropdownMenuItemProps) {
   return (
     <DropdownMenu.Item
       asChild
-      className={classnames(className, { 'opacity-30': props.disabled })}
+      disabled={disabled}
+      className={classnames(className, { 'opacity-30': disabled })}
       {...props}
     >
       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
@@ -311,7 +263,7 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
       )}
       {...props}
     >
-      <div className="w-7">{leftSlot}</div>
+      {leftSlot && <div className="w-7">{leftSlot}</div>}
       <div>{children}</div>
       {rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
     </div>

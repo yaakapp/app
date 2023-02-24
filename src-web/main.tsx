@@ -4,9 +4,12 @@ import App from './App';
 import { HelmetProvider } from 'react-helmet-async';
 import { MotionConfig } from 'framer-motion';
 import init, { greet } from 'hello';
-import { invoke } from '@tauri-apps/api'
+import { invoke } from '@tauri-apps/api';
+import { setTheme } from './lib/theme';
 
 import './main.css';
+
+setTheme();
 
 await init();
 greet();
