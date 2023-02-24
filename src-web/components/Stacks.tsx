@@ -19,7 +19,7 @@ const spaceClassesY = {
 
 interface HStackProps extends BaseStackProps {
   space?: keyof typeof spaceClassesX;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function HStack({ className, space, children, ...props }: HStackProps) {

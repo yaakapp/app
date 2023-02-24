@@ -28,10 +28,9 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
   };
 
   return (
-    <form onSubmit={handleSendRequest} className="w-full flex items-center overflow-hidden">
+    <form onSubmit={handleSendRequest} className="w-full flex items-center">
       <Input
         hideLabel
-        size="sm"
         name="url"
         label="Enter URL"
         className="font-mono"
@@ -48,7 +47,7 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
               { label: 'POST', value: 'POST' },
             ]}
           >
-            <Button disabled={loading} size="xs" className="ml-1" justify="start">
+            <Button disabled={loading} size="sm" className="ml-1" justify="start">
               {method.label}
             </Button>
           </DropdownMenuRadio>
@@ -58,7 +57,7 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
             icon={loading ? 'update' : 'paper-plane'}
             spin={loading}
             disabled={loading}
-            size="xs"
+            size="sm"
             className="mr-1"
           />
         }
