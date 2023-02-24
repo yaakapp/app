@@ -47,7 +47,7 @@ export function Input({
           id={id}
           className={classnames(
             className,
-            'bg-transparent min-w-0 pl-3 pr-2 w-full focus:outline-none',
+            'bg-transparent min-w-0 pl-3 pr-2 w-full focus:outline-none text-gray-900',
             leftSlot && 'pl-1',
             rightSlot && 'pr-1',
             size === 'md' && 'h-10',
