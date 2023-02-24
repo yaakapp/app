@@ -28,7 +28,7 @@ export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }
   };
 
   return (
-    <form onSubmit={handleSendRequest} className="w-full flex items-center">
+    <form onSubmit={handleSendRequest} className="w-full flex items-center overflow-hidden">
       <Input
         hideLabel
         size="sm"
