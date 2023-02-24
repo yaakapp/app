@@ -54,8 +54,8 @@ export function Input({
           className={classnames(
             className,
             'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
-            leftSlot && 'pl-1',
-            rightSlot && 'pr-1',
+            leftSlot && '!pl-1',
+            rightSlot && '!pr-1',
           )}
           {...props}
         />
