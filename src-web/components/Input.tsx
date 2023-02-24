@@ -29,10 +29,16 @@ export function Input({
   return (
     <HStack
       items="center"
-      className={classnames(containerClassName, 'w-full bg-gray-50 rounded-md text-sm')}
+      className={classnames(
+        containerClassName,
+        'w-full bg-gray-50 rounded-md text-sm overflow-hidden text-gray-900',
+        'border border-transparent focus-within:border-blue-400/40',
+        size === 'md' && 'h-10',
+        size === 'sm' && 'h-8',
+      )}
     >
       {leftSlot}
-      <VStack className={classnames('w-full border-gray-100/50')}>
+      <VStack className="w-full">
         <label
           htmlFor={name}
           className={classnames(
@@ -47,11 +53,9 @@ export function Input({
           id={id}
           className={classnames(
             className,
-            'bg-transparent min-w-0 pl-3 pr-2 w-full focus:outline-none text-gray-900',
+            'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
             leftSlot && 'pl-1',
             rightSlot && 'pr-1',
-            size === 'md' && 'h-10',
-            size === 'sm' && 'h-8',
           )}
           {...props}
         />

@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import Editor from './components/Editor/Editor';
 import { HStack, VStack } from './components/Stacks';
-import { Dropdown, DropdownMenuRadio } from './components/Dropdown';
+import { Dropdown } from './components/Dropdown';
 import { WindowDragRegion } from './components/WindowDragRegion';
 import { IconButton } from './components/IconButton';
 import { Sidebar } from './components/Sidebar';
 import { UrlBar } from './components/UrlBar';
-import { Input } from './components/Input';
-import { Button } from './components/Button';
 import { Grid } from './components/Grid';
 
 interface Response {
@@ -53,7 +51,8 @@ function App() {
         <Sidebar />
         <Grid cols={2}>
           <VStack className="w-full">
-            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
+            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5"></HStack>
+            <VStack className="pl-3 px-1.5 py-3" space={3}>
               <UrlBar
                 method={method}
                 url={url}
@@ -61,23 +60,11 @@ function App() {
                 onUrlChange={setUrl}
                 sendRequest={sendRequest}
               />
-            </HStack>
-            <VStack className="pl-3 px-1.5 py-3" space={3}>
               <Editor value="" contentType={contentType} />
             </VStack>
           </VStack>
           <VStack className="w-full">
             <HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">
-              {response && (
-                <div className="my-1 italic text-gray-500 text-sm w-full pointer-events-none">
-                  {response.method.toUpperCase()}
-                  &nbsp;&bull;&nbsp;
-                  {response.status}
-                  &nbsp;&bull;&nbsp;
-                  {response.elapsed}ms &nbsp;&bull;&nbsp;
-                  {response.elapsed2}ms
-                </div>
-              )}
               <Dropdown
                 items={[
                   {
@@ -97,6 +84,15 @@ function App() {
               {error && <div className="text-white bg-red-500 px-3 py-1 rounded">{error}</div>}
               {response !== null && (
                 <>
+                  <HStack
+                    items="center"
+                    className="italic text-gray-500 text-sm w-full pointer-events-none h-10 mb-3 flex-shrink-0"
+                  >
+                    {response.status}
+                    &nbsp;&bull;&nbsp;
+                    {response.elapsed}ms &nbsp;&bull;&nbsp;
+                    {response.elapsed2}ms
+                  </HStack>
                   {contentType.includes('html') ? (
                     <iframe
                       title="Response preview"

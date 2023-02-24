@@ -10,19 +10,21 @@
     right: 0;
     top: 0;
     bottom: 0;
-    border-radius: var(--border-radius-lg);
-    border: 1px solid hsl(var(--color-gray-50));
     font-size: 0.9rem;
+}
+
+.cm-editor .cm-scroller {
+    border: 1px solid hsl(var(--color-gray-50));
+    border-radius: var(--border-radius-lg);
+    background-color: hsl(var(--color-gray-50));
 }
 
 .cm-editor.cm-focused {
     outline: none !important;
-    border-color: hsl(var(--color-gray-100));
 }
 
-.cm-editor .cm-scroller {
-    border-radius: var(--border-radius-lg);
-    background-color: hsl(var(--color-gray-50));
+.cm-editor.cm-focused .cm-scroller {
+    border-color: hsl(var(--color-blue-400)/0.4);
 }
 
 .cm-editor .cm-line {
