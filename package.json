@@ -12,9 +12,11 @@
     "tauri-build": "tauri build"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.2.1",
     "@codemirror/lang-html": "^6.4.2",
     "@codemirror/lang-javascript": "^6.1.4",
     "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/search": "^6.2.3",
     "@radix-ui/react-dropdown-menu": "^2.0.2",
     "@radix-ui/react-icons": "^1.2.0",
     "@radix-ui/react-popover": "1.0.3",

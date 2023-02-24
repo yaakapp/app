@@ -1,11 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
-import { EditorView, basicSetup } from 'codemirror';
+import { EditorView } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { html } from '@codemirror/lang-html';
-import { EditorState } from '@codemirror/state';
 import { tags } from '@lezer/highlight';
-import { HighlightStyle, LanguageSupport, syntaxHighlighting } from '@codemirror/language';
+import {
+  bracketMatching,
+  defaultHighlightStyle,
+  foldGutter,
+  foldKeymap,
+  HighlightStyle,
+  indentOnInput,
+  LanguageSupport,
+  syntaxHighlighting,
+} from '@codemirror/language';
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  keymap,
+  lineNumbers,
+  rectangularSelection,
+} from '@codemirror/view';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+} from '@codemirror/autocomplete';
+import { lintKeymap } from '@codemirror/lint';
+import { EditorState } from '@codemirror/state';
 
 const myHighlightStyle = HighlightStyle.define([
   {
@@ -26,7 +55,45 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
   'text/html': html(),
 };
 
-const extensions = [basicSetup, syntaxHighlighting(myHighlightStyle)];
+const extensions = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  foldGutter({
+    markerDOM: (open) => {
+      const el = document.createElement('div');
+      el.classList.add('fold-gutter-icon');
+      el.tabIndex = -1;
+      if (open) {
+        el.setAttribute('data-open', '');
+      }
+      return el;
+    },
+  }),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  closeBrackets(),
+  autocompletion(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([
+    ...closeBracketsKeymap,
+    ...defaultKeymap,
+    ...searchKeymap,
+    ...historyKeymap,
+    ...foldKeymap,
+    ...completionKeymap,
+    ...lintKeymap,
+  ]),
+  syntaxHighlighting(myHighlightStyle),
+];
 
 export default function useCodeMirror({
   value,

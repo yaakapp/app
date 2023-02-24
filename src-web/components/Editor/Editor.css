@@ -36,7 +36,49 @@
 .cm-editor .cm-gutters {
     background-color: hsl(var(--color-gray-50));
     border-right: 0;
+    color: hsl(var(--color-gray-200));
+}
+
+.cm-editor .fold-gutter-icon {
+    height: 1.5em;
+    padding-top: 0.2em;
+    padding-left: 0.4em;
+    padding-right: 0.4em;
+    cursor: pointer;
+    border-radius: 0.2em;
+}
+
+.cm-editor .fold-gutter-icon::after {
+    display: block;
+    width: 0.5em;
+    height: 0.5em;
+    border: 1px solid transparent;
+    border-left-color: currentColor;
+    border-bottom-color: currentColor;
+    transform: rotate(-45deg);
+    content: "";
+}
+
+.cm-editor .fold-gutter-icon[data-open] {
+    padding-top: 0.4em;
+    padding-left: 0.2em;
+}
+
+.cm-editor .fold-gutter-icon[data-open]::after {
+    transform: rotate(-135deg);
+}
+
+.cm-editor .fold-gutter-icon:hover {
+    background-color: hsl(var(--color-gray-100)/0.2);
+    color: hsl(var(--color-gray-400));
+}
+
+.cm-editor.cm-focused .cm-gutters {
     color: hsl(var(--color-gray-300));
+}
+
+.cm-editor .cm-content {
+    padding-top: 0.4rem;
 }
 
 .cm-editor .cm-foldPlaceholder {
