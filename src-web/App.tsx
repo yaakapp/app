@@ -66,7 +66,7 @@ function App() {
 
   return (
     <>
-      <div className="grid grid-cols-[auto_1fr] h-full">
+      <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
         <Sidebar />
         <Grid cols={2}>
           <VStack className="w-full">
