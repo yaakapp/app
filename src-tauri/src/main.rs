@@ -119,6 +119,7 @@ async fn send_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     url: &str,
     method: &str,
+    body: Option<&str>,
 ) -> Result<CustomResponse, String> {
     let start = std::time::Instant::now();
 
@@ -141,10 +142,14 @@ async fn send_request(
     );
 
     let m = Method::from_bytes(method.to_uppercase().as_bytes()).unwrap();
-    let req = client
+    let builder = client
         .request(m, abs_url.to_string())
-        .headers(headers)
-        .build();
+        .headers(headers);
+
+    let req = match body {
+        Some(b) => builder.body(b.to_string()).build(),
+        None => builder.build(),
+    };
 
     let req = match req {
         Ok(v) => v,

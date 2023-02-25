@@ -23,6 +23,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<Response | null>(null);
   const [url, setUrl] = useState<string>('https://go-server.schier.dev/debug');
+  const [body, setBody] = useState<string>('');
   const [method, setMethod] = useState<{ label: string; value: string }>({
     label: 'GET',
     value: 'GET',
@@ -32,12 +33,15 @@ function App() {
     setError(null);
 
     try {
-      const resp = (await invoke('send_request', { method: method.value, url })) as Response;
+      const resp = (await invoke('send_request', {
+        method: method.value,
+        url,
+        body: body || undefined,
+      })) as Response;
       if (resp.body.includes('<head>')) {
         resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
       }
       setResponse(resp);
-      console.log('Response', resp.status, resp.url, { resp });
     } catch (err) {
       setError(`${err}`);
     }
@@ -60,7 +64,11 @@ function App() {
                 onUrlChange={setUrl}
                 sendRequest={sendRequest}
               />
-              <Editor value={`{\n  "foo": "bar"\n}`} contentType="application/json" />
+              <Editor
+                value={`{\n  "foo": "bar"\n}`}
+                contentType="application/json"
+                onChange={setBody}
+              />
             </VStack>
           </VStack>
           <VStack className="w-full">
