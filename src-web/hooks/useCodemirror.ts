@@ -98,9 +98,11 @@ const extensions = [
 export default function useCodeMirror({
   value,
   contentType,
+  onChange,
 }: {
   value: string;
   contentType: string;
+  onChange?: (value: string) => void;
 }) {
   const [cm, setCm] = useState<EditorView | null>(null);
   const ref = useRef(null);
@@ -108,7 +110,7 @@ export default function useCodeMirror({
     if (ref.current === null) return;
 
     const view = new EditorView({
-      extensions: getExtensions(contentType),
+      extensions: getExtensions({ contentType, onChange }),
       parent: ref.current,
     });
 
@@ -122,7 +124,7 @@ export default function useCodeMirror({
 
     const newState = EditorState.create({
       doc: value,
-      extensions: getExtensions(contentType),
+      extensions: getExtensions({ contentType, onChange }),
     });
     cm.setState(newState);
   }, [cm, value]);
@@ -130,7 +132,21 @@ export default function useCodeMirror({
   return { ref, cm };
 }
 
-function getExtensions(contentType: string) {
+function getExtensions({
+  contentType,
+  onChange,
+}: {
+  contentType: string;
+  onChange?: (value: string) => void;
+}) {
   const ext = syntaxExtensions[contentType];
-  return ext ? [...extensions, ext] : extensions;
+  return ext
+    ? [
+        ...extensions,
+        ...(onChange
+          ? [EditorView.updateListener.of((update) => onChange(update.state.doc.toString()))]
+          : []),
+        ext,
+      ]
+    : extensions;
 }
