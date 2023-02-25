@@ -27,16 +27,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={classnames(
         className,
         'rounded-md flex items-center',
+        // 'active:translate-y-[0.5px] active:scale-[0.99]',
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
         size === 'md' && 'h-10 px-4',
         size === 'sm' && 'h-8 px-3 text-sm',
         size === 'xs' && 'h-6 px-2 text-sm',
-        color === undefined &&
-          'hover:bg-gray-500/[0.1] active:bg-gray-500/[0.15] text-gray-800 hover:text-gray-900',
-        color === 'primary' && 'bg-blue-500 hover:bg-blue-500/90 active:bg-blue-500/80 text-white',
-        color === 'secondary' &&
-          'bg-violet-500 hover:bg-violet-500/90 active:bg-violet-500/80 text-white',
+        color === undefined && 'hover:bg-gray-500/[0.1] text-gray-800 hover:text-gray-900',
+        color === 'primary' && 'bg-blue-500 hover:bg-blue-500/90 text-white',
+        color === 'secondary' && 'bg-violet-500 hover:bg-violet-500/90 text-white',
       )}
       {...props}
     >
