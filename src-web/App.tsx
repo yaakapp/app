@@ -70,7 +70,9 @@ function App() {
         <Sidebar />
         <Grid cols={2}>
           <VStack className="w-full">
-            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5"></HStack>
+            <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
+              Test Request
+            </HStack>
             <VStack className="pl-3 px-1.5 py-3" space={3}>
               <UrlBar
                 method={method}
