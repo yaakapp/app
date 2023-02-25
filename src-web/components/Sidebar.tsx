@@ -19,10 +19,14 @@ export function Sidebar({ className, ...props }: Props) {
         <IconButton size="sm" icon="sun" onClick={toggleTheme} />
       </HStack>
       <ul className="mx-2 py-2">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-          <li key={i}>
-            <Button className="w-full" size="sm" justify="start">
-              Hello {i}
+        {['Test Request', 'Another Request', 'Something else', 'And Another'].map((v, i) => (
+          <li key={v}>
+            <Button
+              className={classnames('w-full', i === 0 && 'bg-gray-50')}
+              size="sm"
+              justify="start"
+            >
+              {v}
             </Button>
           </li>
         ))}
