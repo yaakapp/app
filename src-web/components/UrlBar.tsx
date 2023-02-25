@@ -1,30 +1,22 @@
-import { HStack } from './Stacks';
 import { DropdownMenuRadio } from './Dropdown';
 import { Button } from './Button';
 import { Input } from './Input';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
 import { IconButton } from './IconButton';
 
 interface Props {
-  sendRequest: () => Promise<void>;
+  sendRequest: () => void;
+  loading: boolean;
   method: { label: string; value: string };
   url: string;
   onMethodChange: (method: { label: string; value: string }) => void;
   onUrlChange: (url: string) => void;
 }
 
-export function UrlBar({ sendRequest, onMethodChange, method, onUrlChange, url }: Props) {
-  const [loading, setLoading] = useState(false);
-
+export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
   const handleSendRequest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (loading) return;
-    setLoading(true);
-    try {
-      await sendRequest();
-    } finally {
-      setLoading(false);
-    }
+    sendRequest();
   };
 
   return (
