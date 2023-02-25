@@ -96,11 +96,13 @@ const extensions = [
 ];
 
 export default function useCodeMirror({
+  initialValue,
   value,
   contentType,
   onChange,
 }: {
-  value: string;
+  initialValue?: string;
+  value?: string;
   contentType: string;
   onChange?: (value: string) => void;
 }) {
@@ -108,9 +110,12 @@ export default function useCodeMirror({
   const ref = useRef(null);
   useEffect(() => {
     if (ref.current === null) return;
-
-    const view = new EditorView({
+    const state = EditorState.create({
+      doc: initialValue,
       extensions: getExtensions({ contentType, onChange }),
+    });
+    const view = new EditorView({
+      state,
       parent: ref.current,
     });
 
@@ -123,11 +128,11 @@ export default function useCodeMirror({
     if (cm === null) return;
 
     const newState = EditorState.create({
-      doc: value,
+      doc: value ?? cm.state.doc,
       extensions: getExtensions({ contentType, onChange }),
     });
     cm.setState(newState);
-  }, [cm, value]);
+  }, [cm, contentType, value, onChange]);
 
   return { ref, cm };
 }
