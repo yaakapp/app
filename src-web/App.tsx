@@ -9,6 +9,7 @@ import { Sidebar } from './components/Sidebar';
 import { UrlBar } from './components/UrlBar';
 import { Grid } from './components/Grid';
 import { motion } from 'framer-motion';
+import { useRequests, useWorkspace, useWorkspaces } from './hooks/useWorkspaces';
 
 interface Response {
   url: string;
@@ -21,6 +22,8 @@ interface Response {
 }
 
 function App() {
+  const { data } = useWorkspace();
+  console.log('DATA', data);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<Response | null>(null);
@@ -30,6 +33,19 @@ function App() {
     label: 'GET',
     value: 'GET',
   });
+
+  useEffect(() => {
+    const listener = async (e: KeyboardEvent) => {
+      if (e.metaKey && (e.key === 'Enter' || e.key === 'r')) {
+        await sendRequest();
+      }
+    };
+    document.documentElement.addEventListener('keypress', listener);
+    return () => document.documentElement.removeEventListener('keypress', listener);
+  }, []);
+
+  if (!data) return null;
+  const { requests, workspace } = data;
 
   async function sendRequest() {
     setLoading(true);
@@ -54,20 +70,10 @@ function App() {
 
   const contentType = response?.headers['content-type']?.split(';')[0] ?? 'text/plain';
 
-  useEffect(() => {
-    const listener = async (e: KeyboardEvent) => {
-      if (e.metaKey && (e.key === 'Enter' || e.key === 'r')) {
-        await sendRequest();
-      }
-    };
-    document.documentElement.addEventListener('keypress', listener);
-    return () => document.documentElement.removeEventListener('keypress', listener);
-  }, []);
-
   return (
     <>
       <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
-        <Sidebar />
+        <Sidebar requests={requests ?? []} workspaceId={workspace.id} />
         <Grid cols={2}>
           <VStack className="w-full">
             <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">

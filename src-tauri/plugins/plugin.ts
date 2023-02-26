@@ -2,4 +2,4 @@ console.log('---------------------------');
 console.log('- 👋 Hello from plugin.ts -');
 console.log('---------------------------');
 
-Deno.core.ops.op_hello('World');
+Deno.core.opAsync('op_hello', 'World');
