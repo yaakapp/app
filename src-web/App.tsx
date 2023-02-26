@@ -9,7 +9,8 @@ import { Sidebar } from './components/Sidebar';
 import { UrlBar } from './components/UrlBar';
 import { Grid } from './components/Grid';
 import { motion } from 'framer-motion';
-import { useRequests, useWorkspace, useWorkspaces } from './hooks/useWorkspaces';
+import { useRequests } from './hooks/useWorkspaces';
+import { useParams } from 'react-router-dom';
 
 interface Response {
   url: string;
@@ -21,17 +22,26 @@ interface Response {
   headers: Record<string, string>;
 }
 
+type Params = {
+  workspaceId: string;
+  requestId?: string;
+};
+
 function App() {
-  const { data } = useWorkspace();
-  console.log('DATA', data);
+  const p = useParams<Params>();
+  const workspaceId = p.workspaceId ?? '';
+  const requestId = p.requestId;
+  const { data: requests } = useRequests(workspaceId);
+  const request = requests?.find((r) => r.id === requestId);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<Response | null>(null);
-  const [url, setUrl] = useState<string>('https://go-server.schier.dev/debug');
-  const [body, setBody] = useState<string>(`{\n  "foo": "bar"\n}`);
+  const [url, setUrl] = useState<string>(request?.url ?? '');
+  const [body, setBody] = useState<string>(request?.body ?? '');
   const [method, setMethod] = useState<{ label: string; value: string }>({
-    label: 'GET',
-    value: 'GET',
+    label: request?.method ?? 'GET',
+    value: request?.method ?? 'GET',
   });
 
   useEffect(() => {
@@ -43,9 +53,6 @@ function App() {
     document.documentElement.addEventListener('keypress', listener);
     return () => document.documentElement.removeEventListener('keypress', listener);
   }, []);
-
-  if (!data) return null;
-  const { requests, workspace } = data;
 
   async function sendRequest() {
     setLoading(true);
@@ -73,7 +80,7 @@ function App() {
   return (
     <>
       <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
-        <Sidebar requests={requests ?? []} workspaceId={workspace.id} />
+        <Sidebar requests={requests ?? []} workspaceId={workspaceId} requestId={requestId} />
         <Grid cols={2}>
           <VStack className="w-full">
             <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
