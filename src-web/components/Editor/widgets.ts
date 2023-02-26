@@ -70,7 +70,6 @@ export const placeholders = ViewPlugin.fromClass(
       this.placeholders = placeholderMatcher.createDeco(view);
     }
     update(update: ViewUpdate) {
-      console.log('VIEW UPDATE', update);
       this.placeholders = placeholderMatcher.updateDeco(update, this.placeholders);
     }
   },
