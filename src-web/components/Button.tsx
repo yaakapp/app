@@ -1,4 +1,10 @@
-import { ButtonHTMLAttributes, ComponentPropsWithoutRef, ElementType } from 'react';
+import {
+  ButtonHTMLAttributes,
+  ComponentPropsWithoutRef,
+  ElementType,
+  ForwardedRef,
+  forwardRef,
+} from 'react';
 import classnames from 'classnames';
 import { Icon } from './Icon';
 
@@ -11,19 +17,23 @@ export interface ButtonProps<T extends ElementType>
   as?: T;
 }
 
-export function Button<T extends ElementType>({
-  className,
-  as,
-  justify = 'center',
-  children,
-  size = 'md',
-  forDropdown,
-  color,
-  ...props
-}: ButtonProps<T> & Omit<ComponentPropsWithoutRef<T>, keyof ButtonProps<T>>) {
+export const Button = forwardRef(function Button<T extends ElementType>(
+  {
+    className,
+    as,
+    justify = 'center',
+    children,
+    size = 'md',
+    forDropdown,
+    color,
+    ...props
+  }: ButtonProps<T> & Omit<ComponentPropsWithoutRef<T>, keyof ButtonProps<T>>,
+  ref: ForwardedRef<HTMLButtonElement>,
+) {
   const Component = as || 'button';
   return (
     <Component
+      ref={ref}
       className={classnames(
         className,
         'rounded-md flex items-center',
@@ -43,4 +53,4 @@ export function Button<T extends ElementType>({
       {forDropdown && <Icon icon="triangle-down" className="ml-1 -mr-1" />}
     </Component>
   );
-}
+});

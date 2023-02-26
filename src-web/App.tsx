@@ -1,26 +1,13 @@
-import { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
+import { useEffect } from 'react';
 import Editor from './components/Editor/Editor';
 import { HStack, VStack } from './components/Stacks';
-import { Dropdown } from './components/Dropdown';
 import { WindowDragRegion } from './components/WindowDragRegion';
-import { IconButton } from './components/IconButton';
 import { Sidebar } from './components/Sidebar';
 import { UrlBar } from './components/UrlBar';
 import { Grid } from './components/Grid';
-import { motion } from 'framer-motion';
-import { useRequests } from './hooks/useWorkspaces';
 import { useParams } from 'react-router-dom';
-
-interface Response {
-  url: string;
-  method: string;
-  body: string;
-  status: string;
-  elapsed: number;
-  elapsed2: number;
-  headers: Record<string, string>;
-}
+import { useRequests, useRequestUpdate, useSendRequest } from './hooks/useRequest';
+import { ResponsePane } from './components/ResponsePane';
 
 type Params = {
   workspaceId: string;
@@ -30,57 +17,26 @@ type Params = {
 function App() {
   const p = useParams<Params>();
   const workspaceId = p.workspaceId ?? '';
-  const requestId = p.requestId;
   const { data: requests } = useRequests(workspaceId);
-  const request = requests?.find((r) => r.id === requestId);
+  const request = requests?.find((r) => r.id === p.requestId);
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [response, setResponse] = useState<Response | null>(null);
-  const [url, setUrl] = useState<string>(request?.url ?? '');
-  const [body, setBody] = useState<string>(request?.body ?? '');
-  const [method, setMethod] = useState<{ label: string; value: string }>({
-    label: request?.method ?? 'GET',
-    value: request?.method ?? 'GET',
-  });
+  const updateRequest = useRequestUpdate(request ?? null);
+  const sendRequest = useSendRequest(request ?? null);
 
   useEffect(() => {
     const listener = async (e: KeyboardEvent) => {
       if (e.metaKey && (e.key === 'Enter' || e.key === 'r')) {
-        await sendRequest();
+        await sendRequest.mutate();
       }
     };
     document.documentElement.addEventListener('keypress', listener);
     return () => document.documentElement.removeEventListener('keypress', listener);
   }, []);
 
-  async function sendRequest() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const resp = (await invoke('send_request', {
-        method: method.value,
-        url,
-        body: body || undefined,
-      })) as Response;
-      if (resp.body.includes('<head>')) {
-        resp.body = resp.body.replace(/<head>/gi, `<head><base href="${resp.url}"/>`);
-      }
-      setResponse(resp);
-    } catch (err) {
-      setError(`${err}`);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const contentType = response?.headers['content-type']?.split(';')[0] ?? 'text/plain';
-
   return (
-    <>
-      <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
-        <Sidebar requests={requests ?? []} workspaceId={workspaceId} requestId={requestId} />
+    <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
+      <Sidebar requests={requests ?? []} workspaceId={workspaceId} activeRequestId={request?.id} />
+      {request && (
         <Grid cols={2}>
           <VStack className="w-full">
             <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
@@ -88,71 +44,26 @@ function App() {
             </HStack>
             <VStack className="pl-3 px-1.5 py-3" space={3}>
               <UrlBar
-                method={method}
-                url={url}
-                loading={loading}
-                onMethodChange={setMethod}
-                onUrlChange={setUrl}
-                sendRequest={sendRequest}
+                key={request.id}
+                method={request.method}
+                url={request.url}
+                loading={sendRequest.isLoading}
+                onMethodChange={(method) => updateRequest.mutate({ method })}
+                onUrlChange={(url) => updateRequest.mutate({ url })}
+                sendRequest={sendRequest.mutate}
               />
-              <Editor initialValue={body} contentType="application/json" onChange={setBody} />
+              <Editor
+                key={request.id}
+                defaultValue={request.body}
+                contentType="application/json"
+                onChange={(body) => updateRequest.mutate({ body })}
+              />
             </VStack>
           </VStack>
-          <VStack className="w-full">
-            <HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">
-              <Dropdown
-                items={[
-                  {
-                    label: 'Clear Response',
-                    onSelect: () => setResponse(null),
-                    disabled: !response,
-                  },
-                  {
-                    label: 'Other Thing',
-                  },
-                ]}
-              >
-                <IconButton icon="gear" className="ml-auto" size="sm" />
-              </Dropdown>
-            </HStack>
-            {(response || error) && (
-              <motion.div
-                animate={{ opacity: 1 }}
-                initial={{ opacity: 0 }}
-                className="w-full h-full"
-              >
-                <VStack className="pr-3 pl-1.5 py-3" space={3}>
-                  {error && <div className="text-white bg-red-500 px-3 py-1 rounded">{error}</div>}
-                  {response && (
-                    <>
-                      <HStack
-                        items="center"
-                        className="italic text-gray-500 text-sm w-full pointer-events-none h-10 mb-3 flex-shrink-0"
-                      >
-                        {response.status}
-                        &nbsp;&bull;&nbsp;
-                        {response.elapsed}ms &nbsp;&bull;&nbsp;
-                        {response.elapsed2}ms
-                      </HStack>
-                      {contentType.includes('html') ? (
-                        <iframe
-                          title="Response preview"
-                          srcDoc={response.body}
-                          sandbox="allow-scripts allow-same-origin"
-                          className="h-full w-full rounded-lg"
-                        />
-                      ) : response?.body ? (
-                        <Editor value={response?.body} contentType={contentType} />
-                      ) : null}
-                    </>
-                  )}
-                </VStack>
-              </motion.div>
-            )}
-          </VStack>
+          <ResponsePane requestId={request.id} error={sendRequest.error} />
         </Grid>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
 

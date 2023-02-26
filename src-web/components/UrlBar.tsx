@@ -7,9 +7,9 @@ import { IconButton } from './IconButton';
 interface Props {
   sendRequest: () => void;
   loading: boolean;
-  method: { label: string; value: string };
+  method: string;
   url: string;
-  onMethodChange: (method: { label: string; value: string }) => void;
+  onMethodChange: (method: string) => void;
   onUrlChange: (url: string) => void;
 }
 
@@ -27,12 +27,12 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         label="Enter URL"
         className="font-mono"
         onChange={(e) => onUrlChange(e.currentTarget.value)}
-        value={url}
+        defaultValue={url}
         placeholder="Enter a URL..."
         leftSlot={
           <DropdownMenuRadio
-            onValueChange={onMethodChange}
-            value={method.value}
+            onValueChange={(v) => onMethodChange(v.value)}
+            value={method.toUpperCase()}
             items={[
               { label: 'GET', value: 'GET' },
               { label: 'PUT', value: 'PUT' },
@@ -43,8 +43,8 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
               { label: 'HEAD', value: 'HEAD' },
             ]}
           >
-            <Button disabled={loading} size="sm" className="ml-1" justify="start">
-              {method.label}
+            <Button type="button" disabled={loading} size="sm" className="ml-1" justify="start">
+              {method.toUpperCase()}
             </Button>
           </DropdownMenuRadio>
         }
