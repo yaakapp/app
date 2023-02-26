@@ -6,14 +6,15 @@ import { EditorState } from '@codemirror/state';
 
 interface Props {
   contentType: string;
+  useTemplating?: boolean;
   defaultValue?: string | null;
   onChange?: (value: string) => void;
 }
 
-export default function Editor({ contentType, defaultValue, onChange }: Props) {
+export default function Editor({ contentType, useTemplating, defaultValue, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const extensions = useMemo(() => {
-    const ext = syntaxExtension(contentType);
+    const ext = syntaxExtension({ contentType, useTemplating });
     return [
       ...baseExtensions,
       ...(ext ? [ext] : []),
@@ -28,13 +29,18 @@ export default function Editor({ contentType, defaultValue, onChange }: Props) {
   useEffect(() => {
     if (ref.current === null) return;
 
-    const view = new EditorView({
-      state: EditorState.create({
-        doc: defaultValue ?? '',
-        extensions: extensions,
-      }),
-      parent: ref.current,
-    });
+    let view: EditorView;
+    try {
+      view = new EditorView({
+        state: EditorState.create({
+          doc: defaultValue ?? '',
+          extensions: extensions,
+        }),
+        parent: ref.current,
+      });
+    } catch (e) {
+      console.log(e);
+    }
     return () => view?.destroy();
   }, [ref.current]);
 

@@ -1,13 +1,18 @@
+import { parser as twigParser } from './twig/twig';
 import {
   bracketMatching,
-  defaultHighlightStyle,
   foldGutter,
+  foldInside,
   foldKeymap,
+  foldNodeProp,
   HighlightStyle,
+  indentNodeProp,
   indentOnInput,
   LanguageSupport,
+  LRLanguage,
   syntaxHighlighting,
 } from '@codemirror/language';
+import { lintKeymap } from '@codemirror/lint';
 import {
   crosshairCursor,
   drawSelection,
@@ -19,6 +24,12 @@ import {
   lineNumbers,
   rectangularSelection,
 } from '@codemirror/view';
+import { html } from '@codemirror/lang-html';
+import { parseMixed } from '@lezer/common';
+import { EditorState } from '@codemirror/state';
+import { json } from '@codemirror/lang-json';
+import { javascript } from '@codemirror/lang-javascript';
+import { tags as t } from '@lezer/highlight';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
 import {
@@ -27,35 +38,86 @@ import {
   closeBracketsKeymap,
   completionKeymap,
 } from '@codemirror/autocomplete';
-import { lintKeymap } from '@codemirror/lint';
-import { EditorState } from '@codemirror/state';
-import { json } from '@codemirror/lang-json';
-import { javascript } from '@codemirror/lang-javascript';
-import { html } from '@codemirror/lang-html';
-import { tags } from '@lezer/highlight';
+import { placeholders } from './widgets';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
-    tag: [tags.documentMeta, tags.blockComment, tags.lineComment, tags.docComment, tags.comment],
+    tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
     color: '#757b93',
   },
-  { tag: tags.name, color: '#4699de' },
-  { tag: tags.variableName, color: '#31c434' },
-  { tag: tags.bool, color: '#e864f6' },
-  { tag: tags.attributeName, color: '#8f68ff' },
-  { tag: tags.attributeValue, color: '#ff964b' },
-  { tag: [tags.keyword, tags.string], color: '#e8b045' },
-  { tag: tags.comment, color: '#cec4cc', fontStyle: 'italic' },
+  { tag: [t.name], color: '#4699de' },
+  { tag: [t.variableName], color: '#31c434' },
+  { tag: [t.bool], color: '#e864f6' },
+  { tag: [t.attributeName], color: '#8f68ff' },
+  { tag: [t.attributeValue], color: '#ff964b' },
+  { tag: [t.string], color: '#e8b045' },
+  { tag: [t.keyword, t.meta], color: '#45e8a4' },
+  { tag: [t.comment], color: '#cec4cc', fontStyle: 'italic' },
 ]);
 
-const syntaxExtensions: Record<string, LanguageSupport> = {
-  'application/json': json(),
-  'application/javascript': javascript(),
-  'text/html': html(),
+// export const defaultHighlightStyle = HighlightStyle.define([
+//   { tag: t.meta, color: '#404740' },
+//   { tag: t.link, textDecoration: 'underline' },
+//   { tag: t.heading, textDecoration: 'underline', fontWeight: 'bold' },
+//   { tag: t.emphasis, fontStyle: 'italic' },
+//   { tag: t.strong, fontWeight: 'bold' },
+//   { tag: t.strikethrough, textDecoration: 'line-through' },
+//   { tag: t.keyword, color: '#708' },
+//   { tag: [t.atom, t.bool, t.url, t.contentSeparator, t.labelName], color: '#219' },
+//   { tag: [t.literal, t.inserted], color: '#164' },
+//   { tag: [t.string, t.deleted], color: '#a11' },
+//   { tag: [t.regexp, t.escape, t.special(t.string)], color: '#e40' },
+//   { tag: t.definition(t.variableName), color: '#00f' },
+//   { tag: t.local(t.variableName), color: '#30a' },
+//   { tag: [t.typeName, t.namespace], color: '#085' },
+//   { tag: t.className, color: '#167' },
+//   { tag: [t.special(t.variableName), t.macroName], color: '#256' },
+//   { tag: t.definition(t.propertyName), color: '#00c' },
+//   { tag: t.comment, color: '#940' },
+//   { tag: t.invalid, color: '#f00' },
+// ]);
+
+const syntaxExtensions: Record<string, { base: LanguageSupport; ext: any[] }> = {
+  'application/json': { base: json(), ext: [] },
+  'application/javascript': { base: javascript(), ext: [] },
+  'text/html': { base: html(), ext: [] },
 };
 
-export function syntaxExtension(contentType: string): LanguageSupport | undefined {
-  return syntaxExtensions[contentType];
+export function syntaxExtension({
+  contentType,
+  useTemplating,
+}: {
+  contentType: string;
+  useTemplating?: boolean;
+}) {
+  const { base, ext } = syntaxExtensions[contentType] ?? { base: json(), ext: [] };
+  if (!useTemplating) {
+    return [base];
+  }
+
+  const mixedTwigParser = twigParser.configure({
+    props: [
+      // Add basic folding/indent metadata
+      foldNodeProp.add({ Conditional: foldInside }),
+      indentNodeProp.add({
+        Conditional: (cx) => {
+          const closed = /^\s*\{% endif/.test(cx.textAfter);
+          return cx.lineIndent(cx.node.from) + (closed ? 0 : cx.unit);
+        },
+      }),
+    ],
+    wrap: parseMixed((node) => {
+      return node.type.isTop
+        ? {
+            parser: base.language.parser,
+            overlay: (node) => node.type.name == 'Text',
+          }
+        : null;
+    }),
+  });
+
+  const twigLanguage = LRLanguage.define({ parser: mixedTwigParser });
+  return [twigLanguage, placeholders, base.support, ...ext];
 }
 
 export const baseExtensions = [
@@ -78,7 +140,6 @@ export const baseExtensions = [
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   bracketMatching(),
   closeBrackets(),
   autocompletion(),
