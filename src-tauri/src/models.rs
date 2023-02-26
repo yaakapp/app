@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
+use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
@@ -16,8 +15,16 @@ pub struct Workspace {
     pub description: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HttpRequestHeader {
+    pub name: String,
+    pub value: String,
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-pub struct Request {
+#[serde(rename_all = "camelCase")]
+pub struct HttpRequest {
     pub id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -27,26 +34,31 @@ pub struct Request {
     pub url: String,
     pub method: String,
     pub body: Option<String>,
-    pub headers: String,
+    pub headers: Json<Vec<HttpRequestHeader>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HttpResponseHeader {
+    pub name: String,
+    pub value: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-pub struct Response {
+#[serde(rename_all = "camelCase")]
+pub struct HttpResponse {
     pub id: String,
     pub workspace_id: String,
     pub request_id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: Option<NaiveDateTime>,
-    pub name: String,
-    pub status: u16,
-    pub status_reason: Option<&'static str>,
-    pub body: String,
     pub url: String,
-    pub method: String,
-    pub elapsed: u128,
-    pub elapsed2: u128,
-    pub headers: HashMap<String, String>,
+    pub elapsed: i64,
+    pub status: i64,
+    pub status_reason: Option<String>,
+    pub body: String,
+    pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
 pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
@@ -104,18 +116,28 @@ pub async fn upsert_request(
     method: &str,
     body: Option<&str>,
     url: &str,
+    headers: Vec<HttpRequestHeader>,
     pool: &Pool<Sqlite>,
-) -> Result<Request, sqlx::Error> {
-    let id = generate_id("rq");
+) -> Result<HttpRequest, sqlx::Error> {
+    let generated_id;
+    let id = match id {
+        Some(v) => v,
+        None => {
+            generated_id = generate_id("rq");
+            generated_id.as_str()
+        }
+    };
+    let headers_json = Json(headers);
     sqlx::query!(
         r#"
-            INSERT INTO requests (id, workspace_id, name, url, method, body, updated_at, headers)
-            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '{}')
+            INSERT INTO http_requests (id, workspace_id, name, url, method, body, headers, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
                method = excluded.method,
                body = excluded.body,
-               url = excluded.url;
+               url = excluded.url
         "#,
         id,
         workspace_id,
@@ -123,23 +145,25 @@ pub async fn upsert_request(
         url,
         method,
         body,
+        headers_json,
     )
     .execute(pool)
     .await
     .expect("Failed to insert new request");
-    get_request(&id, pool).await
+    get_request(id, pool).await
 }
 
 pub async fn find_requests(
     workspace_id: &str,
     pool: &Pool<Sqlite>,
-) -> Result<Vec<Request>, sqlx::Error> {
+) -> Result<Vec<HttpRequest>, sqlx::Error> {
     sqlx::query_as!(
-        Request,
+        HttpRequest,
         r#"
-            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body, headers
-            FROM requests
-            WHERE workspace_id = ?;
+            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,
+                headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
+            FROM http_requests
+            WHERE workspace_id = ?
         "#,
         workspace_id,
     )
@@ -147,18 +171,122 @@ pub async fn find_requests(
     .await
 }
 
-pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<Request, sqlx::Error> {
+pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
     sqlx::query_as!(
-        Request,
+        HttpRequest,
         r#"
-            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body, headers
-            FROM requests
+            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,
+                headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
+            FROM http_requests
+            WHERE id = ?
+            ORDER BY created_at DESC
+        "#,
+        id,
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn create_response(
+    request_id: &str,
+    elapsed: i64,
+    url: &str,
+    status: i64,
+    status_reason: Option<&str>,
+    body: &str,
+    headers: Vec<HttpResponseHeader>,
+    pool: &Pool<Sqlite>,
+) -> Result<HttpResponse, sqlx::Error> {
+    let req = get_request(request_id, pool)
+        .await
+        .expect("Failed to get request");
+    let id = generate_id("rp");
+    let headers_json = Json(headers);
+    sqlx::query!(
+        r#"
+            INSERT INTO http_responses (id, request_id, workspace_id, elapsed, url, status, status_reason, body, headers)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+        "#,
+        id,
+        request_id,
+        req.workspace_id,
+        elapsed,
+        url,
+        status,
+        status_reason,
+        body,
+        headers_json,
+    )
+    .execute(pool)
+    .await
+    .expect("Failed to insert new response");
+
+    get_response(&id, pool).await
+}
+
+pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
+    sqlx::query_as!(
+        HttpResponse,
+        r#"
+            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,
+                headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
+            FROM http_responses
             WHERE id = ?
         "#,
         id,
     )
     .fetch_one(pool)
     .await
+}
+
+pub async fn find_responses(
+    request_id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<Vec<HttpResponse>, sqlx::Error> {
+    sqlx::query_as!(
+        HttpResponse,
+        r#"
+            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,
+                headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
+            FROM http_responses
+            WHERE request_id = ?
+            ORDER BY created_at DESC
+        "#,
+        request_id,
+    )
+        .fetch_all(pool)
+        .await
+}
+
+pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM http_responses
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(pool)
+    .await;
+
+    Ok(())
+}
+
+pub async fn delete_all_responses(
+    request_id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<(), sqlx::Error> {
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM http_responses
+            WHERE request_id = ?
+        "#,
+        request_id,
+    )
+    .execute(pool)
+    .await;
+
+    Ok(())
 }
 
 fn generate_id(prefix: &str) -> String {

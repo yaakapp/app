@@ -89,7 +89,12 @@
 
 .cm-editor .cm-activeLineGutter,
 .cm-editor .cm-activeLine {
-    background-color: hsl(var(--color-gray-50));
+    background-color: transparent;
+}
+
+.cm-editor.cm-focused .cm-activeLineGutter,
+.cm-editor.cm-focused .cm-activeLine {
+    background-color: hsl(var(--color-gray-100)/0.3);
 }
 
 .cm-editor * {
@@ -101,9 +106,9 @@
 }
 
 .cm-editor .cm-selectionBackground {
-    background-color: hsl(var(--color-gray-100));
+    background-color: hsl(var(--color-gray-200));
 }
 
 .cm-editor.cm-focused .cm-selectionBackground {
-    background-color: hsl(var(--color-gray-100));
+    background-color: hsl(var(--color-gray-200));
 }

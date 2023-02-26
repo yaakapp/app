@@ -5,17 +5,18 @@ import { Button } from './Button';
 import useTheme from '../hooks/useTheme';
 import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
-import { Request } from '../hooks/useWorkspaces';
-import { invoke } from '@tauri-apps/api';
+import { HttpRequest } from '../lib/models';
 import { Link } from 'react-router-dom';
+import { useRequestCreate } from '../hooks/useRequest';
 
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   workspaceId: string;
-  requests: Request[];
-  requestId?: string;
+  requests: HttpRequest[];
+  activeRequestId?: string;
 }
 
-export function Sidebar({ className, requestId, workspaceId, requests, ...props }: Props) {
+export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
+  const createRequest = useRequestCreate(workspaceId);
   const { toggleTheme } = useTheme();
   return (
     <div
@@ -27,31 +28,30 @@ export function Sidebar({ className, requestId, workspaceId, requests, ...props 
         <IconButton
           size="sm"
           icon="camera"
-          onClick={async () => {
-            const req = await invoke('upsert_request', {
-              workspaceId,
-              id: null,
-              name: 'Test Request',
-            });
-            console.log('UPSERTED', req);
-          }}
+          onClick={() => createRequest.mutate({ name: 'Test Request' })}
         />
       </HStack>
       <VStack as="ul" className="py-2" space={1}>
         {requests.map((r) => (
-          <li key={r.id} className="mx-2">
-            <Button
-              as={Link}
-              to={`/workspaces/${workspaceId}/requests/${r.id}`}
-              className={classnames('w-full', requestId === r.id && 'bg-gray-50')}
-              size="sm"
-              justify="start"
-            >
-              {r.name}
-            </Button>
-          </li>
+          <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
       </VStack>
     </div>
+  );
+}
+
+function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
+  return (
+    <li key={request.id} className="mx-2">
+      <Button
+        as={Link}
+        to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
+        className={classnames('w-full', active && 'bg-gray-50')}
+        size="sm"
+        justify="start"
+      >
+        {request.name}
+      </Button>
+    </li>
   );
 }

@@ -133,39 +133,39 @@ function DropdownMenuItem({
   );
 }
 
-type DropdownMenuCheckboxItemProps = DropdownMenu.DropdownMenuCheckboxItemProps & ItemInnerProps;
+// type DropdownMenuCheckboxItemProps = DropdownMenu.DropdownMenuCheckboxItemProps & ItemInnerProps;
+//
+// function DropdownMenuCheckboxItem({
+//   leftSlot,
+//   rightSlot,
+//   children,
+//   ...props
+// }: DropdownMenuCheckboxItemProps) {
+//   return (
+//     <DropdownMenu.CheckboxItem asChild {...props}>
+//       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
+//         {children}
+//       </ItemInner>
+//     </DropdownMenu.CheckboxItem>
+//   );
+// }
 
-function DropdownMenuCheckboxItem({
-  leftSlot,
-  rightSlot,
-  children,
-  ...props
-}: DropdownMenuCheckboxItemProps) {
-  return (
-    <DropdownMenu.CheckboxItem asChild {...props}>
-      <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
-        {children}
-      </ItemInner>
-    </DropdownMenu.CheckboxItem>
-  );
-}
-
-type DropdownMenuSubTriggerProps = DropdownMenu.DropdownMenuSubTriggerProps & ItemInnerProps;
-
-function DropdownMenuSubTrigger({
-  leftSlot,
-  rightSlot,
-  children,
-  ...props
-}: DropdownMenuSubTriggerProps) {
-  return (
-    <DropdownMenu.SubTrigger asChild {...props}>
-      <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
-        {children}
-      </ItemInner>
-    </DropdownMenu.SubTrigger>
-  );
-}
+// type DropdownMenuSubTriggerProps = DropdownMenu.DropdownMenuSubTriggerProps & ItemInnerProps;
+//
+// function DropdownMenuSubTrigger({
+//   leftSlot,
+//   rightSlot,
+//   children,
+//   ...props
+// }: DropdownMenuSubTriggerProps) {
+//   return (
+//     <DropdownMenu.SubTrigger asChild {...props}>
+//       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
+//         {children}
+//       </ItemInner>
+//     </DropdownMenu.SubTrigger>
+//   );
+// }
 
 type DropdownMenuRadioItemProps = Omit<
   DropdownMenu.DropdownMenuRadioItemProps & ItemInnerProps,
@@ -189,22 +189,22 @@ function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRa
   );
 }
 
-const DropdownMenuSubContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuSubContentProps>(
-  function DropdownMenuSubContent(
-    { className, ...props }: DropdownMenu.DropdownMenuSubContentProps,
-    ref,
-  ) {
-    return (
-      <DropdownMenu.SubContent
-        ref={ref}
-        alignOffset={0}
-        sideOffset={4}
-        className={classnames(className, dropdownMenuClasses)}
-        {...props}
-      />
-    );
-  },
-);
+// const DropdownMenuSubContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuSubContentProps>(
+//   function DropdownMenuSubContent(
+//     { className, ...props }: DropdownMenu.DropdownMenuSubContentProps,
+//     ref,
+//   ) {
+//     return (
+//       <DropdownMenu.SubContent
+//         ref={ref}
+//         alignOffset={0}
+//         sideOffset={4}
+//         className={classnames(className, dropdownMenuClasses)}
+//         {...props}
+//       />
+//     );
+//   },
+// );
 
 function DropdownMenuLabel({ className, children, ...props }: DropdownMenu.DropdownMenuLabelProps) {
   return (
@@ -216,14 +216,14 @@ function DropdownMenuLabel({ className, children, ...props }: DropdownMenu.Dropd
   );
 }
 
-function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMenuSeparatorProps) {
-  return (
-    <DropdownMenu.Separator
-      className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
-      {...props}
-    />
-  );
-}
+// function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMenuSeparatorProps) {
+//   return (
+//     <DropdownMenu.Separator
+//       className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
+//       {...props}
+//     />
+//   );
+// }
 
 function DropdownMenuTrigger({
   children,
@@ -236,7 +236,7 @@ function DropdownMenuTrigger({
       className={classnames(className, 'focus:outline-none')}
       {...props}
     >
-      <>{children}</>
+      {children}
     </DropdownMenu.Trigger>
   );
 }
