@@ -2,7 +2,16 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu';
 import { motion } from 'framer-motion';
 import { CheckIcon } from '@radix-ui/react-icons';
-import { forwardRef, HTMLAttributes, ReactNode } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from 'react';
 import classnames from 'classnames';
 
 interface DropdownMenuRadioProps {
@@ -51,11 +60,15 @@ export function DropdownMenuRadio({
 
 export interface DropdownProps {
   children: ReactNode;
-  items: {
-    label: string;
-    onSelect?: () => void;
-    disabled?: boolean;
-  }[];
+  items: (
+    | {
+        label: string;
+        onSelect?: () => void;
+        disabled?: boolean;
+        leftSlot?: ReactNode;
+      }
+    | '-----'
+  )[];
 }
 
 export function Dropdown({ children, items }: DropdownProps) {
@@ -64,11 +77,22 @@ export function Dropdown({ children, items }: DropdownProps) {
       <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
-          {items.map((item, i) => (
-            <DropdownMenuItem key={i} onSelect={() => item.onSelect?.()} disabled={item.disabled}>
-              {item.label}
-            </DropdownMenuItem>
-          ))}
+          {items.map((item, i) => {
+            if (item === '-----') {
+              return <DropdownMenuSeparator key={i} />;
+            } else {
+              return (
+                <DropdownMenuItem
+                  key={i}
+                  onSelect={() => item.onSelect?.()}
+                  disabled={item.disabled}
+                  leftSlot={item.leftSlot}
+                >
+                  {item.label}
+                </DropdownMenuItem>
+              );
+            }
+          })}
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenu.Root>
@@ -94,13 +118,25 @@ function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
 const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuContentProps>(
   function DropdownMenuContent(
     { className, children, ...props }: DropdownMenu.DropdownMenuContentProps,
-    ref,
+    ref: ForwardedRef<HTMLDivElement>,
   ) {
+    const divRef = useRef<HTMLDivElement>(null);
+    useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(ref, () => divRef.current);
+
+    // Calculate the max height so we can scroll
+    const styles = useMemo(() => {
+      if (divRef.current === null) return;
+      const windowBox = document.documentElement.getBoundingClientRect();
+      const menuBox = divRef.current.getBoundingClientRect();
+      return { maxHeight: windowBox.height - menuBox.top - 5 };
+    }, [divRef.current]);
+
     return (
       <DropdownMenu.Content
-        ref={ref}
+        ref={divRef}
         align="start"
-        className={classnames(className, dropdownMenuClasses, 'm-0.5')}
+        className={classnames(className, dropdownMenuClasses, 'overflow-auto m-1')}
+        style={styles}
         {...props}
       >
         {children}
@@ -216,14 +252,14 @@ function DropdownMenuLabel({ className, children, ...props }: DropdownMenu.Dropd
   );
 }
 
-// function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMenuSeparatorProps) {
-//   return (
-//     <DropdownMenu.Separator
-//       className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
-//       {...props}
-//     />
-//   );
-// }
+function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMenuSeparatorProps) {
+  return (
+    <DropdownMenu.Separator
+      className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
+      {...props}
+    />
+  );
+}
 
 function DropdownMenuTrigger({
   children,
