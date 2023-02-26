@@ -5,10 +5,15 @@ import { Button } from './Button';
 import useTheme from '../hooks/useTheme';
 import { HStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
+import { Request } from '../hooks/useWorkspaces';
+import { invoke } from '@tauri-apps/api';
 
-type Props = Omit<HTMLAttributes<HTMLDivElement>, 'children'>;
+interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  workspaceId: string;
+  requests: Request[];
+}
 
-export function Sidebar({ className, ...props }: Props) {
+export function Sidebar({ className, workspaceId, requests, ...props }: Props) {
   const { toggleTheme } = useTheme();
   return (
     <div
@@ -17,16 +22,28 @@ export function Sidebar({ className, ...props }: Props) {
     >
       <HStack as={WindowDragRegion} items="center" className="pr-1" justify="end">
         <IconButton size="sm" icon="sun" onClick={toggleTheme} />
+        <IconButton
+          size="sm"
+          icon="camera"
+          onClick={async () => {
+            const req = await invoke('upsert_request', {
+              workspaceId,
+              id: null,
+              name: 'Test Request',
+            });
+            console.log('UPSERTED', req);
+          }}
+        />
       </HStack>
       <ul className="mx-2 py-2">
-        {['Test Request', 'Another Request', 'Something else', 'And Another'].map((v, i) => (
-          <li key={v}>
+        {requests.map((r) => (
+          <li key={r.id}>
             <Button
-              className={classnames('w-full', i === 0 && 'bg-gray-50')}
+              className={classnames('w-full', false && 'bg-gray-50')}
               size="sm"
               justify="start"
             >
-              {v}
+              {r.name}
             </Button>
           </li>
         ))}

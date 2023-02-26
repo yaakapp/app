@@ -1,0 +1,263 @@
+{
+  "db": "SQLite",
+  "74850a49fa21f4cb5f30905b8ede1fa76935c1ff7ad13c105c6de772d10ff742": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 6
+      }
+    },
+    "query": "\n            INSERT INTO requests (id, workspace_id, name, url, method, body, updated_at, headers)\n            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, '{}')\n            ON CONFLICT (id) DO UPDATE SET\n               name = excluded.name,\n               method = excluded.method,\n               body = excluded.body,\n               url = excluded.url;\n        "
+  },
+  "8069c0bd326f659faca7b45b03e5317d7339a168f4cd7776d9f84304bb7ae7ac": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 1,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n            SELECT id, created_at, updated_at, deleted_at, name, description\n            FROM workspaces\n        "
+  },
+  "d461b9471bdc1fd3f85ca9351f686def07634b4906c8429eeef343b11992b445": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "method",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "body",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers",
+          "ordinal": 9,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body, headers\n            FROM requests\n            WHERE id = ?\n        "
+  },
+  "da08ebedec0942fd5c54ed1e180d7dc399629f83bfa1341c1c09a048123adac1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "method",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "body",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers",
+          "ordinal": 9,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body, headers\n            FROM requests\n            WHERE workspace_id = ?;\n        "
+  },
+  "f116d8cf9aad828135bb8c3a4c8b8e6b857ae13303989e9133a33b2d1cf20e96": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "\n            INSERT INTO workspaces (id, name, description)\n            VALUES (?, ?, ?)\n        "
+  },
+  "fa5011146663ba5675764f33bf55a86b8274aa18737aff427fd1e3fb74ef3535": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 1,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, created_at, updated_at, deleted_at, name, description\n            FROM workspaces\n            WHERE id = ?\n        "
+  }
+}
