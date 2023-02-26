@@ -8,7 +8,7 @@ CREATE TABLE workspaces
     description TEXT     NOT NULL
 );
 
-CREATE TABLE requests
+CREATE TABLE http_requests
 (
     id           TEXT     NOT NULL PRIMARY KEY,
     workspace_id TEXT     NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
@@ -22,17 +22,18 @@ CREATE TABLE requests
     body         TEXT
 );
 
-CREATE TABLE responses
+CREATE TABLE http_responses
 (
     id            TEXT     NOT NULL PRIMARY KEY,
-    request_id    TEXT     NOT NULL REFERENCES requests (id) ON DELETE CASCADE,
+    request_id    TEXT     NOT NULL REFERENCES http_requests (id) ON DELETE CASCADE,
     workspace_id  TEXT     NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at    DATETIME,
     elapsed       INTEGER  NOT NULL,
     status        INTEGER  NOT NULL,
-    status_reason TEXT     NOT NULL,
+    status_reason TEXT,
+    url           TEXT     NOT NULL,
     body          TEXT     NOT NULL,
     headers       TEXT     NOT NULL
 );

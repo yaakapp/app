@@ -6,9 +6,9 @@ import { HelmetProvider } from 'react-helmet-async';
 import { MotionConfig } from 'framer-motion';
 import { invoke } from '@tauri-apps/api';
 import { setTheme } from './lib/theme';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { Layout } from './pages/Layout';
+import { Layout } from './components/Layout';
 import { Workspaces } from './pages/Workspaces';
 import './main.css';
 
