@@ -2,10 +2,11 @@ import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks
 import { motion } from 'framer-motion';
 import { HStack, VStack } from './Stacks';
 import Editor from './Editor/Editor';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { WindowDragRegion } from './WindowDragRegion';
 import { Dropdown } from './Dropdown';
 import { IconButton } from './IconButton';
+import { Icon } from './Icon';
 
 interface Props {
   requestId: string;
@@ -13,10 +14,17 @@ interface Props {
 }
 
 export function ResponsePane({ requestId, error }: Props) {
+  const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
   const responses = useResponses(requestId);
-  const response = responses.data[0];
+  const response = activeResponseId
+    ? responses.data.find((r) => r.id === activeResponseId)
+    : responses.data[0];
   const deleteResponse = useDeleteResponse(response);
   const deleteAllResponses = useDeleteAllResponses(response?.requestId);
+
+  useEffect(() => {
+    setActiveResponseId(null);
+  }, [responses.data?.length]);
 
   const contentType = useMemo(
     () =>
@@ -47,6 +55,12 @@ export function ResponsePane({ requestId, error }: Props) {
               onSelect: deleteAllResponses.mutate,
               disabled: responses.data.length === 0,
             },
+            '-----',
+            ...responses.data.map((r) => ({
+              label: r.status + ' - ' + r.elapsed,
+              leftSlot: response?.id === r.id ? <Icon icon="check" /> : <></>,
+              onSelect: () => setActiveResponseId(r.id),
+            })),
           ]}
         >
           <IconButton icon="gear" className="ml-auto" size="sm" />

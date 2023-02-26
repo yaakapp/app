@@ -1,10 +1,12 @@
 import {
   ArchiveIcon,
   CameraIcon,
+  CheckIcon,
   GearIcon,
   HomeIcon,
   MoonIcon,
   PaperPlaneIcon,
+  QuestionMarkIcon,
   SunIcon,
   TriangleDownIcon,
   UpdateIcon,
@@ -20,6 +22,8 @@ type IconName =
   | 'triangle-down'
   | 'paper-plane'
   | 'update'
+  | 'question'
+  | 'check'
   | 'sun'
   | 'moon';
 
@@ -28,11 +32,13 @@ const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
   'triangle-down': TriangleDownIcon,
   archive: ArchiveIcon,
   camera: CameraIcon,
+  check: CheckIcon,
   gear: GearIcon,
   home: HomeIcon,
   update: UpdateIcon,
   sun: SunIcon,
   moon: MoonIcon,
+  question: QuestionMarkIcon,
 };
 
 export interface IconProps {
@@ -43,7 +49,7 @@ export interface IconProps {
 }
 
 export function Icon({ icon, spin, size = 'md', className }: IconProps) {
-  const Component = icons[icon];
+  const Component = icons[icon] ?? icons.question;
   return (
     <Component
       className={classnames(
