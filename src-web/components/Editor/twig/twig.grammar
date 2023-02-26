@@ -3,21 +3,14 @@
 @top Template { (directive | Text)* }
 
 directive {
-  // Insert |
-  // Conditional { ConditionalOpen (directive | Text)* ConditionalClose }
   Insert
 }
 
 @skip {space} {
   Insert { "{{" DirectiveContent "}}" }
-  // ConditionalOpen { "{%" kw<"if"> DirectiveContent "%}" }
-  // ConditionalClose { "{%" kw<"endif"> "%}" }
 }
 
-kw<word> { @specialize[@name={word}]<Identifier, word> }
-
 @tokens {
-  Identifier { @asciiLetter+ }
   Text { ![{] Text? | "{" (@eof | ![%{] Text?) }
   space { @whitespace+ }
   DirectiveContent { ![%}] DirectiveContent? | $[%}] (@eof | ![}] DirectiveContent?) }
@@ -25,4 +18,4 @@ kw<word> { @specialize[@name={word}]<Identifier, word> }
   "{{" "}}" // "{%" "%}"
 }
 
-@external propSource twigHighlight from "./twig-highlight.ts"
+@external propSource twigHighlight from "./twig-highlight"
