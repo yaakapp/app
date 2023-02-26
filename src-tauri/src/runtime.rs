@@ -24,12 +24,18 @@ pub async fn run_plugin(file_path: &str) -> Result<(), AnyError> {
 
     runtime
         .execute_script("<runtime>", include_str!("runtime.js"))
-        .unwrap();
+        .expect("Failed to execute runtime.js");
 
-    let main_module = deno_core::resolve_path(file_path)?;
-    let mod_id = runtime.load_main_module(&main_module, None).await?;
+    let main_module = deno_core::resolve_path(file_path).expect("Failed to resolve path");
+    let mod_id = runtime
+        .load_main_module(&main_module, None)
+        .await
+        .expect("Failed to load main module");
     let result = runtime.mod_evaluate(mod_id);
-    runtime.run_event_loop(false).await?;
+    runtime
+        .run_event_loop(false)
+        .await
+        .expect("Failed to run event loop");
     result.await?
 }
 

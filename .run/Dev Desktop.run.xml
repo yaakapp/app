@@ -6,7 +6,9 @@
       <script value="tauri-dev" />
     </scripts>
     <node-interpreter value="project" />
-    <envs />
+    <envs>
+      <env name="DATABASE_URL" value="sqlite://$USER_HOME$/Library/Application%20Support/co.schier.twosomnia/db.sqlite" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>

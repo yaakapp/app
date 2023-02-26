@@ -1,5 +1,5 @@
 (function (globalThis) {
-  Deno.core.initializeAsyncOps();
+  // Deno.core.print(Object.keys(Deno.core).join('\n'));
 
   function argsToMessage(...args) {
     return args.map((arg) => JSON.stringify(arg)).join(' ');
