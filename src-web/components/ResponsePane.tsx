@@ -64,7 +64,8 @@ export function ResponsePane({ requestId, error }: Props) {
                 {response.status}
                 {response.statusReason && ` ${response.statusReason}`}
                 &nbsp;&bull;&nbsp;
-                {response.elapsed}ms
+                {response.elapsed}ms &nbsp;&bull;&nbsp;
+                {Math.round(response.body.length / 1000)} KB
               </HStack>
               {contentType.includes('html') ? (
                 <iframe
