@@ -27,10 +27,9 @@ export function useWorkspaces(): UseQueryResult<Workspace[]> {
   });
 }
 
-export function useRequests(): UseQueryResult<Request[]> {
+export function useRequests(workspaceId: string): UseQueryResult<Request[]> {
   return useQuery('requests', async () => {
-    const workspaces = (await invoke('workspaces')) as Workspace[];
-    const requests = (await invoke('requests', { workspaceId: workspaces[0].id })) as Request[];
+    const requests = (await invoke('requests', { workspaceId })) as Request[];
     return requests.map(convertDates);
   });
 }

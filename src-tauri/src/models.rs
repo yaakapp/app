@@ -80,7 +80,7 @@ pub async fn create_workspace(
     description: &str,
     pool: &Pool<Sqlite>,
 ) -> Result<Workspace, sqlx::Error> {
-    let id = generate_id("wrk");
+    let id = generate_id("wk");
     sqlx::query!(
         r#"
             INSERT INTO workspaces (id, name, description)
@@ -106,7 +106,7 @@ pub async fn upsert_request(
     url: &str,
     pool: &Pool<Sqlite>,
 ) -> Result<Request, sqlx::Error> {
-    let id = generate_id("wrk");
+    let id = generate_id("rq");
     sqlx::query!(
         r#"
             INSERT INTO requests (id, workspace_id, name, url, method, body, updated_at, headers)
