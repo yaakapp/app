@@ -54,6 +54,7 @@ function App() {
               />
               <Editor
                 key={request.id}
+                useTemplating
                 defaultValue={request.body}
                 contentType="application/json"
                 onChange={(body) => updateRequest.mutate({ body })}

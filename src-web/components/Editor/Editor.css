@@ -11,10 +11,22 @@
     top: 0;
     bottom: 0;
     font-size: 0.9rem;
+    font-family: monospace;
+}
+
+.cm-editor .cm-tooltip {
+    color: gray;
+}
+
+.cm-editor .placeholder-widget {
+    background-color: hsl(var(--color-blue-400));
+    padding: 0.05em 0.3em;
+    border-radius: 0.2em;
+    color: white;
+    cursor: pointer;
 }
 
 .cm-editor .cm-scroller {
-    border: 1px solid hsl(var(--color-gray-50));
     border-radius: var(--border-radius-lg);
     background-color: hsl(var(--color-gray-50));
 }
@@ -24,7 +36,7 @@
 }
 
 .cm-editor.cm-focused .cm-scroller {
-    border-color: hsl(var(--color-blue-400)/0.4);
+    box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);
 }
 
 .cm-editor .cm-line {
@@ -77,10 +89,6 @@
     color: hsl(var(--color-gray-300));
 }
 
-.cm-editor .cm-content {
-    padding-top: 0.4rem;
-}
-
 .cm-editor .cm-foldPlaceholder {
     background-color: hsl(var(--color-gray-100));
     border: 1px solid hsl(var(--color-gray-200));
@@ -102,7 +110,7 @@
 }
 
 .cm-editor .cm-cursor {
-    border-left: 2px solid red;
+    border-left: 2px solid hsl(var(--color-gray-900));
 }
 
 .cm-editor .cm-selectionBackground {
@@ -112,3 +120,16 @@
 .cm-editor.cm-focused .cm-selectionBackground {
     background-color: hsl(var(--color-gray-200));
 }
+
+/* --> Add padding to container. For some reason, using padding on both adds an extra
+ * 1px offset so we need to use a combination of padding and margin.
+ */
+.cm-editor .cm-gutters {
+    padding-top: 0.2em;
+}
+
+.cm-editor .cm-content {
+    margin-top: 0.2em;
+}
+
+/* <-- */
