@@ -3,17 +3,19 @@ import classnames from 'classnames';
 import { IconButton } from './IconButton';
 import { Button } from './Button';
 import useTheme from '../hooks/useTheme';
-import { HStack } from './Stacks';
+import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
 import { Request } from '../hooks/useWorkspaces';
 import { invoke } from '@tauri-apps/api';
+import { Link } from 'react-router-dom';
 
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   workspaceId: string;
   requests: Request[];
+  requestId?: string;
 }
 
-export function Sidebar({ className, workspaceId, requests, ...props }: Props) {
+export function Sidebar({ className, requestId, workspaceId, requests, ...props }: Props) {
   const { toggleTheme } = useTheme();
   return (
     <div
@@ -35,11 +37,13 @@ export function Sidebar({ className, workspaceId, requests, ...props }: Props) {
           }}
         />
       </HStack>
-      <ul className="mx-2 py-2">
+      <VStack as="ul" className="py-2" space={1}>
         {requests.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="mx-2">
             <Button
-              className={classnames('w-full', false && 'bg-gray-50')}
+              as={Link}
+              to={`/workspaces/${workspaceId}/requests/${r.id}`}
+              className={classnames('w-full', requestId === r.id && 'bg-gray-50')}
               size="sm"
               justify="start"
             >
@@ -47,7 +51,7 @@ export function Sidebar({ className, workspaceId, requests, ...props }: Props) {
             </Button>
           </li>
         ))}
-      </ul>
+      </VStack>
     </div>
   );
 }

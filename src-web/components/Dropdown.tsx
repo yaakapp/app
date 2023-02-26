@@ -1,16 +1,9 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu';
 import { motion } from 'framer-motion';
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  DotFilledIcon,
-  HamburgerMenuIcon,
-} from '@radix-ui/react-icons';
-import { forwardRef, HTMLAttributes, ReactNode, useState } from 'react';
-import { Button } from './Button';
+import { CheckIcon } from '@radix-ui/react-icons';
+import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
-import { HotKey } from './HotKey';
 
 interface DropdownMenuRadioProps {
   children: ReactNode;
@@ -232,13 +225,19 @@ function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMen
   );
 }
 
-function DropdownMenuTrigger({ className, ...props }: DropdownMenu.DropdownMenuTriggerProps) {
+function DropdownMenuTrigger({
+  children,
+  className,
+  ...props
+}: DropdownMenu.DropdownMenuTriggerProps) {
   return (
     <DropdownMenu.Trigger
       asChild
       className={classnames(className, 'focus:outline-none')}
       {...props}
-    />
+    >
+      <>{children}</>
+    </DropdownMenu.Trigger>
   );
 }
 
