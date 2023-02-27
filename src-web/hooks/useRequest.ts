@@ -17,8 +17,14 @@ export function useRequestUpdate(request: HttpRequest | null) {
       if (request == null) {
         throw new Error("Can't update a null request");
       }
-      // console.error('UPDATE REQUEST', patch);
-      const req = await invoke('upsert_request', { ...request, ...patch });
+
+      const updatedRequest = { ...request, ...patch } as any;
+
+      // TODO: Figure out why this is necessary
+      updatedRequest.createdAt = updatedRequest.createdAt.toISOString().replace('Z', '');
+      updatedRequest.updatedAt = updatedRequest.updatedAt.toISOString().replace('Z', '');
+
+      const req = await invoke('update_request', { request: updatedRequest });
       return convertDates(req as HttpRequest);
     },
     onSuccess: (req) => {
@@ -31,13 +37,9 @@ export function useRequestUpdate(request: HttpRequest | null) {
 
 export function useRequestCreate(workspaceId: string) {
   const queryClient = useQueryClient();
-  return useMutation<HttpRequest, unknown, Partial<Omit<HttpRequest, 'workspaceId'>>>({
+  return useMutation<HttpRequest, unknown, Pick<HttpRequest, 'name'>>({
     mutationFn: async (patch) => {
-      const req = await invoke('upsert_request', {
-        url: '',
-        method: 'GET',
-        name: 'New Request',
-        headers: [],
+      const req = await invoke('create_request', {
         ...patch,
         workspaceId,
       });
