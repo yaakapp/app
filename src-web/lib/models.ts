@@ -45,6 +45,9 @@ export function convertDates<T extends BaseModel>(m: T): T {
 }
 
 function convertDate(d: string | Date): Date {
+  if (typeof d !== 'string') {
+    return d;
+  }
   const date = new Date(d);
   const userTimezoneOffset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - userTimezoneOffset);

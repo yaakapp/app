@@ -4,13 +4,14 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { HelmetProvider } from 'react-helmet-async';
 import { MotionConfig } from 'framer-motion';
-import { invoke } from '@tauri-apps/api';
+import { listen } from '@tauri-apps/api/event';
 import { setTheme } from './lib/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Workspaces } from './pages/Workspaces';
 import './main.css';
+import { convertDates, HttpRequest } from './lib/models';
 
 setTheme();
 
@@ -18,9 +19,18 @@ setTheme();
 await init();
 greet();
 
-// Load the database
-// await invoke('load_db');
 const queryClient = new QueryClient();
+await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
+  queryClient.setQueryData(['requests'], (requests: HttpRequest[] = []) =>
+    requests.map((r) => (r.id === request.id ? convertDates(request) : r)),
+  );
+});
+await listen('created_request', ({ payload: request }: { payload: HttpRequest }) => {
+  queryClient.setQueryData(['requests'], (requests: HttpRequest[] = []) => [
+    ...requests,
+    convertDates(request),
+  ]);
+});
 
 const router = createBrowserRouter([
   {
