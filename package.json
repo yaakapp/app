@@ -16,6 +16,7 @@
     "@codemirror/lang-html": "^6.4.2",
     "@codemirror/lang-javascript": "^6.1.4",
     "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-xml": "^6.0.2",
     "@codemirror/language": "^6.6.0",
     "@codemirror/search": "^6.2.3",
     "@lezer/generator": "^1.2.2",

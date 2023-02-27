@@ -27,7 +27,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
         <IconButton size="sm" icon="sun" onClick={toggleTheme} />
         <IconButton
           size="sm"
-          icon="camera"
+          icon="plus-circled"
           onClick={() => createRequest.mutate({ name: 'Test Request' })}
         />
       </HStack>

@@ -25,6 +25,7 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { html } from '@codemirror/lang-html';
+import { xml } from '@codemirror/lang-xml';
 import { parseMixed } from '@lezer/common';
 import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
@@ -44,15 +45,15 @@ export const myHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
     color: '#757b93',
+    fontStyle: 'italic',
   },
-  { tag: [t.name], color: '#4699de' },
+  { tag: [t.name, t.tagName, t.angleBracket, t.docString], color: '#4699de' },
   { tag: [t.variableName], color: '#31c434' },
   { tag: [t.bool], color: '#e864f6' },
-  { tag: [t.attributeName], color: '#8f68ff' },
+  { tag: [t.attributeName], color: '#a773ff' },
   { tag: [t.attributeValue], color: '#ff964b' },
   { tag: [t.string], color: '#e8b045' },
   { tag: [t.keyword, t.meta], color: '#45e8a4' },
-  { tag: [t.comment], color: '#cec4cc', fontStyle: 'italic' },
 ]);
 
 // export const defaultHighlightStyle = HighlightStyle.define([
@@ -81,6 +82,8 @@ const syntaxExtensions: Record<string, { base: LanguageSupport; ext: any[] }> = 
   'application/json': { base: json(), ext: [] },
   'application/javascript': { base: javascript(), ext: [] },
   'text/html': { base: html(), ext: [] },
+  'application/xml': { base: xml(), ext: [] },
+  'text/xml': { base: xml(), ext: [] },
 };
 
 export function syntaxExtension({
@@ -90,7 +93,8 @@ export function syntaxExtension({
   contentType: string;
   useTemplating?: boolean;
 }) {
-  const { base, ext } = syntaxExtensions[contentType] ?? { base: json(), ext: [] };
+  const justContentType = contentType.split(';')[0] ?? contentType;
+  const { base, ext } = syntaxExtensions[justContentType] ?? { base: json(), ext: [] };
   if (!useTemplating) {
     return [base];
   }

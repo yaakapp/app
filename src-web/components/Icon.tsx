@@ -2,10 +2,14 @@ import {
   ArchiveIcon,
   CameraIcon,
   CheckIcon,
+  CodeIcon,
+  EyeOpenIcon,
   GearIcon,
   HomeIcon,
   MoonIcon,
   PaperPlaneIcon,
+  PlusCircledIcon,
+  PlusIcon,
   QuestionMarkIcon,
   SunIcon,
   TriangleDownIcon,
@@ -19,17 +23,23 @@ type IconName =
   | 'home'
   | 'camera'
   | 'gear'
+  | 'eye'
   | 'triangle-down'
   | 'paper-plane'
   | 'update'
   | 'question'
   | 'check'
+  | 'plus'
+  | 'plus-circled'
   | 'sun'
+  | 'code'
   | 'moon';
 
 const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
   'paper-plane': PaperPlaneIcon,
   'triangle-down': TriangleDownIcon,
+  plus: PlusIcon,
+  'plus-circled': PlusCircledIcon,
   archive: ArchiveIcon,
   camera: CameraIcon,
   check: CheckIcon,
@@ -39,6 +49,8 @@ const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
   sun: SunIcon,
   moon: MoonIcon,
   question: QuestionMarkIcon,
+  eye: EyeOpenIcon,
+  code: CodeIcon,
 };
 
 export interface IconProps {
