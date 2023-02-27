@@ -15,6 +15,7 @@ interface Props {
 
 export function ResponsePane({ requestId, error }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
   const responses = useResponses(requestId);
   const response = activeResponseId
     ? responses.data.find((r) => r.id === activeResponseId)
@@ -73,15 +74,23 @@ export function ResponsePane({ requestId, error }: Props) {
             <>
               <HStack
                 items="center"
-                className="italic text-gray-500 text-sm w-full pointer-events-none h-10 mb-3 flex-shrink-0"
+                className="italic text-gray-500 text-sm w-full h-10 mb-3 flex-shrink-0"
               >
-                {response.status}
-                {response.statusReason && ` ${response.statusReason}`}
-                &nbsp;&bull;&nbsp;
-                {response.elapsed}ms &nbsp;&bull;&nbsp;
-                {Math.round(response.body.length / 1000)} KB
+                <div>
+                  {response.status}
+                  {response.statusReason && ` ${response.statusReason}`}
+                  &nbsp;&bull;&nbsp;
+                  {response.elapsed}ms &nbsp;&bull;&nbsp;
+                  {Math.round(response.body.length / 1000)} KB
+                </div>
+                <IconButton
+                  icon={viewMode === 'pretty' ? 'eye' : 'code'}
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
+                />
               </HStack>
-              {contentType.includes('html') ? (
+              {viewMode === 'pretty' && contentType.includes('html') ? (
                 <iframe
                   title="Response preview"
                   srcDoc={contentForIframe}
