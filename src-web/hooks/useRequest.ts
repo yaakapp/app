@@ -2,10 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { convertDates, HttpRequest } from '../lib/models';
 import { responsesQueryKey } from './useResponses';
-import { useNavigate, useNavigation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
+export function requestsQueryKey(workspaceId: string) {
+  return ['requests', { workspaceId }];
+}
 
 export function useRequests(workspaceId: string) {
-  return useQuery(['requests'], async () => {
+  return useQuery(requestsQueryKey(workspaceId), async () => {
     const requests = (await invoke('requests', { workspaceId })) as HttpRequest[];
     return requests.map(convertDates);
   });
@@ -40,6 +44,7 @@ export function useRequestCreate({
   return useMutation<string, unknown, Pick<HttpRequest, 'name'>>({
     mutationFn: async (patch) => invoke('create_request', { ...patch, workspaceId }),
     onSuccess: async (requestId) => {
+      console.log('DONE', { requestId, navigateAfter });
       if (navigateAfter) {
         navigate(`/workspaces/${workspaceId}/requests/${requestId}`);
       }
@@ -57,6 +62,20 @@ export function useSendRequest(request: HttpRequest | null) {
     onSuccess: async () => {
       if (request == null) return;
       await queryClient.invalidateQueries(responsesQueryKey(request.id));
+    },
+  });
+}
+
+export function useDeleteRequest(request: HttpRequest | null) {
+  const queryClient = useQueryClient();
+  return useMutation<void, string>({
+    mutationFn: async () => {
+      if (request == null) return;
+      await invoke('delete_request', { requestId: request.id });
+    },
+    onSuccess: async () => {
+      if (request == null) return;
+      await queryClient.invalidateQueries(requestsQueryKey(request.workspaceId));
     },
   });
 }

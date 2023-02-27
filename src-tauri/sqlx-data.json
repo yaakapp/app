@@ -186,6 +186,16 @@
     },
     "query": "\n            INSERT INTO http_requests (id, workspace_id, name, url, method, body, headers, updated_at)\n            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               method = excluded.method,\n               body = excluded.body,\n               url = excluded.url\n        "
   },
+  "448a1d1f1866ab42c0f81fcf8eb2930bf21dfdd43ca4831bc1a198cf45ac3732": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            DELETE FROM http_requests\n            WHERE id = ?\n        "
+  },
   "55eae4b20a2c313134579b0ea43bad4dc2dd313db6cd1654f783bac12602db8a": {
     "describe": {
       "columns": [
