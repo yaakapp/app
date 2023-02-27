@@ -138,20 +138,29 @@ async fn send_request(
 async fn create_request(
     workspace_id: &str,
     name: &str,
+    app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<models::HttpRequest, String> {
+) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
     let headers = Vec::new();
-    models::upsert_request(None, workspace_id, name, "GET", None, "", headers, pool)
-        .await
-        .map_err(|e| e.to_string())
+    let created_request =
+        models::upsert_request(None, workspace_id, name, "GET", None, "", headers, pool)
+            .await
+            .expect("Failed to create request");
+
+    app_handle
+        .emit_all("created_request", &created_request)
+        .unwrap();
+
+    Ok(created_request.id)
 }
 
 #[tauri::command]
 async fn update_request(
     request: models::HttpRequest,
+    app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<models::HttpRequest, String> {
+) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
 
     // TODO: Figure out how to make this better
@@ -164,7 +173,7 @@ async fn update_request(
         None => None,
     };
 
-    models::upsert_request(
+    let updated_request = models::upsert_request(
         Some(request.id.as_str()),
         request.workspace_id.as_str(),
         request.name.as_str(),
@@ -175,7 +184,13 @@ async fn update_request(
         pool,
     )
     .await
-    .map_err(|e| e.to_string())
+    .expect("Failed to update request");
+
+    app_handle
+        .emit_all("updated_request", updated_request)
+        .unwrap();
+
+    Ok(())
 }
 
 #[tauri::command]

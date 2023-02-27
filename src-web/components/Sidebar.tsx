@@ -16,7 +16,7 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 }
 
 export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
-  const createRequest = useRequestCreate(workspaceId);
+  const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
   const { toggleTheme } = useTheme();
   return (
     <div
@@ -28,7 +28,9 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
         <IconButton
           size="sm"
           icon="plus-circled"
-          onClick={() => createRequest.mutate({ name: 'Test Request' })}
+          onClick={async () => {
+            await createRequest.mutate({ name: 'Test Request' });
+          }}
         />
       </HStack>
       <VStack as="ul" className="py-3" space={1}>
