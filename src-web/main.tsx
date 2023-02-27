@@ -12,6 +12,7 @@ import { Layout } from './components/Layout';
 import { Workspaces } from './pages/Workspaces';
 import './main.css';
 import { convertDates, HttpRequest } from './lib/models';
+import { requestsQueryKey } from './hooks/useRequest';
 
 setTheme();
 
@@ -20,16 +21,24 @@ await init();
 greet();
 
 const queryClient = new QueryClient();
+
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
-  queryClient.setQueryData(['requests'], (requests: HttpRequest[] = []) =>
+  queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
     requests.map((r) => (r.id === request.id ? convertDates(request) : r)),
   );
 });
+
 await listen('created_request', ({ payload: request }: { payload: HttpRequest }) => {
-  queryClient.setQueryData(['requests'], (requests: HttpRequest[] = []) => [
-    ...requests,
-    convertDates(request),
-  ]);
+  queryClient.setQueryData(
+    requestsQueryKey(request.workspaceId),
+    (requests: HttpRequest[] = []) => [...requests, convertDates(request)],
+  );
+});
+
+await listen('deleted_request', ({ payload: request }: { payload: HttpRequest }) => {
+  queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
+    requests.filter((r) => r.id !== request.id),
+  );
 });
 
 const router = createBrowserRouter([

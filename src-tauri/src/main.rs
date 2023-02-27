@@ -194,6 +194,21 @@ async fn update_request(
 }
 
 #[tauri::command]
+async fn delete_request(
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    request_id: &str,
+) -> Result<models::HttpRequest, String> {
+    let pool = &*db_instance.lock().await;
+    let req = models::delete_request(request_id, pool)
+        .await
+        .expect("Failed to delete request");
+    app_handle.emit_all("deleted_request", request_id).unwrap();
+
+    Ok(req)
+}
+
+#[tauri::command]
 async fn requests(
     workspace_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -324,6 +339,7 @@ fn main() {
             send_request,
             create_request,
             update_request,
+            delete_request,
             responses,
             delete_response,
             delete_all_responses,

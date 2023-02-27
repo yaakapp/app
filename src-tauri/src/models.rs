@@ -187,6 +187,23 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
     .await
 }
 
+pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
+    let req = get_request(id, pool)
+        .await
+        .expect("Failed to get request to delete");
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM http_requests
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(pool)
+    .await;
+
+    Ok(req)
+}
+
 pub async fn create_response(
     request_id: &str,
     elapsed: i64,

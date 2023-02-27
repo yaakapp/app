@@ -12,6 +12,7 @@ import {
   PlusIcon,
   QuestionMarkIcon,
   SunIcon,
+  TrashIcon,
   TriangleDownIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
@@ -33,6 +34,7 @@ type IconName =
   | 'plus-circled'
   | 'sun'
   | 'code'
+  | 'trash'
   | 'moon';
 
 const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
@@ -51,6 +53,7 @@ const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
   question: QuestionMarkIcon,
   eye: EyeOpenIcon,
   code: CodeIcon,
+  trash: TrashIcon,
 };
 
 export interface IconProps {
