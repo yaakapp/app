@@ -14,9 +14,12 @@ import './main.css';
 
 setTheme();
 
+// WASM stuff
 await init();
 greet();
-await invoke('load_db');
+
+// Load the database
+// await invoke('load_db');
 const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
