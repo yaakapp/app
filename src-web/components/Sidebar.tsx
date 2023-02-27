@@ -31,7 +31,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           onClick={() => createRequest.mutate({ name: 'Test Request' })}
         />
       </HStack>
-      <VStack as="ul" className="py-2" space={1}>
+      <VStack as="ul" className="py-3" space={1}>
         {requests.map((r) => (
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
@@ -42,12 +42,12 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
 
 function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
   return (
-    <li key={request.id} className="mx-2">
+    <li key={request.id} className="mx-3">
       <Button
         as={Link}
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         className={classnames('w-full', active && 'bg-gray-50')}
-        size="sm"
+        size="xs"
         justify="start"
       >
         {request.name}

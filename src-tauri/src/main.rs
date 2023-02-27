@@ -23,8 +23,6 @@ use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
 
-use crate::models::HttpRequestHeader;
-
 mod models;
 mod runtime;
 mod window_ext;
@@ -41,13 +39,13 @@ pub struct CustomResponse {
     pub status_reason: Option<&'static str>,
 }
 
-#[tauri::command]
-async fn load_db(db_instance: State<'_, Mutex<Pool<Sqlite>>>) -> Result<(), String> {
+async fn migrate_db(db_instance: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
     let m = Migrator::new(Path::new("./migrations"))
         .await
         .expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
+    println!("Migrations ran");
     Ok(())
 }
 
@@ -137,20 +135,47 @@ async fn send_request(
 }
 
 #[tauri::command]
-async fn upsert_request(
-    id: Option<&str>,
+async fn create_request(
     workspace_id: &str,
     name: &str,
-    url: &str,
-    body: Option<&str>,
-    headers: Vec<HttpRequestHeader>,
-    method: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-    models::upsert_request(id, workspace_id, name, method, body, url, headers, pool)
+    let headers = Vec::new();
+    models::upsert_request(None, workspace_id, name, "GET", None, "", headers, pool)
         .await
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn update_request(
+    request: models::HttpRequest,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::HttpRequest, String> {
+    let pool = &*db_instance.lock().await;
+
+    // TODO: Figure out how to make this better
+    let b2;
+    let body = match request.body {
+        Some(b) => {
+            b2 = b;
+            Some(b2.as_str())
+        }
+        None => None,
+    };
+
+    models::upsert_request(
+        Some(request.id.as_str()),
+        request.workspace_id.as_str(),
+        request.name.as_str(),
+        request.method.as_str(),
+        body,
+        request.url.as_str(),
+        request.headers.0,
+        pool,
+    )
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -245,7 +270,9 @@ fn main() {
                     .connect(url.as_str())
                     .await
                     .expect("Failed to connect to database");
-                app.manage(Mutex::new(pool));
+                let m = Mutex::new(pool);
+                migrate_db(&m).await.expect("Failed to migrate database");
+                app.manage(m);
                 Ok(())
             })
         })
@@ -277,11 +304,11 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             greet,
-            load_db,
             workspaces,
             requests,
             send_request,
-            upsert_request,
+            create_request,
+            update_request,
             responses,
             delete_response,
             delete_all_responses,
