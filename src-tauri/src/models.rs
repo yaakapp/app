@@ -306,7 +306,7 @@ pub async fn delete_all_responses(
     Ok(())
 }
 
-fn generate_id(prefix: &str) -> String {
+pub fn generate_id(prefix: &str) -> String {
     format!(
         "{prefix}_{}",
         Alphanumeric.sample_string(&mut rand::thread_rng(), 10)
