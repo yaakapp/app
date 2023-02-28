@@ -88,7 +88,7 @@ const syntaxExtensions: Record<string, { base: LanguageSupport; ext: any[] }> = 
   url: { base: url(), ext: [] },
 };
 
-export function syntaxExtension({
+export function getLanguageExtension({
   contentType,
   useTemplating,
 }: {
