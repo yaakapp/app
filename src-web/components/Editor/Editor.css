@@ -4,14 +4,21 @@
     position: relative;
 }
 
-.cm-editor {
+.cm-wrapper .cm-editor {
     position: absolute !important;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
-    font-size: 0.9rem;
-    font-family: monospace;
+}
+
+.cm-editor {
+    width: 100%;
+    display: block;
+}
+
+.cm-singleline .cm-scroller {
+    overflow: hidden !important;;
 }
 
 .cm-editor .cm-tooltip {
@@ -35,14 +42,22 @@
     outline: none !important;
 }
 
-.cm-editor.cm-focused .cm-scroller {
+.cm-multiline.cm-editor.cm-focused .cm-scroller {
     box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);
 }
 
 .cm-editor .cm-line {
+    color: hsl(var(--color-gray-900));
+}
+
+.cm-multiline .cm-editor .cm-line {
     padding-left: 1em;
     padding-right: 1.5em;
-    color: hsl(var(--color-gray-900));
+}
+
+.cm-singleline .cm-scroller {
+    display: flex;
+    align-items: center !important;
 }
 
 .cm-editor .cm-gutters {

@@ -1,0 +1,30 @@
+@top url { Protocol Host Path Query }
+
+Protocol {
+    ProtocolName Slashy
+}
+
+Path {
+  (Slash PathSegment)*
+}
+
+Query {
+  Question (QueryPair)*
+}
+
+QueryPair {
+  Amp? QueryName Equal QueryValue
+}
+
+@tokens {
+  ProtocolName { "http" | "https" }
+  Host { $[a-zA-Z0-9-_.]+ }
+  QueryName { $[a-zA-Z0-9-_.]+ }
+  QueryValue { $[a-zA-Z0-9-_.]+ }
+  PathSegment { $[a-zA-Z0-9-_.]+ }
+  Slashy { "://" }
+  Slash { "/" }
+  Question { "?" }
+  Equal { "=" }
+  Amp { "&" }
+}

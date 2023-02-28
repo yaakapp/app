@@ -83,12 +83,14 @@ export function ResponsePane({ requestId, error }: Props) {
                   {response.elapsed}ms &nbsp;&bull;&nbsp;
                   {Math.round(response.body.length / 1000)} KB
                 </div>
-                <IconButton
-                  icon={viewMode === 'pretty' ? 'eye' : 'code'}
-                  size="sm"
-                  className="ml-auto"
-                  onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
-                />
+                {contentType.includes('html') && (
+                  <IconButton
+                    icon={viewMode === 'pretty' ? 'eye' : 'code'}
+                    size="sm"
+                    className="ml-auto"
+                    onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
+                  />
+                )}
               </HStack>
               {viewMode === 'pretty' && contentType.includes('html') ? (
                 <iframe

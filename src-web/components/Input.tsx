@@ -1,13 +1,17 @@
 import { InputHTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
 import { HStack, VStack } from './Stacks';
+import Editor from './Editor/Editor';
 
-interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'> {
   name: string;
   label: string;
   hideLabel?: boolean;
   labelClassName?: string;
   containerClassName?: string;
+  onChange?: (value: string) => void;
+  onSubmit?: () => void;
+  useEditor?: boolean;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
   size?: 'sm' | 'md';
@@ -19,10 +23,14 @@ export function Input({
   className,
   containerClassName,
   labelClassName,
+  onSubmit,
   size = 'md',
+  useEditor,
+  onChange,
   name,
   leftSlot,
   rightSlot,
+  defaultValue,
   ...props
 }: Props) {
   const id = `input-${name}`;
@@ -49,16 +57,34 @@ export function Input({
         >
           {label}
         </label>
-        <input
-          id={id}
-          className={classnames(
-            className,
-            'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
-            leftSlot && '!pl-1',
-            rightSlot && '!pr-1',
-          )}
-          {...props}
-        />
+        {useEditor ? (
+          <Editor
+            id={id}
+            singleLine
+            contentType="url"
+            defaultValue={defaultValue}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            className={classnames(
+              className,
+              'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
+              leftSlot && '!pl-1',
+              rightSlot && '!pr-1',
+            )}
+          />
+        ) : (
+          <input
+            id={id}
+            onChange={(e) => onChange?.(e.target.value)}
+            className={classnames(
+              className,
+              'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
+              leftSlot && '!pl-1',
+              rightSlot && '!pr-1',
+            )}
+            {...props}
+          />
+        )}
       </VStack>
       {rightSlot}
     </HStack>
