@@ -76,7 +76,7 @@ async fn send_request(
     headers.insert("x-foo-bar", HeaderValue::from_static("hi mom"));
     headers.insert(
         HeaderName::from_static("x-api-key"),
-        HeaderValue::from_static("123-123-123"),
+        HeaderValue::from_str(models::generate_id("x").as_str()).expect("Failed to create header"),
     );
 
     let m = Method::from_bytes(req.method.to_uppercase().as_bytes()).unwrap();

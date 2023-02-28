@@ -101,7 +101,7 @@ export function ResponsePane({ requestId, error }: Props) {
                 />
               ) : response?.body ? (
                 <Editor
-                  key={response.body}
+                  valueKey={response.id}
                   defaultValue={response?.body}
                   contentType={contentType}
                 />
