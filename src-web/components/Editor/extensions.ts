@@ -40,6 +40,7 @@ import {
   completionKeymap,
 } from '@codemirror/autocomplete';
 import { placeholders } from './widgets';
+import { url } from './url/extension';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -84,6 +85,7 @@ const syntaxExtensions: Record<string, { base: LanguageSupport; ext: any[] }> = 
   'text/html': { base: html(), ext: [] },
   'application/xml': { base: xml(), ext: [] },
   'text/xml': { base: xml(), ext: [] },
+  url: { base: url(), ext: [] },
 };
 
 export function syntaxExtension({
@@ -125,10 +127,17 @@ export function syntaxExtension({
 }
 
 export const baseExtensions = [
-  lineNumbers(),
-  highlightActiveLineGutter(),
   highlightSpecialChars(),
   history(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  syntaxHighlighting(myHighlightStyle),
+];
+
+export const multiLineExtensions = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
   foldGutter({
     markerDOM: (open) => {
       const el = document.createElement('div');
@@ -141,7 +150,6 @@ export const baseExtensions = [
     },
   }),
   drawSelection(),
-  dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
   bracketMatching(),
@@ -160,5 +168,4 @@ export const baseExtensions = [
     ...completionKeymap,
     ...lintKeymap,
   ]),
-  syntaxHighlighting(myHighlightStyle),
 ];

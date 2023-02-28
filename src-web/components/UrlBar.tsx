@@ -23,10 +23,12 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
     <form onSubmit={handleSendRequest} className="w-full flex items-center">
       <Input
         hideLabel
+        useEditor
+        onSubmit={sendRequest}
         name="url"
         label="Enter URL"
         className="font-mono"
-        onChange={(e) => onUrlChange(e.currentTarget.value)}
+        onChange={onUrlChange}
         defaultValue={url}
         placeholder="Enter a URL..."
         leftSlot={
