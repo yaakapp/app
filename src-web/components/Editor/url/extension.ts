@@ -7,16 +7,16 @@ import { completeFromList } from '@codemirror/autocomplete';
 const parserWithMetadata = parser.configure({
   props: [
     styleTags({
-      ProtocolName: t.comment,
-      Slashy: t.comment,
+      Protocol: t.comment,
+      Port: t.attributeName,
       Host: t.variableName,
-      Slash: t.comment,
       PathSegment: t.bool,
-      QueryName: t.variableName,
-      QueryValue: t.string,
-      Question: t.comment,
-      Equal: t.comment,
+      Slash: t.bool,
+      Question: t.attributeName,
+      QueryName: t.attributeName,
+      QueryValue: t.attributeName,
       Amp: t.comment,
+      Equal: t.comment,
     }),
     // indentNodeProp.add({
     //   Application: (context) => context.column(context.node.from) + context.unit,

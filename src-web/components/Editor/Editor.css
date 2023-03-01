@@ -42,7 +42,7 @@
     outline: none !important;
 }
 
-.cm-multiline.cm-editor.cm-focused .cm-scroller {
+.cm-multiline .cm-editor.cm-focused .cm-scroller {
     box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);
 }
 
@@ -64,6 +64,10 @@
     background-color: hsl(var(--color-gray-50));
     border-right: 0;
     color: hsl(var(--color-gray-200));
+}
+
+.cm-editor .cm-gutterElement {
+    transition: color var(--transition-duration);
 }
 
 .cm-editor .fold-gutter-icon {
