@@ -1,7 +1,7 @@
 import { DropdownMenuRadio } from './Dropdown';
 import { Button } from './Button';
 import { Input } from './Input';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { IconButton } from './IconButton';
 
 interface Props {
@@ -24,6 +24,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
       <Input
         hideLabel
         useEditor
+        useTemplating
         onSubmit={sendRequest}
         name="url"
         label="Enter URL"

@@ -1,29 +1,18 @@
-@top url { Protocol Host Port? Path Query }
-
-Protocol {
-    "http://" | "https://"
-}
-
-Path {
-  (Slash PathSegment)*
-}
+@top url { Protocol? Host Port? Path? Query? }
 
 Query {
-  Question (QueryPair)*
-}
-
-QueryPair {
-  Amp? QueryName Equal QueryValue
+    "?" queryPair ("&" queryPair)*
 }
 
 @tokens {
+  Protocol { $[a-zA-Z]+ "://" }
+  Path { ("/" $[a-zA-Z0-9\-_.]*)+ }
+  queryPair { ($[a-zA-Z0-9]+ ("=" $[a-zA-Z0-9]*)?) }
   Port { ":" $[0-9]+ }
   Host { $[a-zA-Z0-9-_.]+ }
-  QueryName { $[a-zA-Z0-9-_.]+ }
-  QueryValue { $[a-zA-Z0-9-_./]+ }
-  PathSegment { $[a-zA-Z0-9-_.]+ }
-  Slash { "/" }
-  Question { "?" }
-  Equal { "=" }
-  Amp { "&" }
+
+  // Protocol/host overlaps, so give proto explicit precedence
+  @precedence { Protocol, Host }
 }
+
+@external propSource highlight from "./highlight"

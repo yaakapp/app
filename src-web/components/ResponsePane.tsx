@@ -76,21 +76,24 @@ export function ResponsePane({ requestId, error }: Props) {
                 items="center"
                 className="italic text-gray-500 text-sm w-full h-10 mb-3 flex-shrink-0"
               >
-                <div>
+                <div className="w-full">
                   {response.status}
                   {response.statusReason && ` ${response.statusReason}`}
                   &nbsp;&bull;&nbsp;
                   {response.elapsed}ms &nbsp;&bull;&nbsp;
                   {Math.round(response.body.length / 1000)} KB
                 </div>
-                {contentType.includes('html') && (
-                  <IconButton
-                    icon={viewMode === 'pretty' ? 'eye' : 'code'}
-                    size="sm"
-                    className="ml-auto"
-                    onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
-                  />
-                )}
+                <HStack items="center" className="ml-auto">
+                  <div className="font-mono">{response.url}</div>
+                  {contentType.includes('html') && (
+                    <IconButton
+                      icon={viewMode === 'pretty' ? 'eye' : 'code'}
+                      size="sm"
+                      className="ml-1"
+                      onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
+                    />
+                  )}
+                </HStack>
               </HStack>
               {viewMode === 'pretty' && contentType.includes('html') ? (
                 <iframe

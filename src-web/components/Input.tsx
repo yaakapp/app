@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, ReactNode } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
 import { HStack, VStack } from './Stacks';
 import Editor from './Editor/Editor';
@@ -11,6 +11,7 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'on
   containerClassName?: string;
   onChange?: (value: string) => void;
   onSubmit?: () => void;
+  useTemplating?: boolean;
   useEditor?: boolean;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
@@ -24,6 +25,7 @@ export function Input({
   containerClassName,
   labelClassName,
   onSubmit,
+  useTemplating,
   size = 'md',
   useEditor,
   onChange,
@@ -61,6 +63,7 @@ export function Input({
           <Editor
             id={id}
             singleLine
+            useTemplating
             contentType="url"
             defaultValue={defaultValue}
             onChange={onChange}
