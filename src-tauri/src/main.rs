@@ -9,7 +9,6 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::fs::create_dir_all;
-use std::path::Path;
 
 use http::header::{HeaderName, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};

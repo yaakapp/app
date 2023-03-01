@@ -57,15 +57,17 @@ export default function Editor({
       console.log('Failed to initialize Codemirror', e);
     }
     return () => view?.destroy();
-  }, [ref.current]);
+  }, [ref.current, valueKey]);
 
   // Update value when valueKey changes
-  useEffect(() => {
-    if (cm === null) return;
-    cm.view.dispatch({
-      changes: { from: 0, to: cm.view.state.doc.length, insert: `${defaultValue ?? ''}` },
-    });
-  }, [valueKey]);
+  // TODO: This would be more efficient but the onChange handler gets fired on update
+  // useEffect(() => {
+  //   if (cm === null) return;
+  //   console.log('NEW DOC', valueKey, defaultValue);
+  //   cm.view.dispatch({
+  //     changes: { from: 0, to: cm.view.state.doc.length, insert: `${defaultValue ?? ''}` },
+  //   });
+  // }, [valueKey]);
 
   // Update language extension when contentType changes
   useEffect(() => {
@@ -111,31 +113,20 @@ function getExtensions({
           ),
           EditorState.transactionFilter.of(
             (tr: Transaction): TransactionSpec | TransactionSpec[] => {
-              if (!tr.isUserEvent('input.paste')) {
-                return tr;
-              }
+              if (!tr.isUserEvent('input.paste')) return tr;
 
-              // let addedNewline = false;
               const trs: TransactionSpec[] = [];
               tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
                 let insert = '';
                 for (const line of inserted) {
                   insert += line.replace('\n', '');
                 }
-                trs.push({
-                  ...tr,
-                  selection: undefined,
-                  changes: [{ from: fromB, to: toA, insert }],
-                });
-              });
-
-              // selection: EditorSelection.create([EditorSelection.cursor(8)], 1),
-              // console.log('TRS', trs, tr);
-              trs.push({
-                selection: EditorSelection.create([EditorSelection.cursor(8)], 1),
+                const changes = [{ from: fromB, to: toA, insert }];
+                // Update selection now that the text has been changed
+                const selection = EditorSelection.create([EditorSelection.cursor(toB - 1)], 0);
+                trs.push({ ...tr, selection, changes });
               });
               return trs;
-              // return addedNewline ? [] : tr;
             },
           ),
         ]
@@ -144,7 +135,7 @@ function getExtensions({
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(ext ? [ext] : []),
     EditorView.updateListener.of((update) => {
-      if (typeof onChange === 'function') {
+      if (typeof onChange === 'function' && update.docChanged) {
         onChange(update.state.doc.toString());
       }
     }),
