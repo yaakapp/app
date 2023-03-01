@@ -23,7 +23,6 @@ use tauri::{AppHandle, State, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
 
-use crate::models::{update_response, HttpResponse};
 use window_ext::WindowExt;
 
 mod models;
@@ -42,11 +41,16 @@ pub struct CustomResponse {
     pub status_reason: Option<&'static str>,
 }
 
-async fn migrate_db(db_instance: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
+async fn migrate_db(
+    app_handle: AppHandle<Wry>,
+    db_instance: &Mutex<Pool<Sqlite>>,
+) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
-    let m = Migrator::new(Path::new("./migrations"))
-        .await
-        .expect("Failed to load migrations");
+    let p = app_handle
+        .path_resolver()
+        .resolve_resource("migrations")
+        .expect("failed to resolve resource");
+    let m = Migrator::new(p).await.expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
     println!("Migrations ran");
     Ok(())
@@ -148,7 +152,7 @@ async fn send_request(
             response.url = v.url().to_string();
             response.body = v.text().await.expect("Failed to get body");
             response.elapsed = start.elapsed().as_millis() as i64;
-            response = update_response(response, pool)
+            response = models::update_response(response, pool)
                 .await
                 .expect("Failed to update response");
             app_handle.emit_all("updated_response", &response).unwrap();
@@ -159,13 +163,13 @@ async fn send_request(
 }
 
 async fn response_err(
-    mut response: HttpResponse,
+    mut response: models::HttpResponse,
     error: String,
     app_handle: AppHandle<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<String, String> {
     response.error = Some(error.clone());
-    response = update_response(response, pool)
+    response = models::update_response(response, pool)
         .await
         .expect("Failed to update response");
     app_handle.emit_all("updated_response", &response).unwrap();
@@ -339,7 +343,9 @@ fn main() {
                     .await
                     .expect("Failed to connect to database");
                 let m = Mutex::new(pool);
-                migrate_db(&m).await.expect("Failed to migrate database");
+                migrate_db(app.handle(), &m)
+                    .await
+                    .expect("Failed to migrate database");
                 app.manage(m);
                 Ok(())
             })
