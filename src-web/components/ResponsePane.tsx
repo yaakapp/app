@@ -34,13 +34,14 @@ export function ResponsePane({ requestId, error }: Props) {
     [response],
   );
 
-  const contentForIframe: string = useMemo(() => {
-    if (response == null) return '';
+  const contentForIframe: string | null = useMemo(() => {
+    if (!contentType.includes('html')) return null;
+    if (response == null) return null;
     if (response.body.includes('<head>')) {
       return response.body.replace(/<head>/gi, `<head><base href="${response.url}"/>`);
     }
     return response.body;
-  }, [response?.id]);
+  }, [response?.body, contentType]);
 
   return (
     <VStack className="w-full">
@@ -97,7 +98,7 @@ export function ResponsePane({ requestId, error }: Props) {
                   )}
                 </HStack>
               </HStack>
-              {viewMode === 'pretty' && contentType.includes('html') ? (
+              {viewMode === 'pretty' && contentForIframe !== null ? (
                 <iframe
                   title="Response preview"
                   srcDoc={contentForIframe}
