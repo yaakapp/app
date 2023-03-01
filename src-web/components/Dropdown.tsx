@@ -1,18 +1,10 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu';
-import { motion } from 'framer-motion';
 import { CheckIcon } from '@radix-ui/react-icons';
-import {
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-  ReactNode,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-} from 'react';
 import classnames from 'classnames';
+import { motion } from 'framer-motion';
+import type { ForwardedRef, HTMLAttributes, ReactNode } from 'react';
+import { forwardRef, useImperativeHandle, useLayoutEffect, useState } from 'react';
 
 interface DropdownMenuRadioProps {
   children: ReactNode;
@@ -120,20 +112,30 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenu
     { className, children, ...props }: DropdownMenu.DropdownMenuContentProps,
     ref: ForwardedRef<HTMLDivElement>,
   ) {
-    const divRef = useRef<HTMLDivElement>(null);
-    useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(ref, () => divRef.current);
+    const [styles, setStyles] = useState<{ maxHeight: number }>();
+    const [divRef, setDivRef] = useState<HTMLDivElement | null>(null);
+    useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(ref, () => divRef);
+
+    const initDivRef = (ref: HTMLDivElement | null) => {
+      setDivRef(ref);
+    };
 
     // Calculate the max height so we can scroll
-    const styles = useMemo(() => {
-      if (divRef.current === null) return;
-      const windowBox = document.documentElement.getBoundingClientRect();
-      const menuBox = divRef.current.getBoundingClientRect();
-      return { maxHeight: windowBox.height - menuBox.top - 5 };
-    }, [divRef.current]);
+    useLayoutEffect(() => {
+      if (divRef === null) return;
+      // Needs to be in a setTimeout because the ref is not positioned yet
+      // TODO: Make this better?
+      setTimeout(() => {
+        const windowBox = document.documentElement.getBoundingClientRect();
+        const menuBox = divRef.getBoundingClientRect();
+        const styles = { maxHeight: windowBox.height - menuBox.top - 5 - 45 };
+        setStyles(styles);
+      });
+    }, [divRef]);
 
     return (
       <DropdownMenu.Content
-        ref={divRef}
+        ref={initDivRef}
         align="start"
         className={classnames(className, dropdownMenuClasses, 'overflow-auto m-1')}
         style={styles}

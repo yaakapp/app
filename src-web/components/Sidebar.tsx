@@ -1,13 +1,14 @@
-import React, { HTMLAttributes } from 'react';
 import classnames from 'classnames';
-import { IconButton } from './IconButton';
-import { Button } from './Button';
-import useTheme from '../hooks/useTheme';
-import { HStack, VStack } from './Stacks';
-import { WindowDragRegion } from './WindowDragRegion';
-import { HttpRequest } from '../lib/models';
+import type { HTMLAttributes } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useRequestCreate } from '../hooks/useRequest';
+import useTheme from '../hooks/useTheme';
+import type { HttpRequest } from '../lib/models';
+import { Button } from './Button';
+import { IconButton } from './IconButton';
+import { HStack, VStack } from './Stacks';
+import { WindowDragRegion } from './WindowDragRegion';
 
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   workspaceId: string;

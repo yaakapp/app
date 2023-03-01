@@ -58,7 +58,7 @@ export function ResponsePane({ requestId, error }: Props) {
               disabled: responses.data.length === 0,
             },
             '-----',
-            ...responses.data.map((r) => ({
+            ...responses.data.slice(0, 10).map((r) => ({
               label: r.status + ' - ' + r.elapsed,
               leftSlot: response?.id === r.id ? <Icon icon="check" /> : <></>,
               onSelect: () => setActiveResponseId(r.id),
