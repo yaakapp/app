@@ -4,6 +4,7 @@
 
 :root {
     color-scheme: light dark;
+    --transition-duration: 200ms ease-in-out;
 }
 
 :not(input):not(textarea),
@@ -22,7 +23,7 @@ html, body, #root {
 }
 
 * {
-    transition: background-color 150ms ease, border-color 150ms ease;
+    transition: background-color var(--transition-duration), border-color var(--transition-duration);
 }
 
 @layer base {

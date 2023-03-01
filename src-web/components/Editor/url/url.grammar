@@ -1,7 +1,7 @@
-@top url { Protocol Host Path Query }
+@top url { Protocol Host Port? Path Query }
 
 Protocol {
-    ProtocolName Slashy
+    "http://" | "https://"
 }
 
 Path {
@@ -17,12 +17,11 @@ QueryPair {
 }
 
 @tokens {
-  ProtocolName { "http" | "https" }
+  Port { ":" $[0-9]+ }
   Host { $[a-zA-Z0-9-_.]+ }
   QueryName { $[a-zA-Z0-9-_.]+ }
-  QueryValue { $[a-zA-Z0-9-_.]+ }
+  QueryValue { $[a-zA-Z0-9-_./]+ }
   PathSegment { $[a-zA-Z0-9-_.]+ }
-  Slashy { "://" }
   Slash { "/" }
   Question { "?" }
   Equal { "=" }

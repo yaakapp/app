@@ -48,13 +48,16 @@ export const myHighlightStyle = HighlightStyle.define([
     color: '#757b93',
     fontStyle: 'italic',
   },
-  { tag: [t.name, t.tagName, t.angleBracket, t.docString], color: 'hsl(var(--color-blue-500))' },
+  {
+    tag: [t.name, t.tagName, t.angleBracket, t.docString, t.number],
+    color: 'hsl(var(--color-blue-500))',
+  },
   { tag: [t.variableName], color: '#31c434' },
   { tag: [t.bool], color: '#e864f6' },
   { tag: [t.attributeName], color: 'hsl(var(--color-violet-500))' },
   { tag: [t.attributeValue], color: 'hsl(var(--color-orange-500))' },
   { tag: [t.string], color: 'hsl(var(--color-yellow-500))' },
-  { tag: [t.keyword, t.meta], color: '#45e8a4' },
+  { tag: [t.keyword, t.meta, t.operator], color: '#45e8a4' },
 ]);
 
 // export const defaultHighlightStyle = HighlightStyle.define([
