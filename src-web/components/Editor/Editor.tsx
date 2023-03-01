@@ -1,5 +1,6 @@
 import type { Transaction, TransactionSpec } from '@codemirror/state';
 import { Compartment, EditorSelection, EditorState, Prec } from '@codemirror/state';
+import { placeholder as placeholderExt } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { HTMLAttributes } from 'react';
@@ -10,6 +11,7 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   contentType: string;
   valueKey?: string;
+  placeholder?: string;
   useTemplating?: boolean;
   onChange?: (value: string) => void;
   onSubmit?: () => void;
@@ -18,6 +20,7 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
 
 export default function Editor({
   contentType,
+  placeholder,
   valueKey,
   useTemplating,
   defaultValue,
@@ -30,7 +33,8 @@ export default function Editor({
   const [cm, setCm] = useState<{ view: EditorView; langHolder: Compartment } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const extensions = useMemo(
-    () => getExtensions({ onSubmit, singleLine, onChange, contentType, useTemplating }),
+    () =>
+      getExtensions({ placeholder, onSubmit, singleLine, onChange, contentType, useTemplating }),
     [contentType],
   );
 
@@ -91,11 +95,15 @@ export default function Editor({
 
 function getExtensions({
   singleLine,
+  placeholder,
   onChange,
   onSubmit,
   contentType,
   useTemplating,
-}: Pick<Props, 'singleLine' | 'onChange' | 'onSubmit' | 'contentType' | 'useTemplating'>) {
+}: Pick<
+  Props,
+  'singleLine' | 'onChange' | 'onSubmit' | 'contentType' | 'useTemplating' | 'placeholder'
+>) {
   const ext = getLanguageExtension({ contentType, useTemplating });
   return [
     ...(singleLine
@@ -134,6 +142,7 @@ function getExtensions({
     ...baseExtensions,
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(ext ? [ext] : []),
+    ...(placeholder ? [placeholderExt(placeholder)] : []),
     EditorView.updateListener.of((update) => {
       if (typeof onChange === 'function' && update.docChanged) {
         onChange(update.state.doc.toString());
