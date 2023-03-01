@@ -36,7 +36,7 @@ icon = [
 ]
 identifier = "co.schier.twosomnia"
 longDescription = ""
-resources = [ "plugins/*" ]
+resources = [ "plugins/*", "migrations/*" ]
 shortDescription = ""
 targets = "all"
 
