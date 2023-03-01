@@ -1,4 +1,5 @@
-import React, { Children, Fragment, HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import React, { Children, Fragment } from 'react';
 import classnames from 'classnames';
 
 const spaceClassesX = {
@@ -24,7 +25,7 @@ interface HStackProps extends BaseStackProps {
 
 export function HStack({ className, space, children, ...props }: HStackProps) {
   return (
-    <BaseStack className={classnames(className, 'w-full flex-row')} {...props}>
+    <BaseStack className={classnames(className, 'flex-row')} {...props}>
       {space
         ? Children.toArray(children)
             .filter(Boolean) // Remove null/false/undefined children

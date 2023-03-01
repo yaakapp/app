@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Editor from './components/Editor/Editor';
 import { HStack, VStack } from './components/Stacks';
 import { WindowDragRegion } from './components/WindowDragRegion';
@@ -40,11 +40,17 @@ function App() {
     return () => document.documentElement.removeEventListener('keypress', listener);
   }, []);
 
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    console.log('SCREEN WIDTH', document.documentElement.clientWidth);
+    window.addEventListener('resize', () => setScreenWidth(window.innerWidth));
+  }, []);
+
   return (
     <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
       <Sidebar requests={requests ?? []} workspaceId={workspaceId} activeRequestId={request?.id} />
       {request && (
-        <Grid cols={2}>
+        <Grid cols={screenWidth > 700 ? 2 : 1} rows={screenWidth > 700 ? 1 : 2}>
           <VStack className="w-full">
             <HStack as={WindowDragRegion} items="center" className="pl-3 pr-1.5">
               Test Request
@@ -61,7 +67,7 @@ function App() {
                 sendRequest={sendRequest.mutate}
               />
               <Editor
-                key={request.id}
+                valueKey={request.id}
                 useTemplating
                 defaultValue={request.body ?? undefined}
                 contentType="application/json"

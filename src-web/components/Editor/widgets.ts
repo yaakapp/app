@@ -1,12 +1,5 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  MatchDecorator,
-  ViewPlugin,
-  ViewUpdate,
-  WidgetType,
-} from '@codemirror/view';
+import type { DecorationSet, ViewUpdate } from '@codemirror/view';
+import { Decoration, EditorView, MatchDecorator, ViewPlugin, WidgetType } from '@codemirror/view';
 
 class PlaceholderWidget extends WidgetType {
   constructor(readonly name: string) {
@@ -40,7 +33,7 @@ class BetterMatchDecorator extends MatchDecorator {
 }
 
 const placeholderMatcher = new BetterMatchDecorator({
-  regexp: /\{\{\s*([^}\s]+)\s*}}/g,
+  regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
   decoration(match, view, matchStartPos) {
     const matchEndPos = matchStartPos + match[0].length - 1;
 

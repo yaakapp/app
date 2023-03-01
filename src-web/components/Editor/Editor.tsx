@@ -1,11 +1,12 @@
-import './Editor.css';
-import { HTMLAttributes, useEffect, useMemo, useRef, useState } from 'react';
-import { EditorView } from 'codemirror';
-import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
-import type { TransactionSpec } from '@codemirror/state';
-import { Compartment, EditorSelection, EditorState, Transaction } from '@codemirror/state';
-import classnames from 'classnames';
 import { autocompletion } from '@codemirror/autocomplete';
+import type { Transaction, TransactionSpec } from '@codemirror/state';
+import { Compartment, EditorSelection, EditorState, Prec } from '@codemirror/state';
+import classnames from 'classnames';
+import { EditorView } from 'codemirror';
+import type { HTMLAttributes } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import './Editor.css';
+import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   contentType: string;
@@ -96,18 +97,19 @@ function getExtensions({
 }: Pick<Props, 'singleLine' | 'onChange' | 'onSubmit' | 'contentType' | 'useTemplating'>) {
   const ext = getLanguageExtension({ contentType, useTemplating });
   return [
-    autocompletion(),
     ...(singleLine
       ? [
-          EditorView.domEventHandlers({
-            keydown: (e) => {
-              // TODO: Figure out how to not have this mess up autocomplete
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                onSubmit?.();
-              }
-            },
-          }),
+          Prec.high(
+            EditorView.domEventHandlers({
+              keydown: (e) => {
+                // TODO: Figure out how to not have this not trigger on autocomplete selection
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onSubmit?.();
+                }
+              },
+            }),
+          ),
           EditorState.transactionFilter.of(
             (tr: Transaction): TransactionSpec | TransactionSpec[] => {
               if (!tr.isUserEvent('input.paste')) {
@@ -117,7 +119,6 @@ function getExtensions({
               // let addedNewline = false;
               const trs: TransactionSpec[] = [];
               tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-                // console.log('CHANGE', { fromA, toA }, { fromB, toB }, inserted);
                 let insert = '';
                 for (const line of inserted) {
                   insert += line.replace('\n', '');

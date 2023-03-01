@@ -1,18 +1,27 @@
-import { parser as twigParser } from './twig/twig';
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+} from '@codemirror/autocomplete';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { html } from '@codemirror/lang-html';
+import { javascript } from '@codemirror/lang-javascript';
+import { json } from '@codemirror/lang-json';
+import { xml } from '@codemirror/lang-xml';
 import {
   bracketMatching,
   foldGutter,
-  foldInside,
   foldKeymap,
-  foldNodeProp,
   HighlightStyle,
-  indentNodeProp,
   indentOnInput,
   LanguageSupport,
   LRLanguage,
   syntaxHighlighting,
 } from '@codemirror/language';
 import { lintKeymap } from '@codemirror/lint';
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import { EditorState } from '@codemirror/state';
 import {
   crosshairCursor,
   drawSelection,
@@ -24,23 +33,12 @@ import {
   lineNumbers,
   rectangularSelection,
 } from '@codemirror/view';
-import { html } from '@codemirror/lang-html';
-import { xml } from '@codemirror/lang-xml';
 import { parseMixed } from '@lezer/common';
-import { EditorState } from '@codemirror/state';
-import { json } from '@codemirror/lang-json';
-import { javascript } from '@codemirror/lang-javascript';
 import { tags as t } from '@lezer/highlight';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
-import {
-  autocompletion,
-  closeBrackets,
-  closeBracketsKeymap,
-  completionKeymap,
-} from '@codemirror/autocomplete';
-import { placeholders } from './widgets';
+import { myCompletions } from './completion/completion';
+import { parser as twigParser } from './twig/twig';
 import { url } from './url/extension';
+import { placeholders } from './widgets';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -82,13 +80,13 @@ export const myHighlightStyle = HighlightStyle.define([
 //   { tag: t.invalid, color: '#f00' },
 // ]);
 
-const syntaxExtensions: Record<string, { base: LanguageSupport; ext: any[] }> = {
-  'application/json': { base: json(), ext: [] },
-  'application/javascript': { base: javascript(), ext: [] },
-  'text/html': { base: html(), ext: [] },
-  'application/xml': { base: xml(), ext: [] },
-  'text/xml': { base: xml(), ext: [] },
-  url: { base: url(), ext: [] },
+const syntaxExtensions: Record<string, LanguageSupport> = {
+  'application/json': json(),
+  'application/javascript': javascript(),
+  'text/html': html(),
+  'application/xml': xml(),
+  'text/xml': xml(),
+  url: url(),
 };
 
 export function getLanguageExtension({
@@ -99,7 +97,7 @@ export function getLanguageExtension({
   useTemplating?: boolean;
 }) {
   const justContentType = contentType.split(';')[0] ?? contentType;
-  const { base, ext } = syntaxExtensions[justContentType] ?? { base: json(), ext: [] };
+  const base = syntaxExtensions[justContentType] ?? json();
   if (!useTemplating) {
     return [base];
   }
@@ -107,35 +105,44 @@ export function getLanguageExtension({
   const mixedTwigParser = twigParser.configure({
     props: [
       // Add basic folding/indent metadata
-      foldNodeProp.add({ Conditional: foldInside }),
-      indentNodeProp.add({
-        Conditional: (cx) => {
-          const closed = /^\s*\{% endif/.test(cx.textAfter);
-          return cx.lineIndent(cx.node.from) + (closed ? 0 : cx.unit);
-        },
-      }),
+      // foldNodeProp.add({ Conditional: foldInside }),
+      // indentNodeProp.add({
+      //   Conditional: (cx) => {
+      //     const closed = /^\s*\{% endif/.test(cx.textAfter);
+      //     return cx.lineIndent(cx.node.from) + (closed ? 0 : cx.unit);
+      //   },
+      // }),
     ],
     wrap: parseMixed((node) => {
       return node.type.isTop
         ? {
             parser: base.language.parser,
-            overlay: (node) => node.type.name == 'Text',
+            overlay: (node) => node.type.name === 'Text',
           }
         : null;
     }),
   });
 
-  const twigLanguage = LRLanguage.define({ parser: mixedTwigParser });
-  return [twigLanguage, placeholders, base.support, ...ext];
+  const twigLanguage = LRLanguage.define({ parser: mixedTwigParser, languageData: {} });
+  const completion = twigLanguage.data.of({
+    autocomplete: myCompletions,
+  });
+  const languageSupport = new LanguageSupport(twigLanguage, [completion]);
+  const completion2 = base.language.data.of({ autocomplete: myCompletions });
+  const languageSupport2 = new LanguageSupport(base.language, [completion2]);
+  return [languageSupport, languageSupport2, placeholders, base.support];
 }
 
 export const baseExtensions = [
+  keymap.of([...defaultKeymap]),
   highlightSpecialChars(),
   history(),
   drawSelection(),
   dropCursor(),
-  EditorState.allowMultipleSelections.of(true),
+  bracketMatching(),
+  autocompletion(),
   syntaxHighlighting(myHighlightStyle),
+  EditorState.allowMultipleSelections.of(true),
 ];
 
 export const multiLineExtensions = [
@@ -152,12 +159,10 @@ export const multiLineExtensions = [
       return el;
     },
   }),
-  drawSelection(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
   bracketMatching(),
   closeBrackets(),
-  autocompletion(),
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLine(),

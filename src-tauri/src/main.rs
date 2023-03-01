@@ -17,6 +17,7 @@ use reqwest::redirect::Policy;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::{Pool, Sqlite};
+use tauri::regex::Regex;
 use tauri::{AppHandle, State, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
@@ -61,15 +62,33 @@ async fn send_request(
         .expect("Failed to get request");
     let start = std::time::Instant::now();
 
-    let mut abs_url = req.url.to_string();
-    if !abs_url.starts_with("http://") && !abs_url.starts_with("https://") {
-        abs_url = format!("http://{}", req.url);
+    let mut url_string = req.url.to_string();
+
+    let mut variables = HashMap::new();
+    variables.insert("PROJECT_ID", "project_123");
+    variables.insert("TOKEN", "s3cret");
+    variables.insert("DOMAIN", "schier.co");
+    variables.insert("BASE_URL", "https://schier.co");
+
+    let re = Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}").expect("Failed to create regex");
+    url_string = re
+        .replace(&url_string, |caps: &tauri::regex::Captures| {
+            let key = caps.get(1).unwrap().as_str();
+            match variables.get(key) {
+                Some(v) => v,
+                None => "",
+            }
+        })
+        .to_string();
+
+    if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
+        url_string = format!("http://{}", url_string);
     }
 
     let client = reqwest::Client::builder()
         .redirect(Policy::none())
         .build()
-        .unwrap();
+        .expect("Failed to build client");
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("reqwest"));
@@ -79,14 +98,21 @@ async fn send_request(
         HeaderValue::from_str(models::generate_id("x").as_str()).expect("Failed to create header"),
     );
 
-    let m = Method::from_bytes(req.method.to_uppercase().as_bytes()).unwrap();
-    let builder = client.request(m, abs_url.to_string()).headers(headers);
+    let m =
+        Method::from_bytes(req.method.to_uppercase().as_bytes()).expect("Failed to create method");
+    let builder = client.request(m, url_string.to_string()).headers(headers);
 
-    let sendable_req = match req.body {
+    let sendable_req_result = match req.body {
         Some(b) => builder.body(b).build(),
         None => builder.build(),
-    }
-    .expect("Failed to build request");
+    };
+
+    let sendable_req = match sendable_req_result {
+        Ok(r) => r,
+        Err(e) => {
+            return Err(e.to_string());
+        }
+    };
 
     let resp = client.execute(sendable_req).await;
 

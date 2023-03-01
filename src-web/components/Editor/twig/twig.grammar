@@ -1,5 +1,3 @@
-// Very crude grammar for a subset of Twig templating syntax
-
 @top Template { (directive | Text)* }
 
 directive {
@@ -7,15 +5,15 @@ directive {
 }
 
 @skip {space} {
-  Insert { "{{" DirectiveContent "}}" }
+  Insert { "${[" DirectiveContent "]}" }
 }
 
 @tokens {
-  Text { ![{] Text? | "{" (@eof | ![%{] Text?) }
+  Text { ![${[] Text? }
   space { @whitespace+ }
-  DirectiveContent { ![%}] DirectiveContent? | $[%}] (@eof | ![}] DirectiveContent?) }
+  DirectiveContent { ![\]}$] DirectiveContent? }
   @precedence { space DirectiveContent }
-  "{{" "}}" // "{%" "%}"
+  "${[" "]}"
 }
 
-@external propSource twigHighlight from "./twig-highlight"
+@external propSource highlight from "./highlight"
