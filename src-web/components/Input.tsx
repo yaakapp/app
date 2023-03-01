@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import classnames from 'classnames';
+import { placeholders } from './Editor/widgets';
 import { HStack, VStack } from './Stacks';
 import Editor from './Editor/Editor';
 
@@ -25,6 +26,7 @@ export function Input({
   containerClassName,
   labelClassName,
   onSubmit,
+  placeholder,
   useTemplating,
   size = 'md',
   useEditor,
@@ -68,6 +70,7 @@ export function Input({
             defaultValue={defaultValue}
             onChange={onChange}
             onSubmit={onSubmit}
+            placeholder={placeholder}
             className={classnames(
               className,
               'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
@@ -79,6 +82,8 @@ export function Input({
           <input
             id={id}
             onChange={(e) => onChange?.(e.target.value)}
+            placeholder={placeholder}
+            defaultValue={defaultValue}
             className={classnames(
               className,
               'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
