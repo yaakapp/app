@@ -20,90 +20,6 @@
     },
     "query": "\n            DELETE FROM http_responses\n            WHERE request_id = ?\n        "
   },
-  "28675cd7ad73860417a667050694675e132b5e92cf6d3195a6eec218834e3a1d": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "workspace_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "request_id",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 3,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "deleted_at",
-          "ordinal": 4,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 5,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "status",
-          "ordinal": 6,
-          "type_info": "Int64"
-        },
-        {
-          "name": "status_reason",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "body",
-          "ordinal": 8,
-          "type_info": "Text"
-        },
-        {
-          "name": "elapsed",
-          "ordinal": 9,
-          "type_info": "Int64"
-        },
-        {
-          "name": "url",
-          "ordinal": 10,
-          "type_info": "Text"
-        },
-        {
-          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
-          "ordinal": 11,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n        "
-  },
   "3d2a542964d946ff9854d053b1adf04985d97a6de27b713188505c1f99c77707": {
     "describe": {
       "columns": [
@@ -196,90 +112,6 @@
     },
     "query": "\n            DELETE FROM http_requests\n            WHERE id = ?\n        "
   },
-  "55eae4b20a2c313134579b0ea43bad4dc2dd313db6cd1654f783bac12602db8a": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "workspace_id",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "request_id",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 3,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "deleted_at",
-          "ordinal": 4,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 5,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "status",
-          "ordinal": 6,
-          "type_info": "Int64"
-        },
-        {
-          "name": "status_reason",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "body",
-          "ordinal": 8,
-          "type_info": "Text"
-        },
-        {
-          "name": "elapsed",
-          "ordinal": 9,
-          "type_info": "Int64"
-        },
-        {
-          "name": "url",
-          "ordinal": 10,
-          "type_info": "Text"
-        },
-        {
-          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
-          "ordinal": 11,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
-  },
   "7ec60cbc3c9f26e8af86a21ef6b66e564f4fa518925c92308b04f882237a244e": {
     "describe": {
       "columns": [
@@ -352,6 +184,96 @@
     },
     "query": "\n            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n            ORDER BY created_at DESC\n        "
   },
+  "7f623d0e8f1ddad33d356e2d159b776a2bef1a238cb9200d74eb0c5e3983df85": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "request_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "status",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "status_reason",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "body",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "elapsed",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "url",
+          "ordinal": 10,
+          "type_info": "Text"
+        },
+        {
+          "name": "error",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
+          "ordinal": 12,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, workspace_id, request_id, updated_at, deleted_at,\n                created_at, status, status_reason, body, elapsed, url, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at ASC\n        "
+  },
   "8069c0bd326f659faca7b45b03e5317d7339a168f4cd7776d9f84304bb7ae7ac": {
     "describe": {
       "columns": [
@@ -399,6 +321,16 @@
       }
     },
     "query": "\n            SELECT id, created_at, updated_at, deleted_at, name, description\n            FROM workspaces\n        "
+  },
+  "a83698dcf9a815b881097133edb31a34ba25e7c6c114d463c495342a85371639": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 8
+      }
+    },
+    "query": "\n            UPDATE http_responses SET (elapsed, url, status, status_reason, body, error, headers, updated_at) =\n            (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
   },
   "e767522f92c8c49cd2e563e58737a05092daf9b1dc763bacc82a5c14d696d78e": {
     "describe": {
@@ -467,5 +399,95 @@
       }
     },
     "query": "\n            SELECT id, created_at, updated_at, deleted_at, name, description\n            FROM workspaces\n            WHERE id = ?\n        "
+  },
+  "fb2c2328678bbdcb64b79ced26f3d7a1b08d315ef6dedfe4d5ae4231c861b079": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "request_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "deleted_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "status",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "status_reason",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "body",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "elapsed",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "url",
+          "ordinal": 10,
+          "type_info": "Text"
+        },
+        {
+          "name": "error",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
+          "ordinal": 12,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at,\n                status, status_reason, body, elapsed, url, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
   }
 }

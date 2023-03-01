@@ -1,12 +1,12 @@
-import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
 import { motion } from 'framer-motion';
-import { HStack, VStack } from './Stacks';
-import Editor from './Editor/Editor';
 import { useEffect, useMemo, useState } from 'react';
-import { WindowDragRegion } from './WindowDragRegion';
+import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
 import { Dropdown } from './Dropdown';
-import { IconButton } from './IconButton';
+import Editor from './Editor/Editor';
 import { Icon } from './Icon';
+import { IconButton } from './IconButton';
+import { HStack, VStack } from './Stacks';
+import { WindowDragRegion } from './WindowDragRegion';
 
 interface Props {
   requestId: string;
@@ -19,9 +19,10 @@ export function ResponsePane({ requestId, error }: Props) {
   const responses = useResponses(requestId);
   const response = activeResponseId
     ? responses.data.find((r) => r.id === activeResponseId)
-    : responses.data[0];
+    : responses.data[responses.data.length - 1];
   const deleteResponse = useDeleteResponse(response);
   const deleteAllResponses = useDeleteAllResponses(response?.requestId);
+  error = response?.error ?? error;
 
   useEffect(() => {
     setActiveResponseId(null);
@@ -76,7 +77,9 @@ export function ResponsePane({ requestId, error }: Props) {
                 items="center"
                 className="italic text-gray-500 text-sm w-full h-10 mb-3 flex-shrink-0"
               >
-                <div className="w-full">
+                <div className="whitespace-nowrap">
+                  {response.updatedAt.toISOString()}
+                  &nbsp;&bull;&nbsp;
                   {response.status}
                   {response.statusReason && ` ${response.statusReason}`}
                   &nbsp;&bull;&nbsp;
@@ -84,7 +87,6 @@ export function ResponsePane({ requestId, error }: Props) {
                   {Math.round(response.body.length / 1000)} KB
                 </div>
                 <HStack items="center" className="ml-auto">
-                  <div className="font-mono">{response.url}</div>
                   {contentType.includes('html') && (
                     <IconButton
                       icon={viewMode === 'pretty' ? 'eye' : 'code'}
@@ -104,7 +106,7 @@ export function ResponsePane({ requestId, error }: Props) {
                 />
               ) : response?.body ? (
                 <Editor
-                  valueKey={response.id}
+                  valueKey={`${contentType}:${response.body}`}
                   defaultValue={response?.body}
                   contentType={contentType}
                 />

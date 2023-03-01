@@ -11,7 +11,6 @@ const variables = [
 ];
 
 export function myCompletions(context: CompletionContext) {
-  // console.log('COMPLETE', context);
   const toStartOfName = context.matchBefore(/\w*/);
   const toStartOfVariable = context.matchBefore(/\$\{.*/);
   const toMatch = toStartOfVariable ?? toStartOfName ?? null;
