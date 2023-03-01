@@ -53,6 +53,7 @@ pub struct HttpResponse {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: Option<NaiveDateTime>,
+    pub error: Option<String>,
     pub url: String,
     pub elapsed: i64,
     pub status: i64,
@@ -241,11 +242,37 @@ pub async fn create_response(
     get_response(&id, pool).await
 }
 
+pub async fn update_response(
+    response: HttpResponse,
+    pool: &Pool<Sqlite>,
+) -> Result<HttpResponse, sqlx::Error> {
+    let headers_json = Json(response.headers);
+    sqlx::query!(
+        r#"
+            UPDATE http_responses SET (elapsed, url, status, status_reason, body, error, headers, updated_at) =
+            (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
+        "#,
+        response.elapsed,
+        response.url,
+        response.status,
+        response.status_reason,
+        response.body,
+        response.error,
+        headers_json,
+        response.id,
+    )
+    .execute(pool)
+    .await
+    .expect("Failed to update response");
+    get_response(&response.id, pool).await
+}
+
 pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
-    sqlx::query_as!(
+    sqlx::query_as_unchecked!(
         HttpResponse,
         r#"
-            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,
+            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at,
+                status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE id = ?
@@ -263,16 +290,17 @@ pub async fn find_responses(
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at, status, status_reason, body, elapsed, url,
+            SELECT id, workspace_id, request_id, updated_at, deleted_at,
+                created_at, status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE request_id = ?
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
         "#,
         request_id,
     )
-        .fetch_all(pool)
-        .await
+    .fetch_all(pool)
+    .await
 }
 
 pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {

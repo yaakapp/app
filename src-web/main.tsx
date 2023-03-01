@@ -5,13 +5,15 @@ import App from './App';
 import { HelmetProvider } from 'react-helmet-async';
 import { MotionConfig } from 'framer-motion';
 import { listen } from '@tauri-apps/api/event';
+import { responsesQueryKey } from './hooks/useResponses';
 import { setTheme } from './lib/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Workspaces } from './pages/Workspaces';
 import './main.css';
-import { convertDates, HttpRequest } from './lib/models';
+import type { HttpRequest, HttpResponse } from './lib/models';
+import { convertDates } from './lib/models';
 import { requestsQueryKey } from './hooks/useRequest';
 
 setTheme();
@@ -23,21 +25,52 @@ greet();
 const queryClient = new QueryClient();
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
-  queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
-    requests.map((r) => (r.id === request.id ? convertDates(request) : r)),
-  );
-});
-
-await listen('created_request', ({ payload: request }: { payload: HttpRequest }) => {
   queryClient.setQueryData(
     requestsQueryKey(request.workspaceId),
-    (requests: HttpRequest[] = []) => [...requests, convertDates(request)],
+    (requests: HttpRequest[] = []) => {
+      const newRequests = [];
+      let found = false;
+      for (const r of requests) {
+        if (r.id === request.id) {
+          found = true;
+          newRequests.push(convertDates(request));
+        } else {
+          newRequests.push(r);
+        }
+      }
+      if (!found) {
+        newRequests.push(convertDates(request));
+      }
+      return newRequests;
+    },
   );
 });
 
 await listen('deleted_request', ({ payload: request }: { payload: HttpRequest }) => {
   queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
     requests.filter((r) => r.id !== request.id),
+  );
+});
+
+await listen('updated_response', ({ payload: response }: { payload: HttpResponse }) => {
+  queryClient.setQueryData(
+    responsesQueryKey(response.requestId),
+    (responses: HttpResponse[] = []) => {
+      const newResponses = [];
+      let found = false;
+      for (const r of responses) {
+        if (r.id === response.id) {
+          found = true;
+          newResponses.push(convertDates(response));
+        } else {
+          newResponses.push(r);
+        }
+      }
+      if (!found) {
+        newResponses.push(convertDates(response));
+      }
+      return newResponses;
+    },
   );
 });
 
