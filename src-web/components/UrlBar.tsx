@@ -45,7 +45,13 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
               { label: 'HEAD', value: 'HEAD' },
             ]}
           >
-            <Button type="button" disabled={loading} size="sm" className="ml-1" justify="start">
+            <Button
+              type="button"
+              disabled={loading}
+              size="sm"
+              className="ml-1 !px-2"
+              justify="start"
+            >
               {method.toUpperCase()}
             </Button>
           </DropdownMenuRadio>
@@ -56,7 +62,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
             spin={loading}
             disabled={loading}
             size="sm"
-            className="mr-1"
+            className="mr-1 !px-2"
           />
         }
       />

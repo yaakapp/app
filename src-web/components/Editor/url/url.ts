@@ -2,14 +2,14 @@
 import {LRParser} from "@lezer/lr"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "#xOQOPOOOVOPO'#C^O[OQOOOOOO,58x,58xOaOPOOOiOSO'#ClOnOPO'#CbOvOPOOOOOO,59W,59WOOOO-E6j-E6jO{OWO'#CeQOOOOOO!WOPO'#CgO!]OWO'#CgOOOO'#Cm'#CmO!bOWO,59PO!mO`O,59RO!rOPO,59ROOOO-E6k-E6kOOOO1G.m1G.mO!wO`O1G.mOOOO7+$X7+$X",
-  stateData: "!|~ORPO~OSRO~OTSO~OVTOYUP~OWWO~OVTOYUX~OYYO~O[]O][ObXX~O^`O~O]aO~O[]O][ObXa~O_cO~O^dO~O_eO~O",
-  goto: "|bPPcPPPfPPiPlPPPPpvRQORVSRZVT^Y_QUSRXUQ_YRb_",
-  nodeNames: "⚠ url Protocol ProtocolName Slashy Host Path Slash PathSegment Query Question QueryPair Amp QueryName Equal QueryValue",
-  maxTerm: 18,
+  states: "#xOQOPOOOOOO'#C^'#C^OYOQOOO_OPOOOjOSO'#CkOoOPO'#CaOwOPOOObOPOOOOOO,59V,59VOOOO-E6i-E6iO|OWO'#CdQOOOOOO!XOPO'#CfO!^OWO'#CfOOOO'#Cl'#ClO!cOWO,59OO!nO`O,59QO!sOPO,59QOOOO-E6j-E6jOOOO1G.l1G.lO!xO`O1G.lOOOO7+$W7+$W",
+  stateData: "!}~ObPOcPO~ORRO~OSVOUSOXTP~OVWO~OUSOXTX~OXYO~OZ]O[[OaWX~O]`O~O[aO~OZ]O[[OaWa~O^cO~O]dO~O^eO~O",
+  goto: "}aPPbPPePPiPlPPPPpwRQOTURVRZUT^Y_STRVRXTQ_YRb_",
+  nodeNames: "⚠ url Protocol Host Port Path Slash PathSegment Query Question QueryPair Amp QueryName Equal QueryValue",
+  maxTerm: 19,
   skippedNodes: [0],
   repeatNodeCount: 2,
-  tokenData: "'T~R]vwz}!O!P!O!P!P!P!Q!n!Q![!P![!]!s!_!`#U!a!b#Z!c!}!P#R#S!P#T#[!P#[#]#`#]#o!P~!PO[~n![UTQWS]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#o!P~!sOV~~!vP!P!Q!y~!|P!P!Q#P~#UOS~~#ZO^~~#`OY~o#kWTQWS]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#h!P#h#i$T#i#o!Po$`WTQWS]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#h!P#h#i$x#i#o!Po%TWTQWS]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#d!P#d#e%m#e#o!Po%zWTQWSRP]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#g!P#g#h&d#h#o!Po&qUTQWSRP]W_`}!O!P!O!P!P!Q![!P!c!}!P#R#S!P#T#o!P",
+  tokenData: ")]~R]vwz}!O!P!O!P!P!P!Q#]!Q![!P![!]#y!_!`$X!a!b$^!c!}!P#R#S!P#T#[!P#[#]$c#]#o!P~!POZ~n![VRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P!c!}!P#R#S!P#T#o!P`!vV^`}!O!q!O!P!q!P!Q!q!Q![!q!c!}!q#R#S!q#T#o!qa#dV^`UP}!O!q!O!P!q!P!Q!q!Q![!q!c!}!q#R#S!q#T#o!q~#|P!Q![$P~$UPS~!Q![$P~$^O]~~$cOX~o$nXRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P!c!}!P#R#S!P#T#h!P#h#i%Z#i#o!Po%fXRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P!c!}!P#R#S!P#T#h!P#h#i&R#i#o!Po&^XRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P!c!}!P#R#S!P#T#d!P#d#e&y#e#o!Po'UYRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P![!]'t!c!}!P#R#S!P#T#g!P#g#h(V#h#o!PP'wP!P!Q'zP'}P!P!Q(QP(VObPo(bWRQVS[W^`}!O!P!O!P!P!P!Q!q!Q![!P![!](z!c!}!P#R#S!P#T#o!PP(}P!P!Q)QP)TP!P!Q)WP)]OcP",
   tokenizers: [0, 1, 2, 3, 4],
   topRules: {"url":[0,1]},
   tokenPrec: 0
