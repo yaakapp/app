@@ -28,6 +28,7 @@ export interface HttpResponse extends BaseModel {
   id: string;
   requestId: string;
   body: string;
+  error: string;
   status: string;
   elapsed: number;
   statusReason: string;

@@ -1,4 +1,3 @@
-import { autocompletion } from '@codemirror/autocomplete';
 import type { Transaction, TransactionSpec } from '@codemirror/state';
 import { Compartment, EditorSelection, EditorState, Prec } from '@codemirror/state';
 import classnames from 'classnames';

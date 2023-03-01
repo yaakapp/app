@@ -9,14 +9,13 @@ import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
+import type { LanguageSupport } from '@codemirror/language';
 import {
   bracketMatching,
   foldGutter,
   foldKeymap,
   HighlightStyle,
   indentOnInput,
-  LanguageSupport,
-  LRLanguage,
   syntaxHighlighting,
 } from '@codemirror/language';
 import { lintKeymap } from '@codemirror/lint';
@@ -33,12 +32,9 @@ import {
   lineNumbers,
   rectangularSelection,
 } from '@codemirror/view';
-import { parseMixed } from '@lezer/common';
 import { tags as t } from '@lezer/highlight';
-import { myCompletions } from './completion/completion';
-import { parser as twigParser } from './twig/twig';
+import { twig } from './twig/extension';
 import { url } from './url/extension';
-import { placeholders } from './widgets';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -102,35 +98,7 @@ export function getLanguageExtension({
     return [base];
   }
 
-  const mixedTwigParser = twigParser.configure({
-    props: [
-      // Add basic folding/indent metadata
-      // foldNodeProp.add({ Conditional: foldInside }),
-      // indentNodeProp.add({
-      //   Conditional: (cx) => {
-      //     const closed = /^\s*\{% endif/.test(cx.textAfter);
-      //     return cx.lineIndent(cx.node.from) + (closed ? 0 : cx.unit);
-      //   },
-      // }),
-    ],
-    wrap: parseMixed((node) => {
-      return node.type.isTop
-        ? {
-            parser: base.language.parser,
-            overlay: (node) => node.type.name === 'Text',
-          }
-        : null;
-    }),
-  });
-
-  const twigLanguage = LRLanguage.define({ parser: mixedTwigParser, languageData: {} });
-  const completion = twigLanguage.data.of({
-    autocomplete: myCompletions,
-  });
-  const languageSupport = new LanguageSupport(twigLanguage, [completion]);
-  const completion2 = base.language.data.of({ autocomplete: myCompletions });
-  const languageSupport2 = new LanguageSupport(base.language, [completion2]);
-  return [languageSupport, languageSupport2, placeholders, base.support];
+  return twig(base);
 }
 
 export const baseExtensions = [
