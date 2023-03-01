@@ -69,7 +69,7 @@ function App() {
               <Editor
                 valueKey={request.id}
                 useTemplating
-                defaultValue={request.body ?? undefined}
+                defaultValue={request.body ?? ''}
                 contentType="application/json"
                 onChange={(body) => updateRequest.mutate({ body })}
               />

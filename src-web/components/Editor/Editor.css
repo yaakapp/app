@@ -119,9 +119,8 @@
     background-color: transparent;
 }
 
-.cm-editor.cm-focused .cm-activeLineGutter,
-.cm-editor.cm-focused .cm-activeLine {
-    background-color: hsl(var(--color-gray-100)/0.3);
+.cm-editor.cm-focused .cm-activeLineGutter {
+    color: hsl(var(--color-gray-800));
 }
 
 .cm-editor * {
