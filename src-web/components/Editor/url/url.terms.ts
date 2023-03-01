@@ -5,12 +5,4 @@ export const
   Host = 3,
   Port = 4,
   Path = 5,
-  Slash = 6,
-  PathSegment = 7,
-  Query = 8,
-  Question = 9,
-  QueryPair = 10,
-  Amp = 11,
-  QueryName = 12,
-  Equal = 13,
-  QueryValue = 14
+  Query = 6
