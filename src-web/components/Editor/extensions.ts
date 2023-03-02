@@ -107,7 +107,7 @@ export const baseExtensions = [
   drawSelection(),
   dropCursor(),
   bracketMatching(),
-  autocompletion({ activateOnTyping: false, closeOnBlur: true }),
+  autocompletion({ closeOnBlur: true }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];

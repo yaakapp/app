@@ -119,7 +119,6 @@ function getExtensions({
       ? [
           EditorView.domEventHandlers({
             keydown: (e) => {
-              console.log('KEYDOWN', e);
               if (e.key === 'Enter') onSubmit?.();
             },
           }),
