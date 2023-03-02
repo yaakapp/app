@@ -6,7 +6,7 @@ distDir = "../dist"
 withGlobalTauri = false
 
 [package]
-productName = "Twosomnia"
+productName = "Yaak"
 version = "0.0.1"
 
 [tauri.allowlist]
@@ -34,7 +34,7 @@ icon = [
   "icons/icon.icns",
   "icons/icon.ico"
 ]
-identifier = "co.schier.twosomnia"
+identifier = "co.schier.yaak"
 longDescription = ""
 resources = [ "plugins/*", "migrations/*" ]
 shortDescription = ""
@@ -63,7 +63,7 @@ dialog = true
 fullscreen = false
 height = 800
 resizable = true
-title = "Twosomnia"
+title = "Yaak"
 width = 1_400
 titleBarStyle = "Overlay"
 hiddenTitle = true

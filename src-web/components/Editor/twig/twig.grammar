@@ -9,9 +9,9 @@ directive {
 }
 
 @tokens {
-  Text { ![${[] Text? }
+  Text { ![$] Text? }
   space { @whitespace+ }
-  DirectiveContent { ![\]}$] DirectiveContent? }
+  DirectiveContent { ![\]}] DirectiveContent? }
   @precedence { space DirectiveContent }
   "${[" "]}"
 }

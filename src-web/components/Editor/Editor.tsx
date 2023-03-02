@@ -1,12 +1,13 @@
-import type { Transaction, TransactionSpec } from '@codemirror/state';
-import { Compartment, EditorSelection, EditorState, Prec } from '@codemirror/state';
-import { placeholder as placeholderExt } from '@codemirror/view';
+import { defaultKeymap } from '@codemirror/commands';
+import { Compartment, EditorState, Prec } from '@codemirror/state';
+import { keymap, placeholder as placeholderExt } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
+import { singleLineExt } from './singleLine';
 
 interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   contentType: string;
@@ -106,43 +107,25 @@ function getExtensions({
 >) {
   const ext = getLanguageExtension({ contentType, useTemplating });
   return [
-    ...(singleLine
-      ? [
-          Prec.high(
-            EditorView.domEventHandlers({
-              keydown: (e) => {
-                // TODO: Figure out how to not have this not trigger on autocomplete selection
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  onSubmit?.();
-                }
-              },
-            }),
-          ),
-          EditorState.transactionFilter.of(
-            (tr: Transaction): TransactionSpec | TransactionSpec[] => {
-              if (!tr.isUserEvent('input.paste')) return tr;
-
-              const trs: TransactionSpec[] = [];
-              tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-                let insert = '';
-                for (const line of inserted) {
-                  insert += line.replace('\n', '');
-                }
-                const changes = [{ from: fromB, to: toA, insert }];
-                // Update selection now that the text has been changed
-                const selection = EditorSelection.create([EditorSelection.cursor(toB - 1)], 0);
-                trs.push({ ...tr, selection, changes });
-              });
-              return trs;
-            },
-          ),
-        ]
-      : []),
     ...baseExtensions,
+    keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
+    ...(singleLine ? [singleLineExt()] : []),
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(ext ? [ext] : []),
     ...(placeholder ? [placeholderExt(placeholder)] : []),
+
+    // Handle onSubmit
+    ...(onSubmit
+      ? [
+          EditorView.domEventHandlers({
+            keydown: (e) => {
+              console.log('KEYDOWN', e);
+              if (e.key === 'Enter') onSubmit?.();
+            },
+          }),
+        ]
+      : []),
+    // Handle onChange
     EditorView.updateListener.of((update) => {
       if (typeof onChange === 'function' && update.docChanged) {
         onChange(update.state.doc.toString());
