@@ -13,30 +13,24 @@
 }
 
 .cm-editor {
-    width: 100%;
-    display: block;
+    @apply w-full block;
 }
 
 .cm-singleline .cm-scroller {
     overflow: hidden !important;;
 }
 
-.cm-editor .cm-tooltip {
-    color: gray;
-}
-
 .cm-editor .placeholder-widget {
-    background-color: hsl(var(--color-blue-400));
+    @apply text-xs text-white bg-blue-400 py-[1px] px-1 mx-[1px] rounded border border-gray-50 cursor-pointer;
     text-shadow: 0 0 0.2em black;
-    padding: 0.05em 0.3em;
-    border-radius: 0.2em;
-    color: hsl(var(--color-blue-900));
-    cursor: pointer;
 }
 
 .cm-editor .cm-scroller {
-    border-radius: var(--border-radius-lg);
-    background-color: hsl(var(--color-gray-50));
+    @apply rounded-lg bg-gray-50;
+}
+
+.cm-multiline .cm-editor .cm-scroller {
+    padding-bottom: 300px;
 }
 
 .cm-editor.cm-focused {
@@ -137,7 +131,7 @@
 /* <-- */
 
 .cm-editor .cm-tooltip {
-    @apply shadow-lg border-0 bg-background rounded overflow-hidden text-gray-900;
+    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70;
 }
 
 .cm-editor .cm-tooltip * {
