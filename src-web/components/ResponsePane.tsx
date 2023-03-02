@@ -60,7 +60,7 @@ export function ResponsePane({ requestId, error }: Props) {
             },
             '-----',
             ...responses.data.slice(0, 10).map((r) => ({
-              label: r.status + ' - ' + r.elapsed,
+              label: r.status + ' - ' + r.elapsed + ' ms',
               leftSlot: response?.id === r.id ? <Icon icon="check" /> : <></>,
               onSelect: () => setActiveResponseId(r.id),
             })),

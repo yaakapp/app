@@ -102,13 +102,12 @@ export function getLanguageExtension({
 }
 
 export const baseExtensions = [
-  keymap.of([...defaultKeymap]),
   highlightSpecialChars(),
   history(),
   drawSelection(),
   dropCursor(),
   bracketMatching(),
-  autocompletion(),
+  autocompletion({ activateOnTyping: false, closeOnBlur: true }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];

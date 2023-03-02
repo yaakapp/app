@@ -27,9 +27,10 @@
 
 .cm-editor .placeholder-widget {
     background-color: hsl(var(--color-blue-400));
+    text-shadow: 0 0 0.2em black;
     padding: 0.05em 0.3em;
     border-radius: 0.2em;
-    color: white;
+    color: hsl(var(--color-blue-900));
     cursor: pointer;
 }
 
@@ -55,15 +56,13 @@
     padding-right: 1.5em;
 }
 
-.cm-singleline .cm-scroller {
-    display: flex;
+.cm-singleline .cm-editor .cm-scroller {
+    @apply flex;
     align-items: center !important;
 }
 
 .cm-editor .cm-gutters {
-    background-color: hsl(var(--color-gray-50));
-    border-right: 0;
-    color: hsl(var(--color-gray-200));
+    @apply bg-gray-50 border-r-0 text-gray-200;
 }
 
 .cm-editor .cm-gutterElement {
@@ -71,83 +70,92 @@
 }
 
 .cm-editor .fold-gutter-icon {
-    height: 1.5em;
-    padding-top: 0.2em;
-    padding-left: 0.4em;
-    padding-right: 0.4em;
-    cursor: pointer;
-    border-radius: 0.2em;
+    @apply pt-[0.3em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
 }
 
 .cm-editor .fold-gutter-icon::after {
-    display: block;
-    width: 0.5em;
-    height: 0.5em;
-    border: 1px solid transparent;
-    border-left-color: currentColor;
-    border-bottom-color: currentColor;
-    transform: rotate(-45deg);
-    content: "";
+    @apply block w-1.5 h-1.5 border-transparent -rotate-45
+    border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
 }
 
 .cm-editor .fold-gutter-icon[data-open] {
-    padding-top: 0.4em;
-    padding-left: 0.2em;
+    @apply pt-[0.4em] pl-[0.3em];
 }
 
 .cm-editor .fold-gutter-icon[data-open]::after {
-    transform: rotate(-135deg);
+    @apply rotate-[-135deg];
 }
 
 .cm-editor .fold-gutter-icon:hover {
-    background-color: hsl(var(--color-gray-100)/0.2);
-    color: hsl(var(--color-gray-400));
+    @apply text-gray-400 bg-gray-100/20;
 }
 
 .cm-editor.cm-focused .cm-gutters {
-    color: hsl(var(--color-gray-300));
+    @apply text-gray-300;
 }
 
 .cm-editor .cm-foldPlaceholder {
-    background-color: hsl(var(--color-gray-100));
-    border: 1px solid hsl(var(--color-gray-200));
-    padding: 0 0.3em;
+    @apply px-2 border border-gray-200 bg-gray-100;
 }
 
 .cm-editor .cm-activeLineGutter,
 .cm-editor .cm-activeLine {
-    background-color: transparent;
+    @apply bg-transparent;
 }
 
 .cm-editor.cm-focused .cm-activeLineGutter {
-    color: hsl(var(--color-gray-800));
+    @apply text-gray-800;
 }
 
 .cm-editor * {
-    cursor: text;
+    @apply cursor-text;
 }
 
 .cm-editor .cm-cursor {
-    border-left: 2px solid hsl(var(--color-gray-900));
+    @apply border-l-2 border-gray-800;
 }
 
 .cm-editor .cm-selectionBackground {
-    background-color: hsl(var(--color-gray-200));
+    @apply bg-gray-200;
 }
 
 .cm-editor.cm-focused .cm-selectionBackground {
-    background-color: hsl(var(--color-gray-200));
+    @apply bg-gray-200;
 }
 
 /* --> Add padding to container. For some reason, using padding on both adds an extra
  * 1px offset so we need to use a combination of padding and margin.
  */
 .cm-editor .cm-gutters {
-    padding-top: 0.2em;
+    @apply pt-1;
 }
 
 .cm-editor .cm-content {
-    margin-top: 0.2em;
+    @apply mt-1;
 }
 
 /* <-- */
+
+.cm-editor .cm-tooltip {
+    @apply shadow-lg border-0 bg-background rounded overflow-hidden text-gray-900;
+}
+
+.cm-editor .cm-tooltip * {
+    @apply transition-none;
+}
+
+.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul {
+    @apply p-1 max-h-[40vh];
+}
+
+.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li {
+    @apply cursor-default py-1 px-2 rounded-sm text-gray-500;
+}
+
+.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+    @apply bg-gray-50 text-gray-800;
+}
+
+.cm-editor .cm-tooltip.cm-tooltip-autocomplete .cm-completionIcon {
+    @apply text-sm;
+}

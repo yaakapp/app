@@ -7,7 +7,7 @@
     </scripts>
     <node-interpreter value="project" />
     <envs>
-      <env name="DATABASE_URL" value="sqlite://$USER_HOME$/Library/Application%20Support/co.schier.twosomnia/db.sqlite" />
+      <env name="DATABASE_URL" value="sqlite://$USER_HOME$/Library/Application%20Support/co.schier.yaak/db.sqlite" />
     </envs>
     <method v="2" />
   </configuration>
