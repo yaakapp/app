@@ -26,6 +26,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         useEditor
         useTemplating
         onSubmit={sendRequest}
+        contentType="url"
         name="url"
         label="Enter URL"
         className="font-mono"
