@@ -1,7 +1,7 @@
-import classnames from "classnames";
-import type { InputHTMLAttributes, ReactNode } from "react";
-import Editor from "./Editor/Editor";
-import { HStack, VStack } from "./Stacks";
+import classnames from 'classnames';
+import type { InputHTMLAttributes, ReactNode } from 'react';
+import Editor from './Editor/Editor';
+import { HStack, VStack } from './Stacks';
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'> {
   name: string;
@@ -45,7 +45,7 @@ export function Input({
         htmlFor={id}
         className={classnames(
           labelClassName,
-          'font-semibold text-sm uppercase text-gray-700 absolute',
+          'font-semibold text-sm uppercase text-gray-700',
           hideLabel && 'sr-only',
         )}
       >
@@ -55,8 +55,8 @@ export function Input({
         items="center"
         className={classnames(
           containerClassName,
-          'relative w-full bg-gray-50 rounded-md overflow-hidden text-gray-900',
-          'border border-transparent focus-within:border-blue-400/40',
+          'relative w-full rounded-md overflow-hidden text-gray-900 bg-gray-200/10',
+          'border border-gray-500/10 focus-within:border-blue-400/40',
           size === 'md' && 'h-10',
           size === 'sm' && 'h-8',
         )}
@@ -72,12 +72,7 @@ export function Input({
             onChange={onChange}
             onSubmit={onSubmit}
             placeholder={placeholder}
-            className={classnames(
-              className,
-              'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
-              leftSlot && '!pl-1',
-              rightSlot && '!pr-1',
-            )}
+            className={className}
           />
         ) : (
           <input
@@ -87,7 +82,7 @@ export function Input({
             defaultValue={defaultValue}
             className={classnames(
               className,
-              'bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
+              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none placeholder:text-gray-500/40',
               leftSlot && '!pl-1',
               rightSlot && '!pr-1',
             )}

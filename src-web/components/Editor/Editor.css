@@ -25,7 +25,7 @@
     text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
 }
 
-.cm-editor .cm-scroller {
+.cm-multiline .cm-editor .cm-scroller {
     @apply rounded-lg bg-gray-50;
 }
 

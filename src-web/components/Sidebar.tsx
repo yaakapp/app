@@ -7,6 +7,7 @@ import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
 import { Dialog } from './Dialog';
+import { HeaderEditor } from './HeaderEditor';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
 import { HStack, VStack } from './Stacks';
@@ -28,9 +29,8 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
       {...props}
     >
       <HStack as={WindowDragRegion} items="center" className="pr-1" justify="end">
-        <Dialog open={open} onOpenChange={setOpen} title="This is the title">
-          <p>This is the body</p>
-          <Input name="Name" label="This is the label" className="bg-gray-100" />
+        <Dialog wide open={open} onOpenChange={setOpen} title="This is the title">
+          <HeaderEditor />
           <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
             Save
           </Button>
