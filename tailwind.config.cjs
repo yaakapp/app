@@ -17,6 +17,7 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             white: 'hsl(var(--color-white) / <alpha-value>)',
+            black: 'hsl(var(--color-black) / <alpha-value>)',
             background: 'hsl(var(--color-background) / <alpha-value>)',
             gray: color('gray'),
             blue: color('blue'),
