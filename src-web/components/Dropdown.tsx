@@ -1,4 +1,4 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import * as D from '@radix-ui/react-dropdown-menu';
 import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
@@ -32,7 +32,7 @@ export function DropdownMenuRadio({
   };
 
   return (
-    <DropdownMenu.Root>
+    <D.Root>
       <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
@@ -46,7 +46,7 @@ export function DropdownMenuRadio({
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenuPortal>
-    </DropdownMenu.Root>
+    </D.Root>
   );
 }
 
@@ -65,7 +65,7 @@ export interface DropdownProps {
 
 export function Dropdown({ children, items }: DropdownProps) {
   return (
-    <DropdownMenu.Root>
+    <D.Root>
       <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent>
@@ -87,7 +87,7 @@ export function Dropdown({ children, items }: DropdownProps) {
           })}
         </DropdownMenuContent>
       </DropdownMenuPortal>
-    </DropdownMenu.Root>
+    </D.Root>
   );
 }
 
@@ -99,17 +99,17 @@ interface DropdownMenuPortalProps {
 
 function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
   return (
-    <DropdownMenu.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
+    <D.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {children}
       </motion.div>
-    </DropdownMenu.Portal>
+    </D.Portal>
   );
 }
 
-const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuContentProps>(
+const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProps>(
   function DropdownMenuContent(
-    { className, children, ...props }: DropdownMenu.DropdownMenuContentProps,
+    { className, children, ...props }: D.DropdownMenuContentProps,
     ref: ForwardedRef<HTMLDivElement>,
   ) {
     const [styles, setStyles] = useState<{ maxHeight: number }>();
@@ -134,7 +134,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenu
     }, [divRef]);
 
     return (
-      <DropdownMenu.Content
+      <D.Content
         ref={initDivRef}
         align="start"
         className={classnames(className, dropdownMenuClasses, 'overflow-auto m-1')}
@@ -142,12 +142,12 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenu
         {...props}
       >
         {children}
-      </DropdownMenu.Content>
+      </D.Content>
     );
   },
 );
 
-type DropdownMenuItemProps = DropdownMenu.DropdownMenuItemProps & ItemInnerProps;
+type DropdownMenuItemProps = D.DropdownMenuItemProps & ItemInnerProps;
 
 function DropdownMenuItem({
   leftSlot,
@@ -158,7 +158,7 @@ function DropdownMenuItem({
   ...props
 }: DropdownMenuItemProps) {
   return (
-    <DropdownMenu.Item
+    <D.Item
       asChild
       disabled={disabled}
       className={classnames(className, { 'opacity-30': disabled })}
@@ -167,7 +167,7 @@ function DropdownMenuItem({
       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
         {children}
       </ItemInner>
-    </DropdownMenu.Item>
+    </D.Item>
   );
 }
 
@@ -205,25 +205,22 @@ function DropdownMenuItem({
 //   );
 // }
 
-type DropdownMenuRadioItemProps = Omit<
-  DropdownMenu.DropdownMenuRadioItemProps & ItemInnerProps,
-  'leftSlot'
->;
+type DropdownMenuRadioItemProps = Omit<D.DropdownMenuRadioItemProps & ItemInnerProps, 'leftSlot'>;
 
 function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRadioItemProps) {
   return (
-    <DropdownMenu.RadioItem asChild {...props}>
+    <D.RadioItem asChild {...props}>
       <ItemInner
         leftSlot={
-          <DropdownMenu.ItemIndicator>
+          <D.ItemIndicator>
             <CheckIcon />
-          </DropdownMenu.ItemIndicator>
+          </D.ItemIndicator>
         }
         rightSlot={rightSlot}
       >
         {children}
       </ItemInner>
-    </DropdownMenu.RadioItem>
+    </D.RadioItem>
   );
 }
 
@@ -244,38 +241,30 @@ function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRa
 //   },
 // );
 
-function DropdownMenuLabel({ className, children, ...props }: DropdownMenu.DropdownMenuLabelProps) {
+function DropdownMenuLabel({ className, children, ...props }: D.DropdownMenuLabelProps) {
   return (
-    <DropdownMenu.Label asChild {...props}>
+    <D.Label asChild {...props}>
       <ItemInner noHover className={classnames(className, 'opacity-50 uppercase text-sm')}>
         {children}
       </ItemInner>
-    </DropdownMenu.Label>
+    </D.Label>
   );
 }
 
-function DropdownMenuSeparator({ className, ...props }: DropdownMenu.DropdownMenuSeparatorProps) {
+function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorProps) {
   return (
-    <DropdownMenu.Separator
+    <D.Separator
       className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
       {...props}
     />
   );
 }
 
-function DropdownMenuTrigger({
-  children,
-  className,
-  ...props
-}: DropdownMenu.DropdownMenuTriggerProps) {
+function DropdownMenuTrigger({ children, className, ...props }: D.DropdownMenuTriggerProps) {
   return (
-    <DropdownMenu.Trigger
-      asChild
-      className={classnames(className, 'focus:outline-none')}
-      {...props}
-    >
+    <D.Trigger asChild className={classnames(className, 'focus:outline-none')} {...props}>
       {children}
-    </DropdownMenu.Trigger>
+    </D.Trigger>
   );
 }
 

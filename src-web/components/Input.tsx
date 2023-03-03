@@ -12,6 +12,7 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'on
   containerClassName?: string;
   onChange?: (value: string) => void;
   onSubmit?: () => void;
+  contentType?: string;
   useTemplating?: boolean;
   useEditor?: boolean;
   leftSlot?: ReactNode;
@@ -30,6 +31,7 @@ export function Input({
   useTemplating,
   size = 'md',
   useEditor,
+  contentType,
   onChange,
   name,
   leftSlot,
@@ -39,34 +41,34 @@ export function Input({
 }: Props) {
   const id = `input-${name}`;
   return (
-    <HStack
-      items="center"
-      className={classnames(
-        containerClassName,
-        'w-full bg-gray-50 rounded-md text-sm overflow-hidden text-gray-900',
-        'border border-transparent focus-within:border-blue-400/40',
-        size === 'md' && 'h-10',
-        size === 'sm' && 'h-8',
-      )}
-    >
-      {leftSlot}
-      <VStack className="w-full">
-        <label
-          htmlFor={name}
-          className={classnames(
-            labelClassName,
-            'font-semibold text-sm uppercase text-gray-700',
-            hideLabel && 'sr-only',
-          )}
-        >
-          {label}
-        </label>
+    <VStack>
+      <label
+        htmlFor={id}
+        className={classnames(
+          labelClassName,
+          'font-semibold text-sm uppercase text-gray-700 absolute',
+          hideLabel && 'sr-only',
+        )}
+      >
+        {label}
+      </label>
+      <HStack
+        items="center"
+        className={classnames(
+          containerClassName,
+          'relative w-full bg-gray-50 rounded-md overflow-hidden text-gray-900',
+          'border border-transparent focus-within:border-blue-400/40',
+          size === 'md' && 'h-10',
+          size === 'sm' && 'h-8',
+        )}
+      >
+        {leftSlot}
         {useEditor ? (
           <Editor
             id={id}
             singleLine
-            useTemplating
-            contentType="url"
+            contentType={contentType ?? 'text/plain'}
+            useTemplating={useTemplating}
             defaultValue={defaultValue}
             onChange={onChange}
             onSubmit={onSubmit}
@@ -93,8 +95,8 @@ export function Input({
             {...props}
           />
         )}
-      </VStack>
-      {rightSlot}
-    </HStack>
+        {rightSlot}
+      </HStack>
+    </VStack>
   );
 }

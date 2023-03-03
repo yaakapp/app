@@ -29,10 +29,6 @@
     @apply rounded-lg bg-gray-50;
 }
 
-.cm-multiline .cm-editor .cm-scroller {
-    padding-bottom: 300px;
-}
-
 .cm-editor.cm-focused {
     outline: none !important;
 }

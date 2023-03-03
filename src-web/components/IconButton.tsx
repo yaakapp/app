@@ -1,6 +1,8 @@
 import { forwardRef } from 'react';
-import { Icon, IconProps } from './Icon';
-import { Button, ButtonProps } from './Button';
+import type { IconProps } from './Icon';
+import { Icon } from './Icon';
+import type { ButtonProps } from './Button';
+import { Button } from './Button';
 import classnames from 'classnames';
 
 type Props = Omit<IconProps, 'size'> & ButtonProps<typeof Button>;
