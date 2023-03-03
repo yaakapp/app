@@ -1,12 +1,14 @@
 import classnames from 'classnames';
 import type { HTMLAttributes } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useRequestCreate } from '../hooks/useRequest';
 import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
+import { Dialog } from './Dialog';
 import { IconButton } from './IconButton';
+import { Input } from './Input';
 import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
 
@@ -19,12 +21,27 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
   const { toggleTheme } = useTheme();
+  const [open, setOpen] = useState<boolean>(false);
   return (
     <div
       className={classnames(className, 'w-52 bg-gray-50/40 h-full border-gray-500/10')}
       {...props}
     >
       <HStack as={WindowDragRegion} items="center" className="pr-1" justify="end">
+        <Dialog open={open} onOpenChange={setOpen} title="This is the title">
+          <p>This is the body</p>
+          <Input name="Name" label="This is the label" className="bg-gray-100" />
+          <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
+            Save
+          </Button>
+        </Dialog>
+        <IconButton
+          size="sm"
+          icon="camera"
+          onClick={() => {
+            setOpen((v) => !v);
+          }}
+        />
         <IconButton size="sm" icon="sun" onClick={toggleTheme} />
         <IconButton
           size="sm"
