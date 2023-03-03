@@ -1,8 +1,7 @@
-import type { InputHTMLAttributes, ReactNode } from 'react';
-import classnames from 'classnames';
-import { placeholders } from './Editor/widgets';
-import { HStack, VStack } from './Stacks';
-import Editor from './Editor/Editor';
+import classnames from "classnames";
+import type { InputHTMLAttributes, ReactNode } from "react";
+import Editor from "./Editor/Editor";
+import { HStack, VStack } from "./Stacks";
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'> {
   name: string;
