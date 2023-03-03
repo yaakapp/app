@@ -21,8 +21,8 @@
 }
 
 .cm-editor .placeholder-widget {
-    @apply text-xs text-white bg-blue-400 py-[1px] px-1 mx-[1px] rounded border border-gray-50 cursor-pointer;
-    text-shadow: 0 0 0.2em black;
+    @apply text-xs text-white bg-blue-400 py-[1px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-500;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
 }
 
 .cm-editor .cm-scroller {

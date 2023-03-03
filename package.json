@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "rsw build && tsc && vite build",
+    "build": "rsw build && vite build",
     "dev": "vite",
     "lint": "tsc && eslint . --ext .ts,.tsx",
     "preview": "vite preview",
     "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\"",
-    "tauri-build": "tauri build"
+    "tauri-build": "npm run build:icon && tauri build",
+    "build:icon": "tauri icon src-tauri/icons/icon.png"
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.1",

@@ -30,6 +30,7 @@ html, body, #root {
     :root, [data-theme="light"] {
         /* Colors */
         --color-white: 255 100% 100%;
+        --color-black: 255 0% 0%;
         --color-background: var(--color-white);
 
         --color-blue-50: 217 91% 95%;
@@ -107,7 +108,6 @@ html, body, #root {
     }
 
     [data-theme="dark"] {
-        --color-white: 255 100% 100%;
         --color-background: 217 21% 7%;
 
         --color-blue-900: 217 91% 95%;
