@@ -18,8 +18,11 @@
 html, body, #root {
     width: 100%;
     height: 100%;
-    background-color: hsl(var(--color-background));
     overflow: hidden;
+
+    /* Default colors */
+    background-color: hsl(var(--color-background));
+    color: hsl(var(--color-gray-900));
 }
 
 * {

@@ -91,8 +91,6 @@ export function Dropdown({ children, items }: DropdownProps) {
   );
 }
 
-const dropdownMenuClasses = 'bg-background rounded-md shadow-lg p-1.5 border border-gray-100';
-
 interface DropdownMenuPortalProps {
   children: ReactNode;
 }
@@ -137,7 +135,11 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProp
       <D.Content
         ref={initDivRef}
         align="start"
-        className={classnames(className, dropdownMenuClasses, 'overflow-auto m-1')}
+        className={classnames(
+          className,
+          'bg-background rounded-md shadow-lg p-1.5 border border-gray-100',
+          'overflow-auto m-1',
+        )}
         style={styles}
         {...props}
       >
@@ -161,7 +163,7 @@ function DropdownMenuItem({
     <D.Item
       asChild
       disabled={disabled}
-      className={classnames(className, { 'opacity-30': disabled })}
+      className={classnames(className, disabled && 'opacity-30')}
       {...props}
     >
       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>
