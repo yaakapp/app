@@ -3,6 +3,8 @@ import {
   CameraIcon,
   CheckIcon,
   CodeIcon,
+  Cross1Icon,
+  Cross2Icon,
   EyeOpenIcon,
   GearIcon,
   HomeIcon,
@@ -17,7 +19,7 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
-import { NamedExoticComponent } from 'react';
+import type { NamedExoticComponent } from 'react';
 
 type IconName =
   | 'archive'
@@ -34,6 +36,7 @@ type IconName =
   | 'plus-circled'
   | 'sun'
   | 'code'
+  | 'x'
   | 'trash'
   | 'moon';
 
@@ -50,6 +53,7 @@ const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
   update: UpdateIcon,
   sun: SunIcon,
   moon: MoonIcon,
+  x: Cross2Icon,
   question: QuestionMarkIcon,
   eye: EyeOpenIcon,
   code: CodeIcon,
