@@ -20,6 +20,7 @@ module.exports = {
         },
     },
     rules: {
+        "jsx-a11y/no-autofocus": "warn",
         "react/react-in-jsx-scope": "off",
         "@typescript-eslint/consistent-type-imports": ["error", {
             prefer: "type-imports",
