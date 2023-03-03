@@ -33,6 +33,17 @@ html, body, #root {
         --color-black: 255 0% 0%;
         --color-background: var(--color-white);
 
+        --color-green-50: 160 84% 95%;
+        --color-green-100: 160 84% 88%;
+        --color-green-200: 160 84% 76%;
+        --color-green-300: 160 84% 70%;
+        --color-green-400: 160 84% 60%;
+        --color-green-500: 160 84% 50%;
+        --color-green-600: 160 84% 38%;
+        --color-green-700: 160 84% 30%;
+        --color-green-800: 160 84% 20%;
+        --color-green-900:  160 84% 10%;
+
         --color-blue-50: 217 91% 95%;
         --color-blue-100: 217 91% 88%;
         --color-blue-200: 217 91% 76%;
@@ -43,6 +54,17 @@ html, body, #root {
         --color-blue-700: 217 91% 30%;
         --color-blue-800: 217 91% 20%;
         --color-blue-900: 217 91% 10%;
+
+        --color-pink-50:  292 84% 95%;
+        --color-pink-100: 292 84% 88%;
+        --color-pink-200: 292 84% 76%;
+        --color-pink-300: 292 84% 70%;
+        --color-pink-400: 292 84% 65%;
+        --color-pink-500: 292 84% 58%;
+        --color-pink-600: 292 84% 43%;
+        --color-pink-700: 292 84% 30%;
+        --color-pink-800: 292 84% 20%;
+        --color-pink-900: 292 84% 10%;
 
         --color-violet-50: 258 90% 95%;
         --color-violet-100: 258 90% 88%;
@@ -110,6 +132,17 @@ html, body, #root {
     [data-theme="dark"] {
         --color-background: 217 21% 7%;
 
+        --color-green-900: 160 84% 95%;
+        --color-green-800: 160 84% 88%;
+        --color-green-700: 160 84% 76%;
+        --color-green-600: 160 84% 70%;
+        --color-green-500: 160 84% 60%;
+        --color-green-400: 160 84% 50%;
+        --color-green-300: 160 84% 38%;
+        --color-green-200: 160 84% 30%;
+        --color-green-100: 160 84% 20%;
+        --color-green-50:  160 84% 10%;
+
         --color-blue-900: 217 91% 95%;
         --color-blue-800: 217 91% 88%;
         --color-blue-700: 217 91% 76%;
@@ -120,6 +153,17 @@ html, body, #root {
         --color-blue-200: 217 91% 30%;
         --color-blue-100: 217 91% 20%;
         --color-blue-50: 217 91% 10%;
+
+        --color-pink-900:  292 84% 95%;
+        --color-pink-800: 292 84% 88%;
+        --color-pink-700: 292 84% 76%;
+        --color-pink-600: 292 84% 70%;
+        --color-pink-500: 292 84% 65%;
+        --color-pink-400: 292 84% 58%;
+        --color-pink-300: 292 84% 43%;
+        --color-pink-200: 292 84% 30%;
+        --color-pink-100: 292 84% 20%;
+        --color-pink-50: 292 84% 10%;
 
         --color-violet-900: 258 90% 95%;
         --color-violet-800: 258 90% 88%;
