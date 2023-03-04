@@ -31,6 +31,7 @@ import {
   keymap,
   lineNumbers,
   rectangularSelection,
+  tooltips,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { twig } from './twig/extension';

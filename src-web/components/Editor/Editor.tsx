@@ -1,6 +1,6 @@
 import { defaultKeymap } from '@codemirror/commands';
-import { Compartment, EditorState, Prec } from '@codemirror/state';
-import { keymap, placeholder as placeholderExt } from '@codemirror/view';
+import { Compartment, EditorState } from '@codemirror/state';
+import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { HTMLAttributes } from 'react';
@@ -13,6 +13,7 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   contentType: string;
   valueKey?: string;
   placeholder?: string;
+  tooltipContainer?: HTMLElement;
   useTemplating?: boolean;
   onChange?: (value: string) => void;
   onSubmit?: () => void;
@@ -35,8 +36,16 @@ export default function Editor({
   const ref = useRef<HTMLDivElement>(null);
   const extensions = useMemo(
     () =>
-      getExtensions({ placeholder, onSubmit, singleLine, onChange, contentType, useTemplating }),
-    [contentType],
+      getExtensions({
+        container: ref.current,
+        placeholder,
+        onSubmit,
+        singleLine,
+        onChange,
+        contentType,
+        useTemplating,
+      }),
+    [contentType, ref.current],
   );
 
   const newState = (langHolder: Compartment) => {
@@ -95,6 +104,7 @@ export default function Editor({
 }
 
 function getExtensions({
+  container,
   singleLine,
   placeholder,
   onChange,
@@ -104,10 +114,15 @@ function getExtensions({
 }: Pick<
   Props,
   'singleLine' | 'onChange' | 'onSubmit' | 'contentType' | 'useTemplating' | 'placeholder'
->) {
+> & { container: HTMLDivElement | null }) {
   const ext = getLanguageExtension({ contentType, useTemplating });
+
+  // TODO: This is a hack to get the tooltips to render in the correct place when inside a modal dialog
+  const parent = container?.closest<HTMLDivElement>('.dialog-content') ?? undefined;
+
   return [
     ...baseExtensions,
+    tooltips({ parent }),
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
     ...(singleLine ? [singleLineExt()] : []),
     ...(!singleLine ? [multiLineExtensions] : []),
