@@ -8,8 +8,9 @@ import { HStack, VStack } from './Stacks';
 export function HeaderEditor() {
   const [headers, setHeaders] = useState<HttpHeader[]>([]);
   const [newHeader, setNewHeader] = useState<HttpHeader>({ name: '', value: '' });
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: FormEvent) => {
+    console.log('SUBMIT');
+    e?.preventDefault();
     setHeaders([...headers, newHeader]);
     setNewHeader({ name: '', value: '' });
   };
@@ -31,9 +32,10 @@ export function HeaderEditor() {
             header={header}
             onChange={(h) => handleChangeHeader(h, i)}
             onDelete={() => handleDelete(i)}
+            onSubmit={handleSubmit}
           />
         ))}
-        <FormRow addSubmit onChange={setNewHeader} header={newHeader} />
+        <FormRow addSubmit onChange={setNewHeader} header={newHeader} onSubmit={handleSubmit} />
       </VStack>
     </form>
   );
@@ -43,10 +45,12 @@ function FormRow({
   header,
   addSubmit,
   onChange,
+  onSubmit,
   onDelete,
 }: {
   header: HttpHeader;
   addSubmit?: boolean;
+  onSubmit?: () => void;
   onChange: (header: HttpHeader) => void;
   onDelete?: () => void;
 }) {
@@ -55,9 +59,12 @@ function FormRow({
       <HStack space={2}>
         <Input
           autoFocus
+          useEditor
+          useTemplating
           name="name"
           label="Name"
           placeholder="name"
+          onSubmit={onSubmit}
           value={header.name}
           hideLabel
           onChange={(name) => {
@@ -67,6 +74,9 @@ function FormRow({
         <Input
           name="value"
           label="Value"
+          useEditor
+          useTemplating
+          onSubmit={onSubmit}
           placeholder="value"
           value={header.value}
           hideLabel

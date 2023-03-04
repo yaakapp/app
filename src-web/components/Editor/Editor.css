@@ -126,26 +126,26 @@
 
 /* <-- */
 
-.cm-editor .cm-tooltip {
-    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70;
+.cm-tooltip.cm-tooltip {
+    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70 z-50;
 }
 
-.cm-editor .cm-tooltip * {
+.cm-tooltip.cm-tooltip * {
     @apply transition-none;
 }
 
-.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul {
+.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul {
     @apply p-1 max-h-[40vh];
 }
 
-.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li {
+.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul > li {
     @apply cursor-default py-1 px-2 rounded-sm text-gray-500;
 }
 
-.cm-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
     @apply bg-gray-50 text-gray-800;
 }
 
-.cm-editor .cm-tooltip.cm-tooltip-autocomplete .cm-completionIcon {
+.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete .cm-completionIcon {
     @apply text-sm;
 }

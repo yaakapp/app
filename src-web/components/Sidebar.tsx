@@ -29,7 +29,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
       {...props}
     >
       <HStack as={WindowDragRegion} items="center" className="pr-1" justify="end">
-        <Dialog wide open={open} onOpenChange={setOpen} title="This is the title">
+        <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
           <HeaderEditor />
           <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
             Save

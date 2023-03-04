@@ -29,24 +29,26 @@ export function Dialog({
       <D.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <D.Overlay className="fixed inset-0 bg-gray-900 dark:bg-background opacity-80 shadow-lg" />
-          <D.Content
-            className={classnames(
-              className,
-              'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-gray-50',
-              'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
-              wide && 'w-[80vw] max-w-[50rem]',
-            )}
-          >
-            <D.Close asChild className="ml-auto absolute right-1 top-1">
-              <IconButton aria-label="Close" icon="x" size="sm" />
-            </D.Close>
-            <VStack space={3}>
-              <HStack items="center" className="pb-3">
-                <D.Title className="text-xl font-semibold">{title}</D.Title>
-              </HStack>
-              {description && <D.Description>{description}</D.Description>}
-              <div>{children}</div>
-            </VStack>
+          <D.Content className={classnames(className, 'dialog-content', 'fixed inset-0')}>
+            <div
+              className={classnames(
+                className,
+                'absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-gray-50',
+                'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
+                wide && 'w-[80vw] max-w-[50rem]',
+              )}
+            >
+              <D.Close asChild className="ml-auto absolute right-1 top-1">
+                <IconButton aria-label="Close" icon="x" size="sm" />
+              </D.Close>
+              <VStack space={3}>
+                <HStack items="center" className="pb-3">
+                  <D.Title className="text-xl font-semibold">{title}</D.Title>
+                </HStack>
+                {description && <D.Description>{description}</D.Description>}
+                <div>{children}</div>
+              </VStack>
+            </div>
           </D.Content>
         </motion.div>
       </D.Portal>
