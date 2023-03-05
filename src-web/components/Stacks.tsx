@@ -76,7 +76,7 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
 
 interface BaseStackProps extends HTMLAttributes<HTMLElement> {
   items?: 'start' | 'center';
-  justify?: 'start' | 'end';
+  justify?: 'start' | 'center' | 'end';
   as?: React.ElementType;
 }
 
@@ -90,6 +90,7 @@ function BaseStack({ className, items, justify, as = 'div', ...props }: BaseStac
         items === 'center' && 'items-center',
         items === 'start' && 'items-start',
         justify === 'start' && 'justify-start',
+        justify === 'center' && 'justify-center',
         justify === 'end' && 'justify-end',
       )}
       {...props}

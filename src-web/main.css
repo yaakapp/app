@@ -125,6 +125,7 @@ html, body, #root {
         --color-yellow-800: 45 93% 20%;
         --color-yellow-900: 45 93% 10%;
 
+        --color-gray-25: 217 21% 98%;
         --color-gray-50: 217 21% 95%;
         --color-gray-100: 217 21% 88%;
         --color-gray-200: 217 21% 76%;
@@ -234,5 +235,6 @@ html, body, #root {
         --color-gray-200: 217 21% 30%;
         --color-gray-100: 217 21% 25%;
         --color-gray-50: 217 21% 15%;
+        --color-gray-25: 217 21% 10%;
     }
 }
