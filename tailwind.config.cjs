@@ -34,7 +34,7 @@ module.exports = {
 }
 
 function color(name) {
-    return {
+    const map = {
         50: `hsl(var(--color-${name}-50) / <alpha-value>)`,
         100: `hsl(var(--color-${name}-100) / <alpha-value>)`,
         200: `hsl(var(--color-${name}-200) / <alpha-value>)`,
@@ -46,4 +46,8 @@ function color(name) {
         800: `hsl(var(--color-${name}-800) / <alpha-value>)`,
         900: `hsl(var(--color-${name}-900) / <alpha-value>)`,
     }
+    if (name === 'gray') {
+        map[25] = `hsl(var(--color-${name}-25) / <alpha-value>)`;
+    }
+    return map;
 }
