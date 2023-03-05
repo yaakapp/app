@@ -11,6 +11,7 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 import { singleLineExt } from './singleLine';
 
 export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  height?: 'auto' | 'full';
   contentType?: string;
   autoFocus?: boolean;
   valueKey?: string | number;
@@ -23,6 +24,7 @@ export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
 }
 
 export default function Editor({
+  height,
   contentType,
   autoFocus,
   placeholder,
@@ -95,6 +97,7 @@ export default function Editor({
       className={classnames(
         className,
         'cm-wrapper text-base',
+        height === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
       )}
       {...props}

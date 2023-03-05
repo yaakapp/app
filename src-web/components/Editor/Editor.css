@@ -1,17 +1,18 @@
 .cm-wrapper {
-    height: 100%;
-    width: 100%;
-    position: relative;
-}
+    @apply h-full;
 
-.cm-wrapper .cm-editor {
-    @apply inset-0;
-    position: absolute !important;
-    font-size: 0.85em;
+    &.cm-full-height {
+        @apply relative;
+
+        .cm-editor {
+            @apply inset-0;
+            position: absolute !important;
+        }
+    }
 }
 
 .cm-editor {
-    @apply w-full block;
+    @apply w-full block text-[0.85rem];
 
     &.cm-focused {
         outline: none !important;
