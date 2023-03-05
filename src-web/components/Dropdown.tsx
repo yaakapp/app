@@ -264,7 +264,11 @@ function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorP
 
 function DropdownMenuTrigger({ children, className, ...props }: D.DropdownMenuTriggerProps) {
   return (
-    <D.Trigger asChild className={classnames(className, 'focus:outline-none')} {...props}>
+    <D.Trigger
+      asChild
+      className={classnames(className, 'focus:outline-none focus:border-0 focus:shadow-none')}
+      {...props}
+    >
       {children}
     </D.Trigger>
   );

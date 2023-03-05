@@ -1,22 +1,25 @@
 import classnames from 'classnames';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 const colsClasses = {
   none: 'grid-cols-none',
   1: 'grid-cols-1',
   2: 'grid-cols-2',
+  3: 'grid-cols-2',
 };
 
 const rowsClasses = {
   none: 'grid-rows-none',
   1: 'grid-rows-1',
   2: 'grid-rows-2',
+  3: 'grid-rows-2',
 };
 
 const gapClasses = {
   0: 'gap-0',
   1: 'gap-1',
   2: 'gap-2',
+  3: 'gap-3',
 };
 
 type Props = HTMLAttributes<HTMLElement> & {

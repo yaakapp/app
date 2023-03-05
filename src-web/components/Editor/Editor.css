@@ -5,45 +5,62 @@
 }
 
 .cm-wrapper .cm-editor {
+    @apply inset-0;
     position: absolute !important;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
+    font-size: 0.85em;
 }
 
 .cm-editor {
     @apply w-full block;
+
+    &.cm-focused {
+        outline: none !important;
+    }
+
+    .cm-line {
+        @apply text-gray-900 pl-1 pr-1.5;
+    }
+
+    .cm-placeholder {
+        @apply text-placeholder;
+    }
+
+    .placeholder-widget {
+        @apply text-xs text-white/90 bg-blue-400/80 py-[1px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-400 hover:text-white;
+        text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
+    }
 }
 
-.cm-singleline .cm-scroller {
-    overflow: hidden !important;;
+
+.cm-singleline {
+    .cm-editor {
+        @apply h-full w-full;
+    }
+
+    .cm-scroller {
+        font-family: inherit;
+        overflow: hidden !important;;
+    }
+
+    .cm-line {
+        @apply px-0;
+    }
 }
 
-.cm-editor .placeholder-widget {
-    @apply text-xs text-white bg-blue-400 py-[1px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-500;
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
+.cm-multiline {
+    .cm-editor {
+        @apply h-full;
+    }
+
+    .cm-scroller {
+        @apply rounded;
+    }
 }
 
-.cm-multiline .cm-editor .cm-scroller {
-    @apply rounded-lg bg-gray-50;
-}
-
-.cm-editor.cm-focused {
-    outline: none !important;
-}
 
 .cm-multiline .cm-editor.cm-focused .cm-scroller {
-    box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);
-}
-
-.cm-editor .cm-line {
-    color: hsl(var(--color-gray-900));
-}
-
-.cm-multiline .cm-editor .cm-line {
-    padding-left: 1em;
-    padding-right: 1.5em;
+    /* Active border state if we want it */
+    /*box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);*/
 }
 
 .cm-singleline .cm-editor .cm-scroller {
@@ -52,7 +69,8 @@
 }
 
 .cm-editor .cm-gutters {
-    @apply bg-gray-50 border-r-0 text-gray-200;
+    /*@apply bg-gray-50 border-r-0 text-gray-200;*/
+    @apply bg-transparent border-0 text-gray-200;
 }
 
 .cm-editor .cm-gutterElement {
@@ -113,39 +131,56 @@
     @apply bg-gray-200;
 }
 
-/* --> Add padding to container. For some reason, using padding on both adds an extra
- * 1px offset so we need to use a combination of padding and margin.
- */
-.cm-editor .cm-gutters {
-    @apply pt-1;
+.cm-singleline .cm-editor {
+    .cm-content {
+        @apply h-full flex items-center;
+    }
 }
 
-.cm-editor .cm-content {
-    @apply mt-1;
+.cm-scroller {
+    &::-webkit-scrollbar-corner,
+    &::-webkit-scrollbar {
+        @apply w-[5px] h-[5px] bg-transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        @apply bg-gray-100 bg-opacity-30 rounded-full;
+    }
+}
+
+.cm-editor.cm-focused .cm-scroller::-webkit-scrollbar-thumb {
+    @apply bg-opacity-80;
 }
 
 /* <-- */
 
+/* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70 z-50;
-}
+    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70 z-50 pointer-events-auto;
 
-.cm-tooltip.cm-tooltip * {
-    @apply transition-none;
-}
+    * {
+        @apply transition-none;
+    }
 
-.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul {
-    @apply p-1 max-h-[40vh];
-}
+    &.cm-tooltip-autocomplete {
+        & > ul {
+            @apply p-1 max-h-[40vh];
+        }
 
-.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul > li {
-    @apply cursor-default py-1 px-2 rounded-sm text-gray-500;
-}
+        & > ul > li {
+            @apply cursor-default px-2 rounded-sm text-gray-500 h-7 flex items-center;
+        }
 
-.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
-    @apply bg-gray-50 text-gray-800;
-}
+        & > ul > li[aria-selected] {
+            @apply bg-gray-50 text-gray-800;
+        }
 
-.cm-tooltip.cm-tooltip.cm-tooltip-autocomplete .cm-completionIcon {
-    @apply text-sm;
+        & > ul > li:hover {
+            @apply text-gray-700;
+        }
+
+        .cm-completionIcon {
+            @apply text-sm flex items-center pb-0.5;
+        }
+    }
 }

@@ -98,7 +98,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <MotionConfig transition={{ duration: 0.15 }}>
+      <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <RouterProvider router={router} />
         </HelmetProvider>
