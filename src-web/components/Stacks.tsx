@@ -8,6 +8,8 @@ const spaceClassesX = {
   2: 'pr-2',
   3: 'pr-3',
   4: 'pr-4',
+  5: 'pr-5',
+  6: 'pr-6',
 };
 
 const spaceClassesY = {
@@ -16,6 +18,8 @@ const spaceClassesY = {
   2: 'pt-2',
   3: 'pt-3',
   4: 'pt-4',
+  5: 'pt-5',
+  6: 'pt-6',
 };
 
 interface HStackProps extends BaseStackProps {

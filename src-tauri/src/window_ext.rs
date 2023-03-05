@@ -1,7 +1,7 @@
 use tauri::{Runtime, Window};
 
 const TRAFFIC_LIGHT_OFFSET_X: f64 = 15.0;
-const TRAFFIC_LIGHT_OFFSET_Y: f64 = 26.0;
+const TRAFFIC_LIGHT_OFFSET_Y: f64 = 20.0;
 
 pub trait WindowExt {
     #[cfg(target_os = "macos")]

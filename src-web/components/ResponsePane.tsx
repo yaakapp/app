@@ -122,13 +122,16 @@ export function ResponsePane({ requestId, className }: Props) {
               ))}
             </HStack>
           </ScrollArea>
+
           {viewMode === 'pretty' && contentForIframe !== null ? (
-            <iframe
-              title="Response preview"
-              srcDoc={contentForIframe}
-              sandbox="allow-scripts allow-same-origin"
-              className="h-full w-full rounded-lg"
-            />
+            <div className="pl-2">
+              <iframe
+                title="Response preview"
+                srcDoc={contentForIframe}
+                sandbox="allow-scripts allow-same-origin"
+                className="h-full w-full rounded-lg"
+              />
+            </div>
           ) : response?.body ? (
             <Editor
               valueKey={`${contentType}:${response.body}`}
