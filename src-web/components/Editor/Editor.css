@@ -12,7 +12,7 @@
 }
 
 .cm-editor {
-    @apply w-full block text-[0.85rem];
+    @apply w-full block text-[0.85rem] bg-gray-25;
 
     &.cm-focused {
         outline: none !important;
@@ -27,7 +27,7 @@
     }
 
     .placeholder-widget {
-        @apply text-xs text-white/90 bg-blue-400/80 py-[1px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-400 hover:text-white;
+        @apply text-xs text-white/90 bg-blue-400/80 py-[0.5px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-400 hover:text-white;
         text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
     }
 }
@@ -70,8 +70,7 @@
 }
 
 .cm-editor .cm-gutters {
-    /*@apply bg-gray-50 border-r-0 text-gray-200;*/
-    @apply bg-transparent border-0 text-gray-200;
+    @apply bg-gray-25 border-0 text-gray-200;
 }
 
 .cm-editor .cm-gutterElement {

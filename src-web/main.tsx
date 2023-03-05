@@ -1,20 +1,21 @@
-import React from 'react';
-import init, { greet } from 'hello';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import { HelmetProvider } from 'react-helmet-async';
-import { MotionConfig } from 'framer-motion';
-import { listen } from '@tauri-apps/api/event';
-import { responsesQueryKey } from './hooks/useResponses';
-import { setTheme } from './lib/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { listen } from '@tauri-apps/api/event';
+import { MotionConfig } from 'framer-motion';
+import init, { greet } from 'hello';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import App from './App';
 import { Layout } from './components/Layout';
-import { Workspaces } from './pages/Workspaces';
-import './main.css';
+import { RouterError } from './components/RouterError';
+import { requestsQueryKey } from './hooks/useRequest';
+import { responsesQueryKey } from './hooks/useResponses';
 import type { HttpRequest, HttpResponse } from './lib/models';
 import { convertDates } from './lib/models';
-import { requestsQueryKey } from './hooks/useRequest';
+import { setTheme } from './lib/theme';
+import './main.css';
+import { Workspaces } from './pages/Workspaces';
 
 setTheme();
 
@@ -78,6 +79,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
+    errorElement: <RouterError />,
     children: [
       {
         path: '/',

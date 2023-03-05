@@ -1,13 +1,15 @@
 import classnames from 'classnames';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from './components/Button';
 import { Divider } from './components/Divider';
 import { Grid } from './components/Grid';
+import { IconButton } from './components/IconButton';
 import { RequestPane } from './components/RequestPane';
 import { ResponsePane } from './components/ResponsePane';
 import { Sidebar } from './components/Sidebar';
 import { HStack } from './components/Stacks';
+import { WindowDragRegion } from './components/WindowDragRegion';
 import {
   useDeleteRequest,
   useRequests,
@@ -24,6 +26,7 @@ function App() {
   const p = useParams<Params>();
   const workspaceId = p.workspaceId ?? '';
   const { data: requests } = useRequests(workspaceId);
+  const navigate = useNavigate();
   const request = requests?.find((r) => r.id === p.requestId);
 
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -39,12 +42,20 @@ function App() {
         <div className="p-2 h-full">
           <div className="grid grid-rows-[auto_1fr] rounded-md h-full overflow-hidden">
             <HStack
-              data-tauri-drag-region
-              className="h-10 px-3 bg-gray-50"
+              as={WindowDragRegion}
+              className="pl-1 pr-3 bg-gray-50 text-sm"
               justify="center"
               items="center"
             >
-              {request.name}
+              <div className="mr-auto">
+                <IconButton
+                  size="xs"
+                  icon="x"
+                  onClick={() => navigate(`/workspaces/${workspaceId}`)}
+                />
+              </div>
+              <div>{request.name}</div>
+              <div className="ml-auto"></div>
             </HStack>
             <div
               className={classnames(
