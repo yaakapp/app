@@ -10,7 +10,7 @@ import { Icon } from './Icon';
 
 const colorStyles = {
   default: 'hover:bg-gray-500/10 text-gray-600',
-  gray: 'bg-gray-50 text-gray-800 hover:bg-gray-500/10',
+  gray: 'text-gray-800 bg-gray-50 hover:bg-gray-500/20',
   primary: 'bg-blue-400',
   secondary: 'bg-violet-400',
   warning: 'bg-orange-400',
