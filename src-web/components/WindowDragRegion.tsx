@@ -1,12 +1,12 @@
 import classnames from 'classnames';
-import { HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 type Props = HTMLAttributes<HTMLDivElement>;
 
 export function WindowDragRegion({ className, ...props }: Props) {
   return (
     <div
-      className={classnames(className, 'w-full h-11 flex-shrink-0 border-b border-gray-500/10')}
+      className={classnames(className, 'w-full h-14 flex-shrink-0')}
       data-tauri-drag-region=""
       {...props}
     />

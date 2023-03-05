@@ -7,6 +7,7 @@ import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
 import { Dialog } from './Dialog';
+import { DropdownMenuRadio } from './Dropdown';
 import { HeaderEditor } from './HeaderEditor';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
@@ -24,10 +25,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
   const { toggleTheme } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
   return (
-    <div
-      className={classnames(className, 'w-52 bg-gray-50/40 h-full border-gray-500/10')}
-      {...props}
-    >
+    <div className={classnames(className, 'w-52 bg-gray-50 h-full')} {...props}>
       <HStack as={WindowDragRegion} items="center" className="pr-1" justify="end">
         <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
           <HeaderEditor />
@@ -51,7 +49,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           }}
         />
       </HStack>
-      <VStack as="ul" className="py-3" space={1}>
+      <VStack as="ul" className="pb-3" space={1}>
         {requests.map((r) => (
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
@@ -66,7 +64,7 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
       <Button
         as={Link}
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
-        className={classnames('w-full', active && 'bg-gray-50')}
+        className={classnames('w-full', active && 'bg-gray-500/[0.1]')}
         size="xs"
         justify="start"
       >

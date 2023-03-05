@@ -1,5 +1,4 @@
 import type { CompletionContext } from '@codemirror/autocomplete';
-import { match } from 'assert';
 
 const openTag = '${[ ';
 const closeTag = ' ]}';
@@ -18,7 +17,7 @@ const variables = [
 ];
 
 const MIN_MATCH_VAR = 2;
-const MIN_MATCH_NAME = 2;
+const MIN_MATCH_NAME = 4;
 
 export function completions(context: CompletionContext) {
   const toStartOfName = context.matchBefore(/\w*/);

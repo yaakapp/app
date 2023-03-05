@@ -1,19 +1,22 @@
 import classnames from 'classnames';
 import type { InputHTMLAttributes, ReactNode } from 'react';
+import type { EditorProps } from './Editor/Editor';
 import Editor from './Editor/Editor';
 import { HStack, VStack } from './Stacks';
 
-interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'> {
+interface Props
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    'size' | 'onChange' | 'onSubmit' | 'defaultValue'
+  > {
   name: string;
   label: string;
   hideLabel?: boolean;
   labelClassName?: string;
   containerClassName?: string;
   onChange?: (value: string) => void;
-  onSubmit?: () => void;
-  contentType?: string;
-  useTemplating?: boolean;
-  useEditor?: boolean;
+  useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating' | 'valueKey'>;
+  defaultValue?: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
   size?: 'sm' | 'md';
@@ -25,13 +28,10 @@ export function Input({
   className,
   containerClassName,
   labelClassName,
-  onSubmit,
+  onChange,
   placeholder,
-  useTemplating,
   size = 'md',
   useEditor,
-  contentType,
-  onChange,
   name,
   leftSlot,
   rightSlot,
@@ -55,7 +55,7 @@ export function Input({
         items="center"
         className={classnames(
           containerClassName,
-          'relative w-full rounded-md overflow-hidden text-gray-900 bg-gray-200/10',
+          'relative w-full rounded-md text-gray-900 bg-gray-200/10',
           'border border-gray-500/10 focus-within:border-blue-400/40',
           size === 'md' && 'h-10',
           size === 'sm' && 'h-8',
@@ -66,13 +66,15 @@ export function Input({
           <Editor
             id={id}
             singleLine
-            contentType={contentType ?? 'text/plain'}
-            useTemplating={useTemplating}
             defaultValue={defaultValue}
-            onChange={onChange}
-            onSubmit={onSubmit}
             placeholder={placeholder}
-            className={className}
+            onChange={onChange}
+            className={classnames(
+              className,
+              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
+            )}
+            {...props}
+            {...useEditor}
           />
         ) : (
           <input
@@ -82,7 +84,7 @@ export function Input({
             defaultValue={defaultValue}
             className={classnames(
               className,
-              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none placeholder:text-gray-500/40',
+              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none placeholder:text-placeholder',
               leftSlot && '!pl-1',
               rightSlot && '!pr-1',
             )}

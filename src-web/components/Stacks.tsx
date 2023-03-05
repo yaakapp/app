@@ -34,6 +34,7 @@ export function HStack({ className, space, children, ...props }: HStackProps) {
                 {i > 0 ? (
                   <div
                     className={classnames(spaceClassesX[space], 'pointer-events-none')}
+                    data-spacer=""
                     aria-hidden
                   />
                 ) : null}
@@ -61,6 +62,7 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
                 {i > 0 ? (
                   <div
                     className={classnames(spaceClassesY[space], 'pointer-events-none')}
+                    data-spacer=""
                     aria-hidden
                   />
                 ) : null}

@@ -11,9 +11,18 @@ interface Props {
   url: string;
   onMethodChange: (method: string) => void;
   onUrlChange: (url: string) => void;
+  className?: string;
 }
 
-export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
+export function UrlBar({
+  className,
+  sendRequest,
+  loading,
+  onMethodChange,
+  method,
+  onUrlChange,
+  url,
+}: Props) {
   const handleSendRequest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     sendRequest();
@@ -23,13 +32,12 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
     <form onSubmit={handleSendRequest} className="w-full flex items-center">
       <Input
         hideLabel
-        useEditor
-        useTemplating
-        onSubmit={sendRequest}
-        contentType="url"
+        useEditor={{ useTemplating: true, contentType: 'url' }}
+        size="sm"
+        className="font-mono text-sm"
         name="url"
         label="Enter URL"
-        className="font-mono"
+        containerClassName={className}
         onChange={onUrlChange}
         defaultValue={url}
         placeholder="Enter a URL..."
@@ -51,7 +59,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
               type="button"
               disabled={loading}
               size="sm"
-              className="ml-1 !px-2"
+              className="ml-1 mr-2 !px-2 !text-gray-800"
               justify="start"
             >
               {method.toUpperCase()}
@@ -60,11 +68,13 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         }
         rightSlot={
           <IconButton
+            type="submit"
+            size="sm"
             icon={loading ? 'update' : 'paper-plane'}
             spin={loading}
             disabled={loading}
-            size="sm"
-            className="mr-1 !px-2"
+            className="mx-1 !px-4"
+            title="Send Request"
           />
         }
       />

@@ -1,4 +1,5 @@
 import { defaultKeymap } from '@codemirror/commands';
+import type { Extension } from '@codemirror/state';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
@@ -9,29 +10,30 @@ import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
 
-interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  contentType: string;
-  valueKey?: string;
+export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  contentType?: string;
+  autoFocus?: boolean;
+  valueKey?: string | number;
+  defaultValue?: string;
   placeholder?: string;
   tooltipContainer?: HTMLElement;
   useTemplating?: boolean;
   onChange?: (value: string) => void;
-  onSubmit?: () => void;
   singleLine?: boolean;
 }
 
 export default function Editor({
   contentType,
+  autoFocus,
   placeholder,
   valueKey,
   useTemplating,
   defaultValue,
   onChange,
-  onSubmit,
   className,
   singleLine,
   ...props
-}: Props) {
+}: EditorProps) {
   const [cm, setCm] = useState<{ view: EditorView; langHolder: Compartment } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const extensions = useMemo(
@@ -39,7 +41,6 @@ export default function Editor({
       getExtensions({
         container: ref.current,
         placeholder,
-        onSubmit,
         singleLine,
         onChange,
         contentType,
@@ -48,25 +49,23 @@ export default function Editor({
     [contentType, ref.current],
   );
 
-  const newState = (langHolder: Compartment) => {
-    const langExt = getLanguageExtension({ contentType, useTemplating });
-    return EditorState.create({
-      doc: `${defaultValue ?? ''}`,
-      extensions: [...extensions, langHolder.of(langExt)],
-    });
-  };
-
   // Create codemirror instance when ref initializes
   useEffect(() => {
     if (ref.current === null) return;
     let view: EditorView | null = null;
     try {
       const langHolder = new Compartment();
+      const langExt = getLanguageExtension({ contentType, useTemplating });
+      const state = EditorState.create({
+        doc: `${defaultValue ?? ''}`,
+        extensions: [...extensions, langHolder.of(langExt)],
+      });
       view = new EditorView({
-        state: newState(langHolder),
+        state,
         parent: ref.current,
       });
       setCm({ view, langHolder });
+      if (autoFocus && view) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
@@ -108,17 +107,19 @@ function getExtensions({
   singleLine,
   placeholder,
   onChange,
-  onSubmit,
   contentType,
   useTemplating,
 }: Pick<
-  Props,
-  'singleLine' | 'onChange' | 'onSubmit' | 'contentType' | 'useTemplating' | 'placeholder'
+  EditorProps,
+  'singleLine' | 'onChange' | 'contentType' | 'useTemplating' | 'placeholder'
 > & { container: HTMLDivElement | null }) {
   const ext = getLanguageExtension({ contentType, useTemplating });
 
-  // TODO: This is a hack to get the tooltips to render in the correct place when inside a modal dialog
-  const parent = container?.closest<HTMLDivElement>('.dialog-content') ?? undefined;
+  // TODO: Ensure tooltips render inside the dialog if we are in one.
+  const parent =
+    container?.closest<HTMLDivElement>('[role="dialog"]') ??
+    document.querySelector<HTMLDivElement>('#cm-portal') ??
+    undefined;
 
   return [
     ...baseExtensions,
@@ -130,11 +131,15 @@ function getExtensions({
     ...(placeholder ? [placeholderExt(placeholder)] : []),
 
     // Handle onSubmit
-    ...(onSubmit
+    ...(singleLine
       ? [
           EditorView.domEventHandlers({
             keydown: (e) => {
-              if (e.key === 'Enter') onSubmit?.();
+              if (e.key === 'Enter') {
+                const el = e.currentTarget as HTMLElement;
+                const form = el.closest('form');
+                form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+              }
             },
           }),
         ]
@@ -147,3 +152,24 @@ function getExtensions({
     }),
   ];
 }
+
+const newState = ({
+  langHolder,
+  contentType,
+  useTemplating,
+  defaultValue,
+  extensions,
+}: {
+  langHolder: Compartment;
+  contentType?: string;
+  useTemplating?: boolean;
+  defaultValue?: string;
+  extensions: Extension[];
+}) => {
+  console.log('NEW STATE', defaultValue);
+  const langExt = getLanguageExtension({ contentType, useTemplating });
+  return EditorState.create({
+    doc: `${defaultValue ?? ''}`,
+    extensions: [...extensions, langHolder.of(langExt)],
+  });
+};
