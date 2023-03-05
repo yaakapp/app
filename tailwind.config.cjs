@@ -20,6 +20,7 @@ module.exports = {
             white: 'hsl(var(--color-white) / <alpha-value>)',
             black: 'hsl(var(--color-black) / <alpha-value>)',
             background: 'hsl(var(--color-background) / <alpha-value>)',
+            placeholder: 'hsl(var(--color-gray-200) / <alpha-value>)',
             gray: color('gray'),
             orange: color('orange'),
             blue: color('blue'),

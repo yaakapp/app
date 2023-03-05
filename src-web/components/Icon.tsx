@@ -3,7 +3,6 @@ import {
   CameraIcon,
   CheckIcon,
   CodeIcon,
-  Cross1Icon,
   Cross2Icon,
   EyeOpenIcon,
   GearIcon,

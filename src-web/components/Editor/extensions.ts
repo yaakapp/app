@@ -31,7 +31,6 @@ import {
   keymap,
   lineNumbers,
   rectangularSelection,
-  tooltips,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { twig } from './twig/extension';
@@ -90,10 +89,10 @@ export function getLanguageExtension({
   contentType,
   useTemplating,
 }: {
-  contentType: string;
+  contentType?: string;
   useTemplating?: boolean;
 }) {
-  const justContentType = contentType.split(';')[0] ?? contentType;
+  const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   const base = syntaxExtensions[justContentType] ?? json();
   if (!useTemplating) {
     return [base];
@@ -108,7 +107,7 @@ export const baseExtensions = [
   drawSelection(),
   dropCursor(),
   bracketMatching(),
-  autocompletion({ closeOnBlur: true }),
+  autocompletion({ closeOnBlur: true, interactionDelay: 200 }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];
