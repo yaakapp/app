@@ -23,21 +23,24 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
   const { toggleTheme } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
   return (
-    <div className={classnames(className, 'w-52 bg-gray-50 h-full px-2')} {...props}>
-      <HStack as={WindowDragRegion} items="center" className="py-2" justify="end">
+    <div
+      className={classnames(className, 'w-52 bg-gray-50 h-full border-gray-100/50 relative z-10')}
+      {...props}
+    >
+      <HStack as={WindowDragRegion} items="center" justify="end">
         <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
           <HeaderEditor />
           <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
             Save
           </Button>
         </Dialog>
-        <IconButton
-          size="sm"
-          icon="camera"
-          onClick={() => {
-            setOpen((v) => !v);
-          }}
-        />
+        {/*<IconButton*/}
+        {/*  size="sm"*/}
+        {/*  icon="camera"*/}
+        {/*  onClick={() => {*/}
+        {/*    setOpen((v) => !v);*/}
+        {/*  }}*/}
+        {/*/>*/}
         <IconButton size="sm" icon="sun" onClick={toggleTheme} />
         <IconButton
           size="sm"
@@ -47,7 +50,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           }}
         />
       </HStack>
-      <VStack as="ul" className="pb-3" space={1}>
+      <VStack as="ul" className="py-3 px-2" space={1}>
         {requests.map((r) => (
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
@@ -63,7 +66,7 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
         as={Link}
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         className={classnames('w-full', active && 'bg-gray-500/[0.1] text-gray-900')}
-        size="sm"
+        size="xs"
         justify="start"
       >
         {request.name}

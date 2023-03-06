@@ -2,7 +2,6 @@ import classnames from 'classnames';
 import { useRequestUpdate, useSendRequest } from '../hooks/useRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
-import { Divider } from './Divider';
 import Editor from './Editor/Editor';
 import { ScrollArea } from './ScrollArea';
 import { HStack } from './Stacks';
@@ -18,10 +17,12 @@ export function RequestPane({ fullHeight, request, className }: Props) {
   const updateRequest = useRequestUpdate(request ?? null);
   const sendRequest = useSendRequest(request ?? null);
   return (
-    <div className={classnames(className, 'grid grid-rows-[auto_auto_minmax(0,1fr)] grid-cols-1')}>
-      <div>
+    <div
+      className={classnames(className, 'py-2 grid grid-rows-[auto_auto_minmax(0,1fr)] grid-cols-1')}
+    >
+      <div className="pl-2">
         <UrlBar
-          className="bg-transparent border-0 mb-1"
+          className="border-0 mb-1"
           key={request.id}
           method={request.method}
           url={request.url}
@@ -30,9 +31,7 @@ export function RequestPane({ fullHeight, request, className }: Props) {
           onUrlChange={(url) => updateRequest.mutate({ url })}
           sendRequest={sendRequest.mutate}
         />
-        <div className="mx-2">
-          <Divider />
-        </div>
+        {/*<Divider />*/}
       </div>
       {/*<Divider className="mb-2" />*/}
       <ScrollArea className="max-w-full pb-2 mx-2">

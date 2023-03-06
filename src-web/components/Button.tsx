@@ -52,7 +52,7 @@ export const Button = forwardRef(function Button<T extends ElementType>(
         justify === 'center' && 'justify-center',
         size === 'md' && 'h-10 px-4',
         size === 'sm' && 'h-8 px-3 text-sm',
-        size === 'xs' && 'h-6 px-3 text-xs',
+        size === 'xs' && 'h-7 px-2.5 text-sm',
       )}
       {...props}
     >

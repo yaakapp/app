@@ -1,13 +1,10 @@
 import classnames from 'classnames';
 import { useEffect, useMemo, useState } from 'react';
 import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
-import { Button } from './Button';
-import { Divider } from './Divider';
 import { Dropdown } from './Dropdown';
 import Editor from './Editor/Editor';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
-import { ScrollArea } from './ScrollArea';
 import { HStack } from './Stacks';
 
 interface Props {
@@ -45,23 +42,23 @@ export function ResponsePane({ requestId, className }: Props) {
   }, [response?.body, contentType]);
 
   return (
-    <div
-      className={classnames(
-        className,
-        'max-h-full h-full grid grid-rows-[auto_auto_minmax(0,1fr)] grid-cols-1',
-      )}
-    >
-      {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
-      {/*</HStack>*/}
-      {response?.error && (
-        <div className="text-white bg-red-500 px-2 py-1 rounded">{response.error}</div>
-      )}
-      {response && (
-        <>
-          <div>
+    <div className="p-2">
+      <div
+        className={classnames(
+          className,
+          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-50/50 rounded-md',
+        )}
+      >
+        {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
+        {/*</HStack>*/}
+        {response?.error && (
+          <div className="text-white bg-red-500 px-2 py-1 rounded">{response.error}</div>
+        )}
+        {response && (
+          <>
             <HStack
               items="center"
-              className="italic text-gray-500 text-sm w-full mb-1 flex-shrink-0 pl-2"
+              className="italic text-gray-500 text-sm w-full mb-1 flex-shrink-0 pl-2 py-1"
             >
               <div className="whitespace-nowrap">
                 {response.status}
@@ -104,43 +101,27 @@ export function ResponsePane({ requestId, className }: Props) {
                 </Dropdown>
               </HStack>
             </HStack>
-            <div className="px-2">
-              <Divider />
-            </div>
-          </div>
-          <ScrollArea className="max-w-full pb-2 mx-2">
-            <HStack className="mt-2 hide-scrollbar" space={1}>
-              {['Preview', 'Headers', 'Cookies', 'Timing'].map((label, i) => (
-                <Button
-                  key={label}
-                  size="xs"
-                  color={i === 0 && 'gray'}
-                  className={i !== 0 && 'opacity-50 hover:opacity-60'}
-                >
-                  {label}
-                </Button>
-              ))}
-            </HStack>
-          </ScrollArea>
 
-          {viewMode === 'pretty' && contentForIframe !== null ? (
-            <div className="pl-2">
-              <iframe
-                title="Response preview"
-                srcDoc={contentForIframe}
-                sandbox="allow-scripts allow-same-origin"
-                className="h-full w-full rounded-lg"
+            {viewMode === 'pretty' && contentForIframe !== null ? (
+              <div className="px-2 pb-2">
+                <iframe
+                  title="Response preview"
+                  srcDoc={contentForIframe}
+                  sandbox="allow-scripts allow-same-origin"
+                  className="h-full w-full rounded-md border border-gray-100/20"
+                />
+              </div>
+            ) : response?.body ? (
+              <Editor
+                backgroundColor="red"
+                valueKey={`${contentType}:${response.body}`}
+                defaultValue={response?.body}
+                contentType={contentType}
               />
-            </div>
-          ) : response?.body ? (
-            <Editor
-              valueKey={`${contentType}:${response.body}`}
-              defaultValue={response?.body}
-              contentType={contentType}
-            />
-          ) : null}
-        </>
-      )}
+            ) : null}
+          </>
+        )}
+      </div>
     </div>
   );
 }
