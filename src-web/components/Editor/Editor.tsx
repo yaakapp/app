@@ -4,7 +4,7 @@ import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import type { HTMLAttributes } from 'react';
+import type { CSSProperties, HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -13,6 +13,7 @@ import { singleLineExt } from './singleLine';
 export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
   height?: 'auto' | 'full';
   contentType?: string;
+  backgroundColor?: string;
   autoFocus?: boolean;
   valueKey?: string | number;
   defaultValue?: string;
@@ -26,6 +27,7 @@ export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
 export default function Editor({
   height,
   contentType,
+  backgroundColor,
   autoFocus,
   placeholder,
   valueKey,
@@ -100,6 +102,7 @@ export default function Editor({
         height === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
       )}
+      data-color-background="var(--color-gray-50)"
       {...props}
     />
   );
