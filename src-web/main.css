@@ -41,6 +41,10 @@ html, body, #root {
 /*    }*/
 /*}*/
 
+[data-color-background] {
+    --color-background: attr(data-bg-color);
+}
+
 @layer base {
     :root, [data-theme="light"] {
         /* Colors */

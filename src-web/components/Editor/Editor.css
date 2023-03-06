@@ -12,7 +12,7 @@
 }
 
 .cm-editor {
-    @apply w-full block text-[0.85rem] bg-gray-25;
+    @apply bg-background w-full block text-[0.85rem];
 
     &.cm-focused {
         outline: none !important;
@@ -70,7 +70,7 @@
 }
 
 .cm-editor .cm-gutters {
-    @apply bg-gray-25 border-0 text-gray-200;
+    @apply bg-background border-0 text-gray-200;
 }
 
 .cm-editor .cm-gutterElement {
