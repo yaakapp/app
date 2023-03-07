@@ -1,14 +1,38 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { setTheme, subscribeToPreferredThemeChange, toggleTheme } from '../lib/theme';
+import type { Appearance } from '../lib/theme/window';
+import {
+  getAppearance,
+  setAppearance,
+  subscribeToPreferredAppearanceChange,
+  toggleAppearance,
+} from '../lib/theme/window';
 
-export default function useTheme(subscribeToChanges = true): { toggleTheme: () => void } {
+const appearanceQueryKey = ['theme', 'appearance'];
+
+export default function useTheme() {
+  const queryClient = useQueryClient();
+  const appearance = useQuery({
+    queryKey: appearanceQueryKey,
+    queryFn: getAppearance,
+    initialData: getAppearance(),
+  });
+
+  const themeChange = (appearance: Appearance) => {
+    setAppearance(appearance);
+  };
+
+  const handleToggleAppearance = async () => {
+    const newAppearance = toggleAppearance();
+    await queryClient.setQueryData(appearanceQueryKey, newAppearance);
+  };
+
   useEffect(() => {
-    if (!subscribeToChanges) return;
-    const unsub = subscribeToPreferredThemeChange(setTheme);
-    return unsub;
-  }, [subscribeToChanges]);
+    return subscribeToPreferredAppearanceChange(themeChange);
+  }, []);
 
   return {
-    toggleTheme: toggleTheme,
+    appearance: appearance.data,
+    toggleAppearance: handleToggleAppearance,
   };
 }

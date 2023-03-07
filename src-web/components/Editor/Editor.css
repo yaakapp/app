@@ -12,7 +12,7 @@
 }
 
 .cm-editor {
-    @apply bg-background w-full block text-[0.85rem];
+    @apply w-full block text-[0.85rem];
 
     &.cm-focused {
         outline: none !important;
@@ -24,6 +24,18 @@
 
     .cm-placeholder {
         @apply text-placeholder;
+    }
+
+    .cm-gutters {
+        @apply border-0 text-gray-500 text-opacity-30;
+        .cm-gutterElement {
+            @apply cursor-default;
+        }
+    }
+
+    &.cm-focused .cm-gutters,
+    .cm-gutters:hover {
+        @apply text-opacity-60;
     }
 
     .placeholder-widget {
@@ -69,10 +81,6 @@
     align-items: center !important;
 }
 
-.cm-editor .cm-gutters {
-    @apply bg-background border-0 text-gray-200;
-}
-
 .cm-editor .cm-gutterElement {
     transition: color var(--transition-duration);
 }
@@ -96,10 +104,6 @@
 
 .cm-editor .fold-gutter-icon:hover {
     @apply text-gray-400 bg-gray-100/20;
-}
-
-.cm-editor.cm-focused .cm-gutters {
-    @apply text-gray-300;
 }
 
 .cm-editor .cm-foldPlaceholder {

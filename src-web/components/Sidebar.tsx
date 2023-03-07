@@ -20,11 +20,14 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 
 export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
-  const { toggleTheme } = useTheme();
+  const { appearance, toggleAppearance } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
   return (
     <div
-      className={classnames(className, 'w-52 bg-gray-50 h-full border-gray-100/50 relative z-10')}
+      className={classnames(
+        className,
+        'w-52 bg-violet-600 dark:bg-violet-50 h-full border-gray-100/50 relative z-10',
+      )}
       {...props}
     >
       <HStack as={WindowDragRegion} items="center" justify="end">
@@ -34,17 +37,14 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
             Save
           </Button>
         </Dialog>
-        {/*<IconButton*/}
-        {/*  size="sm"*/}
-        {/*  icon="camera"*/}
-        {/*  onClick={() => {*/}
-        {/*    setOpen((v) => !v);*/}
-        {/*  }}*/}
-        {/*/>*/}
-        <IconButton size="sm" icon="sun" onClick={toggleTheme} />
         <IconButton
           size="sm"
-          icon="plus-circled"
+          icon={appearance === 'dark' ? 'moon' : 'sun'}
+          onClick={toggleAppearance}
+        />
+        <IconButton
+          size="sm"
+          icon="plusCircle"
           onClick={async () => {
             await createRequest.mutate({ name: 'Test Request' });
           }}
@@ -54,6 +54,19 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
         {requests.map((r) => (
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
+        <div>
+          <div className="w-10 h-5 bg-blue-50" />
+          <div className="w-10 h-5 bg-blue-100" />
+          <div className="w-10 h-5 bg-blue-200" />
+          <div className="w-10 h-5 bg-blue-300" />
+          <div className="w-10 h-5 bg-blue-400" />
+          <div className="w-10 h-5 bg-blue-500" />
+          <div className="w-10 h-5 bg-blue-600" />
+          <div className="w-10 h-5 bg-blue-700" />
+          <div className="w-10 h-5 bg-blue-800" />
+          <div className="w-10 h-5 bg-blue-900" />
+          <div className="w-10 h-5 bg-blue-950" />
+        </div>
       </VStack>
     </div>
   );
@@ -64,12 +77,13 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
     <li key={request.id}>
       <Button
         as={Link}
+        color="tint"
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         className={classnames('w-full', active && 'bg-gray-500/[0.1] text-gray-900')}
         size="xs"
         justify="start"
       >
-        {request.name}
+        {request.name || request.url}
       </Button>
     </li>
   );

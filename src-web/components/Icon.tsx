@@ -2,6 +2,7 @@ import {
   ArchiveIcon,
   CameraIcon,
   CheckIcon,
+  ClockIcon,
   CodeIcon,
   Cross2Icon,
   EyeOpenIcon,
@@ -15,6 +16,8 @@ import {
   SunIcon,
   TrashIcon,
   TriangleDownIcon,
+  TriangleLeftIcon,
+  TriangleRightIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
@@ -26,13 +29,16 @@ type IconName =
   | 'camera'
   | 'gear'
   | 'eye'
-  | 'triangle-down'
-  | 'paper-plane'
+  | 'triangleDown'
+  | 'triangleLeft'
+  | 'triangleRight'
+  | 'paperPlane'
   | 'update'
   | 'question'
   | 'check'
   | 'plus'
-  | 'plus-circled'
+  | 'plusCircle'
+  | 'clock'
   | 'sun'
   | 'code'
   | 'x'
@@ -40,13 +46,16 @@ type IconName =
   | 'moon';
 
 const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
-  'paper-plane': PaperPlaneIcon,
-  'triangle-down': TriangleDownIcon,
+  paperPlane: PaperPlaneIcon,
+  triangleDown: TriangleDownIcon,
   plus: PlusIcon,
-  'plus-circled': PlusCircledIcon,
+  plusCircle: PlusCircledIcon,
+  clock: ClockIcon,
   archive: ArchiveIcon,
   camera: CameraIcon,
   check: CheckIcon,
+  triangleLeft: TriangleLeftIcon,
+  triangleRight: TriangleRightIcon,
   gear: GearIcon,
   home: HomeIcon,
   update: UpdateIcon,

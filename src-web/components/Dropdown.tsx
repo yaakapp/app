@@ -264,11 +264,7 @@ function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorP
 
 function DropdownMenuTrigger({ children, className, ...props }: D.DropdownMenuTriggerProps) {
   return (
-    <D.Trigger
-      asChild
-      className={classnames(className, 'focus:outline-none focus:border-0 focus:shadow-none')}
-      {...props}
-    >
+    <D.Trigger asChild className={classnames(className)} {...props}>
       {children}
     </D.Trigger>
   );
@@ -290,7 +286,7 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
       ref={ref}
       className={classnames(
         className,
-        'outline-none px-2 py-1.5 flex items-center text-sm text-gray-700',
+        'outline-none px-2 py-1.5 flex items-center text-sm text-gray-700 whitespace-nowrap pr-4',
         !noHover && 'focus:bg-gray-50 focus:text-gray-900 rounded',
       )}
       {...props}

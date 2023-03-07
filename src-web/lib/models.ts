@@ -29,7 +29,7 @@ export interface HttpResponse extends BaseModel {
   requestId: string;
   body: string;
   error: string;
-  status: string;
+  status: number;
   elapsed: number;
   statusReason: string;
   url: string;
