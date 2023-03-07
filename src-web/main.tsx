@@ -13,11 +13,11 @@ import { requestsQueryKey } from './hooks/useRequest';
 import { responsesQueryKey } from './hooks/useResponses';
 import type { HttpRequest, HttpResponse } from './lib/models';
 import { convertDates } from './lib/models';
-import { setTheme } from './lib/theme';
+import { setAppearance } from './lib/theme/window';
 import './main.css';
 import { Workspaces } from './pages/Workspaces';
 
-setTheme();
+setAppearance();
 
 // WASM stuff
 await init();

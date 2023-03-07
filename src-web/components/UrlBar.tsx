@@ -58,8 +58,8 @@ export function UrlBar({
             <Button
               type="button"
               disabled={loading}
-              size="sm"
-              className="ml-1 mr-2 !px-2 !text-gray-800"
+              size="xs"
+              className="mx-0.5 !text-gray-800"
               justify="start"
             >
               {method.toUpperCase()}
@@ -69,11 +69,11 @@ export function UrlBar({
         rightSlot={
           <IconButton
             type="submit"
-            size="sm"
-            icon={loading ? 'update' : 'paper-plane'}
+            className="mr-0.5"
+            size="xs"
+            icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
             disabled={loading}
-            className="mx-1 !px-4"
             title="Send Request"
           />
         }

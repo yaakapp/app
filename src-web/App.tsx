@@ -33,21 +33,21 @@ function App() {
           <div className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
             <HStack
               as={WindowDragRegion}
-              className="px-3 bg-gray-50/50 text-sm text-gray-900 border-b border-b-gray-50 pt-[1px]"
+              className="px-3 bg-background text-sm text-gray-900 border-b border-b-gray-100 pt-[1px]"
               items="center"
             >
               {request.name}
             </HStack>
             <div
               className={classnames(
-                'bg-gray-25 grid overflow-auto',
+                'grid overflow-auto',
                 isH ? 'grid-cols-[1fr_1fr]' : 'grid-rows-[minmax(0,auto)_minmax(0,100%)]',
               )}
             >
               <RequestPane
                 fullHeight={isH}
                 request={request}
-                className={classnames(isH ? 'pr-0' : 'pb-3 mb-1')}
+                className={classnames(!isH && 'pr-2 pb-3 mb-1')}
               />
               <ResponsePane requestId={request.id} />
             </div>

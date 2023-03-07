@@ -46,7 +46,7 @@ export function ResponsePane({ requestId, className }: Props) {
       <div
         className={classnames(
           className,
-          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-50/50 rounded-md',
+          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-100 rounded-md overflow-hidden border border-gray-50',
         )}
       >
         {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
@@ -58,7 +58,7 @@ export function ResponsePane({ requestId, className }: Props) {
           <>
             <HStack
               items="center"
-              className="italic text-gray-500 text-sm w-full mb-1 flex-shrink-0 pl-2 py-1"
+              className="italic text-gray-500 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
               <div className="whitespace-nowrap">
                 {response.status}
@@ -68,7 +68,7 @@ export function ResponsePane({ requestId, className }: Props) {
                 {Math.round(response.body.length / 1000)} KB
               </div>
 
-              <HStack items="center" className="ml-auto">
+              <HStack items="center" className="ml-auto h-8">
                 {contentType.includes('html') && (
                   <IconButton
                     icon={viewMode === 'pretty' ? 'eye' : 'code'}
@@ -97,7 +97,12 @@ export function ResponsePane({ requestId, className }: Props) {
                     })),
                   ]}
                 >
-                  <IconButton icon="gear" className="ml-auto" size="sm" />
+                  <IconButton
+                    icon="clock"
+                    className="ml-auto"
+                    iconClassName="text-gray-300"
+                    size="sm"
+                  />
                 </Dropdown>
               </HStack>
             </HStack>
@@ -113,7 +118,7 @@ export function ResponsePane({ requestId, className }: Props) {
               </div>
             ) : response?.body ? (
               <Editor
-                backgroundColor="red"
+                className="mr-1 !bg-gray-100"
                 valueKey={`${contentType}:${response.body}`}
                 defaultValue={response?.body}
                 contentType={contentType}

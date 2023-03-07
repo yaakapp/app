@@ -51,7 +51,7 @@ export const myHighlightStyle = HighlightStyle.define([
   { tag: [t.attributeName], color: 'hsl(var(--color-violet-600))' },
   { tag: [t.attributeValue], color: 'hsl(var(--color-orange-600))' },
   { tag: [t.string], color: 'hsl(var(--color-yellow-600))' },
-  { tag: [t.keyword, t.meta, t.operator], color: '#45e8a4' },
+  { tag: [t.keyword, t.meta, t.operator], color: 'hsl(var(--color-red-600))' },
 ]);
 
 // export const defaultHighlightStyle = HighlightStyle.define([

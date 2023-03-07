@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    darkMode: ['class', '[data-theme="dark"]'],
+    darkMode: ['class', '[data-appearance="dark"]'],
     content: [
         "./index.html",
         "./src-web/**/*.{js,ts,jsx,tsx}",
@@ -17,8 +17,8 @@ module.exports = {
         },
         colors: {
             transparent: 'transparent',
-            white: 'hsl(var(--color-white) / <alpha-value>)',
-            black: 'hsl(var(--color-black) / <alpha-value>)',
+            white: 'hsl(0 100% 100% / <alpha-value>)',
+            black: 'hsl(0 100% 0% / <alpha-value>)',
             background: 'hsl(var(--color-background) / <alpha-value>)',
             placeholder: 'hsl(var(--color-gray-200) / <alpha-value>)',
             gray: color('gray'),
@@ -34,7 +34,7 @@ module.exports = {
 }
 
 function color(name) {
-    const map = {
+    return {
         50: `hsl(var(--color-${name}-50) / <alpha-value>)`,
         100: `hsl(var(--color-${name}-100) / <alpha-value>)`,
         200: `hsl(var(--color-${name}-200) / <alpha-value>)`,
@@ -45,9 +45,6 @@ function color(name) {
         700: `hsl(var(--color-${name}-700) / <alpha-value>)`,
         800: `hsl(var(--color-${name}-800) / <alpha-value>)`,
         900: `hsl(var(--color-${name}-900) / <alpha-value>)`,
-    }
-    if (name === 'gray') {
-        map[25] = `hsl(var(--color-${name}-25) / <alpha-value>)`;
-    }
-    return map;
+        950: `hsl(var(--color-${name}-950) / <alpha-value>)`,
+    };
 }
