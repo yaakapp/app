@@ -1,19 +1,17 @@
 import { defaultKeymap } from '@codemirror/commands';
-import type { Extension } from '@codemirror/state';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import type { CSSProperties, HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
 
 export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
-  height?: 'auto' | 'full';
+  heightMode?: 'auto' | 'full';
   contentType?: string;
-  backgroundColor?: string;
   autoFocus?: boolean;
   valueKey?: string | number;
   defaultValue?: string;
@@ -25,9 +23,8 @@ export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
 }
 
 export default function Editor({
-  height,
+  heightMode,
   contentType,
-  backgroundColor,
   autoFocus,
   placeholder,
   valueKey,
@@ -53,6 +50,18 @@ export default function Editor({
     [contentType, ref.current],
   );
 
+  const syncGutterBg = () => {
+    if (ref.current === null) return;
+    if (singleLine) return;
+    const gutterEl = ref.current.querySelector<HTMLDivElement>('.cm-gutters');
+    const bgClass = className
+      ?.split(/\s+/)
+      .find((c) => c.startsWith('!bg-') || c.startsWith('bg-'));
+    if (bgClass && gutterEl) {
+      gutterEl?.classList.add(`${bgClass}`);
+    }
+  };
+
   // Create codemirror instance when ref initializes
   useEffect(() => {
     if (ref.current === null) return;
@@ -69,12 +78,17 @@ export default function Editor({
         parent: ref.current,
       });
       setCm({ view, langHolder });
+      syncGutterBg();
       if (autoFocus && view) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
     return () => view?.destroy();
   }, [ref.current, valueKey]);
+
+  useEffect(() => {
+    syncGutterBg();
+  }, [ref.current, className]);
 
   // Update value when valueKey changes
   // TODO: This would be more efficient but the onChange handler gets fired on update
@@ -98,11 +112,10 @@ export default function Editor({
       ref={ref}
       className={classnames(
         className,
-        'cm-wrapper text-base',
-        height === 'auto' ? 'cm-auto-height' : 'cm-full-height',
+        'cm-wrapper text-base bg-background',
+        heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
       )}
-      data-color-background="var(--color-gray-50)"
       {...props}
     />
   );
@@ -158,24 +171,3 @@ function getExtensions({
     }),
   ];
 }
-
-const newState = ({
-  langHolder,
-  contentType,
-  useTemplating,
-  defaultValue,
-  extensions,
-}: {
-  langHolder: Compartment;
-  contentType?: string;
-  useTemplating?: boolean;
-  defaultValue?: string;
-  extensions: Extension[];
-}) => {
-  console.log('NEW STATE', defaultValue);
-  const langExt = getLanguageExtension({ contentType, useTemplating });
-  return EditorState.create({
-    doc: `${defaultValue ?? ''}`,
-    extensions: [...extensions, langHolder.of(langExt)],
-  });
-};

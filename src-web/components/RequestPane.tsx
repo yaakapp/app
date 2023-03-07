@@ -22,7 +22,7 @@ export function RequestPane({ fullHeight, request, className }: Props) {
     >
       <div className="pl-2">
         <UrlBar
-          className="border-0 mb-1"
+          className="bg-transparent"
           key={request.id}
           method={request.method}
           url={request.url}
@@ -36,28 +36,27 @@ export function RequestPane({ fullHeight, request, className }: Props) {
       {/*<Divider className="mb-2" />*/}
       <ScrollArea className="max-w-full pb-2 mx-2">
         <HStack className="mt-2 hide-scrollbar" space={1}>
-          {['JSON', 'Params', 'Headers', 'Auth', 'Docs'].map((label, i) => (
+          {['JSON', 'Params', 'Headers', 'Auth'].map((label, i) => (
             <Button
               key={label}
               size="xs"
               color={i === 0 && 'gray'}
-              className={i !== 0 && 'opacity-50 hover:opacity-60'}
+              className={i !== 0 && 'opacity-80 hover:opacity-100'}
             >
               {label}
             </Button>
           ))}
         </HStack>
       </ScrollArea>
-      <div className="px-0">
-        <Editor
-          height={fullHeight ? 'full' : 'auto'}
-          valueKey={request.id}
-          useTemplating
-          defaultValue={request.body ?? ''}
-          contentType="application/json"
-          onChange={(body) => updateRequest.mutate({ body })}
-        />
-      </div>
+      <Editor
+        className="mt-1 !bg-gray-50"
+        heightMode={fullHeight ? 'full' : 'auto'}
+        valueKey={request.id}
+        useTemplating
+        defaultValue={request.body ?? ''}
+        contentType="application/json"
+        onChange={(body) => updateRequest.mutate({ body })}
+      />
     </div>
   );
 }

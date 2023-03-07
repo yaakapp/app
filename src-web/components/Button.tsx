@@ -10,7 +10,8 @@ import { Icon } from './Icon';
 
 const colorStyles = {
   default: 'hover:bg-gray-500/10 text-gray-600',
-  gray: 'text-gray-800 bg-gray-50 hover:bg-gray-500/20',
+  gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20',
+  tint: 'text-white/90 hover:text-white hover:bg-white/20',
   primary: 'bg-blue-400',
   secondary: 'bg-violet-400',
   warning: 'bg-orange-400',
@@ -45,7 +46,9 @@ export const Button = forwardRef(function Button<T extends ElementType>(
       type="button"
       className={classnames(
         className,
-        'transition-all rounded-md flex items-center bg-opacity-80 hover:bg-opacity-100 hover:text-white',
+        'outline-none', // TODO: Add focus styles
+        'border border-transparent focus-visible:border-blue-300',
+        'transition-all rounded-md flex items-center hover:text-white',
         // 'active:translate-y-[0.5px] active:scale-[0.99]',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
@@ -57,7 +60,7 @@ export const Button = forwardRef(function Button<T extends ElementType>(
       {...props}
     >
       {children}
-      {forDropdown && <Icon icon="triangle-down" className="ml-1 -mr-1" />}
+      {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
     </Component>
   );
 });
