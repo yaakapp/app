@@ -7,6 +7,9 @@ module.exports = {
     ],
     theme: {
         extend: {},
+        fontFamily: {
+            'mono': ['JetBrains Mono', "Menlo", 'monospace'],
+        },
         borderRadius: {
             none: '0px',
             sm: 'var(--border-radius-sm)',

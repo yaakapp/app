@@ -25,6 +25,10 @@
         @apply text-placeholder;
     }
 
+    .cm-scroller {
+        @apply font-mono text-[0.8rem];
+    }
+
     .cm-gutters {
         @apply border-0 text-gray-500 text-opacity-30;
 
@@ -39,7 +43,7 @@
     }
 
     .placeholder-widget {
-        @apply text-[0.9em] text-gray-900 bg-gray-200 px-2 border border-background py-0.5
+        @apply text-[0.9em] text-gray-900 bg-gray-200 px-2 border border-background/70
         rounded cursor-default hover:bg-gray-300 hover:text-white;
     }
 }
@@ -51,7 +55,8 @@
     }
 
     .cm-scroller {
-        overflow: hidden !important;;
+        overflow: hidden !important;
+        font-family: inherit;
     }
 
     .cm-line {
@@ -61,7 +66,7 @@
 
 .cm-multiline {
     .cm-editor {
-        @apply h-full text-[0.95em];
+        @apply h-full;
         position: absolute !important;
     }
 
@@ -128,7 +133,7 @@
 }
 
 .cm-editor .cm-selectionBackground {
-    @apply bg-gray-400;
+    @apply bg-gray-200/70;
 }
 
 .cm-editor.cm-focused .cm-selectionBackground {
