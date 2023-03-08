@@ -6,13 +6,12 @@
 
         .cm-editor {
             @apply inset-0;
-            position: absolute !important;
         }
     }
 }
 
 .cm-editor {
-    @apply w-full block text-[0.85rem];
+    @apply w-full block text-base;
 
     &.cm-focused {
         outline: none !important;
@@ -28,6 +27,7 @@
 
     .cm-gutters {
         @apply border-0 text-gray-500 text-opacity-30;
+
         .cm-gutterElement {
             @apply cursor-default;
         }
@@ -39,8 +39,8 @@
     }
 
     .placeholder-widget {
-        @apply text-xs text-white/90 bg-blue-400/80 py-[0.5px] px-1 mx-[1px] rounded cursor-default hover:bg-blue-400 hover:text-white;
-        text-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
+        @apply text-[0.9em] text-gray-900 bg-gray-200 px-2 border border-background py-0.5
+        rounded cursor-default hover:bg-gray-300 hover:text-white;
     }
 }
 
@@ -51,7 +51,6 @@
     }
 
     .cm-scroller {
-        font-family: inherit;
         overflow: hidden !important;;
     }
 
@@ -62,7 +61,8 @@
 
 .cm-multiline {
     .cm-editor {
-        @apply h-full;
+        @apply h-full text-[0.95em];
+        position: absolute !important;
     }
 
     .cm-scroller {
@@ -128,7 +128,7 @@
 }
 
 .cm-editor .cm-selectionBackground {
-    @apply bg-gray-200;
+    @apply bg-gray-400;
 }
 
 .cm-editor.cm-focused .cm-selectionBackground {
@@ -148,7 +148,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        @apply bg-gray-100 bg-opacity-30 rounded-full;
+        @apply bg-gray-400 bg-opacity-30 rounded-full;
     }
 }
 
@@ -160,7 +160,7 @@
 
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-100/70 z-50 pointer-events-auto;
+    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-200 z-50 pointer-events-auto;
 
     * {
         @apply transition-none;
@@ -172,15 +172,15 @@
         }
 
         & > ul > li {
-            @apply cursor-default px-2 rounded-sm text-gray-500 h-7 flex items-center;
+            @apply cursor-default px-2 rounded-sm text-gray-600 h-7 flex items-center;
         }
 
         & > ul > li[aria-selected] {
-            @apply bg-gray-50 text-gray-800;
+            @apply bg-gray-100 text-gray-900;
         }
 
         & > ul > li:hover {
-            @apply text-gray-700;
+            @apply text-gray-800;
         }
 
         .cm-completionIcon {

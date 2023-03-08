@@ -137,7 +137,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProp
         align="start"
         className={classnames(
           className,
-          'bg-background rounded-md shadow-lg p-1.5 border border-gray-100',
+          'bg-background rounded-md shadow-lg p-1.5 border border-gray-200',
           'overflow-auto m-1',
         )}
         style={styles}
