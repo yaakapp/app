@@ -1,14 +1,5 @@
 .cm-wrapper {
     @apply h-full;
-
-    &.cm-full-height {
-        @apply relative;
-
-        .cm-editor {
-            @apply inset-0 absolute;
-            position: absolute !important;
-        }
-    }
 }
 
 .cm-editor {
@@ -40,7 +31,7 @@
     }
 
     .placeholder-widget {
-        @apply text-[0.9em] text-gray-900 bg-gray-200 px-2 border border-background/70
+        @apply text-[0.9em] text-gray-900 bg-gray-200 px-1.5 py-[0.1em] border-y border-gray-50
         rounded cursor-default hover:bg-gray-300 hover:text-white;
     }
 }
@@ -63,6 +54,15 @@
 }
 
 .cm-multiline {
+    &.cm-full-height {
+        @apply relative;
+
+        .cm-editor {
+            @apply inset-0 absolute;
+            position: absolute !important;
+        }
+    }
+
     .cm-editor {
         @apply h-full;
     }
@@ -135,7 +135,7 @@
 .cm-scroller {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-        @apply w-[5px] h-[5px] bg-transparent;
+        @apply w-1 h-1 bg-transparent;
     }
 
     &::-webkit-scrollbar-thumb {
