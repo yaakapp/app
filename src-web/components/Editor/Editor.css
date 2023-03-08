@@ -5,7 +5,8 @@
         @apply relative;
 
         .cm-editor {
-            @apply inset-0;
+            @apply inset-0 absolute;
+            position: absolute !important;
         }
     }
 }
@@ -23,10 +24,6 @@
 
     .cm-placeholder {
         @apply text-placeholder;
-    }
-
-    .cm-scroller {
-        @apply font-mono text-[0.8rem];
     }
 
     .cm-gutters {
@@ -55,8 +52,9 @@
     }
 
     .cm-scroller {
+        @apply font-mono flex text-[0.8rem];
+        align-items: center !important;
         overflow: hidden !important;
-        font-family: inherit;
     }
 
     .cm-line {
@@ -67,23 +65,11 @@
 .cm-multiline {
     .cm-editor {
         @apply h-full;
-        position: absolute !important;
     }
 
     .cm-scroller {
-        @apply rounded;
+        @apply font-mono text-[0.75rem];
     }
-}
-
-
-.cm-multiline .cm-editor.cm-focused .cm-scroller {
-    /* Active border state if we want it */
-    /*box-shadow: 0 0 0 1px hsl(var(--color-blue-400)/0.4);*/
-}
-
-.cm-singleline .cm-editor .cm-scroller {
-    @apply flex;
-    align-items: center !important;
 }
 
 .cm-editor .cm-gutterElement {

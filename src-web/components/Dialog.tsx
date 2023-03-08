@@ -30,27 +30,25 @@ export function Dialog({
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <D.Overlay className="fixed inset-0 bg-gray-900/60 dark:bg-black/50" />
           <D.Content>
-            <div className={classnames(className, 'fixed inset-0')}>
-              <div
-                className={classnames(
-                  className,
-                  'absolute z-10 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-gray-100',
-                  'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
-                  'border border-gray-200 shadow-lg',
-                  wide && 'w-[80vw] max-w-[50rem]',
-                )}
-              >
-                <D.Close asChild className="ml-auto absolute right-1 top-1">
-                  <IconButton aria-label="Close" icon="x" size="sm" />
-                </D.Close>
-                <VStack space={3}>
-                  <HStack items="center" className="pb-3">
-                    <D.Title className="text-xl font-semibold">{title}</D.Title>
-                  </HStack>
-                  {description && <D.Description>{description}</D.Description>}
-                  <div>{children}</div>
-                </VStack>
-              </div>
+            <div
+              className={classnames(
+                className,
+                'absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-gray-100',
+                'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
+                'border border-gray-200 shadow-lg',
+                wide && 'w-[80vw] max-w-[50rem]',
+              )}
+            >
+              <D.Close asChild className="ml-auto absolute right-1 top-1">
+                <IconButton aria-label="Close" icon="x" size="sm" />
+              </D.Close>
+              <VStack space={3}>
+                <HStack items="center" className="pb-3">
+                  <D.Title className="text-xl font-semibold">{title}</D.Title>
+                </HStack>
+                {description && <D.Description>{description}</D.Description>}
+                <div>{children}</div>
+              </VStack>
             </div>
           </D.Content>
         </motion.div>

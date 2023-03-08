@@ -149,11 +149,15 @@ function getExtensions({
     ...(ext ? [ext] : []),
     ...(placeholder ? [placeholderExt(placeholder)] : []),
 
-    // Handle onSubmit
     ...(singleLine
       ? [
           EditorView.domEventHandlers({
+            focus: (e, view) => {
+              // select all text on focus, like a regular input does
+              view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+            },
             keydown: (e) => {
+              // Submit nearest form on enter if there is one
               if (e.key === 'Enter') {
                 const el = e.currentTarget as HTMLElement;
                 const form = el.closest('form');
@@ -163,6 +167,16 @@ function getExtensions({
           }),
         ]
       : []),
+
+    // Clear selection on blur
+    EditorView.domEventHandlers({
+      blur: (e, view) => {
+        setTimeout(() => {
+          view.dispatch({ selection: { anchor: 0, head: 0 } });
+        }, 100);
+      },
+    }),
+
     // Handle onChange
     EditorView.updateListener.of((update) => {
       if (typeof onChange === 'function' && update.docChanged) {
