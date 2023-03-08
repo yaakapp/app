@@ -67,7 +67,7 @@ export default function Editor({
   // Create codemirror instance when ref initializes
   useEffect(() => {
     if (ref.current === null) return;
-    console.log('INIT EDITOR');
+    // console.log('INIT EDITOR');
     let view: EditorView | null = null;
     try {
       const langHolder = new Compartment();
@@ -102,7 +102,7 @@ export default function Editor({
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm === null) return;
-    console.log('UPDATE LANG');
+    // console.log('UPDATE LANG');
     const ext = getLanguageExtension({ contentType, useTemplating });
     cm.view.dispatch({ effects: cm.langHolder.reconfigure(ext) });
   }, [contentType]);
@@ -110,6 +110,7 @@ export default function Editor({
   return (
     <div
       ref={ref}
+      dangerouslySetInnerHTML={{ __html: '' }}
       className={classnames(
         className,
         'cm-wrapper text-base bg-background',

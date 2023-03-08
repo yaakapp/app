@@ -33,6 +33,7 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
+import { debouncedAutocompletionDisplay } from './autocomplete';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 
@@ -107,7 +108,8 @@ export const baseExtensions = [
   drawSelection(),
   dropCursor(),
   bracketMatching(),
-  autocompletion({ closeOnBlur: true, interactionDelay: 200 }),
+  debouncedAutocompletionDisplay({ millis: 1000 }),
+  autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];
