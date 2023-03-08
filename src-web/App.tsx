@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { RequestPane } from './components/RequestPane';
 import { ResponsePane } from './components/ResponsePane';
 import { Sidebar } from './components/Sidebar';
@@ -47,7 +47,7 @@ function App() {
               <RequestPane
                 fullHeight={isH}
                 request={request}
-                className={classnames(!isH && 'pr-2 pb-3 mb-1')}
+                className={classnames(!isH && 'pr-2 pb-0')}
               />
               <ResponsePane requestId={request.id} />
             </div>
