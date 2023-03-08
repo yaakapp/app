@@ -87,27 +87,27 @@ export function generateColors(
 
 const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
   light: {
-    50: 0.98,
-    100: 0.88,
+    50: 1,
+    100: 0.9,
     200: 0.7,
-    300: 0.5,
-    400: 0.3,
+    300: 0.4,
+    400: 0.2,
     500: 0,
     600: -0.2,
-    700: -0.3,
-    800: -0.45,
-    900: -0.6,
-    950: -0.8,
+    700: -0.4,
+    800: -0.6,
+    900: -0.8,
+    950: -0.9,
   },
   dark: {
-    50: -0.98,
-    100: -0.93,
-    200: -0.78,
-    300: -0.63,
-    400: -0.44,
-    500: -0.2,
-    600: 0,
-    700: 0.3,
+    50: -0.9,
+    100: -0.8,
+    200: -0.6,
+    300: -0.4,
+    400: -0.2,
+    500: 0,
+    600: 0.2,
+    700: 0.4,
     800: 0.6,
     900: 0.8,
     950: 0.9,
@@ -122,8 +122,8 @@ export function generateColorVariant(
   whitePoint = 1,
 ): string {
   const { hsl } = parseColor(color || '');
-  // const lightnessMod = lightnessMap[appearance][variant];
-  const lightnessMod = (appearance === 'dark' ? 1 : -1) * ((variant / 1000) * 2 - 1);
+  const lightnessMod = lightnessMap[appearance][variant];
+  // const lightnessMod = (appearance === 'dark' ? 1 : -1) * ((variant / 1000) * 2 - 1);
   const newL =
     lightnessMod > 0
       ? hsl[2] + (100 * whitePoint - hsl[2]) * lightnessMod

@@ -22,6 +22,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
+  console.log('OPEN', open);
   return (
     <div
       className={classnames(className, 'w-52 bg-gray-100 h-full border-r border-gray-200')}

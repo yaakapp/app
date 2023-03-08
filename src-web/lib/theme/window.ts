@@ -14,7 +14,7 @@ const darkTheme: AppTheme = {
         gray: '#656196',
         red: '#ee3b3b',
         orange: '#ff9411',
-        yellow: '#dcdc3b',
+        yellow: '#dcc73b',
         green: '#44cb44',
         blue: '#2e91ff',
         pink: '#f670f6',

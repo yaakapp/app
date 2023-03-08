@@ -1,17 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { convertDates, HttpRequest } from '../lib/models';
-import { responsesQueryKey } from './useResponses';
 import { useNavigate } from 'react-router-dom';
+import type { HttpRequest } from '../lib/models';
+import { convertDates } from '../lib/models';
+import { responsesQueryKey } from './useResponses';
 
 export function requestsQueryKey(workspaceId: string) {
   return ['requests', { workspaceId }];
 }
 
 export function useRequests(workspaceId: string) {
-  return useQuery(requestsQueryKey(workspaceId), async () => {
-    const requests = (await invoke('requests', { workspaceId })) as HttpRequest[];
-    return requests.map(convertDates);
+  return useQuery({
+    queryKey: requestsQueryKey(workspaceId),
+    queryFn: async () => {
+      const requests = (await invoke('requests', { workspaceId })) as HttpRequest[];
+      return requests.map(convertDates);
+    },
   });
 }
 
