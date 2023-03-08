@@ -46,19 +46,16 @@ export function ResponsePane({ requestId, className }: Props) {
       <div
         className={classnames(
           className,
-          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-100 rounded-md overflow-hidden border border-gray-50',
+          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-100 rounded-md overflow-hidden border border-gray-200',
         )}
       >
         {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
         {/*</HStack>*/}
-        {response?.error && (
-          <div className="text-white bg-red-500 px-2 py-1 rounded">{response.error}</div>
-        )}
         {response && (
           <>
             <HStack
               items="center"
-              className="italic text-gray-500 text-sm w-full mb-1 flex-shrink-0 pl-2"
+              className="italic text-gray-600 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
               <div className="whitespace-nowrap">
                 {response.status}
@@ -107,7 +104,11 @@ export function ResponsePane({ requestId, className }: Props) {
               </HStack>
             </HStack>
 
-            {viewMode === 'pretty' && contentForIframe !== null ? (
+            {response?.error ? (
+              <div className="p-1">
+                <div className="text-white bg-red-500 px-3 py-2 rounded">{response.error}</div>
+              </div>
+            ) : viewMode === 'pretty' && contentForIframe !== null ? (
               <div className="px-2 pb-2">
                 <iframe
                   title="Response preview"
@@ -118,7 +119,7 @@ export function ResponsePane({ requestId, className }: Props) {
               </div>
             ) : response?.body ? (
               <Editor
-                className="mr-1 !bg-gray-100"
+                className="!bg-gray-100"
                 valueKey={`${contentType}:${response.body}`}
                 defaultValue={response?.body}
                 contentType={contentType}

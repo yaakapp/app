@@ -9,9 +9,8 @@ import { forwardRef } from 'react';
 import { Icon } from './Icon';
 
 const colorStyles = {
-  default: 'hover:bg-gray-500/10 text-gray-600',
-  gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20',
-  tint: 'text-white/90 hover:text-white hover:bg-white/20',
+  default: 'hover:bg-gray-700/10 text-gray-700 hover:text-gray-900',
+  gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20 hover:text-gray-900',
   primary: 'bg-blue-400',
   secondary: 'bg-violet-400',
   warning: 'bg-orange-400',

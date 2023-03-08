@@ -29,6 +29,8 @@ export type AppThemeLayer = 'root' | 'sidebar' | 'titlebar' | 'content' | 'above
 
 export interface AppThemeLayerStyle {
   colors: Record<AppThemeColor, string>;
+  blackPoint?: number;
+  whitePoint?: number;
 }
 
 interface ThemeColorObj {
@@ -51,7 +53,15 @@ export function generateCSS(t: AppTheme): ThemeColorObj[] {
   for (const color of colorNames) {
     const rawValue = rootColors[color];
     if (!rawValue) continue;
-    colors.push(...generateColors(color, rawValue, t.appearance));
+    colors.push(
+      ...generateColors(
+        color,
+        rawValue,
+        t.appearance,
+        t.layers.root?.blackPoint,
+        t.layers.root?.whitePoint,
+      ),
+    );
   }
 
   return colors;
@@ -61,39 +71,45 @@ export function generateColors(
   name: AppThemeColor,
   color: string,
   appearance: Appearance,
+  blackPoint = 0,
+  whitePoint = 1,
 ): ThemeColorObj[] {
   const colors = [];
   for (const variant of appThemeVariants) {
-    colors.push({ name, variant, cssColor: generateColorVariant(color, variant, appearance) });
+    colors.push({
+      name,
+      variant,
+      cssColor: generateColorVariant(color, variant, appearance, blackPoint, whitePoint),
+    });
   }
   return colors;
 }
 
 const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
   light: {
-    50: 1,
-    100: 0.8,
+    50: 0.98,
+    100: 0.88,
     200: 0.7,
     300: 0.5,
     400: 0.3,
-    500: 0.1,
+    500: 0,
     600: -0.2,
     700: -0.3,
-    800: -0.5,
-    900: -0.7,
+    800: -0.45,
+    900: -0.6,
     950: -0.8,
   },
   dark: {
-    50: -0.95,
-    100: -0.8,
-    200: -0.6,
-    300: -0.4,
-    400: -0.2,
-    500: 0,
-    600: 0.2,
-    700: 0.4,
-    800: 0.5,
-    900: 0.7,
+    50: -0.98,
+    100: -0.93,
+    200: -0.78,
+    300: -0.63,
+    400: -0.44,
+    500: -0.2,
+    600: 0,
+    700: 0.3,
+    800: 0.6,
+    900: 0.8,
     950: 0.9,
   },
 };
@@ -102,10 +118,16 @@ export function generateColorVariant(
   color: string,
   variant: AppThemeColorVariant,
   appearance: Appearance,
+  blackPoint = 0,
+  whitePoint = 1,
 ): string {
   const { hsl } = parseColor(color || '');
-  const lightnessMod = lightnessMap[appearance][variant];
-  const newL = hsl[2] + (100 - hsl[2]) * lightnessMod;
+  // const lightnessMod = lightnessMap[appearance][variant];
+  const lightnessMod = (appearance === 'dark' ? 1 : -1) * ((variant / 1000) * 2 - 1);
+  const newL =
+    lightnessMod > 0
+      ? hsl[2] + (100 * whitePoint - hsl[2]) * lightnessMod
+      : hsl[2] + hsl[2] * (1 - blackPoint) * lightnessMod;
   return `hsl(${hsl[0]},${hsl[1]}%,${newL.toFixed(1)}%)`;
 }
 

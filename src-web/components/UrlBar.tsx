@@ -34,7 +34,7 @@ export function UrlBar({
         hideLabel
         useEditor={{ useTemplating: true, contentType: 'url' }}
         size="sm"
-        className="font-mono text-sm"
+        className="font-mono"
         name="url"
         label="Enter URL"
         containerClassName={className}
