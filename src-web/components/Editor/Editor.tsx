@@ -54,17 +54,20 @@ export default function Editor({
     if (ref.current === null) return;
     if (singleLine) return;
     const gutterEl = ref.current.querySelector<HTMLDivElement>('.cm-gutters');
-    const bgClass = className
-      ?.split(/\s+/)
-      .find((c) => c.startsWith('!bg-') || c.startsWith('bg-'));
-    if (bgClass && gutterEl) {
-      gutterEl?.classList.add(`${bgClass}`);
+    const classList = className?.split(/\s+/) ?? [];
+    const bgClasses = classList
+      .filter((c) => c.match(/(^|:)?bg-.+/)) // Find bg-* classes
+      .map((c) => c.replace(/^bg-/, '!bg-')) // !important
+      .map((c) => c.replace(/^dark:bg-/, 'dark:!bg-')); // !important
+    if (gutterEl) {
+      gutterEl?.classList.add(...bgClasses);
     }
   };
 
   // Create codemirror instance when ref initializes
   useEffect(() => {
     if (ref.current === null) return;
+    console.log('INIT EDITOR');
     let view: EditorView | null = null;
     try {
       const langHolder = new Compartment();
@@ -86,10 +89,6 @@ export default function Editor({
     return () => view?.destroy();
   }, [ref.current, valueKey]);
 
-  useEffect(() => {
-    syncGutterBg();
-  }, [ref.current, className]);
-
   // Update value when valueKey changes
   // TODO: This would be more efficient but the onChange handler gets fired on update
   // useEffect(() => {
@@ -103,6 +102,7 @@ export default function Editor({
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm === null) return;
+    console.log('UPDATE LANG');
     const ext = getLanguageExtension({ contentType, useTemplating });
     cm.view.dispatch({ effects: cm.langHolder.reconfigure(ext) });
   }, [contentType]);

@@ -15,7 +15,7 @@ interface Props {
 
 export function ResponsePane({ requestId, className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
+  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('raw');
   const responses = useResponses(requestId);
   const response = activeResponseId
     ? responses.data.find((r) => r.id === activeResponseId)
@@ -42,12 +42,18 @@ export function ResponsePane({ requestId, className }: Props) {
     return response.body;
   }, [response?.body, contentType]);
 
+  if (!response) {
+    return null;
+  }
+
   return (
     <div className="p-2">
       <div
         className={classnames(
           className,
-          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 bg-gray-100 rounded-md overflow-hidden border border-gray-200',
+          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
+          'dark:bg-gray-100 rounded-md overflow-hidden border border-gray-200',
+          'shadow dark:shadow-none shadow-gray-200',
         )}
       >
         {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
@@ -58,15 +64,17 @@ export function ResponsePane({ requestId, className }: Props) {
               items="center"
               className="italic text-gray-600 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
-              <div className="whitespace-nowrap">
-                <StatusColor statusCode={response.status}>
-                  {response.status}
-                  {response.statusReason && ` ${response.statusReason}`}
-                </StatusColor>
-                &nbsp;&bull;&nbsp;
-                {response.elapsed}ms &nbsp;&bull;&nbsp;
-                {Math.round(response.body.length / 1000)} KB
-              </div>
+              {response.status > 0 && (
+                <div className="whitespace-nowrap">
+                  <StatusColor statusCode={response.status}>
+                    {response.status}
+                    {response.statusReason && ` ${response.statusReason}`}
+                  </StatusColor>
+                  &nbsp;&bull;&nbsp;
+                  {response.elapsed}ms &nbsp;&bull;&nbsp;
+                  {Math.round(response.body.length / 1000)} KB
+                </div>
+              )}
 
               <HStack items="center" className="ml-auto h-8">
                 {contentType.includes('html') && (
@@ -122,7 +130,7 @@ export function ResponsePane({ requestId, className }: Props) {
               </div>
             ) : response?.body ? (
               <Editor
-                className="!bg-gray-100"
+                className="bg-gray-50 dark:!bg-gray-100"
                 valueKey={`${contentType}:${response.body}`}
                 defaultValue={response?.body}
                 contentType={contentType}

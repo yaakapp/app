@@ -25,7 +25,6 @@ export function HeaderEditor() {
         headers.map((h, i) => {
           if (i === index) return h;
           const newHeader: HttpHeader = { ...h, ...header };
-          console.log('NEW HEADER', newHeader);
           return newHeader;
         }),
       );
@@ -36,8 +35,6 @@ export function HeaderEditor() {
   const handleDelete = (index: number) => {
     setHeaders((headers) => headers.filter((_, i) => i !== index));
   };
-
-  console.log('HEADERS', headers);
 
   return (
     <form onSubmit={handleSubmit}>
