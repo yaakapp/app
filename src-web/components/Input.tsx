@@ -42,8 +42,8 @@ export function Input({
   const inputClassName = classnames(
     className,
     '!bg-transparent pl-3 pr-2 min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
-    leftSlot && '!pl-1',
-    rightSlot && '!pr-1',
+    leftSlot && '!pl-0.5',
+    rightSlot && '!pr-0.5',
   );
 
   return (

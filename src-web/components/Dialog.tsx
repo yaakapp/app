@@ -28,14 +28,14 @@ export function Dialog({
     <D.Root open={open} onOpenChange={onOpenChange}>
       <D.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <D.Overlay className="fixed inset-0 bg-gray-900/60 dark:bg-black/50" />
+          <D.Overlay className="fixed inset-0 bg-gray-600/60 dark:bg-black/50" />
           <D.Content>
             <div
               className={classnames(
                 className,
                 'absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-gray-100',
                 'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
-                'border border-gray-200 shadow-lg',
+                'dark:border border-gray-200 shadow-md shadow-black/10',
                 wide && 'w-[80vw] max-w-[50rem]',
               )}
             >
