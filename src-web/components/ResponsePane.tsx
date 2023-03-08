@@ -6,6 +6,7 @@ import Editor from './Editor/Editor';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import { HStack } from './Stacks';
+import { StatusColor } from './StatusColor';
 
 interface Props {
   requestId: string;
@@ -58,8 +59,10 @@ export function ResponsePane({ requestId, className }: Props) {
               className="italic text-gray-600 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
               <div className="whitespace-nowrap">
-                {response.status}
-                {response.statusReason && ` ${response.statusReason}`}
+                <StatusColor statusCode={response.status}>
+                  {response.status}
+                  {response.statusReason && ` ${response.statusReason}`}
+                </StatusColor>
                 &nbsp;&bull;&nbsp;
                 {response.elapsed}ms &nbsp;&bull;&nbsp;
                 {Math.round(response.body.length / 1000)} KB

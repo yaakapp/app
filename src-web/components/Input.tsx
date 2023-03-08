@@ -39,6 +39,13 @@ export function Input({
   ...props
 }: Props) {
   const id = `input-${name}`;
+  const inputClassName = classnames(
+    className,
+    '!bg-transparent pl-3 pr-2 min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
+    leftSlot && '!pl-1',
+    rightSlot && '!pr-1',
+  );
+
   return (
     <VStack>
       <label
@@ -69,10 +76,7 @@ export function Input({
             defaultValue={defaultValue}
             placeholder={placeholder}
             onChange={onChange}
-            className={classnames(
-              className,
-              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none',
-            )}
+            className={inputClassName}
             {...props}
             {...useEditor}
           />
@@ -82,12 +86,7 @@ export function Input({
             onChange={(e) => onChange?.(e.target.value)}
             placeholder={placeholder}
             defaultValue={defaultValue}
-            className={classnames(
-              className,
-              '!bg-transparent min-w-0 pl-3 pr-2 h-full w-full focus:outline-none placeholder:text-placeholder',
-              leftSlot && '!pl-1',
-              rightSlot && '!pr-1',
-            )}
+            className={inputClassName}
             {...props}
           />
         )}
