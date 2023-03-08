@@ -8,15 +8,17 @@ const darkTheme: AppTheme = {
   appearance: 'dark',
   layers: {
     root: {
+      blackPoint: 0.15,
+      whitePoint: 0.95,
       colors: {
-        gray: '#69789b',
-        red: '#ff1c1c',
+        gray: '#656196',
+        red: '#ff2727',
         orange: '#ff9411',
-        yellow: '#ffff1f',
-        green: '#35ff35',
-        blue: '#1365ff',
+        yellow: '#dede34',
+        green: '#39da39',
+        blue: '#2e91ff',
         pink: '#ff74ff',
-        violet: '#873fff',
+        violet: '#a853ff',
       },
     },
   },
@@ -27,8 +29,10 @@ const lightTheme: AppTheme = {
   appearance: 'light',
   layers: {
     root: {
+      blackPoint: 0.1,
+      whitePoint: 1,
       colors: {
-        gray: '#69789b',
+        gray: '#7f8fb0',
         red: '#e13939',
         orange: '#da881f',
         yellow: '#e3b22d',
@@ -63,7 +67,7 @@ export function setAppearance(a?: Appearance) {
   document.documentElement.setAttribute('data-appearance', appearance);
   document.documentElement.setAttribute('data-theme', theme.name);
 
-  let existingStyleEl = document.head.querySelector(`style[data-theme-definition="${theme.name}"]`);
+  let existingStyleEl = document.head.querySelector(`style[data-theme-definition]`);
   if (!existingStyleEl) {
     const styleEl = document.createElement('style');
     document.head.appendChild(styleEl);
@@ -71,11 +75,16 @@ export function setAppearance(a?: Appearance) {
   }
 
   existingStyleEl.textContent = [
-    `[data-theme="${theme.name}"] {`,
-    ...generateCSS(theme).map(toTailwindVariable),
+    `/* ${darkTheme.name} */`,
+    `[data-appearance="dark"] {`,
+    ...generateCSS(darkTheme).map(toTailwindVariable),
+    '}',
+    `/* ${lightTheme.name} */`,
+    `[data-appearance="light"] {`,
+    ...generateCSS(lightTheme).map(toTailwindVariable),
     '}',
   ].join('\n');
-  existingStyleEl.setAttribute('data-theme-definition', theme.name);
+  existingStyleEl.setAttribute('data-theme-definition', '');
 }
 
 export function getPreferredAppearance(): Appearance {

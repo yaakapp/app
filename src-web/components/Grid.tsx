@@ -5,14 +5,16 @@ const colsClasses = {
   none: 'grid-cols-none',
   1: 'grid-cols-1',
   2: 'grid-cols-2',
-  3: 'grid-cols-2',
+  3: 'grid-cols-3',
+  11: 'grid-cols-11',
 };
 
 const rowsClasses = {
   none: 'grid-rows-none',
   1: 'grid-rows-1',
   2: 'grid-rows-2',
-  3: 'grid-rows-2',
+  3: 'grid-rows-3',
+  11: 'grid-rows-11',
 };
 
 const gapClasses = {

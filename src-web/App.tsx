@@ -33,7 +33,7 @@ function App() {
           <div className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
             <HStack
               as={WindowDragRegion}
-              className="px-3 bg-background text-sm text-gray-900 border-b border-b-gray-100 pt-[1px]"
+              className="px-3 bg-background text-sm text-gray-900 border-b border-b-gray-200 pt-[1px]"
               items="center"
             >
               {request.name}
