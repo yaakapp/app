@@ -11,10 +11,10 @@ import { Icon } from './Icon';
 const colorStyles = {
   default: 'hover:bg-gray-700/10 text-gray-700 hover:text-gray-900',
   gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20 hover:text-gray-900',
-  primary: 'bg-blue-400',
-  secondary: 'bg-violet-400',
-  warning: 'bg-orange-400',
-  danger: 'bg-red-400',
+  primary: 'bg-blue-400 text-white',
+  secondary: 'bg-violet-400 text-white',
+  warning: 'bg-orange-400 text-white',
+  danger: 'bg-red-400 text-white',
 };
 
 export type ButtonProps<T extends ElementType> = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -48,6 +48,7 @@ export const Button = forwardRef(function Button<T extends ElementType>(
         'outline-none', // TODO: Add focus styles
         'border border-transparent focus-visible:border-blue-300',
         'transition-all rounded-md flex items-center hover:text-white',
+        'bg-opacity-90 hover:bg-opacity-100',
         // 'active:translate-y-[0.5px] active:scale-[0.99]',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
