@@ -37,7 +37,7 @@ export function HeaderEditor() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="min-h-[30vh]">
       <VStack space={2}>
         {headers.map((header, i) => (
           <FormRow

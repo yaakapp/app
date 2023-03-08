@@ -47,6 +47,7 @@ export function completions(context: CompletionContext) {
         label: toStartOfVariable ? `${openTag}${v.name}${closeTag}` : v.name,
         apply: `${openTag}${v.name}${closeTag}`,
         type: 'variable',
+        matchLen,
       }))
       // Filter out exact matches
       .filter((o) => o.label !== toMatch.text),
