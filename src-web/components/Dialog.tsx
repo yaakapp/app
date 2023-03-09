@@ -43,7 +43,7 @@ export function Dialog({
                 <IconButton aria-label="Close" icon="x" size="sm" />
               </D.Close>
               <VStack space={3}>
-                <HStack items="center" className="pb-3">
+                <HStack alignItems="center" className="pb-3">
                   <D.Title className="text-xl font-semibold">{title}</D.Title>
                 </HStack>
                 {description && <D.Description>{description}</D.Description>}

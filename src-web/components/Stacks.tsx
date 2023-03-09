@@ -1,6 +1,6 @@
-import type { HTMLAttributes, ReactNode } from 'react';
-import React, { Children, Fragment } from 'react';
 import classnames from 'classnames';
+import type { ReactNode } from 'react';
+import React, { Children, Fragment } from 'react';
 
 const spaceClassesX = {
   0: 'pr-0',
@@ -78,26 +78,35 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
   );
 }
 
-interface BaseStackProps extends HTMLAttributes<HTMLElement> {
-  items?: 'start' | 'center';
-  justify?: 'start' | 'center' | 'end';
+interface BaseStackProps {
   as?: React.ElementType;
+  alignItems?: 'start' | 'center';
+  justifyContent?: 'start' | 'center' | 'end';
+  className?: string;
+  children?: ReactNode;
 }
 
-function BaseStack({ className, items, justify, as = 'div', ...props }: BaseStackProps) {
+function BaseStack({
+  className,
+  alignItems,
+  justifyContent,
+  children,
+  as = 'div',
+}: BaseStackProps) {
   const Component = as;
   return (
     <Component
       className={classnames(
         className,
         'flex flex-grow-0',
-        items === 'center' && 'items-center',
-        items === 'start' && 'items-start',
-        justify === 'start' && 'justify-start',
-        justify === 'center' && 'justify-center',
-        justify === 'end' && 'justify-end',
+        alignItems === 'center' && 'items-center',
+        alignItems === 'start' && 'items-start',
+        justifyContent === 'start' && 'justify-start',
+        justifyContent === 'center' && 'justify-center',
+        justifyContent === 'end' && 'justify-end',
       )}
-      {...props}
-    />
+    >
+      {children}
+    </Component>
   );
 }

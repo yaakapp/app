@@ -2,49 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    color-scheme: light dark;
-    --transition-duration: 100ms ease-in-out;
-}
-
-:not(input):not(textarea),
-:not(input):not(textarea)::after,
-:not(input):not(textarea)::before {
-    -webkit-user-select: none;
-    user-select: none;
-    cursor: default;
-}
-
-html, body, #root {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-
-    /* Default colors */
-    background-color: hsl(var(--color-background));
-    color: hsl(var(--color-gray-900));
-}
-
-* {
-    transition: background-color var(--transition-duration),
-    border-color var(--transition-duration),
-    box-shadow var(--transition-duration);
-}
-
-/*.hide-scrollbar {*/
-/*    &::-webkit-scrollbar-corner,*/
-/*    &::-webkit-scrollbar {*/
-/*        @apply w-[5px] h-[5px];*/
-/*        background-color: transparent; !* or add it to the track *!*/
-/*    }*/
-
-/*    &::-webkit-scrollbar-thumb {*/
-/*        @apply bg-gray-100 bg-opacity-20 rounded-full;*/
-/*    }*/
-/*}*/
-
 @layer base {
+    html, body, #root {
+        @apply w-full h-full overflow-hidden bg-gray-50 text-gray-900;
+    }
+
+    /* Setup default transitions for elements */
+    * {
+        transition: background-color var(--transition-duration),
+        border-color var(--transition-duration),
+        box-shadow var(--transition-duration);
+    }
+
+    /* Disable user selection to make it more "app-like" */
+    :not(input):not(textarea),
+    :not(input):not(textarea)::after,
+    :not(input):not(textarea)::before {
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: default;
+    }
+
     :root {
+        color-scheme: light dark;
+        --transition-duration: 100ms ease-in-out;
         --color-white: 255 100% 100%;
         --color-black: 255 0% 0%;
         --color-background: var(--color-gray-50);

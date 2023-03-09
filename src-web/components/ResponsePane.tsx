@@ -61,7 +61,7 @@ export function ResponsePane({ requestId, className }: Props) {
         {response && (
           <>
             <HStack
-              items="center"
+              alignItems="center"
               className="italic text-gray-600 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
               {response.status > 0 && (
@@ -76,7 +76,7 @@ export function ResponsePane({ requestId, className }: Props) {
                 </div>
               )}
 
-              <HStack items="center" className="ml-auto h-8">
+              <HStack alignItems="center" className="ml-auto h-8">
                 {contentType.includes('html') && (
                   <IconButton
                     icon={viewMode === 'pretty' ? 'eye' : 'code'}

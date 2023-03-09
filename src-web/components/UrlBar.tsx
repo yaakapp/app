@@ -1,8 +1,8 @@
-import { DropdownMenuRadio } from './Dropdown';
-import { Button } from './Button';
-import { Input } from './Input';
 import type { FormEvent } from 'react';
+import { Button } from './Button';
+import { DropdownMenuRadio } from './Dropdown';
 import { IconButton } from './IconButton';
+import { Input } from './Input';
 
 interface Props {
   sendRequest: () => void;
@@ -24,7 +24,6 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
       <Input
         hideLabel
         useEditor={{ useTemplating: true, contentType: 'url' }}
-        size="sm"
         className="font-mono px-0"
         name="url"
         label="Enter URL"
@@ -46,7 +45,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
               { label: 'HEAD', value: 'HEAD' },
             ]}
           >
-            <Button type="button" disabled={loading} size="xs" className="mx-0.5" justify="start">
+            <Button type="button" disabled={loading} size="sm" className="mx-0.5" justify="start">
               {method.toUpperCase()}
             </Button>
           </DropdownMenuRadio>
@@ -55,7 +54,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
           <IconButton
             type="submit"
             className="mr-0.5"
-            size="xs"
+            size="sm"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
             disabled={loading}

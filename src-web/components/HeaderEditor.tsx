@@ -106,7 +106,7 @@ function FormRow({
           defaultValue={value}
           onChange={onChangeValue}
         />
-        {onDelete && <IconButton size="sm" icon="trash" onClick={onDelete} />}
+        {onDelete && <IconButton icon="trash" onClick={onDelete} />}
       </HStack>
       {addSubmit && <input type="submit" value="Add" className="sr-only" />}
     </div>

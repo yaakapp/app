@@ -11,6 +11,7 @@ import { Layout } from './components/Layout';
 import { RouterError } from './components/RouterError';
 import { requestsQueryKey } from './hooks/useRequest';
 import { responsesQueryKey } from './hooks/useResponses';
+import { DEFAULT_FONT_SIZE } from './lib/constants';
 import type { HttpRequest, HttpResponse } from './lib/models';
 import { convertDates } from './lib/models';
 import { setAppearance } from './lib/theme/window';
@@ -73,6 +74,21 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
       return newResponses;
     },
   );
+});
+
+await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
+  const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+
+  let newFontSize;
+  if (zoomDelta === 0) {
+    newFontSize = DEFAULT_FONT_SIZE;
+  } else if (zoomDelta > 0) {
+    newFontSize = Math.min(fontSize * 1.1, DEFAULT_FONT_SIZE * 5);
+  } else if (zoomDelta < 0) {
+    newFontSize = Math.max(fontSize * 0.9, DEFAULT_FONT_SIZE * 0.4);
+  }
+
+  document.documentElement.style.fontSize = `${newFontSize}px`;
 });
 
 const router = createBrowserRouter([
