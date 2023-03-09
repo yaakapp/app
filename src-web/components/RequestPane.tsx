@@ -38,9 +38,9 @@ export function RequestPane({ fullHeight, request, className }: Props) {
           {['JSON', 'Params', 'Headers', 'Auth'].map((label, i) => (
             <Button
               key={label}
-              size="xs"
-              color={i === 0 && 'gray'}
-              className={i !== 0 && 'opacity-80 hover:opacity-100'}
+              size="sm"
+              color={i === 0 ? 'gray' : undefined}
+              className={i !== 0 ? 'opacity-80 hover:opacity-100' : undefined}
             >
               {label}
             </Button>

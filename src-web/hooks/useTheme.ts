@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { debounce } from 'lodash';
 import { useEffect } from 'react';
 import type { Appearance } from '../lib/theme/window';
 import {
@@ -10,13 +11,17 @@ import {
 
 const appearanceQueryKey = ['theme', 'appearance'];
 
+const forceSetTheme = debounce((gray: string) => {
+  setAppearance(getAppearance(), gray);
+}, 200);
+
 export default function useTheme() {
   const queryClient = useQueryClient();
   const appearance = useQuery({
     queryKey: appearanceQueryKey,
     queryFn: getAppearance,
     initialData: getAppearance(),
-  });
+  }).data;
 
   const themeChange = (appearance: Appearance) => {
     setAppearance(appearance);
@@ -32,7 +37,8 @@ export default function useTheme() {
   }, []);
 
   return {
-    appearance: appearance.data,
+    appearance,
+    forceSetTheme,
     toggleAppearance: handleToggleAppearance,
   };
 }
