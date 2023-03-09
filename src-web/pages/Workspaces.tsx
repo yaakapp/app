@@ -1,5 +1,4 @@
 import { ButtonLink } from '../components/ButtonLink';
-import { Editor } from '../components/Editor/Editor';
 import { Heading } from '../components/Heading';
 import { VStack } from '../components/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
@@ -14,7 +13,6 @@ export function Workspaces(props: { path: string }) {
           {w.name}
         </ButtonLink>
       ))}
-      <Editor className="h-20 w-full" defaultValue="hello" />
     </VStack>
   );
 }
