@@ -37,10 +37,8 @@
     "codemirror": "^6.0.1",
     "framer-motion": "^9.0.4",
     "parse-color": "^1.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-helmet-async": "^1.3.0",
-    "react-router-dom": "^6.8.1"
+    "preact-router": "^4.1.0",
+    "react-helmet-async": "^1.3.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",
@@ -53,7 +51,6 @@
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
-    "@vitejs/plugin-react": "^3.0.0",
     "autoprefixer": "^10.4.13",
     "concurrently": "^7.6.0",
     "eslint": "^8.34.0",

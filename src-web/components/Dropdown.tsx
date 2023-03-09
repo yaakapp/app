@@ -1,13 +1,13 @@
 import * as D from '@radix-ui/react-dropdown-menu';
-import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
-import type { ForwardedRef, HTMLAttributes, ReactNode } from 'react';
+import type { ComponentChildren } from 'preact';
+import type { ForwardedRef } from 'preact/compat';
 import { forwardRef, useImperativeHandle, useLayoutEffect, useState } from 'react';
 
 interface DropdownMenuRadioProps {
-  children: ReactNode;
+  children: ComponentChildren;
   onValueChange: ((v: { label: string; value: string }) => void) | null;
   value: string;
   label?: string;
@@ -37,13 +37,13 @@ export function DropdownMenuRadio({
       <DropdownMenuPortal>
         <DropdownMenuContent>
           {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
-          <DropdownMenuRadioGroup onValueChange={handleChange} value={value}>
+          <D.DropdownMenuRadioGroup onValueChange={handleChange} value={value}>
             {items.map((item) => (
               <DropdownMenuRadioItem key={item.value} value={item.value}>
                 {item.label}
               </DropdownMenuRadioItem>
             ))}
-          </DropdownMenuRadioGroup>
+          </D.DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </D.Root>
@@ -51,13 +51,13 @@ export function DropdownMenuRadio({
 }
 
 export interface DropdownProps {
-  children: ReactNode;
+  children: ComponentChildren;
   items: (
     | {
         label: string;
         onSelect?: () => void;
         disabled?: boolean;
-        leftSlot?: ReactNode;
+        leftSlot?: ComponentChildren;
       }
     | '-----'
   )[];
@@ -92,12 +92,14 @@ export function Dropdown({ children, items }: DropdownProps) {
 }
 
 interface DropdownMenuPortalProps {
-  children: ReactNode;
+  children: ComponentChildren;
 }
 
 function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
+  const container = document.querySelector<Element>('#radix-portal');
+  if (container === null) return null;
   return (
-    <D.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
+    <D.Portal>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {children}
       </motion.div>
@@ -262,7 +264,12 @@ function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorP
   );
 }
 
-function DropdownMenuTrigger({ children, className, ...props }: D.DropdownMenuTriggerProps) {
+type DropdownMenuTriggerProps = D.DropdownMenuTriggerProps & {
+  children: ComponentChildren;
+  className?: string;
+};
+
+function DropdownMenuTrigger({ children, className, ...props }: DropdownMenuTriggerProps) {
   return (
     <D.Trigger asChild className={classnames(className)} {...props}>
       {children}
@@ -270,11 +277,12 @@ function DropdownMenuTrigger({ children, className, ...props }: D.DropdownMenuTr
   );
 }
 
-interface ItemInnerProps extends HTMLAttributes<HTMLDivElement> {
-  leftSlot?: ReactNode;
-  rightSlot?: ReactNode;
-  children: ReactNode;
+interface ItemInnerProps {
+  leftSlot?: ComponentChildren;
+  rightSlot?: ComponentChildren;
+  children: ComponentChildren;
   noHover?: boolean;
+  className?: string;
 }
 
 const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(

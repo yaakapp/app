@@ -1,7 +1,10 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
+import type { ComponentChildren } from 'preact';
 
-type Props = HTMLAttributes<HTMLDivElement>;
+interface Props {
+  className?: string;
+  children?: ComponentChildren;
+}
 
 export function WindowDragRegion({ className, ...props }: Props) {
   return (

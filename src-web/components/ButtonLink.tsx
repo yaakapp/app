@@ -1,22 +1,14 @@
 import classnames from 'classnames';
-import type { LinkProps } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link } from 'preact-router';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
 
-type Props = ButtonProps & LinkProps;
+type Props = ButtonProps & {
+  href: string;
+};
 
-export function ButtonLink({
-  reloadDocument,
-  replace,
-  state,
-  preventScrollReset,
-  relative,
-  to,
-  className,
-  ...buttonProps
-}: Props) {
-  const linkProps = { reloadDocument, replace, state, preventScrollReset, relative, to };
+export function ButtonLink({ href, className, ...buttonProps }: Props) {
+  const linkProps = { href };
   return (
     <Link {...linkProps}>
       <Button className={classnames(className, 'w-full')} {...buttonProps} />
