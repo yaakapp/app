@@ -103,21 +103,27 @@ async fn send_request(
         .expect("Failed to build client");
 
     let mut headers = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_static("reqwest"));
-    headers.insert("x-foo-bar", HeaderValue::from_static("hi mom"));
-    headers.insert(
-        HeaderName::from_static("x-api-key"),
-        HeaderValue::from_str(models::generate_id("x").as_str()).expect("Failed to create header"),
-    );
+    headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
 
     for h in req.headers.0 {
-        if h.name.is_empty() {
+        if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
-        headers.insert(
-            HeaderName::from_bytes(h.name.as_bytes()).expect("Failed to create header name"),
-            HeaderValue::from_str(h.value.as_str()).expect("Failed to create header value"),
-        );
+        let header_name = match HeaderName::from_bytes(h.name.as_bytes()) {
+            Ok(n) => n,
+            Err(e) => {
+                eprintln!("Failed to create header name: {}", e);
+                continue;
+            }
+        };
+        let header_value = match HeaderValue::from_str(h.value.as_str()) {
+            Ok(n) => n,
+            Err(e) => {
+                eprintln!("Failed to create header value: {}", e);
+                continue;
+            }
+        };
+        headers.insert(header_name, header_value);
     }
 
     let m =
