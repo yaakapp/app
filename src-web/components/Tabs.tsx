@@ -6,6 +6,8 @@ import { Button } from './Button';
 import { ScrollArea } from './ScrollArea';
 import { HStack } from './Stacks';
 
+import './Tabs.css';
+
 interface Props {
   defaultValue?: string;
   label: string;
@@ -49,9 +51,12 @@ export function TabTrigger({ value, children, active }: TabTriggerProps) {
   return (
     <T.Trigger value={value} asChild>
       <Button
+        color="custom"
         size="sm"
         disabled={active}
-        className={classnames(active ? 'bg-gray-100' : '!text-gray-500 hover:!text-gray-800')}
+        className={classnames(
+          active ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
+        )}
       >
         {children}
       </Button>
@@ -67,7 +72,11 @@ interface TabContentProps {
 
 export function TabContent({ value, children, className }: TabContentProps) {
   return (
-    <T.Content value={value} className={classnames(className, 'w-full h-full')}>
+    <T.Content
+      forceMount
+      value={value}
+      className={classnames(className, 'tab-content', 'w-full h-full')}
+    >
       {children}
     </T.Content>
   );

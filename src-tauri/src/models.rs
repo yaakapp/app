@@ -137,6 +137,7 @@ pub async fn upsert_request(
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
                method = excluded.method,
+               headers = excluded.headers,
                body = excluded.body,
                url = excluded.url
         "#,

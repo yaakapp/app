@@ -92,16 +92,6 @@
     },
     "query": "\n            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        "
   },
-  "3d3cc959cd3844950dde2426945bad638fa5f1a46c4681b5fe2bff60780dea62": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 7
-      }
-    },
-    "query": "\n            INSERT INTO http_requests (id, workspace_id, name, url, method, body, headers, updated_at)\n            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               method = excluded.method,\n               body = excluded.body,\n               url = excluded.url\n        "
-  },
   "448a1d1f1866ab42c0f81fcf8eb2930bf21dfdd43ca4831bc1a198cf45ac3732": {
     "describe": {
       "columns": [],
@@ -321,6 +311,16 @@
       }
     },
     "query": "\n            SELECT id, created_at, updated_at, deleted_at, name, description\n            FROM workspaces\n        "
+  },
+  "a097740ea4ab772ec6f9d8a5144d6871e0b172130d5abe4da61e663155d2bf25": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 7
+      }
+    },
+    "query": "\n            INSERT INTO http_requests (id, workspace_id, name, url, method, body, headers, updated_at)\n            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               method = excluded.method,\n               headers = excluded.headers,\n               body = excluded.body,\n               url = excluded.url\n        "
   },
   "a83698dcf9a815b881097133edb31a34ba25e7c6c114d463c495342a85371639": {
     "describe": {

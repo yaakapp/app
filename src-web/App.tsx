@@ -24,7 +24,7 @@ export function App({ matches }: { path: string; matches?: Params }) {
   const isH = screenWidth > 900;
 
   return (
-    <div className="grid grid-cols-[auto_1fr] h-full text-gray-900 overflow-hidden rounded-[11px]">
+    <div className="grid grid-cols-[auto_1fr] h-full text-gray-900 overflow-hidden">
       <Sidebar
         requests={requests ?? []}
         workspaceId={workspaceId}

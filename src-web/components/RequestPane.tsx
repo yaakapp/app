@@ -54,7 +54,7 @@ export function RequestPane({ fullHeight, request, className }: Props) {
           />
         </TabContent>
         <TabContent value="headers" className="pl-2">
-          <HeaderEditor />
+          <HeaderEditor key={request.id} request={request} />
         </TabContent>
       </Tabs>
     </div>

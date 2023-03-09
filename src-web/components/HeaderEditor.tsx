@@ -1,24 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import type { HttpHeader } from '../lib/models';
+import { useRequestUpdate } from '../hooks/useRequest';
+import type { HttpHeader, HttpRequest } from '../lib/models';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
 import { VStack } from './Stacks';
 
+interface Props {
+  request: HttpRequest;
+}
+
 type PairWithId = { header: Partial<HttpHeader>; id: string };
 
-export function HeaderEditor() {
+export function HeaderEditor({ request }: Props) {
+  const updateRequest = useRequestUpdate(request);
   const newPair = () => {
     return { header: { name: '', value: '' }, id: Math.random().toString() };
   };
 
-  const [pairs, setPairs] = useState<PairWithId[]>([newPair()]);
+  const [pairs, setPairs] = useState<PairWithId[]>(
+    request.headers.map((h) => ({ header: h, id: Math.random().toString() })),
+  );
 
   const handleChangeHeader = (pair: PairWithId) => {
-    setPairs((pairs) =>
-      pairs.map((p) =>
+    setPairs((pairs) => {
+      const newPairs = pairs.map((p) =>
         pair.id !== p.id ? p : { id: p.id, header: { ...p.header, ...pair.header } },
-      ),
-    );
+      );
+      const headers = newPairs.map((p) => ({ name: '', value: '', ...p.header }));
+      updateRequest.mutate({ headers });
+      return newPairs;
+    });
   };
 
   useEffect(() => {
