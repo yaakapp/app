@@ -146,7 +146,6 @@ export function generateColorVariant(
     lightnessMod > 0
       ? hsl[2] + (100 * whitePoint - hsl[2]) * lightnessMod
       : hsl[2] + hsl[2] * (1 - blackPoint) * lightnessMod;
-  console.log('NEWL', color, newL);
   return `hsl(${hsl[0]},${hsl[1]}%,${newL.toFixed(1)}%)`;
 }
 
