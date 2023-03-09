@@ -11,12 +11,15 @@ export function debouncedAutocompletionDisplay({ millis }: { millis: number }) {
     startCompletion(view);
   }, millis);
 
-  return EditorView.updateListener.of(({ view, docChanged }) => {
+  return EditorView.updateListener.of(({ view, docChanged, focusChanged }) => {
     // const completions = currentCompletions(view.state);
     // const status = completionStatus(view.state);
 
-    // If the document hasn't changed, we don't need to do anything
-    if (!docChanged) return;
+    if (!view.hasFocus) {
+      debouncedStartCompletion.cancel();
+      closeCompletion(view);
+      return;
+    }
 
     if (view.state.doc.length === 0) {
       debouncedStartCompletion.cancel();
@@ -24,6 +27,9 @@ export function debouncedAutocompletionDisplay({ millis }: { millis: number }) {
       return;
     }
 
-    debouncedStartCompletion(view);
+    // If the document hasn't changed, we don't need to do anything
+    if (docChanged) {
+      debouncedStartCompletion(view);
+    }
   });
 }

@@ -24,7 +24,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
       <Input
         hideLabel
         useEditor={{ useTemplating: true, contentType: 'url' }}
-        className="font-mono px-0"
+        className="px-0"
         name="url"
         label="Enter URL"
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-0"
