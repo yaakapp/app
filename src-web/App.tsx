@@ -1,6 +1,5 @@
 import classnames from 'classnames';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { RequestPane } from './components/RequestPane';
 import { ResponsePane } from './components/ResponsePane';
 import { Sidebar } from './components/Sidebar';
@@ -13,11 +12,10 @@ type Params = {
   requestId?: string;
 };
 
-function App() {
-  const p = useParams<Params>();
-  const workspaceId = p.workspaceId ?? '';
+export function App({ matches }: { path: string; matches?: Params }) {
+  const workspaceId = matches?.workspaceId ?? '';
   const { data: requests } = useRequests(workspaceId);
-  const request = requests?.find((r) => r.id === p.requestId);
+  const request = requests?.find((r) => r.id === matches?.requestId);
 
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -27,7 +25,11 @@ function App() {
 
   return (
     <div className="grid grid-cols-[auto_1fr] h-full text-gray-900 overflow-hidden rounded-[11px]">
-      <Sidebar requests={requests ?? []} workspaceId={workspaceId} activeRequestId={p.requestId} />
+      <Sidebar
+        requests={requests ?? []}
+        workspaceId={workspaceId}
+        activeRequestId={matches?.requestId}
+      />
       {request && (
         <div className="h-full">
           <div className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
@@ -57,5 +59,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

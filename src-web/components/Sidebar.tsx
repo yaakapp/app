@@ -1,5 +1,4 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
 import React, { useState } from 'react';
 import { useRequestCreate } from '../hooks/useRequest';
 import useTheme from '../hooks/useTheme';
@@ -12,13 +11,14 @@ import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
 
-interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+interface Props {
   workspaceId: string;
   requests: HttpRequest[];
   activeRequestId?: string;
+  className?: string;
 }
 
-export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
+export function Sidebar({ className, activeRequestId, workspaceId, requests }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
@@ -28,7 +28,6 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
         className,
         'min-w-[10rem] bg-gray-100 h-full border-r border-gray-200 relative',
       )}
-      {...props}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
         <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
@@ -56,7 +55,6 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           alignItems="center"
           justifyContent="end"
         >
-          <IconButton icon="colorWheel" onClick={() => setShowPicker((p) => !p)} />
           <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
           <IconButton icon="rows" onClick={() => setOpen(true)} />
         </HStack>
@@ -70,13 +68,13 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
     <li key={request.id}>
       <ButtonLink
         color="custom"
-        to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
+        href={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         disabled={active}
         className={classnames(
           'w-full',
           active
             ? 'bg-gray-200/70 text-gray-900'
-            : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/50',
+            : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
         )}
         size="sm"
         justify="start"

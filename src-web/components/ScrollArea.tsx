@@ -1,9 +1,9 @@
 import * as S from '@radix-ui/react-scroll-area';
 import classnames from 'classnames';
-import type { ReactNode } from 'react';
+import type { ComponentChildren } from 'preact';
 
 interface Props {
-  children: ReactNode;
+  children: ComponentChildren;
   className?: string;
 }
 

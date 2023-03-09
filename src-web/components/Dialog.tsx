@@ -1,12 +1,13 @@
 import * as D from '@radix-ui/react-dialog';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
+import type { ComponentChildren } from 'preact';
 import React from 'react';
 import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
 interface Props {
-  children: React.ReactNode;
+  children: ComponentChildren;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;

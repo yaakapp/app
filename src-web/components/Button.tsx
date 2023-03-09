@@ -1,6 +1,7 @@
 import classnames from 'classnames';
-import type { ButtonHTMLAttributes, ForwardedRef } from 'react';
-import { forwardRef } from 'react';
+import type { ComponentChildren } from 'preact';
+import type { ForwardedRef } from 'preact/compat';
+import { forwardRef } from 'preact/compat';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -13,11 +14,17 @@ const colorStyles = {
   danger: 'bg-red-400 text-white hover:bg-red-500',
 };
 
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = {
   color?: keyof typeof colorStyles;
   size?: 'sm' | 'md';
   justify?: 'start' | 'center';
+  type?: 'button' | 'submit';
+  onClick?: (event: MouseEvent) => void;
   forDropdown?: boolean;
+  className?: string;
+  children?: ComponentChildren;
+  disabled?: boolean;
+  title?: string;
 };
 
 export const Button = forwardRef(function Button(
