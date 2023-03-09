@@ -8,11 +8,22 @@ import { Icon } from './Icon';
 type Props = IconProps & ButtonProps & { iconClassName?: string; iconSize?: IconProps['size'] };
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
-  { icon, spin, className, iconClassName, size, iconSize, ...props }: Props,
+  { icon, spin, className, iconClassName, size = 'md', iconSize, ...props }: Props,
   ref,
 ) {
   return (
-    <Button ref={ref} className={classnames(className, 'group')} size={size} {...props}>
+    <Button
+      ref={ref}
+      className={classnames(
+        className,
+        'group',
+        '!px-0',
+        size === 'md' && 'w-9',
+        size === 'sm' && 'w-9',
+      )}
+      size={size}
+      {...props}
+    >
       <Icon
         size={iconSize}
         icon={icon}

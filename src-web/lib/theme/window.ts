@@ -28,7 +28,6 @@ const lightTheme: AppTheme = {
   appearance: 'light',
   layers: {
     root: {
-      whitePoint: 0.95,
       colors: {
         gray: '#7f8fb0',
         red: '#da4545',

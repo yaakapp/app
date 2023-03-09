@@ -1,14 +1,13 @@
 import { defaultKeymap } from '@codemirror/commands';
+import { useUnmount } from 'react-use';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Editor.css';
-import { singleLineExt } from './singleLine';
-
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
-// const { baseExtensions, getLanguageExtension, multiLineExtensions } = await import('./extensions');
+import { singleLineExt } from './singleLine';
 
 export interface EditorProps {
   id?: string;
@@ -17,7 +16,6 @@ export interface EditorProps {
   heightMode?: 'auto' | 'full';
   contentType?: string;
   autoFocus?: boolean;
-  valueKey?: string | number;
   defaultValue?: string;
   placeholder?: string;
   tooltipContainer?: HTMLElement;
@@ -32,75 +30,65 @@ export function Editor({
   contentType,
   autoFocus,
   placeholder,
-  valueKey,
   useTemplating,
   defaultValue,
   onChange,
   className,
   singleLine,
-  ...props
 }: EditorProps) {
   const [cm, setCm] = useState<{ view: EditorView; langHolder: Compartment } | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
-  const extensions = useMemo(
-    () =>
-      getExtensions({
-        container: ref.current,
-        readOnly,
-        placeholder,
-        singleLine,
-        onChange,
-        contentType,
-        useTemplating,
-      }),
-    [contentType, ref.current],
-  );
+  const [divRef, setDivRef] = useState<HTMLDivElement | null>(null);
 
-  // Create codemirror instance when ref initializes
-  useEffect(() => {
-    const parent = ref.current;
-    if (parent === null) return;
+  // Unmount editor when component unmounts
+  useUnmount(() => cm?.view.destroy());
 
-    // console.log('INIT EDITOR');
-    let view: EditorView | null = null;
+  const initDivRef = (el: HTMLDivElement | null) => {
+    setDivRef(el);
+    if (divRef !== null || el === null) return;
+
     try {
       const langHolder = new Compartment();
       const langExt = getLanguageExtension({ contentType, useTemplating });
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
-        extensions: [...extensions, langHolder.of(langExt)],
+        extensions: [
+          langHolder.of(langExt),
+          ...getExtensions({
+            container: divRef,
+            readOnly,
+            placeholder,
+            singleLine,
+            onChange,
+            contentType,
+            useTemplating,
+          }),
+        ],
       });
-      view = new EditorView({ state, parent });
-      syncGutterBg({ parent, className });
-      setCm({ view, langHolder });
-      if (autoFocus && view) view.focus();
+      let newView;
+      if (cm) {
+        newView = cm.view;
+        newView.setState(state);
+      } else {
+        newView = new EditorView({ state, parent: el });
+      }
+      setCm({ view: newView, langHolder });
+      syncGutterBg({ parent: el, className });
+      if (autoFocus && newView) newView.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
-    return () => view?.destroy();
-  }, [ref.current, valueKey]);
-
-  // Update value when valueKey changes
-  // TODO: This would be more efficient but the onChange handler gets fired on update
-  // useEffect(() => {
-  //   if (cm === null) return;
-  //   console.log('NEW DOC', valueKey, defaultValue);
-  //   cm.view.dispatch({
-  //     changes: { from: 0, to: cm.view.state.doc.length, insert: `${defaultValue ?? ''}` },
-  //   });
-  // }, [valueKey]);
+  };
 
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm === null) return;
-    // console.log('UPDATE LANG');
     const ext = getLanguageExtension({ contentType, useTemplating });
     cm.view.dispatch({ effects: cm.langHolder.reconfigure(ext) });
   }, [contentType]);
 
   return (
     <div
-      ref={ref}
+      ref={initDivRef}
       className={classnames(
         className,
         'cm-wrapper text-base bg-gray-50',
@@ -108,7 +96,6 @@ export function Editor({
         singleLine ? 'cm-singleline' : 'cm-multiline',
         readOnly && 'cm-readonly',
       )}
-      {...props}
     />
   );
 }
@@ -142,7 +129,6 @@ function getExtensions({
     ...(ext ? [ext] : []),
     ...(readOnly ? [EditorState.readOnly.of(true)] : []),
     ...(placeholder ? [placeholderExt(placeholder)] : []),
-
     ...(singleLine
       ? [
           EditorView.domEventHandlers({

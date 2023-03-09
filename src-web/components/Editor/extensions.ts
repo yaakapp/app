@@ -25,7 +25,6 @@ import {
   crosshairCursor,
   drawSelection,
   dropCursor,
-  highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
   keymap,
@@ -116,7 +115,6 @@ export const baseExtensions = [
 
 export const multiLineExtensions = [
   lineNumbers(),
-  highlightActiveLineGutter(),
   foldGutter({
     markerDOM: (open) => {
       const el = document.createElement('div');
@@ -130,11 +128,10 @@ export const multiLineExtensions = [
   }),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
-  bracketMatching(),
   closeBrackets(),
   rectangularSelection(),
   crosshairCursor(),
-  highlightActiveLine(),
+  highlightActiveLineGutter(),
   highlightSelectionMatches({ minSelectionLength: 2 }),
   keymap.of([
     ...closeBracketsKeymap,

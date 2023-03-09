@@ -28,7 +28,7 @@ function ScrollBar({ orientation }: { orientation: 'vertical' | 'horizontal' }) 
         orientation === 'horizontal' && 'h-1.5 flex-col',
       )}
     >
-      <S.Thumb className="flex-1 bg-gray-50 group-hover:bg-gray-100 rounded-full" />
+      <S.Thumb className="flex-1 bg-gray-100 group-hover:bg-gray-200 rounded-full" />
     </S.Scrollbar>
   );
 }
