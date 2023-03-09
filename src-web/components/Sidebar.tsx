@@ -3,10 +3,7 @@ import React, { useState } from 'react';
 import { useRequestCreate } from '../hooks/useRequest';
 import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
-import { Button } from './Button';
 import { ButtonLink } from './ButtonLink';
-import { Dialog } from './Dialog';
-import { HeaderEditor } from './HeaderEditor';
 import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
@@ -21,7 +18,6 @@ interface Props {
 export function Sidebar({ className, activeRequestId, workspaceId, requests }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
-  const [open, setOpen] = useState<boolean>(false);
   return (
     <div
       className={classnames(
@@ -30,12 +26,6 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
       )}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
-        <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
-          <HeaderEditor />
-          <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
-            Save
-          </Button>
-        </Dialog>
         <IconButton
           className="mx-1"
           icon="plusCircle"
@@ -56,7 +46,6 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
           justifyContent="end"
         >
           <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
-          <IconButton icon="rows" onClick={() => setOpen(true)} />
         </HStack>
       </VStack>
     </div>

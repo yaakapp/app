@@ -1,113 +1,99 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { HttpHeader } from '../lib/models';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
-import { HStack, VStack } from './Stacks';
+import { VStack } from './Stacks';
+
+type PairWithId = { header: Partial<HttpHeader>; id: string };
 
 export function HeaderEditor() {
-  const [headers, setHeaders] = useState<HttpHeader[]>([]);
-  const [newHeaderName, setNewHeaderName] = useState<string>('');
-  const [newHeaderValue, setNewHeaderValue] = useState<string>('');
-  const handleSubmit = useCallback(
-    (e?: Event) => {
-      e?.preventDefault();
-      setHeaders([...headers, { name: newHeaderName, value: newHeaderValue }]);
-      setNewHeaderName('');
-      setNewHeaderValue('');
-    },
-    [newHeaderName, newHeaderValue],
-  );
+  const newPair = () => {
+    return { header: { name: '', value: '' }, id: Math.random().toString() };
+  };
 
-  const handleChangeHeader = useCallback(
-    (header: Partial<HttpHeader>, index: number) => {
-      setHeaders((headers) =>
-        headers.map((h, i) => {
-          if (i === index) return h;
-          const newHeader: HttpHeader = { ...h, ...header };
-          return newHeader;
-        }),
-      );
-    },
-    [headers],
-  );
+  const [pairs, setPairs] = useState<PairWithId[]>([newPair()]);
 
-  const handleDelete = (index: number) => {
-    setHeaders((headers) => headers.filter((_, i) => i !== index));
+  const handleChangeHeader = (pair: PairWithId) => {
+    setPairs((pairs) =>
+      pairs.map((p) =>
+        pair.id !== p.id ? p : { id: p.id, header: { ...p.header, ...pair.header } },
+      ),
+    );
+  };
+
+  useEffect(() => {
+    const lastPair = pairs[pairs.length - 1];
+    if (lastPair === undefined) {
+      setPairs([newPair()]);
+      return;
+    }
+
+    if (lastPair.header.name !== '' || lastPair.header.value !== '') {
+      setPairs((pairs) => [...pairs, newPair()]);
+    }
+  }, [pairs]);
+
+  const handleDelete = (pair: PairWithId) => {
+    setPairs((headers) => headers.filter((p) => p.id !== pair.id));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="min-h-[30vh]">
-      <VStack space={2}>
-        {headers.map((header, i) => (
-          <FormRow
-            key={`${headers.length}-${i}`}
-            valueKey={`${headers.length}-${i}`}
-            name={header.name}
-            value={header.value}
-            onChangeName={(name) => handleChangeHeader({ name }, i)}
-            onChangeValue={(value) => handleChangeHeader({ value }, i)}
-            onDelete={() => handleDelete(i)}
-          />
-        ))}
+    <VStack space={2}>
+      {pairs.map((p, i) => (
         <FormRow
-          autoFocus
-          addSubmit
-          valueKey={headers.length}
-          onChangeName={setNewHeaderName}
-          onChangeValue={setNewHeaderValue}
-          name={newHeaderName}
-          value={newHeaderValue}
+          key={p.id}
+          pair={p}
+          onChange={handleChangeHeader}
+          onDelete={i < pairs.length - 1 ? handleDelete : undefined}
         />
-      </VStack>
-    </form>
+      ))}
+    </VStack>
   );
 }
 
 function FormRow({
   autoFocus,
-  valueKey,
-  name,
-  value,
-  addSubmit,
-  onChangeName,
-  onChangeValue,
+  pair,
+  onChange,
   onDelete,
 }: {
   autoFocus?: boolean;
-  valueKey: string | number;
-  name: string;
-  value: string;
-  addSubmit?: boolean;
-  onSubmit?: () => void;
-  onChangeName: (name: string) => void;
-  onChangeValue: (value: string) => void;
-  onDelete?: () => void;
+  pair: PairWithId;
+  onChange: (pair: PairWithId) => void;
+  onDelete?: (pair: PairWithId) => void;
 }) {
   return (
-    <div>
-      <HStack space={2}>
-        <Input
-          hideLabel
-          autoFocus={autoFocus}
-          useEditor={{ useTemplating: true, valueKey }}
-          name="name"
-          label="Name"
-          placeholder="name"
-          defaultValue={name}
-          onChange={onChangeName}
-        />
-        <Input
-          hideLabel
-          name="value"
-          label="Value"
-          useEditor={{ useTemplating: true, valueKey }}
-          placeholder="value"
-          defaultValue={value}
-          onChange={onChangeValue}
-        />
-        {onDelete && <IconButton icon="trash" onClick={onDelete} />}
-      </HStack>
-      {addSubmit && <input type="submit" value="Add" className="sr-only" />}
+    <div className="grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
+      <Input
+        hideLabel
+        autoFocus={autoFocus}
+        useEditor={{ useTemplating: true }}
+        name="name"
+        label="Name"
+        placeholder="name"
+        defaultValue={pair.header.name}
+        onChange={(name) =>
+          onChange({
+            id: pair.id,
+            header: { name },
+          })
+        }
+      />
+      <Input
+        hideLabel
+        name="value"
+        label="Value"
+        useEditor={{ useTemplating: true }}
+        placeholder="value"
+        defaultValue={pair.header.value}
+        onChange={(value) =>
+          onChange({
+            id: pair.id,
+            header: { value },
+          })
+        }
+      />
+      {onDelete && <IconButton icon="trash" onClick={() => onDelete(pair)} className="w-auto" />}
     </div>
   );
 }

@@ -11,7 +11,7 @@ interface Props {
   labelClassName?: string;
   containerClassName?: string;
   onChange?: (value: string) => void;
-  useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating' | 'valueKey'>;
+  useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating'>;
   defaultValue?: string;
   leftSlot?: ComponentChildren;
   rightSlot?: ComponentChildren;

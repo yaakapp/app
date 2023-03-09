@@ -1,5 +1,5 @@
 .cm-wrapper {
-    @apply h-full;
+    @apply h-full overflow-hidden;
 
     .cm-editor {
         @apply w-full block text-base;
@@ -109,8 +109,7 @@
     @apply hover:text-gray-800 hover:border-gray-400;
 }
 
-.cm-editor .cm-activeLineGutter,
-.cm-editor .cm-activeLine {
+.cm-editor .cm-activeLineGutter {
     @apply bg-transparent;
 }
 
@@ -118,6 +117,7 @@
     &.cm-focused .cm-activeLineGutter {
         @apply text-gray-800;
     }
+
     .cm-cursor {
         @apply border-l-2 border-gray-800;
     }
