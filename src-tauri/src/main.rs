@@ -110,6 +110,16 @@ async fn send_request(
         HeaderValue::from_str(models::generate_id("x").as_str()).expect("Failed to create header"),
     );
 
+    for h in req.headers.0 {
+        if h.name.is_empty() {
+            continue;
+        }
+        headers.insert(
+            HeaderName::from_bytes(h.name.as_bytes()).expect("Failed to create header name"),
+            HeaderValue::from_str(h.value.as_str()).expect("Failed to create header value"),
+        );
+    }
+
     let m =
         Method::from_bytes(req.method.to_uppercase().as_bytes()).expect("Failed to create method");
     let builder = client.request(m, url_string.to_string()).headers(headers);
