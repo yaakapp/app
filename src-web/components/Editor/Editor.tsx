@@ -151,9 +151,11 @@ function getExtensions({
     // Clear selection on blur
     EditorView.domEventHandlers({
       blur: (e, view) => {
+        // Clear selection on blur. Must do on next tick or updating selection
+        // will keep the editor focused
         setTimeout(() => {
-          view.dispatch({ selection: { anchor: 0, head: 0 } });
-        }, 100);
+          view.dispatch({ selection: { anchor: 0, head: 0 } }, { userEvent: 'blur' });
+        });
       },
     }),
 
