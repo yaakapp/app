@@ -22,7 +22,6 @@ export function RequestPane({ fullHeight, request, className }: Props) {
     >
       <div className="pl-2">
         <UrlBar
-          className="bg-transparent shadow dark:shadow-none shadow-gray-200"
           key={request.id}
           method={request.method}
           url={request.url}

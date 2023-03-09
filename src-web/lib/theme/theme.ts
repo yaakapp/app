@@ -20,9 +20,23 @@ const colorNames: AppThemeColor[] = [
   'pink',
   'violet',
 ];
-export type AppThemeColorVariant = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
+export type AppThemeColorVariant =
+  | 0
+  | 50
+  | 100
+  | 200
+  | 300
+  | 400
+  | 500
+  | 600
+  | 700
+  | 800
+  | 900
+  | 950
+  | 1000;
+
 export const appThemeVariants: AppThemeColorVariant[] = [
-  50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
+  0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 1000,
 ];
 
 export type AppThemeLayer = 'root' | 'sidebar' | 'titlebar' | 'content' | 'above';
@@ -87,6 +101,7 @@ export function generateColors(
 
 const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
   light: {
+    0: 1,
     50: 1,
     100: 0.9,
     200: 0.7,
@@ -98,8 +113,10 @@ const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
     800: -0.6,
     900: -0.8,
     950: -0.9,
+    1000: -1,
   },
   dark: {
+    0: -1,
     50: -0.9,
     100: -0.8,
     200: -0.6,
@@ -111,6 +128,7 @@ const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
     800: 0.6,
     900: 0.8,
     950: 0.9,
+    1000: 1,
   },
 };
 
@@ -128,6 +146,7 @@ export function generateColorVariant(
     lightnessMod > 0
       ? hsl[2] + (100 * whitePoint - hsl[2]) * lightnessMod
       : hsl[2] + hsl[2] * (1 - blackPoint) * lightnessMod;
+  console.log('NEWL', color, newL);
   return `hsl(${hsl[0]},${hsl[1]}%,${newL.toFixed(1)}%)`;
 }
 

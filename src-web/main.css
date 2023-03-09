@@ -28,8 +28,7 @@ html, body, #root {
 * {
     transition: background-color var(--transition-duration),
     border-color var(--transition-duration),
-    box-shadow var(--transition-duration),
-;
+    box-shadow var(--transition-duration);
 }
 
 /*.hide-scrollbar {*/

@@ -11,18 +11,9 @@ interface Props {
   url: string;
   onMethodChange: (method: string) => void;
   onUrlChange: (url: string) => void;
-  className?: string;
 }
 
-export function UrlBar({
-  className,
-  sendRequest,
-  loading,
-  onMethodChange,
-  method,
-  onUrlChange,
-  url,
-}: Props) {
+export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
   const handleSendRequest = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     sendRequest();
@@ -37,7 +28,7 @@ export function UrlBar({
         className="font-mono px-0"
         name="url"
         label="Enter URL"
-        containerClassName={className}
+        containerClassName="shadow shadow-gray-100 dark:shadow-gray-0"
         onChange={onUrlChange}
         defaultValue={url}
         placeholder="Enter a URL..."
@@ -55,13 +46,7 @@ export function UrlBar({
               { label: 'HEAD', value: 'HEAD' },
             ]}
           >
-            <Button
-              type="button"
-              disabled={loading}
-              size="xs"
-              className="mx-0.5 !text-gray-800"
-              justify="start"
-            >
+            <Button type="button" disabled={loading} size="xs" className="mx-0.5" justify="start">
               {method.toUpperCase()}
             </Button>
           </DropdownMenuRadio>

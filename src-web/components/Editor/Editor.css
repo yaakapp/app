@@ -5,6 +5,10 @@
 .cm-editor {
     @apply w-full block text-base;
 
+    * {
+        @apply cursor-text;
+    }
+
     &.cm-focused {
         outline: none !important;
     }
@@ -31,8 +35,13 @@
     }
 
     .placeholder-widget {
-        @apply text-[0.9em] text-gray-900 bg-gray-200 px-1.5 py-[0.1em] border-y border-gray-50
-        rounded cursor-default hover:bg-gray-300 hover:text-white;
+        @apply text-[0.9em] text-gray-800 dark:text-gray-1000 px-1 rounded cursor-default dark:shadow;
+
+        /* NOTE: Background and border are translucent so we can see text selection through it */
+        @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
+
+        /* Bring above on hover */
+        @apply hover:z-10 relative;
     }
 }
 
@@ -110,10 +119,6 @@
     @apply text-gray-800;
 }
 
-.cm-editor * {
-    @apply cursor-text;
-}
-
 .cm-editor .cm-cursor {
     @apply border-l-2 border-gray-800;
 }
@@ -132,19 +137,23 @@
     }
 }
 
-.cm-scroller {
+.cm-scroller, .cm-tooltip-autocomplete > ul {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-        @apply w-1 h-1 bg-transparent;
+        @apply w-1.5 h-1.5 bg-transparent;
     }
 
     &::-webkit-scrollbar-thumb {
-        @apply bg-gray-400 bg-opacity-30 rounded-full;
+        @apply bg-gray-200 rounded-full;
     }
 }
 
+.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
+    @apply bg-opacity-50;
+}
+
 .cm-editor.cm-focused .cm-scroller::-webkit-scrollbar-thumb {
-    @apply bg-opacity-80;
+    @apply bg-opacity-100;
 }
 
 /* <-- */
