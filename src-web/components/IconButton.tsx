@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { forwardRef } from 'react';
+import { forwardRef } from 'preact/compat';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
 import type { IconProps } from './Icon';

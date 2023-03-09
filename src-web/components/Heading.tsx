@@ -1,7 +1,10 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
+import type { ComponentChildren } from 'preact';
 
-type Props = HTMLAttributes<HTMLHeadingElement>;
+type Props = {
+  className?: string;
+  children?: ComponentChildren;
+};
 
 export function Heading({ className, children, ...props }: Props) {
   return (

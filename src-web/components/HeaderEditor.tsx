@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import React, { useCallback, useState } from 'react';
 import type { HttpHeader } from '../lib/models';
 import { IconButton } from './IconButton';
@@ -10,7 +9,7 @@ export function HeaderEditor() {
   const [newHeaderName, setNewHeaderName] = useState<string>('');
   const [newHeaderValue, setNewHeaderValue] = useState<string>('');
   const handleSubmit = useCallback(
-    (e?: FormEvent) => {
+    (e?: Event) => {
       e?.preventDefault();
       setHeaders([...headers, { name: newHeaderName, value: newHeaderValue }]);
       setNewHeaderName('');

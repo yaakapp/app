@@ -1,14 +1,10 @@
 import classnames from 'classnames';
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import type { ComponentChildren } from 'preact';
 import type { EditorProps } from './Editor/Editor';
 import { Editor } from './Editor/Editor';
 import { HStack, VStack } from './Stacks';
 
-interface Props
-  extends Omit<
-    InputHTMLAttributes<HTMLInputElement>,
-    'size' | 'onChange' | 'onSubmit' | 'defaultValue'
-  > {
+interface Props {
   name: string;
   label: string;
   hideLabel?: boolean;
@@ -17,9 +13,12 @@ interface Props
   onChange?: (value: string) => void;
   useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating' | 'valueKey'>;
   defaultValue?: string;
-  leftSlot?: ReactNode;
-  rightSlot?: ReactNode;
+  leftSlot?: ComponentChildren;
+  rightSlot?: ComponentChildren;
   size?: 'sm' | 'md';
+  className?: string;
+  placeholder?: string;
+  autoFocus?: boolean;
 }
 
 export function Input({
@@ -42,8 +41,8 @@ export function Input({
   const inputClassName = classnames(
     className,
     '!bg-transparent pl-3 pr-2 min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
-    leftSlot && '!pl-0.5',
-    rightSlot && '!pr-0.5',
+    !!leftSlot && '!pl-0.5',
+    !!rightSlot && '!pr-0.5',
   );
 
   return (
@@ -83,7 +82,7 @@ export function Input({
         ) : (
           <input
             id={id}
-            onChange={(e) => onChange?.(e.target.value)}
+            onChange={(e) => onChange?.(e.currentTarget.value)}
             placeholder={placeholder}
             defaultValue={defaultValue}
             className={inputClassName}

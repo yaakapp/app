@@ -1,13 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { render } from 'preact';
+import { Router } from 'preact-router';
 import { HelmetProvider } from 'react-helmet-async';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import App from './App';
-import { Layout } from './components/Layout';
-import { RouterError } from './components/RouterError';
+import { App } from './App';
 import { requestsQueryKey } from './hooks/useRequest';
 import { responsesQueryKey } from './hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from './lib/constants';
@@ -90,36 +87,17 @@ await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
   document.documentElement.style.fontSize = `${newFontSize}px`;
 });
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Layout />,
-    errorElement: <RouterError />,
-    children: [
-      {
-        path: '/',
-        element: <Workspaces />,
-      },
-      {
-        path: '/workspaces/:workspaceId',
-        element: <App />,
-      },
-      {
-        path: '/workspaces/:workspaceId/requests/:requestId',
-        element: <App />,
-      },
-    ],
-  },
-]);
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <MotionConfig transition={{ duration: 0.1 }}>
-        <HelmetProvider>
-          <RouterProvider router={router} />
-        </HelmetProvider>
-      </MotionConfig>
-    </QueryClientProvider>
-  </React.StrictMode>,
+render(
+  <QueryClientProvider client={queryClient}>
+    <MotionConfig transition={{ duration: 0.1 }}>
+      <HelmetProvider>
+        <Router>
+          <Workspaces path="/" />
+          <App path="/workspaces/:workspaceId" />
+          <App path="/workspaces/:workspaceId/requests/:requestId" />
+        </Router>
+      </HelmetProvider>
+    </MotionConfig>
+  </QueryClientProvider>,
+  document.getElementById('root') as HTMLElement,
 );

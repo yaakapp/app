@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { Button } from './Button';
 import { DropdownMenuRadio } from './Dropdown';
 import { IconButton } from './IconButton';
@@ -14,13 +13,14 @@ interface Props {
 }
 
 export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
-  const handleSendRequest = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    sendRequest();
-  };
-
   return (
-    <form onSubmit={handleSendRequest} className="w-full flex items-center">
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        sendRequest();
+      }}
+      className="w-full flex items-center"
+    >
       <Input
         hideLabel
         useEditor={{ useTemplating: true, contentType: 'url' }}

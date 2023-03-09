@@ -1,5 +1,5 @@
-import { HTMLAttributes } from 'react';
 import classnames from 'classnames';
+import type { HTMLAttributes } from 'react';
 
 export function HotKey({ children }: HTMLAttributes<HTMLSpanElement>) {
   return (

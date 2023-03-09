@@ -1,6 +1,6 @@
 import classnames from 'classnames';
-import type { ReactNode } from 'react';
-import React, { Children, Fragment } from 'react';
+import type { ComponentChildren, ComponentType } from 'preact';
+import { Children, Fragment } from 'react';
 
 const spaceClassesX = {
   0: 'pr-0',
@@ -24,7 +24,7 @@ const spaceClassesY = {
 
 interface HStackProps extends BaseStackProps {
   space?: keyof typeof spaceClassesX;
-  children?: ReactNode;
+  children?: ComponentChildren;
 }
 
 export function HStack({ className, space, children, ...props }: HStackProps) {
@@ -52,7 +52,7 @@ export function HStack({ className, space, children, ...props }: HStackProps) {
 
 export interface VStackProps extends BaseStackProps {
   space?: keyof typeof spaceClassesY;
-  children: ReactNode;
+  children: ComponentChildren;
 }
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
@@ -79,21 +79,15 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
 }
 
 interface BaseStackProps {
-  as?: React.ElementType;
+  as?: ComponentType | 'ul';
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';
   className?: string;
-  children?: ReactNode;
+  children?: ComponentChildren;
 }
 
-function BaseStack({
-  className,
-  alignItems,
-  justifyContent,
-  children,
-  as = 'div',
-}: BaseStackProps) {
-  const Component = as;
+function BaseStack({ className, alignItems, justifyContent, children, as }: BaseStackProps) {
+  const Component = as ?? 'div';
   return (
     <Component
       className={classnames(
