@@ -25,19 +25,15 @@
         }
 
         .cm-gutters {
-            @apply border-0 text-gray-500 text-opacity-30;
+            @apply border-0 text-gray-500/60;
 
             .cm-gutterElement {
                 @apply cursor-default;
             }
         }
 
-        &.cm-focused .cm-gutters {
-            @apply text-opacity-60;
-        }
-
         .placeholder-widget {
-            @apply text-[0.9em] text-gray-800 dark:text-gray-1000 px-1 rounded cursor-default dark:shadow;
+            @apply text-[0.9em] text-gray-800 dark:text-gray-900 px-1 rounded cursor-default dark:shadow;
 
             /* NOTE: Background and border are translucent so we can see text selection through it */
             @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
@@ -105,11 +101,12 @@
 }
 
 .cm-editor .fold-gutter-icon:hover {
-    @apply text-gray-400 bg-gray-100/20;
+    @apply text-gray-900 bg-gray-300/50;
 }
 
 .cm-editor .cm-foldPlaceholder {
-    @apply px-2 border border-gray-200 bg-gray-100;
+    @apply px-2 border border-gray-400/50 bg-gray-300/50 cursor-default;
+    @apply hover:text-gray-800 hover:border-gray-400;
 }
 
 .cm-editor .cm-activeLineGutter,

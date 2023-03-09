@@ -4,11 +4,13 @@ import {
   CheckIcon,
   ClockIcon,
   CodeIcon,
+  ColorWheelIcon,
   Cross2Icon,
   EyeOpenIcon,
   GearIcon,
   HomeIcon,
   MoonIcon,
+  ListBulletIcon,
   PaperPlaneIcon,
   PlusCircledIcon,
   PlusIcon,
@@ -19,59 +21,40 @@ import {
   TriangleLeftIcon,
   TriangleRightIcon,
   UpdateIcon,
+  RowsIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
-import type { NamedExoticComponent } from 'react';
 
-type IconName =
-  | 'archive'
-  | 'home'
-  | 'camera'
-  | 'gear'
-  | 'eye'
-  | 'triangleDown'
-  | 'triangleLeft'
-  | 'triangleRight'
-  | 'paperPlane'
-  | 'update'
-  | 'question'
-  | 'check'
-  | 'plus'
-  | 'plusCircle'
-  | 'clock'
-  | 'sun'
-  | 'code'
-  | 'x'
-  | 'trash'
-  | 'moon';
-
-const icons: Record<IconName, NamedExoticComponent<{ className: string }>> = {
-  paperPlane: PaperPlaneIcon,
-  triangleDown: TriangleDownIcon,
-  plus: PlusIcon,
-  plusCircle: PlusCircledIcon,
-  clock: ClockIcon,
+const icons = {
   archive: ArchiveIcon,
   camera: CameraIcon,
   check: CheckIcon,
-  triangleLeft: TriangleLeftIcon,
-  triangleRight: TriangleRightIcon,
+  clock: ClockIcon,
+  code: CodeIcon,
+  colorWheel: ColorWheelIcon,
+  eye: EyeOpenIcon,
   gear: GearIcon,
   home: HomeIcon,
-  update: UpdateIcon,
-  sun: SunIcon,
+  listBullet: ListBulletIcon,
   moon: MoonIcon,
-  x: Cross2Icon,
+  paperPlane: PaperPlaneIcon,
+  plus: PlusIcon,
+  plusCircle: PlusCircledIcon,
   question: QuestionMarkIcon,
-  eye: EyeOpenIcon,
-  code: CodeIcon,
+  rows: RowsIcon,
+  sun: SunIcon,
   trash: TrashIcon,
+  triangleDown: TriangleDownIcon,
+  triangleLeft: TriangleLeftIcon,
+  triangleRight: TriangleRightIcon,
+  update: UpdateIcon,
+  x: Cross2Icon,
 };
 
 export interface IconProps {
-  icon: IconName;
+  icon: keyof typeof icons;
   className?: string;
-  size?: 'md';
+  size?: 'xs' | 'sm' | 'md';
   spin?: boolean;
 }
 
@@ -83,6 +66,8 @@ export function Icon({ icon, spin, size = 'md', className }: IconProps) {
         className,
         'text-gray-800',
         size === 'md' && 'h-4 w-4',
+        size === 'sm' && 'h-3 w-3',
+        size === 'xs' && 'h-2 w-2',
         spin && 'animate-spin',
       )}
     />

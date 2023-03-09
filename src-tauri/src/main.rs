@@ -1,6 +1,6 @@
 #![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
+all(not(debug_assertions), target_os = "windows"),
+windows_subsystem = "windows"
 )]
 
 #[cfg(target_os = "macos")]
@@ -18,7 +18,7 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
-use tauri::{AppHandle, State, Wry};
+use tauri::{AppHandle, Menu, MenuItem, State, Submenu, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
 
@@ -224,8 +224,8 @@ async fn update_request(
         request.headers.0,
         pool,
     )
-    .await
-    .expect("Failed to update request");
+        .await
+        .expect("Failed to update request");
 
     app_handle
         .emit_all("updated_request", updated_request)
@@ -317,12 +317,19 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
-    // here `"quit".to_string()` defines the menu item id, and the second parameter is the menu item label.
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     let tray_menu = SystemTrayMenu::new().add_item(quit);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
+    let submenu = Submenu::new("View", Menu::new()
+        .add_item(CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size").accelerator("CmdOrCtrl+0"))
+        .add_item(CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"))
+        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-")),
+    );
+    let menu = Menu::new().add_native_item(MenuItem::Quit).add_submenu(submenu);
+
     tauri::Builder::default()
+        .menu(menu)
         .system_tray(system_tray)
         .setup(|app| {
             let win = app.get_window("main").unwrap();
@@ -360,8 +367,18 @@ fn main() {
                         window.hide().unwrap();
                     }
                     _ => {}
-                }
+                };
             }
+        })
+        .on_menu_event(|event| {
+            match event.menu_item_id() {
+                "quit" => std::process::exit(0),
+                "close" => event.window().close().unwrap(),
+                "zoom_reset" => event.window().emit("zoom", 0).unwrap(),
+                "zoom_in" => event.window().emit("zoom", 1).unwrap(),
+                "zoom_out" => event.window().emit("zoom", -1).unwrap(),
+                _ => {}
+            };
         })
         .on_window_event(|e| {
             let apply_offset = || {

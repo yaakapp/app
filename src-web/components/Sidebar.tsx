@@ -1,11 +1,12 @@
 import classnames from 'classnames';
 import type { HTMLAttributes } from 'react';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { SketchPicker } from 'react-color';
 import { useRequestCreate } from '../hooks/useRequest';
 import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
+import { ButtonLink } from './ButtonLink';
 import { Dialog } from './Dialog';
 import { HeaderEditor } from './HeaderEditor';
 import { IconButton } from './IconButton';
@@ -20,28 +21,27 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 
 export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
-  const { appearance, toggleAppearance } = useTheme();
+  const { appearance, toggleAppearance, forceSetTheme } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
+  const [color, setColor] = useState<string>('blue');
+  const [showPicker, setShowPicker] = useState<boolean>(false);
   return (
     <div
-      className={classnames(className, 'w-52 bg-gray-100 h-full border-r border-gray-200')}
+      className={classnames(
+        className,
+        'min-w-[10rem] bg-gray-100 h-full border-r border-gray-200 relative',
+      )}
       {...props}
     >
-      <HStack as={WindowDragRegion} items="center" justify="end">
+      <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
         <Dialog wide open={open} onOpenChange={setOpen} title="Edit Headers">
           <HeaderEditor />
           <Button className="ml-auto mt-5" color="primary" onClick={() => setOpen(false)}>
             Save
           </Button>
         </Dialog>
-        <IconButton size="sm" icon="camera" onClick={() => setOpen(true)} />
         <IconButton
-          size="sm"
-          icon={appearance === 'dark' ? 'moon' : 'sun'}
-          onClick={toggleAppearance}
-        />
-        <IconButton
-          size="sm"
+          className="mx-1"
           icon="plusCircle"
           onClick={async () => {
             await createRequest.mutate({ name: 'Test Request' });
@@ -53,6 +53,27 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
         {/*<Colors />*/}
+
+        <HStack
+          className="absolute bottom-1 left-1 right-0 mx-1"
+          alignItems="center"
+          justifyContent="end"
+        >
+          <IconButton icon="colorWheel" onClick={() => setShowPicker((p) => !p)} />
+          <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
+          <IconButton icon="rows" onClick={() => setOpen(true)} />
+        </HStack>
+
+        {showPicker && (
+          <SketchPicker
+            className="fixed z-10 bottom-2 right-2"
+            color={color}
+            onChange={(c) => {
+              setColor(c.hex);
+              forceSetTheme(c.hex);
+            }}
+          />
+        )}
       </VStack>
     </div>
   );
@@ -61,15 +82,16 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
 function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
   return (
     <li key={request.id}>
-      <Button
-        as={Link}
+      <ButtonLink
+        color="custom"
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
-        className={classnames('w-full', active ? 'bg-gray-200/70 text-gray-900' : 'text-gray-500')}
-        size="xs"
+        disabled={active}
+        className={classnames('w-full', active ? 'bg-gray-200/70 text-gray-900' : 'text-gray-600')}
+        size="sm"
         justify="start"
       >
         {request.name || request.url}
-      </Button>
+      </ButtonLink>
     </li>
   );
 }
