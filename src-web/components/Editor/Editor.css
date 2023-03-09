@@ -144,7 +144,7 @@
 
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-background rounded overflow-hidden text-gray-900 border border-gray-200 z-50 pointer-events-auto;
+    @apply shadow-lg bg-gray-50 rounded overflow-hidden text-gray-900 border border-gray-200 z-50 pointer-events-auto;
 
     * {
         @apply transition-none;

@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import type { EditorProps } from './Editor/Editor';
-import Editor from './Editor/Editor';
+import { Editor } from './Editor/Editor';
 import { HStack, VStack } from './Stacks';
 
 interface Props

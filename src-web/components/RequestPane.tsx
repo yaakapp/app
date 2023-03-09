@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import { useRequestUpdate, useSendRequest } from '../hooks/useRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './Button';
-import Editor from './Editor/Editor';
+import { Editor } from './Editor/Editor';
 import { ScrollArea } from './ScrollArea';
 import { HStack } from './Stacks';
 import { UrlBar } from './UrlBar';
