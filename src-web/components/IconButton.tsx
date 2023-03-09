@@ -21,7 +21,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         spin={spin}
         className={classnames(
           iconClassName,
-          'text-gray-700 group-hover:text-gray-900',
+          'text-gray-700 group-hover:text-gray-1000',
           props.disabled && 'opacity-70',
         )}
       />

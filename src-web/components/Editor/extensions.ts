@@ -135,7 +135,7 @@ export const multiLineExtensions = [
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLine(),
-  highlightSelectionMatches(),
+  highlightSelectionMatches({ minSelectionLength: 2 }),
   keymap.of([
     ...closeBracketsKeymap,
     ...defaultKeymap,

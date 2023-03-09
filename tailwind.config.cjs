@@ -39,6 +39,7 @@ module.exports = {
 
 function color(name) {
     return {
+        0: `hsl(var(--color-${name}-0) / <alpha-value>)`,
         50: `hsl(var(--color-${name}-50) / <alpha-value>)`,
         100: `hsl(var(--color-${name}-100) / <alpha-value>)`,
         200: `hsl(var(--color-${name}-200) / <alpha-value>)`,
@@ -50,5 +51,6 @@ function color(name) {
         800: `hsl(var(--color-${name}-800) / <alpha-value>)`,
         900: `hsl(var(--color-${name}-900) / <alpha-value>)`,
         950: `hsl(var(--color-${name}-950) / <alpha-value>)`,
+        1000: `hsl(var(--color-${name}-1000) / <alpha-value>)`,
     };
 }

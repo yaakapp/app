@@ -24,8 +24,8 @@ function ScrollBar({ orientation }: { orientation: 'vertical' | 'horizontal' }) 
       orientation={orientation}
       className={classnames(
         'flex bg-transparent rounded-full',
-        orientation === 'vertical' && 'w-1',
-        orientation === 'horizontal' && 'h-1 flex-col',
+        orientation === 'vertical' && 'w-1.5',
+        orientation === 'horizontal' && 'h-1.5 flex-col',
       )}
     >
       <S.Thumb className="flex-1 bg-gray-50 group-hover:bg-gray-100 rounded-full" />

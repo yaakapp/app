@@ -8,8 +8,7 @@ const darkTheme: AppTheme = {
   appearance: 'dark',
   layers: {
     root: {
-      blackPoint: 0.1,
-      whitePoint: 0.95,
+      blackPoint: 0.3,
       colors: {
         gray: '#656196',
         red: '#ee3b3b',
@@ -18,7 +17,7 @@ const darkTheme: AppTheme = {
         green: '#44cb44',
         blue: '#2e91ff',
         pink: '#f670f6',
-        violet: '#ae70ff',
+        violet: '#b176ff',
       },
     },
   },
@@ -29,17 +28,16 @@ const lightTheme: AppTheme = {
   appearance: 'light',
   layers: {
     root: {
-      blackPoint: 0.1,
-      whitePoint: 1,
+      whitePoint: 0.98,
       colors: {
         gray: '#7f8fb0',
-        red: '#e13939',
-        orange: '#da881f',
-        yellow: '#cb9f2a',
-        green: '#37c237',
+        red: '#da4545',
+        orange: '#e38511',
+        yellow: '#e0c514',
+        green: '#29d229',
         blue: '#1365ff',
-        pink: '#e861e8',
-        violet: '#8d47ff',
+        pink: '#ff69dc',
+        violet: '#9959ff',
       },
     },
   },

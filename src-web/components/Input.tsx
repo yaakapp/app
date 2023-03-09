@@ -62,7 +62,7 @@ export function Input({
         items="center"
         className={classnames(
           containerClassName,
-          'relative w-full rounded-md text-gray-900 bg-gray-200/10',
+          'relative w-full rounded-md text-gray-900',
           'border border-gray-200 focus-within:border-blue-400/40',
           size === 'md' && 'h-10',
           size === 'sm' && 'h-8',

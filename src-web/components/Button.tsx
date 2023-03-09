@@ -9,8 +9,8 @@ import { forwardRef } from 'react';
 import { Icon } from './Icon';
 
 const colorStyles = {
-  default: 'hover:bg-gray-700/10 text-gray-700 hover:text-gray-900',
-  gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20 hover:text-gray-900',
+  default: 'hover:bg-gray-700/10 text-gray-700 hover:text-gray-1000',
+  gray: 'text-gray-800 bg-gray-100 hover:bg-gray-500/20 hover:text-gray-1000',
   primary: 'bg-blue-400 text-white',
   secondary: 'bg-violet-400 text-white',
   warning: 'bg-orange-400 text-white',
@@ -45,11 +45,10 @@ export const Button = forwardRef(function Button<T extends ElementType>(
       type="button"
       className={classnames(
         className,
-        'outline-none', // TODO: Add focus styles
+        'outline-none',
         'border border-transparent focus-visible:border-blue-300',
-        'transition-all rounded-md flex items-center hover:text-white',
+        'transition-all rounded-md flex items-center',
         'bg-opacity-90 hover:bg-opacity-100',
-        // 'active:translate-y-[0.5px] active:scale-[0.99]',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',

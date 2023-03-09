@@ -53,7 +53,7 @@ export function ResponsePane({ requestId, className }: Props) {
           className,
           'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
           'dark:bg-gray-100 rounded-md overflow-hidden border border-gray-200',
-          'shadow dark:shadow-none shadow-gray-200',
+          'shadow shadow-gray-100 dark:shadow-gray-0',
         )}
       >
         {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
