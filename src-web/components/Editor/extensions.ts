@@ -34,6 +34,7 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { debouncedAutocompletionDisplay } from './autocomplete';
+import { readOnlyTransactionFilter } from './readOnlyTransactionFilter';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 

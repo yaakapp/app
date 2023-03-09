@@ -1,83 +1,85 @@
 .cm-wrapper {
     @apply h-full;
-}
 
-.cm-editor {
-    @apply w-full block text-base;
+    .cm-editor {
+        @apply w-full block text-base;
 
-    * {
-        @apply cursor-text;
-    }
+        * {
+            @apply cursor-text;
+        }
 
-    &.cm-focused {
-        outline: none !important;
-    }
+        &.cm-focused {
+            outline: none !important;
+        }
 
-    .cm-line {
-        @apply text-gray-900 pl-1 pr-1.5;
-    }
+        .cm-selectionBackground {
+            @apply bg-gray-300;
+        }
 
-    .cm-placeholder {
-        @apply text-placeholder;
-    }
+        .cm-line {
+            @apply text-gray-900 pl-1 pr-1.5;
+        }
 
-    .cm-gutters {
-        @apply border-0 text-gray-500 text-opacity-30;
+        .cm-placeholder {
+            @apply text-placeholder;
+        }
 
-        .cm-gutterElement {
-            @apply cursor-default;
+        .cm-gutters {
+            @apply border-0 text-gray-500 text-opacity-30;
+
+            .cm-gutterElement {
+                @apply cursor-default;
+            }
+        }
+
+        &.cm-focused .cm-gutters {
+            @apply text-opacity-60;
+        }
+
+        .placeholder-widget {
+            @apply text-[0.9em] text-gray-800 dark:text-gray-1000 px-1 rounded cursor-default dark:shadow;
+
+            /* NOTE: Background and border are translucent so we can see text selection through it */
+            @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
+
+            /* Bring above on hover */
+            @apply hover:z-10 relative;
         }
     }
 
-    &.cm-focused .cm-gutters,
-    .cm-gutters:hover {
-        @apply text-opacity-60;
+    &.cm-singleline {
+        .cm-editor {
+            @apply h-full w-full;
+        }
+
+        .cm-scroller {
+            @apply font-mono flex text-[0.8rem];
+            align-items: center !important;
+            overflow: hidden !important;
+        }
+
+        .cm-line {
+            @apply px-0;
+        }
     }
 
-    .placeholder-widget {
-        @apply text-[0.9em] text-gray-800 dark:text-gray-1000 px-1 rounded cursor-default dark:shadow;
+    &.cm-multiline {
+        &.cm-full-height {
+            @apply relative;
 
-        /* NOTE: Background and border are translucent so we can see text selection through it */
-        @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
-
-        /* Bring above on hover */
-        @apply hover:z-10 relative;
-    }
-}
-
-
-.cm-singleline {
-    .cm-editor {
-        @apply h-full w-full;
-    }
-
-    .cm-scroller {
-        @apply font-mono flex text-[0.8rem];
-        align-items: center !important;
-        overflow: hidden !important;
-    }
-
-    .cm-line {
-        @apply px-0;
-    }
-}
-
-.cm-multiline {
-    &.cm-full-height {
-        @apply relative;
+            .cm-editor {
+                @apply inset-0 absolute;
+                position: absolute !important;
+            }
+        }
 
         .cm-editor {
-            @apply inset-0 absolute;
-            position: absolute !important;
+            @apply h-full;
         }
-    }
 
-    .cm-editor {
-        @apply h-full;
-    }
-
-    .cm-scroller {
-        @apply font-mono text-[0.75rem];
+        .cm-scroller {
+            @apply font-mono text-[0.75rem];
+        }
     }
 }
 
@@ -115,20 +117,13 @@
     @apply bg-transparent;
 }
 
-.cm-editor.cm-focused .cm-activeLineGutter {
-    @apply text-gray-800;
-}
-
-.cm-editor .cm-cursor {
-    @apply border-l-2 border-gray-800;
-}
-
-.cm-editor .cm-selectionBackground {
-    @apply bg-gray-200/70;
-}
-
-.cm-editor.cm-focused .cm-selectionBackground {
-    @apply bg-gray-200;
+.cm-wrapper:not(.cm-readonly) .cm-editor {
+    &.cm-focused .cm-activeLineGutter {
+        @apply text-gray-800;
+    }
+    .cm-cursor {
+        @apply border-l-2 border-gray-800;
+    }
 }
 
 .cm-singleline .cm-editor {

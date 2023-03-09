@@ -10,6 +10,7 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 import { singleLineExt } from './singleLine';
 
 export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  readOnly?: boolean;
   heightMode?: 'auto' | 'full';
   contentType?: string;
   autoFocus?: boolean;
@@ -23,6 +24,7 @@ export interface EditorProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
 }
 
 export default function Editor({
+  readOnly,
   heightMode,
   contentType,
   autoFocus,
@@ -41,6 +43,7 @@ export default function Editor({
     () =>
       getExtensions({
         container: ref.current,
+        readOnly,
         placeholder,
         singleLine,
         onChange,
@@ -116,6 +119,7 @@ export default function Editor({
         'cm-wrapper text-base bg-background',
         heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
+        readOnly && 'cm-readonly',
       )}
       {...props}
     />
@@ -124,6 +128,7 @@ export default function Editor({
 
 function getExtensions({
   container,
+  readOnly,
   singleLine,
   placeholder,
   onChange,
@@ -131,7 +136,7 @@ function getExtensions({
   useTemplating,
 }: Pick<
   EditorProps,
-  'singleLine' | 'onChange' | 'contentType' | 'useTemplating' | 'placeholder'
+  'singleLine' | 'onChange' | 'contentType' | 'useTemplating' | 'placeholder' | 'readOnly'
 > & { container: HTMLDivElement | null }) {
   const ext = getLanguageExtension({ contentType, useTemplating });
 
@@ -148,6 +153,7 @@ function getExtensions({
     ...(singleLine ? [singleLineExt()] : []),
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(ext ? [ext] : []),
+    ...(readOnly ? [EditorState.readOnly.of(true)] : []),
     ...(placeholder ? [placeholderExt(placeholder)] : []),
 
     ...(singleLine

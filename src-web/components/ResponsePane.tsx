@@ -130,6 +130,7 @@ export function ResponsePane({ requestId, className }: Props) {
               </div>
             ) : response?.body ? (
               <Editor
+                readOnly
                 className="bg-gray-50 dark:!bg-gray-100"
                 valueKey={`${contentType}:${response.updatedAt}`}
                 defaultValue={response?.body}
