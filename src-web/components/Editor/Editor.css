@@ -136,16 +136,8 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        @apply bg-gray-200 rounded-full;
+        @apply bg-gray-200 hover:bg-gray-300 rounded-full;
     }
-}
-
-.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
-    @apply bg-opacity-50;
-}
-
-.cm-editor.cm-focused .cm-scroller::-webkit-scrollbar-thumb {
-    @apply bg-opacity-100;
 }
 
 /* <-- */
