@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
-import init, { greet } from 'hello';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
@@ -21,8 +20,8 @@ import { Workspaces } from './pages/Workspaces';
 setAppearance();
 
 // WASM stuff
-await init();
-greet();
+// await init();
+// greet();
 
 const queryClient = new QueryClient();
 

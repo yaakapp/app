@@ -8,9 +8,9 @@ const darkTheme: AppTheme = {
   appearance: 'dark',
   layers: {
     root: {
-      blackPoint: 0.3,
+      blackPoint: 0.2,
       colors: {
-        gray: '#656196',
+        gray: '#6b5b98',
         red: '#ee3b3b',
         orange: '#ff9411',
         yellow: '#dcc73b',
@@ -59,14 +59,9 @@ export function toggleAppearance(): Appearance {
   return newAppearance;
 }
 
-export function setAppearance(a?: Appearance, gray?: string) {
+export function setAppearance(a?: Appearance) {
   const appearance = a ?? getPreferredAppearance();
   const theme = appearance === 'dark' ? darkTheme : lightTheme;
-
-  // Hack to update the gray color for a demo
-  if (theme.layers.root && gray) {
-    theme.layers.root.colors.gray = gray;
-  }
 
   document.documentElement.setAttribute('data-appearance', appearance);
   document.documentElement.setAttribute('data-theme', theme.name);
