@@ -1,7 +1,6 @@
 import classnames from 'classnames';
 import type { HTMLAttributes } from 'react';
 import React, { useState } from 'react';
-import { SketchPicker } from 'react-color';
 import { useRequestCreate } from '../hooks/useRequest';
 import useTheme from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
@@ -21,10 +20,8 @@ interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 
 export function Sidebar({ className, activeRequestId, workspaceId, requests, ...props }: Props) {
   const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
-  const { appearance, toggleAppearance, forceSetTheme } = useTheme();
+  const { appearance, toggleAppearance } = useTheme();
   const [open, setOpen] = useState<boolean>(false);
-  const [color, setColor] = useState<string>('blue');
-  const [showPicker, setShowPicker] = useState<boolean>(false);
   return (
     <div
       className={classnames(
@@ -63,17 +60,6 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests, ...
           <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
           <IconButton icon="rows" onClick={() => setOpen(true)} />
         </HStack>
-
-        {showPicker && (
-          <SketchPicker
-            className="fixed z-10 bottom-2 right-2"
-            color={color}
-            onChange={(c) => {
-              setColor(c.hex);
-              forceSetTheme(c.hex);
-            }}
-          />
-        )}
       </VStack>
     </div>
   );
@@ -86,7 +72,12 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
         color="custom"
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         disabled={active}
-        className={classnames('w-full', active ? 'bg-gray-200/70 text-gray-900' : 'text-gray-600')}
+        className={classnames(
+          'w-full',
+          active
+            ? 'bg-gray-200/70 text-gray-900'
+            : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/50',
+        )}
         size="sm"
         justify="start"
       >

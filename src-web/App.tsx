@@ -27,13 +27,13 @@ function App() {
 
   return (
     <div className="grid grid-cols-[auto_1fr] h-full text-gray-900 overflow-hidden rounded-[11px]">
-      <Sidebar requests={requests ?? []} workspaceId={workspaceId} activeRequestId={request?.id} />
+      <Sidebar requests={requests ?? []} workspaceId={workspaceId} activeRequestId={p.requestId} />
       {request && (
         <div className="h-full">
           <div className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
             <HStack
               as={WindowDragRegion}
-              className="px-3 bg-background text-gray-900 border-b border-b-gray-200 pt-[1px]"
+              className="px-3 bg-gray-50 text-gray-900 border-b border-b-gray-200 pt-[1px]"
               alignItems="center"
             >
               {request.name}

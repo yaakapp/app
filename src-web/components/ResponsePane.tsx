@@ -2,11 +2,12 @@ import classnames from 'classnames';
 import { useEffect, useMemo, useState } from 'react';
 import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
 import { Dropdown } from './Dropdown';
-import Editor from './Editor/Editor';
+import { Editor } from './Editor/Editor';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import { HStack } from './Stacks';
 import { StatusColor } from './StatusColor';
+import { Webview } from './Webview';
 
 interface Props {
   requestId: string;
@@ -32,15 +33,6 @@ export function ResponsePane({ requestId, className }: Props) {
       response?.headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? 'text/plain',
     [response],
   );
-
-  const contentForIframe: string | null = useMemo(() => {
-    if (!contentType.includes('html')) return null;
-    if (response == null) return null;
-    if (response.body.includes('<head>')) {
-      return response.body.replace(/<head>/gi, `<head><base href="${response.url}"/>`);
-    }
-    return response.body;
-  }, [response?.body, contentType]);
 
   if (!response) {
     return null;
@@ -119,15 +111,8 @@ export function ResponsePane({ requestId, className }: Props) {
               <div className="p-1">
                 <div className="text-white bg-red-500 px-3 py-2 rounded">{response.error}</div>
               </div>
-            ) : viewMode === 'pretty' && contentForIframe !== null ? (
-              <div className="px-2 pb-2">
-                <iframe
-                  title="Response preview"
-                  srcDoc={contentForIframe}
-                  sandbox="allow-scripts allow-same-origin"
-                  className="h-full w-full rounded-md border border-gray-100/20"
-                />
-              </div>
+            ) : viewMode === 'pretty' ? (
+              <Webview body={response.body} contentType={contentType} url={response.url} />
             ) : response?.body ? (
               <Editor
                 readOnly

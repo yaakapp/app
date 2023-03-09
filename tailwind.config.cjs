@@ -3,12 +3,13 @@ module.exports = {
   darkMode: ["class", "[data-appearance=\"dark\"]"],
   content: [
     "./index.html",
-    "./src-web/**/*.{html,tsx}"
+    "./src-web/**/*.{html,js,jsx,ts,tsx}"
   ],
   theme: {
     extend: {},
     fontFamily: {
-      "mono": ["JetBrains Mono", "Menlo", "monospace"]
+      "mono": ["JetBrains Mono", "Menlo", "monospace"],
+      "sans": ["Inter", "sans-serif"],
     },
     fontSize: {
       sm: "0.9rem",
@@ -19,19 +20,10 @@ module.exports = {
       "4xl": "2.441rem",
       "5xl": "3.052rem"
     },
-    borderRadius: {
-      none: "0px",
-      sm: "var(--border-radius-sm)",
-      DEFAULT: "var(--border-radius)",
-      md: "var(--border-radius-md)",
-      lg: "var(--border-radius-lg)",
-      full: "9999px"
-    },
     colors: {
       transparent: "transparent",
       white: "hsl(0 100% 100% / <alpha-value>)",
       black: "hsl(0 100% 0% / <alpha-value>)",
-      background: "hsl(var(--color-background) / <alpha-value>)",
       placeholder: "hsl(var(--color-gray-400) / <alpha-value>)",
       red: color("red"),
       orange: color("orange"),
