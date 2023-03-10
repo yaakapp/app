@@ -25,6 +25,7 @@ export type ButtonProps = {
   children?: ComponentChildren;
   disabled?: boolean;
   title?: string;
+  tabIndex?: number;
 };
 
 export const Button = forwardRef(function Button(
@@ -35,7 +36,6 @@ export const Button = forwardRef(function Button(
     color,
     justify = 'center',
     size = 'md',
-    type = 'button',
     ...props
   }: ButtonProps,
   ref: ForwardedRef<HTMLButtonElement>,
@@ -43,7 +43,6 @@ export const Button = forwardRef(function Button(
   return (
     <button
       ref={ref}
-      type={type}
       className={classnames(
         className,
         'outline-none',

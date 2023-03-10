@@ -4,7 +4,8 @@ import { MotionConfig } from 'framer-motion';
 import { render } from 'preact';
 import { Router } from 'preact-router';
 import { HelmetProvider } from 'react-helmet-async';
-import { App } from './App';
+import { AppRouter } from './components/AppRouter';
+import { Workspace } from './Workspace';
 import { requestsQueryKey } from './hooks/useRequest';
 import { responsesQueryKey } from './hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from './lib/constants';
@@ -23,6 +24,7 @@ setAppearance();
 const queryClient = new QueryClient();
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
+  console.log('UPDATED REQUEST');
   queryClient.setQueryData(
     requestsQueryKey(request.workspaceId),
     (requests: HttpRequest[] = []) => {
@@ -45,12 +47,14 @@ await listen('updated_request', ({ payload: request }: { payload: HttpRequest })
 });
 
 await listen('deleted_request', ({ payload: request }: { payload: HttpRequest }) => {
+  console.log('DELETED REQUEST');
   queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
     requests.filter((r) => r.id !== request.id),
   );
 });
 
 await listen('updated_response', ({ payload: response }: { payload: HttpResponse }) => {
+  console.log('UPDATED RESPONSE');
   queryClient.setQueryData(
     responsesQueryKey(response.requestId),
     (responses: HttpResponse[] = []) => {
@@ -91,11 +95,7 @@ render(
   <QueryClientProvider client={queryClient}>
     <MotionConfig transition={{ duration: 0.1 }}>
       <HelmetProvider>
-        <Router>
-          <Workspaces path="/" />
-          <App path="/workspaces/:workspaceId" />
-          <App path="/workspaces/:workspaceId/requests/:requestId" />
-        </Router>
+        <AppRouter />
       </HelmetProvider>
     </MotionConfig>
   </QueryClientProvider>,

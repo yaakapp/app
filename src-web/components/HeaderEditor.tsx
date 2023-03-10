@@ -93,12 +93,7 @@ function FormRow({
         label="Name"
         placeholder="name"
         defaultValue={pair.header.name}
-        onChange={(name) =>
-          onChange({
-            id: pair.id,
-            header: { name },
-          })
-        }
+        onChange={(name) => onChange({ id: pair.id, header: { name } })}
       />
       <Input
         hideLabel
@@ -107,12 +102,7 @@ function FormRow({
         useEditor={{ useTemplating: true }}
         placeholder="value"
         defaultValue={pair.header.value}
-        onChange={(value) =>
-          onChange({
-            id: pair.id,
-            header: { value },
-          })
-        }
+        onChange={(value) => onChange({ id: pair.id, header: { value } })}
       />
       {onDelete && <IconButton icon="trash" onClick={() => onDelete(pair)} className="w-auto" />}
     </div>

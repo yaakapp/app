@@ -10,7 +10,7 @@ import {
 
 const appearanceQueryKey = ['theme', 'appearance'];
 
-export default function useTheme() {
+export function useTheme() {
   const queryClient = useQueryClient();
   const appearance = useQuery({
     queryKey: appearanceQueryKey,

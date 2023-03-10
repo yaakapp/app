@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { useEffect, useState } from 'react';
+import { useWindowSize } from 'react-use';
 import { RequestPane } from './components/RequestPane';
 import { ResponsePane } from './components/ResponsePane';
 import { Sidebar } from './components/Sidebar';
@@ -12,16 +12,12 @@ type Params = {
   requestId?: string;
 };
 
-export function App({ matches }: { path: string; matches?: Params }) {
+export function Workspace({ matches }: { path: string; matches?: Params }) {
   const workspaceId = matches?.workspaceId ?? '';
   const { data: requests } = useRequests(workspaceId);
   const request = requests?.find((r) => r.id === matches?.requestId);
-
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    window.addEventListener('resize', () => setScreenWidth(window.innerWidth));
-  }, []);
-  const isH = screenWidth > 900;
+  const { width } = useWindowSize();
+  const isH = width > 900;
 
   return (
     <div className="grid grid-cols-[auto_1fr] h-full text-gray-900 overflow-hidden">

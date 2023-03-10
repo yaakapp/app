@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import type { ComponentChildren } from 'preact';
-import type { EditorProps } from './Editor/Editor';
-import { Editor } from './Editor/Editor';
+import type { EditorProps } from './Editor';
+import { Editor } from './Editor';
 import { HStack, VStack } from './Stacks';
 
 interface Props {

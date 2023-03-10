@@ -1,15 +1,15 @@
 import { defaultKeymap } from '@codemirror/commands';
-import { useUnmount } from 'react-use';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import './Editor.css';
+import { useUnmount } from 'react-use';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
 
-export interface EditorProps {
+export interface _EditorProps {
   id?: string;
   readOnly?: boolean;
   className?: string;
@@ -24,7 +24,7 @@ export interface EditorProps {
   singleLine?: boolean;
 }
 
-export function Editor({
+export function _Editor({
   readOnly,
   heightMode,
   contentType,
@@ -35,16 +35,27 @@ export function Editor({
   onChange,
   className,
   singleLine,
-}: EditorProps) {
-  const [cm, setCm] = useState<{ view: EditorView; langHolder: Compartment } | null>(null);
-  const [divRef, setDivRef] = useState<HTMLDivElement | null>(null);
+}: _EditorProps) {
+  console.log('ROUTERss');
+  const cm = useRef<{ view: EditorView; langHolder: Compartment } | null>(null);
 
-  // Unmount editor when component unmounts
-  useUnmount(() => cm?.view.destroy());
+  // Unmount the editor
+  useUnmount(() => {
+    cm.current?.view.destroy();
+    cm.current = null;
+  });
 
+  // Update language extension when contentType changes
+  useEffect(() => {
+    if (cm.current === null) return;
+    const { view, langHolder } = cm.current;
+    const ext = getLanguageExtension({ contentType, useTemplating });
+    view.dispatch({ effects: langHolder.reconfigure(ext) });
+  }, [contentType]);
+
+  // Initialize the editor
   const initDivRef = (el: HTMLDivElement | null) => {
-    setDivRef(el);
-    if (divRef !== null || el === null) return;
+    if (el === null || cm.current !== null) return;
 
     try {
       const langHolder = new Compartment();
@@ -54,7 +65,7 @@ export function Editor({
         extensions: [
           langHolder.of(langExt),
           ...getExtensions({
-            container: divRef,
+            container: el,
             readOnly,
             placeholder,
             singleLine,
@@ -64,27 +75,14 @@ export function Editor({
           }),
         ],
       });
-      let newView;
-      if (cm) {
-        newView = cm.view;
-        newView.setState(state);
-      } else {
-        newView = new EditorView({ state, parent: el });
-      }
-      setCm({ view: newView, langHolder });
+      const view = new EditorView({ state, parent: el });
+      cm.current = { view, langHolder };
       syncGutterBg({ parent: el, className });
-      if (autoFocus && newView) newView.focus();
+      if (autoFocus) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
   };
-
-  // Update language extension when contentType changes
-  useEffect(() => {
-    if (cm === null) return;
-    const ext = getLanguageExtension({ contentType, useTemplating });
-    cm.view.dispatch({ effects: cm.langHolder.reconfigure(ext) });
-  }, [contentType]);
 
   return (
     <div
@@ -109,7 +107,7 @@ function getExtensions({
   contentType,
   useTemplating,
 }: Pick<
-  EditorProps,
+  _EditorProps,
   'singleLine' | 'onChange' | 'contentType' | 'useTemplating' | 'placeholder' | 'readOnly'
 > & { container: HTMLDivElement | null }) {
   const ext = getLanguageExtension({ contentType, useTemplating });
@@ -147,17 +145,6 @@ function getExtensions({
           }),
         ]
       : []),
-
-    // Clear selection on blur
-    EditorView.domEventHandlers({
-      blur: (e, view) => {
-        // Clear selection on blur. Must do on next tick or updating selection
-        // will keep the editor focused
-        setTimeout(() => {
-          view.dispatch({ selection: { anchor: 0, head: 0 } }, { userEvent: 'blur' });
-        });
-      },
-    }),
 
     // Handle onChange
     EditorView.updateListener.of((update) => {

@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import { useRequestUpdate, useSendRequest } from '../hooks/useRequest';
 import type { HttpRequest } from '../lib/models';
-import { Editor } from './Editor/Editor';
+import { Editor } from './Editor';
 import { HeaderEditor } from './HeaderEditor';
 import { TabContent, Tabs } from './Tabs';
 import { UrlBar } from './UrlBar';
@@ -27,9 +27,7 @@ export function RequestPane({ fullHeight, request, className }: Props) {
           onUrlChange={(url) => updateRequest.mutate({ url })}
           sendRequest={sendRequest.mutate}
         />
-        {/*<Divider />*/}
       </div>
-      {/*<Divider className="mb-2" />*/}
       <Tabs
         tabs={[
           { value: 'body', label: 'JSON' },

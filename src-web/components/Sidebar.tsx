@@ -1,7 +1,6 @@
 import classnames from 'classnames';
-import React, { useState } from 'react';
 import { useRequestCreate } from '../hooks/useRequest';
-import useTheme from '../hooks/useTheme';
+import { useTheme } from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { ButtonLink } from './ButtonLink';
 import { IconButton } from './IconButton';
