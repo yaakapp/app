@@ -12,10 +12,6 @@
             outline: none !important;
         }
 
-        .cm-selectionBackground {
-            @apply bg-gray-300;
-        }
-
         .cm-line {
             @apply text-gray-900 pl-1 pr-1.5;
         }
@@ -24,6 +20,15 @@
             @apply text-placeholder;
         }
 
+        /* Don't show selection on blurred input */
+        .cm-selectionBackground {
+            @apply bg-transparent;
+        }
+        &.cm-focused .cm-selectionBackground {
+            @apply bg-gray-400;
+        }
+
+        /* Style gutters */
         .cm-gutters {
             @apply border-0 text-gray-500/60;
 

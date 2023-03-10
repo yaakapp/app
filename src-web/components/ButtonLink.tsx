@@ -11,7 +11,7 @@ export function ButtonLink({ href, className, ...buttonProps }: Props) {
   const linkProps = { href };
   return (
     <Link {...linkProps}>
-      <Button className={classnames(className, 'w-full')} {...buttonProps} />
+      <Button className={classnames(className, 'w-full')} tabIndex={-1} {...buttonProps} />
     </Link>
   );
 }
