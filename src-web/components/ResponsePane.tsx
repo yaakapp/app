@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import { useEffect, useMemo, useState } from 'react';
 import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
 import { Dropdown } from './Dropdown';
-import { Editor } from './Editor/Editor';
+import { Editor } from './Editor';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import { HStack } from './Stacks';
