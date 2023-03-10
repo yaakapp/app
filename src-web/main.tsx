@@ -2,10 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
 import { render } from 'preact';
-import { Router } from 'preact-router';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './components/AppRouter';
-import { Workspace } from './Workspace';
 import { requestsQueryKey } from './hooks/useRequest';
 import { responsesQueryKey } from './hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from './lib/constants';
@@ -13,7 +11,6 @@ import type { HttpRequest, HttpResponse } from './lib/models';
 import { convertDates } from './lib/models';
 import { setAppearance } from './lib/theme/window';
 import './main.css';
-import { Workspaces } from './pages/Workspaces';
 
 setAppearance();
 
@@ -24,7 +21,6 @@ setAppearance();
 const queryClient = new QueryClient();
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
-  console.log('UPDATED REQUEST');
   queryClient.setQueryData(
     requestsQueryKey(request.workspaceId),
     (requests: HttpRequest[] = []) => {
@@ -47,14 +43,12 @@ await listen('updated_request', ({ payload: request }: { payload: HttpRequest })
 });
 
 await listen('deleted_request', ({ payload: request }: { payload: HttpRequest }) => {
-  console.log('DELETED REQUEST');
   queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
     requests.filter((r) => r.id !== request.id),
   );
 });
 
 await listen('updated_response', ({ payload: response }: { payload: HttpResponse }) => {
-  console.log('UPDATED RESPONSE');
   queryClient.setQueryData(
     responsesQueryKey(response.requestId),
     (responses: HttpResponse[] = []) => {
