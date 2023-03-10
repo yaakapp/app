@@ -36,7 +36,6 @@ export function _Editor({
   className,
   singleLine,
 }: _EditorProps) {
-  console.log('ROUTERss');
   const cm = useRef<{ view: EditorView; langHolder: Compartment } | null>(null);
 
   // Unmount the editor
