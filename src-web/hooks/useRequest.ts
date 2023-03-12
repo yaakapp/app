@@ -26,13 +26,15 @@ export function useRequestUpdate(request: HttpRequest | null) {
         throw new Error("Can't update a null request");
       }
 
-      const updatedRequest = { ...request, ...patch } as any;
+      const updatedRequest = { ...request, ...patch };
 
-      // TODO: Figure out why this is necessary
-      updatedRequest.createdAt = updatedRequest.createdAt.toISOString().replace('Z', '');
-      updatedRequest.updatedAt = updatedRequest.updatedAt.toISOString().replace('Z', '');
-
-      await invoke('update_request', { request: updatedRequest });
+      await invoke('update_request', {
+        request: {
+          ...updatedRequest,
+          createdAt: updatedRequest.createdAt.toISOString().replace('Z', ''),
+          updatedAt: updatedRequest.updatedAt.toISOString().replace('Z', ''),
+        },
+      });
     },
   });
 }

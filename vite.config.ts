@@ -4,7 +4,7 @@ import { ViteRsw } from 'vite-plugin-rsw';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+const config = defineConfig({
   plugins: [preact({ devToolsEnabled: true }), ViteRsw(), topLevelAwait()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -30,3 +30,5 @@ export default defineConfig({
     chunkSizeWarningLimit: Infinity,
   },
 });
+
+export default config;

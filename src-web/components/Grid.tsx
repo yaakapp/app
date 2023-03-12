@@ -1,7 +1,7 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
+import type { ComponentChildren } from 'preact';
 
-const colsClasses = {
+const colsClasses: Record<string | number, string> = {
   none: 'grid-cols-none',
   1: 'grid-cols-1',
   2: 'grid-cols-2',
@@ -24,13 +24,15 @@ const gapClasses = {
   3: 'gap-3',
 };
 
-type Props = HTMLAttributes<HTMLElement> & {
+interface Props {
   rows?: keyof typeof rowsClasses;
   cols?: keyof typeof colsClasses;
   gap?: keyof typeof gapClasses;
-};
+  className?: string;
+  children?: ComponentChildren;
+}
 
-export function Grid({ className, cols, gap, ...props }: Props) {
+export function Grid({ className, cols, gap, children }: Props) {
   return (
     <div
       className={classnames(
@@ -39,7 +41,8 @@ export function Grid({ className, cols, gap, ...props }: Props) {
         cols && colsClasses[cols],
         gap && gapClasses[gap],
       )}
-      {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }

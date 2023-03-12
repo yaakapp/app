@@ -2,7 +2,6 @@ import * as D from '@radix-ui/react-dialog';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ComponentChildren } from 'preact';
-import React from 'react';
 import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
