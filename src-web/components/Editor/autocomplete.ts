@@ -11,7 +11,7 @@ export function debouncedAutocompletionDisplay({ millis }: { millis: number }) {
     startCompletion(view);
   }, millis);
 
-  return EditorView.updateListener.of(({ view, docChanged, focusChanged }) => {
+  return EditorView.updateListener.of(({ view, docChanged }) => {
     // const completions = currentCompletions(view.state);
     // const status = completionStatus(view.state);
 

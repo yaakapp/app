@@ -1,6 +1,8 @@
-export function debounce(fn: (...args: any[]) => any, delay: number) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce(fn: (...args: any[]) => void, delay: number) {
   let timer: ReturnType<typeof setTimeout>;
-  const result = function (...args: Parameters<typeof fn>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = function (...args: any[]) {
     clearTimeout(timer);
     timer = setTimeout(() => fn(...args), delay);
   };

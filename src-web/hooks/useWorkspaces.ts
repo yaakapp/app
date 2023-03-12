@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api';
-import { convertDates, Workspace } from '../lib/models';
+import type { Workspace } from '../lib/models';
+import { convertDates } from '../lib/models';
 import { useQuery } from '@tanstack/react-query';
 
 export function useWorkspaces() {

@@ -1,6 +1,7 @@
-import { invoke } from '@tauri-apps/api';
-import { convertDates, HttpResponse } from '../lib/models';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invoke } from '@tauri-apps/api';
+import type { HttpResponse } from '../lib/models';
+import { convertDates } from '../lib/models';
 
 export function responsesQueryKey(requestId: string) {
   return ['responses', { requestId }];
