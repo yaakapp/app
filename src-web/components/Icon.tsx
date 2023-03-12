@@ -64,7 +64,7 @@ export function Icon({ icon, spin, size = 'md', className }: IconProps) {
     <Component
       className={classnames(
         className,
-        'text-gray-800',
+        'text-inherit',
         size === 'md' && 'h-4 w-4',
         size === 'sm' && 'h-3 w-3',
         size === 'xs' && 'h-2 w-2',
