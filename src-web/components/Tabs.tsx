@@ -60,7 +60,6 @@ export function TabTrigger({ value, children, active }: TabTriggerProps) {
       <Button
         color="custom"
         size="sm"
-        disabled={active}
         className={classnames(
           active ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
         )}
