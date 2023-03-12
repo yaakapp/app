@@ -3,6 +3,7 @@ import { Heading } from '../components/Heading';
 import { VStack } from '../components/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function Workspaces(props: { path: string }) {
   const workspaces = useWorkspaces();
   return (

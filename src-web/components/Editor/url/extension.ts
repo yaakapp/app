@@ -1,4 +1,3 @@
-import { completeFromList } from '@codemirror/autocomplete';
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { completions } from './completion';
 import { parser } from './url';

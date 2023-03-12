@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
-import { render } from 'preact';
+import { render } from 'react-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './components/AppRouter';
 import { requestsQueryKey } from './hooks/useRequest';
