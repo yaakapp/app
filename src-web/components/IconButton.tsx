@@ -16,7 +16,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       ref={ref}
       className={classnames(
         className,
-        'group',
+        'text-gray-700 hover:text-gray-1000',
         '!px-0',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-9',
@@ -28,11 +28,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         size={iconSize}
         icon={icon}
         spin={spin}
-        className={classnames(
-          iconClassName,
-          'text-gray-700 group-hover:text-gray-1000',
-          props.disabled && 'opacity-70',
-        )}
+        className={classnames(iconClassName, props.disabled && 'opacity-70')}
       />
     </Button>
   );
