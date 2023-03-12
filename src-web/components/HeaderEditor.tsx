@@ -59,35 +59,34 @@ export function HeaderEditor({ request }: Props) {
   };
 
   return (
-    <VStack space={2}>
-      {pairs.map((p, i) => (
-        <FormRow
-          key={p.id}
-          pair={p}
-          onChange={handleChangeHeader}
-          onDelete={i < pairs.length - 1 ? handleDelete : undefined}
-        />
-      ))}
-    </VStack>
+    <div className="pb-6">
+      <VStack space={2}>
+        {pairs.map((p, i) => (
+          <FormRow
+            key={p.id}
+            pair={p}
+            onChange={handleChangeHeader}
+            onDelete={i < pairs.length - 1 ? handleDelete : undefined}
+          />
+        ))}
+      </VStack>
+    </div>
   );
 }
 
 function FormRow({
-  autoFocus,
   pair,
   onChange,
   onDelete,
 }: {
-  autoFocus?: boolean;
   pair: PairWithId;
   onChange: (pair: PairWithId) => void;
   onDelete?: (pair: PairWithId) => void;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
+    <div className="group grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
       <Input
         hideLabel
-        autoFocus={autoFocus}
         useEditor={{ useTemplating: true }}
         name="name"
         label="Name"
@@ -104,7 +103,13 @@ function FormRow({
         defaultValue={pair.header.value}
         onChange={(value) => onChange({ id: pair.id, header: { value } })}
       />
-      {onDelete && <IconButton icon="trash" onClick={() => onDelete(pair)} className="w-auto" />}
+      {onDelete && (
+        <IconButton
+          icon="trash"
+          onClick={() => onDelete(pair)}
+          className="invisible group-hover:visible"
+        />
+      )}
     </div>
   );
 }

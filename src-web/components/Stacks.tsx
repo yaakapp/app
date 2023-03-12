@@ -92,7 +92,7 @@ function BaseStack({ className, alignItems, justifyContent, children, as }: Base
     <Component
       className={classnames(
         className,
-        'flex flex-grow-0',
+        'flex',
         alignItems === 'center' && 'items-center',
         alignItems === 'start' && 'items-start',
         justifyContent === 'start' && 'justify-start',

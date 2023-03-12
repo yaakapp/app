@@ -54,7 +54,7 @@ export function ResponsePane({ requestId, className }: Props) {
           <>
             <HStack
               alignItems="center"
-              className="italic text-gray-600 text-sm w-full mb-1 flex-shrink-0 pl-2"
+              className="italic text-gray-700 text-sm w-full mb-1 flex-shrink-0 pl-2"
             >
               {response.status > 0 && (
                 <div className="whitespace-nowrap">
@@ -97,12 +97,7 @@ export function ResponsePane({ requestId, className }: Props) {
                     })),
                   ]}
                 >
-                  <IconButton
-                    icon="clock"
-                    className="ml-auto"
-                    iconClassName="text-gray-300"
-                    size="sm"
-                  />
+                  <IconButton icon="clock" className="ml-auto" size="sm" />
                 </Dropdown>
               </HStack>
             </HStack>

@@ -47,7 +47,7 @@ export const Button = forwardRef(function Button(
         className,
         'outline-none',
         'border border-transparent focus-visible:border-blue-300',
-        'transition-all rounded-md flex items-center',
+        'rounded-md flex items-center',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
