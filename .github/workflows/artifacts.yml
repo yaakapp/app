@@ -42,7 +42,10 @@ jobs:
       - name: Install dependencies
         run: |
           cargo install rsw wasm-pack
-          npm install
+          npm ci
+
+      - name: Run tests
+        run: npm test
 
       - name: Build artifacts
         working-directory: ./src-tauri
