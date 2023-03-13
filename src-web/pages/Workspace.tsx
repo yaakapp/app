@@ -1,11 +1,11 @@
 import classnames from 'classnames';
 import { useWindowSize } from 'react-use';
-import { RequestPane } from './components/RequestPane';
-import { ResponsePane } from './components/ResponsePane';
-import { Sidebar } from './components/Sidebar';
-import { HStack } from './components/Stacks';
-import { WindowDragRegion } from './components/WindowDragRegion';
-import { useRequests } from './hooks/useRequest';
+import { RequestPane } from '../components/RequestPane';
+import { ResponsePane } from '../components/ResponsePane';
+import { Sidebar } from '../components/Sidebar';
+import { HStack } from '../components/Stacks';
+import { WindowDragRegion } from '../components/WindowDragRegion';
+import { useRequests } from '../hooks/useRequest';
 
 type Params = {
   workspaceId: string;

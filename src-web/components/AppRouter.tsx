@@ -1,6 +1,6 @@
 import { Router } from 'preact-router';
 import { Workspaces } from '../pages/Workspaces';
-import { Workspace } from '../Workspace';
+import { Workspace } from '../pages/Workspace';
 
 export function AppRouter() {
   return (
