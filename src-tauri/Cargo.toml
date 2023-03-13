@@ -1,10 +1,10 @@
 [package]
-name = "tauri-app"
+name = "yaak-app"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "A network protocol testing utility app"
+authors = ["Gregory Schier"]
+license = "MIT"
+repository = "https://github.com/gschier/yaak-app"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
