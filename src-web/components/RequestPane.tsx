@@ -47,7 +47,7 @@ export function RequestPane({ fullHeight, request, className }: Props) {
             heightMode={fullHeight ? 'full' : 'auto'}
             useTemplating
             defaultValue={request.body ?? ''}
-            contentType="application/json"
+            contentType="application/graphql+json"
             onChange={(body) => updateRequest.mutate({ body })}
           />
         </TabContent>
