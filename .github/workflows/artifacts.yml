@@ -4,7 +4,8 @@
 
 name: updater test artifacts
 on:
-  tags: [ v* ]
+  push:
+    tags: [ v* ]
 
 jobs:
   build-artifacts:
