@@ -3,9 +3,11 @@ import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
+import { formatSdl } from 'format-graphql';
 import { useEffect, useRef } from 'react';
-import './Editor.css';
 import { useUnmount } from 'react-use';
+import { IconButton } from '../IconButton';
+import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
 
@@ -93,7 +95,17 @@ export function _Editor({
         singleLine ? 'cm-singleline' : 'cm-multiline',
         readOnly && 'cm-readonly',
       )}
-    />
+    >
+      <IconButton
+        icon="eye"
+        className="absolute right-3 bottom-3 z-10"
+        onClick={() => {
+          const doc = cm.current?.view.state.doc ?? '';
+          const insert = formatSdl(doc.toString());
+          cm.current?.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
+        }}
+      />
+    </div>
   );
 }
 
