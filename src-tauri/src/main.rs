@@ -352,7 +352,10 @@ fn main() {
         .system_tray(system_tray)
         .setup(|app| {
             let win = app.get_window("main").unwrap();
+
+            #[cfg(target_os = "macos")]
             win.position_traffic_lights();
+
             Ok(())
         })
         .setup(|app| {
@@ -402,6 +405,8 @@ fn main() {
         .on_window_event(|e| {
             let apply_offset = || {
                 let win = e.window();
+
+                #[cfg(target_os = "macos")]
                 win.position_traffic_lights();
             };
 
