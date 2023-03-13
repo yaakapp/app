@@ -4,13 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "rsw build && vite build",
-    "dev": "vite",
-    "lint": "tsc && eslint . --ext .ts,.tsx",
-    "preview": "vite preview",
     "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\"",
     "tauri-build": "npm run build:icon && tauri build",
+    "build": "npm run build:rsw && npm run build:frontend",
+    "lint": "tsc && eslint . --ext .ts,.tsx",
     "build:icon": "tauri icon src-tauri/icons/icon.png",
+    "build:rsw": "rsw build",
+    "build:frontend": "vite build",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
