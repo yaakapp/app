@@ -1,7 +1,7 @@
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
-import { Link } from 'preact-router';
-import { forwardRef } from 'preact/compat';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -15,18 +15,18 @@ const colorStyles = {
 };
 
 export type ButtonProps = {
-  href?: string;
+  to?: string;
   color?: keyof typeof colorStyles;
   size?: 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
-  onClick?: (event: MouseEvent) => void;
-  onDoubleClick?: (event: MouseEvent) => void;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+  onDoubleClick?: (event: MouseEvent<HTMLElement>) => void;
   contentEditable?: boolean;
-  onKeyDown?: (event: KeyboardEvent) => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   forDropdown?: boolean;
   className?: string;
-  children?: ComponentChildren;
+  children?: ReactNode;
   disabled?: boolean;
   title?: string;
   tabIndex?: number;
@@ -34,30 +34,60 @@ export type ButtonProps = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Button = forwardRef<any, ButtonProps>(function Button(
-  { href, className, children, forDropdown, color, justify = 'center', size = 'md', ...props },
+  {
+    to,
+    className,
+    children,
+    forDropdown,
+    color,
+    justify = 'center',
+    size = 'md',
+    ...props
+  }: ButtonProps,
   ref,
 ) {
-  // const Component = 'button';
-  const Component = typeof href === 'string' ? Link : 'button';
-  return (
-    <Component
-      ref={ref}
-      href={href}
-      className={classnames(
-        className,
-        'outline-none',
-        'border border-transparent focus-visible:border-blue-300',
-        'rounded-md flex items-center',
-        colorStyles[color || 'default'],
-        justify === 'start' && 'justify-start',
-        justify === 'center' && 'justify-center',
-        size === 'md' && 'h-9 px-3',
-        size === 'sm' && 'h-7 px-2.5 text-sm',
-      )}
-      {...props}
-    >
-      {children}
-      {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
-    </Component>
-  );
+  if (typeof to === 'string') {
+    return (
+      <Link
+        ref={ref}
+        to={to}
+        className={classnames(
+          className,
+          'outline-none',
+          'border border-transparent focus-visible:border-blue-300',
+          'rounded-md flex items-center',
+          colorStyles[color || 'default'],
+          justify === 'start' && 'justify-start',
+          justify === 'center' && 'justify-center',
+          size === 'md' && 'h-9 px-3',
+          size === 'sm' && 'h-7 px-2.5 text-sm',
+        )}
+        {...props}
+      >
+        {children}
+        {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
+      </Link>
+    );
+  } else {
+    return (
+      <button
+        ref={ref}
+        className={classnames(
+          className,
+          'outline-none',
+          'border border-transparent focus-visible:border-blue-300',
+          'rounded-md flex items-center',
+          colorStyles[color || 'default'],
+          justify === 'start' && 'justify-start',
+          justify === 'center' && 'justify-center',
+          size === 'md' && 'h-9 px-3',
+          size === 'sm' && 'h-7 px-2.5 text-sm',
+        )}
+        {...props}
+      >
+        {children}
+        {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
+      </button>
+    );
+  }
 });

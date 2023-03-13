@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { ComponentChildren, ComponentType } from 'preact';
+import type { ComponentType, ReactNode } from 'react';
 import { Children, Fragment } from 'react';
 
 const spaceClassesX = {
@@ -24,7 +24,7 @@ const spaceClassesY = {
 
 interface HStackProps extends BaseStackProps {
   space?: keyof typeof spaceClassesX;
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 export function HStack({ className, space, children, ...props }: HStackProps) {
@@ -52,7 +52,7 @@ export function HStack({ className, space, children, ...props }: HStackProps) {
 
 export interface VStackProps extends BaseStackProps {
   space?: keyof typeof spaceClassesY;
-  children: ComponentChildren;
+  children: ReactNode;
 }
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
@@ -83,7 +83,7 @@ interface BaseStackProps {
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';
   className?: string;
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 function BaseStack({ className, alignItems, justifyContent, children, as }: BaseStackProps) {

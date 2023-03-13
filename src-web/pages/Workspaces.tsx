@@ -3,14 +3,13 @@ import { Heading } from '../components/Heading';
 import { VStack } from '../components/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function Workspaces(props: { path: string }) {
+export function Workspaces() {
   const workspaces = useWorkspaces();
   return (
     <VStack as="ul" className="p-12">
       <Heading>Workspaces</Heading>
       {workspaces.data?.map((w) => (
-        <ButtonLink key={w.id} color="gray" href={`/workspaces/${w.id}`}>
+        <ButtonLink key={w.id} color="gray" to={`/workspaces/${w.id}`}>
           {w.name}
         </ButtonLink>
       ))}

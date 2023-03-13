@@ -1,6 +1,6 @@
 import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Button } from './Button';
 import { ScrollArea } from './ScrollArea';
@@ -11,10 +11,10 @@ import './Tabs.css';
 interface Props {
   defaultValue?: string;
   label: string;
-  tabs: { value: string; label: ComponentChildren }[];
+  tabs: { value: string; label: ReactNode }[];
   tabListClassName?: string;
   className?: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }
 
 export function Tabs({ defaultValue, label, children, tabs, className, tabListClassName }: Props) {
@@ -50,7 +50,7 @@ export function Tabs({ defaultValue, label, children, tabs, className, tabListCl
 
 interface TabTriggerProps {
   value: string;
-  children: ComponentChildren;
+  children: ReactNode;
   active?: boolean;
 }
 
@@ -72,7 +72,7 @@ export function TabTrigger({ value, children, active }: TabTriggerProps) {
 
 interface TabContentProps {
   value: string;
-  children: ComponentChildren;
+  children: ReactNode;
   className?: string;
 }
 
