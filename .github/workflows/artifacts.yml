@@ -26,6 +26,7 @@ jobs:
       - name: build sample artifacts (updater)
         working-directory: ./src-tauri
         run: |
+          cargo install rsw
           npm install
           npm run tauri-build
         env:
