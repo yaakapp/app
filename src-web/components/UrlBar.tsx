@@ -23,7 +23,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
     >
       <Input
         hideLabel
-        // useEditor={{ useTemplating: true, contentType: 'url' }}
+        useEditor={{ useTemplating: true, contentType: 'url' }}
         className="px-0"
         name="url"
         label="Enter URL"
