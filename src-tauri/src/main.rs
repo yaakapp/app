@@ -10,7 +10,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::fs::create_dir_all;
 
-use http::header::{HeaderName, USER_AGENT};
+use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
 use reqwest::redirect::Policy;
 use sqlx::migrate::Migrator;
@@ -18,7 +18,7 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
-use tauri::{AppHandle, Menu, MenuItem, State, Submenu, Wry};
+use tauri::{AppHandle, Menu, State, Submenu, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
 
@@ -104,6 +104,7 @@ async fn send_request(
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
+    headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
 
     for h in req.headers.0 {
         if h.name.is_empty() && h.value.is_empty() {
@@ -337,12 +338,14 @@ fn main() {
     let tray_menu = SystemTrayMenu::new().add_item(quit);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
-    let submenu = Submenu::new("View", Menu::new()
+    let default_menu = Menu::os_default("Yaak".to_string().as_str());
+    let submenu = Submenu::new("Test Menu", Menu::new()
         .add_item(CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size").accelerator("CmdOrCtrl+0"))
         .add_item(CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"))
         .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-")),
     );
-    let menu = Menu::new().add_native_item(MenuItem::Quit).add_submenu(submenu);
+
+    let menu = default_menu.add_submenu(submenu);
 
     tauri::Builder::default()
         .menu(menu)
