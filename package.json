@@ -4,13 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\"",
+    "tauri-dev": "tauri dev",
     "tauri-build": "npm run build:icon && tauri build",
-    "build": "npm run build:rsw && npm run build:frontend",
+    "build": "npm run build:frontend",
     "dev": "vite dev",
     "lint": "tsc && eslint . --ext .ts,.tsx",
     "build:icon": "tauri icon src-tauri/icons/icon.png",
-    "build:rsw": "rsw build",
     "build:frontend": "vite build",
     "test": "vitest",
     "coverage": "vitest run --coverage"
@@ -65,7 +64,6 @@
     "tailwindcss": "^3.2.7",
     "typescript": "^4.6.4",
     "vite": "^4.0.0",
-    "vite-plugin-rsw": "^2.0.11",
     "vite-plugin-top-level-await": "^1.2.4",
     "vitest": "^0.29.2"
   }

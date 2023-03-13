@@ -14,10 +14,6 @@ import './main.css';
 
 setAppearance();
 
-// WASM stuff
-// await init();
-// greet();
-
 const queryClient = new QueryClient();
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {

@@ -1,11 +1,10 @@
 import preact from '@preact/preset-vite';
 import { defineConfig } from 'vite';
-import { ViteRsw } from 'vite-plugin-rsw';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
 // https://vitejs.dev/config/
 const config = defineConfig({
-  plugins: [preact({ devToolsEnabled: true }), ViteRsw(), topLevelAwait()],
+  plugins: [preact({ devToolsEnabled: true }), topLevelAwait()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors
