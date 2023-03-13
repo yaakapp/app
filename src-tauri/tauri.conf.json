@@ -1,0 +1,86 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "Yaak",
+    "version": "0.0.1"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 800,
+        "hiddenTitle": true,
+        "resizable": true,
+        "title": "Yaak",
+        "titleBarStyle": "Overlay",
+        "width": 1400
+      }
+    ],
+    "allowlist": {
+      "all": false,
+      "fs": {
+        "scope": [
+          "$RESOURCE/*"
+        ]
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "window": {
+        "startDragging": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "co.schier.yaak",
+      "longDescription": "",
+      "resources": [
+        "plugins/*",
+        "migrations/*"
+      ],
+      "shortDescription": "",
+      "targets": "all",
+      "deb": {
+        "depends": []
+      },
+      "macOS": {
+        "exceptionDomain": "",
+        "frameworks": []
+      },
+      "windows": {
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {},
+    "systemTray": {
+      "iconAsTemplate": true,
+      "iconPath": "icons/icon.png"
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoints": [
+        "https://update.yaak.app/check/{{target}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRDJFREQ1MjExQjdGN0IKUldSN2Z4c2gxZTNTd1FHNCtmYnFXMHVVQzhuNkJOM1cwOFBodmdLall3ckhKenpKUytHSTR1MlkK"
+    }
+  }
+}

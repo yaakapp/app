@@ -15,7 +15,7 @@ tauri-build = { version = "1.2", features = [] }
 [dependencies]
 serde_json = { version = "1.0", features = ["raw_value"] }
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2", features = ["config-toml", "devtools", "shell-open", "system-tray", "window-start-dragging"] }
+tauri = { version = "1.2", features = ["config-toml", "devtools", "shell-open", "system-tray", "updater", "window-start-dragging"] }
 http = { version = "0.2.8" }
 reqwest = { version = "0.11.14", features = ["json"] }
 tokio = { version = "1.25.0", features = ["sync"] }
