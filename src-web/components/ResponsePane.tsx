@@ -1,6 +1,7 @@
 import classnames from 'classnames';
 import { useEffect, useMemo, useState } from 'react';
 import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
+import { tryFormatJson } from '../lib/formatters';
 import { Dropdown } from './Dropdown';
 import { Editor } from './Editor';
 import { Icon } from './Icon';
@@ -16,7 +17,7 @@ interface Props {
 
 export function ResponsePane({ requestId, className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('raw');
+  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
   const responses = useResponses(requestId);
   const response = activeResponseId
     ? responses.data.find((r) => r.id === activeResponseId)
@@ -69,14 +70,12 @@ export function ResponsePane({ requestId, className }: Props) {
               )}
 
               <HStack alignItems="center" className="ml-auto h-8">
-                {contentType.includes('html') && (
-                  <IconButton
-                    icon={viewMode === 'pretty' ? 'eye' : 'code'}
-                    size="sm"
-                    className="ml-1"
-                    onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
-                  />
-                )}
+                <IconButton
+                  icon={viewMode === 'pretty' ? 'eye' : 'code'}
+                  size="sm"
+                  className="ml-1"
+                  onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
+                />
                 <Dropdown
                   items={[
                     {
@@ -106,8 +105,16 @@ export function ResponsePane({ requestId, className }: Props) {
               <div className="p-1">
                 <div className="text-white bg-red-500 px-3 py-2 rounded">{response.error}</div>
               </div>
-            ) : viewMode === 'pretty' ? (
+            ) : viewMode === 'pretty' && contentType.includes('html') ? (
               <Webview body={response.body} contentType={contentType} url={response.url} />
+            ) : viewMode === 'pretty' && contentType.includes('json') ? (
+              <Editor
+                readOnly
+                key={`${contentType}:${response.updatedAt}:pretty`}
+                className="bg-gray-50 dark:!bg-gray-100"
+                defaultValue={tryFormatJson(response?.body)}
+                contentType={contentType}
+              />
             ) : response?.body ? (
               <Editor
                 readOnly

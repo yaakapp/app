@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRequestUpdate } from '../hooks/useRequest';
 import type { HttpHeader, HttpRequest } from '../lib/models';
 import { IconButton } from './IconButton';

@@ -1,5 +1,4 @@
 import classnames from 'classnames';
-import React from 'react';
 import { HStack, VStack } from './Stacks';
 
 export function Colors() {
