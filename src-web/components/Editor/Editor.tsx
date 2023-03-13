@@ -96,15 +96,17 @@ export function _Editor({
         readOnly && 'cm-readonly',
       )}
     >
-      <IconButton
-        icon="eye"
-        className="absolute right-3 bottom-3 z-10"
-        onClick={() => {
-          const doc = cm.current?.view.state.doc ?? '';
-          const insert = formatSdl(doc.toString());
-          cm.current?.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
-        }}
-      />
+      {contentType?.includes("graphql") && (
+        <IconButton
+          icon="eye"
+          className="absolute right-3 bottom-3 z-10"
+          onClick={() => {
+            const doc = cm.current?.view.state.doc ?? '';
+            const insert = formatSdl(doc.toString());
+            cm.current?.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
+          }}
+        />
+      )}
     </div>
   );
 }

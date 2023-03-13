@@ -1,5 +1,7 @@
 import classnames from 'classnames';
-import { useRequestCreate } from '../hooks/useRequest';
+import { Link } from 'preact-router';
+import { useState } from 'react';
+import { useRequestCreate, useRequestUpdate } from '../hooks/useRequest';
 import { useTheme } from '../hooks/useTheme';
 import type { HttpRequest } from '../lib/models';
 import { ButtonLink } from './ButtonLink';
@@ -21,7 +23,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
     <div
       className={classnames(
         className,
-        'min-w-[10rem] bg-gray-100 h-full border-r border-gray-200 relative',
+        'min-w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative',
       )}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
@@ -52,22 +54,48 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
 }
 
 function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
+  const updateRequest = useRequestUpdate(request);
+  const [editing, setEditing] = useState<boolean>(false);
+  const handleSubmitNameEdit = async (el: HTMLInputElement) => {
+    await updateRequest.mutate({ name: el.value });
+    setEditing(false);
+  };
+
+  const handleFocus = (el: HTMLInputElement | null) => {
+    el?.focus();
+  };
+
   return (
-    <li key={request.id}>
+    <li key={request.id} className="flex">
       <ButtonLink
         color="custom"
-        href={`/workspaces/${request.workspaceId}/requests/${request.id}`}
-        disabled={active}
+        size="sm"
         className={classnames(
           'w-full',
           active
             ? 'bg-gray-200/70 text-gray-900'
             : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
         )}
-        size="sm"
+        href={`/workspaces/${request.workspaceId}/requests/${request.id}`}
+        contentEditable={editing}
+        onDoubleClick={() => setEditing(true)}
         justify="start"
       >
-        {request.name || request.url}
+        {editing ? (
+          <input
+            ref={handleFocus}
+            defaultValue={request.name}
+            className="bg-transparent outline-none"
+            onBlur={(e) => handleSubmitNameEdit(e.currentTarget)}
+            onKeyDown={async (e) => {
+              if (e.key === 'Enter') {
+                await handleSubmitNameEdit(e.currentTarget);
+              }
+            }}
+          />
+        ) : (
+          request.name || request.url
+        )}
       </ButtonLink>
     </li>
   );
