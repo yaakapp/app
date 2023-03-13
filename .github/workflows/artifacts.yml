@@ -57,20 +57,27 @@ jobs:
       - name: Upload Ubuntu Artifacts
         uses: actions/upload-artifact@v2
         if: matrix.platform == 'ubuntu-latest'
+        working-directory: ./src-tauri/target/release/bundle
         with:
           name: linux-updater-artifacts
-          path: ./target/release/bundle/appimage/*.AppImage.*
+          path: ./appimage/*.AppImage.*
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v2
         if: matrix.platform == 'windows-latest'
+        working-directory: ./src-tauri/target/release/bundle
         with:
           name: windows-updater-artifacts
-          path: ./target/release/bundle/msi/*
+          path: ./msi/*
 
       - name: Upload MacOS Artifacts
         uses: actions/upload-artifact@v2
         if: matrix.platform == 'macos-latest'
+        working-directory: ./src-tauri/target/release/bundle
         with:
           name: macos-updater-artifacts
-          path: ./target/release/bundle/macos/*.app.tar.*
+          path: |
+            ./macos/*.app
+            ./macos/*.app.tar.gz
+            ./macos/*.sig
+            ./dmg/*.dmg
