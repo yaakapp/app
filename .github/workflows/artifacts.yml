@@ -14,38 +14,59 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: install stable
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: install webkit2gtk (ubuntu only)
+
+      - name: Install webkit2gtk (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0
-      - name: build sample artifacts (updater)
-        working-directory: ./src-tauri
+
+      - name: Install dependencies
         run: |
           cargo install rsw wasm-pack
           npm install
-          npm run tauri-build
-        env:
-          TAURI_PRIVATE_KEY: ${{secrets.TAURI_PRIVATE_KEY}}
-          TAURI_KEY_PASSWORD: ${{secrets.TAURI_KEY_PASSWORD}}
 
-      - uses: actions/upload-artifact@v2
+      - name: Build artifacts
+        working-directory: ./src-tauri
+        run: npm run tauri-build
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+      - name: Upload Ubuntu Artifacts
+        uses: actions/upload-artifact@v2
         if: matrix.platform == 'ubuntu-latest'
         with:
           name: linux-updater-artifacts
           path: ./target/release/bundle/appimage/*.AppImage.*
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v2
         if: matrix.platform == 'windows-latest'
         with:
           name: windows-updater-artifacts
           path: ./target/release/bundle/msi/*
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload MacOS Artifacts
+        uses: actions/upload-artifact@v2
         if: matrix.platform == 'macos-latest'
         with:
           name: macos-updater-artifacts
