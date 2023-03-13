@@ -24,8 +24,6 @@ jobs:
             ~/.cargo/git
             ./src-tauri/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
-      - uses: Swatinem/rust-cache@v2
-        working-directory: src-tauri
       - uses: actions/setup-node@v3
         with:
           node-version: 18
