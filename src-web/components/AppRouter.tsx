@@ -1,13 +1,31 @@
-import { Router } from 'preact-router';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Workspaces } from '../pages/Workspaces';
 import { Workspace } from '../pages/Workspace';
+import { RouteError } from "./RouteError";
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    errorElement: <RouteError />,
+    children: [
+      {
+        path: '/',
+        element: <Workspaces />,
+      },
+      {
+        path: '/workspaces/:workspaceId',
+        element: <Workspace />,
+      },
+      {
+        path: '/workspaces/:workspaceId/requests/:requestId',
+        element: <Workspace />,
+      },
+    ],
+  },
+]);
 
 export function AppRouter() {
   return (
-    <Router>
-      <Workspaces path="/" />
-      <Workspace path="/workspaces/:workspaceId" />
-      <Workspace path="/workspaces/:workspaceId/requests/:requestId" />
-    </Router>
+    <RouterProvider router={router} />
   );
 }

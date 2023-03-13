@@ -2,12 +2,11 @@ import * as D from '@radix-ui/react-dropdown-menu';
 import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
-import type { ComponentChildren } from 'preact';
-import type { ForwardedRef } from 'preact/compat';
+import type { ReactNode, ForwardedRef } from 'react';
 import { forwardRef, useImperativeHandle, useLayoutEffect, useState } from 'react';
 
 interface DropdownMenuRadioProps {
-  children: ComponentChildren;
+  children: ReactNode;
   onValueChange: ((v: { label: string; value: string }) => void) | null;
   value: string;
   label?: string;
@@ -51,13 +50,13 @@ export function DropdownMenuRadio({
 }
 
 export interface DropdownProps {
-  children: ComponentChildren;
+  children: ReactNode;
   items: (
     | {
         label: string;
         onSelect?: () => void;
         disabled?: boolean;
-        leftSlot?: ComponentChildren;
+        leftSlot?: ReactNode;
       }
     | '-----'
   )[];
@@ -92,7 +91,7 @@ export function Dropdown({ children, items }: DropdownProps) {
 }
 
 interface DropdownMenuPortalProps {
-  children: ComponentChildren;
+  children: ReactNode;
 }
 
 function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
@@ -265,7 +264,7 @@ function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorP
 }
 
 type DropdownMenuTriggerProps = D.DropdownMenuTriggerProps & {
-  children: ComponentChildren;
+  children: ReactNode;
   className?: string;
 };
 
@@ -278,9 +277,9 @@ function DropdownMenuTrigger({ children, className, ...props }: DropdownMenuTrig
 }
 
 interface ItemInnerProps {
-  leftSlot?: ComponentChildren;
-  rightSlot?: ComponentChildren;
-  children: ComponentChildren;
+  leftSlot?: ReactNode;
+  rightSlot?: ReactNode;
+  children: ReactNode;
   noHover?: boolean;
   className?: string;
 }

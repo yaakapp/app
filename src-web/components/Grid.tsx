@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 const colsClasses: Record<string | number, string> = {
   none: 'grid-cols-none',
@@ -29,7 +29,7 @@ interface Props {
   cols?: keyof typeof colsClasses;
   gap?: keyof typeof gapClasses;
   className?: string;
-  children?: ComponentChildren;
+  children?: ReactNode;
 }
 
 export function Grid({ className, cols, gap, children }: Props) {

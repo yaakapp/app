@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { HStack, VStack } from './Stacks';
@@ -13,8 +13,8 @@ interface Props {
   onChange?: (value: string) => void;
   useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating'>;
   defaultValue?: string;
-  leftSlot?: ComponentChildren;
-  rightSlot?: ComponentChildren;
+  leftSlot?: ReactNode;
+  rightSlot?: ReactNode;
   size?: 'sm' | 'md';
   className?: string;
   placeholder?: string;

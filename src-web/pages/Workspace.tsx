@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import { useParams } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 import { RequestPane } from '../components/RequestPane';
 import { ResponsePane } from '../components/ResponsePane';
@@ -12,10 +13,11 @@ type Params = {
   requestId?: string;
 };
 
-export function Workspace({ matches }: { path: string; matches?: Params }) {
-  const workspaceId = matches?.workspaceId ?? '';
+export function Workspace() {
+  const params = useParams<Params>();
+  const workspaceId = params?.workspaceId ?? '';
   const { data: requests } = useRequests(workspaceId);
-  const request = requests?.find((r) => r.id === matches?.requestId);
+  const request = requests?.find((r) => r.id === params?.requestId);
   const { width } = useWindowSize();
   const isH = width > 900;
 
@@ -24,7 +26,7 @@ export function Workspace({ matches }: { path: string; matches?: Params }) {
       <Sidebar
         requests={requests ?? []}
         workspaceId={workspaceId}
-        activeRequestId={matches?.requestId}
+        activeRequestId={params?.requestId}
       />
       {request && (
         <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full">

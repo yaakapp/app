@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { route } from 'preact-router';
+import { useNavigate, useNavigation } from 'react-router-dom';
 import type { HttpRequest } from '../lib/models';
 import { convertDates } from '../lib/models';
 import { responsesQueryKey } from './useResponses';
@@ -46,12 +46,12 @@ export function useRequestCreate({
   workspaceId: string;
   navigateAfter: boolean;
 }) {
+  const navigate = useNavigate();
   return useMutation<string, unknown, Pick<HttpRequest, 'name'>>({
     mutationFn: async (patch) => invoke('create_request', { ...patch, workspaceId }),
     onSuccess: async (requestId) => {
-      console.log('DONE', { requestId, navigateAfter });
       if (navigateAfter) {
-        route(`/workspaces/${workspaceId}/requests/${requestId}`);
+        navigate(`/workspaces/${workspaceId}/requests/${requestId}`);
       }
     },
   });

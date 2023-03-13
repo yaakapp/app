@@ -1,9 +1,9 @@
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 type Props = {
   className?: string;
-  children?: ComponentChildren;
+  children?: ReactNode;
 };
 
 export function Heading({ className, children, ...props }: Props) {
