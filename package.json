@@ -7,6 +7,7 @@
     "tauri-dev": "concurrently -n app,rsw \"tauri dev\" \"rsw watch\"",
     "tauri-build": "npm run build:icon && tauri build",
     "build": "npm run build:rsw && npm run build:frontend",
+    "dev": "vite dev",
     "lint": "tsc && eslint . --ext .ts,.tsx",
     "build:icon": "tauri icon src-tauri/icons/icon.png",
     "build:rsw": "rsw build",
