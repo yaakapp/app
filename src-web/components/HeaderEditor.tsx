@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRequestUpdate } from '../hooks/useRequest';
 import type { HttpHeader, HttpRequest } from '../lib/models';
 import { IconButton } from './IconButton';
@@ -13,13 +13,10 @@ type PairWithId = { header: Partial<HttpHeader>; id: string };
 
 export function HeaderEditor({ request }: Props) {
   const updateRequest = useRequestUpdate(request);
-  const saveHeaders = useCallback(
-    (pairs: PairWithId[]) => {
-      const headers = pairs.map((p) => ({ name: '', value: '', ...p.header }));
-      updateRequest.mutate({ headers });
-    },
-    [updateRequest],
-  );
+  const saveHeaders = (pairs: PairWithId[]) => {
+    const headers = pairs.map((p) => ({ name: '', value: '', ...p.header }));
+    updateRequest.mutate({ headers });
+  };
 
   const newPair = () => {
     return { header: { name: '', value: '' }, id: Math.random().toString() };
@@ -29,16 +26,13 @@ export function HeaderEditor({ request }: Props) {
     request.headers.map((h) => ({ header: h, id: Math.random().toString() })),
   );
 
-  const setPairsAndSave = useCallback(
-    (fn: (pairs: PairWithId[]) => PairWithId[]) => {
-      setPairs((oldPairs) => {
-        const newPairs = fn(oldPairs);
-        saveHeaders(newPairs);
-        return newPairs;
-      });
-    },
-    [saveHeaders],
-  );
+  const setPairsAndSave = (fn: (pairs: PairWithId[]) => PairWithId[]) => {
+    setPairs((oldPairs) => {
+      const newPairs = fn(oldPairs);
+      saveHeaders(newPairs);
+      return newPairs;
+    });
+  };
 
   const handleChangeHeader = (pair: PairWithId) => {
     setPairsAndSave((pairs) =>
@@ -58,7 +52,7 @@ export function HeaderEditor({ request }: Props) {
     if (lastPair.header.name !== '' || lastPair.header.value !== '') {
       setPairsAndSave((pairs) => [...pairs, newPair()]);
     }
-  }, [pairs, setPairsAndSave]);
+  }, [pairs]);
 
   const handleDelete = (pair: PairWithId) => {
     setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
