@@ -1,9 +1,9 @@
 import classnames from 'classnames';
-import type { ComponentChildren } from 'preact';
+import type { ReactNode } from 'react';
 
 interface Props {
   statusCode: number;
-  children: ComponentChildren;
+  children: ReactNode;
 }
 
 export function StatusColor({ statusCode, children }: Props) {

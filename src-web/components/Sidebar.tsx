@@ -75,7 +75,7 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
             ? 'bg-gray-200/70 text-gray-900'
             : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
         )}
-        href={`/workspaces/${request.workspaceId}/requests/${request.id}`}
+        to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         contentEditable={editing}
         onDoubleClick={() => setEditing(true)}
         justify="start"
