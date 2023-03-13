@@ -4,7 +4,6 @@ const TRAFFIC_LIGHT_OFFSET_X: f64 = 15.0;
 const TRAFFIC_LIGHT_OFFSET_Y: f64 = 22.0;
 
 pub trait WindowExt {
-    #[cfg(target_os = "macos")]
     fn position_traffic_lights(&self);
 }
 
