@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import type { ComponentChildren } from 'preact';
-import type { ForwardedRef } from 'preact/compat';
+import { Link } from 'preact-router';
 import { forwardRef } from 'preact/compat';
 import { Icon } from './Icon';
 
@@ -15,11 +15,15 @@ const colorStyles = {
 };
 
 export type ButtonProps = {
+  href?: string;
   color?: keyof typeof colorStyles;
   size?: 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   onClick?: (event: MouseEvent) => void;
+  onDoubleClick?: (event: MouseEvent) => void;
+  contentEditable?: boolean;
+  onKeyDown?: (event: KeyboardEvent) => void;
   forDropdown?: boolean;
   className?: string;
   children?: ComponentChildren;
@@ -28,21 +32,17 @@ export type ButtonProps = {
   tabIndex?: number;
 };
 
-export const Button = forwardRef(function Button(
-  {
-    className,
-    children,
-    forDropdown,
-    color,
-    justify = 'center',
-    size = 'md',
-    ...props
-  }: ButtonProps,
-  ref: ForwardedRef<HTMLButtonElement>,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Button = forwardRef<any, ButtonProps>(function Button(
+  { href, className, children, forDropdown, color, justify = 'center', size = 'md', ...props },
+  ref,
 ) {
+  // const Component = 'button';
+  const Component = typeof href === 'string' ? Link : 'button';
   return (
-    <button
+    <Component
       ref={ref}
+      href={href}
       className={classnames(
         className,
         'outline-none',
@@ -58,6 +58,6 @@ export const Button = forwardRef(function Button(
     >
       {children}
       {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
-    </button>
+    </Component>
   );
 });
