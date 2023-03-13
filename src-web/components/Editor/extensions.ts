@@ -109,8 +109,10 @@ export const baseExtensions = [
   drawSelection(),
   dropCursor(),
   bracketMatching(),
-  debouncedAutocompletionDisplay({ millis: 1000 }),
-  autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
+  // TODO: Figure out how to debounce showing of autocomplete in a good way
+  // debouncedAutocompletionDisplay({ millis: 1000 }),
+  // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
+  autocompletion({ closeOnBlur: true, interactionDelay: 300 }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];

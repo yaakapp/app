@@ -3,7 +3,7 @@ import { Heading } from '../components/Heading';
 import { VStack } from '../components/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
-export function Workspaces() {
+export default function Workspaces() {
   const workspaces = useWorkspaces();
   return (
     <VStack as="ul" className="p-12">

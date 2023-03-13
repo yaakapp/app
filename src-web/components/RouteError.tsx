@@ -3,7 +3,7 @@ import { ButtonLink } from './ButtonLink';
 import { Heading } from './Heading';
 import { VStack } from './Stacks';
 
-export function RouteError() {
+export default function RouteError() {
   const error = useRouteError();
   const stringified = JSON.stringify(error);
   const message = (error as any).message ?? stringified;

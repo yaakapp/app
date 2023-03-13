@@ -13,7 +13,7 @@ type Params = {
   requestId?: string;
 };
 
-export function Workspace() {
+export default function Workspace() {
   const params = useParams<Params>();
   const workspaceId = params?.workspaceId ?? '';
   const { data: requests } = useRequests(workspaceId);
