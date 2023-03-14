@@ -5,8 +5,7 @@ import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import { formatSdl } from 'format-graphql';
 import { useEffect, useRef } from 'react';
-import { useDebounce, useUnmount } from 'react-use';
-import { debounce } from '../../../lib/debounce';
+import { useUnmount } from 'react-use';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -24,6 +23,7 @@ export interface _EditorProps {
   tooltipContainer?: HTMLElement;
   useTemplating?: boolean;
   onChange?: (value: string) => void;
+  onFocus?: () => void;
   singleLine?: boolean;
 }
 
@@ -36,6 +36,7 @@ export function _Editor({
   useTemplating,
   defaultValue,
   onChange,
+  onFocus,
   className,
   singleLine,
 }: _EditorProps) {
@@ -72,6 +73,7 @@ export function _Editor({
             placeholder,
             singleLine,
             onChange,
+            onFocus,
             contentType,
             useTemplating,
           }),
@@ -100,7 +102,7 @@ export function _Editor({
       {contentType?.includes('graphql') && (
         <IconButton
           icon="eye"
-          className="absolute right-3 bottom-3 z-10"
+          className="absolute right-0 bottom-0 z-10"
           onClick={() => {
             const doc = cm.current?.view.state.doc ?? '';
             const insert = formatSdl(doc.toString());
@@ -118,11 +120,18 @@ function getExtensions({
   singleLine,
   placeholder,
   onChange,
+  onFocus,
   contentType,
   useTemplating,
 }: Pick<
   _EditorProps,
-  'singleLine' | 'onChange' | 'contentType' | 'useTemplating' | 'placeholder' | 'readOnly'
+  | 'singleLine'
+  | 'onChange'
+  | 'contentType'
+  | 'useTemplating'
+  | 'placeholder'
+  | 'readOnly'
+  | 'onFocus'
 > & { container: HTMLDivElement | null }) {
   const ext = getLanguageExtension({ contentType, useTemplating });
 
@@ -159,6 +168,13 @@ function getExtensions({
           }),
         ]
       : []),
+
+    // Handle onFocus
+    EditorView.domEventHandlers({
+      focus: () => {
+        onFocus?.();
+      },
+    }),
 
     // Handle onChange
     EditorView.updateListener.of((update) => {
