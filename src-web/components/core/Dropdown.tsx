@@ -2,18 +2,20 @@ import * as D from '@radix-ui/react-dropdown-menu';
 import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
-import type { ReactNode, ForwardedRef } from 'react';
+import type { ForwardedRef, ReactElement, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useLayoutEffect, useState } from 'react';
 
-interface DropdownMenuRadioProps {
-  children: ReactNode;
-  onValueChange: ((v: { label: string; value: string }) => void) | null;
+export interface DropdownMenuRadioItem {
+  label: string;
+  value: string;
+}
+
+export interface DropdownMenuRadioProps {
+  children: ReactElement<typeof DropdownMenuTrigger>;
+  onValueChange: ((v: DropdownMenuRadioItem) => void) | null;
   value: string;
   label?: string;
-  items: {
-    label: string;
-    value: string;
-  }[];
+  items: DropdownMenuRadioItem[];
 }
 
 export function DropdownMenuRadio({
@@ -32,7 +34,7 @@ export function DropdownMenuRadio({
 
   return (
     <D.Root>
-      <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
+      {children}
       <DropdownMenuPortal>
         <DropdownMenuContent>
           {label && <DropdownMenuLabel>{label}</DropdownMenuLabel>}
@@ -50,7 +52,7 @@ export function DropdownMenuRadio({
 }
 
 export interface DropdownProps {
-  children: ReactNode;
+  children: ReactElement<typeof DropdownMenuTrigger>;
   items: (
     | {
         label: string;
@@ -65,7 +67,7 @@ export interface DropdownProps {
 export function Dropdown({ children, items }: DropdownProps) {
   return (
     <D.Root>
-      <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
+      {children}
       <DropdownMenuPortal>
         <DropdownMenuContent>
           {items.map((item, i) => {
@@ -268,7 +270,7 @@ type DropdownMenuTriggerProps = D.DropdownMenuTriggerProps & {
   className?: string;
 };
 
-function DropdownMenuTrigger({ children, className, ...props }: DropdownMenuTriggerProps) {
+export function DropdownMenuTrigger({ children, className, ...props }: DropdownMenuTriggerProps) {
   return (
     <D.Trigger asChild className={classnames(className)} {...props}>
       {children}

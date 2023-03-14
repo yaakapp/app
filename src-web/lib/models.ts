@@ -20,6 +20,7 @@ export interface HttpRequest extends BaseModel {
   name: string;
   url: string;
   body: string | null;
+  bodyType: string | null;
   method: string;
   headers: HttpHeader[];
 }

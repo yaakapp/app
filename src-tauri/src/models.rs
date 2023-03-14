@@ -34,6 +34,7 @@ pub struct HttpRequest {
     pub url: String,
     pub method: String,
     pub body: Option<String>,
+    pub body_type: Option<String>,
     pub headers: Json<Vec<HttpRequestHeader>>,
 }
 
@@ -116,6 +117,7 @@ pub async fn upsert_request(
     name: &str,
     method: &str,
     body: Option<&str>,
+    body_type: Option<String>,
     url: &str,
     headers: Vec<HttpRequestHeader>,
     pool: &Pool<Sqlite>,
@@ -131,14 +133,25 @@ pub async fn upsert_request(
     let headers_json = Json(headers);
     sqlx::query!(
         r#"
-            INSERT INTO http_requests (id, workspace_id, name, url, method, body, headers, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            INSERT INTO http_requests (
+                id,
+                workspace_id,
+                name,
+                url,
+                method,
+                body,
+                body_type,
+                headers,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
                method = excluded.method,
                headers = excluded.headers,
                body = excluded.body,
+               body_type = excluded.body_type,
                url = excluded.url
         "#,
         id,
@@ -147,6 +160,7 @@ pub async fn upsert_request(
         url,
         method,
         body,
+        body_type,
         headers_json,
     )
     .execute(pool)
@@ -162,7 +176,17 @@ pub async fn find_requests(
     sqlx::query_as!(
         HttpRequest,
         r#"
-            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,
+            SELECT
+                id,
+                workspace_id,
+                created_at,
+                updated_at,
+                deleted_at,
+                name,
+                url,
+                method,
+                body,
+                body_type,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE workspace_id = ?
@@ -177,7 +201,17 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
     sqlx::query_as!(
         HttpRequest,
         r#"
-            SELECT id, workspace_id, created_at, updated_at, deleted_at, name, url, method, body,
+            SELECT
+                id,
+                workspace_id,
+                created_at,
+                updated_at,
+                deleted_at,
+                name,
+                url,
+                method,
+                body,
+                body_type,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE id = ?
