@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "tauri-dev": "tauri dev",
+    "tauri-dev": "YAAK_ENV=development tauri dev",
     "tauri-build": "npm run build:icon && tauri build",
     "build": "npm run build:frontend",
     "dev": "vite dev",

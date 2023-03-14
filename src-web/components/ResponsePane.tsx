@@ -5,7 +5,7 @@ import { useDeleteResponse } from '../hooks/useResponseDelete';
 import { useResponses } from '../hooks/useResponses';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpResponse } from '../lib/models';
-import { Dropdown } from './core/Dropdown';
+import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -97,7 +97,9 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                 })),
               ]}
             >
-              <IconButton icon="clock" className="ml-auto" size="sm" />
+              <DropdownMenuTrigger>
+                <IconButton icon="clock" className="ml-auto" size="sm" />
+              </DropdownMenuTrigger>
             </Dropdown>
           </HStack>
         </HStack>
