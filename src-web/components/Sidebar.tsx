@@ -2,11 +2,12 @@ import classnames from 'classnames';
 import { useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useRequests } from '../hooks/useRequests';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
-import { ButtonLink } from './core/ButtonLink';
+import { Button } from './core/Button';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
@@ -18,13 +19,14 @@ interface Props {
 export function Sidebar({ className }: Props) {
   const requests = useRequests();
   const activeRequest = useActiveRequest();
+  const deleteRequest = useDeleteRequest(activeRequest);
   const createRequest = useCreateRequest({ navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
   return (
     <div
       className={classnames(
         className,
-        'min-w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
+        'w-[15rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
       )}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
@@ -47,6 +49,7 @@ export function Sidebar({ className }: Props) {
           alignItems="center"
           justifyContent="end"
         >
+          <IconButton icon="trash" onClick={() => deleteRequest.mutate()} />
           <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
         </HStack>
       </VStack>
@@ -64,21 +67,28 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
 
   const handleFocus = (el: HTMLInputElement | null) => {
     el?.focus();
+    el?.select();
   };
 
   return (
-    <li key={request.id} className="flex">
-      <ButtonLink
+    <li>
+      <Button
         color="custom"
         size="sm"
         className={classnames(
-          'w-full',
+          editing && 'focus-within:border-blue-400/40',
           active
             ? 'bg-gray-200/70 text-gray-900'
             : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
         )}
+        onKeyDown={(e) => {
+          // Hitting enter on active request during keyboard nav will start edit
+          if (active && e.key === 'Enter') {
+            e.preventDefault();
+            setEditing(true);
+          }
+        }}
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
-        contentEditable={editing}
         onDoubleClick={() => setEditing(true)}
         justify="start"
       >
@@ -86,18 +96,23 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
           <input
             ref={handleFocus}
             defaultValue={request.name}
-            className="bg-transparent outline-none"
+            className="bg-transparent outline-none w-full"
             onBlur={(e) => handleSubmitNameEdit(e.currentTarget)}
             onKeyDown={async (e) => {
-              if (e.key === 'Enter') {
-                await handleSubmitNameEdit(e.currentTarget);
+              switch (e.key) {
+                case 'Enter':
+                  await handleSubmitNameEdit(e.currentTarget);
+                  break;
+                case 'Escape':
+                  setEditing(false);
+                  break;
               }
             }}
           />
         ) : (
-          request.name || request.url
+          <span className="truncate">{request.name || request.url}</span>
         )}
-      </ButtonLink>
+      </Button>
     </li>
   );
 }

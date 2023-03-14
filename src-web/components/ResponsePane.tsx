@@ -4,6 +4,7 @@ import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useDeleteResponse } from '../hooks/useResponseDelete';
 import { useResponses } from '../hooks/useResponses';
 import { tryFormatJson } from '../lib/formatters';
+import type { HttpResponse } from '../lib/models';
 import { Dropdown } from './core/Dropdown';
 import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
@@ -20,11 +21,11 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
   const responses = useResponses();
-  const response = activeResponseId
-    ? responses.find((r) => r.id === activeResponseId)
-    : responses[responses.length - 1];
-  const deleteResponse = useDeleteResponse(response);
-  const deleteAllResponses = useDeleteResponses(response?.requestId);
+  const activeResponse: HttpResponse | null = activeResponseId
+    ? responses.find((r) => r.id === activeResponseId) ?? null
+    : responses[responses.length - 1] ?? null;
+  const deleteResponse = useDeleteResponse(activeResponse);
+  const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
 
   useEffect(() => {
     setActiveResponseId(null);
@@ -32,9 +33,14 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
 
   const contentType = useMemo(
     () =>
-      response?.headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? 'text/plain',
-    [response],
+      activeResponse?.headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ??
+      'text/plain',
+    [activeResponse],
   );
+
+  if (activeResponse === null) {
+    return null;
+  }
 
   return (
     <div className="p-2">
@@ -52,15 +58,15 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
           alignItems="center"
           className="italic text-gray-700 text-sm w-full mb-1 flex-shrink-0 pl-2"
         >
-          {response && response.status > 0 && (
+          {activeResponse && activeResponse.status > 0 && (
             <div className="whitespace-nowrap">
-              <StatusColor statusCode={response.status}>
-                {response.status}
-                {response.statusReason && ` ${response.statusReason}`}
+              <StatusColor statusCode={activeResponse.status}>
+                {activeResponse.status}
+                {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
               </StatusColor>
               &nbsp;&bull;&nbsp;
-              {response.elapsed}ms &nbsp;&bull;&nbsp;
-              {Math.round(response.body.length / 1000)} KB
+              {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
+              {Math.round(activeResponse.body.length / 1000)} KB
             </div>
           )}
 
@@ -86,7 +92,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                 '-----',
                 ...responses.slice(0, 10).map((r) => ({
                   label: r.status + ' - ' + r.elapsed + ' ms',
-                  leftSlot: response?.id === r.id ? <Icon icon="check" /> : <></>,
+                  leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
                   onSelect: () => setActiveResponseId(r.id),
                 })),
               ]}
@@ -96,33 +102,29 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
           </HStack>
         </HStack>
 
-        {response && (
-          <>
-            {response?.error ? (
-              <div className="p-1">
-                <div className="text-white bg-red-500 px-3 py-2 rounded">{response.error}</div>
-              </div>
-            ) : viewMode === 'pretty' && contentType.includes('html') ? (
-              <Webview body={response.body} contentType={contentType} url={response.url} />
-            ) : viewMode === 'pretty' && contentType.includes('json') ? (
-              <Editor
-                readOnly
-                key={`${contentType}:${response.updatedAt}:pretty`}
-                className="bg-gray-50 dark:!bg-gray-100"
-                defaultValue={tryFormatJson(response?.body)}
-                contentType={contentType}
-              />
-            ) : response?.body ? (
-              <Editor
-                readOnly
-                key={`${contentType}:${response.updatedAt}`}
-                className="bg-gray-50 dark:!bg-gray-100"
-                defaultValue={response?.body}
-                contentType={contentType}
-              />
-            ) : null}
-          </>
-        )}
+        {activeResponse?.error ? (
+          <div className="p-1">
+            <div className="text-white bg-red-500 px-3 py-2 rounded">{activeResponse.error}</div>
+          </div>
+        ) : viewMode === 'pretty' && contentType.includes('html') ? (
+          <Webview body={activeResponse.body} contentType={contentType} url={activeResponse.url} />
+        ) : viewMode === 'pretty' && contentType.includes('json') ? (
+          <Editor
+            readOnly
+            key={`${contentType}:${activeResponse.updatedAt}:pretty`}
+            className="bg-gray-50 dark:!bg-gray-100"
+            defaultValue={tryFormatJson(activeResponse?.body)}
+            contentType={contentType}
+          />
+        ) : activeResponse?.body ? (
+          <Editor
+            readOnly
+            key={`${contentType}:${activeResponse.updatedAt}`}
+            className="bg-gray-50 dark:!bg-gray-100"
+            defaultValue={activeResponse?.body}
+            contentType={contentType}
+          />
+        ) : null}
       </div>
     </div>
   );

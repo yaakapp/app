@@ -1,5 +1,5 @@
 import { useRouteError } from 'react-router-dom';
-import { ButtonLink } from './core/ButtonLink';
+import { Button } from './core/Button';
 import { Heading } from './core/Heading';
 import { VStack } from './core/Stacks';
 
@@ -14,9 +14,9 @@ export default function RouteError() {
         <pre className="text-sm select-auto cursor-text bg-gray-100 p-3 rounded whitespace-normal">
           {message}
         </pre>
-        <ButtonLink to="/" color="primary">
+        <Button to="/" color="primary">
           Go Home
-        </ButtonLink>
+        </Button>
       </VStack>
     </div>
   );
