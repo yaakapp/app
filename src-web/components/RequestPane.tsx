@@ -40,6 +40,9 @@ export function RequestPane({ fullHeight, request, className }: Props) {
         defaultValue="body"
         label="Request body"
       >
+        <TabContent value="headers" className="pl-2">
+          <HeaderEditor key={request.id} request={request} />
+        </TabContent>
         <TabContent value="body">
           <Editor
             key={request.id}
@@ -50,9 +53,6 @@ export function RequestPane({ fullHeight, request, className }: Props) {
             contentType="application/graphql+json"
             onChange={(body) => updateRequest.mutate({ body })}
           />
-        </TabContent>
-        <TabContent value="headers" className="pl-2">
-          <HeaderEditor key={request.id} request={request} />
         </TabContent>
       </Tabs>
     </div>

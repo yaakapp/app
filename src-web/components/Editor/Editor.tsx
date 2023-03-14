@@ -5,7 +5,8 @@ import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import { formatSdl } from 'format-graphql';
 import { useEffect, useRef } from 'react';
-import { useUnmount } from 'react-use';
+import { useDebounce, useUnmount } from 'react-use';
+import { debounce } from '../../lib/debounce';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -96,7 +97,7 @@ export function _Editor({
         readOnly && 'cm-readonly',
       )}
     >
-      {contentType?.includes("graphql") && (
+      {contentType?.includes('graphql') && (
         <IconButton
           icon="eye"
           className="absolute right-3 bottom-3 z-10"

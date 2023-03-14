@@ -23,6 +23,16 @@
         cursor: default;
     }
 
+    /* Style the scrollbars */
+    ::-webkit-scrollbar-corner,
+    ::-webkit-scrollbar {
+        @apply w-1.5 h-1.5 bg-gray-300/10;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-200 hover:bg-gray-300 rounded-full;
+    }
+
     :root {
         color-scheme: light dark;
         --transition-duration: 100ms ease-in-out;
