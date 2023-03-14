@@ -1,6 +1,7 @@
 import classnames from 'classnames';
 import { useParams } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
+import { HeaderEditor } from '../components/HeaderEditor';
 import { RequestPane } from '../components/RequestPane';
 import { ResponsePane } from '../components/ResponsePane';
 import { Sidebar } from '../components/Sidebar';
@@ -22,7 +23,7 @@ export default function Workspace() {
   const isH = width > 900;
 
   return (
-    <div className="grid grid-cols-[auto_1fr] h-full text-gray-900">
+    <div className="grid grid-cols-[auto_1fr] grid-rows-1 h-full text-gray-900">
       <Sidebar
         requests={requests ?? []}
         workspaceId={workspaceId}
@@ -39,8 +40,10 @@ export default function Workspace() {
           </HStack>
           <div
             className={classnames(
-              'grid overflow-auto',
-              isH ? 'grid-cols-[1fr_1fr]' : 'grid-rows-[minmax(0,auto)_minmax(0,100%)]',
+              'grid',
+              isH
+                ? 'grid-cols-[1fr_1fr] grid-rows-1'
+                : 'grid-cols-1 grid-rows-[minmax(0,auto)_minmax(0,100%)]',
             )}
           >
             <RequestPane

@@ -22,7 +22,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
     <div
       className={classnames(
         className,
-        'min-w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative',
+        'min-w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
       )}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
@@ -34,7 +34,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
           }}
         />
       </HStack>
-      <VStack as="ul" className="py-3 px-2" space={1}>
+      <VStack as="ul" className="py-3 px-2 overflow-auto h-full" space={1}>
         {requests.map((r) => (
           <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
         ))}
