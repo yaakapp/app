@@ -6,7 +6,7 @@ import { EditorView } from 'codemirror';
 import { formatSdl } from 'format-graphql';
 import { useEffect, useRef } from 'react';
 import { useDebounce, useUnmount } from 'react-use';
-import { debounce } from '../../lib/debounce';
+import { debounce } from '../../../lib/debounce';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';

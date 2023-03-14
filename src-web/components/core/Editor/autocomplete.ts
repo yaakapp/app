@@ -1,6 +1,6 @@
 import { closeCompletion, startCompletion } from '@codemirror/autocomplete';
 import { EditorView } from 'codemirror';
-import { debounce } from '../../lib/debounce';
+import { debounce } from '../../../lib/debounce';
 
 /*
  * Debounce autocomplete until user stops typing for `millis` milliseconds.

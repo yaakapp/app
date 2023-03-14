@@ -1,6 +1,6 @@
-import { ButtonLink } from '../components/ButtonLink';
-import { Heading } from '../components/Heading';
-import { VStack } from '../components/Stacks';
+import { ButtonLink } from './core/ButtonLink';
+import { Heading } from './core/Heading';
+import { VStack } from './core/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 
 export default function Workspaces() {

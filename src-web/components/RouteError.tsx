@@ -1,7 +1,7 @@
 import { useRouteError } from 'react-router-dom';
-import { ButtonLink } from './ButtonLink';
-import { Heading } from './Heading';
-import { VStack } from './Stacks';
+import { ButtonLink } from './core/ButtonLink';
+import { Heading } from './core/Heading';
+import { VStack } from './core/Stacks';
 
 export default function RouteError() {
   const error = useRouteError();
