@@ -1,9 +1,11 @@
 import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { useState } from 'react';
 import { Button } from '../Button';
-import { ScrollArea } from '../ScrollArea';
+import type { DropdownMenuRadioItem, DropdownMenuRadioProps } from '../Dropdown';
+import { DropdownMenuRadio, DropdownMenuTrigger } from '../Dropdown';
+import { Icon } from '../Icon';
 import { HStack } from '../Stacks';
 
 import './Tabs.css';
@@ -11,7 +13,15 @@ import './Tabs.css';
 interface Props {
   defaultValue?: string;
   label: string;
-  tabs: { value: string; label: ReactNode }[];
+  tabs: {
+    value: string;
+    label: string;
+    options?: {
+      onValueChange: DropdownMenuRadioProps['onValueChange'];
+      value: string;
+      items: DropdownMenuRadioItem[];
+    };
+  }[];
   tabListClassName?: string;
   className?: string;
   children: ReactNode;
@@ -32,40 +42,69 @@ export function Tabs({ defaultValue, label, children, tabs, className, tabListCl
           'h-auto flex items-center overflow-x-auto mb-1 pb-1',
         )}
       >
-        {/*<ScrollArea className="w-full pb-2">*/}
         <HStack space={1}>
-          {tabs.map((t) => (
-            <TabTrigger key={t.value} value={t.value} active={t.value === value}>
-              {t.label}
-            </TabTrigger>
-          ))}
+          {tabs.map((t) => {
+            const isActive = t.value === value;
+            if (t.options && isActive) {
+              return (
+                <DropdownMenuRadio
+                  key={t.value}
+                  items={t.options.items}
+                  value={t.options.value}
+                  onValueChange={t.options.onValueChange}
+                >
+                  <DropdownMenuTrigger>
+                    <Button
+                      color="custom"
+                      size="sm"
+                      onClick={(e) => e.stopPropagation()}
+                      className={classnames(
+                        isActive
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-600 hover:text-gray-900',
+                      )}
+                    >
+                      {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
+                      <Icon icon="triangleDown" className="-mr-1.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </DropdownMenuRadio>
+              );
+            } else if (t.options && !isActive) {
+              return (
+                <T.Trigger asChild key={t.value} value={t.value}>
+                  <Button
+                    color="custom"
+                    size="sm"
+                    className={classnames(
+                      isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
+                    )}
+                  >
+                    {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
+                    <Icon icon="triangleDown" className="-mr-1.5" />
+                  </Button>
+                </T.Trigger>
+              );
+            } else {
+              return (
+                <T.Trigger asChild key={t.value} value={t.value}>
+                  <Button
+                    color="custom"
+                    size="sm"
+                    className={classnames(
+                      isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
+                    )}
+                  >
+                    {t.label}
+                  </Button>
+                </T.Trigger>
+              );
+            }
+          })}
         </HStack>
-        {/*</ScrollArea>*/}
       </T.List>
       {children}
     </T.Root>
-  );
-}
-
-interface TabTriggerProps {
-  value: string;
-  children: ReactNode;
-  active?: boolean;
-}
-
-export function TabTrigger({ value, children, active }: TabTriggerProps) {
-  return (
-    <T.Trigger value={value} asChild>
-      <Button
-        color="custom"
-        size="sm"
-        className={classnames(
-          active ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
-        )}
-      >
-        {children}
-      </Button>
-    </T.Trigger>
   );
 }
 

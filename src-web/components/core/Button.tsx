@@ -21,6 +21,7 @@ export type ButtonProps = HTMLAttributes<HTMLElement> & {
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   forDropdown?: boolean;
+  disabled?: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

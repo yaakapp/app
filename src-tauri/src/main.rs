@@ -8,6 +8,8 @@ windows_subsystem = "windows"
 extern crate objc;
 
 use std::collections::HashMap;
+use std::env;
+use std::env::current_dir;
 use std::fs::create_dir_all;
 
 use http::header::{ACCEPT, HeaderName, USER_AGENT};
@@ -202,7 +204,7 @@ async fn create_request(
     let pool = &*db_instance.lock().await;
     let headers = Vec::new();
     let created_request =
-        models::upsert_request(None, workspace_id, name, "GET", None, "", headers, pool)
+        models::upsert_request(None, workspace_id, name, "GET", None, None, "", headers, pool)
             .await
             .expect("Failed to create request");
 
@@ -237,6 +239,7 @@ async fn update_request(
         request.name.as_str(),
         request.method.as_str(),
         body,
+        request.body_type,
         request.url.as_str(),
         request.headers.0,
         pool,
@@ -359,7 +362,11 @@ fn main() {
             Ok(())
         })
         .setup(|app| {
-            let dir = app.path_resolver().app_data_dir().unwrap();
+            let dir = match is_dev() {
+                true => current_dir().unwrap(),
+                false => app.path_resolver().app_data_dir().unwrap(),
+            };
+
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
             let p = dir.join("db.sqlite");
             let p_string = p.to_string_lossy().replace(' ', "%20");
@@ -430,4 +437,9 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn is_dev() -> bool {
+    let env = option_env!("YAAK_ENV");
+    env.unwrap_or("production") == "development"
 }

@@ -34,7 +34,19 @@ export function RequestPane({ fullHeight, className }: Props) {
       </div>
       <Tabs
         tabs={[
-          { value: 'body', label: 'JSON' },
+          {
+            value: 'body',
+            label: activeRequest.bodyType ?? 'NoBody',
+            options: {
+              onValueChange: (bodyType) => updateRequest.mutate({ bodyType: bodyType.value }),
+              value: activeRequest.bodyType ?? 'nobody',
+              items: [
+                { label: 'No Body', value: 'nobody' },
+                { label: 'JSON', value: 'json' },
+                { label: 'GraphQL', value: 'graphql' },
+              ],
+            },
+          },
           { value: 'params', label: 'Params' },
           { value: 'headers', label: 'Headers' },
           { value: 'auth', label: 'Auth' },
@@ -48,15 +60,29 @@ export function RequestPane({ fullHeight, className }: Props) {
           <HeaderEditor key={activeRequest.id} request={activeRequest} />
         </TabContent>
         <TabContent value="body">
-          <Editor
-            key={activeRequest.id}
-            className="!bg-gray-50"
-            heightMode={fullHeight ? 'full' : 'auto'}
-            useTemplating
-            defaultValue={activeRequest.body ?? ''}
-            contentType="application/graphql+json"
-            onChange={(body) => updateRequest.mutate({ body })}
-          />
+          {activeRequest.bodyType === 'json' ? (
+            <Editor
+              key={activeRequest.id}
+              className="!bg-gray-50"
+              heightMode={fullHeight ? 'full' : 'auto'}
+              useTemplating
+              defaultValue={activeRequest.body ?? ''}
+              contentType="application/json"
+              onChange={(body) => updateRequest.mutate({ body })}
+            />
+          ) : activeRequest.bodyType === 'graphql' ? (
+            <Editor
+              key={activeRequest.id}
+              className="!bg-gray-50"
+              heightMode={fullHeight ? 'full' : 'auto'}
+              useTemplating
+              defaultValue={activeRequest.body ?? ''}
+              contentType="application/graphql+json"
+              onChange={(body) => updateRequest.mutate({ body })}
+            />
+          ) : (
+            <div className="h-full text-gray-400 flex items-center justify-center">No Body</div>
+          )}
         </TabContent>
       </Tabs>
     </div>
