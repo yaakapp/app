@@ -1,4 +1,4 @@
-import { ButtonLink } from './core/ButtonLink';
+import { Button } from './core/Button';
 import { Heading } from './core/Heading';
 import { VStack } from './core/Stacks';
 import { useWorkspaces } from '../hooks/useWorkspaces';
@@ -9,9 +9,9 @@ export default function Workspaces() {
     <VStack as="ul" className="p-12">
       <Heading>Workspaces</Heading>
       {workspaces.map((w) => (
-        <ButtonLink key={w.id} color="gray" to={`/workspaces/${w.id}`}>
+        <Button key={w.id} color="gray" to={`/workspaces/${w.id}`}>
           {w.name}
-        </ButtonLink>
+        </Button>
       ))}
     </VStack>
   );
