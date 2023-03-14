@@ -8,7 +8,7 @@ export default function Workspaces() {
   return (
     <VStack as="ul" className="p-12">
       <Heading>Workspaces</Heading>
-      {workspaces.data?.map((w) => (
+      {workspaces.map((w) => (
         <ButtonLink key={w.id} color="gray" to={`/workspaces/${w.id}`}>
           {w.name}
         </ButtonLink>

@@ -1,7 +1,10 @@
 import classnames from 'classnames';
 import { useState } from 'react';
-import { useRequestCreate, useRequestUpdate } from '../hooks/useRequest';
+import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useRequests } from '../hooks/useRequests';
 import { useTheme } from '../hooks/useTheme';
+import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { ButtonLink } from './ButtonLink';
 import { IconButton } from './IconButton';
@@ -9,14 +12,13 @@ import { HStack, VStack } from './Stacks';
 import { WindowDragRegion } from './WindowDragRegion';
 
 interface Props {
-  workspaceId: string;
-  requests: HttpRequest[];
-  activeRequestId?: string;
   className?: string;
 }
 
-export function Sidebar({ className, activeRequestId, workspaceId, requests }: Props) {
-  const createRequest = useRequestCreate({ workspaceId, navigateAfter: true });
+export function Sidebar({ className }: Props) {
+  const requests = useRequests();
+  const activeRequest = useActiveRequest();
+  const createRequest = useCreateRequest({ navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
   return (
     <div
@@ -36,7 +38,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
       </HStack>
       <VStack as="ul" className="py-3 px-2 overflow-auto h-full" space={1}>
         {requests.map((r) => (
-          <SidebarItem key={r.id} request={r} active={r.id === activeRequestId} />
+          <SidebarItem key={r.id} request={r} active={r.id === activeRequest?.id} />
         ))}
         {/*<Colors />*/}
 
@@ -53,7 +55,7 @@ export function Sidebar({ className, activeRequestId, workspaceId, requests }: P
 }
 
 function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
-  const updateRequest = useRequestUpdate(request);
+  const updateRequest = useUpdateRequest(request);
   const [editing, setEditing] = useState<boolean>(false);
   const handleSubmitNameEdit = async (el: HTMLInputElement) => {
     await updateRequest.mutate({ name: el.value });

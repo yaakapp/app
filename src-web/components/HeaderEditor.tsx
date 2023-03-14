@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import { useEffect, useState } from 'react';
-import { useRequestUpdate } from '../hooks/useRequest';
+import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpHeader, HttpRequest } from '../lib/models';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
@@ -14,7 +14,7 @@ interface Props {
 type PairWithId = { header: Partial<HttpHeader>; id: string };
 
 export function HeaderEditor({ request, className }: Props) {
-  const updateRequest = useRequestUpdate(request);
+  const updateRequest = useUpdateRequest(request);
   const saveHeaders = (pairs: PairWithId[]) => {
     const headers = pairs.map((p) => ({ name: '', value: '', ...p.header }));
     updateRequest.mutate({ headers });
