@@ -1,16 +1,17 @@
 import classnames from 'classnames';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { HStack, VStack } from './Stacks';
 
-interface Props {
+type Props = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> & {
   name: string;
   label: string;
   hideLabel?: boolean;
   labelClassName?: string;
   containerClassName?: string;
   onChange?: (value: string) => void;
+  onFocus?: () => void;
   useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating'>;
   defaultValue?: string;
   leftSlot?: ReactNode;
@@ -19,7 +20,7 @@ interface Props {
   className?: string;
   placeholder?: string;
   autoFocus?: boolean;
-}
+};
 
 export function Input({
   label,
