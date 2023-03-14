@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useDeleteAllResponses, useDeleteResponse, useResponses } from '../hooks/useResponses';
 import { tryFormatJson } from '../lib/formatters';
 import { Dropdown } from './Dropdown';
@@ -15,7 +15,7 @@ interface Props {
   className?: string;
 }
 
-export function ResponsePane({ requestId, className }: Props) {
+export const ResponsePane = memo(function ResponsePane({ requestId, className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
   const responses = useResponses(requestId);
@@ -129,4 +129,4 @@ export function ResponsePane({ requestId, className }: Props) {
       </div>
     </div>
   );
-}
+});

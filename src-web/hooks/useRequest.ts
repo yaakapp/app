@@ -27,6 +27,7 @@ export function useRequestUpdate(request: HttpRequest | null) {
       }
 
       const updatedRequest = { ...request, ...patch };
+      console.log('UPDATE REQUEST', updatedRequest.url);
 
       await invoke('update_request', {
         request: {

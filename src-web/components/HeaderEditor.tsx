@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 import { useEffect, useState } from 'react';
 import { useRequestUpdate } from '../hooks/useRequest';
 import type { HttpHeader, HttpRequest } from '../lib/models';
@@ -7,11 +8,12 @@ import { VStack } from './Stacks';
 
 interface Props {
   request: HttpRequest;
+  className?: string;
 }
 
 type PairWithId = { header: Partial<HttpHeader>; id: string };
 
-export function HeaderEditor({ request }: Props) {
+export function HeaderEditor({ request, className }: Props) {
   const updateRequest = useRequestUpdate(request);
   const saveHeaders = (pairs: PairWithId[]) => {
     const headers = pairs.map((p) => ({ name: '', value: '', ...p.header }));
@@ -59,7 +61,7 @@ export function HeaderEditor({ request }: Props) {
   };
 
   return (
-    <div className="pb-6">
+    <div className={classnames(className, 'pb-6 grid')}>
       <VStack space={2}>
         {pairs.map((p, i) => (
           <FormRow

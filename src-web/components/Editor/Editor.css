@@ -134,19 +134,6 @@
     }
 }
 
-.cm-scroller, .cm-tooltip-autocomplete > ul {
-    &::-webkit-scrollbar-corner,
-    &::-webkit-scrollbar {
-        @apply w-1.5 h-1.5 bg-transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        @apply bg-gray-200 hover:bg-gray-300 rounded-full;
-    }
-}
-
-/* <-- */
-
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
     @apply shadow-lg bg-gray-50 rounded overflow-hidden text-gray-900 border border-gray-200 z-50 pointer-events-auto;
