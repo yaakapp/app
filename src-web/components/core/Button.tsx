@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import type { HTMLAttributes } from 'react';
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
@@ -14,22 +14,13 @@ const colorStyles = {
   danger: 'bg-red-400 text-white hover:bg-red-500',
 };
 
-export type ButtonProps = {
+export type ButtonProps = HTMLAttributes<HTMLElement> & {
   to?: string;
   color?: keyof typeof colorStyles;
   size?: 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
-  onClick?: (event: MouseEvent<HTMLElement>) => void;
-  onDoubleClick?: (event: MouseEvent<HTMLElement>) => void;
-  contentEditable?: boolean;
-  onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
   forDropdown?: boolean;
-  className?: string;
-  children?: ReactNode;
-  disabled?: boolean;
-  title?: string;
-  tabIndex?: number;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
