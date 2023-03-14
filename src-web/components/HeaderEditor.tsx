@@ -15,10 +15,6 @@ type PairWithId = { header: Partial<HttpHeader>; id: string };
 
 export function HeaderEditor({ request, className }: Props) {
   const updateRequest = useUpdateRequest(request);
-  const saveHeaders = (pairs: PairWithId[]) => {
-    const headers = pairs.map((p) => ({ name: '', value: '', ...p.header }));
-    updateRequest.mutate({ headers });
-  };
 
   const newPair = () => {
     return { header: { name: '', value: '' }, id: Math.random().toString() };
@@ -31,7 +27,8 @@ export function HeaderEditor({ request, className }: Props) {
   const setPairsAndSave = (fn: (pairs: PairWithId[]) => PairWithId[]) => {
     setPairs((oldPairs) => {
       const newPairs = fn(oldPairs);
-      saveHeaders(newPairs);
+      const headers = newPairs.map((p) => ({ name: '', value: '', ...p.header }));
+      updateRequest.mutate({ headers });
       return newPairs;
     });
   };
@@ -47,7 +44,7 @@ export function HeaderEditor({ request, className }: Props) {
   useEffect(() => {
     const lastPair = pairs[pairs.length - 1];
     if (lastPair === undefined) {
-      setPairs([newPair()]);
+      setPairsAndSave((pairs) => [...pairs, newPair()]);
       return;
     }
 
@@ -63,14 +60,18 @@ export function HeaderEditor({ request, className }: Props) {
   return (
     <div className={classnames(className, 'pb-6 grid')}>
       <VStack space={2}>
-        {pairs.map((p, i) => (
-          <FormRow
-            key={p.id}
-            pair={p}
-            onChange={handleChangeHeader}
-            onDelete={i < pairs.length - 1 ? handleDelete : undefined}
-          />
-        ))}
+        {pairs.map((p, i) => {
+          const isLast = i === pairs.length - 1;
+          return (
+            <FormRow
+              key={p.id}
+              pair={p}
+              isLast={isLast}
+              onChange={handleChangeHeader}
+              onDelete={isLast ? undefined : handleDelete}
+            />
+          );
+        })}
       </VStack>
     </div>
   );
@@ -80,30 +81,38 @@ function FormRow({
   pair,
   onChange,
   onDelete,
+  onFocus,
+  isLast,
 }: {
   pair: PairWithId;
   onChange: (pair: PairWithId) => void;
   onDelete?: (pair: PairWithId) => void;
+  onFocus?: (pair: PairWithId) => void;
+  isLast?: boolean;
 }) {
   return (
     <div className="group grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
       <Input
         hideLabel
-        useEditor={{ useTemplating: true }}
-        name="name"
-        label="Name"
-        placeholder="name"
+        containerClassName={classnames(isLast && 'border-dashed')}
         defaultValue={pair.header.name}
+        label="Name"
+        name="name"
         onChange={(name) => onChange({ id: pair.id, header: { name } })}
+        onFocus={() => onFocus?.(pair)}
+        placeholder="name"
+        useEditor={{ useTemplating: true }}
       />
       <Input
         hideLabel
-        name="value"
-        label="Value"
-        useEditor={{ useTemplating: true }}
-        placeholder="value"
+        containerClassName={classnames(isLast && 'border-dashed')}
         defaultValue={pair.header.value}
+        label="Value"
+        name="value"
         onChange={(value) => onChange({ id: pair.id, header: { value } })}
+        onFocus={() => onFocus?.(pair)}
+        placeholder="value"
+        useEditor={{ useTemplating: true }}
       />
       {onDelete && (
         <IconButton
