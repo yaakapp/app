@@ -2,9 +2,9 @@ import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Button } from './Button';
-import { ScrollArea } from './ScrollArea';
-import { HStack } from './Stacks';
+import { Button } from '../Button';
+import { ScrollArea } from '../ScrollArea';
+import { HStack } from '../Stacks';
 
 import './Tabs.css';
 
@@ -27,7 +27,10 @@ export function Tabs({ defaultValue, label, children, tabs, className, tabListCl
     >
       <T.List
         aria-label={label}
-        className={classnames(tabListClassName, 'h-auto flex items-center overflow-x-auto mb-1 pb-1')}
+        className={classnames(
+          tabListClassName,
+          'h-auto flex items-center overflow-x-auto mb-1 pb-1',
+        )}
       >
         {/*<ScrollArea className="w-full pb-2">*/}
         <HStack space={1}>

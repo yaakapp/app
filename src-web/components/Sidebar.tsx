@@ -6,10 +6,10 @@ import { useRequests } from '../hooks/useRequests';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
-import { ButtonLink } from './ButtonLink';
-import { IconButton } from './IconButton';
-import { HStack, VStack } from './Stacks';
-import { WindowDragRegion } from './WindowDragRegion';
+import { ButtonLink } from './core/ButtonLink';
+import { IconButton } from './core/IconButton';
+import { HStack, VStack } from './core/Stacks';
+import { WindowDragRegion } from './core/WindowDragRegion';
 
 interface Props {
   className?: string;

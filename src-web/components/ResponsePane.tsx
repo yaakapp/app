@@ -4,13 +4,13 @@ import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useDeleteResponse } from '../hooks/useResponseDelete';
 import { useResponses } from '../hooks/useResponses';
 import { tryFormatJson } from '../lib/formatters';
-import { Dropdown } from './Dropdown';
-import { Editor } from './Editor';
-import { Icon } from './Icon';
-import { IconButton } from './IconButton';
-import { HStack } from './Stacks';
-import { StatusColor } from './StatusColor';
-import { Webview } from './Webview';
+import { Dropdown } from './core/Dropdown';
+import { Editor } from './core/Editor';
+import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
+import { HStack } from './core/Stacks';
+import { StatusColor } from './core/StatusColor';
+import { Webview } from './core/Webview';
 
 interface Props {
   className?: string;

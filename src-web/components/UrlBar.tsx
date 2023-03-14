@@ -1,7 +1,7 @@
-import { Button } from './Button';
-import { DropdownMenuRadio } from './Dropdown';
-import { IconButton } from './IconButton';
-import { Input } from './Input';
+import { Button } from './core/Button';
+import { DropdownMenuRadio } from './core/Dropdown';
+import { IconButton } from './core/IconButton';
+import { Input } from './core/Input';
 
 interface Props {
   sendRequest: () => void;
