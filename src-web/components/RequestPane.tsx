@@ -2,9 +2,9 @@ import classnames from 'classnames';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
-import { Editor } from './Editor';
+import { Editor } from './core/Editor';
 import { HeaderEditor } from './HeaderEditor';
-import { TabContent, Tabs } from './Tabs';
+import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { UrlBar } from './UrlBar';
 
 interface Props {

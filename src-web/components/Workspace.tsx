@@ -1,10 +1,10 @@
 import classnames from 'classnames';
 import { useWindowSize } from 'react-use';
-import { RequestPane } from '../components/RequestPane';
-import { ResponsePane } from '../components/ResponsePane';
-import { Sidebar } from '../components/Sidebar';
-import { HStack } from '../components/Stacks';
-import { WindowDragRegion } from '../components/WindowDragRegion';
+import { RequestPane } from './RequestPane';
+import { ResponsePane } from './ResponsePane';
+import { Sidebar } from './Sidebar';
+import { HStack } from './core/Stacks';
+import { WindowDragRegion } from './core/WindowDragRegion';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 
 export default function Workspace() {

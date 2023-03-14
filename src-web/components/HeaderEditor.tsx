@@ -2,9 +2,9 @@ import classnames from 'classnames';
 import { useEffect, useState } from 'react';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpHeader, HttpRequest } from '../lib/models';
-import { IconButton } from './IconButton';
-import { Input } from './Input';
-import { VStack } from './Stacks';
+import { IconButton } from './core/IconButton';
+import { Input } from './core/Input';
+import { VStack } from './core/Stacks';
 
 interface Props {
   request: HttpRequest;

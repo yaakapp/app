@@ -1,8 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-const Workspaces = lazy(() => import('../pages/Workspaces'));
-const Workspace = lazy(() => import('../pages/Workspace'));
+const Workspaces = lazy(() => import('./Workspaces'));
+const Workspace = lazy(() => import('./Workspace'));
 const RouteError = lazy(() => import('./RouteError'));
 
 const router = createBrowserRouter([

@@ -2,12 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
 import { HelmetProvider } from 'react-helmet-async';
-import { AppRouter } from './components/AppRouter';
-import { requestsQueryKey } from './hooks/useRequests';
-import { responsesQueryKey } from './hooks/useResponses';
-import { DEFAULT_FONT_SIZE } from './lib/constants';
-import type { HttpRequest, HttpResponse } from './lib/models';
-import { convertDates } from './lib/models';
+import { AppRouter } from './AppRouter';
+import { requestsQueryKey } from '../hooks/useRequests';
+import { responsesQueryKey } from '../hooks/useResponses';
+import { DEFAULT_FONT_SIZE } from '../lib/constants';
+import type { HttpRequest, HttpResponse } from '../lib/models';
+import { convertDates } from '../lib/models';
 
 const queryClient = new QueryClient();
 
