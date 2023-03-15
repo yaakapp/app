@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import type { HTMLAttributes } from 'react';
-import { forwardRef } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
@@ -39,45 +39,32 @@ export const Button = forwardRef<any, ButtonProps>(function Button(
   }: ButtonProps,
   ref,
 ) {
+  const classes = useMemo(
+    () =>
+      classnames(
+        className,
+        'outline-none pointer-events-auto',
+        'border border-transparent focus-visible:border-blue-300',
+        'rounded-md flex items-center',
+        colorStyles[color || 'default'],
+        justify === 'start' && 'justify-start',
+        justify === 'center' && 'justify-center',
+        size === 'md' && 'h-9 px-3',
+        size === 'sm' && 'h-7 px-2.5 text-sm',
+      ),
+    [color, size, justify, className],
+  );
+
   if (typeof to === 'string') {
     return (
-      <Link
-        ref={ref}
-        to={to}
-        className={classnames(
-          className,
-          'outline-none',
-          'border border-transparent focus-visible:border-blue-300',
-          'rounded-md flex items-center',
-          colorStyles[color || 'default'],
-          justify === 'start' && 'justify-start',
-          justify === 'center' && 'justify-center',
-          size === 'md' && 'h-9 px-3',
-          size === 'sm' && 'h-7 px-2.5 text-sm',
-        )}
-        {...props}
-      >
+      <Link ref={ref} to={to} className={classes} {...props}>
         {children}
         {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
       </Link>
     );
   } else {
     return (
-      <button
-        ref={ref}
-        className={classnames(
-          className,
-          'outline-none',
-          'border border-transparent focus-visible:border-blue-300',
-          'rounded-md flex items-center',
-          colorStyles[color || 'default'],
-          justify === 'start' && 'justify-start',
-          justify === 'center' && 'justify-center',
-          size === 'md' && 'h-9 px-3',
-          size === 'sm' && 'h-7 px-2.5 text-sm',
-        )}
-        {...props}
-      >
+      <button ref={ref} className={classes} {...props}>
         {children}
         {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
       </button>
