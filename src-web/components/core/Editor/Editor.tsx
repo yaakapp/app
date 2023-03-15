@@ -93,8 +93,6 @@ export function _Editor({
             onFocus: handleFocus,
             readOnly,
             singleLine,
-            contentType,
-            useTemplating,
           }),
         ],
       });
@@ -132,15 +130,11 @@ function getExtensions({
   singleLine,
   onChange,
   onFocus,
-  contentType,
-  useTemplating,
-}: Pick<_EditorProps, 'singleLine' | 'contentType' | 'useTemplating' | 'readOnly'> & {
+}: Pick<_EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<_EditorProps['onChange']>;
   onFocus: MutableRefObject<_EditorProps['onFocus']>;
 }) {
-  const ext = getLanguageExtension({ contentType, useTemplating });
-
   // TODO: Ensure tooltips render inside the dialog if we are in one.
   const parent =
     container?.closest<HTMLDivElement>('[role="dialog"]') ??
@@ -153,7 +147,6 @@ function getExtensions({
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
     ...(singleLine ? [singleLineExt()] : []),
     ...(!singleLine ? [multiLineExtensions] : []),
-    ...(ext ? [ext] : []),
     ...(readOnly ? [EditorState.readOnly.of(true)] : []),
     ...(singleLine
       ? [

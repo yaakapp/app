@@ -4,17 +4,13 @@ import type { HttpRequest } from '../lib/models';
 import { useRequests } from './useRequests';
 
 export function useActiveRequest(): HttpRequest | null {
-  const params = useParams<{ requestId?: string }>();
   const requests = useRequests();
+  const { requestId } = useParams<{ requestId?: string }>();
   const [activeRequest, setActiveRequest] = useState<HttpRequest | null>(null);
 
   useEffect(() => {
-    if (requests.length === 0) {
-      setActiveRequest(null);
-    } else {
-      setActiveRequest(requests.find((r) => r.id === params.requestId) ?? null);
-    }
-  }, [requests, params.requestId]);
+    setActiveRequest(requests.find((r) => r.id === requestId) ?? null);
+  }, [requests, requestId]);
 
   return activeRequest;
 }

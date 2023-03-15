@@ -75,7 +75,6 @@ export function RequestPane({ fullHeight, className }: Props) {
           ) : activeRequest.bodyType === 'graphql' ? (
             <GraphQLEditor
               key={activeRequest.id}
-              useTemplating
               className="!bg-gray-50"
               defaultValue={activeRequest?.body ?? ''}
               onChange={(body) => updateRequest.mutate({ body })}
