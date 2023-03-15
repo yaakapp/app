@@ -40,7 +40,7 @@ export function Dialog({
               )}
             >
               <D.Close asChild className="ml-auto absolute right-1 top-1">
-                <IconButton aria-label="Close" icon="x" size="sm" />
+                <IconButton title="Close dialog" aria-label="Close" icon="x" size="sm" />
               </D.Close>
               <VStack space={3}>
                 <HStack alignItems="center" className="pb-3">
