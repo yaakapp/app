@@ -39,7 +39,7 @@ export function _Editor({
   className,
   singleLine,
 }: _EditorProps) {
-  const cm = useRef<{ view: EditorView; langHolder: Compartment } | null>(null);
+  const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   // Unmount the editor
@@ -60,30 +60,38 @@ export function _Editor({
     handleFocus.current = onFocus;
   }, [onFocus]);
 
+  // Update placeholder
+  const placeholderCompartment = useRef(new Compartment());
+  useEffect(() => {
+    if (cm.current === null) return;
+    const effect = placeholderCompartment.current.reconfigure(placeholderExt(placeholder ?? ''));
+    cm.current?.view.dispatch({ effects: effect });
+  }, [placeholder]);
+
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm.current === null) return;
-    const { view, langHolder } = cm.current;
+    const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({ contentType, useTemplating });
-    view.dispatch({ effects: langHolder.reconfigure(ext) });
+    view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType]);
 
   // Initialize the editor when ref mounts
   useEffect(() => {
     if (wrapperRef.current === null || cm.current !== null) return;
     try {
-      const langHolder = new Compartment();
+      const languageCompartment = new Compartment();
       const langExt = getLanguageExtension({ contentType, useTemplating });
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
         extensions: [
-          langHolder.of(langExt),
+          languageCompartment.of(langExt),
+          placeholderCompartment.current.of(placeholderExt(placeholder ?? '')),
           ...getExtensions({
             container: wrapperRef.current,
             onChange: handleChange,
             onFocus: handleFocus,
             readOnly,
-            placeholder,
             singleLine,
             contentType,
             useTemplating,
@@ -91,7 +99,7 @@ export function _Editor({
         ],
       });
       const view = new EditorView({ state, parent: wrapperRef.current });
-      cm.current = { view, langHolder };
+      cm.current = { view, languageCompartment };
       if (autoFocus) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
@@ -122,15 +130,11 @@ function getExtensions({
   container,
   readOnly,
   singleLine,
-  placeholder,
   onChange,
   onFocus,
   contentType,
   useTemplating,
-}: Pick<
-  _EditorProps,
-  'singleLine' | 'contentType' | 'useTemplating' | 'placeholder' | 'readOnly'
-> & {
+}: Pick<_EditorProps, 'singleLine' | 'contentType' | 'useTemplating' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<_EditorProps['onChange']>;
   onFocus: MutableRefObject<_EditorProps['onFocus']>;
@@ -151,7 +155,6 @@ function getExtensions({
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(ext ? [ext] : []),
     ...(readOnly ? [EditorState.readOnly.of(true)] : []),
-    ...(placeholder ? [placeholderExt(placeholder)] : []),
     ...(singleLine
       ? [
           EditorView.domEventHandlers({
