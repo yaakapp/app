@@ -1,5 +1,4 @@
 import classnames from 'classnames';
-import { act } from 'react-dom/test-utils';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -67,7 +66,6 @@ export function RequestPane({ fullHeight, className }: Props) {
               key={activeRequest.id}
               useTemplating
               className="!bg-gray-50"
-              heightMode={fullHeight ? 'full' : 'auto'}
               defaultValue={activeRequest.body ?? ''}
               contentType="application/json"
               onChange={(body) => updateRequest.mutate({ body })}
@@ -78,7 +76,6 @@ export function RequestPane({ fullHeight, className }: Props) {
               useTemplating
               className="!bg-gray-50"
               defaultValue={activeRequest?.body ?? ''}
-              heightMode={fullHeight ? 'full' : 'auto'}
               onChange={(body) => updateRequest.mutate({ body })}
             />
           ) : (
