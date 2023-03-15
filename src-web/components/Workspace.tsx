@@ -31,7 +31,7 @@ export default function Workspace() {
               : 'grid-cols-1 grid-rows-[minmax(0,auto)_minmax(0,100%)]',
           )}
         >
-          <RequestPane fullHeight={isH} className={classnames(!isH && 'pr-2 pb-0')} />
+          <RequestPane fullHeight={isH} className={classnames(!isH && 'pr-2')} />
           <ResponsePane />
         </div>
       </div>

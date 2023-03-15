@@ -33,7 +33,6 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphqlLanguageSupport } from 'cm6-graphql';
-import { debouncedAutocompletionDisplay } from './autocomplete';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 
@@ -78,7 +77,7 @@ export const myHighlightStyle = HighlightStyle.define([
 // ]);
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
-  'application/graphql+json': graphqlLanguageSupport(),
+  'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
   'text/html': html(),
