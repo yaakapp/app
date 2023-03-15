@@ -10,7 +10,7 @@ import { useActiveRequest } from '../hooks/useActiveRequest';
 export default function Workspace() {
   const activeRequest = useActiveRequest();
   const { width } = useWindowSize();
-  const isH = width > 900;
+  const isSideBySide = width > 900;
 
   return (
     <div className="grid grid-cols-[auto_1fr] grid-rows-1 h-full text-gray-900">
@@ -26,12 +26,12 @@ export default function Workspace() {
         <div
           className={classnames(
             'grid',
-            isH
-              ? 'grid-cols-[1fr_1fr] grid-rows-1'
+            isSideBySide
+              ? 'grid-cols-[1fr_1fr] grid-rows-[minmax(0,1fr)]'
               : 'grid-cols-1 grid-rows-[minmax(0,auto)_minmax(0,100%)]',
           )}
         >
-          <RequestPane fullHeight={isH} className={classnames(!isH && 'pr-2')} />
+          <RequestPane fullHeight={isSideBySide} className={classnames(!isSideBySide && 'pr-2')} />
           <ResponsePane />
         </div>
       </div>

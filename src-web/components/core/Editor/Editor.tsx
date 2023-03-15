@@ -3,10 +3,9 @@ import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import { formatSdl } from 'format-graphql';
+import type { MutableRefObject } from 'react';
 import { useEffect, useRef } from 'react';
 import { useUnmount } from 'react-use';
-import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
@@ -48,6 +47,18 @@ export function _Editor({
     cm.current = null;
   });
 
+  // Use ref so we can update the onChange handler without re-initializing the editor
+  const handleChange = useRef<_EditorProps['onChange']>(onChange);
+  useEffect(() => {
+    handleChange.current = onChange;
+  }, [onChange]);
+
+  // Use ref so we can update the onChange handler without re-initializing the editor
+  const handleFocus = useRef<_EditorProps['onFocus']>(onFocus);
+  useEffect(() => {
+    handleFocus.current = onFocus;
+  }, [onFocus]);
+
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -69,11 +80,11 @@ export function _Editor({
           langHolder.of(langExt),
           ...getExtensions({
             container: el,
+            onChange: handleChange,
+            onFocus: handleFocus,
             readOnly,
             placeholder,
             singleLine,
-            onChange,
-            onFocus,
             contentType,
             useTemplating,
           }),
@@ -91,6 +102,7 @@ export function _Editor({
   return (
     <div
       ref={initDivRef}
+      dangerouslySetInnerHTML={{ __html: '' }}
       className={classnames(
         className,
         'cm-wrapper text-base bg-gray-50',
@@ -98,19 +110,7 @@ export function _Editor({
         singleLine ? 'cm-singleline' : 'cm-multiline',
         readOnly && 'cm-readonly',
       )}
-    >
-      {contentType?.includes('graphql') && (
-        <IconButton
-          icon="eye"
-          className="absolute right-0 bottom-0 z-10"
-          onClick={() => {
-            const doc = cm.current?.view.state.doc ?? '';
-            const insert = formatSdl(doc.toString());
-            cm.current?.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
-          }}
-        />
-      )}
-    </div>
+    />
   );
 }
 
@@ -125,14 +125,12 @@ function getExtensions({
   useTemplating,
 }: Pick<
   _EditorProps,
-  | 'singleLine'
-  | 'onChange'
-  | 'contentType'
-  | 'useTemplating'
-  | 'placeholder'
-  | 'readOnly'
-  | 'onFocus'
-> & { container: HTMLDivElement | null }) {
+  'singleLine' | 'contentType' | 'useTemplating' | 'placeholder' | 'readOnly'
+> & {
+  container: HTMLDivElement | null;
+  onChange: MutableRefObject<_EditorProps['onChange']>;
+  onFocus: MutableRefObject<_EditorProps['onFocus']>;
+}) {
   const ext = getLanguageExtension({ contentType, useTemplating });
 
   // TODO: Ensure tooltips render inside the dialog if we are in one.
@@ -172,14 +170,14 @@ function getExtensions({
     // Handle onFocus
     EditorView.domEventHandlers({
       focus: () => {
-        onFocus?.();
+        onFocus.current?.();
       },
     }),
 
     // Handle onChange
     EditorView.updateListener.of((update) => {
-      if (typeof onChange === 'function' && update.docChanged) {
-        onChange(update.state.doc.toString());
+      if (onChange && update.docChanged) {
+        onChange.current?.(update.state.doc.toString());
       }
     }),
   ];
