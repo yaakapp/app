@@ -1,20 +1,41 @@
 import classnames from 'classnames';
 import { forwardRef } from 'react';
+import { useTimedBoolean } from '../../hooks/useTimedBoolean';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
 import type { IconProps } from './Icon';
 import { Icon } from './Icon';
 
 type Props = IconProps &
-  ButtonProps & { iconClassName?: string; iconSize?: IconProps['size']; title: string };
+  ButtonProps & {
+    showConfirm?: boolean;
+    iconClassName?: string;
+    iconSize?: IconProps['size'];
+    title: string;
+  };
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
-  { icon, spin, className, iconClassName, size = 'md', iconSize, ...props }: Props,
+  {
+    showConfirm,
+    icon,
+    spin,
+    onClick,
+    className,
+    iconClassName,
+    size = 'md',
+    iconSize,
+    ...props
+  }: Props,
   ref,
 ) {
+  const [confirmed, setConfirmed] = useTimedBoolean();
   return (
     <Button
       ref={ref}
+      onClick={(e) => {
+        if (showConfirm) setConfirmed();
+        onClick?.(e);
+      }}
       className={classnames(
         className,
         'text-gray-700 hover:text-gray-1000',
@@ -27,9 +48,13 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
     >
       <Icon
         size={iconSize}
-        icon={icon}
+        icon={confirmed ? 'check' : icon}
         spin={spin}
-        className={classnames(iconClassName, props.disabled && 'opacity-70')}
+        className={classnames(
+          iconClassName,
+          props.disabled && 'opacity-70',
+          confirmed && 'text-green-600',
+        )}
       />
     </Button>
   );
