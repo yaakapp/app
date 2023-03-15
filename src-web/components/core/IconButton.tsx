@@ -5,7 +5,8 @@ import { Button } from './Button';
 import type { IconProps } from './Icon';
 import { Icon } from './Icon';
 
-type Props = IconProps & ButtonProps & { iconClassName?: string; iconSize?: IconProps['size'] };
+type Props = IconProps &
+  ButtonProps & { iconClassName?: string; iconSize?: IconProps['size']; title: string };
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
   { icon, spin, className, iconClassName, size = 'md', iconSize, ...props }: Props,

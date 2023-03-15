@@ -22,6 +22,7 @@ export type ButtonProps = HTMLAttributes<HTMLElement> & {
   type?: 'button' | 'submit';
   forDropdown?: boolean;
   disabled?: boolean;
+  title?: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
