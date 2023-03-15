@@ -20,9 +20,12 @@ export function HeaderEditor({ request, className }: Props) {
     return { header: { name: '', value: '' }, id: Math.random().toString() };
   };
 
-  const [pairs, setPairs] = useState<PairWithId[]>(
-    request.headers.map((h) => ({ header: h, id: Math.random().toString() })),
-  );
+  const [pairs, setPairs] = useState<PairWithId[]>(() => {
+    // Remove empty headers on initial render
+    const nonEmpty = request.headers.filter((h) => !(h.name === '' && h.value === ''));
+    const pairs = nonEmpty.map((h) => ({ header: h, id: Math.random().toString() }));
+    return [...pairs, newPair()];
+  });
 
   const setPairsAndSave = (fn: (pairs: PairWithId[]) => PairWithId[]) => {
     setPairs((oldPairs) => {
@@ -41,15 +44,10 @@ export function HeaderEditor({ request, className }: Props) {
     );
   };
 
+  // Ensure there's always at least one pair
   useEffect(() => {
-    const lastPair = pairs[pairs.length - 1];
-    if (lastPair === undefined) {
-      setPairsAndSave((pairs) => [...pairs, newPair()]);
-      return;
-    }
-
-    if (lastPair.header.name !== '' || lastPair.header.value !== '') {
-      setPairsAndSave((pairs) => [...pairs, newPair()]);
+    if (pairs.length === 0) {
+      setPairs((pairs) => [...pairs, newPair()]);
     }
   }, [pairs]);
 
@@ -68,6 +66,11 @@ export function HeaderEditor({ request, className }: Props) {
               pair={p}
               isLast={isLast}
               onChange={handleChangeHeader}
+              onFocus={() => {
+                if (isLast) {
+                  setPairs((pairs) => [...pairs, newPair()]);
+                }
+              }}
               onDelete={isLast ? undefined : handleDelete}
             />
           );
@@ -81,11 +84,13 @@ function FormRow({
   pair,
   onChange,
   onDelete,
+  onFocus,
   isLast,
 }: {
   pair: PairWithId;
   onChange: (pair: PairWithId) => void;
   onDelete?: (pair: PairWithId) => void;
+  onFocus?: () => void;
   isLast?: boolean;
 }) {
   return (
@@ -97,7 +102,8 @@ function FormRow({
         label="Name"
         name="name"
         onChange={(name) => onChange({ id: pair.id, header: { name } })}
-        placeholder="name"
+        onFocus={onFocus}
+        placeholder={isLast ? 'new name' : 'name'}
         useEditor={{ useTemplating: true }}
       />
       <Input
@@ -107,7 +113,8 @@ function FormRow({
         label="Value"
         name="value"
         onChange={(value) => onChange({ id: pair.id, header: { value } })}
-        placeholder="value"
+        onFocus={onFocus}
+        placeholder={isLast ? 'new value' : 'value'}
         useEditor={{ useTemplating: true }}
       />
       {onDelete && (
