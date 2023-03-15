@@ -1,5 +1,5 @@
 import { Button } from './core/Button';
-import { DropdownMenuRadio } from './core/Dropdown';
+import { DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
 
@@ -45,9 +45,11 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
               { label: 'HEAD', value: 'HEAD' },
             ]}
           >
-            <Button type="button" disabled={loading} size="sm" className="mx-0.5" justify="start">
-              {method.toUpperCase()}
-            </Button>
+            <DropdownMenuTrigger>
+              <Button type="button" disabled={loading} size="sm" className="mx-0.5" justify="start">
+                {method.toUpperCase()}
+              </Button>
+            </DropdownMenuTrigger>
           </DropdownMenuRadio>
         }
         rightSlot={

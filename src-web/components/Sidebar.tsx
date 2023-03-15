@@ -26,7 +26,7 @@ export function Sidebar({ className }: Props) {
     <div
       className={classnames(
         className,
-        'w-[15rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
+        'w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
       )}
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
