@@ -7,11 +7,11 @@ export function useDeleteRequest(request: HttpRequest | null) {
   const queryClient = useQueryClient();
   return useMutation<void, string>({
     mutationFn: async () => {
-      if (request == null) return;
+      if (!request) return;
       await invoke('delete_request', { requestId: request.id });
     },
     onSuccess: async () => {
-      if (request == null) return;
+      if (!request) return;
       await queryClient.invalidateQueries(requestsQueryKey(request.workspaceId));
     },
   });

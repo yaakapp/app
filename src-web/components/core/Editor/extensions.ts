@@ -43,12 +43,16 @@ export const myHighlightStyle = HighlightStyle.define([
     fontStyle: 'italic',
   },
   {
+    tag: [t.paren],
+    color: 'hsl(var(--color-gray-900))',
+  },
+  {
     tag: [t.name, t.tagName, t.angleBracket, t.docString, t.number],
     color: 'hsl(var(--color-blue-600))',
   },
   { tag: [t.variableName], color: 'hsl(var(--color-green-600))' },
   { tag: [t.bool], color: 'hsl(var(--color-pink-600))' },
-  { tag: [t.attributeName], color: 'hsl(var(--color-violet-600))' },
+  { tag: [t.attributeName, t.propertyName], color: 'hsl(var(--color-violet-600))' },
   { tag: [t.attributeValue], color: 'hsl(var(--color-orange-600))' },
   { tag: [t.string], color: 'hsl(var(--color-yellow-600))' },
   { tag: [t.keyword, t.meta, t.operator], color: 'hsl(var(--color-red-600))' },
@@ -88,7 +92,7 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 
 export function getLanguageExtension({
   contentType,
-  useTemplating,
+  useTemplating = false,
 }: {
   contentType?: string;
   useTemplating?: boolean;

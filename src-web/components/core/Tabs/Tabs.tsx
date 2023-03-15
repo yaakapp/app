@@ -37,10 +37,7 @@ export function Tabs({ defaultValue, label, children, tabs, className, tabListCl
     >
       <T.List
         aria-label={label}
-        className={classnames(
-          tabListClassName,
-          'h-auto flex items-center overflow-x-auto mb-1 pb-1',
-        )}
+        className={classnames(tabListClassName, 'h-auto flex items-center overflow-x-auto pb-1')}
       >
         <HStack space={1}>
           {tabs.map((t) => {
