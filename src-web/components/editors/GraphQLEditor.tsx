@@ -4,7 +4,6 @@ import { useUniqueKey } from '../../hooks/useUniqueKey';
 import { Divider } from '../core/Divider';
 import type { EditorProps } from '../core/Editor';
 import { Editor } from '../core/Editor';
-import { IconButton } from '../core/IconButton';
 
 type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'>;
 
@@ -17,6 +16,9 @@ interface GraphQLBody {
 export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: Props) {
   const queryKey = useUniqueKey();
   const { query, variables } = useMemo<GraphQLBody>(() => {
+    if (!defaultValue) {
+      return { query: '', variables: {} };
+    }
     try {
       const p = JSON.parse(defaultValue ?? '{}');
       const query = p.query ?? '';
@@ -53,6 +55,7 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
         onChange={handleChangeQuery}
         contentType="application/graphql"
         format={formatSdl}
+        placeholder={`query { }`}
         {...extraEditorProps}
       />
       <Divider />

@@ -1,11 +1,11 @@
 import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState } from '@codemirror/state';
-import { keymap, placeholder as placeholderExt, tooltips, ViewPlugin } from '@codemirror/view';
+import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
 import { useEffect, useMemo, useRef } from 'react';
-import { useMount, useUnmount } from 'react-use';
+import { useUnmount } from 'react-use';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -67,7 +67,9 @@ export function _Editor({
   const placeholderCompartment = useRef(new Compartment());
   useEffect(() => {
     if (cm.current === null) return;
-    const effect = placeholderCompartment.current.reconfigure(placeholderExt(placeholder ?? ''));
+    const effect = placeholderCompartment.current.reconfigure(
+      placeholderExt(placeholderElFromText(placeholder ?? '')),
+    );
     cm.current?.view.dispatch({ effects: effect });
   }, [placeholder]);
 
@@ -89,7 +91,9 @@ export function _Editor({
         doc: `${defaultValue ?? ''}`,
         extensions: [
           languageCompartment.of(langExt),
-          placeholderCompartment.current.of(placeholderExt(placeholder ?? '')),
+          placeholderCompartment.current.of(
+            placeholderExt(placeholderElFromText(placeholder ?? '')),
+          ),
           ...getExtensions({
             container: wrapperRef.current,
             onChange: handleChange,
@@ -138,8 +142,9 @@ export function _Editor({
       {cmContainer}
       {format && (
         <IconButton
+          showConfirm
           size="sm"
-          title="Re-format"
+          title="Reformat contents"
           icon="magicWand"
           className="absolute bottom-2 right-0 transition-opacity opacity-0 group-hover:opacity-70"
           onClick={() => {
@@ -231,4 +236,10 @@ const syncGutterBg = ({
   if (gutterEl) {
     gutterEl?.classList.add(...bgClasses);
   }
+};
+
+const placeholderElFromText = (text: string) => {
+  const el = document.createElement('div');
+  el.innerHTML = text.replace('\n', '<br/>');
+  return el;
 };
