@@ -20,7 +20,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         'text-gray-700 hover:text-gray-1000',
         '!px-0',
         size === 'md' && 'w-9',
-        size === 'sm' && 'w-9',
+        size === 'sm' && 'w-8',
       )}
       size={size}
       {...props}

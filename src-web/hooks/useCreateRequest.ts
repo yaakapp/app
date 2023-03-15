@@ -12,7 +12,7 @@ export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) 
       if (workspace === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
-      return invoke('create_request', { ...patch, workspaceId: workspace?.id });
+      return invoke('create_request', { ...patch, workspaceId: workspace.id });
     },
     onSuccess: async (requestId) => {
       if (navigateAfter) {

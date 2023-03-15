@@ -105,7 +105,7 @@ function FormRow({
         onChange={(name) => onChange({ id, pair: { name, value: pairContainer.pair.value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new name' : 'name'}
-        useEditor={{ useTemplating: true }}
+        useEditor={{ useTemplating: true, contentType: 'text/plain' }}
       />
       <Input
         hideLabel
@@ -116,7 +116,7 @@ function FormRow({
         onChange={(value) => onChange({ id, pair: { name: pairContainer.pair.name, value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new value' : 'value'}
-        useEditor={{ useTemplating: true }}
+        useEditor={{ useTemplating: true, contentType: 'text/plain' }}
       />
       {onDelete && (
         <IconButton

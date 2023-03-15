@@ -5,11 +5,11 @@ export function useDeleteResponses(requestId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      if (requestId == null) return;
+      if (!requestId) return;
       await invoke('delete_all_responses', { requestId });
     },
     onSuccess: () => {
-      if (requestId == null) return;
+      if (!requestId) return;
       queryClient.setQueryData(['responses', { requestId: requestId }], []);
     },
   });

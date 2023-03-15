@@ -8,12 +8,14 @@ import {
   toggleAppearance,
 } from '../lib/theme/window';
 
-const appearanceQueryKey = ['theme', 'appearance'];
+export function appearanceQueryKey() {
+  return ['theme', 'appearance'];
+}
 
 export function useTheme() {
   const queryClient = useQueryClient();
   const appearance = useQuery({
-    queryKey: appearanceQueryKey,
+    queryKey: appearanceQueryKey(),
     queryFn: getAppearance,
     initialData: getAppearance(),
   }).data;
@@ -24,12 +26,10 @@ export function useTheme() {
 
   const handleToggleAppearance = async () => {
     const newAppearance = toggleAppearance();
-    await queryClient.setQueryData(appearanceQueryKey, newAppearance);
+    await queryClient.setQueryData(appearanceQueryKey(), newAppearance);
   };
 
-  useEffect(() => {
-    return subscribeToPreferredAppearanceChange(themeChange);
-  }, []);
+  useEffect(() => subscribeToPreferredAppearanceChange(themeChange), []);
 
   return {
     appearance,

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpResponse } from '../lib/models';
+import { responsesQueryKey } from './useResponses';
 
 export function useDeleteResponse(response: HttpResponse | null) {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export function useDeleteResponse(response: HttpResponse | null) {
     onSuccess: () => {
       if (response === null) return;
       queryClient.setQueryData(
-        ['responses', { requestId: response.requestId }],
+        responsesQueryKey(response.requestId),
         (responses: HttpResponse[] = []) => responses.filter((r) => r.id !== response.id),
       );
     },
