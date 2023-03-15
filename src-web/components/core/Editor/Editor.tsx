@@ -1,11 +1,12 @@
 import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState } from '@codemirror/state';
-import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
+import { keymap, placeholder as placeholderExt, tooltips, ViewPlugin } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { useEffect, useRef } from 'react';
-import { useUnmount } from 'react-use';
+import { useEffect, useMemo, useRef } from 'react';
+import { useMount, useUnmount } from 'react-use';
+import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import { singleLineExt } from './singleLine';
@@ -24,6 +25,7 @@ export interface _EditorProps {
   onChange?: (value: string) => void;
   onFocus?: () => void;
   singleLine?: boolean;
+  format?: (v: string) => string;
 }
 
 export function _Editor({
@@ -38,6 +40,7 @@ export function _Editor({
   onFocus,
   className,
   singleLine,
+  format,
 }: _EditorProps) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -109,18 +112,47 @@ export function _Editor({
     syncGutterBg({ parent: wrapperRef.current, className });
   }, [className]);
 
+  const cmContainer = useMemo(
+    () => (
+      <div
+        ref={wrapperRef}
+        dangerouslySetInnerHTML={{ __html: '' }}
+        className={classnames(
+          className,
+          'cm-wrapper text-base bg-gray-50',
+          heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
+          singleLine ? 'cm-singleline' : 'cm-multiline',
+          readOnly && 'cm-readonly',
+        )}
+      />
+    ),
+    [],
+  );
+
+  if (singleLine) {
+    return cmContainer;
+  }
+
   return (
-    <div
-      ref={wrapperRef}
-      dangerouslySetInnerHTML={{ __html: '' }}
-      className={classnames(
-        className,
-        'cm-wrapper text-base bg-gray-50',
-        heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
-        singleLine ? 'cm-singleline' : 'cm-multiline',
-        readOnly && 'cm-readonly',
+    <div className="group relative h-full w-full">
+      {cmContainer}
+      {format && (
+        <IconButton
+          size="sm"
+          title="Re-format"
+          icon="magicWand"
+          className="absolute bottom-2 right-0 transition-opacity opacity-0 group-hover:opacity-70"
+          onClick={() => {
+            if (cm.current === null) return;
+            const { doc } = cm.current.view.state;
+            const insert = format(doc.toString());
+            // Update editor and blur because the cursor will reset anyway
+            cm.current.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
+            cm.current.view.contentDOM.blur();
+          }}
+        />
       )}
-    />
+    </div>
   );
 }
 
