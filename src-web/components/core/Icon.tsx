@@ -22,6 +22,7 @@ import {
   TriangleRightIcon,
   UpdateIcon,
   RowsIcon,
+  MagicWandIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 
@@ -48,6 +49,7 @@ const icons = {
   triangleLeft: TriangleLeftIcon,
   triangleRight: TriangleRightIcon,
   update: UpdateIcon,
+  magicWand: MagicWandIcon,
   x: Cross2Icon,
 };
 
@@ -66,8 +68,8 @@ export function Icon({ icon, spin, size = 'md', className }: IconProps) {
         className,
         'text-inherit',
         size === 'md' && 'h-4 w-4',
-        size === 'sm' && 'h-3 w-3',
-        size === 'xs' && 'h-2 w-2',
+        size === 'sm' && 'h-3.5 w-3.5',
+        size === 'xs' && 'h-3 w-3',
         spin && 'animate-spin',
       )}
     />

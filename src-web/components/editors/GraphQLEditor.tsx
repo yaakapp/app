@@ -46,26 +46,15 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
 
   return (
     <div className="pb-1 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
-      <div className="relative">
-        <Editor
-          key={queryKey.key}
-          heightMode="auto"
-          defaultValue={query ?? ''}
-          onChange={handleChangeQuery}
-          contentType="application/graphql"
-          {...extraEditorProps}
-        />
-        <IconButton
-          size="sm"
-          title="Re-format GraphQL Query"
-          icon="eye"
-          className="absolute bottom-2 right-0"
-          onClick={() => {
-            handleChangeQuery(formatSdl(query));
-            setTimeout(queryKey.regenerate, 200);
-          }}
-        />
-      </div>
+      <Editor
+        key={queryKey.key}
+        heightMode="auto"
+        defaultValue={query ?? ''}
+        onChange={handleChangeQuery}
+        contentType="application/graphql"
+        format={formatSdl}
+        {...extraEditorProps}
+      />
       <Divider />
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
