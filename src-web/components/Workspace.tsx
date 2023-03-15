@@ -31,8 +31,11 @@ export default function Workspace() {
               : 'grid-cols-1 grid-rows-[minmax(0,auto)_minmax(0,100%)]',
           )}
         >
-          <RequestPane fullHeight={isSideBySide} className={classnames(!isSideBySide && 'pr-2')} />
-          <ResponsePane />
+          <RequestPane
+            fullHeight={isSideBySide}
+            className={classnames(isSideBySide ? 'pr-1' : 'pr-2')}
+          />
+          <ResponsePane className={classnames(isSideBySide && 'pl-1')} />
         </div>
       </div>
     </div>

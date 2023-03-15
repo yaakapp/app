@@ -48,10 +48,8 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
         contentType="application/graphql"
         {...extraEditorProps}
       />
-      <div className="pl-2">
-        <Divider />
-      </div>
-      <p className="pl-2 pt-1 text-gray-500 text-sm">Variables</p>
+      <Divider />
+      <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
         heightMode="auto"
         defaultValue={JSON.stringify(variables, null, 2)}
