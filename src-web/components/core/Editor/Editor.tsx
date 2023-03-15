@@ -40,6 +40,7 @@ export function _Editor({
   singleLine,
 }: _EditorProps) {
   const cm = useRef<{ view: EditorView; langHolder: Compartment } | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   // Unmount the editor
   useUnmount(() => {
@@ -67,10 +68,9 @@ export function _Editor({
     view.dispatch({ effects: langHolder.reconfigure(ext) });
   }, [contentType]);
 
-  // Initialize the editor
-  const initDivRef = (el: HTMLDivElement | null) => {
-    if (el === null || cm.current !== null) return;
-
+  // Initialize the editor when ref mounts
+  useEffect(() => {
+    if (wrapperRef.current === null || cm.current !== null) return;
     try {
       const langHolder = new Compartment();
       const langExt = getLanguageExtension({ contentType, useTemplating });
@@ -79,7 +79,7 @@ export function _Editor({
         extensions: [
           langHolder.of(langExt),
           ...getExtensions({
-            container: el,
+            container: wrapperRef.current,
             onChange: handleChange,
             onFocus: handleFocus,
             readOnly,
@@ -90,18 +90,22 @@ export function _Editor({
           }),
         ],
       });
-      const view = new EditorView({ state, parent: el });
+      const view = new EditorView({ state, parent: wrapperRef.current });
       cm.current = { view, langHolder };
-      syncGutterBg({ parent: el, className });
       if (autoFocus) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
-  };
+  }, [wrapperRef.current]);
+
+  useEffect(() => {
+    if (wrapperRef.current === null) return;
+    syncGutterBg({ parent: wrapperRef.current, className });
+  }, [className]);
 
   return (
     <div
-      ref={initDivRef}
+      ref={wrapperRef}
       dangerouslySetInnerHTML={{ __html: '' }}
       className={classnames(
         className,

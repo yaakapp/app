@@ -21,18 +21,16 @@ export function RequestPane({ fullHeight, className }: Props) {
   if (activeRequest === null) return null;
 
   return (
-    <div className={classnames(className, 'py-2 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
-      <div className="pl-2">
-        <UrlBar
-          key={activeRequest.id}
-          method={activeRequest.method}
-          url={activeRequest.url}
-          loading={sendRequest.isLoading}
-          onMethodChange={(method) => updateRequest.mutate({ method })}
-          onUrlChange={(url) => updateRequest.mutate({ url })}
-          sendRequest={sendRequest.mutate}
-        />
-      </div>
+    <div className={classnames(className, 'p-2 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
+      <UrlBar
+        key={activeRequest.id}
+        method={activeRequest.method}
+        url={activeRequest.url}
+        loading={sendRequest.isLoading}
+        onMethodChange={(method) => updateRequest.mutate({ method })}
+        onUrlChange={(url) => updateRequest.mutate({ url })}
+        sendRequest={sendRequest.mutate}
+      />
       <Tabs
         tabs={[
           {
@@ -53,7 +51,6 @@ export function RequestPane({ fullHeight, className }: Props) {
           { value: 'auth', label: 'Auth' },
         ]}
         className="mt-2"
-        tabListClassName="px-2"
         defaultValue="body"
         label="Request body"
       >
@@ -66,6 +63,7 @@ export function RequestPane({ fullHeight, className }: Props) {
               key={activeRequest.id}
               useTemplating
               className="!bg-gray-50"
+              heightMode={fullHeight ? 'full' : 'auto'}
               defaultValue={activeRequest.body ?? ''}
               contentType="application/json"
               onChange={(body) => updateRequest.mutate({ body })}
