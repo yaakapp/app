@@ -2,6 +2,7 @@ import classnames from 'classnames';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { tryFormatJson } from '../lib/formatters';
 import { Editor } from './core/Editor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { GraphQLEditor } from './editors/GraphQLEditor';
@@ -71,6 +72,7 @@ export function RequestPane({ fullHeight, className }: Props) {
               defaultValue={activeRequest.body ?? ''}
               contentType="application/json"
               onChange={(body) => updateRequest.mutate({ body })}
+              format={activeRequest.bodyType === 'json' ? (v) => tryFormatJson(v) : undefined}
             />
           ) : activeRequest.bodyType === 'graphql' ? (
             <GraphQLEditor

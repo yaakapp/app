@@ -50,7 +50,6 @@ export function Sidebar({ className }: Props) {
           alignItems="center"
           justifyContent="end"
         >
-          <IconButton title="Delete request" icon="trash" onClick={() => deleteRequest.mutate()} />
           <IconButton
             title={appearance === 'dark' ? 'Enable light mode' : 'Enable dark mode'}
             icon={appearance === 'dark' ? 'moon' : 'sun'}
@@ -63,6 +62,7 @@ export function Sidebar({ className }: Props) {
 }
 
 function SidebarItem({ request, active }: { request: HttpRequest; active: boolean }) {
+  const deleteRequest = useDeleteRequest(request);
   const updateRequest = useUpdateRequest(request);
   const [editing, setEditing] = useState<boolean>(false);
   const handleSubmitNameEdit = async (el: HTMLInputElement) => {
@@ -76,7 +76,16 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
   };
 
   return (
-    <li>
+    <li className="group/item relative">
+      <IconButton
+        size="sm"
+        color="custom"
+        iconSize="sm"
+        title="Delete request"
+        icon="trash"
+        className="absolute right-0 transition-opacity opacity-0 group-hover/item:opacity-100"
+        onClick={() => deleteRequest.mutate()}
+      />
       <Button
         color="custom"
         size="sm"
@@ -85,6 +94,9 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
           active
             ? 'bg-gray-200/70 text-gray-900'
             : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
+
+          // Move out of the way when trash is shown
+          'group-hover/item:pr-6',
         )}
         onKeyDown={(e) => {
           // Hitting enter on active request during keyboard nav will start edit

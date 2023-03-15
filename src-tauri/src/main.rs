@@ -441,5 +441,5 @@ fn main() {
 
 fn is_dev() -> bool {
     let env = option_env!("YAAK_ENV");
-    env.unwrap_or("production") == "development"
+    env.unwrap_or("production") != "production"
 }

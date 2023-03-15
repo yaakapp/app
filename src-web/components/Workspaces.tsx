@@ -1,8 +1,7 @@
+import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
-import { Editor } from './core/Editor';
 import { Heading } from './core/Heading';
 import { VStack } from './core/Stacks';
-import { useWorkspaces } from '../hooks/useWorkspaces';
 
 export default function Workspaces() {
   const workspaces = useWorkspaces();
@@ -14,7 +13,6 @@ export default function Workspaces() {
           {w.name}
         </Button>
       ))}
-      <Editor defaultValue="hello world" />
     </VStack>
   );
 }
