@@ -54,13 +54,13 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         }
         rightSlot={
           <IconButton
+            title="Send Request"
             type="submit"
             className="mr-0.5"
             size="sm"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
             disabled={loading}
-            title="Send Request"
           />
         }
       />

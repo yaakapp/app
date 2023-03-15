@@ -31,6 +31,7 @@ export function Sidebar({ className }: Props) {
     >
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
         <IconButton
+          title="Add Request"
           className="mx-1"
           icon="plusCircle"
           onClick={async () => {
@@ -49,8 +50,12 @@ export function Sidebar({ className }: Props) {
           alignItems="center"
           justifyContent="end"
         >
-          <IconButton icon="trash" onClick={() => deleteRequest.mutate()} />
-          <IconButton icon={appearance === 'dark' ? 'moon' : 'sun'} onClick={toggleAppearance} />
+          <IconButton title="Delete request" icon="trash" onClick={() => deleteRequest.mutate()} />
+          <IconButton
+            title={appearance === 'dark' ? 'Enable light mode' : 'Enable dark mode'}
+            icon={appearance === 'dark' ? 'moon' : 'sun'}
+            onClick={toggleAppearance}
+          />
         </HStack>
       </VStack>
     </div>

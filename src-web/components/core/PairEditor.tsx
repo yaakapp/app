@@ -1,57 +1,57 @@
 import classnames from 'classnames';
 import { useEffect, useState } from 'react';
-import { useUpdateRequest } from '../hooks/useUpdateRequest';
-import type { HttpHeader, HttpRequest } from '../lib/models';
-import { IconButton } from './core/IconButton';
-import { Input } from './core/Input';
-import { VStack } from './core/Stacks';
+import { IconButton } from './IconButton';
+import { Input } from './Input';
+import { VStack } from './Stacks';
 
 interface Props {
-  request: HttpRequest;
+  pairs: Pair[];
+  onChange: (pairs: Pair[]) => void;
   className?: string;
 }
 
-type PairWithId = { header: Partial<HttpHeader>; id: string };
+interface Pair {
+  name: string;
+  value: string;
+}
 
-export function HeaderEditor({ request, className }: Props) {
-  const updateRequest = useUpdateRequest(request);
+interface PairContainer {
+  pair: Pair;
+  id: string;
+}
 
-  const newPair = () => {
-    return { header: { name: '', value: '' }, id: Math.random().toString() };
+export function PairEditor({ pairs: originalPairs, className, onChange }: Props) {
+  const newPairContainer = (): PairContainer => {
+    return { pair: { name: '', value: '' }, id: Math.random().toString() };
   };
 
-  const [pairs, setPairs] = useState<PairWithId[]>(() => {
+  const [pairs, setPairs] = useState<PairContainer[]>(() => {
     // Remove empty headers on initial render
-    const nonEmpty = request.headers.filter((h) => !(h.name === '' && h.value === ''));
-    const pairs = nonEmpty.map((h) => ({ header: h, id: Math.random().toString() }));
-    return [...pairs, newPair()];
+    const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
+    const pairs = nonEmpty.map((h) => ({ pair: h, id: Math.random().toString() }));
+    return [...pairs, newPairContainer()];
   });
 
-  const setPairsAndSave = (fn: (pairs: PairWithId[]) => PairWithId[]) => {
+  const setPairsAndSave = (fn: (pairs: PairContainer[]) => PairContainer[]) => {
     setPairs((oldPairs) => {
-      const newPairs = fn(oldPairs);
-      const headers = newPairs.map((p) => ({ name: '', value: '', ...p.header }));
-      updateRequest.mutate({ headers });
-      return newPairs;
+      const pairs = fn(oldPairs).map((p) => p.pair);
+      onChange(pairs);
+      return fn(oldPairs);
     });
   };
 
-  const handleChangeHeader = (pair: PairWithId) => {
-    setPairsAndSave((pairs) =>
-      pairs.map((p) =>
-        pair.id !== p.id ? p : { id: p.id, header: { ...p.header, ...pair.header } },
-      ),
-    );
+  const handleChangeHeader = (pair: PairContainer) => {
+    setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair)));
   };
 
   // Ensure there's always at least one pair
   useEffect(() => {
     if (pairs.length === 0) {
-      setPairs((pairs) => [...pairs, newPair()]);
+      setPairs((pairs) => [...pairs, newPairContainer()]);
     }
   }, [pairs]);
 
-  const handleDelete = (pair: PairWithId) => {
+  const handleDelete = (pair: PairContainer) => {
     setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
   };
 
@@ -63,12 +63,12 @@ export function HeaderEditor({ request, className }: Props) {
           return (
             <FormRow
               key={p.id}
-              pair={p}
+              pairContainer={p}
               isLast={isLast}
               onChange={handleChangeHeader}
               onFocus={() => {
                 if (isLast) {
-                  setPairs((pairs) => [...pairs, newPair()]);
+                  setPairs((pairs) => [...pairs, newPairContainer()]);
                 }
               }}
               onDelete={isLast ? undefined : handleDelete}
@@ -81,27 +81,28 @@ export function HeaderEditor({ request, className }: Props) {
 }
 
 function FormRow({
-  pair,
+  pairContainer,
   onChange,
   onDelete,
   onFocus,
   isLast,
 }: {
-  pair: PairWithId;
-  onChange: (pair: PairWithId) => void;
-  onDelete?: (pair: PairWithId) => void;
+  pairContainer: PairContainer;
+  onChange: (pair: PairContainer) => void;
+  onDelete?: (pair: PairContainer) => void;
   onFocus?: () => void;
   isLast?: boolean;
 }) {
+  const { id } = pairContainer;
   return (
     <div className="group grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
-        defaultValue={pair.header.name}
+        defaultValue={pairContainer.pair.name}
         label="Name"
         name="name"
-        onChange={(name) => onChange({ id: pair.id, header: { name } })}
+        onChange={(name) => onChange({ id, pair: { name, value: pairContainer.pair.value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new name' : 'name'}
         useEditor={{ useTemplating: true }}
@@ -109,10 +110,10 @@ function FormRow({
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
-        defaultValue={pair.header.value}
+        defaultValue={pairContainer.pair.value}
         label="Value"
         name="value"
-        onChange={(value) => onChange({ id: pair.id, header: { value } })}
+        onChange={(value) => onChange({ id, pair: { name: pairContainer.pair.name, value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new value' : 'value'}
         useEditor={{ useTemplating: true }}
@@ -120,7 +121,8 @@ function FormRow({
       {onDelete && (
         <IconButton
           icon="trash"
-          onClick={() => onDelete(pair)}
+          title="Delete header"
+          onClick={() => onDelete(pairContainer)}
           tabIndex={-1}
           className={classnames('opacity-0 group-hover:opacity-100')}
         />

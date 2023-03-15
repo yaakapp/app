@@ -5,7 +5,7 @@ import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { Editor } from './core/Editor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { GraphQLEditor } from './editors/GraphQLEditor';
-import { HeaderEditor } from './HeaderEditor';
+import { PairEditor } from './core/PairEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -55,7 +55,11 @@ export function RequestPane({ fullHeight, className }: Props) {
         label="Request body"
       >
         <TabContent value="headers" className="pl-2">
-          <HeaderEditor key={activeRequest.id} request={activeRequest} />
+          <PairEditor
+            key={activeRequest.id}
+            pairs={activeRequest.headers}
+            onChange={(headers) => updateRequest.mutate({ headers })}
+          />
         </TabContent>
         <TabContent value="body">
           {activeRequest.bodyType === 'json' ? (

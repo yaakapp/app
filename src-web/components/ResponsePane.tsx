@@ -71,6 +71,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
 
           <HStack alignItems="center" className="ml-auto h-8">
             <IconButton
+              title={viewMode === 'pretty' ? 'View Raw' : 'View Prettified'}
               icon={viewMode === 'pretty' ? 'eye' : 'code'}
               size="sm"
               className="ml-1"
@@ -97,7 +98,12 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
               ]}
             >
               <DropdownMenuTrigger>
-                <IconButton icon="clock" className="ml-auto" size="sm" />
+                <IconButton
+                  title="Show response history"
+                  icon="clock"
+                  className="ml-auto"
+                  size="sm"
+                />
               </DropdownMenuTrigger>
             </Dropdown>
           </HStack>
