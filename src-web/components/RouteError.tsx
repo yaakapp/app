@@ -6,6 +6,7 @@ import { VStack } from './core/Stacks';
 export default function RouteError() {
   const error = useRouteError();
   const stringified = JSON.stringify(error);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const message = (error as any).message ?? stringified;
   return (
     <div className="flex items-center justify-center h-full">

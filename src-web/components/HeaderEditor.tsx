@@ -81,13 +81,11 @@ function FormRow({
   pair,
   onChange,
   onDelete,
-  onFocus,
   isLast,
 }: {
   pair: PairWithId;
   onChange: (pair: PairWithId) => void;
   onDelete?: (pair: PairWithId) => void;
-  onFocus?: (pair: PairWithId) => void;
   isLast?: boolean;
 }) {
   return (
@@ -99,7 +97,6 @@ function FormRow({
         label="Name"
         name="name"
         onChange={(name) => onChange({ id: pair.id, header: { name } })}
-        onFocus={() => onFocus?.(pair)}
         placeholder="name"
         useEditor={{ useTemplating: true }}
       />
@@ -110,7 +107,6 @@ function FormRow({
         label="Value"
         name="value"
         onChange={(value) => onChange({ id: pair.id, header: { value } })}
-        onFocus={() => onFocus?.(pair)}
         placeholder="value"
         useEditor={{ useTemplating: true }}
       />
@@ -118,7 +114,8 @@ function FormRow({
         <IconButton
           icon="trash"
           onClick={() => onDelete(pair)}
-          className="invisible group-hover:visible"
+          tabIndex={-1}
+          className={classnames('opacity-0 group-hover:opacity-100')}
         />
       )}
     </div>

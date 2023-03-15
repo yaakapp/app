@@ -1,10 +1,12 @@
 import classnames from 'classnames';
+import { act } from 'react-dom/test-utils';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { Editor } from './core/Editor';
-import { HeaderEditor } from './HeaderEditor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
+import { GraphQLEditor } from './editors/GraphQLEditor';
+import { HeaderEditor } from './HeaderEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -63,21 +65,20 @@ export function RequestPane({ fullHeight, className }: Props) {
           {activeRequest.bodyType === 'json' ? (
             <Editor
               key={activeRequest.id}
+              useTemplating
               className="!bg-gray-50"
               heightMode={fullHeight ? 'full' : 'auto'}
-              useTemplating
               defaultValue={activeRequest.body ?? ''}
               contentType="application/json"
               onChange={(body) => updateRequest.mutate({ body })}
             />
           ) : activeRequest.bodyType === 'graphql' ? (
-            <Editor
+            <GraphQLEditor
               key={activeRequest.id}
-              className="!bg-gray-50"
-              heightMode={fullHeight ? 'full' : 'auto'}
               useTemplating
-              defaultValue={activeRequest.body ?? ''}
-              contentType="application/graphql+json"
+              className="!bg-gray-50"
+              defaultValue={activeRequest?.body ?? ''}
+              heightMode={fullHeight ? 'full' : 'auto'}
               onChange={(body) => updateRequest.mutate({ body })}
             />
           ) : (

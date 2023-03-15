@@ -1,6 +1,6 @@
 import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Button } from '../Button';
 import type { DropdownMenuRadioItem, DropdownMenuRadioProps } from '../Dropdown';
@@ -81,7 +81,7 @@ export function Tabs({ defaultValue, label, children, tabs, className, tabListCl
                     )}
                   >
                     {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
-                    <Icon icon="triangleDown" className="-mr-1.5" />
+                    <Icon icon="triangleDown" className="-mr-1.5 opacity-40" />
                   </Button>
                 </T.Trigger>
               );
