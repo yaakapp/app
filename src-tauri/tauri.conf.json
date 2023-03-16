@@ -14,12 +14,14 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 800,
+        "height": 600,
         "hiddenTitle": true,
         "resizable": true,
         "title": "Yaak",
         "titleBarStyle": "Overlay",
-        "width": 1400
+        "width": 1100,
+        "minWidth": 600,
+        "minHeight": 400
       }
     ],
     "allowlist": {
