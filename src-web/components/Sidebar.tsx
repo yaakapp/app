@@ -1,8 +1,9 @@
 import classnames from 'classnames';
-import { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useKeyValues } from '../hooks/useKeyValues';
 import { useRequests } from '../hooks/useRequests';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -16,18 +17,65 @@ interface Props {
   className?: string;
 }
 
+const MIN_WIDTH = 130;
+
 export function Sidebar({ className }: Props) {
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const width = useKeyValues<number>({ key: 'sidebar_width', initialValue: 200 });
   const requests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
+
+  const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
+  const unsub = () => {
+    if (moveState.current !== null) {
+      document.documentElement.removeEventListener('mousemove', moveState.current.move);
+      document.documentElement.removeEventListener('mouseup', moveState.current.up);
+    }
+  };
+
+  const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    unsub();
+    const mouseStartX = e.clientX;
+    const startWidth = width.value;
+    moveState.current = {
+      move: (e: MouseEvent) => {
+        const newWidth = Math.max(MIN_WIDTH, startWidth + (e.clientX - mouseStartX));
+        width.set(newWidth);
+      },
+      up: () => {
+        unsub();
+        setIsDragging(false);
+      },
+    };
+    document.documentElement.addEventListener('mousemove', moveState.current.move);
+    document.documentElement.addEventListener('mouseup', moveState.current.up);
+    setIsDragging(true);
+  };
+
   return (
     <div
+      style={{ width: `${width.value}px` }}
       className={classnames(
         className,
-        'w-[12rem] bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
+        'relative',
+        'bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr]',
       )}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <div
+        aria-hidden
+        className="group absolute -right-2 top-0 bottom-0 w-4 cursor-ew-resize flex justify-center"
+        onMouseDown={handleResizeStart}
+      >
+        <div
+          className={classnames(
+            'transition-colors w-[1px] group-hover:bg-white/10 h-full pointer-events-none',
+            isDragging && '!bg-white/20',
+          )}
+        />
+      </div>
       <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
         <IconButton
           title="Add Request"
