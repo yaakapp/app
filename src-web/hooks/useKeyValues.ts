@@ -14,14 +14,14 @@ export function keyValueQueryKey({
   return ['key_value', { namespace, key: buildKey(key) }];
 }
 
-export function useKeyValues({
+export function useKeyValues<T extends string | number | boolean>({
   namespace = DEFAULT_NAMESPACE,
   key,
   initialValue,
 }: {
   namespace?: string;
   key: string | string[];
-  initialValue: string;
+  initialValue: T;
 }) {
   const query = useQuery<KeyValue | null>({
     initialData: null,
@@ -29,15 +29,25 @@ export function useKeyValues({
     queryFn: async () => invoke('get_key_value', { namespace, key: buildKey(key) }),
   });
 
-  const mutate = useMutation<KeyValue, unknown, string>({
+  const mutate = useMutation<KeyValue, unknown, T>({
     mutationFn: (value) => {
-      return invoke('set_key_value', { namespace, key: buildKey(key), value });
+      return invoke('set_key_value', {
+        namespace,
+        key: buildKey(key),
+        value: JSON.stringify(value),
+      });
     },
   });
 
+  let value: T;
+  try {
+    value = JSON.parse(query.data?.value ?? JSON.stringify(initialValue));
+  } catch (e) {
+    value = initialValue;
+  }
   return {
-    value: query.data?.value ?? initialValue,
-    set: (value: string) => mutate.mutate(value),
+    value,
+    set: (value: T) => mutate.mutate(value),
   };
 }
 
