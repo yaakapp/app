@@ -19,7 +19,7 @@ use sqlx::{Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, Menu, State, Submenu, Wry};
+use tauri::{AppHandle, Menu, MenuItem, State, Submenu, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tauri::regex::Regex;
 use tokio::sync::Mutex;
@@ -374,13 +374,19 @@ fn main() {
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
     let default_menu = Menu::os_default("Yaak".to_string().as_str());
-    let submenu = Submenu::new("Test Menu", Menu::new()
-        .add_item(CustomMenuItem::new("refresh".to_string(), "Refresh").accelerator("CmdOrCtrl+Shift+r"))
+    let mut test_menu = Menu::new()
         .add_item(CustomMenuItem::new("send_request".to_string(), "Send Request").accelerator("CmdOrCtrl+r"))
         .add_item(CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size").accelerator("CmdOrCtrl+0"))
         .add_item(CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"))
-        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-")),
-    );
+        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"));
+    if is_dev() {
+        test_menu = test_menu
+            .add_native_item(MenuItem::Separator)
+            .add_item(CustomMenuItem::new("refresh".to_string(), "Refresh").accelerator("CmdOrCtrl+Shift+r"))
+            .add_item(CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools").accelerator("CmdOrCtrl+Option+i"));
+    }
+
+    let submenu = Submenu::new("Test Menu", test_menu);
 
     let menu = default_menu.add_submenu(submenu);
 
@@ -442,6 +448,13 @@ fn main() {
                 "zoom_out" => event.window().emit("zoom", -1).unwrap(),
                 "refresh" => event.window().emit("refresh", true).unwrap(),
                 "send_request" => event.window().emit("send_request", true).unwrap(),
+                "toggle_devtools" => {
+                    if event.window().is_devtools_open() {
+                        event.window().close_devtools();
+                    } else {
+                        event.window().open_devtools();
+                    }
+                },
                 _ => {}
             };
         })
