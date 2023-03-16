@@ -53,6 +53,7 @@ export default function Workspace() {
             {activeRequest?.name}
           </div>
           <div className="flex-1 flex justify-end -mr-2">
+            <IconButton size="sm" title="" icon="magnifyingGlass" />
             <IconButton size="sm" title="" icon="gear" />
           </div>
         </HStack>

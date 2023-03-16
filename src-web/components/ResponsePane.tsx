@@ -70,15 +70,13 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
           )}
 
           <HStack alignItems="center" className="ml-auto h-8">
-            <IconButton
-              title={viewMode === 'pretty' ? 'View Raw' : 'View Prettified'}
-              icon={viewMode === 'pretty' ? 'eye' : 'code'}
-              size="sm"
-              className="ml-1"
-              onClick={() => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty'))}
-            />
             <Dropdown
               items={[
+                {
+                  label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
+                  onSelect: () => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty')),
+                },
+                '-----',
                 {
                   label: 'Clear Response',
                   onSelect: deleteResponse.mutate,
@@ -100,7 +98,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
               <DropdownMenuTrigger>
                 <IconButton
                   title="Show response history"
-                  icon="clock"
+                  icon="triangleDown"
                   className="ml-auto"
                   size="sm"
                 />

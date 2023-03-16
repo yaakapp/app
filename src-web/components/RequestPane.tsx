@@ -55,7 +55,7 @@ export function RequestPane({ fullHeight, className }: Props) {
         defaultValue="body"
         label="Request body"
       >
-        <TabContent value="headers" className="pl-2">
+        <TabContent value="headers">
           <PairEditor
             key={activeRequest.id}
             pairs={activeRequest.headers}
