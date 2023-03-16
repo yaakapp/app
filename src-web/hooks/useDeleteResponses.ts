@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { responsesQueryKey } from './useResponses';
 
 export function useDeleteResponses(requestId?: string) {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export function useDeleteResponses(requestId?: string) {
     },
     onSuccess: () => {
       if (!requestId) return;
-      queryClient.setQueryData(['responses', { requestId: requestId }], []);
+      queryClient.setQueryData(responsesQueryKey(requestId), []);
     },
   });
 }

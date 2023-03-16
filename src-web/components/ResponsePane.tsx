@@ -3,8 +3,10 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useDeleteResponse } from '../hooks/useResponseDelete';
 import { useResponses } from '../hooks/useResponses';
+import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpResponse } from '../lib/models';
+import { pluralize } from '../lib/pluralize';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
@@ -19,11 +21,11 @@ interface Props {
 
 export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty');
   const responses = useResponses();
   const activeResponse: HttpResponse | null = activeResponseId
     ? responses.find((r) => r.id === activeResponseId) ?? null
     : responses[responses.length - 1] ?? null;
+  const [viewMode, toggleViewMode] = useResponseViewMode(activeResponse?.requestId);
   const deleteResponse = useDeleteResponse(activeResponse);
   const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
 
@@ -74,7 +76,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
               items={[
                 {
                   label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
-                  onSelect: () => setViewMode((m) => (m === 'pretty' ? 'raw' : 'pretty')),
+                  onSelect: toggleViewMode,
                 },
                 '-----',
                 {
@@ -83,7 +85,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                   disabled: responses.length === 0,
                 },
                 {
-                  label: 'Clear All Responses',
+                  label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
                   onSelect: deleteAllResponses.mutate,
                   disabled: responses.length === 0,
                 },

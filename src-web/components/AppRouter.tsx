@@ -5,6 +5,9 @@ const Workspaces = lazy(() => import('./Workspaces'));
 const Workspace = lazy(() => import('./Workspace'));
 const RouteError = lazy(() => import('./RouteError'));
 
+export const WORKSPACE_PATH = '/workspaces/:workspaceId';
+export const WORKSPACE_REQUEST_PATH = '/workspaces/:workspaceId/requests/:requestId';
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -15,11 +18,11 @@ const router = createBrowserRouter([
         element: <Workspaces />,
       },
       {
-        path: '/workspaces/:workspaceId',
+        path: WORKSPACE_PATH,
         element: <Workspace />,
       },
       {
-        path: '/workspaces/:workspaceId/requests/:requestId',
+        path: WORKSPACE_REQUEST_PATH,
         element: <Workspace />,
       },
     ],
