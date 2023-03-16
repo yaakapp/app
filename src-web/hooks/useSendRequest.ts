@@ -14,5 +14,5 @@ export function useSendRequest(request: HttpRequest | null) {
       if (request == null) return;
       await queryClient.invalidateQueries(responsesQueryKey(request.id));
     },
-  });
+  }).mutate;
 }

@@ -1,19 +1,22 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
 import { HelmetProvider } from 'react-helmet-async';
+import { matchPath } from 'react-router-dom';
 import { keyValueQueryKey } from '../hooks/useKeyValues';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import type { HttpRequest, HttpResponse, KeyValue } from '../lib/models';
 import { convertDates } from '../lib/models';
-import { AppRouter } from './AppRouter';
+import { AppRouter, WORKSPACE_REQUEST_PATH } from './AppRouter';
 
 const queryClient = new QueryClient();
 
 await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
-  queryClient.setQueryData(keyValueQueryKey(keyValue.namespace, keyValue.key), keyValue);
+  queryClient.setQueryData(keyValueQueryKey(keyValue), keyValue);
 });
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
@@ -66,6 +69,19 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
   );
 });
 
+await listen('send_request', async () => {
+  const params = matchPath(WORKSPACE_REQUEST_PATH, window.location.pathname);
+  const requestId = params?.params.requestId;
+  if (typeof requestId !== 'string') {
+    return;
+  }
+  await invoke('send_request', { requestId });
+});
+
+await listen('refresh', () => {
+  location.reload();
+});
+
 await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
   const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
@@ -87,6 +103,7 @@ export function App() {
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <AppRouter />
+          <ReactQueryDevtools initialIsOpen={false} />
         </HelmetProvider>
       </MotionConfig>
     </QueryClientProvider>
