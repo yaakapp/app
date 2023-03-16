@@ -1,7 +1,6 @@
 import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { Button } from '../Button';
 import type { DropdownMenuRadioItem, DropdownMenuRadioProps } from '../Dropdown';
 import { DropdownMenuRadio, DropdownMenuTrigger } from '../Dropdown';
@@ -13,6 +12,8 @@ import './Tabs.css';
 interface Props {
   defaultValue?: string;
   label: string;
+  onChangeValue: (value: string) => void;
+  value: string;
   tabs: {
     value: string;
     label: string;
@@ -27,12 +28,20 @@ interface Props {
   children: ReactNode;
 }
 
-export function Tabs({ defaultValue, label, children, tabs, className, tabListClassName }: Props) {
-  const [value, setValue] = useState(defaultValue);
+export function Tabs({
+  value,
+  onChangeValue,
+  defaultValue,
+  label,
+  children,
+  tabs,
+  className,
+  tabListClassName,
+}: Props) {
   return (
     <T.Root
       defaultValue={defaultValue}
-      onValueChange={setValue}
+      onValueChange={onChangeValue}
       className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
       <T.List

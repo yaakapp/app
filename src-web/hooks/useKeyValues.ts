@@ -8,7 +8,7 @@ export function keyValueQueryKey({
   namespace = DEFAULT_NAMESPACE,
   key,
 }: {
-  namespace: string;
+  namespace?: string;
   key: string | string[];
 }) {
   return ['key_value', { namespace, key: buildKey(key) }];
@@ -19,7 +19,7 @@ export function useKeyValues({
   key,
   initialValue,
 }: {
-  namespace: string;
+  namespace?: string;
   key: string | string[];
   initialValue: string;
 }) {
