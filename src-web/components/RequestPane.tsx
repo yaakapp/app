@@ -1,12 +1,13 @@
 import classnames from 'classnames';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import { Editor } from './core/Editor';
+import { PairEditor } from './core/PairEditor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { GraphQLEditor } from './editors/GraphQLEditor';
-import { PairEditor } from './core/PairEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -18,6 +19,7 @@ export function RequestPane({ fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const updateRequest = useUpdateRequest(activeRequest);
   const sendRequest = useSendRequest(activeRequest);
+  const responseLoading = useIsResponseLoading();
 
   if (activeRequest === null) return null;
 
@@ -27,10 +29,10 @@ export function RequestPane({ fullHeight, className }: Props) {
         key={activeRequest.id}
         method={activeRequest.method}
         url={activeRequest.url}
-        loading={sendRequest.isLoading}
         onMethodChange={(method) => updateRequest.mutate({ method })}
         onUrlChange={(url) => updateRequest.mutate({ url })}
-        sendRequest={sendRequest.mutate}
+        sendRequest={sendRequest}
+        loading={responseLoading}
       />
       <Tabs
         tabs={[
