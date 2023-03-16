@@ -56,8 +56,8 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
           <IconButton
             title="Send Request"
             type="submit"
-            className="mr-0.5"
-            size="sm"
+            color="custom"
+            className="!px-2 mr-0.5"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
             disabled={loading}
