@@ -23,6 +23,7 @@ import {
   UpdateIcon,
   RowsIcon,
   MagicWandIcon,
+  MagnifyingGlassIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 
@@ -50,7 +51,9 @@ const icons = {
   triangleRight: TriangleRightIcon,
   update: UpdateIcon,
   magicWand: MagicWandIcon,
+  magnifyingGlass: MagnifyingGlassIcon,
   x: Cross2Icon,
+  empty: () => <span />,
 };
 
 export interface IconProps {
