@@ -9,6 +9,8 @@ import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
+import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
+import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
@@ -124,15 +126,6 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
 
   return (
     <li className="group/item relative">
-      <IconButton
-        size="sm"
-        color="custom"
-        iconSize="sm"
-        title="Delete request"
-        icon="trash"
-        className="absolute right-0 transition-opacity opacity-0 group-hover/item:opacity-100"
-        onClick={() => deleteRequest.mutate()}
-      />
       <Button
         color="custom"
         size="sm"
@@ -140,10 +133,10 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
           editing && 'focus-within:border-blue-400/40',
           active
             ? 'bg-gray-200/70 text-gray-900'
-            : 'text-gray-600 hover:text-gray-800 active:bg-gray-200/30',
+            : 'text-gray-600 group-hover/item:text-gray-800 active:bg-gray-200/30',
 
           // Move out of the way when trash is shown
-          'group-hover/item:pr-6',
+          'group-hover/item:pr-7',
         )}
         onKeyDown={(e) => {
           // Hitting enter on active request during keyboard nav will start edit
@@ -177,6 +170,19 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
           <span className="truncate">{request.name || request.url}</span>
         )}
       </Button>
+      <Dropdown
+        items={[
+          {
+            label: 'Delete Request',
+            onSelect: deleteRequest.mutate,
+            leftSlot: <Icon icon="trash" />,
+          },
+        ]}
+      >
+        <DropdownMenuTrigger className="absolute right-0 top-0 transition-opacity opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100">
+          <IconButton color="custom" size="sm" iconSize="sm" title="Delete request" icon="dotsH" />
+        </DropdownMenuTrigger>
+      </Dropdown>
     </li>
   );
 }
