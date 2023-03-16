@@ -95,7 +95,7 @@ function FormRow({
 }) {
   const { id } = pairContainer;
   return (
-    <div className="group grid grid-cols-[1fr_1fr_2.5rem] grid-rows-1 gap-2 items-center">
+    <div className="group grid grid-cols-[1fr_1fr_auto] grid-rows-1 gap-2 items-center">
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
@@ -118,7 +118,7 @@ function FormRow({
         placeholder={isLast ? 'new value' : 'value'}
         useEditor={{ useTemplating: true, contentType: 'text/plain' }}
       />
-      {onDelete && (
+      {onDelete ? (
         <IconButton
           icon="trash"
           title="Delete header"
@@ -126,6 +126,8 @@ function FormRow({
           tabIndex={-1}
           className={classnames('opacity-0 group-hover:opacity-100')}
         />
+      ) : (
+        <IconButton title="" icon="empty" />
       )}
     </div>
   );

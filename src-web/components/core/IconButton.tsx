@@ -22,6 +22,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
     onClick,
     className,
     iconClassName,
+    tabIndex,
     size = 'md',
     iconSize,
     ...props
@@ -32,6 +33,9 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
   return (
     <Button
       ref={ref}
+      aria-hidden={icon === 'empty'}
+      disabled={icon === 'empty'}
+      tabIndex={tabIndex ?? icon === 'empty' ? -1 : undefined}
       onClick={(e) => {
         if (showConfirm) setConfirmed();
         onClick?.(e);
