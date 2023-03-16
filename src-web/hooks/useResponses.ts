@@ -5,7 +5,7 @@ import { convertDates } from '../lib/models';
 import { useActiveRequest } from './useActiveRequest';
 
 export function responsesQueryKey(requestId: string) {
-  return ['responses', { requestId }];
+  return ['http_responses', { requestId }];
 }
 
 export function useResponses() {

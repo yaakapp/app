@@ -5,7 +5,7 @@ import { convertDates } from '../lib/models';
 import { useActiveWorkspace } from './useActiveWorkspace';
 
 export function requestsQueryKey(workspaceId: string) {
-  return ['requests', { workspaceId }];
+  return ['http_requests', { workspaceId }];
 }
 
 export function useRequests() {

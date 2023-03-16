@@ -2,14 +2,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
 import { HelmetProvider } from 'react-helmet-async';
+import { keyValueQueryKey } from '../hooks/useKeyValues';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
-import type { HttpRequest, HttpResponse } from '../lib/models';
+import type { HttpRequest, HttpResponse, KeyValue } from '../lib/models';
 import { convertDates } from '../lib/models';
 import { AppRouter } from './AppRouter';
 
 const queryClient = new QueryClient();
+
+await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
+  queryClient.setQueryData(keyValueQueryKey(keyValue.namespace, keyValue.key), keyValue);
+});
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
   queryClient.setQueryData(

@@ -19,7 +19,6 @@ interface Props {
 export function Sidebar({ className }: Props) {
   const requests = useRequests();
   const activeRequest = useActiveRequest();
-  const deleteRequest = useDeleteRequest(activeRequest);
   const createRequest = useCreateRequest({ navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
   return (
