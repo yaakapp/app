@@ -12,16 +12,16 @@ use std::env;
 use std::env::current_dir;
 use std::fs::create_dir_all;
 
-use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
+use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use reqwest::redirect::Policy;
+use sqlx::{Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite};
-use tauri::regex::Regex;
 use tauri::{AppHandle, Menu, State, Submenu, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
+use tauri::regex::Regex;
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
@@ -51,9 +51,9 @@ async fn migrate_db(
         .path_resolver()
         .resolve_resource("migrations")
         .expect("failed to resolve resource");
+    println!("Running migrations at {}", p.to_string_lossy());
     let m = Migrator::new(p).await.expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
-    println!("Migrations ran");
     Ok(())
 }
 
@@ -192,6 +192,38 @@ async fn response_err(
         .expect("Failed to update response");
     app_handle.emit_all("updated_response", &response).unwrap();
     Ok(response.id)
+}
+
+#[tauri::command]
+async fn get_key_value(
+    namespace: &str,
+    key: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Option<models::KeyValue>, ()> {
+    let pool = &*db_instance.lock().await;
+    let result = models::get_key_value(namespace, key, pool).await;
+    Ok(result)
+}
+
+#[tauri::command]
+async fn set_key_value(
+    namespace: &str,
+    key: &str,
+    value: &str,
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<(), String> {
+    let pool = &*db_instance.lock().await;
+    let created_key_value =
+        models::set_key_value(namespace, key, value, pool)
+            .await
+            .expect("Failed to create key value");
+
+    app_handle
+        .emit_all("updated_key_value", &created_key_value)
+        .unwrap();
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -432,6 +464,8 @@ fn main() {
             update_request,
             delete_request,
             responses,
+            get_key_value,
+            set_key_value,
             delete_response,
             delete_all_responses,
         ])
