@@ -8,6 +8,7 @@ use sqlx::{Pool, Sqlite};
 #[serde(rename_all = "camelCase")]
 pub struct Workspace {
     pub id: String,
+    pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: Option<NaiveDateTime>,
@@ -26,6 +27,7 @@ pub struct HttpRequestHeader {
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequest {
     pub id: String,
+    pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub deleted_at: Option<NaiveDateTime>,
@@ -49,6 +51,7 @@ pub struct HttpResponseHeader {
 #[serde(rename_all = "camelCase")]
 pub struct HttpResponse {
     pub id: String,
+    pub model: String,
     pub workspace_id: String,
     pub request_id: String,
     pub created_at: NaiveDateTime,
@@ -63,11 +66,63 @@ pub struct HttpResponse {
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyValue {
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
+    pub namespace: String,
+    pub key: String,
+    pub value: String,
+}
+
+pub async fn set_key_value(
+    namespace: &str,
+    key: &str,
+    value: &str,
+    pool: &Pool<Sqlite>,
+) -> Option<KeyValue> {
+    sqlx::query!(
+        r#"
+            INSERT INTO key_values (namespace, key, value)
+            VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               value = excluded.value
+        "#,
+        namespace,
+        key,
+        value,
+    )
+        .execute(pool)
+        .await
+        .expect("Failed to insert key value");
+
+    get_key_value(namespace, key, pool).await
+}
+
+pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {
+    sqlx::query_as!(
+        KeyValue,
+        r#"
+            SELECT model, created_at, updated_at, deleted_at, namespace, key, value
+            FROM key_values
+            WHERE namespace = ? AND key = ?
+        "#,
+        namespace,
+        key,
+    )
+        .fetch_one(pool)
+        .await
+        .ok()
+}
+
 pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, created_at, updated_at, deleted_at, name, description
+            SELECT id, model, created_at, updated_at, deleted_at, name, description
             FROM workspaces
         "#,
     )
@@ -79,7 +134,7 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, created_at, updated_at, deleted_at, name, description
+            SELECT id, model, created_at, updated_at, deleted_at, name, description
             FROM workspaces
             WHERE id = ?
         "#,
@@ -141,10 +196,9 @@ pub async fn upsert_request(
                 method,
                 body,
                 body_type,
-                headers,
-                updated_at
+                headers
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
@@ -178,6 +232,7 @@ pub async fn find_requests(
         r#"
             SELECT
                 id,
+                model,
                 workspace_id,
                 created_at,
                 updated_at,
@@ -203,6 +258,7 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
         r#"
             SELECT
                 id,
+                model,
                 workspace_id,
                 created_at,
                 updated_at,
@@ -215,7 +271,6 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE id = ?
-            ORDER BY created_at DESC
         "#,
         id,
     )
@@ -306,7 +361,7 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
     sqlx::query_as_unchecked!(
         HttpResponse,
         r#"
-            SELECT id, workspace_id, request_id, updated_at, deleted_at, created_at,
+            SELECT id, model, workspace_id, request_id, updated_at, deleted_at, created_at,
                 status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
@@ -325,7 +380,7 @@ pub async fn find_responses(
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, workspace_id, request_id, updated_at, deleted_at,
+            SELECT id, model, workspace_id, request_id, updated_at, deleted_at,
                 created_at, status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses

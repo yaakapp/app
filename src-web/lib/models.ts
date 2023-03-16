@@ -1,12 +1,13 @@
 export interface BaseModel {
-  id: string;
-  workspaceId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  readonly id: string;
+  readonly workspaceId: string;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
+  readonly deletedAt: Date | null;
 }
 
 export interface Workspace extends BaseModel {
+  readonly model: 'workspace';
   name: string;
   description: string;
 }
@@ -17,6 +18,7 @@ export interface HttpHeader {
 }
 
 export interface HttpRequest extends BaseModel {
+  readonly model: 'http_request';
   name: string;
   url: string;
   body: string | null;
@@ -25,19 +27,28 @@ export interface HttpRequest extends BaseModel {
   headers: HttpHeader[];
 }
 
-export interface HttpResponse extends BaseModel {
-  id: string;
-  requestId: string;
-  body: string;
-  error: string;
-  status: number;
-  elapsed: number;
-  statusReason: string;
-  url: string;
-  headers: HttpHeader[];
+export interface KeyValue extends Omit<BaseModel, 'id'> {
+  readonly model: 'key_value';
+  readonly key: string;
+  readonly namespace: string;
+  value: string;
 }
 
-export function convertDates<T extends BaseModel>(m: T): T {
+export interface HttpResponse extends BaseModel {
+  readonly model: 'http_response';
+  readonly requestId: string;
+  readonly body: string;
+  readonly error: string;
+  readonly status: number;
+  readonly elapsed: number;
+  readonly statusReason: string;
+  readonly url: string;
+  readonly headers: HttpHeader[];
+}
+
+export function convertDates<T extends Pick<BaseModel, 'createdAt' | 'updatedAt' | 'deletedAt'>>(
+  m: T,
+): T {
   return {
     ...m,
     createdAt: convertDate(m.createdAt),
