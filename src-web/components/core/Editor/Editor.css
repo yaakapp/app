@@ -12,6 +12,10 @@
             outline: none !important;
         }
 
+        .cm-content {
+            @apply py-0;
+        }
+
         .cm-line {
             @apply text-gray-900 pl-1 pr-1.5;
         }
@@ -137,7 +141,7 @@
 
 .cm-singleline .cm-editor {
     .cm-content {
-        @apply h-full flex items-center;
+        @apply  h-full flex items-center;
     }
 }
 
