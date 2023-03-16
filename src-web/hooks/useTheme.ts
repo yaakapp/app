@@ -1,38 +1,31 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import type { Appearance } from '../lib/theme/window';
 import {
   getAppearance,
   setAppearance,
   subscribeToPreferredAppearanceChange,
-  toggleAppearance,
 } from '../lib/theme/window';
-
-export function appearanceQueryKey() {
-  return ['theme', 'appearance'];
-}
+import { useKeyValues } from './useKeyValues';
 
 export function useTheme() {
-  const queryClient = useQueryClient();
-  const appearance = useQuery({
-    queryKey: appearanceQueryKey(),
-    queryFn: getAppearance,
-    initialData: getAppearance(),
-  }).data;
+  const appearanceKv = useKeyValues({ key: 'appearance', initialValue: getAppearance() });
 
   const themeChange = (appearance: Appearance) => {
-    setAppearance(appearance);
+    appearanceKv.set(appearance);
   };
 
   const handleToggleAppearance = async () => {
-    const newAppearance = toggleAppearance();
-    await queryClient.setQueryData(appearanceQueryKey(), newAppearance);
+    appearanceKv.set(appearanceKv.value === 'dark' ? 'light' : 'dark');
   };
 
+  // Set appearance when preferred theme changes
   useEffect(() => subscribeToPreferredAppearanceChange(themeChange), []);
 
+  // Sync appearance when k/v changes
+  useEffect(() => setAppearance(appearanceKv.value as Appearance), [appearanceKv.value]);
+
   return {
-    appearance,
+    appearance: appearanceKv.value,
     toggleAppearance: handleToggleAppearance,
   };
 }

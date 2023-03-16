@@ -1,6 +1,7 @@
 import classnames from 'classnames';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { useKeyValues } from '../hooks/useKeyValues';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
@@ -20,6 +21,10 @@ export function RequestPane({ fullHeight, className }: Props) {
   const updateRequest = useUpdateRequest(activeRequest);
   const sendRequest = useSendRequest(activeRequest);
   const responseLoading = useIsResponseLoading();
+  const activeTab = useKeyValues({
+    key: ['active_request_body_tab', activeRequest?.id ?? 'n/a'],
+    initialValue: 'body',
+  });
 
   if (activeRequest === null) return null;
 
@@ -35,6 +40,8 @@ export function RequestPane({ fullHeight, className }: Props) {
         loading={responseLoading}
       />
       <Tabs
+        value={activeTab.value}
+        onChangeValue={activeTab.set}
         tabs={[
           {
             value: 'body',
