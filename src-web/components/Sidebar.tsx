@@ -21,11 +21,12 @@ interface Props {
 }
 
 const MIN_WIDTH = 110;
+const INITIAL_WIDTH = 200;
 const MAX_WIDTH = 500;
 
 export function Sidebar({ className }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const width = useKeyValue<number>({ key: 'sidebar_width', initialValue: 200 });
+  const width = useKeyValue<number>({ key: 'sidebar_width', initialValue: INITIAL_WIDTH });
   const requests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
@@ -37,6 +38,10 @@ export function Sidebar({ className }: Props) {
       document.documentElement.removeEventListener('mousemove', moveState.current.move);
       document.documentElement.removeEventListener('mouseup', moveState.current.up);
     }
+  };
+
+  const handleResizeReset = () => {
+    width.set(INITIAL_WIDTH);
   };
 
   const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -72,6 +77,7 @@ export function Sidebar({ className }: Props) {
         aria-hidden
         className="group absolute -right-2 top-0 bottom-0 w-4 cursor-ew-resize flex justify-center"
         onMouseDown={handleResizeStart}
+        onDoubleClick={handleResizeReset}
       >
         <div
           className={classnames(

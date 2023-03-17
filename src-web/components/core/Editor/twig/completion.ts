@@ -6,6 +6,7 @@ const closeTag = ' ]}';
 const variables = [
   { name: 'DOMAIN' },
   { name: 'BASE_URL' },
+  { name: 'CONTENT_THINGY' },
   { name: 'TOKEN' },
   { name: 'PROJECT_ID' },
   { name: 'DUMMY' },
@@ -17,7 +18,7 @@ const variables = [
 ];
 
 const MIN_MATCH_VAR = 2;
-const MIN_MATCH_NAME = 4;
+const MIN_MATCH_NAME = 3;
 
 export function completions(context: CompletionContext) {
   const toStartOfName = context.matchBefore(/\w*/);

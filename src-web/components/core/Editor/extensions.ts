@@ -33,6 +33,8 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphqlLanguageSupport } from 'cm6-graphql';
+import type { GenericCompletionOption } from './genericCompletion';
+import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 
@@ -93,17 +95,19 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 export function getLanguageExtension({
   contentType,
   useTemplating = false,
+  autocompleteOptions,
 }: {
   contentType?: string;
   useTemplating?: boolean;
+  autocompleteOptions?: GenericCompletionOption[];
 }) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
-  const base = syntaxExtensions[justContentType] ?? json();
+  const base = syntaxExtensions[justContentType] ?? text();
   if (!useTemplating) {
-    return [base];
+    return base ? base : [];
   }
 
-  return twig(base);
+  return twig(base, autocompleteOptions);
 }
 
 export const baseExtensions = [
@@ -115,7 +119,7 @@ export const baseExtensions = [
   // TODO: Figure out how to debounce showing of autocomplete in a good way
   // debouncedAutocompletionDisplay({ millis: 1000 }),
   // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
-  autocompletion({ closeOnBlur: true, interactionDelay: 300 }),
+  autocompletion({ closeOnBlur: true, interactionDelay: 200 }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];
