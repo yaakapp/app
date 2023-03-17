@@ -354,7 +354,7 @@ async fn workspaces(
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace = models::create_workspace("Default", "This is the default workspace", pool)
+        let workspace = models::create_workspace("My Project", "This is the default workspace", pool)
             .await
             .expect("Failed to create workspace");
         Ok(vec![workspace])

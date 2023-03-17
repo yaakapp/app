@@ -3,10 +3,11 @@ import React, { useRef, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useKeyValues } from '../hooks/useKeyValues';
+import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequests } from '../hooks/useRequests';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { clamp } from '../lib/clamp';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
@@ -19,11 +20,12 @@ interface Props {
   className?: string;
 }
 
-const MIN_WIDTH = 130;
+const MIN_WIDTH = 110;
+const MAX_WIDTH = 500;
 
 export function Sidebar({ className }: Props) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const width = useKeyValues<number>({ key: 'sidebar_width', initialValue: 200 });
+  const width = useKeyValue<number>({ key: 'sidebar_width', initialValue: 200 });
   const requests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
@@ -43,7 +45,7 @@ export function Sidebar({ className }: Props) {
     const startWidth = width.value;
     moveState.current = {
       move: (e: MouseEvent) => {
-        const newWidth = Math.max(MIN_WIDTH, startWidth + (e.clientX - mouseStartX));
+        const newWidth = clamp(startWidth + (e.clientX - mouseStartX), MIN_WIDTH, MAX_WIDTH);
         width.set(newWidth);
       },
       up: () => {
@@ -73,8 +75,8 @@ export function Sidebar({ className }: Props) {
       >
         <div
           className={classnames(
-            'transition-colors w-[1px] group-hover:bg-white/10 h-full pointer-events-none',
-            isDragging && '!bg-white/20',
+            'transition-colors w-[1px] group-hover:bg-gray-300 h-full pointer-events-none',
+            isDragging && '!bg-blue-500/70',
           )}
         />
       </div>

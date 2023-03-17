@@ -11,7 +11,6 @@ pub struct Workspace {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
     pub name: String,
     pub description: String,
 }
@@ -30,7 +29,6 @@ pub struct HttpRequest {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
     pub workspace_id: String,
     pub name: String,
     pub url: String,
@@ -56,7 +54,6 @@ pub struct HttpResponse {
     pub request_id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
     pub error: Option<String>,
     pub url: String,
     pub elapsed: i64,
@@ -72,7 +69,6 @@ pub struct KeyValue {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
     pub namespace: String,
     pub key: String,
     pub value: String,
@@ -106,7 +102,7 @@ pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> O
     sqlx::query_as!(
         KeyValue,
         r#"
-            SELECT model, created_at, updated_at, deleted_at, namespace, key, value
+            SELECT model, created_at, updated_at, namespace, key, value
             FROM key_values
             WHERE namespace = ? AND key = ?
         "#,
@@ -122,7 +118,7 @@ pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, deleted_at, name, description
+            SELECT id, model, created_at, updated_at, name, description
             FROM workspaces
         "#,
     )
@@ -134,9 +130,8 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, deleted_at, name, description
-            FROM workspaces
-            WHERE id = ?
+            SELECT id, model, created_at, updated_at, name, description
+            FROM workspaces WHERE id = ?
         "#,
         id,
     )
@@ -236,7 +231,6 @@ pub async fn find_requests(
                 workspace_id,
                 created_at,
                 updated_at,
-                deleted_at,
                 name,
                 url,
                 method,
@@ -262,7 +256,6 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
                 workspace_id,
                 created_at,
                 updated_at,
-                deleted_at,
                 name,
                 url,
                 method,
@@ -361,7 +354,7 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
     sqlx::query_as_unchecked!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, deleted_at, created_at,
+            SELECT id, model, workspace_id, request_id, updated_at, created_at,
                 status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
@@ -380,7 +373,7 @@ pub async fn find_responses(
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, deleted_at,
+            SELECT id, model, workspace_id, request_id, updated_at,
                 created_at, status, status_reason, body, elapsed, url, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses

@@ -10,7 +10,6 @@ import { HStack } from '../Stacks';
 import './Tabs.css';
 
 interface Props {
-  defaultValue?: string;
   label: string;
   onChangeValue: (value: string) => void;
   value: string;
@@ -31,7 +30,6 @@ interface Props {
 export function Tabs({
   value,
   onChangeValue,
-  defaultValue,
   label,
   children,
   tabs,
@@ -40,7 +38,7 @@ export function Tabs({
 }: Props) {
   return (
     <T.Root
-      defaultValue={defaultValue}
+      value={value}
       onValueChange={onChangeValue}
       className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
