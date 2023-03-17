@@ -12,7 +12,7 @@ type Props = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> & {
   containerClassName?: string;
   onChange?: (value: string) => void;
   onFocus?: () => void;
-  useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating'>;
+  useEditor?: Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocompleteOptions'>;
   defaultValue?: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;

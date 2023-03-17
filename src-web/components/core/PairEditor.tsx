@@ -1,5 +1,6 @@
 import classnames from 'classnames';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { GenericCompletionOption } from './Editor/genericCompletion';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
 import { VStack } from './Stacks';
@@ -94,6 +95,17 @@ function FormRow({
   isLast?: boolean;
 }) {
   const { id } = pairContainer;
+  const valueOptions = useMemo<GenericCompletionOption[] | undefined>(() => {
+    if (pairContainer.pair.name.toLowerCase() === 'content-type') {
+      return [
+        { label: 'application/json', type: 'constant' },
+        { label: 'text/xml', type: 'constant' },
+        { label: 'text/html', type: 'constant' },
+      ];
+    }
+    return undefined;
+  }, [pairContainer.pair.value]);
+
   return (
     <div className="group grid grid-cols-[1fr_1fr_auto] grid-rows-1 gap-2 items-center">
       <Input
@@ -105,7 +117,10 @@ function FormRow({
         onChange={(name) => onChange({ id, pair: { name, value: pairContainer.pair.value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new name' : 'name'}
-        useEditor={{ useTemplating: true, contentType: 'text/plain' }}
+        useEditor={{
+          useTemplating: true,
+          autocompleteOptions: [{ label: 'Content-Type', type: 'constant' }],
+        }}
       />
       <Input
         hideLabel
@@ -116,7 +131,7 @@ function FormRow({
         onChange={(value) => onChange({ id, pair: { name: pairContainer.pair.name, value } })}
         onFocus={onFocus}
         placeholder={isLast ? 'new value' : 'value'}
-        useEditor={{ useTemplating: true, contentType: 'text/plain' }}
+        useEditor={{ useTemplating: true, autocompleteOptions: valueOptions }}
       />
       {onDelete ? (
         <IconButton

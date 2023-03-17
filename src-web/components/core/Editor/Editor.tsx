@@ -9,6 +9,7 @@ import { useUnmount } from 'react-use';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
+import type { GenericCompletionOption } from './genericCompletion';
 import { singleLineExt } from './singleLine';
 
 export interface _EditorProps {
@@ -26,6 +27,7 @@ export interface _EditorProps {
   onFocus?: () => void;
   singleLine?: boolean;
   format?: (v: string) => string;
+  autocompleteOptions?: GenericCompletionOption[];
 }
 
 export function _Editor({
@@ -41,6 +43,7 @@ export function _Editor({
   className,
   singleLine,
   format,
+  autocompleteOptions,
 }: _EditorProps) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -77,16 +80,16 @@ export function _Editor({
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
-    const ext = getLanguageExtension({ contentType, useTemplating });
+    const ext = getLanguageExtension({ contentType, useTemplating, autocompleteOptions });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType]);
+  }, [contentType, JSON.stringify(autocompleteOptions)]);
 
   // Initialize the editor when ref mounts
   useEffect(() => {
     if (wrapperRef.current === null || cm.current !== null) return;
     try {
       const languageCompartment = new Compartment();
-      const langExt = getLanguageExtension({ contentType, useTemplating });
+      const langExt = getLanguageExtension({ contentType, useTemplating, autocompleteOptions });
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
         extensions: [

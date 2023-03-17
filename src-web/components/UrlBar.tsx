@@ -24,7 +24,11 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
     >
       <Input
         hideLabel
-        useEditor={{ useTemplating: true, contentType: 'url' }}
+        useEditor={{
+          useTemplating: true,
+          contentType: 'url',
+          autocompleteOptions: [{ label: 'FOO', type: 'constant' }],
+        }}
         className="px-0"
         name="url"
         label="Enter URL"

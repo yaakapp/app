@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
-import { DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
+import { Dropdown, DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
+import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
@@ -17,6 +19,7 @@ export default function Workspace() {
   const navigate = useNavigate();
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
+  const deleteRequest = useDeleteRequest(activeRequest);
   const workspaces = useWorkspaces();
   const { width } = useWindowSize();
   const isSideBySide = width > 900;
@@ -54,7 +57,25 @@ export default function Workspace() {
           </div>
           <div className="flex-1 flex justify-end -mr-2">
             <IconButton size="sm" title="" icon="magnifyingGlass" />
-            <IconButton size="sm" title="" icon="gear" />
+            <Dropdown
+              items={[
+                {
+                  label: 'Something Else',
+                  onSelect: () => null,
+                  leftSlot: <Icon icon="camera" />,
+                },
+                '-----',
+                {
+                  label: 'Delete Request',
+                  onSelect: deleteRequest.mutate,
+                  leftSlot: <Icon icon="trash" />,
+                },
+              ]}
+            >
+              <DropdownMenuTrigger>
+                <IconButton size="sm" title="Request Options" icon="gear" />
+              </DropdownMenuTrigger>
+            </Dropdown>
           </div>
         </HStack>
         <div
