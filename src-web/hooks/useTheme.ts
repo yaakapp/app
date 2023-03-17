@@ -1,3 +1,4 @@
+import { app } from '@tauri-apps/api';
 import { useEffect } from 'react';
 import type { Appearance } from '../lib/theme/window';
 import {
@@ -5,10 +6,13 @@ import {
   setAppearance,
   subscribeToPreferredAppearanceChange,
 } from '../lib/theme/window';
-import { useKeyValues } from './useKeyValues';
+import { useKeyValue } from './useKeyValue';
 
 export function useTheme() {
-  const appearanceKv = useKeyValues({ key: 'appearance', initialValue: getAppearance() });
+  const appearanceKv = useKeyValue<Appearance>({
+    key: 'appearance',
+    initialValue: getAppearance(),
+  });
 
   const themeChange = (appearance: Appearance) => {
     appearanceKv.set(appearance);
@@ -22,7 +26,7 @@ export function useTheme() {
   useEffect(() => subscribeToPreferredAppearanceChange(themeChange), []);
 
   // Sync appearance when k/v changes
-  useEffect(() => setAppearance(appearanceKv.value as Appearance), [appearanceKv.value]);
+  useEffect(() => setAppearance(appearanceKv.value), [appearanceKv.value]);
 
   return {
     appearance: appearanceKv.value,

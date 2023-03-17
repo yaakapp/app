@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Yaak App</title>
-<!--    <script src="http://localhost:8097"></script>-->
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yaak App</title>
+  <!--    <script src="http://localhost:8097"></script>-->
+  <style>
+      body {
+          background-color: white;
+      }
 
-  <body>
-    <div id="root"></div>
-    <div id="cm-portal" class="cm-portal" style="pointer-events: auto"></div>
-    <div id="radix-portal" class="cm-portal"></div>
-    <script type="module" src="/src-web/main.tsx"></script>
-  </body>
+      @media (prefers-color-scheme: dark) {
+          body {
+              background-color: black;
+          }
+      }
+  </style>
+</head>
+
+<body>
+<div id="root"></div>
+<div id="cm-portal" class="cm-portal" style="pointer-events: auto"></div>
+<div id="radix-portal" class="cm-portal"></div>
+<script type="module" src="/src-web/main.tsx"></script>
+</body>
 </html>

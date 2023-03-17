@@ -3,7 +3,6 @@ export interface BaseModel {
   readonly workspaceId: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
-  readonly deletedAt: Date | null;
 }
 
 export interface Workspace extends BaseModel {
@@ -46,14 +45,11 @@ export interface HttpResponse extends BaseModel {
   readonly headers: HttpHeader[];
 }
 
-export function convertDates<T extends Pick<BaseModel, 'createdAt' | 'updatedAt' | 'deletedAt'>>(
-  m: T,
-): T {
+export function convertDates<T extends Pick<BaseModel, 'createdAt' | 'updatedAt'>>(m: T): T {
   return {
     ...m,
     createdAt: convertDate(m.createdAt),
     updatedAt: convertDate(m.updatedAt),
-    deletedAt: m.deletedAt ? convertDate(m.deletedAt) : null,
   };
 }
 

@@ -5,10 +5,11 @@ import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
 import { HelmetProvider } from 'react-helmet-async';
 import { matchPath } from 'react-router-dom';
-import { keyValueQueryKey } from '../hooks/useKeyValues';
+import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
+import { extractKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue } from '../lib/models';
 import { convertDates } from '../lib/models';
 import { AppRouter, WORKSPACE_REQUEST_PATH } from './AppRouter';
@@ -16,7 +17,7 @@ import { AppRouter, WORKSPACE_REQUEST_PATH } from './AppRouter';
 const queryClient = new QueryClient();
 
 await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
-  queryClient.setQueryData(keyValueQueryKey(keyValue), keyValue);
+  queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));
 });
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
