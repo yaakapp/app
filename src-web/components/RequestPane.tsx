@@ -1,7 +1,8 @@
 import classnames from 'classnames';
+import { act } from 'react-dom/test-utils';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
-import { useKeyValues } from '../hooks/useKeyValues';
+import { useKeyValue } from '../hooks/useKeyValue';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
@@ -21,7 +22,7 @@ export function RequestPane({ fullHeight, className }: Props) {
   const updateRequest = useUpdateRequest(activeRequest);
   const sendRequest = useSendRequest(activeRequest);
   const responseLoading = useIsResponseLoading();
-  const activeTab = useKeyValues({
+  const activeTab = useKeyValue<string>({
     key: ['active_request_body_tab', activeRequest?.id ?? 'n/a'],
     initialValue: 'body',
   });
@@ -61,7 +62,6 @@ export function RequestPane({ fullHeight, className }: Props) {
           { value: 'auth', label: 'Auth' },
         ]}
         className="mt-2"
-        defaultValue="body"
         label="Request body"
       >
         <TabContent value="headers">
