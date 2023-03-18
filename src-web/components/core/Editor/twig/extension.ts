@@ -34,10 +34,16 @@ function mixedOrPlainLanguage(base?: LanguageSupport): LRLanguage {
   }
 
   const parser = twigParser.configure({
-    wrap: parseMixed(() => ({
-      parser: base.language.parser,
-      overlay: (node) => node.type.name === 'Text' || node.type.name === 'Template',
-    })),
+    wrap: parseMixed((node) => {
+      // If the base language is text, we can overwrite at the top
+      if (base.language.name !== 'text' && !node.type.isTop) {
+        return null;
+      }
+      return {
+        parser: base.language.parser,
+        overlay: (node) => node.type.name === 'Text' || node.type.name === 'Template',
+      };
+    }),
   });
 
   return LRLanguage.define({ name, parser });
