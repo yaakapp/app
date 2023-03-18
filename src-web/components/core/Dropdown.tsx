@@ -3,7 +3,7 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ForwardedRef, ReactElement, ReactNode } from 'react';
-import { forwardRef, useImperativeHandle, useLayoutEffect, useState } from 'react';
+import { forwardRef, memo, useImperativeHandle, useLayoutEffect, useState } from 'react';
 
 export interface DropdownMenuRadioItem {
   label: string;
@@ -64,7 +64,7 @@ export interface DropdownProps {
   )[];
 }
 
-export function Dropdown({ children, items }: DropdownProps) {
+export const Dropdown = memo(function Dropdown({ children, items }: DropdownProps) {
   return (
     <D.Root>
       {children}
@@ -90,7 +90,7 @@ export function Dropdown({ children, items }: DropdownProps) {
       </DropdownMenuPortal>
     </D.Root>
   );
-}
+});
 
 interface DropdownMenuPortalProps {
   children: ReactNode;
