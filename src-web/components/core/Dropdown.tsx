@@ -140,7 +140,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProp
         align="start"
         className={classnames(
           className,
-          'bg-gray-50 rounded-md shadow-lg p-1.5 border border-gray-200',
+          'bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 p-1.5 border border-gray-200',
           'overflow-auto m-1',
         )}
         style={styles}
@@ -295,8 +295,8 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
       ref={ref}
       className={classnames(
         className,
-        'outline-none px-2 py-1.5 flex items-center text-sm text-gray-700 whitespace-nowrap pr-4',
-        !noHover && 'focus:bg-gray-50 focus:text-gray-900 rounded',
+        'min-w-[8rem] outline-none px-2 h-7 flex items-center text-sm text-gray-700 whitespace-nowrap pr-4',
+        !noHover && 'focus:bg-highlight focus:text-gray-900 rounded',
       )}
       {...props}
     >

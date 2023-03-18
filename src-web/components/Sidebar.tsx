@@ -155,6 +155,7 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
         }}
         to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
         onDoubleClick={() => setEditing(true)}
+        onClick={active ? () => setEditing(true) : undefined}
         justify="start"
       >
         {editing ? (
@@ -175,7 +176,14 @@ function SidebarItem({ request, active }: { request: HttpRequest; active: boolea
             }}
           />
         ) : (
-          <span className="truncate">{request.name || request.url}</span>
+          <span
+            className={classnames(
+              'truncate',
+              !(request.name || request.url) && 'text-gray-400 italic',
+            )}
+          >
+            {request.name || request.url || 'New Request'}
+          </span>
         )}
       </Button>
       <Dropdown

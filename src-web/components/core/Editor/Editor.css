@@ -163,7 +163,7 @@
         }
 
         & > ul > li[aria-selected] {
-            @apply bg-gray-100 text-gray-900;
+            @apply bg-highlight text-gray-900;
         }
 
         & > ul > li:hover {
