@@ -21,6 +21,7 @@ module.exports = {
       "5xl": "3.052rem"
     },
     colors: {
+      highlight: "hsl(var(--color-gray-200) / 0.3)",
       transparent: "transparent",
       white: "hsl(0 100% 100% / <alpha-value>)",
       black: "hsl(0 100% 0% / <alpha-value>)",
