@@ -3,8 +3,8 @@ import type { Identifier } from 'dnd-core';
 import type { CSSProperties } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
-import { DndProvider, useDrag, useDragLayer, useDrop } from 'react-dnd';
-import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -53,7 +53,7 @@ export function Container({ className }: Props) {
 
   useEffect(() => {
     setItems(requests.map((r) => ({ request: r, left: 0, top: 0 })));
-  }, [requests]);
+  }, [requests.length]);
 
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const unsub = () => {
@@ -107,7 +107,6 @@ export function Container({ className }: Props) {
         'bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr,auto]',
       )}
     >
-      <CustomDragLayer sidebarWidth={sidebarWidth} />
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         aria-hidden
@@ -133,7 +132,7 @@ export function Container({ className }: Props) {
         />
       </HStack>
       <VStack as="ul" className="py-3 overflow-auto h-full" space={1}>
-        {items.map(({ request, top, left }, i) => (
+        {items.map(({ request, left, top }, i) => (
           <DraggableSidebarItem
             index={i}
             key={request.id}
@@ -189,7 +188,7 @@ function SidebarItem({ request, active, sidebarWidth, isDragging }: SidebarItemP
           className={classnames(
             'w-full',
             editing && 'focus-within:border-blue-400/40',
-            isDragging && 'bg-blue-200',
+            isDragging && 'bg-blue-100',
             active
               ? 'bg-gray-200/70 text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-gray-200/30',
@@ -300,9 +299,8 @@ function DraggableSidebarItem({
 }: DraggableSidebarItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const [{ handlerId }, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
+  const [, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
     accept: ItemTypes.REQUEST,
-    collect: (monitor) => ({ handlerId: monitor.getHandlerId() }),
     hover: (item, monitor) => {
       if (!ref.current) return;
 
@@ -333,89 +331,23 @@ function DraggableSidebarItem({
     },
   });
 
-  const [monitor, drag, preview] = useDrag<DragItem, unknown, { isDragging: boolean }>(
-    () => ({
-      type: ItemTypes.REQUEST,
-      item: () => ({ request, left, top, index }),
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    }),
-    [request, left, top, index],
-  );
+  const [monitor, drag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
+    type: ItemTypes.REQUEST,
+    item: () => ({ request, left, top, index }),
+    isDragging: (monitor) => monitor.getItem().request.id === request.id,
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  }));
 
-  useEffect(() => {
-    preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
-
-  const isDragging = !!monitor?.isDragging;
-  console.log('IS DRAGGING', isDragging);
+  const isDragging = monitor?.isDragging;
   drag(drop(ref));
 
   return (
     <div
       ref={ref}
-      className={classnames(isDragging && 'bg-blue-200')}
+      className={classnames(isDragging && 'opacity-0')}
       style={getStyles(left, top, sidebarWidth)}
-      data-handler-id={handlerId}
     >
       <SidebarItem request={request} active={active} sidebarWidth={sidebarWidth} />
     </div>
   );
 }
-
-function getItemStyles(
-  initialOffset: XYCoord | null,
-  currentOffset: XYCoord | null,
-): CSSProperties {
-  if (!initialOffset || !currentOffset) {
-    return { display: 'none' };
-  }
-
-  const { x, y } = currentOffset;
-
-  const transform = `translate(${x}px, ${y}px)`;
-  return {
-    transform,
-    WebkitTransform: transform,
-  };
-}
-
-const CustomDragLayer = ({ sidebarWidth }: { sidebarWidth: number }) => {
-  const dragProps = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
-    initialOffset: monitor.getInitialSourceClientOffset(),
-    currentOffset: monitor.getSourceClientOffset(),
-    isDragging: monitor.isDragging(),
-  }));
-
-  const { itemType, isDragging, item, initialOffset, currentOffset } = dragProps;
-
-  function renderItem() {
-    switch (itemType) {
-      case ItemTypes.REQUEST:
-        return (
-          <SidebarItem
-            request={item.request}
-            sidebarWidth={sidebarWidth}
-            isDragging={dragProps.isDragging}
-          />
-        );
-      default:
-        return null;
-    }
-  }
-
-  if (!isDragging) {
-    return null;
-  }
-
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="pointer" style={getItemStyles(initialOffset, currentOffset)}>
-        {renderItem()}
-      </div>
-    </div>
-  );
-};
