@@ -3,7 +3,14 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ForwardedRef, ReactElement, ReactNode } from 'react';
-import { forwardRef, memo, useImperativeHandle, useLayoutEffect, useState } from 'react';
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useState,
+} from 'react';
 
 export interface DropdownMenuRadioItem {
   label: string;
@@ -18,19 +25,22 @@ export interface DropdownMenuRadioProps {
   items: DropdownMenuRadioItem[];
 }
 
-export function DropdownMenuRadio({
+export const DropdownMenuRadio = memo(function DropdownMenuRadio({
   children,
   items,
   onValueChange,
   label,
   value,
 }: DropdownMenuRadioProps) {
-  const handleChange = (value: string) => {
-    const item = items.find((item) => item.value === value);
-    if (item && onValueChange) {
-      onValueChange(item);
-    }
-  };
+  const handleChange = useCallback(
+    (value: string) => {
+      const item = items.find((item) => item.value === value);
+      if (item && onValueChange) {
+        onValueChange(item);
+      }
+    },
+    [items, onValueChange],
+  );
 
   return (
     <D.Root>
@@ -49,7 +59,7 @@ export function DropdownMenuRadio({
       </DropdownMenuPortal>
     </D.Root>
   );
-}
+});
 
 export interface DropdownProps {
   children: ReactElement<typeof DropdownMenuTrigger>;
@@ -212,7 +222,11 @@ function DropdownMenuItem({
 
 type DropdownMenuRadioItemProps = Omit<D.DropdownMenuRadioItemProps & ItemInnerProps, 'leftSlot'>;
 
-function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRadioItemProps) {
+const DropdownMenuRadioItem = memo(function DropdownMenuRadioItem({
+  rightSlot,
+  children,
+  ...props
+}: DropdownMenuRadioItemProps) {
   return (
     <D.RadioItem asChild {...props}>
       <ItemInner
@@ -227,7 +241,7 @@ function DropdownMenuRadioItem({ rightSlot, children, ...props }: DropdownMenuRa
       </ItemInner>
     </D.RadioItem>
   );
-}
+});
 
 // const DropdownMenuSubContent = forwardRef<HTMLDivElement, DropdownMenu.DropdownMenuSubContentProps>(
 //   function DropdownMenuSubContent(
@@ -270,13 +284,17 @@ type DropdownMenuTriggerProps = D.DropdownMenuTriggerProps & {
   className?: string;
 };
 
-export function DropdownMenuTrigger({ children, className, ...props }: DropdownMenuTriggerProps) {
+export const DropdownMenuTrigger = memo(function DropdownMenuTrigger({
+  children,
+  className,
+  ...props
+}: DropdownMenuTriggerProps) {
   return (
     <D.Trigger asChild className={classnames(className)} {...props}>
       {children}
     </D.Trigger>
   );
-}
+});
 
 interface ItemInnerProps {
   leftSlot?: ReactNode;

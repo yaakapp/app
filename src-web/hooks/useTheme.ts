@@ -1,4 +1,3 @@
-import { app } from '@tauri-apps/api';
 import { useEffect } from 'react';
 import type { Appearance } from '../lib/theme/window';
 import {

@@ -1,85 +1,46 @@
 import classnames from 'classnames';
 import type { ComponentType, ReactNode } from 'react';
-import { Children, Fragment } from 'react';
 
-const spaceClassesX = {
-  0: 'pr-0',
-  1: 'pr-1',
-  2: 'pr-2',
-  3: 'pr-3',
-  4: 'pr-4',
-  5: 'pr-5',
-  6: 'pr-6',
-};
-
-const spaceClassesY = {
-  0: 'pt-0',
-  1: 'pt-1',
-  2: 'pt-2',
-  3: 'pt-3',
-  4: 'pt-4',
-  5: 'pt-5',
-  6: 'pt-6',
+const gapClasses = {
+  0: 'gap-0',
+  1: 'gap-1',
+  2: 'gap-2',
+  3: 'gap-3',
+  4: 'gap-4',
+  5: 'gap-5',
+  6: 'gap-6',
 };
 
 interface HStackProps extends BaseStackProps {
-  space?: keyof typeof spaceClassesX;
   children?: ReactNode;
 }
 
 export function HStack({ className, space, children, ...props }: HStackProps) {
   return (
-    <BaseStack className={classnames(className, 'flex-row')} {...props}>
-      {space
-        ? Children.toArray(children)
-            .filter(Boolean) // Remove null/false/undefined children
-            .map((c, i) => (
-              <Fragment key={i}>
-                {i > 0 ? (
-                  <div
-                    className={classnames(spaceClassesX[space], 'pointer-events-none')}
-                    data-spacer=""
-                    aria-hidden
-                  />
-                ) : null}
-                {c}
-              </Fragment>
-            ))
-        : children}
+    <BaseStack className={classnames(className, 'flex-row', space && gapClasses[space])} {...props}>
+      {children}
     </BaseStack>
   );
 }
 
 export interface VStackProps extends BaseStackProps {
-  space?: keyof typeof spaceClassesY;
   children: ReactNode;
 }
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
   return (
-    <BaseStack className={classnames(className, 'w-full h-full flex-col')} {...props}>
-      {space
-        ? Children.toArray(children)
-            .filter(Boolean) // Remove null/false/undefined children
-            .map((c, i) => (
-              <Fragment key={i}>
-                {i > 0 ? (
-                  <div
-                    className={classnames(spaceClassesY[space], 'pointer-events-none')}
-                    data-spacer=""
-                    aria-hidden
-                  />
-                ) : null}
-                {c}
-              </Fragment>
-            ))
-        : children}
+    <BaseStack
+      className={classnames(className, 'w-full h-full flex-col', space && gapClasses[space])}
+      {...props}
+    >
+      {children}
     </BaseStack>
   );
 }
 
 interface BaseStackProps {
   as?: ComponentType | 'ul';
+  space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';
   className?: string;
