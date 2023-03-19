@@ -7,8 +7,8 @@ import type {
 } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
-import { DndProvider, useDrag, useDragLayer, useDrop } from 'react-dnd';
-import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
+import { useDrag, useDragLayer, useDrop } from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -39,15 +39,7 @@ enum ItemTypes {
   REQUEST = 'request',
 }
 
-export function Sidebar({ className }: Props) {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <Container className={className} />
-    </DndProvider>
-  );
-}
-
-export function Container({ className }: Props) {
+export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [isResizing, setIsRisizing] = useState<boolean>(false);
   const width = useKeyValue<number>({ key: 'sidebar_width', initialValue: INITIAL_WIDTH });
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -94,13 +86,13 @@ export function Container({ className }: Props) {
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         aria-hidden
-        className="group absolute -right-2 top-0 bottom-0 w-4 cursor-ew-resize flex justify-center"
+        className="group absolute z-10 right-0 w-1 top-0 bottom-0 cursor-ew-resize flex justify-end"
         onMouseDown={handleResizeStart}
         onDoubleClick={handleResizeReset}
       >
         <div // drag-divider
           className={classnames(
-            'transition-colors w-[1px] group-hover:bg-gray-300 h-full pointer-events-none',
+            'transition-colors w-0.5 group-hover:bg-gray-300 h-full pointer-events-none',
             isResizing && '!bg-blue-500/70',
           )}
         />
@@ -143,7 +135,7 @@ export function Container({ className }: Props) {
       </div>
     </div>
   );
-}
+});
 
 function SidebarItems({
   requests: unorderedRequests,
@@ -169,8 +161,6 @@ function SidebarItems({
     [requests],
   );
 
-  const handleCancel = useCallback(() => setHoveredIndex(null), []);
-
   const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
     (requestId) => {
       if (hoveredIndex === null) return;
@@ -181,11 +171,8 @@ function SidebarItems({
       if (request === undefined) return;
 
       const newRequests = requests.filter((r) => r.id !== requestId);
-      if (hoveredIndex > index) {
-        newRequests.splice(hoveredIndex - 1, 0, request);
-      } else {
-        newRequests.splice(hoveredIndex, 0, request);
-      }
+      if (hoveredIndex > index) newRequests.splice(hoveredIndex - 1, 0, request);
+      else newRequests.splice(hoveredIndex, 0, request);
 
       const beforePriority = newRequests[hoveredIndex - 1]?.sortPriority ?? 0;
       const afterPriority = newRequests[hoveredIndex + 1]?.sortPriority ?? 0;
@@ -220,7 +207,6 @@ function SidebarItems({
               sidebarWidth={sidebarWidth}
               onMove={handleMove}
               onEnd={handleEnd}
-              onCancel={handleCancel}
             />
           </Fragment>
         );
@@ -369,7 +355,6 @@ const SidebarItem = memo(_SidebarItem);
 type DraggableSidebarItemProps = SidebarItemProps & {
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
-  onCancel: () => void;
 };
 
 type DragItem = {
@@ -386,23 +371,23 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   sidebarWidth,
   onMove,
   onEnd,
-  onCancel,
 }: DraggableSidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
 
-  const [, connectDrop] = useDrop<DragItem, void>({
-    accept: ItemTypes.REQUEST,
-    collect: (m) => ({ handlerId: m.getHandlerId(), isOver: m.isOver() }),
-    hover: (item, monitor) => {
-      if (!ref.current) return;
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-      onMove(requestId, hoverClientY < hoverMiddleY ? 'above' : 'below');
+  const [, connectDrop] = useDrop<DragItem, void>(
+    {
+      accept: ItemTypes.REQUEST,
+      hover: (item, monitor) => {
+        if (!ref.current) return;
+        const hoverBoundingRect = ref.current?.getBoundingClientRect();
+        const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+        const clientOffset = monitor.getClientOffset();
+        const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+        onMove(requestId, hoverClientY < hoverMiddleY ? 'above' : 'below');
+      },
     },
-  });
+    [onMove],
+  );
 
   const [{ isDragging }, connectDrag, preview] = useDrag<
     DragItem,
@@ -414,10 +399,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       item: () => ({ id: requestId, requestName, workspaceId }),
       collect: (m) => ({ isDragging: m.isDragging() }),
       options: { dropEffect: 'move' },
-      end: () => {
-        // TODO: Call cancel if dropped outside of sidebar
-        onEnd(requestId);
-      },
+      end: () => onEnd(requestId),
     }),
     [onEnd],
   );

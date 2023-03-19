@@ -1,9 +1,12 @@
 import classnames from 'classnames';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { XYCoord } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
+import { v4 as uuid } from 'uuid';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
+import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
-import { VStack } from './Stacks';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -34,10 +37,11 @@ export const PairEditor = memo(function PairEditor({
   className,
   onChange,
 }: PairEditorProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pairs, setPairs] = useState<PairContainer[]>(() => {
     // Remove empty headers on initial render
     const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
-    const pairs = nonEmpty.map((h) => ({ pair: h, id: Math.random().toString() }));
+    const pairs = nonEmpty.map((pair) => newPairContainer(pair));
     return [...pairs, newPairContainer()];
   });
 
@@ -50,6 +54,33 @@ export const PairEditor = memo(function PairEditor({
       });
     },
     [onChange],
+  );
+
+  const handleMove = useCallback<FormRowProps['onMove']>(
+    (id, side) => {
+      const dragIndex = pairs.findIndex((r) => r.id === id);
+      setHoveredIndex(side === 'above' ? dragIndex : dragIndex + 1);
+    },
+    [pairs],
+  );
+
+  const handleEnd = useCallback<FormRowProps['onEnd']>(
+    (id: string) => {
+      if (hoveredIndex === null) return;
+      setHoveredIndex(null);
+
+      setPairsAndSave((pairs) => {
+        const index = pairs.findIndex((p) => p.id === id);
+        const pair = pairs[index];
+        if (pair === undefined) return pairs;
+
+        const newPairs = pairs.filter((p) => p.id !== id);
+        if (hoveredIndex > index) newPairs.splice(hoveredIndex - 1, 0, pair);
+        else newPairs.splice(hoveredIndex, 0, pair);
+        return newPairs;
+      });
+    },
+    [hoveredIndex],
   );
 
   const handleChangeHeader = useCallback((pair: PairContainer) => {
@@ -78,13 +109,20 @@ export const PairEditor = memo(function PairEditor({
   );
 
   return (
-    <div className={classnames(className, 'pb-6 grid')}>
-      <VStack space={2}>
-        {pairs.map((p, i) => {
-          const isLast = i === pairs.length - 1;
-          return (
+    <div
+      className={classnames(
+        className,
+        'pb-6 grid',
+        // NOTE: Add padding to top so overflow doesn't hide drop marker
+        'py-1',
+      )}
+    >
+      {pairs.map((p, i) => {
+        const isLast = i === pairs.length - 1;
+        return (
+          <Fragment key={p.id}>
+            {hoveredIndex === i && <DropMarker />}
             <FormRow
-              key={p.id}
               pairContainer={p}
               isLast={isLast}
               onChange={handleChangeHeader}
@@ -94,16 +132,25 @@ export const PairEditor = memo(function PairEditor({
               valuePlaceholder={valuePlaceholder}
               onFocus={handleFocus}
               onDelete={isLast ? undefined : handleDelete}
+              onEnd={handleEnd}
+              onMove={handleMove}
             />
-          );
-        })}
-      </VStack>
+            {hoveredIndex === pairs.length && <DropMarker />}
+          </Fragment>
+        );
+      })}
     </div>
   );
 });
 
+enum ItemTypes {
+  ROW = 'pair-row',
+}
+
 type FormRowProps = {
   pairContainer: PairContainer;
+  onMove: (id: string, side: 'above' | 'below') => void;
+  onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
   onDelete?: (pair: PairContainer) => void;
   onFocus?: (pair: PairContainer) => void;
@@ -118,6 +165,8 @@ const FormRow = memo(function FormRow({
   onChange,
   onDelete,
   onFocus,
+  onMove,
+  onEnd,
   isLast,
   nameAutocomplete,
   valueAutocomplete,
@@ -125,6 +174,7 @@ const FormRow = memo(function FormRow({
   valuePlaceholder,
 }: FormRowProps) {
   const { id } = pairContainer;
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleChangeName = useMemo(
     () => (name: string) => onChange({ id, pair: { name, value: pairContainer.pair.value } }),
@@ -149,8 +199,51 @@ const FormRow = memo(function FormRow({
   const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);
   const handleDelete = useCallback(() => onDelete?.(pairContainer), [onDelete, pairContainer]);
 
+  const [, connectDrop] = useDrop<PairContainer>(
+    {
+      accept: ItemTypes.ROW,
+      hover: (item, monitor) => {
+        if (!ref.current) return;
+        const hoverBoundingRect = ref.current?.getBoundingClientRect();
+        const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+        const clientOffset = monitor.getClientOffset();
+        const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+        onMove(pairContainer.id, hoverClientY < hoverMiddleY ? 'above' : 'below');
+      },
+    },
+    [onMove],
+  );
+
+  const [, connectDrag] = useDrag<PairContainer>(
+    {
+      type: ItemTypes.ROW,
+      item: () => pairContainer,
+      collect: (m) => ({ isDragging: m.isDragging() }),
+      end: () => onEnd(pairContainer.id),
+    },
+    [pairContainer, onEnd],
+  );
+
+  connectDrag(ref);
+  connectDrop(ref);
+
   return (
-    <div className="group grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-1 gap-2 items-center">
+    <div
+      ref={ref}
+      className="pb-2 group grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-1 gap-2 items-center"
+    >
+      {!isLast ? (
+        <div
+          className={classnames(
+            '-mr-2 py-2 h-9 w-3 flex items-center',
+            'justify-center opacity-0 hover:opacity-100',
+          )}
+        >
+          <Icon icon="drag" className="pointer-events-none" />
+        </div>
+      ) : (
+        <span className="w-1" />
+      )}
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
@@ -188,6 +281,17 @@ const FormRow = memo(function FormRow({
   );
 });
 
-const newPairContainer = (): PairContainer => {
-  return { pair: { name: '', value: '' }, id: Math.random().toString() };
+const newPairContainer = (pair?: Pair): PairContainer => {
+  return { pair: pair ?? { name: '', value: '' }, id: uuid() };
 };
+
+const DropMarker = memo(
+  function DropMarker() {
+    return (
+      <div className="relative w-full h-0 overflow-visible pointer-events-none">
+        <div className="absolute z-50 left-0 right-0 bottom-[1px] h-[0.2em] bg-blue-500/50 rounded-full" />
+      </div>
+    );
+  },
+  () => true,
+);

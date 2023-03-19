@@ -3,6 +3,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { matchPath } from 'react-router-dom';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
@@ -123,8 +125,10 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
-          <AppRouter />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <DndProvider backend={HTML5Backend}>
+            <AppRouter />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </DndProvider>
         </HelmetProvider>
       </MotionConfig>
     </QueryClientProvider>

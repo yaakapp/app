@@ -47,10 +47,7 @@ export const Tabs = memo(function Tabs({
     >
       <T.List
         aria-label={label}
-        className={classnames(
-          tabListClassName,
-          'h-auto flex items-center overflow-x-auto pb-1 mb-1',
-        )}
+        className={classnames(tabListClassName, 'h-auto flex items-center overflow-x-auto pb-1')}
       >
         <HStack space={1}>
           {tabs.map((t) => {
