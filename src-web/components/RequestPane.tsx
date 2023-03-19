@@ -60,13 +60,14 @@ export function RequestPane({ fullHeight, className }: Props) {
   if (activeRequest === null) return null;
 
   return (
-    <div className={classnames(className, 'p-2 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
-      <UrlBar request={activeRequest} />
+    <div className={classnames(className, 'py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
+      <UrlBar className="pl-3" request={activeRequest} />
       <Tabs
         value={activeTab.value}
         onChangeValue={activeTab.set}
         tabs={tabs}
         className="mt-2"
+        tabListClassName="pl-3"
         label="Request body"
       >
         <TabContent value="headers">
@@ -79,7 +80,7 @@ export function RequestPane({ fullHeight, className }: Props) {
         <TabContent value="params">
           <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
         </TabContent>
-        <TabContent value="body">
+        <TabContent value="body" className="mt-1">
           {activeRequest.bodyType === 'json' ? (
             <Editor
               key={activeRequest.id}
