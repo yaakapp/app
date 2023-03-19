@@ -26,6 +26,7 @@ export const UrlBar = memo(function UrlBar({ request }: Props) {
       className="w-full flex items-center"
     >
       <Input
+        key={request.id}
         hideLabel
         useEditor={{
           useTemplating: true,

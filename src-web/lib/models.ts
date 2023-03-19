@@ -18,6 +18,7 @@ export interface HttpHeader {
 
 export interface HttpRequest extends BaseModel {
   readonly model: 'http_request';
+  sortPriority: number;
   name: string;
   url: string;
   body: string | null;
