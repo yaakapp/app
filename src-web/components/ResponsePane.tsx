@@ -1,5 +1,6 @@
 import classnames from 'classnames';
 import { memo, useEffect, useMemo, useState } from 'react';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useDeleteResponse } from '../hooks/useResponseDelete';
 import { useResponses } from '../hooks/useResponses';
@@ -21,7 +22,8 @@ interface Props {
 
 export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
-  const responses = useResponses();
+  const activeRequestId = useActiveRequestId();
+  const responses = useResponses(activeRequestId);
   const activeResponse: HttpResponse | null = activeResponseId
     ? responses.find((r) => r.id === activeResponseId) ?? null
     : responses[responses.length - 1] ?? null;

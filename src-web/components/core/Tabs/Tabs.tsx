@@ -1,5 +1,6 @@
 import * as T from '@radix-ui/react-tabs';
 import classnames from 'classnames';
+import { memo } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '../Button';
 import type { DropdownMenuRadioItem, DropdownMenuRadioProps } from '../Dropdown';
@@ -29,7 +30,7 @@ interface Props {
   children: ReactNode;
 }
 
-export function Tabs({
+export const Tabs = memo(function Tabs({
   value,
   onChangeValue,
   label,
@@ -115,7 +116,7 @@ export function Tabs({
       {children}
     </T.Root>
   );
-}
+});
 
 interface TabContentProps {
   value: string;
@@ -123,7 +124,11 @@ interface TabContentProps {
   className?: string;
 }
 
-export function TabContent({ value, children, className }: TabContentProps) {
+export const TabContent = memo(function TabContent({
+  value,
+  children,
+  className,
+}: TabContentProps) {
   return (
     <T.Content
       forceMount
@@ -133,4 +138,4 @@ export function TabContent({ value, children, className }: TabContentProps) {
       {children}
     </T.Content>
   );
-}
+});

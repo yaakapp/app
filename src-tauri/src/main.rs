@@ -227,6 +227,23 @@ async fn set_key_value(
 }
 
 #[tauri::command]
+async fn create_workspace(
+    name: &str,
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<String, String> {
+    let pool = &*db_instance.lock().await;
+    let created_workspace =
+        models::create_workspace(name, "", pool).await.expect("Failed to create workspace");
+
+    app_handle
+        .emit_all("updated_workspace", &created_workspace)
+        .unwrap();
+
+    Ok(created_workspace.id)
+}
+
+#[tauri::command]
 async fn create_request(
     workspace_id: &str,
     name: &str,
@@ -478,6 +495,7 @@ fn main() {
             requests,
             send_request,
             create_request,
+            create_workspace,
             update_request,
             delete_request,
             responses,

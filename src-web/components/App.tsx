@@ -8,9 +8,10 @@ import { matchPath } from 'react-router-dom';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
+import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { extractKeyValue } from '../lib/keyValueStore';
-import type { HttpRequest, HttpResponse, KeyValue } from '../lib/models';
+import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { convertDates } from '../lib/models';
 import { AppRouter, WORKSPACE_REQUEST_PATH } from './AppRouter';
 
@@ -68,6 +69,25 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
       return newResponses;
     },
   );
+});
+
+await listen('updated_workspace', ({ payload: workspace }: { payload: Workspace }) => {
+  queryClient.setQueryData(workspacesQueryKey(), (workspaces: Workspace[] = []) => {
+    const newWorkspaces = [];
+    let found = false;
+    for (const w of workspaces) {
+      if (w.id === workspace.id) {
+        found = true;
+        newWorkspaces.push(convertDates(workspace));
+      } else {
+        newWorkspaces.push(w);
+      }
+    }
+    if (!found) {
+      newWorkspaces.push(convertDates(workspace));
+    }
+    return newWorkspaces;
+  });
 });
 
 await listen('send_request', async () => {
