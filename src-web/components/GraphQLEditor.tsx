@@ -1,9 +1,9 @@
 import { formatSdl } from 'format-graphql';
 import { useMemo } from 'react';
-import { useUniqueKey } from '../../hooks/useUniqueKey';
-import { Divider } from '../core/Divider';
-import type { EditorProps } from '../core/Editor';
-import { Editor } from '../core/Editor';
+import { useUniqueKey } from '../hooks/useUniqueKey';
+import { Divider } from './core/Divider';
+import type { EditorProps } from './core/Editor';
+import { Editor } from './core/Editor';
 
 type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'>;
 

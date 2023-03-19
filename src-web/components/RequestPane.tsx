@@ -1,5 +1,6 @@
 import classnames from 'classnames';
 import { useCallback, useMemo } from 'react';
+import { act } from 'react-dom/test-utils';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -9,7 +10,9 @@ import { Editor } from './core/Editor';
 import { PairEditor } from './core/PairEditor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
-import { GraphQLEditor } from './editors/GraphQLEditor';
+import { GraphQLEditor } from './GraphQLEditor';
+import { HeaderEditor } from './HeaderEditor';
+import { ParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -67,11 +70,14 @@ export function RequestPane({ fullHeight, className }: Props) {
         label="Request body"
       >
         <TabContent value="headers">
-          <PairEditor
-            key={activeRequest.id}
-            pairs={activeRequest.headers}
+          <HeaderEditor
+            key={activeRequestId}
+            headers={activeRequest.headers}
             onChange={handleHeadersChange}
           />
+        </TabContent>
+        <TabContent value="params">
+          <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
         </TabContent>
         <TabContent value="body">
           {activeRequest.bodyType === 'json' ? (
