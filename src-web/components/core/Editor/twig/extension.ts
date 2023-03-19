@@ -1,16 +1,16 @@
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { GenericCompletionOption } from '../genericCompletion';
+import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { placeholders } from '../widgets';
 import { completions } from './completion';
 import { parser as twigParser } from './twig';
 
-export function twig(base?: LanguageSupport, autocompleteOptions?: GenericCompletionOption[]) {
+export function twig(base?: LanguageSupport, autocomplete?: GenericCompletionConfig) {
   const language = mixedOrPlainLanguage(base);
   const additionalCompletion =
-    autocompleteOptions && base
-      ? [language.data.of({ autocomplete: genericCompletion({ options: autocompleteOptions }) })]
+    autocomplete && base
+      ? [language.data.of({ autocomplete: genericCompletion(autocomplete) })]
       : [];
   const completion = language.data.of({
     autocomplete: completions,
