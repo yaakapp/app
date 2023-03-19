@@ -8,7 +8,7 @@ import type {
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { DndProvider, useDrag, useDragLayer, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -134,7 +134,7 @@ export function Container({ className }: Props) {
               activeRequestId={activeRequest?.id}
               requests={requests}
             />
-            {/*<CustomDragLayer sidebarWidth={sidebarWidth} />*/}
+            <CustomDragLayer sidebarWidth={sidebarWidth} />
           </VStack>
         </ScrollArea>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
@@ -414,18 +414,15 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       item: () => ({ id: requestId, requestName, workspaceId }),
       collect: (m) => ({ isDragging: m.isDragging() }),
       options: { dropEffect: 'move' },
-      end: (item, monitor) => {
-        if (monitor.didDrop()) {
-          onEnd(requestId);
-        } else {
-          onCancel();
-        }
+      end: () => {
+        // TODO: Call cancel if dropped outside of sidebar
+        onEnd(requestId);
       },
     }),
     [onEnd],
   );
 
-  // preview(getEmptyImage(), { captureDraggingState: true });
+  preview(getEmptyImage(), { captureDraggingState: true });
 
   connectDrag(ref);
   connectDrop(ref);
@@ -433,7 +430,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   return (
     <SidebarItem
       ref={ref}
-      className={classnames(isDragging && 'opacity-30')}
+      className={classnames(isDragging && 'opacity-20')}
       requestName={requestName}
       requestId={requestId}
       workspaceId={workspaceId}
@@ -484,7 +481,7 @@ const DropMarker = memo(
   function DropMarker() {
     return (
       <div className="relative w-full h-0 overflow-visible pointer-events-none">
-        <div className="absolute z-20 left-0 right-0 bottom-[1px] h-[0.2em] bg-blue-300" />
+        <div className="absolute z-50 left-2 right-2 bottom-[1px] h-[0.2em] bg-blue-500/50 rounded-full" />
       </div>
     );
   },
