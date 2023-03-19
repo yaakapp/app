@@ -1,8 +1,9 @@
-import { useSendRequest } from '../hooks/useSendRequest';
+import { useCallback } from 'react';
 import { Button } from './core/Button';
 import { DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
+import type { TabItem } from './core/Tabs/Tabs';
 
 interface Props {
   sendRequest: () => void;
@@ -14,6 +15,12 @@ interface Props {
 }
 
 export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
+  const handleMethodChange = useCallback(
+    (v: TabItem) => {
+      onMethodChange(v.value);
+    },
+    [onMethodChange],
+  );
   return (
     <form
       onSubmit={async (e) => {
@@ -38,7 +45,7 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         placeholder="Enter a URL..."
         leftSlot={
           <DropdownMenuRadio
-            onValueChange={(v) => onMethodChange(v.value)}
+            onValueChange={handleMethodChange}
             value={method.toUpperCase()}
             items={[
               { label: 'GET', value: 'GET' },

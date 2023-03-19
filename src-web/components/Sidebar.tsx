@@ -79,7 +79,6 @@ export function Container({ className }: Props) {
   }, []);
   const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
 
-  console.log('RENDER SIDEBAR');
   return (
     <div
       ref={sidebarRef}
@@ -145,14 +144,16 @@ function SidebarItems({
 
   useEffect(() => {
     setItems(requests.map((r) => ({ request: r, left: 0, top: 0 })));
-  }, [requests.length]);
+  }, [requests]);
 
   const handleMove = useCallback((id: string, hoverId: string) => {
     setItems((oldItems) => {
       const dragIndex = oldItems.findIndex((i) => i.request.id === id);
       const index = oldItems.findIndex((i) => i.request.id === hoverId);
       const newItems = [...oldItems];
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const b = newItems[index]!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       newItems[index] = newItems[dragIndex]!;
       newItems[dragIndex] = b;
       return newItems;
@@ -164,7 +165,9 @@ function SidebarItems({
       {items.map(({ request }) => (
         <DraggableSidebarItem
           key={request.id}
-          request={request}
+          requestId={request.id}
+          requestName={request.name}
+          workspaceId={request.workspaceId}
           active={request.id === activeRequestId}
           sidebarWidth={sidebarWidth}
           onMove={handleMove}
@@ -175,14 +178,22 @@ function SidebarItems({
 }
 
 type SidebarItemProps = {
-  request: HttpRequest;
+  requestId: string;
+  requestName: string;
+  workspaceId: string;
   sidebarWidth: number;
   active?: boolean;
 };
 
-function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
-  const deleteRequest = useDeleteRequest(request);
-  const updateRequest = useUpdateRequest(request);
+const SidebarItem = memo(function SidebarItem({
+  requestName,
+  requestId,
+  workspaceId,
+  active,
+  sidebarWidth,
+}: SidebarItemProps) {
+  const deleteRequest = useDeleteRequest(requestId);
+  const updateRequest = useUpdateRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
 
   const handleSubmitNameEdit = useCallback(async (el: HTMLInputElement) => {
@@ -196,6 +207,8 @@ function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
   }, []);
 
   const itemStyles = useMemo(() => ({ width: sidebarWidth }), [sidebarWidth]);
+
+  if (workspaceId === null) return null;
 
   return (
     <li className={classnames('block group/item px-2')} style={itemStyles}>
@@ -220,7 +233,7 @@ function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
               setEditing(true);
             }
           }}
-          // to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
+          to={`/workspaces/${workspaceId}/requests/${requestId}`}
           onDoubleClick={() => setEditing(true)}
           onClick={active ? () => setEditing(true) : undefined}
           justify="start"
@@ -228,7 +241,7 @@ function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
           {editing ? (
             <input
               ref={handleFocus}
-              defaultValue={request.name}
+              defaultValue={requestName}
               className="bg-transparent outline-none w-full"
               onBlur={(e) => handleSubmitNameEdit(e.currentTarget)}
               onKeyDown={async (e) => {
@@ -243,24 +256,22 @@ function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
               }}
             />
           ) : (
-            <span
-              className={classnames(
-                'truncate',
-                !(request.name || request.url) && 'text-gray-400 italic',
-              )}
-            >
-              {request.name || request.url || 'New Request'}
+            <span className={classnames('truncate', !requestName && 'text-gray-400 italic')}>
+              {requestName || 'New Request'}
             </span>
           )}
         </Button>
         <Dropdown
-          items={[
-            {
-              label: 'Delete Request',
-              onSelect: deleteRequest.mutate,
-              leftSlot: <Icon icon="trash" />,
-            },
-          ]}
+          items={useMemo(
+            () => [
+              {
+                label: 'Delete Request',
+                onSelect: deleteRequest.mutate,
+                leftSlot: <Icon icon="trash" />,
+              },
+            ],
+            [],
+          )}
         >
           <DropdownMenuTrigger
             className={classnames(
@@ -280,7 +291,7 @@ function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
       </div>
     </li>
   );
-}
+});
 
 type DraggableSidebarItemProps = SidebarItemProps & {
   onMove: (id: string, hoverId: string) => void;
@@ -291,7 +302,9 @@ type DragItem = {
 };
 
 const DraggableSidebarItem = memo(function DraggableSidebarItem({
-  request,
+  requestName,
+  requestId,
+  workspaceId,
   active,
   sidebarWidth,
   onMove,
@@ -302,15 +315,15 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     accept: ItemTypes.REQUEST,
     collect: (m) => ({ handlerId: m.getHandlerId(), isOver: m.isOver() }),
     hover: (item) => {
-      if (item.id !== request.id) {
-        onMove(request.id, item.id);
+      if (item.id !== requestId) {
+        onMove(requestId, item.id);
       }
     },
   });
 
   const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
     type: ItemTypes.REQUEST,
-    item: () => ({ id: request.id }),
+    item: () => ({ id: requestId }),
     collect: (m) => ({ isDragging: m.isDragging() }),
   }));
 
@@ -319,7 +332,13 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
 
   return (
     <div ref={ref} className={classnames(isDragging && 'opacity-0')}>
-      <SidebarItem request={request} active={active} sidebarWidth={sidebarWidth} />
+      <SidebarItem
+        requestName={requestName}
+        requestId={requestId}
+        workspaceId={workspaceId}
+        active={active}
+        sidebarWidth={sidebarWidth}
+      />
     </div>
   );
 });

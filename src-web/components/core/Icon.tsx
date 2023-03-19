@@ -28,6 +28,7 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
+import { memo } from 'react';
 
 const icons = {
   archive: ArchiveIcon,
@@ -67,7 +68,7 @@ export interface IconProps {
   spin?: boolean;
 }
 
-export function Icon({ icon, spin, size = 'md', className }: IconProps) {
+export const Icon = memo(function Icon({ icon, spin, size = 'md', className }: IconProps) {
   const Component = icons[icon] ?? icons.question;
   return (
     <Component
@@ -81,4 +82,4 @@ export function Icon({ icon, spin, size = 'md', className }: IconProps) {
       )}
     />
   );
-}
+});

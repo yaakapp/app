@@ -19,7 +19,7 @@ export default function Workspace() {
   const navigate = useNavigate();
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
-  const deleteRequest = useDeleteRequest(activeRequest);
+  const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
   const workspaces = useWorkspaces();
   const { width } = useWindowSize();
   const isSideBySide = width > 900;

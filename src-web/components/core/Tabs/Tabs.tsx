@@ -9,19 +9,21 @@ import { HStack } from '../Stacks';
 
 import './Tabs.css';
 
+export type TabItem = {
+  value: string;
+  label: string;
+  options?: {
+    onValueChange: DropdownMenuRadioProps['onValueChange'];
+    value: string;
+    items: DropdownMenuRadioItem[];
+  };
+};
+
 interface Props {
   label: string;
   onChangeValue: (value: string) => void;
   value: string;
-  tabs: {
-    value: string;
-    label: string;
-    options?: {
-      onValueChange: DropdownMenuRadioProps['onValueChange'];
-      value: string;
-      items: DropdownMenuRadioItem[];
-    };
-  }[];
+  tabs: TabItem[];
   tabListClassName?: string;
   className?: string;
   children: ReactNode;
