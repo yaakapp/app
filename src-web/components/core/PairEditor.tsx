@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import type { GenericCompletionOption } from './Editor/genericCompletion';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
@@ -21,7 +21,11 @@ interface PairContainer {
   id: string;
 }
 
-export function PairEditor({ pairs: originalPairs, className, onChange }: Props) {
+export const PairEditor = memo(function PairEditor({
+  pairs: originalPairs,
+  className,
+  onChange,
+}: Props) {
   const newPairContainer = (): PairContainer => {
     return { pair: { name: '', value: '' }, id: Math.random().toString() };
   };
@@ -79,9 +83,9 @@ export function PairEditor({ pairs: originalPairs, className, onChange }: Props)
       </VStack>
     </div>
   );
-}
+});
 
-function FormRow({
+const FormRow = memo(function FormRow({
   pairContainer,
   onChange,
   onDelete,
@@ -146,4 +150,4 @@ function FormRow({
       )}
     </div>
   );
-}
+});

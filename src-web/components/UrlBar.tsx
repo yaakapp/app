@@ -1,26 +1,22 @@
-import { useCallback } from 'react';
-import { Button } from './core/Button';
-import { DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
+import { memo, useCallback } from 'react';
+import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { useSendRequest } from '../hooks/useSendRequest';
+import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import type { HttpRequest } from '../lib/models';
 import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
-import type { TabItem } from './core/Tabs/Tabs';
+import { RequestMethodDropdown } from './RequestMethodDropdown';
 
 interface Props {
-  sendRequest: () => void;
-  loading: boolean;
-  method: string;
-  url: string;
-  onMethodChange: (method: string) => void;
-  onUrlChange: (url: string) => void;
+  request: HttpRequest;
 }
 
-export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChange, url }: Props) {
-  const handleMethodChange = useCallback(
-    (v: TabItem) => {
-      onMethodChange(v.value);
-    },
-    [onMethodChange],
-  );
+export const UrlBar = memo(function UrlBar({ request }: Props) {
+  const sendRequest = useSendRequest(request.id);
+  const updateRequest = useUpdateRequest(request.id);
+  const handleMethodChange = useCallback((method: string) => updateRequest.mutate({ method }), []);
+  const handleUrlChange = useCallback((url: string) => updateRequest.mutate({ url }), []);
+  const loading = useIsResponseLoading(request.id);
   return (
     <form
       onSubmit={async (e) => {
@@ -40,30 +36,10 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
         name="url"
         label="Enter URL"
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-0"
-        onChange={onUrlChange}
-        defaultValue={url}
+        onChange={handleUrlChange}
+        defaultValue={request.url}
         placeholder="Enter a URL..."
-        leftSlot={
-          <DropdownMenuRadio
-            onValueChange={handleMethodChange}
-            value={method.toUpperCase()}
-            items={[
-              { label: 'GET', value: 'GET' },
-              { label: 'PUT', value: 'PUT' },
-              { label: 'POST', value: 'POST' },
-              { label: 'PATCH', value: 'PATCH' },
-              { label: 'DELETE', value: 'DELETE' },
-              { label: 'OPTIONS', value: 'OPTIONS' },
-              { label: 'HEAD', value: 'HEAD' },
-            ]}
-          >
-            <DropdownMenuTrigger>
-              <Button type="button" disabled={loading} size="sm" className="mx-0.5" justify="start">
-                {method.toUpperCase()}
-              </Button>
-            </DropdownMenuTrigger>
-          </DropdownMenuRadio>
-        }
+        leftSlot={<RequestMethodDropdown method={request.method} onChange={handleMethodChange} />}
         rightSlot={
           <IconButton
             title="Send Request"
@@ -78,4 +54,4 @@ export function UrlBar({ sendRequest, loading, onMethodChange, method, onUrlChan
       />
     </form>
   );
-}
+});

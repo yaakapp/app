@@ -1,3 +1,4 @@
+import { DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 import classnames from 'classnames';
 import { useNavigate } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
@@ -14,6 +15,7 @@ import { WindowDragRegion } from './core/WindowDragRegion';
 import { RequestPane } from './RequestPane';
 import { ResponsePane } from './ResponsePane';
 import { Sidebar } from './Sidebar';
+import { WorkspaceDropdown } from './WorkspaceDropdown';
 
 export default function Workspace() {
   const navigate = useNavigate();
@@ -38,19 +40,7 @@ export default function Workspace() {
           alignItems="center"
         >
           <div className="flex-1 -ml-2">
-            <DropdownMenuRadio
-              onValueChange={(v) => {
-                navigate(`/workspaces/${v.value}`);
-              }}
-              value={activeWorkspace?.id}
-              items={workspaces.map((w) => ({ label: w.name, value: w.id }))}
-            >
-              <DropdownMenuTrigger>
-                <Button size="sm" className="!px-2 truncate" forDropdown>
-                  {activeWorkspace?.name ?? 'Unknown'}
-                </Button>
-              </DropdownMenuTrigger>
-            </DropdownMenuRadio>
+            <WorkspaceDropdown />
           </div>
           <div className="flex-[2] text-center text-gray-700 text-sm truncate">
             {activeRequest?.name}

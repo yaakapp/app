@@ -9,6 +9,7 @@ import {
   useCallback,
   useImperativeHandle,
   useLayoutEffect,
+  useMemo,
   useState,
 } from 'react';
 
@@ -61,17 +62,18 @@ export const DropdownMenuRadio = memo(function DropdownMenuRadio({
   );
 });
 
+export type DropdownItem =
+  | {
+      label: string;
+      onSelect?: () => void;
+      disabled?: boolean;
+      leftSlot?: ReactNode;
+    }
+  | '-----';
+
 export interface DropdownProps {
   children: ReactElement<typeof DropdownMenuTrigger>;
-  items: (
-    | {
-        label: string;
-        onSelect?: () => void;
-        disabled?: boolean;
-        leftSlot?: ReactNode;
-      }
-    | '-----'
-  )[];
+  items: DropdownItem[];
 }
 
 export const Dropdown = memo(function Dropdown({ children, items }: DropdownProps) {
@@ -106,19 +108,21 @@ interface DropdownMenuPortalProps {
   children: ReactNode;
 }
 
-function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
+const DropdownMenuPortal = memo(function DropdownMenuPortal({ children }: DropdownMenuPortalProps) {
   const container = document.querySelector<Element>('#radix-portal');
   if (container === null) return null;
+  const initial = useMemo(() => ({ opacity: 0 }), []);
+  const animate = useMemo(() => ({ opacity: 1 }), []);
   return (
     <D.Portal>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div initial={initial} animate={animate}>
         {children}
       </motion.div>
     </D.Portal>
   );
-}
+});
 
-const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProps>(
+const _DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProps>(
   function DropdownMenuContent(
     { className, children, ...props }: D.DropdownMenuContentProps,
     ref: ForwardedRef<HTMLDivElement>,
@@ -127,33 +131,34 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProp
     const [divRef, setDivRef] = useState<HTMLDivElement | null>(null);
     useImperativeHandle<HTMLDivElement | null, HTMLDivElement | null>(ref, () => divRef);
 
-    const initDivRef = (ref: HTMLDivElement | null) => {
+    const initDivRef = useCallback((ref: HTMLDivElement | null) => {
       setDivRef(ref);
-    };
+    }, []);
 
     // Calculate the max height so we can scroll
     useLayoutEffect(() => {
       if (divRef === null) return;
       // Needs to be in a setTimeout because the ref is not positioned yet
       // TODO: Make this better?
-      setTimeout(() => {
+      const t = setTimeout(() => {
         const windowBox = document.documentElement.getBoundingClientRect();
         const menuBox = divRef.getBoundingClientRect();
         const styles = { maxHeight: windowBox.height - menuBox.top - 5 - 45 };
         setStyles(styles);
       });
+      return () => clearTimeout(t);
     }, [divRef]);
 
     return (
       <D.Content
         ref={initDivRef}
         align="start"
+        style={styles}
         className={classnames(
           className,
           'bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 p-1.5 border border-gray-200',
           'overflow-auto m-1',
         )}
-        style={styles}
         {...props}
       >
         {children}
@@ -161,10 +166,11 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentProp
     );
   },
 );
+const DropdownMenuContent = memo(_DropdownMenuContent);
 
 type DropdownMenuItemProps = D.DropdownMenuItemProps & ItemInnerProps;
 
-function DropdownMenuItem({
+const DropdownMenuItem = memo(function DropdownMenuItem({
   leftSlot,
   rightSlot,
   className,
@@ -184,7 +190,7 @@ function DropdownMenuItem({
       </ItemInner>
     </D.Item>
   );
-}
+});
 
 // type DropdownMenuCheckboxItemProps = DropdownMenu.DropdownMenuCheckboxItemProps & ItemInnerProps;
 //
@@ -230,12 +236,12 @@ const DropdownMenuRadioItem = memo(function DropdownMenuRadioItem({
   return (
     <D.RadioItem asChild {...props}>
       <ItemInner
+        rightSlot={rightSlot}
         leftSlot={
           <D.ItemIndicator>
             <CheckIcon />
           </D.ItemIndicator>
         }
-        rightSlot={rightSlot}
       >
         {children}
       </ItemInner>
@@ -260,7 +266,11 @@ const DropdownMenuRadioItem = memo(function DropdownMenuRadioItem({
 //   },
 // );
 
-function DropdownMenuLabel({ className, children, ...props }: D.DropdownMenuLabelProps) {
+const DropdownMenuLabel = memo(function DropdownMenuLabel({
+  className,
+  children,
+  ...props
+}: D.DropdownMenuLabelProps) {
   return (
     <D.Label asChild {...props}>
       <ItemInner noHover className={classnames(className, 'opacity-50 uppercase text-sm')}>
@@ -268,16 +278,19 @@ function DropdownMenuLabel({ className, children, ...props }: D.DropdownMenuLabe
       </ItemInner>
     </D.Label>
   );
-}
+});
 
-function DropdownMenuSeparator({ className, ...props }: D.DropdownMenuSeparatorProps) {
+const DropdownMenuSeparator = memo(function DropdownMenuSeparator({
+  className,
+  ...props
+}: D.DropdownMenuSeparatorProps) {
   return (
     <D.Separator
       className={classnames(className, 'h-[1px] bg-gray-400 bg-opacity-30 my-1')}
       {...props}
     />
   );
-}
+});
 
 type DropdownMenuTriggerProps = D.DropdownMenuTriggerProps & {
   children: ReactNode;
@@ -304,7 +317,7 @@ interface ItemInnerProps {
   className?: string;
 }
 
-const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
+const _ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
   { leftSlot, rightSlot, children, className, noHover, ...props }: ItemInnerProps,
   ref,
 ) {
@@ -324,3 +337,5 @@ const ItemInner = forwardRef<HTMLDivElement, ItemInnerProps>(function ItemInner(
     </div>
   );
 });
+
+const ItemInner = memo(_ItemInner);

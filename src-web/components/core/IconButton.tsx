@@ -1,5 +1,6 @@
 import classnames from 'classnames';
-import { forwardRef } from 'react';
+import type { MouseEvent } from 'react';
+import { forwardRef, memo, useCallback } from 'react';
 import { useTimedBoolean } from '../../hooks/useTimedBoolean';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
@@ -14,7 +15,7 @@ type Props = IconProps &
     title: string;
   };
 
-export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
+const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
   {
     showConfirm,
     icon,
@@ -30,16 +31,20 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
   ref,
 ) {
   const [confirmed, setConfirmed] = useTimedBoolean();
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      if (showConfirm) setConfirmed();
+      onClick?.(e);
+    },
+    [onClick],
+  );
   return (
     <Button
       ref={ref}
       aria-hidden={icon === 'empty'}
       disabled={icon === 'empty'}
       tabIndex={tabIndex ?? icon === 'empty' ? -1 : undefined}
-      onClick={(e) => {
-        if (showConfirm) setConfirmed();
-        onClick?.(e);
-      }}
+      onClick={handleClick}
       className={classnames(
         className,
         'text-gray-700 hover:text-gray-1000',
@@ -63,3 +68,5 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
     </Button>
   );
 });
+
+export const IconButton = memo(_IconButton);

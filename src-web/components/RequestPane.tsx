@@ -1,9 +1,7 @@
 import classnames from 'classnames';
 import { useCallback, useMemo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader } from '../lib/models';
@@ -23,8 +21,6 @@ export function RequestPane({ fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
-  const sendRequest = useSendRequest(activeRequestId);
-  const responseLoading = useIsResponseLoading();
   const activeTab = useKeyValue<string>({
     key: ['active_request_body_tab', activeRequestId ?? 'n/a'],
     initialValue: 'body',
@@ -49,11 +45,9 @@ export function RequestPane({ fullHeight, className }: Props) {
       { value: 'headers', label: 'Headers' },
       { value: 'auth', label: 'Auth' },
     ],
-    [],
+    [activeRequest?.bodyType],
   );
 
-  const handleMethodChange = useCallback((method: string) => updateRequest.mutate({ method }), []);
-  const handleUrlChange = useCallback((url: string) => updateRequest.mutate({ url }), []);
   const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);
   const handleHeadersChange = useCallback(
     (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
@@ -64,15 +58,7 @@ export function RequestPane({ fullHeight, className }: Props) {
 
   return (
     <div className={classnames(className, 'p-2 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
-      <UrlBar
-        key={activeRequest.id}
-        method={activeRequest.method}
-        url={activeRequest.url}
-        onMethodChange={handleMethodChange}
-        onUrlChange={handleUrlChange}
-        sendRequest={sendRequest}
-        loading={responseLoading}
-      />
+      <UrlBar request={activeRequest} />
       <Tabs
         value={activeTab.value}
         onChangeValue={activeTab.set}

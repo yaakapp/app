@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import type { HTMLAttributes } from 'react';
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
@@ -26,7 +26,7 @@ export type ButtonProps = HTMLAttributes<HTMLElement> & {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Button = forwardRef<any, ButtonProps>(function Button(
+const _Button = forwardRef<any, ButtonProps>(function Button(
   {
     to,
     className,
@@ -71,3 +71,5 @@ export const Button = forwardRef<any, ButtonProps>(function Button(
     );
   }
 });
+
+export const Button = memo(_Button);
