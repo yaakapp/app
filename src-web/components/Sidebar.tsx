@@ -1,13 +1,20 @@
 import classnames from 'classnames';
-import type { MouseEvent as ReactMouseEvent } from 'react';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import type {
+  CSSProperties,
+  ForwardedRef,
+  KeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
+import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
+import type { XYCoord } from 'react-dnd';
+import { DndProvider, useDrag, useDragLayer, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequests } from '../hooks/useRequests';
+import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { clamp } from '../lib/clamp';
 import type { HttpRequest } from '../lib/models';
@@ -15,6 +22,7 @@ import { Button } from './core/Button';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { ScrollArea } from './core/ScrollArea';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
 import { ToggleThemeButton } from './ToggleThemeButton';
@@ -82,15 +90,7 @@ export function Container({ className }: Props) {
   const sidebarWidth = width.value - 1; // Minus 1 for the border
 
   return (
-    <div
-      ref={sidebarRef}
-      style={sidebarStyles}
-      className={classnames(
-        className,
-        'relative',
-        'bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto,1fr,auto]',
-      )}
-    >
+    <div className="relative">
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         aria-hidden
@@ -105,32 +105,48 @@ export function Container({ className }: Props) {
           )}
         />
       </div>
-      <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
-        <IconButton
-          title="Add Request"
-          className="mx-1"
-          icon="plusCircle"
-          onClick={async () => {
-            await createRequest.mutate({ name: 'Test Request' });
-          }}
-        />
-      </HStack>
-      <VStack as="ul" className="py-3 overflow-auto h-full" space={1}>
-        <SidebarItems
-          sidebarWidth={sidebarWidth}
-          activeRequestId={activeRequest?.id}
-          requests={requests}
-        />
-      </VStack>
-      <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
-        <ToggleThemeButton />
-      </HStack>
+      <div
+        ref={sidebarRef}
+        style={sidebarStyles}
+        className={classnames(
+          className,
+          'bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
+        )}
+      >
+        <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
+          <IconButton
+            title="Add Request"
+            className="mx-1"
+            icon="plusCircle"
+            onClick={async () => {
+              const lastRequest = requests[requests.length - 1];
+              await createRequest.mutate({
+                name: 'Test Request',
+                sortPriority: lastRequest?.sortPriority ?? 0 + 1,
+              });
+            }}
+          />
+        </HStack>
+        <ScrollArea>
+          <VStack as="ul" className="relative py-3" draggable={false}>
+            <SidebarItems
+              sidebarWidth={sidebarWidth}
+              activeRequestId={activeRequest?.id}
+              requests={requests}
+            />
+            {/*<CustomDragLayer sidebarWidth={sidebarWidth} />*/}
+          </VStack>
+        </ScrollArea>
+        <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
+          <ToggleThemeButton />
+        </HStack>
+      </div>
     </div>
   );
 }
 
 function SidebarItems({
-  requests,
+  requests: unorderedRequests,
   activeRequestId,
   sidebarWidth,
 }: {
@@ -138,44 +154,85 @@ function SidebarItems({
   activeRequestId?: string;
   sidebarWidth: number;
 }) {
-  const [items, setItems] = useState(requests.map((r) => ({ request: r, left: 0, top: 0 })));
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const updateRequest = useUpdateAnyRequest();
+  const requests = useMemo(
+    () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
+    [unorderedRequests],
+  );
 
-  useEffect(() => {
-    setItems(requests.map((r) => ({ request: r, left: 0, top: 0 })));
-  }, [requests]);
+  const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
+    (id, side) => {
+      const dragIndex = requests.findIndex((r) => r.id === id);
+      setHoveredIndex(side === 'above' ? dragIndex : dragIndex + 1);
+    },
+    [requests],
+  );
 
-  const handleMove = useCallback((id: string, hoverId: string) => {
-    setItems((oldItems) => {
-      const dragIndex = oldItems.findIndex((i) => i.request.id === id);
-      const index = oldItems.findIndex((i) => i.request.id === hoverId);
-      const newItems = [...oldItems];
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const b = newItems[index]!;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      newItems[index] = newItems[dragIndex]!;
-      newItems[dragIndex] = b;
-      return newItems;
-    });
-  }, []);
+  const handleCancel = useCallback(() => setHoveredIndex(null), []);
+
+  const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
+    (requestId) => {
+      if (hoveredIndex === null) return;
+      setHoveredIndex(null);
+
+      const index = requests.findIndex((r) => r.id === requestId);
+      const request = requests[index];
+      if (request === undefined) return;
+
+      const newRequests = requests.filter((r) => r.id !== requestId);
+      if (hoveredIndex > index) {
+        newRequests.splice(hoveredIndex - 1, 0, request);
+      } else {
+        newRequests.splice(hoveredIndex, 0, request);
+      }
+
+      const beforePriority = newRequests[hoveredIndex - 1]?.sortPriority ?? 0;
+      const afterPriority = newRequests[hoveredIndex + 1]?.sortPriority ?? 0;
+
+      const shouldUpdateAll = afterPriority - beforePriority < 1;
+      if (shouldUpdateAll) {
+        newRequests.forEach((r, i) => {
+          updateRequest.mutate({ id: r.id, sortPriority: i * 1000 });
+        });
+      } else {
+        updateRequest.mutate({
+          id: requestId,
+          sortPriority: afterPriority - (afterPriority - beforePriority) / 2,
+        });
+      }
+    },
+    [hoveredIndex, requests],
+  );
 
   return (
     <>
-      {items.map(({ request }) => (
-        <DraggableSidebarItem
-          key={request.id}
-          requestId={request.id}
-          requestName={request.name}
-          workspaceId={request.workspaceId}
-          active={request.id === activeRequestId}
-          sidebarWidth={sidebarWidth}
-          onMove={handleMove}
-        />
-      ))}
+      {requests.map((r, i) => {
+        return (
+          <Fragment key={r.id}>
+            {hoveredIndex === i && <DropMarker />}
+            <DraggableSidebarItem
+              key={r.id}
+              requestId={r.id}
+              requestName={r.name}
+              workspaceId={r.workspaceId}
+              active={r.id === activeRequestId}
+              sidebarWidth={sidebarWidth}
+              onMove={handleMove}
+              onEnd={handleEnd}
+              onCancel={handleCancel}
+            />
+          </Fragment>
+        );
+      })}
+      {hoveredIndex === requests.length && <DropMarker />}
     </>
   );
 }
 
 type SidebarItemProps = {
+  className?: string;
+  buttonClassName?: string;
   requestId: string;
   requestName: string;
   workspaceId: string;
@@ -183,13 +240,18 @@ type SidebarItemProps = {
   active?: boolean;
 };
 
-const SidebarItem = memo(function SidebarItem({
-  requestName,
-  requestId,
-  workspaceId,
-  active,
-  sidebarWidth,
-}: SidebarItemProps) {
+const _SidebarItem = forwardRef(function SidebarItem(
+  {
+    className,
+    buttonClassName,
+    requestName,
+    requestId,
+    workspaceId,
+    active,
+    sidebarWidth,
+  }: SidebarItemProps,
+  ref: ForwardedRef<HTMLLIElement>,
+) {
   const deleteRequest = useDeleteRequest(requestId);
   const updateRequest = useUpdateRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
@@ -205,17 +267,60 @@ const SidebarItem = memo(function SidebarItem({
   }, []);
 
   const itemStyles = useMemo(() => ({ width: sidebarWidth }), [sidebarWidth]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLElement>) => {
+      // Hitting enter on active request during keyboard nav will start edit
+      if (active && e.key === 'Enter') {
+        e.preventDefault();
+        setEditing(true);
+      }
+    },
+    [active],
+  );
 
-  if (workspaceId === null) return null;
+  const handleInputKeyDown = useCallback(
+    async (e: KeyboardEvent<HTMLInputElement>) => {
+      switch (e.key) {
+        case 'Enter':
+          await handleSubmitNameEdit(e.currentTarget);
+          break;
+        case 'Escape':
+          setEditing(false);
+          break;
+      }
+    },
+    [active],
+  );
+
+  const actionItems = useMemo(
+    () => [
+      {
+        label: 'Delete Request',
+        onSelect: deleteRequest.mutate,
+        leftSlot: <Icon icon="trash" />,
+      },
+    ],
+    [],
+  );
 
   return (
-    <li className={classnames('block group/item px-2')} style={itemStyles}>
+    <li
+      ref={ref}
+      className={classnames(className, 'block group/item px-2 pb-1')}
+      style={itemStyles}
+    >
       <div className="relative w-full">
         <Button
           color="custom"
           size="sm"
+          to={`/workspaces/${workspaceId}/requests/${requestId}`}
           draggable={false} // Item should drag, not the link
+          onDoubleClick={() => setEditing(true)}
+          onClick={active ? () => setEditing(true) : undefined}
+          justify="start"
+          onKeyDown={handleKeyDown}
           className={classnames(
+            buttonClassName,
             'w-full',
             editing && 'focus-within:border-blue-400/40',
             active
@@ -224,17 +329,6 @@ const SidebarItem = memo(function SidebarItem({
             // Move out of the way when trash is shown
             'group-hover/item:pr-7',
           )}
-          onKeyDown={(e) => {
-            // Hitting enter on active request during keyboard nav will start edit
-            if (active && e.key === 'Enter') {
-              e.preventDefault();
-              setEditing(true);
-            }
-          }}
-          to={`/workspaces/${workspaceId}/requests/${requestId}`}
-          onDoubleClick={() => setEditing(true)}
-          onClick={active ? () => setEditing(true) : undefined}
-          justify="start"
         >
           {editing ? (
             <input
@@ -242,16 +336,7 @@ const SidebarItem = memo(function SidebarItem({
               defaultValue={requestName}
               className="bg-transparent outline-none w-full"
               onBlur={(e) => handleSubmitNameEdit(e.currentTarget)}
-              onKeyDown={async (e) => {
-                switch (e.key) {
-                  case 'Enter':
-                    await handleSubmitNameEdit(e.currentTarget);
-                    break;
-                  case 'Escape':
-                    setEditing(false);
-                    break;
-                }
-              }}
+              onKeyDown={handleInputKeyDown}
             />
           ) : (
             <span className={classnames('truncate', !requestName && 'text-gray-400 italic')}>
@@ -259,18 +344,7 @@ const SidebarItem = memo(function SidebarItem({
             </span>
           )}
         </Button>
-        <Dropdown
-          items={useMemo(
-            () => [
-              {
-                label: 'Delete Request',
-                onSelect: deleteRequest.mutate,
-                leftSlot: <Icon icon="trash" />,
-              },
-            ],
-            [],
-          )}
-        >
+        <Dropdown items={actionItems}>
           <DropdownMenuTrigger
             className={classnames(
               'absolute right-0 top-0 transition-opacity opacity-0',
@@ -290,13 +364,18 @@ const SidebarItem = memo(function SidebarItem({
     </li>
   );
 });
+const SidebarItem = memo(_SidebarItem);
 
 type DraggableSidebarItemProps = SidebarItemProps & {
-  onMove: (id: string, hoverId: string) => void;
+  onMove: (id: string, side: 'above' | 'below') => void;
+  onEnd: (id: string) => void;
+  onCancel: () => void;
 };
 
 type DragItem = {
   id: string;
+  workspaceId: string;
+  requestName: string;
 };
 
 const DraggableSidebarItem = memo(function DraggableSidebarItem({
@@ -306,37 +385,108 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   active,
   sidebarWidth,
   onMove,
+  onEnd,
+  onCancel,
 }: DraggableSidebarItemProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLLIElement>(null);
 
   const [, connectDrop] = useDrop<DragItem, void>({
     accept: ItemTypes.REQUEST,
     collect: (m) => ({ handlerId: m.getHandlerId(), isOver: m.isOver() }),
-    hover: (item) => {
-      if (item.id !== requestId) {
-        onMove(requestId, item.id);
-      }
+    hover: (item, monitor) => {
+      if (!ref.current) return;
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+      onMove(requestId, hoverClientY < hoverMiddleY ? 'above' : 'below');
     },
   });
 
-  const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
-    type: ItemTypes.REQUEST,
-    item: () => ({ id: requestId }),
-    collect: (m) => ({ isDragging: m.isDragging() }),
-  }));
+  const [{ isDragging }, connectDrag, preview] = useDrag<
+    DragItem,
+    unknown,
+    { isDragging: boolean }
+  >(
+    () => ({
+      type: ItemTypes.REQUEST,
+      item: () => ({ id: requestId, requestName, workspaceId }),
+      collect: (m) => ({ isDragging: m.isDragging() }),
+      options: { dropEffect: 'move' },
+      end: (item, monitor) => {
+        if (monitor.didDrop()) {
+          onEnd(requestId);
+        } else {
+          onCancel();
+        }
+      },
+    }),
+    [onEnd],
+  );
+
+  // preview(getEmptyImage(), { captureDraggingState: true });
 
   connectDrag(ref);
   connectDrop(ref);
 
   return (
-    <div ref={ref} className={classnames(isDragging && 'opacity-0')}>
-      <SidebarItem
-        requestName={requestName}
-        requestId={requestId}
-        workspaceId={workspaceId}
-        active={active}
-        sidebarWidth={sidebarWidth}
-      />
-    </div>
+    <SidebarItem
+      ref={ref}
+      className={classnames(isDragging && 'opacity-30')}
+      requestName={requestName}
+      requestId={requestId}
+      workspaceId={workspaceId}
+      active={active}
+      sidebarWidth={sidebarWidth}
+    />
   );
 });
+
+function CustomDragLayer({ sidebarWidth }: { sidebarWidth: number }) {
+  const { itemType, isDragging, item, currentOffset } = useDragLayer<any, DragItem>((monitor) => ({
+    item: monitor.getItem(),
+    itemType: monitor.getItemType(),
+    currentOffset: monitor.getSourceClientOffset(),
+    isDragging: monitor.isDragging(),
+  }));
+
+  const styles = useMemo<CSSProperties>(() => {
+    if (currentOffset === null) {
+      return { display: 'none' };
+    }
+    const transform = `translate(${currentOffset.x}px, ${currentOffset.y}px)`;
+    return { transform, WebkitTransform: transform };
+  }, [currentOffset]);
+
+  if (!isDragging) {
+    return null;
+  }
+
+  return (
+    <div className="fixed !pointer-events-none inset-0">
+      <div className="absolute pointer-events-none" style={styles}>
+        {itemType === ItemTypes.REQUEST && (
+          <SidebarItem
+            buttonClassName="bg-violet-500/10"
+            sidebarWidth={sidebarWidth}
+            workspaceId={item.workspaceId}
+            requestName={item.requestName}
+            requestId={item.id}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+const DropMarker = memo(
+  function DropMarker() {
+    return (
+      <div className="relative w-full h-0 overflow-visible pointer-events-none">
+        <div className="absolute z-20 left-0 right-0 bottom-[1px] h-[0.2em] bg-blue-300" />
+      </div>
+    );
+  },
+  () => true,
+);

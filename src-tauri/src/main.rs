@@ -247,13 +247,14 @@ async fn create_workspace(
 async fn create_request(
     workspace_id: &str,
     name: &str,
+    sort_priority: f64,
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
     let headers = Vec::new();
     let created_request =
-        models::upsert_request(None, workspace_id, name, "GET", None, None, "", headers, pool)
+        models::upsert_request(None, workspace_id, name, "GET", None, None, "", headers, sort_priority, pool)
             .await
             .expect("Failed to create request");
 
@@ -291,6 +292,7 @@ async fn update_request(
         request.body_type,
         request.url.as_str(),
         request.headers.0,
+        request.sort_priority,
         pool,
     )
         .await

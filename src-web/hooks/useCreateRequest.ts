@@ -7,7 +7,8 @@ import { useActiveWorkspace } from './useActiveWorkspace';
 export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) {
   const workspace = useActiveWorkspace();
   const navigate = useNavigate();
-  return useMutation<string, unknown, Pick<HttpRequest, 'name'>>({
+
+  return useMutation<string, unknown, Pick<HttpRequest, 'name' | 'sortPriority'>>({
     mutationFn: (patch) => {
       if (workspace === null) {
         throw new Error("Cannot create request when there's no active workspace");

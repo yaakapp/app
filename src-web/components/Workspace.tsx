@@ -1,13 +1,9 @@
-import { DropdownMenuSeparator } from '@radix-ui/react-dropdown-menu';
 import classnames from 'classnames';
-import { useNavigate } from 'react-router-dom';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useWorkspaces } from '../hooks/useWorkspaces';
-import { Button } from './core/Button';
-import { Dropdown, DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
+import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
@@ -18,11 +14,9 @@ import { Sidebar } from './Sidebar';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 
 export default function Workspace() {
-  const navigate = useNavigate();
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
-  const workspaces = useWorkspaces();
   const { width } = useWindowSize();
   const isSideBySide = width > 900;
   if (activeWorkspace == null) {
@@ -40,7 +34,7 @@ export default function Workspace() {
           alignItems="center"
         >
           <div className="flex-1 -ml-2">
-            <WorkspaceDropdown />
+            <WorkspaceDropdown className="pointer-events-auto" />
           </div>
           <div className="flex-[2] text-center text-gray-700 text-sm truncate">
             {activeRequest?.name}

@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
@@ -8,7 +9,11 @@ import type { DropdownItem } from './core/Dropdown';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Icon } from './core/Icon';
 
-export function WorkspaceDropdown() {
+type Props = {
+  className?: string;
+};
+
+export function WorkspaceDropdown({ className }: Props) {
   const navigate = useNavigate();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
@@ -37,7 +42,7 @@ export function WorkspaceDropdown() {
   return (
     <Dropdown items={items}>
       <DropdownMenuTrigger>
-        <Button size="sm" className="!px-2 truncate" forDropdown>
+        <Button size="sm" className={classnames(className, '!px-2 truncate')} forDropdown>
           {activeWorkspace?.name ?? 'Unknown'}
         </Button>
       </DropdownMenuTrigger>

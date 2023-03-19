@@ -143,7 +143,7 @@ const _DropdownMenuContent = forwardRef<HTMLDivElement, D.DropdownMenuContentPro
       const t = setTimeout(() => {
         const windowBox = document.documentElement.getBoundingClientRect();
         const menuBox = divRef.getBoundingClientRect();
-        const styles = { maxHeight: windowBox.height - menuBox.top - 5 - 45 };
+        const styles = { maxHeight: windowBox.height - menuBox.top - 5 };
         setStyles(styles);
       });
       return () => clearTimeout(t);
