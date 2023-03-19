@@ -9,8 +9,8 @@ interface Props {
 
 export function ScrollArea({ children, className }: Props) {
   return (
-    <S.Root className={classnames(className, 'group/scroll')} type="always">
-      <S.Viewport>{children}</S.Viewport>
+    <S.Root className={classnames(className, 'group/scroll overflow-hidden')} type="hover">
+      <S.Viewport className="h-full w-full">{children}</S.Viewport>
       <ScrollBar orientation="vertical" />
       <ScrollBar orientation="horizontal" />
       <S.Corner />
@@ -23,12 +23,12 @@ function ScrollBar({ orientation }: { orientation: 'vertical' | 'horizontal' }) 
     <S.Scrollbar
       orientation={orientation}
       className={classnames(
-        'flex bg-transparent rounded-full',
+        'scrollbar-track flex rounded-full',
         orientation === 'vertical' && 'w-1.5',
         orientation === 'horizontal' && 'h-1.5 flex-col',
       )}
     >
-      <S.Thumb className="flex-1 bg-gray-100 group-hover/scroll:bg-gray-200 rounded-full" />
+      <S.Thumb className="scrollbar-thumb flex-1 rounded-full" />
     </S.Scrollbar>
   );
 }

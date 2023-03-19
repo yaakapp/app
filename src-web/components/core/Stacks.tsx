@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType, HTMLAttributes, ReactNode } from 'react';
 
 const gapClasses = {
   0: 'gap-0',
@@ -23,9 +23,9 @@ export function HStack({ className, space, children, ...props }: HStackProps) {
   );
 }
 
-export interface VStackProps extends BaseStackProps {
+export type VStackProps = BaseStackProps & {
   children: ReactNode;
-}
+};
 
 export function VStack({ className, space, children, ...props }: VStackProps) {
   return (
@@ -38,14 +38,12 @@ export function VStack({ className, space, children, ...props }: VStackProps) {
   );
 }
 
-interface BaseStackProps {
+type BaseStackProps = HTMLAttributes<HTMLElement> & {
   as?: ComponentType | 'ul';
   space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';
-  className?: string;
-  children?: ReactNode;
-}
+};
 
 function BaseStack({ className, alignItems, justifyContent, children, as }: BaseStackProps) {
   const Component = as ?? 'div';

@@ -29,6 +29,7 @@ pub struct HttpRequest {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub sort_priority: f64,
     pub workspace_id: String,
     pub name: String,
     pub url: String,
@@ -170,6 +171,7 @@ pub async fn upsert_request(
     body_type: Option<String>,
     url: &str,
     headers: Vec<HttpRequestHeader>,
+    sort_priority: f64,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpRequest, sqlx::Error> {
     let generated_id;
@@ -191,9 +193,10 @@ pub async fn upsert_request(
                 method,
                 body,
                 body_type,
-                headers
+                headers,
+                sort_priority
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
@@ -201,7 +204,8 @@ pub async fn upsert_request(
                headers = excluded.headers,
                body = excluded.body,
                body_type = excluded.body_type,
-               url = excluded.url
+               url = excluded.url,
+               sort_priority = excluded.sort_priority
         "#,
         id,
         workspace_id,
@@ -211,6 +215,7 @@ pub async fn upsert_request(
         body,
         body_type,
         headers_json,
+        sort_priority,
     )
     .execute(pool)
     .await
@@ -236,6 +241,7 @@ pub async fn find_requests(
                 method,
                 body,
                 body_type,
+                sort_priority,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE workspace_id = ?
@@ -261,6 +267,7 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
                 method,
                 body,
                 body_type,
+                sort_priority,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE id = ?

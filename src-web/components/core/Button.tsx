@@ -43,7 +43,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     () =>
       classnames(
         className,
-        'outline-none pointer-events-auto',
+        'outline-none',
         'border border-transparent focus-visible:border-blue-300',
         'rounded-md flex items-center',
         colorStyles[color || 'default'],
