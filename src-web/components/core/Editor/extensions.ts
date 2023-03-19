@@ -34,6 +34,7 @@ import {
 import { tags as t } from '@lezer/highlight';
 import { graphqlLanguageSupport } from 'cm6-graphql';
 import type { GenericCompletionOption } from './genericCompletion';
+import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
@@ -95,19 +96,15 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 export function getLanguageExtension({
   contentType,
   useTemplating = false,
-  autocompleteOptions,
-}: {
-  contentType?: string;
-  useTemplating?: boolean;
-  autocompleteOptions?: GenericCompletionOption[];
-}) {
+  autocomplete,
+}: Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   const base = syntaxExtensions[justContentType] ?? text();
   if (!useTemplating) {
     return base ? base : [];
   }
 
-  return twig(base, autocompleteOptions);
+  return twig(base, autocomplete);
 }
 
 export const baseExtensions = [

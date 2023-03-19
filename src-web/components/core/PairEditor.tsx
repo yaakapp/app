@@ -1,35 +1,39 @@
 import classnames from 'classnames';
-import { memo, useEffect, useMemo, useState } from 'react';
-import type { GenericCompletionOption } from './Editor/genericCompletion';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
 import { VStack } from './Stacks';
 
-interface Props {
+export type PairEditorProps = {
   pairs: Pair[];
   onChange: (pairs: Pair[]) => void;
   className?: string;
-}
+  namePlaceholder?: string;
+  valuePlaceholder?: string;
+  nameAutocomplete?: GenericCompletionConfig;
+  valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
+};
 
-interface Pair {
+type Pair = {
   name: string;
   value: string;
-}
+};
 
-interface PairContainer {
+type PairContainer = {
   pair: Pair;
   id: string;
-}
+};
 
 export const PairEditor = memo(function PairEditor({
   pairs: originalPairs,
+  nameAutocomplete,
+  valueAutocomplete,
+  namePlaceholder,
+  valuePlaceholder,
   className,
   onChange,
-}: Props) {
-  const newPairContainer = (): PairContainer => {
-    return { pair: { name: '', value: '' }, id: Math.random().toString() };
-  };
-
+}: PairEditorProps) {
   const [pairs, setPairs] = useState<PairContainer[]>(() => {
     // Remove empty headers on initial render
     const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
@@ -37,17 +41,20 @@ export const PairEditor = memo(function PairEditor({
     return [...pairs, newPairContainer()];
   });
 
-  const setPairsAndSave = (fn: (pairs: PairContainer[]) => PairContainer[]) => {
-    setPairs((oldPairs) => {
-      const pairs = fn(oldPairs).map((p) => p.pair);
-      onChange(pairs);
-      return fn(oldPairs);
-    });
-  };
+  const setPairsAndSave = useCallback(
+    (fn: (pairs: PairContainer[]) => PairContainer[]) => {
+      setPairs((oldPairs) => {
+        const pairs = fn(oldPairs).map((p) => p.pair);
+        onChange(pairs);
+        return fn(oldPairs);
+      });
+    },
+    [onChange],
+  );
 
-  const handleChangeHeader = (pair: PairContainer) => {
+  const handleChangeHeader = useCallback((pair: PairContainer) => {
     setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair)));
-  };
+  }, []);
 
   // Ensure there's always at least one pair
   useEffect(() => {
@@ -56,9 +63,19 @@ export const PairEditor = memo(function PairEditor({
     }
   }, [pairs]);
 
-  const handleDelete = (pair: PairContainer) => {
+  const handleDelete = useCallback((pair: PairContainer) => {
     setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
-  };
+  }, []);
+
+  const handleFocus = useCallback(
+    (pair: PairContainer) => {
+      const isLast = pair.id === pairs[pairs.length - 1]?.id;
+      if (isLast) {
+        setPairs((pairs) => [...pairs, newPairContainer()]);
+      }
+    },
+    [pairs],
+  );
 
   return (
     <div className={classnames(className, 'pb-6 grid')}>
@@ -71,11 +88,11 @@ export const PairEditor = memo(function PairEditor({
               pairContainer={p}
               isLast={isLast}
               onChange={handleChangeHeader}
-              onFocus={() => {
-                if (isLast) {
-                  setPairs((pairs) => [...pairs, newPairContainer()]);
-                }
-              }}
+              nameAutocomplete={nameAutocomplete}
+              valueAutocomplete={valueAutocomplete}
+              namePlaceholder={namePlaceholder}
+              valuePlaceholder={valuePlaceholder}
+              onFocus={handleFocus}
               onDelete={isLast ? undefined : handleDelete}
             />
           );
@@ -85,46 +102,65 @@ export const PairEditor = memo(function PairEditor({
   );
 });
 
+type FormRowProps = {
+  pairContainer: PairContainer;
+  onChange: (pair: PairContainer) => void;
+  onDelete?: (pair: PairContainer) => void;
+  onFocus?: (pair: PairContainer) => void;
+  isLast?: boolean;
+} & Pick<
+  PairEditorProps,
+  'nameAutocomplete' | 'valueAutocomplete' | 'namePlaceholder' | 'valuePlaceholder'
+>;
+
 const FormRow = memo(function FormRow({
   pairContainer,
   onChange,
   onDelete,
   onFocus,
   isLast,
-}: {
-  pairContainer: PairContainer;
-  onChange: (pair: PairContainer) => void;
-  onDelete?: (pair: PairContainer) => void;
-  onFocus?: () => void;
-  isLast?: boolean;
-}) {
+  nameAutocomplete,
+  valueAutocomplete,
+  namePlaceholder,
+  valuePlaceholder,
+}: FormRowProps) {
   const { id } = pairContainer;
-  const valueOptions = useMemo<GenericCompletionOption[] | undefined>(() => {
-    if (pairContainer.pair.name.toLowerCase() === 'content-type') {
-      return [
-        { label: 'application/json', type: 'constant' },
-        { label: 'text/xml', type: 'constant' },
-        { label: 'text/html', type: 'constant' },
-      ];
-    }
-    return undefined;
-  }, [pairContainer.pair.value]);
+
+  const handleChangeName = useMemo(
+    () => (name: string) => onChange({ id, pair: { name, value: pairContainer.pair.value } }),
+    [onChange, pairContainer.pair.value],
+  );
+
+  const handleChangeValue = useMemo(
+    () => (value: string) => onChange({ id, pair: { value, name: pairContainer.pair.name } }),
+    [onChange, pairContainer.pair.name],
+  );
+
+  const nameEditorConfig = useMemo(
+    () => ({ useTemplating: true, autocomplete: nameAutocomplete }),
+    [nameAutocomplete],
+  );
+
+  const valueEditorConfig = useMemo(
+    () => ({ useTemplating: true, autocomplete: valueAutocomplete?.(pairContainer.pair.name) }),
+    [valueAutocomplete, pairContainer.pair.name],
+  );
+
+  const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);
+  const handleDelete = useCallback(() => onDelete?.(pairContainer), [onDelete, pairContainer]);
 
   return (
-    <div className="group grid grid-cols-[1fr_1fr_auto] grid-rows-1 gap-2 items-center">
+    <div className="group grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-1 gap-2 items-center">
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
         defaultValue={pairContainer.pair.name}
         label="Name"
         name="name"
-        onChange={(name) => onChange({ id, pair: { name, value: pairContainer.pair.value } })}
-        onFocus={onFocus}
-        placeholder={isLast ? 'new name' : 'name'}
-        useEditor={{
-          useTemplating: true,
-          autocompleteOptions: [{ label: 'Content-Type', type: 'constant' }],
-        }}
+        onChange={handleChangeName}
+        onFocus={handleFocus}
+        placeholder={namePlaceholder ?? 'name'}
+        useEditor={nameEditorConfig}
       />
       <Input
         hideLabel
@@ -132,16 +168,16 @@ const FormRow = memo(function FormRow({
         defaultValue={pairContainer.pair.value}
         label="Value"
         name="value"
-        onChange={(value) => onChange({ id, pair: { name: pairContainer.pair.name, value } })}
-        onFocus={onFocus}
-        placeholder={isLast ? 'new value' : 'value'}
-        useEditor={{ useTemplating: true, autocompleteOptions: valueOptions }}
+        onChange={handleChangeValue}
+        onFocus={handleFocus}
+        placeholder={valuePlaceholder ?? 'value'}
+        useEditor={valueEditorConfig}
       />
       {onDelete ? (
         <IconButton
           icon="trash"
           title="Delete header"
-          onClick={() => onDelete(pairContainer)}
+          onClick={handleDelete}
           tabIndex={-1}
           className={classnames('opacity-0 group-hover:opacity-100')}
         />
@@ -151,3 +187,7 @@ const FormRow = memo(function FormRow({
     </div>
   );
 });
+
+const newPairContainer = (): PairContainer => {
+  return { pair: { name: '', value: '' }, id: Math.random().toString() };
+};
