@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -7,7 +8,6 @@ import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequests } from '../hooks/useRequests';
-import { useTheme } from '../hooks/useTheme';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { clamp } from '../lib/clamp';
 import type { HttpRequest } from '../lib/models';
@@ -17,6 +17,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
+import { ToggleThemeButton } from './ToggleThemeButton';
 
 interface Props {
   className?: string;
@@ -45,7 +46,6 @@ export function Container({ className }: Props) {
   const requests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
-  const { appearance, toggleAppearance } = useTheme();
 
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const unsub = () => {
@@ -59,7 +59,7 @@ export function Container({ className }: Props) {
     width.set(INITIAL_WIDTH);
   }, []);
 
-  const handleResizeStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleResizeStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     unsub();
     const mouseStartX = e.clientX;
     const startWidth = width.value;
@@ -77,7 +77,9 @@ export function Container({ className }: Props) {
     document.documentElement.addEventListener('mouseup', moveState.current.up);
     setIsRisizing(true);
   }, []);
+
   const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
+  const sidebarWidth = width.value - 1; // Minus 1 for the border
 
   return (
     <div
@@ -115,17 +117,13 @@ export function Container({ className }: Props) {
       </HStack>
       <VStack as="ul" className="py-3 overflow-auto h-full" space={1}>
         <SidebarItems
-          sidebarWidth={sidebarRef.current?.clientWidth ?? 0}
+          sidebarWidth={sidebarWidth}
           activeRequestId={activeRequest?.id}
           requests={requests}
         />
       </VStack>
       <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
-        <IconButton
-          title={appearance === 'dark' ? 'Enable light mode' : 'Enable dark mode'}
-          icon={appearance === 'dark' ? 'moon' : 'sun'}
-          onClick={toggleAppearance}
-        />
+        <ToggleThemeButton />
       </HStack>
     </div>
   );
