@@ -47,7 +47,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   }
 
   return (
-    <div className={classnames(className, 'p-2')}>
+    <div className={classnames(className, 'p-3')}>
       <div
         className={classnames(
           'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
@@ -113,7 +113,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
 
         {activeResponse?.error ? (
           <div className="p-1">
-            <div className="text-white bg-red-500 px-3 py-2 rounded">{activeResponse.error}</div>
+            <div className="text-white bg-red-500 px-3 py-3 rounded">{activeResponse.error}</div>
           </div>
         ) : viewMode === 'pretty' && contentType.includes('html') ? (
           <Webview body={activeResponse.body} contentType={contentType} url={activeResponse.url} />
