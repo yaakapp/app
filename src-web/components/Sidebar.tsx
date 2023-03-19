@@ -1,8 +1,5 @@
 import classnames from 'classnames';
-import type { Identifier } from 'dnd-core';
-import type { CSSProperties } from 'react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { XYCoord } from 'react-dnd';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
@@ -49,11 +46,6 @@ export function Container({ className }: Props) {
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
   const { appearance, toggleAppearance } = useTheme();
-  const [items, setItems] = useState(requests.map((r) => ({ request: r, left: 0, top: 0 })));
-
-  useEffect(() => {
-    setItems(requests.map((r) => ({ request: r, left: 0, top: 0 })));
-  }, [requests.length]);
 
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const unsub = () => {
@@ -63,11 +55,11 @@ export function Container({ className }: Props) {
     }
   };
 
-  const handleResizeReset = () => {
+  const handleResizeReset = useCallback(() => {
     width.set(INITIAL_WIDTH);
-  };
+  }, []);
 
-  const handleResizeStart = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleResizeStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     unsub();
     const mouseStartX = e.clientX;
     const startWidth = width.value;
@@ -84,23 +76,14 @@ export function Container({ className }: Props) {
     document.documentElement.addEventListener('mousemove', moveState.current.move);
     document.documentElement.addEventListener('mouseup', moveState.current.up);
     setIsRisizing(true);
-  };
-
-  const sidebarWidth = sidebarRef.current?.clientWidth ?? 0;
-  const handleMove = useCallback((dragIndex: number, hoverIndex: number) => {
-    setItems((oldItems) => {
-      const newItems = [...oldItems];
-      const b = newItems[hoverIndex]!;
-      newItems[hoverIndex] = newItems[dragIndex]!;
-      newItems[dragIndex] = b;
-      return newItems;
-    });
   }, []);
+  const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
 
+  console.log('RENDER SIDEBAR');
   return (
     <div
       ref={sidebarRef}
-      style={{ width: width.value }}
+      style={sidebarStyles}
       className={classnames(
         className,
         'relative',
@@ -132,18 +115,11 @@ export function Container({ className }: Props) {
         />
       </HStack>
       <VStack as="ul" className="py-3 overflow-auto h-full" space={1}>
-        {items.map(({ request, left, top }, i) => (
-          <DraggableSidebarItem
-            index={i}
-            key={request.id}
-            request={request}
-            active={request.id === activeRequest?.id}
-            left={left}
-            top={top}
-            sidebarWidth={sidebarWidth}
-            onMove={handleMove}
-          />
-        ))}
+        <SidebarItems
+          sidebarWidth={sidebarRef.current?.clientWidth ?? 0}
+          activeRequestId={activeRequest?.id}
+          requests={requests}
+        />
       </VStack>
       <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
         <IconButton
@@ -156,30 +132,73 @@ export function Container({ className }: Props) {
   );
 }
 
-interface SidebarItemProps {
+function SidebarItems({
+  requests,
+  activeRequestId,
+  sidebarWidth,
+}: {
+  requests: HttpRequest[];
+  activeRequestId?: string;
+  sidebarWidth: number;
+}) {
+  const [items, setItems] = useState(requests.map((r) => ({ request: r, left: 0, top: 0 })));
+
+  useEffect(() => {
+    setItems(requests.map((r) => ({ request: r, left: 0, top: 0 })));
+  }, [requests.length]);
+
+  const handleMove = useCallback((id: string, hoverId: string) => {
+    setItems((oldItems) => {
+      const dragIndex = oldItems.findIndex((i) => i.request.id === id);
+      const index = oldItems.findIndex((i) => i.request.id === hoverId);
+      const newItems = [...oldItems];
+      const b = newItems[index]!;
+      newItems[index] = newItems[dragIndex]!;
+      newItems[dragIndex] = b;
+      return newItems;
+    });
+  }, []);
+
+  return (
+    <>
+      {items.map(({ request }) => (
+        <DraggableSidebarItem
+          key={request.id}
+          request={request}
+          active={request.id === activeRequestId}
+          sidebarWidth={sidebarWidth}
+          onMove={handleMove}
+        />
+      ))}
+    </>
+  );
+}
+
+type SidebarItemProps = {
   request: HttpRequest;
   sidebarWidth: number;
   active?: boolean;
-  isDragging?: boolean;
-}
+};
 
-function SidebarItem({ request, active, sidebarWidth, isDragging }: SidebarItemProps) {
+function SidebarItem({ request, active, sidebarWidth }: SidebarItemProps) {
   const deleteRequest = useDeleteRequest(request);
   const updateRequest = useUpdateRequest(request);
   const [editing, setEditing] = useState<boolean>(false);
 
-  const handleSubmitNameEdit = async (el: HTMLInputElement) => {
+  const handleSubmitNameEdit = useCallback(async (el: HTMLInputElement) => {
     await updateRequest.mutate({ name: el.value });
     setEditing(false);
-  };
+  }, []);
 
-  const handleFocus = (el: HTMLInputElement | null) => {
+  const handleFocus = useCallback((el: HTMLInputElement | null) => {
     el?.focus();
     el?.select();
-  };
+  }, []);
+
+  const itemStyles = useMemo(() => ({ width: sidebarWidth }), [sidebarWidth]);
 
   return (
-    <li className={classnames('block group/item px-2')} style={{ width: sidebarWidth + 'px' }}>
+    <li className={classnames('block group/item px-2')} style={itemStyles}>
       <div className="relative w-full">
         <Button
           color="custom"
@@ -188,11 +207,9 @@ function SidebarItem({ request, active, sidebarWidth, isDragging }: SidebarItemP
           className={classnames(
             'w-full',
             editing && 'focus-within:border-blue-400/40',
-            isDragging && 'bg-blue-100',
             active
               ? 'bg-gray-200/70 text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-gray-200/30',
-
             // Move out of the way when trash is shown
             'group-hover/item:pr-7',
           )}
@@ -203,7 +220,7 @@ function SidebarItem({ request, active, sidebarWidth, isDragging }: SidebarItemP
               setEditing(true);
             }
           }}
-          to={!isDragging ? `/workspaces/${request.workspaceId}/requests/${request.id}` : undefined}
+          // to={`/workspaces/${request.workspaceId}/requests/${request.id}`}
           onDoubleClick={() => setEditing(true)}
           onClick={active ? () => setEditing(true) : undefined}
           justify="start"
@@ -266,32 +283,14 @@ function SidebarItem({ request, active, sidebarWidth, isDragging }: SidebarItemP
 }
 
 type DraggableSidebarItemProps = SidebarItemProps & {
-  left: number;
-  top: number;
-  index: number;
-  onMove: (dragIndex: number, hoverIndex: number) => void;
+  onMove: (id: string, hoverId: string) => void;
 };
 
 type DragItem = {
-  request: HttpRequest;
-  index: number;
-  top: number;
-  left: number;
+  id: string;
 };
 
-function getStyles(left: number, top: number, width: number): CSSProperties {
-  const transform = `translate3d(${left}px, ${top}px, 0)`;
-  return {
-    transform,
-    WebkitTransform: transform,
-    width,
-  };
-}
-
-function DraggableSidebarItem({
-  index,
-  left,
-  top,
+const DraggableSidebarItem = memo(function DraggableSidebarItem({
   request,
   active,
   sidebarWidth,
@@ -299,55 +298,28 @@ function DraggableSidebarItem({
 }: DraggableSidebarItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const [, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
+  const [, connectDrop] = useDrop<DragItem, void>({
     accept: ItemTypes.REQUEST,
-    hover: (item, monitor) => {
-      if (!ref.current) return;
-
-      const dragIndex = item.index;
-      const hoverIndex = index;
-
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex) return;
-
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
-
-      onMove(dragIndex, hoverIndex);
-
-      // Note: we're mutating the monitor item here! Generally it's better to
-      // avoid mutations, but it's good here for the sake of performance to
-      // avoid expensive index searches.
-      item.index = hoverIndex;
+    collect: (m) => ({ handlerId: m.getHandlerId(), isOver: m.isOver() }),
+    hover: (item) => {
+      if (item.id !== request.id) {
+        onMove(request.id, item.id);
+      }
     },
   });
 
-  const [monitor, drag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
+  const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(() => ({
     type: ItemTypes.REQUEST,
-    item: () => ({ request, left, top, index }),
-    isDragging: (monitor) => monitor.getItem().request.id === request.id,
-    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+    item: () => ({ id: request.id }),
+    collect: (m) => ({ isDragging: m.isDragging() }),
   }));
 
-  const isDragging = monitor?.isDragging;
-  drag(drop(ref));
+  connectDrag(ref);
+  connectDrop(ref);
 
   return (
-    <div
-      ref={ref}
-      className={classnames(isDragging && 'opacity-0')}
-      style={getStyles(left, top, sidebarWidth)}
-    >
+    <div ref={ref} className={classnames(isDragging && 'opacity-0')}>
       <SidebarItem request={request} active={active} sidebarWidth={sidebarWidth} />
     </div>
   );
-}
+});
