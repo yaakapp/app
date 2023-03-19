@@ -1,18 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { HttpRequest } from '../lib/models';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { requestsQueryKey } from './useRequests';
 
-export function useDeleteRequest(request: HttpRequest | null) {
+export function useDeleteRequest(id: string | null) {
+  const workspaceId = useActiveWorkspaceId();
   const queryClient = useQueryClient();
   return useMutation<void, string>({
     mutationFn: async () => {
-      if (!request) return;
-      await invoke('delete_request', { requestId: request.id });
+      if (id === null) return;
+      await invoke('delete_request', { requestId: id });
     },
     onSuccess: async () => {
-      if (!request) return;
-      await queryClient.invalidateQueries(requestsQueryKey(request.workspaceId));
+      if (workspaceId === null || id === null) return;
+      await queryClient.invalidateQueries(requestsQueryKey(workspaceId));
     },
   });
 }
