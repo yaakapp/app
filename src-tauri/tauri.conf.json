@@ -20,7 +20,7 @@
         "titleBarStyle": "Overlay",
         "height": 600,
         "width": 1100,
-        "minWidth": 600,
+        "minWidth": 400,
         "minHeight": 400
       }
     ],
