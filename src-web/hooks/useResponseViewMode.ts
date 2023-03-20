@@ -1,10 +1,10 @@
 import { useKeyValue } from './useKeyValue';
 
-export function useResponseViewMode(requestId?: string): [string, () => void] {
+export function useResponseViewMode(requestId?: string): [string | undefined, () => void] {
   const v = useKeyValue<string>({
     namespace: 'app',
     key: ['response_view_mode', requestId ?? 'n/a'],
-    initialValue: 'pretty',
+    defaultValue: 'pretty',
   });
 
   const toggle = () => {
