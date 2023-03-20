@@ -10,8 +10,8 @@ import { Checkbox } from './Checkbox';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
+import type { InputProps } from './Input';
 import { Input } from './Input';
-import { HStack } from './Stacks';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -21,6 +21,8 @@ export type PairEditorProps = {
   valuePlaceholder?: string;
   nameAutocomplete?: GenericCompletionConfig;
   valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
+  nameValidate?: InputProps['validate'];
+  valueValidate?: InputProps['validate'];
 };
 
 type Pair = {
@@ -40,6 +42,8 @@ export const PairEditor = memo(function PairEditor({
   valueAutocomplete,
   namePlaceholder,
   valuePlaceholder,
+  nameValidate,
+  valueValidate,
   className,
   onChange,
 }: PairEditorProps) {
@@ -140,6 +144,8 @@ export const PairEditor = memo(function PairEditor({
               valueAutocomplete={valueAutocomplete}
               namePlaceholder={namePlaceholder}
               valuePlaceholder={valuePlaceholder}
+              nameValidate={nameValidate}
+              valueValidate={valueValidate}
               onChange={handleChange}
               onFocus={handleFocus}
               onDelete={isLast ? undefined : handleDelete}
@@ -168,7 +174,12 @@ type FormRowProps = {
   isLast?: boolean;
 } & Pick<
   PairEditorProps,
-  'nameAutocomplete' | 'valueAutocomplete' | 'namePlaceholder' | 'valuePlaceholder'
+  | 'nameAutocomplete'
+  | 'valueAutocomplete'
+  | 'namePlaceholder'
+  | 'valuePlaceholder'
+  | 'nameValidate'
+  | 'valueValidate'
 >;
 
 const FormRow = memo(function FormRow({
@@ -183,6 +194,8 @@ const FormRow = memo(function FormRow({
   valueAutocomplete,
   namePlaceholder,
   valuePlaceholder,
+  nameValidate,
+  valueValidate,
 }: FormRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
@@ -272,6 +285,7 @@ const FormRow = memo(function FormRow({
           hideLabel
           size="sm"
           require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
+          validate={nameValidate}
           useTemplating
           containerClassName={classnames(isLast && 'border-dashed')}
           defaultValue={pairContainer.pair.name}
@@ -286,6 +300,7 @@ const FormRow = memo(function FormRow({
           hideLabel
           size="sm"
           containerClassName={classnames(isLast && 'border-dashed')}
+          validate={valueValidate}
           defaultValue={pairContainer.pair.value}
           label="Value"
           name="value"

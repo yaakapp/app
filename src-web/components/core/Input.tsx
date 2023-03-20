@@ -1,11 +1,11 @@
 import classnames from 'classnames';
-import { useMemo, useState } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { HStack, VStack } from './Stacks';
 
-type Props = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> &
+export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> &
   Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'> & {
     name: string;
     label: string;
@@ -41,7 +41,7 @@ export function Input({
   validate,
   require,
   ...props
-}: Props) {
+}: InputProps) {
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const id = `input-${name}`;
   const inputClassName = classnames(
@@ -80,7 +80,7 @@ export function Input({
           containerClassName,
           'relative w-full rounded-md text-gray-900',
           'border border-gray-200 focus-within:border-focus',
-          !isValid && 'border-invalid',
+          !isValid && '!border-invalid',
           size === 'md' && 'h-md',
           size === 'sm' && 'h-sm',
         )}
