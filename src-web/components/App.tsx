@@ -10,12 +10,13 @@ import { matchPath } from 'react-router-dom';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
+import { routePaths } from '../hooks/useRoutes';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { extractKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { convertDates } from '../lib/models';
-import { AppRouter, WORKSPACE_REQUEST_PATH } from './AppRouter';
+import { AppRouter } from './AppRouter';
 
 const queryClient = new QueryClient();
 
@@ -42,12 +43,6 @@ await listen('updated_request', ({ payload: request }: { payload: HttpRequest })
       }
       return newRequests;
     },
-  );
-});
-
-await listen('deleted_request', ({ payload: request }: { payload: HttpRequest }) => {
-  queryClient.setQueryData(requestsQueryKey(request.workspaceId), (requests: HttpRequest[] = []) =>
-    requests.filter((r) => r.id !== request.id),
   );
 });
 
@@ -92,8 +87,27 @@ await listen('updated_workspace', ({ payload: workspace }: { payload: Workspace 
   });
 });
 
+await listen(
+  'deleted_model',
+  ({ payload: model }: { payload: Workspace | HttpRequest | HttpResponse | KeyValue }) => {
+    function removeById<T extends { id: string }>(model: T) {
+      return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id);
+    }
+
+    if (model.model === 'workspace') {
+      queryClient.setQueryData(workspacesQueryKey(), removeById<Workspace>(model));
+    } else if (model.model === 'http_request') {
+      queryClient.setQueryData(requestsQueryKey(model.workspaceId), removeById<HttpRequest>(model));
+    } else if (model.model === 'http_response') {
+      queryClient.setQueryData(responsesQueryKey(model.requestId), removeById<HttpResponse>(model));
+    } else if (model.model === 'key_value') {
+      queryClient.setQueryData(keyValueQueryKey(model), undefined);
+    }
+  },
+);
+
 await listen('send_request', async () => {
-  const params = matchPath(WORKSPACE_REQUEST_PATH, window.location.pathname);
+  const params = matchPath(routePaths.request(), window.location.pathname);
   const requestId = params?.params.requestId;
   if (typeof requestId !== 'string') {
     return;

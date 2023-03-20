@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteResponses } from '../hooks/useDeleteResponses';
-import { useDeleteResponse } from '../hooks/useResponseDelete';
+import { useDeleteResponse } from '../hooks/useDeleteResponse';
 import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { tryFormatJson } from '../lib/formatters';
@@ -21,18 +21,18 @@ interface Props {
 }
 
 export const ResponsePane = memo(function ResponsePane({ className }: Props) {
-  const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
+  const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequestId = useActiveRequestId();
   const responses = useResponses(activeRequestId);
-  const activeResponse: HttpResponse | null = activeResponseId
-    ? responses.find((r) => r.id === activeResponseId) ?? null
+  const activeResponse: HttpResponse | null = pinnedResponseId
+    ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : responses[responses.length - 1] ?? null;
   const [viewMode, toggleViewMode] = useResponseViewMode(activeResponse?.requestId);
-  const deleteResponse = useDeleteResponse(activeResponse);
+  const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
 
   useEffect(() => {
-    setActiveResponseId(null);
+    setPinnedResponseId(null);
   }, [responses.length]);
 
   const contentType = useMemo(
@@ -92,7 +92,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                     ...responses.slice(0, 10).map((r) => ({
                       label: r.status + ' - ' + r.elapsed + ' ms',
                       leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
-                      onSelect: () => setActiveResponseId(r.id),
+                      onSelect: () => setPinnedResponseId(r.id),
                     })),
                   ]}
                 >

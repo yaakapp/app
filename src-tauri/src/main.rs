@@ -313,14 +313,13 @@ async fn delete_request(
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
-) -> Result<models::HttpRequest, String> {
+) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
     let req = models::delete_request(request_id, pool)
         .await
         .expect("Failed to delete request");
-    app_handle.emit_all("deleted_request", request_id).unwrap();
-
-    Ok(req)
+    app_handle.emit_all("deleted_model", req).unwrap();
+    Ok(())
 }
 
 #[tauri::command]
@@ -357,12 +356,15 @@ async fn responses(
 #[tauri::command]
 async fn delete_response(
     id: &str,
+    app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
-    models::delete_response(id, pool)
+    let response = models::delete_response(id, pool)
         .await
-        .map_err(|e| e.to_string())
+        .expect("Failed to delete response");
+    app_handle.emit_all("deleted_model", response).unwrap();
+    Ok(())
 }
 
 #[tauri::command]
@@ -392,6 +394,20 @@ async fn workspaces(
     } else {
         Ok(workspaces)
     }
+}
+
+#[tauri::command]
+async fn delete_workspace(
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    id: &str,
+) -> Result<(), String> {
+    let pool = &*db_instance.lock().await;
+    let workspace = models::delete_workspace(id, pool)
+        .await
+        .expect("Failed to delete workspace");
+    app_handle.emit_all("deleted_model", workspace).unwrap();
+    Ok(())
 }
 
 #[tauri::command]
@@ -511,6 +527,7 @@ fn main() {
             send_request,
             create_request,
             create_workspace,
+            delete_workspace,
             update_request,
             delete_request,
             responses,

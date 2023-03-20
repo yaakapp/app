@@ -1,6 +1,5 @@
 export interface BaseModel {
   readonly id: string;
-  readonly workspaceId: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -18,6 +17,7 @@ export interface HttpHeader {
 }
 
 export interface HttpRequest extends BaseModel {
+  readonly workspaceId: string;
   readonly model: 'http_request';
   sortPriority: number;
   name: string;
@@ -36,6 +36,7 @@ export interface KeyValue extends Omit<BaseModel, 'id'> {
 }
 
 export interface HttpResponse extends BaseModel {
+  readonly workspaceId: string;
   readonly model: 'http_response';
   readonly requestId: string;
   readonly body: string;
