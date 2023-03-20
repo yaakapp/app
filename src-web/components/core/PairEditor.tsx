@@ -10,6 +10,7 @@ import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import { Input } from './Input';
+import { HStack } from './Stacks';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -235,65 +236,66 @@ const FormRow = memo(function FormRow({
     <div
       ref={ref}
       className={classnames(
-        'pb-2 group grid grid-cols-[auto_auto_minmax(0,1fr)_minmax(0,1fr)_auto]',
-        'grid-rows-1 gap-2 items-center',
+        'pb-2 group grid grid-cols-[auto_minmax(0,1fr)_auto]',
+        'grid-rows-1 items-center',
         !pairContainer.pair.enabled && 'opacity-60',
       )}
     >
       {!isLast ? (
         <div
           className={classnames(
-            '-mr-2 py-2 h-9 w-3 flex items-center',
+            'py-2 h-9 w-3 flex items-center',
             'justify-center opacity-0 hover:opacity-100',
           )}
         >
           <Icon icon="drag" className="pointer-events-none" />
         </div>
       ) : (
-        <span className="w-1" />
+        <span className="w-3" />
       )}
-      <Checkbox
-        disabled={isLast || !pairContainer.pair.name}
-        checked={isLast || !pairContainer.pair.name ? false : !!pairContainer.pair.enabled}
-        className={isLast ? '!opacity-disabled' : undefined}
-        onChange={handleChangeEnabled}
-      />
-      <Input
-        hideLabel
-        require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
-        useTemplating
-        containerClassName={classnames(isLast && 'border-dashed')}
-        defaultValue={pairContainer.pair.name}
-        label="Name"
-        name="name"
-        onChange={handleChangeName}
-        onFocus={handleFocus}
-        placeholder={namePlaceholder ?? 'name'}
-        autocomplete={nameAutocomplete}
-      />
-      <Input
-        hideLabel
-        containerClassName={classnames(isLast && 'border-dashed')}
-        defaultValue={pairContainer.pair.value}
-        label="Value"
-        name="value"
-        onChange={handleChangeValue}
-        onFocus={handleFocus}
-        placeholder={valuePlaceholder ?? 'value'}
-        useTemplating
-        autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
-      />
-      {onDelete ? (
-        <IconButton
-          icon="trash"
-          title="Delete header"
-          onClick={handleDelete}
-          tabIndex={-1}
-          className={classnames('opacity-0 group-hover:opacity-100')}
+      <HStack space={2} alignItems="center">
+        <Checkbox
+          disabled={isLast}
+          checked={isLast ? false : !!pairContainer.pair.enabled}
+          className={classnames(isLast && '!opacity-disabled')}
+          onChange={handleChangeEnabled}
         />
-      ) : (
-        <IconButton title="" icon="empty" />
-      )}
+        <Input
+          hideLabel
+          require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
+          useTemplating
+          containerClassName={classnames(isLast && 'border-dashed')}
+          defaultValue={pairContainer.pair.name}
+          label="Name"
+          name="name"
+          onChange={handleChangeName}
+          onFocus={handleFocus}
+          placeholder={namePlaceholder ?? 'name'}
+          autocomplete={nameAutocomplete}
+        />
+        <Input
+          hideLabel
+          containerClassName={classnames(isLast && 'border-dashed')}
+          defaultValue={pairContainer.pair.value}
+          label="Value"
+          name="value"
+          onChange={handleChangeValue}
+          onFocus={handleFocus}
+          placeholder={valuePlaceholder ?? 'value'}
+          useTemplating
+          autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
+        />
+      </HStack>
+      <IconButton
+        aria-hidden={!onDelete}
+        disabled={!onDelete}
+        color="custom"
+        icon={onDelete ? 'trash' : 'empty'}
+        size="sm"
+        title="Delete header"
+        onClick={handleDelete}
+        className="ml-0.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+      />
     </div>
   );
 });
