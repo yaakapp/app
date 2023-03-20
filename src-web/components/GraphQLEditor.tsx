@@ -1,7 +1,7 @@
 import { formatSdl } from 'format-graphql';
 import { useMemo } from 'react';
 import { useUniqueKey } from '../hooks/useUniqueKey';
-import { Divider } from './core/Divider';
+import { Separator } from './core/Separator';
 import type { EditorProps } from './core/Editor';
 import { Editor } from './core/Editor';
 
@@ -58,7 +58,7 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
         placeholder={`query { }`}
         {...extraEditorProps}
       />
-      <Divider />
+      <Separator />
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
         useTemplating

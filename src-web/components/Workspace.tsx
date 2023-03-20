@@ -3,14 +3,14 @@ import { useMemo, useRef } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
-import { Icon } from './core/Icon';
+import { Button } from './core/Button';
+import { Dropdown } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
 import { RequestPane } from './RequestPane';
+import { RequestSettingsDropdown } from './RequestSettingsDropdown';
 import { ResponsePane } from './ResponsePane';
 import { Sidebar } from './Sidebar';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
@@ -18,7 +18,6 @@ import { WorkspaceDropdown } from './WorkspaceDropdown';
 export default function Workspace() {
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
-  const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
 
   const mainContentRef = useRef<HTMLDivElement>(null);
   const windowSize = useWindowSize();
@@ -57,25 +56,7 @@ export default function Workspace() {
           </div>
           <div className="flex-1 flex justify-end -mr-2">
             <IconButton size="sm" title="" icon="magnifyingGlass" />
-            <Dropdown
-              items={[
-                {
-                  label: 'Something Else',
-                  onSelect: () => null,
-                  leftSlot: <Icon icon="camera" />,
-                },
-                '-----',
-                {
-                  label: 'Delete Request',
-                  onSelect: deleteRequest.mutate,
-                  leftSlot: <Icon icon="trash" />,
-                },
-              ]}
-            >
-              <DropdownMenuTrigger>
-                <IconButton size="sm" title="Request Options" icon="gear" />
-              </DropdownMenuTrigger>
-            </Dropdown>
+            <RequestSettingsDropdown />
           </div>
         </HStack>
         <div

@@ -1,35 +1,38 @@
-import type { CheckedState } from '@radix-ui/react-checkbox';
-import * as CB from '@radix-ui/react-checkbox';
 import classnames from 'classnames';
+import { useCallback } from 'react';
 import { Icon } from './Icon';
 
 interface Props {
-  checked: CheckedState;
-  onChange: (checked: CheckedState) => void;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
 
 export function Checkbox({ checked, onChange, className, disabled }: Props) {
+  const handleClick = useCallback(() => {
+    onChange(!checked);
+  }, [onChange, checked]);
+
   return (
-    <CB.Root
+    <button
+      role="checkbox"
+      aria-checked={checked ? 'true' : 'false'}
       disabled={disabled}
-      checked={checked}
-      onCheckedChange={onChange}
+      onClick={handleClick}
       className={classnames(
         className,
         'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',
         'focus:border-focus',
         'disabled:opacity-disabled',
-        'outline-none',
         checked && 'bg-gray-200/10',
         // Remove focus style
+        'outline-none',
       )}
     >
-      <CB.Indicator className="flex items-center justify-center">
-        {checked === 'indeterminate' && <Icon icon="dividerH" />}
-        {checked === true && <Icon size="sm" icon="check" />}
-      </CB.Indicator>
-    </CB.Root>
+      <div className="flex items-center justify-center">
+        <Icon size="sm" icon={checked ? 'check' : 'empty'} />
+      </div>
+    </button>
   );
 }
