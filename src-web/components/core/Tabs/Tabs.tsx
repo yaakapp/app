@@ -9,23 +9,23 @@ import { HStack } from '../Stacks';
 
 import './Tabs.css';
 
-export type TabItem = {
+export type TabItem<T> = {
   value: string;
   label: string;
-  options?: Omit<RadioDropdownProps, 'children'>;
+  options?: Omit<RadioDropdownProps<T>, 'children'>;
 };
 
-interface Props {
+interface Props<T = unknown> {
   label: string;
   value?: string;
   onChangeValue: (value: string) => void;
-  tabs: TabItem[];
+  tabs: TabItem<T>[];
   tabListClassName?: string;
   className?: string;
   children: ReactNode;
 }
 
-export const Tabs = memo(function Tabs({
+export function Tabs<T>({
   value,
   onChangeValue,
   label,
@@ -33,7 +33,7 @@ export const Tabs = memo(function Tabs({
   tabs,
   className,
   tabListClassName,
-}: Props) {
+}: Props<T>) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const handleTabChange = (value: string) => {
@@ -109,7 +109,7 @@ export const Tabs = memo(function Tabs({
       {children}
     </div>
   );
-});
+}
 
 interface TabContentProps {
   value: string;
