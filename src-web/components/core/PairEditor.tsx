@@ -3,6 +3,7 @@ import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useStat
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
+import { DropMarker } from '../DropMarker';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -284,14 +285,3 @@ const FormRow = memo(function FormRow({
 const newPairContainer = (pair?: Pair): PairContainer => {
   return { pair: pair ?? { name: '', value: '' }, id: uuid() };
 };
-
-const DropMarker = memo(
-  function DropMarker() {
-    return (
-      <div className="relative w-full h-0 overflow-visible pointer-events-none">
-        <div className="absolute z-50 left-0 right-0 bottom-[1px] h-[0.2em] bg-blue-500/50 rounded-full" />
-      </div>
-    );
-  },
-  () => true,
-);
