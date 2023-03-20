@@ -263,9 +263,9 @@ const FormRow = memo(function FormRow({
       />
       <div
         className={classNames(
-          'grid gap-2 items-center',
-          '@xs:!grid-rows-1 @sm:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
-          'grid-cols-1 grid-rows-2',
+          'grid items-center',
+          '@xs:gap-2 @xs:!grid-rows-1 @xs:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
+          'gap-0.5 grid-cols-1 grid-rows-2',
         )}
       >
         <Input
