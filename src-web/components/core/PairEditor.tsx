@@ -200,16 +200,6 @@ const FormRow = memo(function FormRow({
     [onChange, pairContainer.pair.name, pairContainer.pair.enabled],
   );
 
-  const nameEditorConfig = useMemo(
-    () => ({ useTemplating: true, autocomplete: nameAutocomplete }),
-    [nameAutocomplete],
-  );
-
-  const valueEditorConfig = useMemo(
-    () => ({ useTemplating: true, autocomplete: valueAutocomplete?.(pairContainer.pair.name) }),
-    [valueAutocomplete, pairContainer.pair.name],
-  );
-
   const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);
   const handleDelete = useCallback(() => onDelete?.(pairContainer), [onDelete, pairContainer]);
 
@@ -263,13 +253,15 @@ const FormRow = memo(function FormRow({
         <span className="w-1" />
       )}
       <Checkbox
-        disabled={isLast}
-        checked={!!pairContainer.pair.enabled}
-        onChange={handleChangeEnabled}
+        disabled={isLast || !pairContainer.pair.name}
+        checked={isLast || !pairContainer.pair.name ? false : !!pairContainer.pair.enabled}
         className={isLast ? '!opacity-disabled' : undefined}
+        onChange={handleChangeEnabled}
       />
       <Input
         hideLabel
+        require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
+        useTemplating
         containerClassName={classnames(isLast && 'border-dashed')}
         defaultValue={pairContainer.pair.name}
         label="Name"
@@ -277,7 +269,7 @@ const FormRow = memo(function FormRow({
         onChange={handleChangeName}
         onFocus={handleFocus}
         placeholder={namePlaceholder ?? 'name'}
-        useEditor={nameEditorConfig}
+        autocomplete={nameAutocomplete}
       />
       <Input
         hideLabel
@@ -288,7 +280,8 @@ const FormRow = memo(function FormRow({
         onChange={handleChangeValue}
         onFocus={handleFocus}
         placeholder={valuePlaceholder ?? 'value'}
-        useEditor={valueEditorConfig}
+        useTemplating
+        autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
       />
       {onDelete ? (
         <IconButton
