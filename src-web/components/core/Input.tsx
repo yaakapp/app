@@ -81,8 +81,8 @@ export function Input({
           'relative w-full rounded-md text-gray-900',
           'border border-gray-200 focus-within:border-focus',
           !isValid && 'border-invalid',
-          size === 'md' && 'h-9',
-          size === 'sm' && 'h-7',
+          size === 'md' && 'h-md',
+          size === 'sm' && 'h-sm',
         )}
       >
         {leftSlot}

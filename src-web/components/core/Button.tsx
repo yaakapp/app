@@ -43,14 +43,14 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     () =>
       classnames(
         className,
-        'outline-none',
+        'outline-none whitespace-nowrap',
         'border border-transparent focus-visible:border-blue-300',
         'rounded-md flex items-center',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
-        size === 'md' && 'h-9 px-3',
-        size === 'sm' && 'h-7 px-2.5 text-sm',
+        size === 'md' && 'h-md px-3',
+        size === 'sm' && 'h-sm px-2.5 text-sm',
       ),
     [color, size, justify, className],
   );

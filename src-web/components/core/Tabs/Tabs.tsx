@@ -128,6 +128,7 @@ export const TabContent = memo(function TabContent({
 }: TabContentProps) {
   return (
     <T.Content
+      tabIndex={-1}
       forceMount
       value={value}
       className={classnames(className, 'tab-content', 'w-full h-full overflow-auto')}

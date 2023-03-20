@@ -18,7 +18,7 @@ export function Checkbox({ checked, onChange, className, disabled }: Props) {
       onCheckedChange={onChange}
       className={classnames(
         className,
-        'flex-shrink-0 w-5 h-5 border border-gray-200 rounded',
+        'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',
         'focus:border-focus',
         'disabled:opacity-disabled',
         'outline-none',
@@ -28,7 +28,7 @@ export function Checkbox({ checked, onChange, className, disabled }: Props) {
     >
       <CB.Indicator className="flex items-center justify-center">
         {checked === 'indeterminate' && <Icon icon="dividerH" />}
-        {checked === true && <Icon icon="check" />}
+        {checked === true && <Icon size="sm" icon="check" />}
       </CB.Indicator>
     </CB.Root>
   );

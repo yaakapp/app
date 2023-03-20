@@ -1,4 +1,5 @@
 import type { CheckedState } from '@radix-ui/react-checkbox';
+import classNames from 'classnames';
 import classnames from 'classnames';
 import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
@@ -121,6 +122,7 @@ export const PairEditor = memo(function PairEditor({
     <div
       className={classnames(
         className,
+        '@container',
         'pb-6 grid',
         // NOTE: Add padding to top so overflow doesn't hide drop marker
         'py-1',
@@ -236,7 +238,7 @@ const FormRow = memo(function FormRow({
     <div
       ref={ref}
       className={classnames(
-        'pb-2 group grid grid-cols-[auto_minmax(0,1fr)_auto]',
+        'pb-2 group grid grid-cols-[auto_auto_minmax(0,1fr)_auto]',
         'grid-rows-1 items-center',
         !pairContainer.pair.enabled && 'opacity-60',
       )}
@@ -244,7 +246,7 @@ const FormRow = memo(function FormRow({
       {!isLast ? (
         <div
           className={classnames(
-            'py-2 h-9 w-3 flex items-center',
+            'py-2 h-7 w-3 flex items-center',
             'justify-center opacity-0 hover:opacity-100',
           )}
         >
@@ -253,15 +255,16 @@ const FormRow = memo(function FormRow({
       ) : (
         <span className="w-3" />
       )}
-      <HStack space={2} alignItems="center">
-        <Checkbox
-          disabled={isLast}
-          checked={isLast ? false : !!pairContainer.pair.enabled}
-          className={classnames(isLast && '!opacity-disabled')}
-          onChange={handleChangeEnabled}
-        />
+      <Checkbox
+        disabled={isLast}
+        checked={isLast ? false : !!pairContainer.pair.enabled}
+        className={classnames('mr-2', isLast && '!opacity-disabled')}
+        onChange={handleChangeEnabled}
+      />
+      <div className={classNames('flex flex-col @xs:flex-row gap-2 items-center')}>
         <Input
           hideLabel
+          size="sm"
           require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
           useTemplating
           containerClassName={classnames(isLast && 'border-dashed')}
@@ -275,6 +278,7 @@ const FormRow = memo(function FormRow({
         />
         <Input
           hideLabel
+          size="sm"
           containerClassName={classnames(isLast && 'border-dashed')}
           defaultValue={pairContainer.pair.value}
           label="Value"
@@ -285,7 +289,7 @@ const FormRow = memo(function FormRow({
           useTemplating
           autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
         />
-      </HStack>
+      </div>
       <IconButton
         aria-hidden={!onDelete}
         disabled={!onDelete}
