@@ -110,7 +110,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
               const lastRequest = requests[requests.length - 1];
               await createRequest.mutate({
                 name: 'Test Request',
-                sortPriority: lastRequest?.sortPriority ?? 0 + 1,
+                sortPriority: (lastRequest?.sortPriority ?? 0) + 1,
               });
             }}
           />
@@ -214,7 +214,6 @@ function SidebarItems({
 
 type SidebarItemProps = {
   className?: string;
-  buttonClassName?: string;
   requestId: string;
   requestName: string;
   workspaceId: string;
@@ -223,15 +222,7 @@ type SidebarItemProps = {
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  {
-    className,
-    buttonClassName,
-    requestName,
-    requestId,
-    workspaceId,
-    active,
-    sidebarWidth,
-  }: SidebarItemProps,
+  { className, requestName, requestId, workspaceId, active, sidebarWidth }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const deleteRequest = useDeleteRequest(requestId);
@@ -302,7 +293,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
           justify="start"
           onKeyDown={handleKeyDown}
           className={classnames(
-            buttonClassName,
             'w-full',
             editing && 'focus-within:border-focus',
             active
@@ -443,7 +433,6 @@ function CustomDragLayer({ sidebarWidth }: { sidebarWidth: number }) {
       <div className="absolute pointer-events-none" style={styles}>
         {itemType === ItemTypes.REQUEST && (
           <SidebarItem
-            buttonClassName="bg-violet-500/10"
             sidebarWidth={sidebarWidth}
             workspaceId={item.workspaceId}
             requestName={item.requestName}
