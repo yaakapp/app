@@ -335,6 +335,15 @@ async fn requests(
 }
 
 #[tauri::command]
+async fn get_request(
+    id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::HttpRequest, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_request(id, pool).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn responses(
     request_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -497,6 +506,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             greet,
             workspaces,
+            get_request,
             requests,
             send_request,
             create_request,

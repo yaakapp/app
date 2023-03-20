@@ -1,35 +1,26 @@
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { Button } from './core/Button';
-import type { DropdownMenuRadioItem } from './core/Dropdown';
-import { DropdownMenuRadio, DropdownMenuTrigger } from './core/Dropdown';
+import { RadioDropdown } from './core/RadioDropdown';
 
 type Props = {
   method: string;
   onChange: (method: string) => void;
 };
 
-const items = [
-  { label: 'GET', value: 'GET' },
-  { label: 'PUT', value: 'PUT' },
-  { label: 'POST', value: 'POST' },
-  { label: 'PATCH', value: 'PATCH' },
-  { label: 'DELETE', value: 'DELETE' },
-  { label: 'OPTIONS', value: 'OPTIONS' },
-  { label: 'HEAD', value: 'HEAD' },
-];
+const methodItems = ['GET', 'PUT', 'POST', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'].map((m) => ({
+  value: m,
+  label: m,
+}));
 
 export const RequestMethodDropdown = memo(function RequestMethodDropdown({
   method,
   onChange,
 }: Props) {
-  const handleChange = useCallback((i: DropdownMenuRadioItem) => onChange(i.value), [onChange]);
   return (
-    <DropdownMenuRadio onValueChange={handleChange} value={method.toUpperCase()} items={items}>
-      <DropdownMenuTrigger>
-        <Button type="button" size="sm" className="mx-0.5" justify="start">
-          {method.toUpperCase()}
-        </Button>
-      </DropdownMenuTrigger>
-    </DropdownMenuRadio>
+    <RadioDropdown value={method} items={methodItems} onChange={onChange}>
+      <Button type="button" size="sm" className="mx-0.5" justify="start">
+        {method.toUpperCase()}
+      </Button>
+    </RadioDropdown>
   );
 });

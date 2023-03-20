@@ -63,7 +63,7 @@ export function Input({
   };
 
   return (
-    <VStack>
+    <VStack className="w-full">
       <label
         htmlFor={id}
         className={classnames(

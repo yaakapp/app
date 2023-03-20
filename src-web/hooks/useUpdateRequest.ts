@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
-import { useRequest } from './useRequest';
+import { getRequest } from '../lib/store';
 
 export function useUpdateRequest(id: string | null) {
-  const request = useRequest(id);
   return useMutation<void, unknown, Partial<HttpRequest>>({
     mutationFn: async (patch) => {
+      const request = await getRequest(id);
       if (request == null) {
         throw new Error("Can't update a null request");
       }

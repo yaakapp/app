@@ -1,14 +1,8 @@
 import classnames from 'classnames';
-import type {
-  CSSProperties,
-  ForwardedRef,
-  KeyboardEvent,
-  MouseEvent as ReactMouseEvent,
-} from 'react';
+import type { ForwardedRef, KeyboardEvent, MouseEvent as ReactMouseEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
-import { useDrag, useDragLayer, useDrop } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -18,10 +12,9 @@ import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
-import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
+import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
-import { ScrollArea } from './core/ScrollArea';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
 import { DropMarker } from './DropMarker';
@@ -115,16 +108,13 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
             }}
           />
         </HStack>
-        <ScrollArea>
-          <VStack as="ul" className="relative py-3" draggable={false}>
-            <SidebarItems
-              sidebarWidth={sidebarWidth}
-              activeRequestId={activeRequest?.id}
-              requests={requests}
-            />
-            <CustomDragLayer sidebarWidth={sidebarWidth} />
-          </VStack>
-        </ScrollArea>
+        <VStack as="ul" className="relative py-3" draggable={false}>
+          <SidebarItems
+            sidebarWidth={sidebarWidth}
+            activeRequestId={activeRequest?.id}
+            requests={requests}
+          />
+        </VStack>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
           <ToggleThemeButton />
         </HStack>
@@ -190,23 +180,21 @@ function SidebarItems({
 
   return (
     <>
-      {requests.map((r, i) => {
-        return (
-          <Fragment key={r.id}>
-            {hoveredIndex === i && <DropMarker />}
-            <DraggableSidebarItem
-              key={r.id}
-              requestId={r.id}
-              requestName={r.name}
-              workspaceId={r.workspaceId}
-              active={r.id === activeRequestId}
-              sidebarWidth={sidebarWidth}
-              onMove={handleMove}
-              onEnd={handleEnd}
-            />
-          </Fragment>
-        );
-      })}
+      {requests.map((r, i) => (
+        <Fragment key={r.id}>
+          {hoveredIndex === i && <DropMarker />}
+          <DraggableSidebarItem
+            key={r.id}
+            requestId={r.id}
+            requestName={r.name}
+            workspaceId={r.workspaceId}
+            active={r.id === activeRequestId}
+            sidebarWidth={sidebarWidth}
+            onMove={handleMove}
+            onEnd={handleEnd}
+          />
+        </Fragment>
+      ))}
       {hoveredIndex === requests.length && <DropMarker />}
     </>
   );
@@ -317,20 +305,17 @@ const _SidebarItem = forwardRef(function SidebarItem(
           )}
         </Button>
         <Dropdown items={actionItems}>
-          <DropdownMenuTrigger
+          <IconButton
             className={classnames(
               'absolute right-0 top-0 transition-opacity opacity-0',
               'group-hover/item:opacity-100 focus-visible:opacity-100',
             )}
-          >
-            <IconButton
-              color="custom"
-              size="sm"
-              iconSize="sm"
-              title="Delete request"
-              icon="dotsH"
-            />
-          </DropdownMenuTrigger>
+            color="custom"
+            size="sm"
+            iconSize="sm"
+            title="Delete request"
+            icon="dotsH"
+          />
         </Dropdown>
       </div>
     </li>
@@ -375,11 +360,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     [onMove],
   );
 
-  const [{ isDragging }, connectDrag, preview] = useDrag<
-    DragItem,
-    unknown,
-    { isDragging: boolean }
-  >(
+  const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(
     () => ({
       type: ItemTypes.REQUEST,
       item: () => ({ id: requestId, requestName, workspaceId }),
@@ -389,8 +370,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     }),
     [onEnd],
   );
-
-  preview(getEmptyImage(), { captureDraggingState: true });
 
   connectDrag(ref);
   connectDrop(ref);
@@ -407,39 +386,3 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     />
   );
 });
-
-function CustomDragLayer({ sidebarWidth }: { sidebarWidth: number }) {
-  const { itemType, isDragging, item, currentOffset } = useDragLayer<any, DragItem>((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
-    currentOffset: monitor.getSourceClientOffset(),
-    isDragging: monitor.isDragging(),
-  }));
-
-  const styles = useMemo<CSSProperties>(() => {
-    if (currentOffset === null) {
-      return { display: 'none' };
-    }
-    const transform = `translate(${currentOffset.x}px, ${currentOffset.y}px)`;
-    return { transform, WebkitTransform: transform };
-  }, [currentOffset]);
-
-  if (!isDragging) {
-    return null;
-  }
-
-  return (
-    <div className="fixed !pointer-events-none inset-0">
-      <div className="absolute pointer-events-none" style={styles}>
-        {itemType === ItemTypes.REQUEST && (
-          <SidebarItem
-            sidebarWidth={sidebarWidth}
-            workspaceId={item.workspaceId}
-            requestName={item.requestName}
-            requestId={item.id}
-          />
-        )}
-      </div>
-    </div>
-  );
-}

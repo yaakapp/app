@@ -33,7 +33,7 @@ export function RequestPane({ fullHeight, className }: Props) {
         value: 'body',
         label: activeRequest?.bodyType ?? 'NoBody',
         options: {
-          onValueChange: (t) => updateRequest.mutate({ bodyType: t.value }),
+          onChange: (bodyType: string) => updateRequest.mutate({ bodyType }),
           value: activeRequest?.bodyType ?? 'nobody',
           items: [
             { label: 'No Body', value: 'nobody' },
@@ -60,7 +60,12 @@ export function RequestPane({ fullHeight, className }: Props) {
     <div className={classnames(className, 'py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
       {activeRequest && (
         <>
-          <UrlBar className="pl-3" request={activeRequest} />
+          <UrlBar
+            className="pl-3"
+            id={activeRequest.id}
+            url={activeRequest.url}
+            method={activeRequest.method}
+          />
           <Tabs
             value={activeTab.value}
             onChangeValue={activeTab.set}

@@ -8,7 +8,7 @@ import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpResponse } from '../lib/models';
 import { pluralize } from '../lib/pluralize';
-import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
+import { Dropdown } from './core/Dropdown';
 import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -85,6 +85,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                     {
                       label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
                       onSelect: deleteAllResponses.mutate,
+                      hidden: responses.length <= 1,
                       disabled: responses.length === 0,
                     },
                     '-----',
@@ -95,14 +96,12 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
                     })),
                   ]}
                 >
-                  <DropdownMenuTrigger>
-                    <IconButton
-                      title="Show response history"
-                      icon="triangleDown"
-                      className="ml-auto"
-                      size="sm"
-                    />
-                  </DropdownMenuTrigger>
+                  <IconButton
+                    title="Show response history"
+                    icon="triangleDown"
+                    className="ml-auto"
+                    size="sm"
+                  />
                 </Dropdown>
               </HStack>
             </>
