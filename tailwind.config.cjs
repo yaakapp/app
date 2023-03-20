@@ -6,7 +6,11 @@ module.exports = {
     "./src-web/**/*.{html,js,jsx,ts,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      opacity: {
+        'disabled': '0.3',
+      }
+    },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],
       "sans": ["Inter", "sans-serif"],
@@ -21,6 +25,7 @@ module.exports = {
       "5xl": "3.052rem"
     },
     colors: {
+      focus: "hsl(var(--color-blue-500) / 0.6)",
       highlight: "hsl(var(--color-gray-200) / 0.3)",
       transparent: "transparent",
       white: "hsl(0 100% 100% / <alpha-value>)",

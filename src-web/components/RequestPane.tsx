@@ -1,13 +1,11 @@
 import classnames from 'classnames';
 import { useCallback, useMemo } from 'react';
-import { act } from 'react-dom/test-utils';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader } from '../lib/models';
 import { Editor } from './core/Editor';
-import { PairEditor } from './core/PairEditor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { GraphQLEditor } from './GraphQLEditor';
@@ -26,7 +24,7 @@ export function RequestPane({ fullHeight, className }: Props) {
   const updateRequest = useUpdateRequest(activeRequestId);
   const activeTab = useKeyValue<string>({
     key: ['active_request_body_tab', activeRequestId ?? 'n/a'],
-    initialValue: 'body',
+    defaultValue: 'body',
   });
 
   const tabs: TabItem[] = useMemo(
@@ -40,6 +38,7 @@ export function RequestPane({ fullHeight, className }: Props) {
           items: [
             { label: 'No Body', value: 'nobody' },
             { label: 'JSON', value: 'json' },
+            { label: 'XML', value: 'xml' },
             { label: 'GraphQL', value: 'graphql' },
           ],
         },
@@ -57,53 +56,65 @@ export function RequestPane({ fullHeight, className }: Props) {
     [],
   );
 
-  if (activeRequest === null) return null;
-
   return (
     <div className={classnames(className, 'py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
-      <UrlBar className="pl-3" request={activeRequest} />
-      <Tabs
-        value={activeTab.value}
-        onChangeValue={activeTab.set}
-        tabs={tabs}
-        className="mt-2"
-        tabListClassName="pl-3"
-        label="Request body"
-      >
-        <TabContent value="headers">
-          <HeaderEditor
-            key={activeRequestId}
-            headers={activeRequest.headers}
-            onChange={handleHeadersChange}
-          />
-        </TabContent>
-        <TabContent value="params">
-          <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
-        </TabContent>
-        <TabContent value="body" className="pl-3 mt-1">
-          {activeRequest.bodyType === 'json' ? (
-            <Editor
-              key={activeRequest.id}
-              useTemplating
-              className="!bg-gray-50"
-              heightMode={fullHeight ? 'full' : 'auto'}
-              defaultValue={activeRequest.body ?? ''}
-              contentType="application/json"
-              onChange={handleBodyChange}
-              format={activeRequest.bodyType === 'json' ? (v) => tryFormatJson(v) : undefined}
-            />
-          ) : activeRequest.bodyType === 'graphql' ? (
-            <GraphQLEditor
-              key={activeRequest.id}
-              className="!bg-gray-50"
-              defaultValue={activeRequest?.body ?? ''}
-              onChange={handleBodyChange}
-            />
-          ) : (
-            <div className="h-full text-gray-400 flex items-center justify-center">No Body</div>
-          )}
-        </TabContent>
-      </Tabs>
+      {activeRequest && (
+        <>
+          <UrlBar className="pl-3" request={activeRequest} />
+          <Tabs
+            value={activeTab.value}
+            onChangeValue={activeTab.set}
+            tabs={tabs}
+            className="mt-2"
+            tabListClassName="pl-3"
+            label="Request body"
+          >
+            <TabContent value="headers">
+              <HeaderEditor
+                key={activeRequestId}
+                headers={activeRequest.headers}
+                onChange={handleHeadersChange}
+              />
+            </TabContent>
+            <TabContent value="params">
+              <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
+            </TabContent>
+            <TabContent value="body" className="pl-3 mt-1">
+              {activeRequest.bodyType === 'json' ? (
+                <Editor
+                  key={activeRequest.id}
+                  useTemplating
+                  className="!bg-gray-50"
+                  heightMode={fullHeight ? 'full' : 'auto'}
+                  defaultValue={activeRequest.body ?? ''}
+                  contentType="application/json"
+                  onChange={handleBodyChange}
+                  format={(v) => tryFormatJson(v)}
+                />
+              ) : activeRequest.bodyType === 'xml' ? (
+                <Editor
+                  key={activeRequest.id}
+                  useTemplating
+                  className="!bg-gray-50"
+                  heightMode={fullHeight ? 'full' : 'auto'}
+                  defaultValue={activeRequest.body ?? ''}
+                  contentType="text/xml"
+                  onChange={handleBodyChange}
+                />
+              ) : activeRequest.bodyType === 'graphql' ? (
+                <GraphQLEditor
+                  key={activeRequest.id}
+                  className="!bg-gray-50"
+                  defaultValue={activeRequest?.body ?? ''}
+                  onChange={handleBodyChange}
+                />
+              ) : (
+                <div className="h-full text-gray-400 flex items-center justify-center">No Body</div>
+              )}
+            </TabContent>
+          </Tabs>
+        </>
+      )}
     </div>
   );
 }

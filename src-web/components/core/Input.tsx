@@ -63,7 +63,7 @@ export function Input({
         className={classnames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
-          'border border-gray-200 focus-within:border-blue-400/40',
+          'border border-gray-200 focus-within:border-focus',
           size === 'md' && 'h-9',
           size === 'sm' && 'h-7',
         )}

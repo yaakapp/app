@@ -18,6 +18,8 @@ pub struct Workspace {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequestHeader {
+    #[serde(default)]
+    pub enabled: bool,
     pub name: String,
     pub value: String,
 }

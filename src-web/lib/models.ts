@@ -14,6 +14,7 @@ export interface Workspace extends BaseModel {
 export interface HttpHeader {
   name: string;
   value: string;
+  enabled?: boolean;
 }
 
 export interface HttpRequest extends BaseModel {

@@ -1,47 +1,53 @@
-import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import type { LanguageSupport } from '@codemirror/language';
+import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
+import { textLanguageName } from '../text/extension';
 import { placeholders } from '../widgets';
 import { completions } from './completion';
 import { parser as twigParser } from './twig';
 
-export function twig(base?: LanguageSupport, autocomplete?: GenericCompletionConfig) {
-  const language = mixedOrPlainLanguage(base);
-  const additionalCompletion =
-    autocomplete && base
-      ? [language.data.of({ autocomplete: genericCompletion(autocomplete) })]
-      : [];
+export function twig(base: LanguageSupport, autocomplete?: GenericCompletionConfig) {
+  const language = mixLanguage(base);
+  const additionalCompletion = autocomplete
+    ? [language.data.of({ autocomplete: genericCompletion(autocomplete) })]
+    : [];
   const completion = language.data.of({
     autocomplete: completions,
   });
-  const languageSupport = new LanguageSupport(language, [completion, ...additionalCompletion]);
 
   if (base) {
-    const completion2 = base.language.data.of({ autocomplete: completions });
-    const languageSupport2 = new LanguageSupport(base.language, [completion2]);
-    return [languageSupport, languageSupport2, base.support];
+    const completionBase = base.language.data.of({
+      autocomplete: completions,
+    });
+    return [
+      language,
+      completion,
+      completionBase,
+      base.support,
+      // placeholders,
+      ...additionalCompletion,
+    ];
   } else {
-    return [languageSupport];
+    return [language, completion, placeholders];
   }
 }
 
-function mixedOrPlainLanguage(base?: LanguageSupport): LRLanguage {
+function mixLanguage(base: LanguageSupport): LRLanguage {
   const name = 'twig';
-
-  if (!base) {
-    return LRLanguage.define({ name, parser: twigParser });
-  }
 
   const parser = twigParser.configure({
     wrap: parseMixed((node) => {
+      console.log('HELLO', node.type.name, node.type.isTop);
       // If the base language is text, we can overwrite at the top
-      if (base.language.name !== 'text' && !node.type.isTop) {
+      if (base.language.name !== textLanguageName && !node.type.isTop) {
         return null;
       }
+
       return {
         parser: base.language.parser,
-        overlay: (node) => node.type.name === 'Text' || node.type.name === 'Template',
+        overlay: (node) => node.type.name === 'Text',
       };
     }),
   });
