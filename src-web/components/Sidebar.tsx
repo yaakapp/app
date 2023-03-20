@@ -12,11 +12,10 @@ import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequests } from '../hooks/useRequests';
+import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
-import { clamp } from '../lib/clamp';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
@@ -32,21 +31,17 @@ interface Props {
   className?: string;
 }
 
-const MIN_WIDTH = 110;
-const INITIAL_WIDTH = 200;
-const MAX_WIDTH = 500;
-
 enum ItemTypes {
   REQUEST = 'request',
 }
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
-  const [isResizing, setIsRisizing] = useState<boolean>(false);
-  const width = useKeyValue<number>({ key: 'sidebar_width', initialValue: INITIAL_WIDTH });
+  const [isResizing, setIsResizing] = useState<boolean>(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const requests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
+  const width = useSidebarWidth();
 
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const unsub = () => {
@@ -56,28 +51,28 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     }
   };
 
-  const handleResizeReset = useCallback(() => {
-    width.set(INITIAL_WIDTH);
-  }, []);
+  const handleResizeStart = useCallback(
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      if (width.value === undefined) return;
 
-  const handleResizeStart = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-    unsub();
-    const mouseStartX = e.clientX;
-    const startWidth = width.value;
-    moveState.current = {
-      move: (e: MouseEvent) => {
-        const newWidth = clamp(startWidth + (e.clientX - mouseStartX), MIN_WIDTH, MAX_WIDTH);
-        width.set(newWidth);
-      },
-      up: () => {
-        unsub();
-        setIsRisizing(false);
-      },
-    };
-    document.documentElement.addEventListener('mousemove', moveState.current.move);
-    document.documentElement.addEventListener('mouseup', moveState.current.up);
-    setIsRisizing(true);
-  }, []);
+      unsub();
+      const mouseStartX = e.clientX;
+      const startWidth = width.value;
+      moveState.current = {
+        move: (e: MouseEvent) => {
+          width.set(startWidth + (e.clientX - mouseStartX));
+        },
+        up: () => {
+          unsub();
+          setIsResizing(false);
+        },
+      };
+      document.documentElement.addEventListener('mousemove', moveState.current.move);
+      document.documentElement.addEventListener('mouseup', moveState.current.up);
+      setIsResizing(true);
+    },
+    [width.value],
+  );
 
   const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
   const sidebarWidth = width.value - 1; // Minus 1 for the border
@@ -89,7 +84,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         aria-hidden
         className="group absolute z-10 right-0 w-1 top-0 bottom-0 cursor-ew-resize flex justify-end"
         onMouseDown={handleResizeStart}
-        onDoubleClick={handleResizeReset}
+        onDoubleClick={width.reset}
       >
         <div // drag-divider
           className={classnames(

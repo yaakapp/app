@@ -33,6 +33,7 @@
     "@radix-ui/react-scroll-area": "^1.0.2",
     "@radix-ui/react-separator": "^1.0.1",
     "@radix-ui/react-tabs": "^1.0.3",
+    "@tailwindcss/container-queries": "^0.1.0",
     "@tanstack/react-query": "^4.24.10",
     "@tanstack/react-query-devtools": "^4.26.1",
     "@tauri-apps/api": "^1.2.0",

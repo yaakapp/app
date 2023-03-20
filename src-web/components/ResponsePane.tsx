@@ -42,10 +42,6 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
     [activeResponse],
   );
 
-  if (activeResponse === null) {
-    return null;
-  }
-
   return (
     <div className={classnames(className, 'p-3')}>
       <div
@@ -61,57 +57,59 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
           alignItems="center"
           className="italic text-gray-700 text-sm w-full mb-1 flex-shrink-0 pl-2"
         >
-          {activeResponse && activeResponse.status > 0 && (
-            <div className="whitespace-nowrap">
-              <StatusColor statusCode={activeResponse.status}>
-                {activeResponse.status}
-                {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
-              </StatusColor>
-              &nbsp;&bull;&nbsp;
-              {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
-              {Math.round(activeResponse.body.length / 1000)} KB
-            </div>
-          )}
+          {activeResponse && (
+            <>
+              <div className="whitespace-nowrap">
+                <StatusColor statusCode={activeResponse.status}>
+                  {activeResponse.status}
+                  {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
+                </StatusColor>
+                &nbsp;&bull;&nbsp;
+                {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
+                {Math.round(activeResponse.body.length / 1000)} KB
+              </div>
 
-          <HStack alignItems="center" className="ml-auto h-8">
-            <Dropdown
-              items={[
-                {
-                  label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
-                  onSelect: toggleViewMode,
-                },
-                '-----',
-                {
-                  label: 'Clear Response',
-                  onSelect: deleteResponse.mutate,
-                  disabled: responses.length === 0,
-                },
-                {
-                  label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
-                  onSelect: deleteAllResponses.mutate,
-                  disabled: responses.length === 0,
-                },
-                '-----',
-                ...responses.slice(0, 10).map((r) => ({
-                  label: r.status + ' - ' + r.elapsed + ' ms',
-                  leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
-                  onSelect: () => setActiveResponseId(r.id),
-                })),
-              ]}
-            >
-              <DropdownMenuTrigger>
-                <IconButton
-                  title="Show response history"
-                  icon="triangleDown"
-                  className="ml-auto"
-                  size="sm"
-                />
-              </DropdownMenuTrigger>
-            </Dropdown>
-          </HStack>
+              <HStack alignItems="center" className="ml-auto h-8">
+                <Dropdown
+                  items={[
+                    {
+                      label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
+                      onSelect: toggleViewMode,
+                    },
+                    '-----',
+                    {
+                      label: 'Clear Response',
+                      onSelect: deleteResponse.mutate,
+                      disabled: responses.length === 0,
+                    },
+                    {
+                      label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
+                      onSelect: deleteAllResponses.mutate,
+                      disabled: responses.length === 0,
+                    },
+                    '-----',
+                    ...responses.slice(0, 10).map((r) => ({
+                      label: r.status + ' - ' + r.elapsed + ' ms',
+                      leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
+                      onSelect: () => setActiveResponseId(r.id),
+                    })),
+                  ]}
+                >
+                  <DropdownMenuTrigger>
+                    <IconButton
+                      title="Show response history"
+                      icon="triangleDown"
+                      className="ml-auto"
+                      size="sm"
+                    />
+                  </DropdownMenuTrigger>
+                </Dropdown>
+              </HStack>
+            </>
+          )}
         </HStack>
 
-        {activeResponse?.error ? (
+        {!activeResponse ? null : activeResponse?.error ? (
           <div className="p-1">
             <div className="text-white bg-red-500 px-3 py-3 rounded">{activeResponse.error}</div>
           </div>

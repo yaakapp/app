@@ -1,8 +1,10 @@
 import classnames from 'classnames';
+import { useMemo, useRef } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -17,8 +19,18 @@ export default function Workspace() {
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
-  const { width } = useWindowSize();
-  const isSideBySide = width > 900;
+
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const windowSize = useWindowSize();
+  const sidebarWidth = useSidebarWidth();
+
+  const mainContentWidth = useMemo(() => {
+    return mainContentRef.current?.getBoundingClientRect().width ?? 0;
+    // TODO: Use container query subscription instead of minitoring everything
+  }, [mainContentRef.current, windowSize, sidebarWidth.value]);
+
+  const isSideBySide = mainContentWidth > 700;
+
   if (activeWorkspace == null) {
     return null;
   }
@@ -26,7 +38,11 @@ export default function Workspace() {
   return (
     <div className="grid grid-cols-[auto_1fr] grid-rows-1 h-full text-gray-900">
       <Sidebar />
-      <div data-tauri-drag-region className="grid grid-rows-[auto_minmax(0,1fr)] h-full">
+      <div
+        ref={mainContentRef}
+        data-tauri-drag-region
+        className="grid grid-rows-[auto_minmax(0,1fr)] h-full"
+      >
         <HStack
           as={WindowDragRegion}
           justifyContent="center"
