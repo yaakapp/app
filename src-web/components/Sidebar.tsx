@@ -31,10 +31,14 @@ enum ItemTypes {
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const requests = useRequests();
+  const unorderedRequests = useRequests();
   const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest({ navigateAfter: true });
   const width = useSidebarWidth();
+  const requests = useMemo(
+    () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
+    [unorderedRequests],
+  );
 
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
   const unsub = () => {
@@ -124,7 +128,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 });
 
 function SidebarItems({
-  requests: unorderedRequests,
+  requests,
   activeRequestId,
   sidebarWidth,
 }: {
@@ -134,10 +138,6 @@ function SidebarItems({
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
-  const requests = useMemo(
-    () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
-    [unorderedRequests],
-  );
 
   const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
     (id, side) => {
