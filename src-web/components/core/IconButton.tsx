@@ -47,7 +47,7 @@ const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
       onClick={handleClick}
       className={classnames(
         className,
-        'text-gray-700 hover:text-gray-1000',
+        'flex-shrink-0 text-gray-700 hover:text-gray-1000',
         '!px-0',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-8',

@@ -18,7 +18,7 @@ export function Checkbox({ checked, onChange, className, disabled }: Props) {
       onCheckedChange={onChange}
       className={classnames(
         className,
-        'w-5 h-5 border border-gray-200 rounded',
+        'flex-shrink-0 w-5 h-5 border border-gray-200 rounded',
         'focus:border-focus',
         'disabled:opacity-disabled',
         'outline-none',
