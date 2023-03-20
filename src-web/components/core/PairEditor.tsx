@@ -1,4 +1,3 @@
-import type { CheckedState } from '@radix-ui/react-checkbox';
 import classNames from 'classnames';
 import classnames from 'classnames';
 import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -201,8 +200,7 @@ const FormRow = memo(function FormRow({
   const ref = useRef<HTMLDivElement>(null);
 
   const handleChangeEnabled = useMemo(
-    () => (enabled: CheckedState) =>
-      onChange({ id, pair: { ...pairContainer.pair, enabled: !!enabled } }),
+    () => (enabled: boolean) => onChange({ id, pair: { ...pairContainer.pair, enabled } }),
     [onChange, pairContainer.pair.name, pairContainer.pair.value],
   );
 

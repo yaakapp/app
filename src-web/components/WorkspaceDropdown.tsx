@@ -1,31 +1,32 @@
 import classnames from 'classnames';
-import { useCallback, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
-import { Dropdown, DropdownMenuTrigger } from './core/Dropdown';
+import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 
 type Props = {
   className?: string;
 };
 
-export function WorkspaceDropdown({ className }: Props) {
+export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: Props) {
   const navigate = useNavigate();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
+  const activeWorkspaceId = useActiveWorkspaceId();
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems = workspaces.map((w) => ({
       label: w.name,
-      value: w.id,
-      leftSlot: activeWorkspace?.id === w.id ? <Icon icon="check" /> : <Icon icon="empty" />,
+      leftSlot: activeWorkspaceId === w.id ? <Icon icon="check" /> : <Icon icon="empty" />,
       onSelect: () => {
-        if (w.id === activeWorkspace?.id) return;
+        if (w.id === activeWorkspaceId) return;
         navigate(`/workspaces/${w.id}`);
       },
     }));
@@ -40,15 +41,13 @@ export function WorkspaceDropdown({ className }: Props) {
         onSelect: () => createWorkspace.mutate({ name: 'New Workspace' }),
       },
     ];
-  }, [workspaces, activeWorkspace]);
+  }, [workspaces, activeWorkspaceId]);
 
   return (
     <Dropdown items={items}>
-      <DropdownMenuTrigger>
-        <Button size="sm" className={classnames(className, '!px-2 truncate')} forDropdown>
-          {activeWorkspace?.name ?? 'Unknown'}
-        </Button>
-      </DropdownMenuTrigger>
+      <Button size="sm" className={classnames(className, '!px-2 truncate')} forDropdown>
+        {activeWorkspace?.name ?? 'Unknown'}
+      </Button>
     </Dropdown>
   );
-}
+});

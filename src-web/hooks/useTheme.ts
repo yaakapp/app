@@ -10,7 +10,7 @@ import { useKeyValue } from './useKeyValue';
 export function useTheme() {
   const appearanceKv = useKeyValue<Appearance>({
     key: 'appearance',
-    initialValue: getAppearance(),
+    defaultValue: getAppearance(),
   });
 
   const themeChange = (appearance: Appearance) => {

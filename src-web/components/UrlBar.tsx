@@ -9,17 +9,16 @@ import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
 import { RequestMethodDropdown } from './RequestMethodDropdown';
 
-interface Props {
-  request: HttpRequest;
+type Props = Pick<HttpRequest, 'id' | 'url' | 'method'> & {
   className?: string;
-}
+};
 
-export const UrlBar = memo(function UrlBar({ request, className }: Props) {
-  const sendRequest = useSendRequest(request.id);
-  const updateRequest = useUpdateRequest(request.id);
+export const UrlBar = memo(function UrlBar({ id: requestId, url, method, className }: Props) {
+  const sendRequest = useSendRequest(requestId);
+  const updateRequest = useUpdateRequest(requestId);
   const handleMethodChange = useCallback((method: string) => updateRequest.mutate({ method }), []);
   const handleUrlChange = useCallback((url: string) => updateRequest.mutate({ url }), []);
-  const loading = useIsResponseLoading(request.id);
+  const loading = useIsResponseLoading(requestId);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
@@ -32,7 +31,7 @@ export const UrlBar = memo(function UrlBar({ request, className }: Props) {
   return (
     <form onSubmit={handleSubmit} className={classnames(className, 'w-full flex items-center')}>
       <Input
-        key={request.id}
+        key={requestId}
         hideLabel
         useTemplating
         contentType="url"
@@ -41,9 +40,9 @@ export const UrlBar = memo(function UrlBar({ request, className }: Props) {
         label="Enter URL"
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-0"
         onChange={handleUrlChange}
-        defaultValue={request.url}
+        defaultValue={url}
         placeholder="Enter a URL..."
-        leftSlot={<RequestMethodDropdown method={request.method} onChange={handleMethodChange} />}
+        leftSlot={<RequestMethodDropdown method={method} onChange={handleMethodChange} />}
         rightSlot={
           <IconButton
             title="Send Request"
