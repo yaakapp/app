@@ -31,12 +31,12 @@ export function RequestPane({ fullHeight, className }: Props) {
     () => [
       {
         value: 'body',
-        label: activeRequest?.bodyType ?? 'NoBody',
+        label: activeRequest?.bodyType ?? 'No Body',
         options: {
-          onChange: (bodyType: string) => updateRequest.mutate({ bodyType }),
-          value: activeRequest?.bodyType ?? 'nobody',
+          onChange: (bodyType: string | null) => updateRequest.mutate({ bodyType }),
+          value: activeRequest?.bodyType ?? null,
           items: [
-            { label: 'No Body', value: 'nobody' },
+            { label: 'No Body', value: null },
             { label: 'JSON', value: 'json' },
             { label: 'XML', value: 'xml' },
             { label: 'GraphQL', value: 'graphql' },
@@ -47,7 +47,7 @@ export function RequestPane({ fullHeight, className }: Props) {
       { value: 'headers', label: 'Headers' },
       { value: 'auth', label: 'Auth' },
     ],
-    [activeRequest?.bodyType],
+    [activeRequest?.bodyType ?? 'n/a'],
   );
 
   const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);

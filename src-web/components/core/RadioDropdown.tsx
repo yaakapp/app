@@ -5,12 +5,12 @@ import { Icon } from './Icon';
 
 export interface RadioDropdownItem {
   label: string;
-  value: string;
+  value: string | null;
 }
 
 export interface RadioDropdownProps {
-  value: string;
-  onChange: (bodyType: string) => void;
+  value: string | null;
+  onChange: (value: string | null) => void;
   items: RadioDropdownItem[];
   children: DropdownProps['children'];
 }

@@ -68,6 +68,7 @@ export const Tabs = memo(function Tabs({
           {tabs.map((t) => {
             const isActive = t.value === value;
             if (t.options && isActive) {
+              console.log('OPTIONS', t.options, t.options?.value);
               return (
                 <RadioDropdown
                   key={t.value}
