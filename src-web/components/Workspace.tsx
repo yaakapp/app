@@ -48,7 +48,7 @@ export default function Workspace() {
           className="pointer-events-none px-3 bg-gray-50 text-gray-900 border-b border-b-gray-200 pt-[1px]"
           alignItems="center"
         >
-          <div className="flex-1 -ml-2">
+          <div className="flex-1 -ml-2 pointer-events-none">
             <WorkspaceDropdown className="pointer-events-auto" />
           </div>
           <div className="flex-[2] text-center text-gray-700 text-sm truncate">
