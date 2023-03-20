@@ -41,7 +41,7 @@ export const Tabs = memo(function Tabs({
     for (const tab of tabs ?? []) {
       const v = tab.getAttribute('data-tab');
       if (v === value) {
-        tab.setAttribute('tabindex', '0');
+        tab.setAttribute('tabindex', '-1');
         tab.setAttribute('data-state', 'active');
       } else {
         tab.setAttribute('data-state', 'inactive');
@@ -67,7 +67,7 @@ export const Tabs = memo(function Tabs({
         <HStack space={1}>
           {tabs.map((t) => {
             const isActive = t.value === value;
-            if (t.options && isActive) {
+            if (t.options) {
               return (
                 <RadioDropdown
                   key={t.value}
@@ -78,7 +78,7 @@ export const Tabs = memo(function Tabs({
                   <Button
                     color="custom"
                     size="sm"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={classnames(
                       isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
                     )}
@@ -87,21 +87,6 @@ export const Tabs = memo(function Tabs({
                     <Icon icon="triangleDown" className="-mr-1.5" />
                   </Button>
                 </RadioDropdown>
-              );
-            } else if (t.options && !isActive) {
-              return (
-                <Button
-                  key={t.value}
-                  color="custom"
-                  size="sm"
-                  onClick={() => handleTabChange(t.value)}
-                  className={classnames(
-                    isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
-                  )}
-                >
-                  {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
-                  <Icon icon="triangleDown" className="-mr-1.5 opacity-40" />
-                </Button>
               );
             } else {
               return (
