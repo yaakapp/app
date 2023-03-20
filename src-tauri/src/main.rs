@@ -112,6 +112,9 @@ async fn send_request(
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
+        if h.enabled == false {
+            continue;
+        }
         let header_name = match HeaderName::from_bytes(h.name.as_bytes()) {
             Ok(n) => n,
             Err(e) => {
