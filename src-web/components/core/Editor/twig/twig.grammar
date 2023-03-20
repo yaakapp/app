@@ -1,19 +1,17 @@
-@top Template { (directive | Text)* }
+@top Template { Tag | Text }
 
-directive {
-  Insert
+@local tokens {
+  Close { "]}" }
+  @else Content
 }
 
-@skip {space} {
-  Insert { "${[" DirectiveContent "]}" }
+@skip {} {
+  Open { "${[" }
+  Tag { Open (Content)+ Close }
 }
 
 @tokens {
-  Text { ![$] Text? }
-  space { @whitespace+ }
-  DirectiveContent { ![\]}] DirectiveContent? }
-  @precedence { space DirectiveContent }
-  "${[" "]}"
+  Text { _ }
 }
 
 @external propSource highlight from "./highlight"

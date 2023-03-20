@@ -20,9 +20,9 @@ export function twig(base?: LanguageSupport, autocomplete?: GenericCompletionCon
   if (base) {
     const completion2 = base.language.data.of({ autocomplete: completions });
     const languageSupport2 = new LanguageSupport(base.language, [completion2]);
-    return [languageSupport, languageSupport2, placeholders, base.support];
+    return [languageSupport, languageSupport2, base.support];
   } else {
-    return [languageSupport, placeholders];
+    return [languageSupport];
   }
 }
 
