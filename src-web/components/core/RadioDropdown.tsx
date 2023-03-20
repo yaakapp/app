@@ -1,26 +1,21 @@
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { DropdownProps } from './Dropdown';
 import { Dropdown } from './Dropdown';
 import { Icon } from './Icon';
 
-export interface RadioDropdownItem {
+export interface RadioDropdownItem<T> {
   label: string;
-  value: string | null;
+  value: T;
 }
 
-export interface RadioDropdownProps {
-  value: string | null;
-  onChange: (value: string | null) => void;
-  items: RadioDropdownItem[];
+export interface RadioDropdownProps<T> {
+  value: T;
+  onChange: (value: T) => void;
+  items: RadioDropdownItem<T>[];
   children: DropdownProps['children'];
 }
 
-export const RadioDropdown = memo(function RadioDropdown({
-  value,
-  items,
-  onChange,
-  children,
-}: RadioDropdownProps) {
+export function RadioDropdown<T>({ value, items, onChange, children }: RadioDropdownProps<T>) {
   const dropdownItems = useMemo(
     () =>
       items.map(({ label, value: v }) => ({
@@ -32,4 +27,4 @@ export const RadioDropdown = memo(function RadioDropdown({
   );
 
   return <Dropdown items={dropdownItems}>{children}</Dropdown>;
-});
+}

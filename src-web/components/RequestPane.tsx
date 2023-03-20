@@ -27,7 +27,7 @@ export function RequestPane({ fullHeight, className }: Props) {
     defaultValue: 'body',
   });
 
-  const tabs: TabItem[] = useMemo(
+  const tabs: TabItem<string | null>[] = useMemo(
     () => [
       {
         value: 'body',
