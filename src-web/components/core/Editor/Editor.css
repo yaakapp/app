@@ -29,7 +29,7 @@
             @apply bg-transparent;
         }
         &.cm-focused .cm-selectionBackground {
-            @apply bg-violet-500/20;
+            @apply bg-selection;
         }
 
         /* Style gutters */

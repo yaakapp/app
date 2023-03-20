@@ -37,26 +37,22 @@ export default function Workspace() {
   return (
     <div className="grid grid-cols-[auto_1fr] grid-rows-1 h-full text-gray-900">
       <Sidebar />
-      <div
-        ref={mainContentRef}
-        data-tauri-drag-region
-        className="grid grid-rows-[auto_minmax(0,1fr)] h-full"
-      >
+      <div ref={mainContentRef} className="grid grid-rows-[auto_minmax(0,1fr)] h-full">
         <HStack
           as={WindowDragRegion}
           justifyContent="center"
-          className="pointer-events-none px-3 bg-gray-50 text-gray-900 border-b border-b-gray-200 pt-[1px]"
+          className="px-3 bg-gray-50 text-gray-900 border-b border-b-gray-200 pt-[1px]"
           alignItems="center"
         >
           <div className="flex-1 -ml-2 pointer-events-none">
             <WorkspaceDropdown className="pointer-events-auto" />
           </div>
-          <div className="flex-[2] text-center text-gray-700 text-sm truncate">
+          <div className="flex-[2] text-center text-gray-700 text-sm truncate pointer-events-none">
             {activeRequest?.name}
           </div>
-          <div className="flex-1 flex justify-end -mr-2">
+          <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
             <IconButton size="sm" title="" icon="magnifyingGlass" />
-            <RequestSettingsDropdown />
+            <RequestSettingsDropdown className="pointer-events-auto" />
           </div>
         </HStack>
         <div
