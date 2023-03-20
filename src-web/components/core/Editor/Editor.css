@@ -24,6 +24,11 @@
             @apply text-placeholder;
         }
 
+        .cm-scroller {
+            /* Inherit line-height from outside */
+            line-height: inherit;
+        }
+
         /* Don't show selection on blurred input */
         .cm-selectionBackground {
             @apply bg-transparent;
@@ -54,17 +59,15 @@
 
     &.cm-singleline {
         .cm-editor {
-            @apply h-full w-full;
+            @apply w-full h-auto;
         }
 
         .cm-scroller {
-            @apply font-mono flex text-[0.8rem];
-            align-items: center !important;
-            overflow: hidden !important;
+            @apply font-mono text-[0.8rem] overflow-hidden;
         }
 
         .cm-line {
-            @apply px-0;
+            @apply px-2 overflow-hidden;
         }
     }
 
@@ -96,11 +99,12 @@
 }
 
 .cm-editor .cm-gutterElement {
+    @apply flex items-center;
     transition: color var(--transition-duration);
 }
 
 .cm-editor .fold-gutter-icon {
-    @apply pt-[0.3em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
+    @apply pt-[0.25em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
 }
 
 .cm-editor .fold-gutter-icon::after {
@@ -109,7 +113,7 @@
 }
 
 .cm-editor .fold-gutter-icon[data-open] {
-    @apply pt-[0.4em] pl-[0.3em];
+    @apply pt-[0.38em] pl-[0.3em];
 }
 
 .cm-editor .fold-gutter-icon[data-open]::after {

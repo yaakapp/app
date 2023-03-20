@@ -9,9 +9,9 @@ export function useDeleteResponses(requestId?: string) {
       if (!requestId) return;
       await invoke('delete_all_responses', { requestId });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       if (!requestId) return;
-      queryClient.setQueryData(responsesQueryKey(requestId), []);
+      await queryClient.invalidateQueries(responsesQueryKey(requestId));
     },
   });
 }

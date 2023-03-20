@@ -29,7 +29,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   );
 
   return (
-    <form onSubmit={handleSubmit} className={classnames(className, 'w-full flex items-center')}>
+    <form onSubmit={handleSubmit} className={className}>
       <Input
         key={requestId}
         hideLabel

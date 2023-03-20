@@ -13,7 +13,11 @@ module.exports = {
       height: {
         'sm': '2rem',
         'md': '2.5rem',
-      }
+      },
+      lineHeight: {
+        'sm': '2rem',
+        'md': '2.5rem',
+      },
     },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],
