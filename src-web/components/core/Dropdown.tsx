@@ -29,7 +29,7 @@ export function Dropdown({ children, items }: DropdownProps) {
     () =>
       cloneElement(Children.only(children) as never, {
         ref,
-        'aria-has-popup': 'true',
+        'aria-haspopup': 'true',
         onClick: (e: MouseEvent<HTMLButtonElement>) => {
           e.preventDefault();
           e.stopPropagation();
