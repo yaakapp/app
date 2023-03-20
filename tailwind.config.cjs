@@ -26,6 +26,7 @@ module.exports = {
     },
     colors: {
       focus: "hsl(var(--color-blue-500) / 0.6)",
+      invalid: "hsl(var(--color-red-500))",
       highlight: "hsl(var(--color-gray-200) / 0.3)",
       transparent: "transparent",
       white: "hsl(0 100% 100% / <alpha-value>)",
