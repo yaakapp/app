@@ -46,7 +46,7 @@ export function Input({
   const id = `input-${name}`;
   const inputClassName = classnames(
     className,
-    '!bg-transparent pl-3 pr-2 min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
+    '!bg-transparent min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
     !!leftSlot && '!pl-0.5',
     !!rightSlot && '!pr-0.5',
   );
@@ -81,8 +81,8 @@ export function Input({
           'relative w-full rounded-md text-gray-900',
           'border border-gray-200 focus-within:border-focus',
           !isValid && '!border-invalid',
-          size === 'md' && 'h-md',
-          size === 'sm' && 'h-sm',
+          size === 'md' && 'h-md leading-md',
+          size === 'sm' && 'h-sm leading-sm',
         )}
       >
         {leftSlot}

@@ -20,10 +20,9 @@ export type DropdownItem =
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
   items: DropdownItem[];
-  ignoreClick?: boolean;
 }
 
-export function Dropdown({ children, items, ignoreClick }: DropdownProps) {
+export function Dropdown({ children, items }: DropdownProps) {
   const [open, setOpen] = useState<boolean>(false);
   const ref = useRef<HTMLButtonElement>(null);
   const child = useMemo(() => {
@@ -36,7 +35,6 @@ export function Dropdown({ children, items, ignoreClick }: DropdownProps) {
       onClick:
         existingChild.props?.onClick ??
         ((e: MouseEvent<HTMLButtonElement>) => {
-          console.log('CLICK INSIDE');
           e.preventDefault();
           e.stopPropagation();
           setOpen((o) => !o);

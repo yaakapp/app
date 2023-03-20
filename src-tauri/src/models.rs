@@ -142,6 +142,22 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     .await
 }
 
+pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, sqlx::Error> {
+    let workspace = get_workspace(id, pool)
+        .await
+        .expect("Failed to get request to delete");
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM http_requests
+            WHERE id = ?
+        "#,
+        id,
+    )
+        .execute(pool)
+        .await;
+    Ok(workspace)
+}
+
 pub async fn create_workspace(
     name: &str,
     description: &str,
@@ -395,7 +411,11 @@ pub async fn find_responses(
     .await
 }
 
-pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
+    let resp = get_response(id, pool)
+        .await
+        .expect("Failed to get response to delete");
+
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_responses
@@ -406,7 +426,7 @@ pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<(), sqlx::
     .execute(pool)
     .await;
 
-    Ok(())
+    Ok(resp)
 }
 
 pub async fn delete_all_responses(

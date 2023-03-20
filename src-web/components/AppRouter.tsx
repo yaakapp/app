@@ -1,12 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { routePaths } from '../hooks/useRoutes';
 
 const Workspaces = lazy(() => import('./Workspaces'));
 const Workspace = lazy(() => import('./Workspace'));
 const RouteError = lazy(() => import('./RouteError'));
-
-export const WORKSPACE_PATH = '/workspaces/:workspaceId';
-export const WORKSPACE_REQUEST_PATH = '/workspaces/:workspaceId/requests/:requestId';
 
 const router = createBrowserRouter([
   {
@@ -15,14 +13,21 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
+        element: <Navigate to={routePaths.workspaces()} replace={true} />,
+      },
+      {
+        path: routePaths.workspaces(),
         element: <Workspaces />,
       },
       {
-        path: WORKSPACE_PATH,
+        path: routePaths.workspace({ workspaceId: ':workspaceId' }),
         element: <Workspace />,
       },
       {
-        path: WORKSPACE_REQUEST_PATH,
+        path: routePaths.request({
+          workspaceId: ':workspaceId',
+          requestId: ':requestId',
+        }),
         element: <Workspace />,
       },
     ],
