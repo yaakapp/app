@@ -10,28 +10,20 @@ import { parser as twigParser } from './twig';
 
 export function twig(base: LanguageSupport, autocomplete?: GenericCompletionConfig) {
   const language = mixLanguage(base);
+  const completion = language.data.of({ autocomplete: completions });
+  const completionBase = base.language.data.of({ autocomplete: completions });
   const additionalCompletion = autocomplete
     ? [language.data.of({ autocomplete: genericCompletion(autocomplete) })]
     : [];
-  const completion = language.data.of({
-    autocomplete: completions,
-  });
 
-  if (base) {
-    const completionBase = base.language.data.of({
-      autocomplete: completions,
-    });
-    return [
-      language,
-      completion,
-      completionBase,
-      base.support,
-      // placeholders,
-      ...additionalCompletion,
-    ];
-  } else {
-    return [language, completion, placeholders];
-  }
+  return [
+    language,
+    completion,
+    completionBase,
+    base.support,
+    placeholders,
+    ...additionalCompletion,
+  ];
 }
 
 function mixLanguage(base: LanguageSupport): LRLanguage {
@@ -39,7 +31,6 @@ function mixLanguage(base: LanguageSupport): LRLanguage {
 
   const parser = twigParser.configure({
     wrap: parseMixed((node) => {
-      console.log('HELLO', node.type.name, node.type.isTop);
       // If the base language is text, we can overwrite at the top
       if (base.language.name !== textLanguageName && !node.type.isTop) {
         return null;
