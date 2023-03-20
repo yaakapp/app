@@ -54,12 +54,12 @@ export function Dropdown({ children, items }: DropdownProps) {
   }, [ref.current, open]);
 
   return (
-    <div className="pointer-events-auto">
+    <>
       {child}
       {open && triggerRect && (
         <Menu items={items} triggerRect={triggerRect} onClose={handleClose} />
       )}
-    </div>
+    </>
   );
 }
 
