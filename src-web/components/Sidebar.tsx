@@ -40,7 +40,9 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     [unorderedRequests],
   );
 
-  const moveState = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
+  const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
+    null,
+  );
   const unsub = () => {
     if (moveState.current !== null) {
       document.documentElement.removeEventListener('mousemove', moveState.current.move);
@@ -57,9 +59,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const startWidth = width.value;
       moveState.current = {
         move: (e: MouseEvent) => {
+          e.preventDefault(); // Prevent text selection and things
           width.set(startWidth + (e.clientX - mouseStartX));
         },
-        up: () => {
+        up: (e: MouseEvent) => {
+          e.preventDefault();
           unsub();
           setIsResizing(false);
         },
@@ -79,13 +83,13 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         aria-hidden
-        className="group absolute z-10 right-0 w-1 top-0 bottom-0 cursor-ew-resize flex justify-end"
+        className="group absolute z-10 right-0 w-2 top-0 bottom-0 cursor-ew-resize flex justify-end"
         onMouseDown={handleResizeStart}
         onDoubleClick={width.reset}
       >
         <div // drag-divider
           className={classnames(
-            'transition-colors w-0.5 group-hover:bg-gray-300 h-full pointer-events-none',
+            'transition-colors w-1 group-hover:bg-gray-300 h-full pointer-events-none',
             isResizing && '!bg-blue-500/70',
           )}
         />

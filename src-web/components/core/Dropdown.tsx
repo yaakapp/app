@@ -20,24 +20,30 @@ export type DropdownItem =
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
   items: DropdownItem[];
+  ignoreClick?: boolean;
 }
 
-export function Dropdown({ children, items }: DropdownProps) {
+export function Dropdown({ children, items, ignoreClick }: DropdownProps) {
   const [open, setOpen] = useState<boolean>(false);
   const ref = useRef<HTMLButtonElement>(null);
-  const child = useMemo(
-    () =>
-      cloneElement(Children.only(children) as never, {
-        ref,
-        'aria-haspopup': 'true',
-        onClick: (e: MouseEvent<HTMLButtonElement>) => {
+  const child = useMemo(() => {
+    const existingChild = Children.only(children);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const props: any = {
+      ...existingChild.props,
+      ref,
+      'aria-haspopup': 'true',
+      onClick:
+        existingChild.props?.onClick ??
+        ((e: MouseEvent<HTMLButtonElement>) => {
+          console.log('CLICK INSIDE');
           e.preventDefault();
           e.stopPropagation();
           setOpen((o) => !o);
-        },
-      }),
-    [children],
-  );
+        }),
+    };
+    return cloneElement(existingChild, props);
+  }, [children]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
