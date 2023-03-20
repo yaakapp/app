@@ -4,8 +4,6 @@ import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { Button } from './core/Button';
-import { Dropdown } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
