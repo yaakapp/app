@@ -18,6 +18,7 @@ export function HeaderEditor({ headers, onChange }: Props) {
     <PairEditor
       pairs={headers}
       onChange={onChange}
+      nameValidate={validateHttpHeader}
       nameAutocomplete={nameAutocomplete}
       valueAutocomplete={valueAutocomplete}
       namePlaceholder="Header-Name"
@@ -49,4 +50,12 @@ const valueAutocomplete = (headerName: string): GenericCompletionConfig | undefi
 const nameAutocomplete: PairEditorProps['nameAutocomplete'] = {
   minMatch: MIN_MATCH,
   options: headerNames.map((t, i) => ({ label: t, type: 'constant', boost: 99 - i })),
+};
+
+const validateHttpHeader = (v: string) => {
+  if (v === '') {
+    return true;
+  }
+
+  return v.match(/^[a-zA-Z0-9-_]+$/) !== null;
 };
