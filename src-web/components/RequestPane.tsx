@@ -80,7 +80,7 @@ export function RequestPane({ fullHeight, className }: Props) {
         <TabContent value="params">
           <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
         </TabContent>
-        <TabContent value="body" className="mt-1">
+        <TabContent value="body" className="pl-3 mt-1">
           {activeRequest.bodyType === 'json' ? (
             <Editor
               key={activeRequest.id}
