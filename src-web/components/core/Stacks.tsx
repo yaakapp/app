@@ -17,7 +17,11 @@ interface HStackProps extends BaseStackProps {
 
 export function HStack({ className, space, children, ...props }: HStackProps) {
   return (
-    <BaseStack className={classnames(className, 'flex-row', space && gapClasses[space])} {...props}>
+    <BaseStack
+      direction="row"
+      className={classnames(className, 'flex-row', space && gapClasses[space])}
+      {...props}
+    >
       {children}
     </BaseStack>
   );
@@ -30,7 +34,8 @@ export type VStackProps = BaseStackProps & {
 export function VStack({ className, space, children, ...props }: VStackProps) {
   return (
     <BaseStack
-      className={classnames(className, 'w-full h-full flex-col', space && gapClasses[space])}
+      direction="col"
+      className={classnames(className, 'w-full h-full', space && gapClasses[space])}
       {...props}
     >
       {children}
@@ -43,15 +48,25 @@ type BaseStackProps = HTMLAttributes<HTMLElement> & {
   space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';
+  direction?: 'row' | 'col';
 };
 
-function BaseStack({ className, alignItems, justifyContent, children, as }: BaseStackProps) {
+function BaseStack({
+  className,
+  direction,
+  alignItems,
+  justifyContent,
+  children,
+  as,
+}: BaseStackProps) {
   const Component = as ?? 'div';
   return (
     <Component
       className={classnames(
         className,
         'flex',
+        direction === 'row' && 'flex-row',
+        direction === 'col' && 'flex-col',
         alignItems === 'center' && 'items-center',
         alignItems === 'start' && 'items-start',
         justifyContent === 'start' && 'justify-start',

@@ -9,6 +9,10 @@ module.exports = {
     extend: {
       opacity: {
         'disabled': '0.3',
+      },
+      height: {
+        'sm': '2rem',
+        'md': '2.5rem',
       }
     },
     fontFamily: {
@@ -42,7 +46,9 @@ module.exports = {
       violet: color("violet")
     }
   },
-  plugins: []
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ]
 };
 
 function color(name) {
