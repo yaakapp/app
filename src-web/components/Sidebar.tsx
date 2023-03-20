@@ -309,7 +309,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
           className={classnames(
             buttonClassName,
             'w-full',
-            editing && 'focus-within:border-blue-400/40',
+            editing && 'focus-within:border-focus',
             active
               ? 'bg-gray-200/70 text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-gray-200/30',

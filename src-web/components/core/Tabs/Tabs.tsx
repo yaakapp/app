@@ -22,8 +22,8 @@ export type TabItem = {
 
 interface Props {
   label: string;
+  value?: string;
   onChangeValue: (value: string) => void;
-  value: string;
   tabs: TabItem[];
   tabListClassName?: string;
   className?: string;

@@ -33,7 +33,6 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphqlLanguageSupport } from 'cm6-graphql';
-import type { GenericCompletionOption } from './genericCompletion';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';

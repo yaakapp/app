@@ -182,7 +182,7 @@ const DropdownMenuItem = memo(function DropdownMenuItem({
     <D.Item
       asChild
       disabled={disabled}
-      className={classnames(className, disabled && 'opacity-30')}
+      className={classnames(className, disabled && 'opacity-disabled')}
       {...props}
     >
       <ItemInner leftSlot={leftSlot} rightSlot={rightSlot}>

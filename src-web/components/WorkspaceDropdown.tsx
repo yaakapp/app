@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
@@ -24,7 +24,10 @@ export function WorkspaceDropdown({ className }: Props) {
       label: w.name,
       value: w.id,
       leftSlot: activeWorkspace?.id === w.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-      onSelect: () => navigate(`/workspaces/${w.id}`),
+      onSelect: () => {
+        if (w.id === activeWorkspace?.id) return;
+        navigate(`/workspaces/${w.id}`);
+      },
     }));
 
     return [

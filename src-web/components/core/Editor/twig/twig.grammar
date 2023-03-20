@@ -1,17 +1,17 @@
-@top Template { Tag | Text }
+@top Template { (Tag | Text)* }
 
 @local tokens {
   Close { "]}" }
   @else Content
 }
 
-@skip {} {
+@skip { } {
   Open { "${[" }
   Tag { Open (Content)+ Close }
 }
 
 @tokens {
-  Text { _ }
+  Text { ![$] Text? }
 }
 
 @external propSource highlight from "./highlight"

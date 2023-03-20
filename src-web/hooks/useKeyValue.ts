@@ -16,16 +16,15 @@ export function keyValueQueryKey({
 export function useKeyValue<T extends string | number | boolean>({
   namespace = DEFAULT_NAMESPACE,
   key,
-  initialValue,
+  defaultValue,
 }: {
   namespace?: string;
   key: string | string[];
-  initialValue: T;
+  defaultValue: T;
 }) {
   const query = useQuery<T>({
-    initialData: initialValue,
     queryKey: keyValueQueryKey({ namespace, key }),
-    queryFn: async () => getKeyValue({ namespace, key, fallback: initialValue }),
+    queryFn: async () => getKeyValue({ namespace, key, fallback: defaultValue }),
   });
 
   const mutate = useMutation<T, unknown, T>({
@@ -34,6 +33,7 @@ export function useKeyValue<T extends string | number | boolean>({
 
   return {
     value: query.data,
+    isLoading: query.isLoading,
     set: (value: T) => mutate.mutate(value),
   };
 }

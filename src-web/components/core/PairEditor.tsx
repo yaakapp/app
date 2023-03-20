@@ -1,9 +1,11 @@
+import type { CheckedState } from '@radix-ui/react-checkbox';
 import classnames from 'classnames';
 import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
 import { DropMarker } from '../DropMarker';
+import { Checkbox } from './Checkbox';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -20,6 +22,7 @@ export type PairEditorProps = {
 };
 
 type Pair = {
+  enabled?: boolean;
   name: string;
   value: string;
 };
@@ -84,20 +87,17 @@ export const PairEditor = memo(function PairEditor({
     [hoveredIndex],
   );
 
-  const handleChangeHeader = useCallback((pair: PairContainer) => {
-    setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair)));
-  }, []);
+  const handleChange = useCallback(
+    (pair: PairContainer) =>
+      setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair))),
+    [],
+  );
 
-  // Ensure there's always at least one pair
-  useEffect(() => {
-    if (pairs.length === 0) {
-      setPairs((pairs) => [...pairs, newPairContainer()]);
-    }
-  }, [pairs]);
-
-  const handleDelete = useCallback((pair: PairContainer) => {
-    setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
-  }, []);
+  const handleDelete = useCallback(
+    (pair: PairContainer) =>
+      setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id)),
+    [],
+  );
 
   const handleFocus = useCallback(
     (pair: PairContainer) => {
@@ -108,6 +108,13 @@ export const PairEditor = memo(function PairEditor({
     },
     [pairs],
   );
+
+  // Ensure there's always at least one pair
+  useEffect(() => {
+    if (pairs.length === 0) {
+      setPairs((pairs) => [...pairs, newPairContainer()]);
+    }
+  }, [pairs]);
 
   return (
     <div
@@ -126,11 +133,11 @@ export const PairEditor = memo(function PairEditor({
             <FormRow
               pairContainer={p}
               isLast={isLast}
-              onChange={handleChangeHeader}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
               namePlaceholder={namePlaceholder}
               valuePlaceholder={valuePlaceholder}
+              onChange={handleChange}
               onFocus={handleFocus}
               onDelete={isLast ? undefined : handleDelete}
               onEnd={handleEnd}
@@ -177,14 +184,20 @@ const FormRow = memo(function FormRow({
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
 
+  const handleChangeEnabled = useMemo(
+    () => (enabled: CheckedState) =>
+      onChange({ id, pair: { ...pairContainer.pair, enabled: !!enabled } }),
+    [onChange, pairContainer.pair.name, pairContainer.pair.value],
+  );
+
   const handleChangeName = useMemo(
-    () => (name: string) => onChange({ id, pair: { name, value: pairContainer.pair.value } }),
-    [onChange, pairContainer.pair.value],
+    () => (name: string) => onChange({ id, pair: { ...pairContainer.pair, name } }),
+    [onChange, pairContainer.pair.value, pairContainer.pair.enabled],
   );
 
   const handleChangeValue = useMemo(
-    () => (value: string) => onChange({ id, pair: { value, name: pairContainer.pair.name } }),
-    [onChange, pairContainer.pair.name],
+    () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value } }),
+    [onChange, pairContainer.pair.name, pairContainer.pair.enabled],
   );
 
   const nameEditorConfig = useMemo(
@@ -231,7 +244,11 @@ const FormRow = memo(function FormRow({
   return (
     <div
       ref={ref}
-      className="pb-2 group grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_auto] grid-rows-1 gap-2 items-center"
+      className={classnames(
+        'pb-2 group grid grid-cols-[auto_auto_minmax(0,1fr)_minmax(0,1fr)_auto]',
+        'grid-rows-1 gap-2 items-center',
+        !pairContainer.pair.enabled && 'opacity-60',
+      )}
     >
       {!isLast ? (
         <div
@@ -245,6 +262,12 @@ const FormRow = memo(function FormRow({
       ) : (
         <span className="w-1" />
       )}
+      <Checkbox
+        disabled={isLast}
+        checked={!!pairContainer.pair.enabled}
+        onChange={handleChangeEnabled}
+        className={isLast ? '!opacity-disabled' : undefined}
+      />
       <Input
         hideLabel
         containerClassName={classnames(isLast && 'border-dashed')}
@@ -283,5 +306,5 @@ const FormRow = memo(function FormRow({
 });
 
 const newPairContainer = (pair?: Pair): PairContainer => {
-  return { pair: pair ?? { name: '', value: '' }, id: uuid() };
+  return { pair: pair ?? { name: '', value: '', enabled: true }, id: uuid() };
 };
