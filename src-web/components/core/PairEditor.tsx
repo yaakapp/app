@@ -261,7 +261,13 @@ const FormRow = memo(function FormRow({
         className={classnames('mr-2', isLast && '!opacity-disabled')}
         onChange={handleChangeEnabled}
       />
-      <div className={classNames('flex flex-col @xs:flex-row gap-2 items-center')}>
+      <div
+        className={classNames(
+          'grid gap-2 items-center',
+          '@xs:!grid-rows-1 @sm:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
+          'grid-cols-1 grid-rows-2',
+        )}
+      >
         <Input
           hideLabel
           size="sm"
