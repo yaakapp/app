@@ -136,9 +136,9 @@ async fn send_request(
         Method::from_bytes(req.method.to_uppercase().as_bytes()).expect("Failed to create method");
     let builder = client.request(m, url_string.to_string()).headers(headers);
 
-    let sendable_req_result = match req.body {
-        Some(b) => builder.body(b).build(),
-        None => builder.build(),
+    let sendable_req_result = match (req.body, req.body_type) {
+        (Some(b), Some(_)) => builder.body(b).build(),
+        _ => builder.build(),
     };
 
     let sendable_req = match sendable_req_result {
