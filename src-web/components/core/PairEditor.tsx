@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
+import { Helmet } from 'react-helmet-async';
 import { v4 as uuid } from 'uuid';
 import { DropMarker } from '../DropMarker';
 import { Checkbox } from './Checkbox';
@@ -151,7 +152,6 @@ export const PairEditor = memo(function PairEditor({
               onEnd={handleEnd}
               onMove={handleMove}
             />
-            {hoveredIndex === pairs.length && <DropMarker />}
           </Fragment>
         );
       })}
@@ -232,7 +232,7 @@ const FormRow = memo(function FormRow({
     [onMove],
   );
 
-  const [, connectDrag] = useDrag<PairContainer>(
+  const [, connectDrag] = useDrag(
     {
       type: ItemTypes.ROW,
       item: () => pairContainer,
