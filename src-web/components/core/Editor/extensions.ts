@@ -41,7 +41,7 @@ import { url } from './url/extension';
 export const myHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
-    color: '#757b93',
+    color: 'hsl(var(--color-gray-600))',
     fontStyle: 'italic',
   },
   {
