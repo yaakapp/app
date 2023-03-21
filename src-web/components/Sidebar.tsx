@@ -80,25 +80,13 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   return (
     <div className="relative">
-      <div
-        aria-hidden
-        className="group absolute z-10 right-0 w-2 top-0 bottom-0 cursor-ew-resize flex justify-end"
-        onMouseDown={handleResizeStart}
-        onDoubleClick={width.reset}
-      >
-        <div // drag-divider
-          className={classnames(
-            'transition-colors w-1 group-hover:bg-gray-300 h-full pointer-events-none',
-            isResizing && '!bg-blue-500/70',
-          )}
-        />
-      </div>
+      <ResizeBar isResizing={isResizing} onResizeStart={handleResizeStart} onReset={width.reset} />
       <div
         ref={sidebarRef}
         style={sidebarStyles}
         className={classnames(
           className,
-          'bg-gray-100 h-full border-r border-gray-200 relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
+          'bg-gray-100 h-full border-r border-highlight relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
         )}
       >
         <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
@@ -389,3 +377,29 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     />
   );
 });
+
+interface ResizeBarProps {
+  isResizing: boolean;
+  onResizeStart: (e: ReactMouseEvent<HTMLDivElement>) => void;
+  onReset: () => void;
+}
+
+function ResizeBar({ onResizeStart, onReset, isResizing }: ResizeBarProps) {
+  return (
+    <div
+      aria-hidden
+      className="group absolute z-10 right-0 w-3 top-0 bottom-0 flex justify-end cursor-ew-resize"
+      onMouseDown={onResizeStart}
+      onDoubleClick={onReset}
+    >
+      {/* Show global overlay with cursor style to ensure cursor remains the same when moving quickly */}
+      {isResizing && <div className="fixed inset-0 cursor-ew-resize" />}
+      <div // drag-divider
+        className={classnames(
+          'transition-colors w-1 group-hover:bg-highlight h-full pointer-events-none',
+          isResizing && '!bg-blue-500/70',
+        )}
+      />
+    </div>
+  );
+}
