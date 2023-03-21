@@ -24,7 +24,7 @@ export function RequestPane({ fullHeight, className }: Props) {
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
   const activeTab = useKeyValue<string>({
-    key: ['active_request_body_tab', activeRequestId ?? 'n/a'],
+    key: ['active_request_body_tab'],
     defaultValue: 'body',
   });
 
@@ -96,6 +96,7 @@ export function RequestPane({ fullHeight, className }: Props) {
                 <Editor
                   key={activeRequest.id}
                   useTemplating
+                  placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={activeRequest.body ?? ''}
@@ -107,6 +108,7 @@ export function RequestPane({ fullHeight, className }: Props) {
                 <Editor
                   key={activeRequest.id}
                   useTemplating
+                  placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={activeRequest.body ?? ''}

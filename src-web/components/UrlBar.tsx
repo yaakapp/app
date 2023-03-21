@@ -31,6 +31,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   return (
     <form onSubmit={handleSubmit} className={classnames('url-bar', className)}>
       <Input
+        size="sm"
         key={requestId}
         hideLabel
         useTemplating
@@ -41,9 +42,13 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-0"
         onChange={handleUrlChange}
         defaultValue={url}
-        placeholder="Enter a URL..."
+        placeholder="https://example.com"
         leftSlot={
-          <RequestMethodDropdown method={method} onChange={handleMethodChange} className="mx-0.5" />
+          <RequestMethodDropdown
+            method={method}
+            onChange={handleMethodChange}
+            className="mx-0.5 h-full my-1"
+          />
         }
         rightSlot={
           <IconButton

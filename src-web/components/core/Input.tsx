@@ -80,7 +80,7 @@ export function Input({
         className={classnames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
-          'border border-gray-200 focus-within:border-focus',
+          'border border-highlight focus-within:border-focus',
           !isValid && '!border-invalid',
           size === 'md' && 'h-md leading-md',
           size === 'sm' && 'h-sm leading-sm',
