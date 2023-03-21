@@ -148,7 +148,7 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
         .expect("Failed to get request to delete");
     let _ = sqlx::query!(
         r#"
-            DELETE FROM http_requests
+            DELETE FROM workspaces
             WHERE id = ?
         "#,
         id,
