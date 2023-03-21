@@ -47,8 +47,9 @@ export function Input({
   const inputClassName = classnames(
     className,
     '!bg-transparent min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
-    !!leftSlot && '!pl-0.5',
-    !!rightSlot && '!pr-0.5',
+    // Bump things over if the slots are occupied
+    leftSlot && 'pl-0.5 -ml-2',
+    rightSlot && 'pr-0.5 -mr-2',
   );
 
   const isValid = useMemo(() => {
