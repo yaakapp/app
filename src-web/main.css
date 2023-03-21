@@ -37,7 +37,7 @@
     .scrollbar-track,
     ::-webkit-scrollbar-corner,
     ::-webkit-scrollbar {
-        @apply bg-gray-300/10;
+        @apply bg-transparent;
     }
 
     ::-webkit-scrollbar-thumb {
