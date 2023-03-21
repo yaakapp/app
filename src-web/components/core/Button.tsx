@@ -59,14 +59,14 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     return (
       <Link ref={ref} to={to} className={classes} {...props}>
         {children}
-        {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
+        {forDropdown && <Icon icon="chevronDown" className="ml-1 -mr-1" />}
       </Link>
     );
   } else {
     return (
       <button ref={ref} className={classes} {...props}>
         {children}
-        {forDropdown && <Icon icon="triangleDown" className="ml-1 -mr-1" />}
+        {forDropdown && <Icon icon="chevronDown" size="sm" className="ml-1 -mr-1" />}
       </button>
     );
   }

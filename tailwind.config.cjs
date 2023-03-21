@@ -1,3 +1,8 @@
+const height = {
+  "sm": "2rem",
+  "md": "2.5rem"
+};
+
 /** @type {import("tailwindcss").Config} */
 module.exports = {
   darkMode: ["class", "[data-appearance=\"dark\"]"],
@@ -8,20 +13,14 @@ module.exports = {
   theme: {
     extend: {
       opacity: {
-        'disabled': '0.3',
+        "disabled": "0.3"
       },
-      height: {
-        'sm': '2rem',
-        'md': '2.5rem',
-      },
-      lineHeight: {
-        'sm': '2rem',
-        'md': '2.5rem',
-      },
+      height,
+      lineHeight: height
     },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],
-      "sans": ["Inter", "sans-serif"],
+      "sans": ["Inter", "sans-serif"]
     },
     fontSize: {
       sm: "0.9rem",
@@ -36,7 +35,8 @@ module.exports = {
       selection: "hsl(var(--color-violet-500) / 0.4)",
       focus: "hsl(var(--color-blue-500) / 0.6)",
       invalid: "hsl(var(--color-red-500))",
-      highlight: "hsl(var(--color-gray-200) / 0.3)",
+      highlight: "hsl(var(--color-gray-300) / 0.35)",
+      highlightSecondary: "hsl(var(--color-gray-300) / 0.2)",
       transparent: "transparent",
       white: "hsl(0 100% 100% / <alpha-value>)",
       black: "hsl(0 100% 0% / <alpha-value>)",
@@ -52,7 +52,7 @@ module.exports = {
     }
   },
   plugins: [
-    require('@tailwindcss/container-queries'),
+    require("@tailwindcss/container-queries")
   ]
 };
 

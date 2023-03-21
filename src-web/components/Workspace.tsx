@@ -39,7 +39,7 @@ export default function Workspace() {
         <HStack
           as={WindowDragRegion}
           justifyContent="center"
-          className="px-3 bg-gray-50 text-gray-900 border-b border-b-gray-200 pt-[1px]"
+          className="px-3 bg-gray-50 text-gray-900 border-b border-b-highlight pt-[1px]"
           alignItems="center"
         >
           <div className="flex-1 -ml-2 pointer-events-none">

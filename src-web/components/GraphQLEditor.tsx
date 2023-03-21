@@ -54,15 +54,17 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
         defaultValue={query ?? ''}
         onChange={handleChangeQuery}
         contentType="application/graphql"
+        placeholder="..."
         format={formatSdl}
-        placeholder={`query { }`}
         {...extraEditorProps}
       />
-      <Separator />
+      <Separator variant="primary" />
+      {/*<Separator variant="secondary" />*/}
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
         useTemplating
         heightMode="auto"
+        placeholder="{}"
         defaultValue={JSON.stringify(variables, null, 2)}
         onChange={handleChangeVariables}
         contentType="application/json"
