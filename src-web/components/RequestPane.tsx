@@ -4,7 +4,8 @@ import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpHeader } from '../lib/models';
+import type { HttpHeader, HttpRequest } from '../lib/models';
+import { HttpRequestBodyType } from '../lib/models';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
@@ -27,19 +28,25 @@ export function RequestPane({ fullHeight, className }: Props) {
     defaultValue: 'body',
   });
 
-  const tabs: TabItem<string | null>[] = useMemo(
+  const tabs: TabItem<HttpRequest['bodyType']>[] = useMemo(
     () => [
       {
         value: 'body',
         label: activeRequest?.bodyType ?? 'No Body',
         options: {
-          onChange: (bodyType: string | null) => updateRequest.mutate({ bodyType }),
+          onChange: (bodyType: HttpRequest['bodyType']) => {
+            const patch: Partial<HttpRequest> = { bodyType };
+            if (bodyType == HttpRequestBodyType.GraphQL) {
+              patch.method = 'POST';
+            }
+            updateRequest.mutate(patch);
+          },
           value: activeRequest?.bodyType ?? null,
           items: [
             { label: 'No Body', value: null },
-            { label: 'JSON', value: 'json' },
-            { label: 'XML', value: 'xml' },
-            { label: 'GraphQL', value: 'graphql' },
+            { label: 'JSON', value: HttpRequestBodyType.JSON },
+            { label: 'XML', value: HttpRequestBodyType.XML },
+            { label: 'GraphQL', value: HttpRequestBodyType.GraphQL },
           ],
         },
       },
@@ -85,7 +92,7 @@ export function RequestPane({ fullHeight, className }: Props) {
               <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
             </TabContent>
             <TabContent value="body" className="pl-3 mt-1">
-              {activeRequest.bodyType === 'json' ? (
+              {activeRequest.bodyType === HttpRequestBodyType.JSON ? (
                 <Editor
                   key={activeRequest.id}
                   useTemplating
@@ -96,7 +103,7 @@ export function RequestPane({ fullHeight, className }: Props) {
                   onChange={handleBodyChange}
                   format={(v) => tryFormatJson(v)}
                 />
-              ) : activeRequest.bodyType === 'xml' ? (
+              ) : activeRequest.bodyType === HttpRequestBodyType.XML ? (
                 <Editor
                   key={activeRequest.id}
                   useTemplating
@@ -106,7 +113,7 @@ export function RequestPane({ fullHeight, className }: Props) {
                   contentType="text/xml"
                   onChange={handleBodyChange}
                 />
-              ) : activeRequest.bodyType === 'graphql' ? (
+              ) : activeRequest.bodyType === HttpRequestBodyType.GraphQL ? (
                 <GraphQLEditor
                   key={activeRequest.id}
                   className="!bg-gray-50"

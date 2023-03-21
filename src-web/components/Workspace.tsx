@@ -26,7 +26,7 @@ export default function Workspace() {
     // TODO: Use container query subscription instead of minitoring everything
   }, [mainContentRef.current, windowSize, sidebarWidth.value]);
 
-  const isSideBySide = mainContentWidth > 700;
+  const isSideBySide = mainContentWidth > 900;
 
   if (activeWorkspace == null) {
     return null;

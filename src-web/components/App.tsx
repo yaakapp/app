@@ -1,5 +1,7 @@
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { MotionConfig } from 'framer-motion';
@@ -18,7 +20,25 @@ import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/mode
 import { convertDates } from '../lib/models';
 import { AppRouter } from './AppRouter';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      cacheTime: 1000 * 60 * 60 * 24, // 24 hours
+      networkMode: 'offlineFirst',
+    },
+  },
+});
+
+const localStoragePersister = createSyncStoragePersister({
+  storage: window.localStorage,
+  throttleTime: 1000,
+});
+
+persistQueryClient({
+  queryClient,
+  persister: localStoragePersister,
+  maxAge: 1000 * 60 * 60 * 24, // 24 hours
+});
 
 await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
   queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));

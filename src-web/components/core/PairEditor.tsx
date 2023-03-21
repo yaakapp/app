@@ -271,6 +271,7 @@ const FormRow = memo(function FormRow({
         onChange={handleChangeEnabled}
       />
       <div
+        onDragStart={(e) => e.preventDefault()}
         className={classnames(
           'grid items-center',
           '@xs:gap-2 @xs:!grid-rows-1 @xs:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
