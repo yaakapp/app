@@ -29,7 +29,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   );
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={classnames('url-bar', className)}>
       <Input
         key={requestId}
         hideLabel
@@ -42,7 +42,9 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
         onChange={handleUrlChange}
         defaultValue={url}
         placeholder="Enter a URL..."
-        leftSlot={<RequestMethodDropdown method={method} onChange={handleMethodChange} />}
+        leftSlot={
+          <RequestMethodDropdown method={method} onChange={handleMethodChange} className="mx-0.5" />
+        }
         rightSlot={
           <IconButton
             title="Send Request"
