@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 export type RouteParamsWorkspace = {
   workspaceId: string;
 };
@@ -24,15 +26,18 @@ export const routePaths = {
 };
 
 export function useRoutes() {
+  const navigate = useNavigate();
   return {
     navigate<T extends keyof typeof routePaths>(
       path: T,
-      params: Parameters<(typeof routePaths)[T]>[0],
+      ...params: Parameters<(typeof routePaths)[T]>
     ) {
       // Not sure how to make TS work here, but it's good from the
       // outside caller perspective.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      routePaths[path](params as any);
+      const resolvedPath = routePaths[path](...(params as any));
+      console.log('NAVIGATE TO', resolvedPath, 'WITH PARAMS', params, 'AND PATH', path);
+      navigate(resolvedPath);
     },
     paths: routePaths,
   };

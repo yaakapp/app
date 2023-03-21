@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { useNavigate } from 'react-router-dom';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useRoutes } from './useRoutes';
 import { workspacesQueryKey } from './useWorkspaces';
@@ -18,7 +17,7 @@ export function useDeleteWorkspace(id: string | null) {
       if (id === null) return;
       await queryClient.invalidateQueries(workspacesQueryKey());
       if (id === activeWorkspaceId) {
-        routes.navigate('workspace', { workspaceId: id });
+        routes.navigate('workspaces');
       }
     },
   });
