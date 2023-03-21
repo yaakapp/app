@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "tauri-dev": "YAAK_ENV=development tauri dev",
-    "tauri-build": "npm run build:icon && tauri build",
+    "tauri-build": "tauri build",
     "build": "npm run build:frontend",
     "dev": "vite dev",
     "lint": "tsc && eslint . --ext .ts,.tsx",

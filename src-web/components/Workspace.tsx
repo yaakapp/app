@@ -63,7 +63,7 @@ export default function Workspace() {
         >
           <RequestPane
             fullHeight={isSideBySide}
-            className={classnames(isSideBySide ? 'pr-1.5' : 'pr-3')}
+            className={classnames(isSideBySide ? 'pr-1.5' : 'pr-3 pb-0')}
           />
           <ResponsePane className={classnames(isSideBySide && 'pl-1.5')} />
         </div>
