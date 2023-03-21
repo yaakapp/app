@@ -3,6 +3,7 @@ import type { ForwardedRef, KeyboardEvent, MouseEvent as ReactMouseEvent } from 
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
+import { Helmet } from 'react-helmet-async';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -81,6 +82,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   return (
     <div className="relative">
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      {isResizing && (
+        <Helmet>
+          <html className="cursor-ew-resize" />
+        </Helmet>
+      )}
       <div
         aria-hidden
         className="group absolute z-10 right-0 w-2 top-0 bottom-0 cursor-ew-resize flex justify-end"
