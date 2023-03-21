@@ -16,6 +16,12 @@ export interface HttpHeader {
   enabled?: boolean;
 }
 
+export enum HttpRequestBodyType {
+  GraphQL = 'graphql',
+  JSON = 'application/json',
+  XML = 'text/xml',
+}
+
 export interface HttpRequest extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'http_request';
@@ -23,7 +29,7 @@ export interface HttpRequest extends BaseModel {
   name: string;
   url: string;
   body: string | null;
-  bodyType: string | null;
+  bodyType: HttpRequestBodyType | null;
   method: string;
   headers: HttpHeader[];
 }

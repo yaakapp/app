@@ -7,9 +7,7 @@ import type { RadioDropdownProps } from '../RadioDropdown';
 import { RadioDropdown } from '../RadioDropdown';
 import { HStack } from '../Stacks';
 
-import './Tabs.css';
-
-export type TabItem<T> = {
+export type TabItem<T = string> = {
   value: string;
   label: string;
   options?: Omit<RadioDropdownProps<T>, 'children'>;
@@ -37,14 +35,18 @@ export function Tabs<T>({
   const ref = useRef<HTMLDivElement | null>(null);
 
   const handleTabChange = (value: string) => {
-    const tabs = ref.current?.querySelectorAll(`[data-tab]`);
+    const tabs = ref.current?.querySelectorAll<HTMLDivElement>(`[data-tab]`);
     for (const tab of tabs ?? []) {
       const v = tab.getAttribute('data-tab');
       if (v === value) {
         tab.setAttribute('tabindex', '-1');
         tab.setAttribute('data-state', 'active');
+        tab.setAttribute('aria-hidden', 'false');
+        tab.style.display = 'block';
       } else {
         tab.setAttribute('data-state', 'inactive');
+        tab.setAttribute('aria-hidden', 'true');
+        tab.style.display = 'none';
       }
     }
     onChangeValue(value);

@@ -1,5 +1,0 @@
-.tab-content {
-    &[data-state="inactive"] {
-        @apply hidden;
-    }
-}

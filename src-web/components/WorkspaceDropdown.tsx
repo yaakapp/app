@@ -1,5 +1,6 @@
 import classnames from 'classnames';
 import { memo, useMemo } from 'react';
+import { act } from 'react-dom/test-utils';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
@@ -16,12 +17,12 @@ type Props = {
 };
 
 export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: Props) {
-  const routes = useRoutes();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspaceId = activeWorkspace?.id ?? null;
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const deleteWorkspace = useDeleteWorkspace(activeWorkspaceId);
+  const routes = useRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems = workspaces.map((w) => ({
@@ -52,7 +53,7 @@ export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: 
   return (
     <Dropdown items={items}>
       <Button size="sm" className={classnames(className, '!px-2 truncate')} forDropdown>
-        {activeWorkspace?.name ?? 'Unknown'}
+        {activeWorkspace?.name}
       </Button>
     </Dropdown>
   );
