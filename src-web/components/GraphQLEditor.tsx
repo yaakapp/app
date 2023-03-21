@@ -47,7 +47,7 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
   };
 
   return (
-    <div className="pb-1 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
+    <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
         key={queryKey.key}
         heightMode="auto"

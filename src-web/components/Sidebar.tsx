@@ -277,7 +277,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
   return (
     <li
       ref={ref}
-      className={classnames(className, 'block group/item px-2 pb-1')}
+      className={classnames(className, 'block group/item px-2 pb-0.5')}
       style={itemStyles}
     >
       <div className="relative w-full">
