@@ -20,7 +20,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
 }: Props) {
   return (
     <RadioDropdown value={method} items={methodItems} onChange={onChange}>
-      <Button size="sm" className={className}>
+      <Button size="xs" className={className}>
         {method.toUpperCase()}
       </Button>
     </RadioDropdown>

@@ -1,10 +1,20 @@
+import classnames from 'classnames';
 import React, { memo } from 'react';
 
+interface Props {
+  className?: string;
+}
+
 export const DropMarker = memo(
-  function DropMarker() {
+  function DropMarker({ className }: Props) {
     return (
-      <div className="relative w-full h-0 overflow-visible pointer-events-none">
-        <div className="absolute z-50 left-2 right-2 bottom-[1px] h-[0.2em] bg-blue-500/50 rounded-full" />
+      <div
+        className={classnames(
+          className,
+          'relative w-full h-0 overflow-visible pointer-events-none',
+        )}
+      >
+        <div className="absolute z-50 left-2 right-2 -bottom-[0.1rem] h-[0.2rem] bg-blue-500/50 rounded-full" />
       </div>
     );
   },
