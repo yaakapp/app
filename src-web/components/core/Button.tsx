@@ -17,7 +17,7 @@ const colorStyles = {
 export type ButtonProps = HTMLAttributes<HTMLElement> & {
   to?: string;
   color?: keyof typeof colorStyles;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'xs';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   forDropdown?: boolean;
@@ -51,6 +51,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
         justify === 'center' && 'justify-center',
         size === 'md' && 'h-md px-3',
         size === 'sm' && 'h-sm px-2.5 text-sm',
+        size === 'xs' && 'h-xs px-2 text-sm',
       ),
     [color, size, justify, className],
   );

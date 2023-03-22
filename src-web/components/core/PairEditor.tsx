@@ -125,9 +125,9 @@ export const PairEditor = memo(function PairEditor({
       className={classnames(
         className,
         '@container',
-        'pb-6 grid',
+        'pb-2 grid',
         // NOTE: Add padding to top so overflow doesn't hide drop marker
-        'py-1',
+        'pt-1',
       )}
     >
       {pairs.map((p, i) => {
@@ -137,6 +137,7 @@ export const PairEditor = memo(function PairEditor({
             {hoveredIndex === i && <DropMarker />}
             <FormRow
               pairContainer={p}
+              className="py-1"
               isLast={isLast}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
@@ -162,6 +163,7 @@ enum ItemTypes {
 }
 
 type FormRowProps = {
+  className?: string;
   pairContainer: PairContainer;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
@@ -180,6 +182,7 @@ type FormRowProps = {
 >;
 
 const FormRow = memo(function FormRow({
+  className,
   pairContainer,
   onChange,
   onDelete,
@@ -247,7 +250,8 @@ const FormRow = memo(function FormRow({
     <div
       ref={ref}
       className={classnames(
-        'pb-2 group grid grid-cols-[auto_auto_minmax(0,1fr)_auto]',
+        className,
+        'group grid grid-cols-[auto_auto_minmax(0,1fr)_auto]',
         'grid-rows-1 items-center',
         !pairContainer.pair.enabled && 'opacity-60',
       )}

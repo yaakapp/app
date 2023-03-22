@@ -32,7 +32,7 @@ const lightTheme: AppTheme = {
         gray: '#7f8fb0',
         red: '#ec3f87',
         orange: '#ff8b00',
-        yellow: '#deda00',
+        yellow: '#e7cf24',
         green: '#00d365',
         blue: '#0090ff',
         pink: '#f670f6',
