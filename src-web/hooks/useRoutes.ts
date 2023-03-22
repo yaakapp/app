@@ -36,7 +36,6 @@ export function useRoutes() {
       // outside caller perspective.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resolvedPath = routePaths[path](...(params as any));
-      console.log('NAVIGATE TO', resolvedPath, 'WITH PARAMS', params, 'AND PATH', path);
       navigate(resolvedPath);
     },
     paths: routePaths,

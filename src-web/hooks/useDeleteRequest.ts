@@ -8,6 +8,7 @@ export function useDeleteRequest(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<void, string>({
     mutationFn: async () => {
+      console.log('DELETE REQUEST2', id, workspaceId);
       if (id === null) return;
       await invoke('delete_request', { requestId: id });
     },

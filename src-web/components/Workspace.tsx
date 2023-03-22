@@ -50,7 +50,14 @@ export default function Workspace() {
           </div>
           <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
             <IconButton size="sm" title="" icon="magnifyingGlass" />
-            <RequestSettingsDropdown className="pointer-events-auto" />
+            <RequestSettingsDropdown>
+              <IconButton
+                size="sm"
+                title="Request Options"
+                icon="gear"
+                className="pointer-events-auto"
+              />
+            </RequestSettingsDropdown>
           </div>
         </HStack>
         <div

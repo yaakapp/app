@@ -5,19 +5,17 @@ import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useCreateRequest } from '../hooks/useCreateRequest';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useRequests } from '../hooks/useRequests';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
-import { Dropdown } from './core/Dropdown';
-import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { WindowDragRegion } from './core/WindowDragRegion';
 import { DropMarker } from './DropMarker';
+import { RequestSettingsDropdown } from './RequestSettingsDropdown';
 import { ToggleThemeButton } from './ToggleThemeButton';
 
 interface Props {
@@ -204,7 +202,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
   { className, requestName, requestId, workspaceId, active, sidebarWidth }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
-  const deleteRequest = useDeleteRequest(requestId);
   const updateRequest = useUpdateRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
 
@@ -242,17 +239,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
       }
     },
     [active],
-  );
-
-  const actionItems = useMemo(
-    () => [
-      {
-        label: 'Delete Request',
-        onSelect: deleteRequest.mutate,
-        leftSlot: <Icon icon="trash" />,
-      },
-    ],
-    [],
   );
 
   return (
@@ -295,19 +281,18 @@ const _SidebarItem = forwardRef(function SidebarItem(
             </span>
           )}
         </Button>
-        <Dropdown items={actionItems}>
+        <RequestSettingsDropdown requestId={requestId}>
           <IconButton
+            color="custom"
+            size="sm"
+            title="Request Options"
+            icon="dotsH"
             className={classnames(
               'absolute right-0 top-0 transition-opacity opacity-0',
               'group-hover/item:opacity-100 focus-visible:opacity-100',
             )}
-            color="custom"
-            size="sm"
-            iconSize="sm"
-            title="Delete request"
-            icon="dotsH"
           />
-        </Dropdown>
+        </RequestSettingsDropdown>
       </div>
     </li>
   );

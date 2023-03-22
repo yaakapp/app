@@ -1,11 +1,11 @@
 import { defaultKeymap } from '@codemirror/commands';
+import type { Extension } from '@codemirror/state';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
 import { useEffect, useMemo, useRef } from 'react';
-import { useUnmount } from 'react-use';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -18,6 +18,7 @@ export interface _EditorProps {
   className?: string;
   heightMode?: 'auto' | 'full';
   contentType?: string;
+  languageExtension?: Extension;
   autoFocus?: boolean;
   defaultValue?: string;
   placeholder?: string;
@@ -38,6 +39,7 @@ export function _Editor({
   placeholder,
   useTemplating,
   defaultValue,
+  languageExtension,
   onChange,
   onFocus,
   className,
@@ -47,12 +49,6 @@ export function _Editor({
 }: _EditorProps) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-
-  // Unmount the editor
-  useUnmount(() => {
-    cm.current?.view.destroy();
-    cm.current = null;
-  });
 
   // Use ref so we can update the onChange handler without re-initializing the editor
   const handleChange = useRef<_EditorProps['onChange']>(onChange);
@@ -87,9 +83,11 @@ export function _Editor({
   // Initialize the editor when ref mounts
   useEffect(() => {
     if (wrapperRef.current === null || cm.current !== null) return;
+    let view: EditorView;
     try {
       const languageCompartment = new Compartment();
-      const langExt = getLanguageExtension({ contentType, useTemplating, autocomplete });
+      const langExt =
+        languageExtension ?? getLanguageExtension({ contentType, useTemplating, autocomplete });
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
         extensions: [
@@ -106,18 +104,18 @@ export function _Editor({
           }),
         ],
       });
-      const view = new EditorView({ state, parent: wrapperRef.current });
+      view = new EditorView({ state, parent: wrapperRef.current });
       cm.current = { view, languageCompartment };
+      syncGutterBg({ parent: wrapperRef.current, className });
       if (autoFocus) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
-  }, [wrapperRef.current]);
-
-  useEffect(() => {
-    if (wrapperRef.current === null) return;
-    syncGutterBg({ parent: wrapperRef.current, className });
-  }, [className]);
+    return () => {
+      view.destroy();
+      cm.current = null;
+    };
+  }, [wrapperRef.current, languageExtension]);
 
   const cmContainer = useMemo(
     () => (

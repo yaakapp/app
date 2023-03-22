@@ -58,25 +58,24 @@ async fn migrate_db(
 }
 
 #[tauri::command]
-async fn send_request(
+async fn send_ephemeral_request(
+    request: models::HttpRequest,
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-    request_id: &str,
-) -> Result<String, String> {
+) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
+    let response = models::HttpResponse::default();
+    return actually_send_ephemeral_request(request, response, app_handle, pool).await;
+}
 
-    let req = models::get_request(request_id, pool)
-        .await
-        .expect("Failed to get request");
-
-    let mut response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
-        .await
-        .expect("Failed to create response");
-    app_handle.emit_all("updated_response", &response).unwrap();
-
+async fn actually_send_ephemeral_request(
+    request: models::HttpRequest,
+    mut response: models::HttpResponse,
+    app_handle: AppHandle<Wry>,
+    pool: &Pool<Sqlite>,
+) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
-
-    let mut url_string = req.url.to_string();
+    let mut url_string = request.url.to_string();
 
     let mut variables = HashMap::new();
     variables.insert("PROJECT_ID", "project_123");
@@ -108,7 +107,7 @@ async fn send_request(
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
     headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
 
-    for h in req.headers.0 {
+    for h in request.headers.0 {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -133,10 +132,10 @@ async fn send_request(
     }
 
     let m =
-        Method::from_bytes(req.method.to_uppercase().as_bytes()).expect("Failed to create method");
+        Method::from_bytes(request.method.to_uppercase().as_bytes()).expect("Failed to create method");
     let builder = client.request(m, url_string.to_string()).headers(headers);
 
-    let sendable_req_result = match (req.body, req.body_type) {
+    let sendable_req_result = match (request.body, request.body_type) {
         (Some(b), Some(_)) => builder.body(b).build(),
         _ => builder.build(),
     };
@@ -173,14 +172,35 @@ async fn send_request(
             response.url = v.url().to_string();
             response.body = v.text().await.expect("Failed to get body");
             response.elapsed = start.elapsed().as_millis() as i64;
-            response = models::update_response(response, pool)
+            response = models::update_response_if_id(response, pool)
                 .await
                 .expect("Failed to update response");
             app_handle.emit_all("updated_response", &response).unwrap();
-            Ok(response.id)
+            Ok(response)
         }
         Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
+}
+
+#[tauri::command]
+async fn send_request(
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    request_id: &str,
+) -> Result<(), String> {
+    let pool = &*db_instance.lock().await;
+
+    let req = models::get_request(request_id, pool)
+        .await
+        .expect("Failed to get request");
+
+    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
+        .await
+        .expect("Failed to create response");
+    app_handle.emit_all("updated_response", &response).unwrap();
+
+    actually_send_ephemeral_request(req, response, app_handle, pool).await?;
+    Ok(())
 }
 
 async fn response_err(
@@ -188,13 +208,13 @@ async fn response_err(
     error: String,
     app_handle: AppHandle<Wry>,
     pool: &Pool<Sqlite>,
-) -> Result<String, String> {
+) -> Result<models::HttpResponse, String> {
     response.error = Some(error.clone());
-    response = models::update_response(response, pool)
+    response = models::update_response_if_id(response, pool)
         .await
         .expect("Failed to update response");
     app_handle.emit_all("updated_response", &response).unwrap();
-    Ok(response.id)
+    Ok(response)
 }
 
 #[tauri::command]
@@ -266,6 +286,20 @@ async fn create_request(
         .unwrap();
 
     Ok(created_request.id)
+}
+
+#[tauri::command]
+async fn duplicate_request(
+    id: &str,
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<String, String> {
+    let pool = &*db_instance.lock().await;
+    let request = models::duplicate_request(id, pool).await.expect("Failed to duplicate request");
+    app_handle
+        .emit_all("updated_request", &request)
+        .unwrap();
+    Ok(request.id)
 }
 
 #[tauri::command]
@@ -458,7 +492,6 @@ fn main() {
             let p = dir.join("db.sqlite");
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
-            println!("DB PATH: {}", p_string);
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
                     .connect(url.as_str())
@@ -501,7 +534,7 @@ fn main() {
                     } else {
                         event.window().open_devtools();
                     }
-                },
+                }
                 _ => {}
             };
         })
@@ -525,6 +558,8 @@ fn main() {
             get_request,
             requests,
             send_request,
+            send_ephemeral_request,
+            duplicate_request,
             create_request,
             create_workspace,
             delete_workspace,

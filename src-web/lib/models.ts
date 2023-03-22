@@ -53,20 +53,3 @@ export interface HttpResponse extends BaseModel {
   readonly url: string;
   readonly headers: HttpHeader[];
 }
-
-export function convertDates<T extends Pick<BaseModel, 'createdAt' | 'updatedAt'>>(m: T): T {
-  return {
-    ...m,
-    createdAt: convertDate(m.createdAt),
-    updatedAt: convertDate(m.updatedAt),
-  };
-}
-
-function convertDate(d: string | Date): Date {
-  if (typeof d !== 'string') {
-    return d;
-  }
-  const date = new Date(d);
-  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - userTimezoneOffset);
-}

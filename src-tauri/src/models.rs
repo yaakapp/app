@@ -48,7 +48,7 @@ pub struct HttpResponseHeader {
     pub value: String,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpResponse {
     pub id: String,
@@ -179,6 +179,35 @@ pub async fn create_workspace(
 
     get_workspace(&id, pool).await
 }
+
+pub async fn duplicate_request(
+    id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<HttpRequest, sqlx::Error> {
+    let existing = get_request(id, pool).await.expect("Failed to get request to duplicate");
+    // TODO: Figure out how to make this better
+    let b2;
+    let body = match existing.body {
+        Some(b) => {
+            b2 = b;
+            Some(b2.as_str())
+        }
+        None => None,
+    };
+    upsert_request(
+        None,
+        existing.workspace_id.as_str(),
+        existing.name.as_str(),
+        existing.method.as_str(),
+        body,
+        existing.body_type,
+        existing.url.as_str(),
+        existing.headers.0,
+        existing.sort_priority,
+        pool,
+    ).await
+}
+
 
 pub async fn upsert_request(
     id: Option<&str>,
@@ -348,6 +377,16 @@ pub async fn create_response(
     .expect("Failed to insert new response");
 
     get_response(&id, pool).await
+}
+
+pub async fn update_response_if_id(
+    response: HttpResponse,
+    pool: &Pool<Sqlite>,
+) -> Result<HttpResponse, sqlx::Error> {
+    if response.id == "" {
+        return Ok(response);
+    }
+    return update_response(response, pool).await;
 }
 
 pub async fn update_response(

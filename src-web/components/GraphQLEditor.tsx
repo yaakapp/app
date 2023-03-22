@@ -1,11 +1,18 @@
+import type { Extension } from '@codemirror/state';
+import { graphql } from 'cm6-graphql';
 import { formatSdl } from 'format-graphql';
-import { useMemo } from 'react';
+import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
+import { useEffect, useMemo, useState } from 'react';
 import { useUniqueKey } from '../hooks/useUniqueKey';
-import { Separator } from './core/Separator';
+import type { HttpRequest } from '../lib/models';
+import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import type { EditorProps } from './core/Editor';
 import { Editor } from './core/Editor';
+import { Separator } from './core/Separator';
 
-type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'>;
+type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'> & {
+  baseRequest: HttpRequest;
+};
 
 interface GraphQLBody {
   query: string;
@@ -13,7 +20,7 @@ interface GraphQLBody {
   operationName?: string;
 }
 
-export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: Props) {
+export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
   const queryKey = useUniqueKey();
   const { query, variables } = useMemo<GraphQLBody>(() => {
     if (!defaultValue) {
@@ -46,12 +53,29 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
     }
   };
 
+  const [graphqlExtension, setGraphqlExtension] = useState<Extension>();
+
+  useEffect(() => {
+    const body = JSON.stringify({
+      query: getIntrospectionQuery(),
+      operationName: 'IntrospectionQuery',
+    });
+    const req: HttpRequest = { ...baseRequest, body, id: '' };
+    sendEphemeralRequest(req).then((response) => {
+      console.log('RESPONSE', response.body);
+      const { data } = JSON.parse(response.body);
+      const schema = buildClientSchema(data);
+      setGraphqlExtension(graphql(schema, {}));
+    });
+  }, [baseRequest.url]);
+
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
         key={queryKey.key}
         heightMode="auto"
         defaultValue={query ?? ''}
+        languageExtension={graphqlExtension}
         onChange={handleChangeQuery}
         contentType="application/graphql"
         placeholder="..."
@@ -59,7 +83,6 @@ export function GraphQLEditor({ defaultValue, onChange, ...extraEditorProps }: P
         {...extraEditorProps}
       />
       <Separator variant="primary" />
-      {/*<Separator variant="secondary" />*/}
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
         useTemplating
