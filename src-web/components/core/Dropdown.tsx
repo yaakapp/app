@@ -162,6 +162,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       >
         {containerStyles && (
           <VStack
+            space={0.5}
             ref={initMenu}
             style={menuStyles}
             tabIndex={-1}

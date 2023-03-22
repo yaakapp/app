@@ -1,33 +1,34 @@
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import type { HTMLAttributes, ReactElement } from 'react';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
-import { IconButton } from './core/IconButton';
 
 interface Props {
-  className?: string;
+  requestId: string;
+  children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
 }
 
-export function RequestSettingsDropdown({ className }: Props) {
-  const activeRequestId = useActiveRequestId();
-  const deleteRequest = useDeleteRequest(activeRequestId ?? null);
+export function RequestSettingsDropdown({ requestId, children }: Props) {
+  const deleteRequest = useDeleteRequest(requestId ?? null);
+  const duplicateRequest = useDuplicateRequest({ id: requestId, navigateAfter: true });
+
   return (
     <Dropdown
       items={[
         {
-          label: 'Something Else',
-          onSelect: () => null,
-          leftSlot: <Icon icon="camera" />,
+          label: 'Duplicate',
+          onSelect: duplicateRequest.mutate,
+          leftSlot: <Icon icon="copy" />,
         },
-        '-----',
         {
-          label: 'Delete Request',
+          label: 'Delete',
           onSelect: deleteRequest.mutate,
           leftSlot: <Icon icon="trash" />,
         },
       ]}
     >
-      <IconButton className={className} size="sm" title="Request Options" icon="gear" />
+      {children}
     </Dropdown>
   );
 }

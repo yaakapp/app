@@ -32,7 +32,8 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
-import { graphqlLanguageSupport } from 'cm6-graphql';
+import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
+import { render } from 'react-dom';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
@@ -97,6 +98,9 @@ export function getLanguageExtension({
   useTemplating = false,
   autocomplete,
 }: Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
+  if (contentType === 'application/graphql') {
+    return graphql();
+  }
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   const base = syntaxExtensions[justContentType] ?? text();
   if (!useTemplating) {
@@ -115,7 +119,14 @@ export const baseExtensions = [
   // TODO: Figure out how to debounce showing of autocomplete in a good way
   // debouncedAutocompletionDisplay({ millis: 1000 }),
   // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
-  autocompletion({ closeOnBlur: true, interactionDelay: 200 }),
+  autocompletion({
+    // closeOnBlur: false,
+    interactionDelay: 200,
+    compareCompletions: (a, b) => {
+      // Don't sort completions at all, only on boost
+      return (a.boost ?? 0) - (b.boost ?? 0);
+    },
+  }),
   syntaxHighlighting(myHighlightStyle),
   EditorState.allowMultipleSelections.of(true),
 ];

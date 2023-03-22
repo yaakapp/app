@@ -1,9 +1,3 @@
-const height = {
-  "xs": "1.5rem",
-  "sm": "2rem",
-  "md": "2.5rem"
-};
-
 /** @type {import("tailwindcss").Config} */
 module.exports = {
   darkMode: ["class", "[data-appearance=\"dark\"]"],
@@ -16,8 +10,17 @@ module.exports = {
       opacity: {
         "disabled": "0.3"
       },
-      height,
-      lineHeight: height
+      height: {
+        "xs": "1.5rem",
+        "sm": "2.00rem",
+        "md": "2.5rem"
+      },
+      lineHeight: {
+        // HACK: Minus 2 to account for borders inside inputs
+        "xs": "calc(1.5rem - 2px)",
+        "sm": "calc(2.0rem - 2px)",
+        "md": "calc(2.5rem - 2px)"
+      }
     },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],

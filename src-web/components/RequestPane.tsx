@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -23,6 +23,7 @@ export function RequestPane({ fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
+  const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const activeTab = useKeyValue<string>({
     key: ['active_request_body_tab'],
     defaultValue: 'body',
@@ -34,12 +35,24 @@ export function RequestPane({ fullHeight, className }: Props) {
         value: 'body',
         label: activeRequest?.bodyType ?? 'No Body',
         options: {
-          onChange: (bodyType: HttpRequest['bodyType']) => {
+          onChange: async (bodyType: HttpRequest['bodyType']) => {
             const patch: Partial<HttpRequest> = { bodyType };
             if (bodyType == HttpRequestBodyType.GraphQL) {
               patch.method = 'POST';
+              patch.headers = [
+                ...(activeRequest?.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
+                  []),
+                {
+                  name: 'Content-Type',
+                  value: 'application/json',
+                  enabled: true,
+                },
+              ];
+              setTimeout(() => {
+                setForceUpdateHeaderEditorKey((u) => u + 1);
+              }, 100);
             }
-            updateRequest.mutate(patch);
+            await updateRequest.mutate(patch);
           },
           value: activeRequest?.bodyType ?? null,
           items: [
@@ -54,7 +67,7 @@ export function RequestPane({ fullHeight, className }: Props) {
       { value: 'headers', label: 'Headers' },
       { value: 'auth', label: 'Auth' },
     ],
-    [activeRequest?.bodyType ?? 'n/a'],
+    [activeRequest?.bodyType, activeRequest?.headers],
   );
 
   const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);
@@ -88,7 +101,7 @@ export function RequestPane({ fullHeight, className }: Props) {
             </TabContent>
             <TabContent value="headers">
               <HeaderEditor
-                key={activeRequestId}
+                key={`${activeRequest.id}::${forceUpdateHeaderEditorKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
@@ -123,6 +136,7 @@ export function RequestPane({ fullHeight, className }: Props) {
               ) : activeRequest.bodyType === HttpRequestBodyType.GraphQL ? (
                 <GraphQLEditor
                   key={activeRequest.id}
+                  baseRequest={activeRequest}
                   className="!bg-gray-50"
                   defaultValue={activeRequest?.body ?? ''}
                   onChange={handleBodyChange}

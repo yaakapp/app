@@ -151,7 +151,15 @@
 
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-gray-50 rounded overflow-hidden text-gray-900 border border-gray-200 z-50 pointer-events-auto;
+    @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-sm;
+
+    &.cm-completionInfo-right {
+        @apply ml-1;
+    }
+
+    &.cm-completionInfo-right-narrow {
+        @apply ml-1;
+    }
 
     * {
         @apply transition-none;
@@ -159,7 +167,7 @@
 
     &.cm-tooltip-autocomplete {
         & > ul {
-            @apply p-1 max-h-[20rem];
+            @apply p-1 max-h-[40vh];
         }
 
         & > ul > li {
@@ -177,5 +185,18 @@
         .cm-completionIcon {
             @apply text-sm flex items-center pb-0.5;
         }
+
+
+        .cm-completionLabel {
+        }
+
+        .cm-completionDetail {
+            @apply ml-auto;
+        }
     }
+}
+
+/* Add default icon. Needs low priority so it can be overwritten */
+.cm-completionIcon::after {
+    content: '𝑥';
 }

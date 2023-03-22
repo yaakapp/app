@@ -39,17 +39,21 @@ const headerOptionsMap: Record<string, string[]> = {
 const valueAutocomplete = (headerName: string): GenericCompletionConfig | undefined => {
   const name = headerName.toLowerCase().trim();
   const options: GenericCompletionConfig['options'] =
-    headerOptionsMap[name]?.map((o, i) => ({
+    headerOptionsMap[name]?.map((o) => ({
       label: o,
       type: 'constant',
-      boost: 99 - i, // Max boost is 99
+      boost: 1, // Put above other completions
     })) ?? [];
   return { minMatch: MIN_MATCH, options };
 };
 
 const nameAutocomplete: PairEditorProps['nameAutocomplete'] = {
   minMatch: MIN_MATCH,
-  options: headerNames.map((t, i) => ({ label: t, type: 'constant', boost: 99 - i })),
+  options: headerNames.map((t) => ({
+    label: t,
+    type: 'constant',
+    boost: 1, // Put above other completions
+  })),
 };
 
 const validateHttpHeader = (v: string) => {
