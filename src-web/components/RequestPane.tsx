@@ -81,6 +81,11 @@ export function RequestPane({ fullHeight, className }: Props) {
             tabListClassName="pl-3"
             label="Request body"
           >
+            <TabContent value="auth">
+              <div className="flex items-center justify-center min-h-[5rem]">
+                <header>Hello</header>
+              </div>
+            </TabContent>
             <TabContent value="headers">
               <HeaderEditor
                 key={activeRequestId}

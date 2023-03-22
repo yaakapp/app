@@ -64,7 +64,7 @@ export function Tabs<T>({
     >
       <div
         aria-label={label}
-        className={classnames(tabListClassName, 'h-auto flex items-center pb-1')}
+        className={classnames(tabListClassName, 'h-auto flex items-center overflow-auto pb-0.5')}
       >
         <HStack space={1}>
           {tabs.map((t) => {

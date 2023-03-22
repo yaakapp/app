@@ -26,7 +26,7 @@ export default function Workspace() {
     // TODO: Use container query subscription instead of minitoring everything
   }, [mainContentRef.current, windowSize, sidebarWidth.value]);
 
-  const isSideBySide = mainContentWidth > 900;
+  const isSideBySide = mainContentWidth > 700;
 
   if (activeWorkspace == null) {
     return null;
@@ -65,7 +65,7 @@ export default function Workspace() {
             fullHeight={isSideBySide}
             className={classnames(isSideBySide ? 'pr-1.5' : 'pr-3 pb-0')}
           />
-          <ResponsePane className={classnames(isSideBySide && 'pl-1.5')} />
+          <ResponsePane className={classnames(isSideBySide ? 'pl-1.5' : 'mt-0')} />
         </div>
       </div>
     </div>
