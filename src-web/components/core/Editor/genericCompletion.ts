@@ -24,6 +24,6 @@ export function genericCompletion({ options, minMatch = 1 }: GenericCompletionCo
     if (!matchedMinimumLength && !context.explicit) return null;
 
     const optionsWithoutExactMatches = options.filter((o) => o.label !== toMatch.text);
-    return { from: toMatch.from, options: optionsWithoutExactMatches };
+    return { from: toMatch.from, options: optionsWithoutExactMatches, info: 'hello' };
   };
 }

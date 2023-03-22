@@ -127,7 +127,7 @@ export const PairEditor = memo(function PairEditor({
         '@container',
         'pb-2 grid',
         // NOTE: Add padding to top so overflow doesn't hide drop marker
-        'pt-1',
+        'pt-1 -my-1',
       )}
     >
       {pairs.map((p, i) => {

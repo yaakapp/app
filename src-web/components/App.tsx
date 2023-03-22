@@ -16,7 +16,6 @@ import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { extractKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
-import { convertDates } from '../lib/models';
 import { AppRouter } from './AppRouter';
 
 const queryClient = new QueryClient({
@@ -52,13 +51,13 @@ await listen('updated_request', ({ payload: request }: { payload: HttpRequest })
       for (const r of requests) {
         if (r.id === request.id) {
           found = true;
-          newRequests.push(convertDates(request));
+          newRequests.push(request);
         } else {
           newRequests.push(r);
         }
       }
       if (!found) {
-        newRequests.push(convertDates(request));
+        newRequests.push(request);
       }
       return newRequests;
     },
@@ -74,13 +73,13 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
       for (const r of responses) {
         if (r.id === response.id) {
           found = true;
-          newResponses.push(convertDates(response));
+          newResponses.push(response);
         } else {
           newResponses.push(r);
         }
       }
       if (!found) {
-        newResponses.push(convertDates(response));
+        newResponses.push(response);
       }
       return newResponses;
     },
@@ -94,13 +93,13 @@ await listen('updated_workspace', ({ payload: workspace }: { payload: Workspace 
     for (const w of workspaces) {
       if (w.id === workspace.id) {
         found = true;
-        newWorkspaces.push(convertDates(workspace));
+        newWorkspaces.push(workspace);
       } else {
         newWorkspaces.push(w);
       }
     }
     if (!found) {
-      newWorkspaces.push(convertDates(workspace));
+      newWorkspaces.push(workspace);
     }
     return newWorkspaces;
   });
