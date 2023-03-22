@@ -388,7 +388,7 @@ function ResizeBar({ onResizeStart, onReset, isResizing }: ResizeBarProps) {
   return (
     <div
       aria-hidden
-      className="group absolute z-10 right-0 w-3 top-0 bottom-0 flex justify-end cursor-ew-resize"
+      className="group absolute z-10 -right-0.5 w-3 top-0 bottom-0 flex justify-end cursor-ew-resize"
       onMouseDown={onResizeStart}
       onDoubleClick={onReset}
     >
@@ -396,7 +396,7 @@ function ResizeBar({ onResizeStart, onReset, isResizing }: ResizeBarProps) {
       {isResizing && <div className="fixed inset-0 cursor-ew-resize" />}
       <div // drag-divider
         className={classnames(
-          'transition-colors w-1 group-hover:bg-highlight h-full pointer-events-none',
+          'transition-colors w-1 mr-0.5 group-hover:bg-highlight h-full pointer-events-none',
           isResizing && '!bg-blue-500/70',
         )}
       />
