@@ -373,8 +373,9 @@ function ResizeBar({ onResizeStart, onReset, isResizing }: ResizeBarProps) {
   return (
     <div
       aria-hidden
+      draggable
       className="group absolute z-10 -right-0.5 w-3 top-0 bottom-0 flex justify-end cursor-ew-resize"
-      onMouseDown={onResizeStart}
+      onDragStart={onResizeStart}
       onDoubleClick={onReset}
     >
       {/* Show global overlay with cursor style to ensure cursor remains the same when moving quickly */}

@@ -62,7 +62,6 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     });
     const req: HttpRequest = { ...baseRequest, body, id: '' };
     sendEphemeralRequest(req).then((response) => {
-      console.log('RESPONSE', response.body);
       const { data } = JSON.parse(response.body);
       const schema = buildClientSchema(data);
       setGraphqlExtension(graphql(schema, {}));
