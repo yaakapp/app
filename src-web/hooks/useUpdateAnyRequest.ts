@@ -12,14 +12,7 @@ export function useUpdateAnyRequest() {
       }
 
       const updatedRequest = { ...request, ...patch };
-
-      await invoke('update_request', {
-        request: {
-          ...updatedRequest,
-          createdAt: updatedRequest.createdAt.toISOString().replace('Z', ''),
-          updatedAt: updatedRequest.updatedAt.toISOString().replace('Z', ''),
-        },
-      });
+      await invoke('update_request', { request: updatedRequest });
     },
   });
 }
