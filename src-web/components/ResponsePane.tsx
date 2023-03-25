@@ -1,8 +1,8 @@
 import classnames from 'classnames';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
-import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useDeleteResponse } from '../hooks/useDeleteResponse';
+import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { tryFormatJson } from '../lib/formatters';
@@ -16,11 +16,7 @@ import { HStack } from './core/Stacks';
 import { StatusColor } from './core/StatusColor';
 import { Webview } from './core/Webview';
 
-interface Props {
-  className?: string;
-}
-
-export const ResponsePane = memo(function ResponsePane({ className }: Props) {
+export const ResponsePane = memo(function ResponsePane() {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequestId = useActiveRequestId();
   const responses = useResponses(activeRequestId);
@@ -43,7 +39,7 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   );
 
   return (
-    <div className={classnames(className, 'p-3')}>
+    <div className={classnames('h-full w-full p-3')}>
       <div
         className={classnames(
           'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',

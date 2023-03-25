@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
+import { WorkspaceLayout } from './layouts/WorkspaceLayout';
 
 const Workspaces = lazy(() => import('./Workspaces'));
 const Workspace = lazy(() => import('./Workspace'));
@@ -21,14 +22,22 @@ const router = createBrowserRouter([
       },
       {
         path: routePaths.workspace({ workspaceId: ':workspaceId' }),
-        element: <Workspace />,
+        element: (
+          <WorkspaceLayout>
+            <Workspace />
+          </WorkspaceLayout>
+        ),
       },
       {
         path: routePaths.request({
           workspaceId: ':workspaceId',
           requestId: ':requestId',
         }),
-        element: <Workspace />,
+        element: (
+          <WorkspaceLayout>
+            <Workspace />
+          </WorkspaceLayout>
+        ),
       },
     ],
   },

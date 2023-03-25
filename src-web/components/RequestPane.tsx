@@ -77,7 +77,12 @@ export function RequestPane({ fullHeight, className }: Props) {
   );
 
   return (
-    <div className={classnames(className, 'py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}>
+    <div
+      className={classnames(
+        className,
+        'h-full py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
+      )}
+    >
       {activeRequest && (
         <>
           <UrlBar
