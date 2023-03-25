@@ -1,8 +1,6 @@
 import classnames from 'classnames';
 import { memo, useMemo } from 'react';
-import { act } from 'react-dom/test-utils';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { useRoutes } from '../hooks/useRoutes';
@@ -36,16 +34,23 @@ export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: 
 
     return [
       ...workspaceItems,
-      '-----',
+      {
+        type: 'separator',
+        label: activeWorkspace?.name,
+      },
+      {
+        label: 'Delete',
+        leftSlot: <Icon icon="trash" />,
+        onSelect: () => deleteWorkspace.mutate(),
+      },
+      {
+        type: 'separator',
+        label: 'Actions',
+      },
       {
         label: 'New Workspace',
         leftSlot: <Icon icon="plus" />,
         onSelect: () => createWorkspace.mutate({ name: 'New Workspace' }),
-      },
-      {
-        label: 'Delete Workspace',
-        leftSlot: <Icon icon="trash" />,
-        onSelect: () => deleteWorkspace.mutate(),
       },
     ];
   }, [workspaces, activeWorkspaceId]);

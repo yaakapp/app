@@ -8,6 +8,7 @@ import { VStack } from './Stacks';
 
 export type DropdownItem =
   | {
+      type?: 'default';
       label: string;
       disabled?: boolean;
       hidden?: boolean;
@@ -15,7 +16,10 @@ export type DropdownItem =
       rightSlot?: ReactNode;
       onSelect?: () => void;
     }
-  | '-----';
+  | {
+      type: 'separator';
+      label?: string;
+    };
 
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
@@ -93,7 +97,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       let nextIndex = (currIndex ?? 0) - 1;
       const maxTries = items.length;
       for (let i = 0; i < maxTries; i++) {
-        if (items[nextIndex] === '-----') {
+        if (items[nextIndex]?.type === 'separator') {
           nextIndex--;
         } else if (nextIndex < 0) {
           nextIndex = items.length - 1;
@@ -110,7 +114,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       let nextIndex = (currIndex ?? -1) + 1;
       const maxTries = items.length;
       for (let i = 0; i < maxTries; i++) {
-        if (items[nextIndex] === '-----') {
+        if (items[nextIndex]?.type === 'separator') {
           nextIndex++;
         } else if (nextIndex >= items.length) {
           nextIndex = 0;
@@ -122,26 +126,29 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     });
   });
 
-  const containerStyles: CSSProperties = useMemo(() => {
+  const { containerStyles, triangleStyles } = useMemo<{
+    containerStyles: CSSProperties;
+    triangleStyles: CSSProperties;
+  }>(() => {
     const docWidth = document.documentElement.getBoundingClientRect().width;
     const spaceRemaining = docWidth - triggerRect.left;
-    if (spaceRemaining < 200) {
-      return {
-        top: triggerRect?.bottom,
-        right: 0,
-      };
-    }
-    return {
-      top: triggerRect?.bottom,
-      left: triggerRect?.left,
-    };
+    const top = triggerRect?.bottom + 5;
+    const onRight = spaceRemaining < 200;
+    const containerStyles = onRight
+      ? { top, right: docWidth - triggerRect?.right }
+      : { top, left: triggerRect?.left };
+    const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
+    const triangleStyles = onRight
+      ? { right: triggerRect.width / 2, marginRight: '-0.2rem', ...size }
+      : { left: triggerRect.width / 2, marginLeft: '-0.2rem', ...size };
+    return { containerStyles, triangleStyles };
   }, [triggerRect]);
 
   const handleSelect = useCallback(
     (i: DropdownItem) => {
       onClose();
       setSelectedIndex(null);
-      if (i !== '-----') {
+      if (i.type !== 'separator') {
         i.onSelect?.();
       }
     },
@@ -160,6 +167,11 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
         style={containerStyles}
         className={classnames(className, 'pointer-events-auto fixed z-50')}
       >
+        <span
+          style={triangleStyles}
+          aria-hidden
+          className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+        />
         {containerStyles && (
           <VStack
             space={0.5}
@@ -169,11 +181,12 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
             className={classnames(
               className,
               'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-              'border-gray-200 overflow-auto m-1',
+              'border-gray-200 overflow-auto mb-1 mx-0.5',
             )}
           >
             {items.map((item, i) => {
-              if (item === '-----') return <Separator key={i} className="my-1.5" />;
+              if (item.type === 'separator')
+                return <Separator key={i} className="my-1.5" label={item.label} />;
               if (item.hidden) return null;
               return (
                 <MenuItem
@@ -211,7 +224,7 @@ function MenuItem({ className, focused, item, onSelect, ...props }: MenuItemProp
     [focused],
   );
 
-  if (item === '-----') return <Separator className="my-1.5" />;
+  if (item.type === 'separator') return <Separator className="my-1.5" />;
 
   return (
     <button

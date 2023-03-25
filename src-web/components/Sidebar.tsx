@@ -74,7 +74,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   );
 
   const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
-  const sidebarWidth = width.value - 1; // Minus 1 for the border
 
   return (
     <div className="relative">
@@ -89,6 +88,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       >
         <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
           <IconButton
+            size="sm"
             title="Add Request"
             className="mx-1"
             icon="plusCircle"
@@ -101,12 +101,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
             }}
           />
         </HStack>
-        <VStack as="ul" className="relative py-3" draggable={false}>
-          <SidebarItems
-            sidebarWidth={sidebarWidth}
-            activeRequestId={activeRequest?.id}
-            requests={requests}
-          />
+        <VStack as="ul" className="relative py-3 overflow-auto" draggable={false}>
+          <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
           <ToggleThemeButton />
@@ -119,11 +115,9 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 function SidebarItems({
   requests,
   activeRequestId,
-  sidebarWidth,
 }: {
   requests: HttpRequest[];
   activeRequestId?: string;
-  sidebarWidth: number;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
@@ -178,7 +172,6 @@ function SidebarItems({
             requestName={r.name}
             workspaceId={r.workspaceId}
             active={r.id === activeRequestId}
-            sidebarWidth={sidebarWidth}
             onMove={handleMove}
             onEnd={handleEnd}
           />
@@ -194,12 +187,11 @@ type SidebarItemProps = {
   requestId: string;
   requestName: string;
   workspaceId: string;
-  sidebarWidth: number;
   active?: boolean;
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  { className, requestName, requestId, workspaceId, active, sidebarWidth }: SidebarItemProps,
+  { className, requestName, requestId, workspaceId, active }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const updateRequest = useUpdateRequest(requestId);
@@ -215,7 +207,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
     el?.select();
   }, []);
 
-  const itemStyles = useMemo(() => ({ width: sidebarWidth }), [sidebarWidth]);
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
       // Hitting enter on active request during keyboard nav will start edit
@@ -242,12 +233,8 @@ const _SidebarItem = forwardRef(function SidebarItem(
   );
 
   return (
-    <li
-      ref={ref}
-      className={classnames(className, 'block group/item px-2 pb-0.5')}
-      style={itemStyles}
-    >
-      <div className="relative w-full">
+    <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
+      <div className="relative">
         <Button
           color="custom"
           size="sm"
@@ -258,7 +245,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
           justify="start"
           onKeyDown={handleKeyDown}
           className={classnames(
-            'w-full',
             editing && 'focus-within:border-focus',
             active
               ? 'bg-highlight text-gray-900'
@@ -315,7 +301,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   requestId,
   workspaceId,
   active,
-  sidebarWidth,
   onMove,
   onEnd,
 }: DraggableSidebarItemProps) {
@@ -358,7 +343,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       requestId={requestId}
       workspaceId={workspaceId}
       active={active}
-      sidebarWidth={sidebarWidth}
     />
   );
 });
