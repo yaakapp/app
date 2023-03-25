@@ -459,12 +459,13 @@ fn main() {
         .add_item(CustomMenuItem::new("send_request".to_string(), "Send Request").accelerator("CmdOrCtrl+r"))
         .add_item(CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size").accelerator("CmdOrCtrl+0"))
         .add_item(CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"))
-        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"));
+        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"))
+        .add_item(CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar").accelerator("CmdOrCtrl+b"));
     if is_dev() {
         test_menu = test_menu
             .add_native_item(MenuItem::Separator)
-            .add_item(CustomMenuItem::new("refresh".to_string(), "Refresh").accelerator("CmdOrCtrl+Shift+r"))
-            .add_item(CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools").accelerator("CmdOrCtrl+Option+i"));
+            .add_item(CustomMenuItem::new("refresh".to_string(), "Refresh").accelerator("CmdOrCtrl + Shift + r"))
+            .add_item(CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools").accelerator("CmdOrCtrl + Option + i"));
     }
 
     let submenu = Submenu::new("Test Menu", test_menu);
@@ -490,7 +491,7 @@ fn main() {
 
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
             let p = dir.join("db.sqlite");
-            let p_string = p.to_string_lossy().replace(' ', "%20");
+            let p_string = p.to_string_lossy().replace(' ', " % 20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
@@ -526,6 +527,7 @@ fn main() {
                 "zoom_reset" => event.window().emit("zoom", 0).unwrap(),
                 "zoom_in" => event.window().emit("zoom", 1).unwrap(),
                 "zoom_out" => event.window().emit("zoom", -1).unwrap(),
+                "toggle_sidebar" => event.window().emit("toggle_sidebar", true).unwrap(),
                 "refresh" => event.window().emit("refresh", true).unwrap(),
                 "send_request" => event.window().emit("send_request", true).unwrap(),
                 "toggle_devtools" => {

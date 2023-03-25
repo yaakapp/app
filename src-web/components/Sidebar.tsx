@@ -1,19 +1,16 @@
 import classnames from 'classnames';
-import type { ForwardedRef, KeyboardEvent, MouseEvent as ReactMouseEvent } from 'react';
+import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useRequests } from '../hooks/useRequests';
-import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
-import { WindowDragRegion } from './core/WindowDragRegion';
 import { DropMarker } from './DropMarker';
 import { RequestSettingsDropdown } from './RequestSettingsDropdown';
 import { ToggleThemeButton } from './ToggleThemeButton';
@@ -27,80 +24,20 @@ enum ItemTypes {
 }
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
-  const [isResizing, setIsResizing] = useState<boolean>(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const unorderedRequests = useRequests();
   const activeRequest = useActiveRequest();
-  const createRequest = useCreateRequest({ navigateAfter: true });
-  const width = useSidebarWidth();
   const requests = useMemo(
     () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
     [unorderedRequests],
   );
 
-  const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
-    null,
-  );
-  const unsub = () => {
-    if (moveState.current !== null) {
-      document.documentElement.removeEventListener('mousemove', moveState.current.move);
-      document.documentElement.removeEventListener('mouseup', moveState.current.up);
-    }
-  };
-
-  const handleResizeStart = useCallback(
-    (e: ReactMouseEvent<HTMLDivElement>) => {
-      if (width.value === undefined) return;
-
-      unsub();
-      const mouseStartX = e.clientX;
-      const startWidth = width.value;
-      moveState.current = {
-        move: (e: MouseEvent) => {
-          e.preventDefault(); // Prevent text selection and things
-          width.set(startWidth + (e.clientX - mouseStartX));
-        },
-        up: (e: MouseEvent) => {
-          e.preventDefault();
-          unsub();
-          setIsResizing(false);
-        },
-      };
-      document.documentElement.addEventListener('mousemove', moveState.current.move);
-      document.documentElement.addEventListener('mouseup', moveState.current.up);
-      setIsResizing(true);
-    },
-    [width.value],
-  );
-
-  const sidebarStyles = useMemo(() => ({ width: width.value }), [width.value]);
-
   return (
-    <div className="relative">
-      <ResizeBar isResizing={isResizing} onResizeStart={handleResizeStart} onReset={width.reset} />
+    <div className="relative h-full">
       <div
         ref={sidebarRef}
-        style={sidebarStyles}
-        className={classnames(
-          className,
-          'bg-gray-100 h-full border-r border-highlight relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
-        )}
+        className={classnames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
       >
-        <HStack as={WindowDragRegion} alignItems="center" justifyContent="end">
-          <IconButton
-            size="sm"
-            title="Add Request"
-            className="mx-1"
-            icon="plusCircle"
-            onClick={async () => {
-              const lastRequest = requests[requests.length - 1];
-              await createRequest.mutate({
-                name: 'Test Request',
-                sortPriority: (lastRequest?.sortPriority ?? 0) + 1,
-              });
-            }}
-          />
-        </HStack>
         <VStack as="ul" className="relative py-3 overflow-auto" draggable={false}>
           <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
@@ -346,30 +283,3 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     />
   );
 });
-
-interface ResizeBarProps {
-  isResizing: boolean;
-  onResizeStart: (e: ReactMouseEvent<HTMLDivElement>) => void;
-  onReset: () => void;
-}
-
-function ResizeBar({ onResizeStart, onReset, isResizing }: ResizeBarProps) {
-  return (
-    <div
-      aria-hidden
-      draggable
-      className="group absolute z-10 -right-0.5 w-3 top-0 bottom-0 flex justify-end cursor-ew-resize"
-      onDragStart={onResizeStart}
-      onDoubleClick={onReset}
-    >
-      {/* Show global overlay with cursor style to ensure cursor remains the same when moving quickly */}
-      {isResizing && <div className="fixed inset-0 cursor-ew-resize" />}
-      <div // drag-divider
-        className={classnames(
-          'transition-colors w-1 mr-0.5 group-hover:bg-highlight h-full pointer-events-none',
-          isResizing && '!bg-blue-500/70',
-        )}
-      />
-    </div>
-  );
-}
