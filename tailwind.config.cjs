@@ -10,6 +10,9 @@ module.exports = {
       opacity: {
         "disabled": "0.3"
       },
+      fontSize: {
+        "xs": "0.8rem"
+      },
       height: {
         "xs": "1.5rem",
         "sm": "2.00rem",
