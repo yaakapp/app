@@ -1,9 +1,8 @@
+import useResizeObserver from '@react-hook/resize-observer';
 import classnames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
-import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useWindowSize } from 'react-use';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { clamp } from '../lib/clamp';
 import { RequestPane } from './RequestPane';
 import { ResizeHandle } from './ResizeHandle';
@@ -19,7 +18,7 @@ const drag = { gridArea: 'drag' };
 
 const DEFAULT = 0.5;
 const MIN_WIDTH_PX = 10;
-const MIN_HEIGHT_PX = 100;
+const MIN_HEIGHT_PX = 30;
 const STACK_VERTICAL_WIDTH = 600;
 
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
@@ -34,13 +33,9 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
     null,
   );
 
-  const windowSize = useWindowSize();
-  const sidebar = useSidebarDisplay();
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const { width } = containerRef.current.getBoundingClientRect();
-    setVertical(width < STACK_VERTICAL_WIDTH);
-  }, [containerRef.current, windowSize, sidebar.width, sidebar.hidden]);
+  useResizeObserver(containerRef, ({ contentRect }) => {
+    setVertical(contentRect.width < STACK_VERTICAL_WIDTH);
+  });
 
   const styles = useMemo<CSSProperties>(
     () => ({

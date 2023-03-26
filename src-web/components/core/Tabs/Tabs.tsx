@@ -64,9 +64,9 @@ export function Tabs<T>({
     >
       <div
         aria-label={label}
-        className={classnames(tabListClassName, 'h-auto flex items-center overflow-auto pb-0.5')}
+        className={classnames(tabListClassName, 'h-md flex items-center overflow-x-auto pb-0.5')}
       >
-        <HStack space={1}>
+        <HStack space={1} className="flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classnames(
