@@ -16,7 +16,11 @@ import { HStack } from './core/Stacks';
 import { StatusColor } from './core/StatusColor';
 import { Webview } from './core/Webview';
 
-export const ResponsePane = memo(function ResponsePane() {
+interface Props {
+  className?: string;
+}
+
+export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequestId = useActiveRequestId();
   const responses = useResponses(activeRequestId);
@@ -39,10 +43,10 @@ export const ResponsePane = memo(function ResponsePane() {
   );
 
   return (
-    <div className={classnames('h-full w-full p-3')}>
+    <div className={classnames(className, 'h-full w-full')}>
       <div
         className={classnames(
-          'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
+          'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
           'dark:bg-gray-100 rounded-md overflow-hidden border border-highlight',
           'shadow shadow-gray-100 dark:shadow-gray-0',
         )}
