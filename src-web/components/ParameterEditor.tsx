@@ -7,5 +7,5 @@ type Props = {
 };
 
 export function ParametersEditor({ parameters, onChange }: Props) {
-  return <PairEditor pairs={parameters} onChange={onChange} namePlaceholder="param_name" />;
+  return <PairEditor pairs={parameters} onChange={onChange} namePlaceholder="name" />;
 }

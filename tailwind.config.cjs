@@ -15,7 +15,7 @@ module.exports = {
       },
       height: {
         "xs": "1.5rem",
-        "sm": "2.00rem",
+        "sm": "2.0rem",
         "md": "2.5rem"
       },
       lineHeight: {
@@ -23,7 +23,7 @@ module.exports = {
         "xs": "calc(1.5rem - 2px)",
         "sm": "calc(2.0rem - 2px)",
         "md": "calc(2.5rem - 2px)"
-      }
+      },
     },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],

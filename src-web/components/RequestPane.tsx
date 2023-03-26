@@ -66,7 +66,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
           ],
         },
       },
-      { value: 'params', label: 'Params' },
+      { value: 'params', label: 'URL Params' },
       { value: 'headers', label: 'Headers' },
       { value: 'auth', label: 'Auth' },
     ],

@@ -20,6 +20,7 @@ import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { extractKeyValue, getKeyValue, setKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { AppRouter } from './AppRouter';
+import { DialogProvider } from './DialogContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -172,8 +173,10 @@ export function App() {
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>
-            <AppRouter />
-            <ReactQueryDevtools initialIsOpen={false} />
+            <DialogProvider>
+              <AppRouter />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </DialogProvider>
           </DndProvider>
         </HelmetProvider>
       </MotionConfig>
