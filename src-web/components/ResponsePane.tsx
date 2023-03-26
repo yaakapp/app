@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import type { CSSProperties } from 'react';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteResponse } from '../hooks/useDeleteResponse';
@@ -17,10 +18,11 @@ import { StatusColor } from './core/StatusColor';
 import { Webview } from './core/Webview';
 
 interface Props {
+  style?: CSSProperties;
   className?: string;
 }
 
-export const ResponsePane = memo(function ResponsePane({ className }: Props) {
+export const ResponsePane = memo(function ResponsePane({ style, className }: Props) {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequestId = useActiveRequestId();
   const responses = useResponses(activeRequestId);
@@ -43,95 +45,93 @@ export const ResponsePane = memo(function ResponsePane({ className }: Props) {
   );
 
   return (
-    <div className={classnames(className, 'h-full w-full')}>
-      <div
-        className={classnames(
-          'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
-          'dark:bg-gray-100 rounded-md overflow-hidden border border-highlight',
-          'shadow shadow-gray-100 dark:shadow-gray-0',
-        )}
+    <div
+      style={style}
+      className={classnames(
+        className,
+        'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
+        'dark:bg-gray-100 rounded-md overflow-hidden border border-highlight',
+        'shadow shadow-gray-100 dark:shadow-gray-0 relative',
+      )}
+    >
+      <HStack
+        alignItems="center"
+        className="italic text-gray-700 text-sm w-full mb-1 flex-shrink-0 pl-2"
       >
-        {/*<HStack as={WindowDragRegion} items="center" className="pl-1.5 pr-1">*/}
-        {/*</HStack>*/}
-        <HStack
-          alignItems="center"
-          className="italic text-gray-700 text-sm w-full mb-1 flex-shrink-0 pl-2"
-        >
-          {activeResponse && (
-            <>
-              <div className="whitespace-nowrap">
-                <StatusColor statusCode={activeResponse.status}>
-                  {activeResponse.status}
-                  {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
-                </StatusColor>
-                &nbsp;&bull;&nbsp;
-                {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
-                {Math.round(activeResponse.body.length / 1000)} KB
-              </div>
+        {activeResponse && (
+          <>
+            <div className="whitespace-nowrap">
+              <StatusColor statusCode={activeResponse.status}>
+                {activeResponse.status}
+                {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
+              </StatusColor>
+              &nbsp;&bull;&nbsp;
+              {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
+              {Math.round(activeResponse.body.length / 1000)} KB
+            </div>
 
-              <HStack alignItems="center" className="ml-auto h-8">
-                <Dropdown
-                  items={[
-                    {
-                      label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
-                      onSelect: toggleViewMode,
-                    },
-                    { type: 'separator' },
-                    {
-                      label: 'Clear Response',
-                      onSelect: deleteResponse.mutate,
-                      disabled: responses.length === 0,
-                    },
-                    {
-                      label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
-                      onSelect: deleteAllResponses.mutate,
-                      hidden: responses.length <= 1,
-                      disabled: responses.length === 0,
-                    },
-                    { type: 'separator' },
-                    ...responses.slice(0, 10).map((r) => ({
-                      label: r.status + ' - ' + r.elapsed + ' ms',
-                      leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
-                      onSelect: () => setPinnedResponseId(r.id),
-                    })),
-                  ]}
-                >
-                  <IconButton
-                    title="Show response history"
-                    icon="triangleDown"
-                    className="ml-auto"
-                    size="sm"
-                  />
-                </Dropdown>
-              </HStack>
-            </>
-          )}
-        </HStack>
+            <HStack alignItems="center" className="ml-auto h-8">
+              <Dropdown
+                items={[
+                  {
+                    label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
+                    onSelect: toggleViewMode,
+                  },
+                  { type: 'separator' },
+                  {
+                    label: 'Clear Response',
+                    onSelect: deleteResponse.mutate,
+                    disabled: responses.length === 0,
+                  },
+                  {
+                    label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
+                    onSelect: deleteAllResponses.mutate,
+                    hidden: responses.length <= 1,
+                    disabled: responses.length === 0,
+                  },
+                  { type: 'separator' },
+                  ...responses.slice(0, 10).map((r) => ({
+                    label: r.status + ' - ' + r.elapsed + ' ms',
+                    leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
+                    onSelect: () => setPinnedResponseId(r.id),
+                  })),
+                ]}
+              >
+                <IconButton
+                  title="Show response history"
+                  icon="triangleDown"
+                  className="ml-auto"
+                  size="sm"
+                />
+              </Dropdown>
+            </HStack>
+          </>
+        )}
+      </HStack>
 
-        {!activeResponse ? null : activeResponse?.error ? (
-          <div className="p-1">
-            <div className="text-white bg-red-500 px-3 py-3 rounded">{activeResponse.error}</div>
-          </div>
-        ) : viewMode === 'pretty' && contentType.includes('html') ? (
-          <Webview body={activeResponse.body} contentType={contentType} url={activeResponse.url} />
-        ) : viewMode === 'pretty' && contentType.includes('json') ? (
-          <Editor
-            readOnly
-            key={`${contentType}:${activeResponse.updatedAt}:pretty`}
-            className="bg-gray-50 dark:!bg-gray-100"
-            defaultValue={tryFormatJson(activeResponse?.body)}
-            contentType={contentType}
-          />
-        ) : activeResponse?.body ? (
-          <Editor
-            readOnly
-            key={`${contentType}:${activeResponse.updatedAt}`}
-            className="bg-gray-50 dark:!bg-gray-100"
-            defaultValue={activeResponse?.body}
-            contentType={contentType}
-          />
-        ) : null}
-      </div>
+      {!activeResponse ? null : activeResponse?.error ? (
+        <div className="p-1">
+          <div className="text-white bg-red-500 px-3 py-3 rounded">{activeResponse.error}</div>
+        </div>
+      ) : viewMode === 'pretty' && contentType.includes('html') ? (
+        <Webview body={activeResponse.body} contentType={contentType} url={activeResponse.url} />
+      ) : viewMode === 'pretty' && contentType.includes('json') ? (
+        <Editor
+          readOnly
+          key={`${contentType}:${activeResponse.updatedAt}:pretty`}
+          className="bg-gray-50 dark:!bg-gray-100"
+          defaultValue={tryFormatJson(activeResponse?.body)}
+          contentType={contentType}
+        />
+      ) : activeResponse?.body ? (
+        <Editor
+          readOnly
+          key={`${contentType}:${activeResponse.updatedAt}`}
+          className="bg-gray-50 dark:!bg-gray-100"
+          defaultValue={activeResponse?.body}
+          contentType={contentType}
+        />
+      ) : null}
     </div>
   );
 });

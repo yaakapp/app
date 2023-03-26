@@ -1,15 +1,16 @@
 import classnames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useWindowSize } from 'react-use';
 import { useKeyValue } from '../hooks/useKeyValue';
+import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { clamp } from '../lib/clamp';
 import { RequestPane } from './RequestPane';
+import { ResizeHandle } from './ResizeHandle';
 import { ResponsePane } from './ResponsePane';
-import { ResizeBar } from './Workspace';
 
 interface Props {
   style: CSSProperties;
-  vertical?: boolean;
 }
 
 const rqst = { gridArea: 'rqst' };
@@ -19,9 +20,11 @@ const drag = { gridArea: 'drag' };
 const DEFAULT = 0.5;
 const MIN_WIDTH_PX = 10;
 const MIN_HEIGHT_PX = 100;
+const STACK_VERTICAL_WIDTH = 600;
 
-export default function RequestResponse({ style, vertical }: Props) {
+export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [vertical, setVertical] = useState<boolean>(false);
   const widthKv = useKeyValue<number>({ key: 'body_width', defaultValue: DEFAULT });
   const heightKv = useKeyValue<number>({ key: 'body_height', defaultValue: DEFAULT });
   const width = widthKv.value ?? DEFAULT;
@@ -31,19 +34,27 @@ export default function RequestResponse({ style, vertical }: Props) {
     null,
   );
 
+  const windowSize = useWindowSize();
+  const sidebar = useSidebarDisplay();
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    const { width } = containerRef.current.getBoundingClientRect();
+    setVertical(width < STACK_VERTICAL_WIDTH);
+  }, [containerRef.current, windowSize, sidebar.width, sidebar.hidden]);
+
   const styles = useMemo<CSSProperties>(
     () => ({
       ...style,
       gridTemplate: vertical
         ? `
           ' ${rqst.gridArea}' minmax(0,${1 - height}fr)
-          ' ${drag.gridArea}' auto
+          ' ${drag.gridArea}' 0
           ' ${resp.gridArea}' minmax(0,${height}fr)
           / 1fr            
         `
         : `
           ' ${rqst.gridArea} ${drag.gridArea} ${resp.gridArea}' minmax(0,1fr)
-          / ${1 - width}fr   auto             ${width}fr           
+          / ${1 - width}fr   0                ${width}fr           
         `,
     }),
     [vertical, width, height, style],
@@ -108,22 +119,18 @@ export default function RequestResponse({ style, vertical }: Props) {
   );
 
   return (
-    <div ref={containerRef} className="grid w-full h-full p-3" style={styles}>
-      <div style={rqst}>
-        <RequestPane fullHeight={!vertical} />
-      </div>
-      <div style={drag} className={classnames('relative flex-grow-0', vertical ? 'h-3' : 'w-3')}>
-        <ResizeBar
-          isResizing={isResizing}
-          onResizeStart={handleResizeStart}
-          onReset={handleReset}
-          side={vertical ? 'top' : 'left'}
-          justify="center"
-        />
-      </div>
-      <div style={resp}>
-        <ResponsePane />
-      </div>
+    <div ref={containerRef} className="grid gap-1.5 w-full h-full p-3" style={styles}>
+      <RequestPane style={rqst} fullHeight={!vertical} />
+      <ResizeHandle
+        style={drag}
+        isResizing={isResizing}
+        className={classnames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
+        onResizeStart={handleResizeStart}
+        onReset={handleReset}
+        side={vertical ? 'top' : 'left'}
+        justify="center"
+      />
+      <ResponsePane style={resp} />
     </div>
   );
-}
+});
