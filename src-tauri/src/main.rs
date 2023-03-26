@@ -491,8 +491,9 @@ fn main() {
 
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
             let p = dir.join("db.sqlite");
-            let p_string = p.to_string_lossy().replace(' ', " % 20");
+            let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
+            println!("Connecting to database at {}", url);
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
                     .connect(url.as_str())

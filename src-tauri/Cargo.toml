@@ -7,7 +7,8 @@ license = "MIT"
 repository = "https://github.com/gschier/yaak-app"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.release]
+strip = true  # Automatically strip symbols from the binary.
 
 [build-dependencies]
 tauri-build = { version = "1.2", features = [] }

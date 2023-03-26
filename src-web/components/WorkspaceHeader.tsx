@@ -1,7 +1,6 @@
 import classnames from 'classnames';
 import { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { RequestSettingsDropdown } from './RequestSettingsDropdown';
@@ -15,8 +14,12 @@ interface Props {
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const activeRequest = useActiveRequest();
   return (
-    <HStack justifyContent="center" alignItems="center" className={classnames(className, 'h-full')}>
-      <HStack className="flex-1 -ml-2 pointer-events-none" alignItems="center">
+    <HStack
+      justifyContent="center"
+      alignItems="center"
+      className={classnames(className, 'w-full h-full')}
+    >
+      <HStack className="flex-1 pointer-events-none" alignItems="center">
         <SidebarDisplayToggle />
         <WorkspaceDropdown className="pointer-events-auto" />
       </HStack>
