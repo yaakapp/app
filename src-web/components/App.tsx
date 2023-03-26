@@ -1,5 +1,6 @@
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
@@ -172,7 +173,7 @@ export function App() {
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>
             <AppRouter />
-            {/*<ReactQueryDevtools initialIsOpen={false}  />*/}
+            <ReactQueryDevtools initialIsOpen={false} />
           </DndProvider>
         </HelmetProvider>
       </MotionConfig>
