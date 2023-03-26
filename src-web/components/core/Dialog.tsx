@@ -1,7 +1,7 @@
-import * as D from '@radix-ui/react-dialog';
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { Portal } from '../Portal';
 import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
@@ -25,11 +25,15 @@ export function Dialog({
   description,
 }: Props) {
   return (
-    <D.Root open={open} onOpenChange={onOpenChange}>
-      <D.Portal container={document.querySelector<HTMLElement>('#radix-portal')}>
+    <Portal name="dialog">
+      {open && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <D.Overlay className="fixed inset-0 bg-gray-600/60 dark:bg-black/50" />
-          <D.Content>
+          <div
+            aria-hidden
+            onClick={() => onOpenChange(false)}
+            className="fixed inset-0 bg-gray-600/60 dark:bg-black/50"
+          />
+          <div>
             <div
               className={classnames(
                 className,
@@ -39,20 +43,25 @@ export function Dialog({
                 wide && 'w-[80vw] max-w-[50rem]',
               )}
             >
-              <D.Close asChild className="ml-auto absolute right-1 top-1">
-                <IconButton title="Close dialog" aria-label="Close" icon="x" size="sm" />
-              </D.Close>
+              <IconButton
+                onClick={() => onOpenChange(false)}
+                title="Close dialog"
+                aria-label="Close"
+                icon="x"
+                size="sm"
+                className="ml-auto absolute right-1 top-1"
+              />
               <VStack space={3}>
                 <HStack alignItems="center" className="pb-3">
-                  <D.Title className="text-xl font-semibold">{title}</D.Title>
+                  <div className="text-xl font-semibold">{title}</div>
                 </HStack>
-                {description && <D.Description>{description}</D.Description>}
+                {description && <div>{description}</div>}
                 <div>{children}</div>
               </VStack>
             </div>
-          </D.Content>
+          </div>
         </motion.div>
-      </D.Portal>
-    </D.Root>
+      )}
+    </Portal>
   );
 }
