@@ -180,7 +180,6 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
             space={0.5}
             ref={initMenu}
             style={menuStyles}
-            tabIndex={-1}
             className={classnames(
               className,
               'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
@@ -232,6 +231,7 @@ function MenuItem({ className, focused, item, onSelect, ...props }: MenuItemProp
   return (
     <button
       ref={initRef}
+      tabIndex={focused ? 0 : -1}
       onMouseEnter={(e) => e.currentTarget.focus()}
       onMouseLeave={(e) => e.currentTarget.blur()}
       onClick={handleClick}
