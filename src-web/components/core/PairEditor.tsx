@@ -125,9 +125,9 @@ export const PairEditor = memo(function PairEditor({
       className={classnames(
         className,
         '@container',
-        'pb-2 grid',
-        // NOTE: Add padding to top so overflow doesn't hide drop marker
-        'pt-1 -my-1',
+        'overflow-auto max-h-full pb-2 grid',
+        // Move over the width of the drag handle
+        '-ml-3',
       )}
     >
       {pairs.map((p, i) => {

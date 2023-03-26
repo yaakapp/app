@@ -1,27 +1,37 @@
-import { useCallback } from 'react';
-import { clamp } from '../lib/clamp';
+import { useCallback, useMemo } from 'react';
 import { useKeyValue } from './useKeyValue';
 
 const START_WIDTH = 200;
-const MIN_WIDTH = 110;
-const MAX_WIDTH = 500;
+const MIN_WIDTH = 150;
+const COLLAPSE_WIDTH = MIN_WIDTH * 0.25;
 
-export enum SidebarDisplayKeys {
-  width = 'sidebar_width',
-  hidden = 'sidebar_hidden',
+export const sidebarDisplayKey = 'sidebar_display';
+export const sidebarDisplayDefaultValue: SidebarDisplay = { hidden: false, width: START_WIDTH };
+
+export interface SidebarDisplay {
+  hidden: boolean;
+  width: number;
 }
 
 export function useSidebarDisplay() {
-  const hiddenKv = useKeyValue<boolean>({ key: SidebarDisplayKeys.hidden, defaultValue: false });
-  const widthKv = useKeyValue<number>({ key: SidebarDisplayKeys.width, defaultValue: START_WIDTH });
-  const hidden = hiddenKv.value;
-  const width = widthKv.value ?? START_WIDTH;
+  const display = useKeyValue<SidebarDisplay>({
+    key: sidebarDisplayKey,
+    defaultValue: sidebarDisplayDefaultValue,
+  });
+  const hidden = display.value?.hidden ?? false;
+  const width = display.value?.width ?? START_WIDTH;
 
-  const set = useCallback((v: number) => widthKv.set(clamp(v, MIN_WIDTH, MAX_WIDTH)), []);
-  const reset = useCallback(() => widthKv.set(START_WIDTH), []);
-  const hide = useCallback(() => hiddenKv.set(true), []);
-  const show = useCallback(() => hiddenKv.set(false), []);
-  const toggle = useCallback(() => hiddenKv.set(!hiddenKv.value), [hiddenKv.value]);
+  const set = useCallback(
+    (width: number) => {
+      const hidden = width < COLLAPSE_WIDTH;
+      display.set({ hidden, width: Math.max(MIN_WIDTH, width) });
+    },
+    [display.set],
+  );
+  const hide = useCallback(() => display.set((v) => ({ ...v, hidden: true })), [display.set]);
+  const show = useCallback(() => display.set((v) => ({ ...v, hidden: false })), [display.set]);
+  const toggle = useMemo(() => (hidden ? show : hide), [hidden, show, hide]);
+  const reset = display.reset;
 
   return { width, hidden, set, reset, hide, show, toggle };
 }

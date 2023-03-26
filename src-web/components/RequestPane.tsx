@@ -1,5 +1,6 @@
 import classnames from 'classnames';
-import { useCallback, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -15,11 +16,12 @@ import { ParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
+  style?: CSSProperties;
   fullHeight: boolean;
   className?: string;
 }
 
-export function RequestPane({ fullHeight, className }: Props) {
+export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
@@ -78,6 +80,7 @@ export function RequestPane({ fullHeight, className }: Props) {
 
   return (
     <div
+      style={style}
       className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
       {activeRequest && (
@@ -146,4 +149,4 @@ export function RequestPane({ fullHeight, className }: Props) {
       )}
     </div>
   );
-}
+});

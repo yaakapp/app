@@ -12,7 +12,8 @@ import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { routePaths } from '../hooks/useRoutes';
-import { SidebarDisplayKeys } from '../hooks/useSidebarDisplay';
+import type { SidebarDisplay } from '../hooks/useSidebarDisplay';
+import { sidebarDisplayDefaultValue, sidebarDisplayKey } from '../hooks/useSidebarDisplay';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { extractKeyValue, getKeyValue, setKeyValue } from '../lib/keyValueStore';
@@ -139,8 +140,14 @@ await listen('refresh', () => {
 });
 
 await listen('toggle_sidebar', async () => {
-  const hidden = await getKeyValue<boolean>({ key: SidebarDisplayKeys.hidden, fallback: false });
-  await setKeyValue({ key: SidebarDisplayKeys.hidden, value: !hidden });
+  const display = await getKeyValue<SidebarDisplay>({
+    key: sidebarDisplayKey,
+    fallback: sidebarDisplayDefaultValue,
+  });
+  await setKeyValue({
+    key: sidebarDisplayKey,
+    value: { width: display.width, hidden: !display.hidden },
+  });
 });
 
 await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {

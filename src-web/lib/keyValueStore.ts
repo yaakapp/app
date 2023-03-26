@@ -3,8 +3,6 @@ import type { KeyValue } from './models';
 
 const DEFAULT_NAMESPACE = 'app';
 
-type KeyValueValue = string | number | boolean;
-
 export async function setKeyValue<T>({
   namespace = DEFAULT_NAMESPACE,
   key,
@@ -22,7 +20,7 @@ export async function setKeyValue<T>({
   return value;
 }
 
-export async function getKeyValue<T extends KeyValueValue>({
+export async function getKeyValue<T>({
   namespace = DEFAULT_NAMESPACE,
   key,
   fallback,
@@ -38,7 +36,7 @@ export async function getKeyValue<T extends KeyValueValue>({
   return extractKeyValueOrFallback(kv, fallback);
 }
 
-export function extractKeyValue<T extends KeyValueValue>(kv: KeyValue | null): T | undefined {
+export function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
   if (kv === null) return undefined;
   try {
     return JSON.parse(kv.value) as T;
@@ -47,10 +45,7 @@ export function extractKeyValue<T extends KeyValueValue>(kv: KeyValue | null): T
   }
 }
 
-export function extractKeyValueOrFallback<T extends KeyValueValue>(
-  kv: KeyValue | null,
-  fallback: T,
-): T {
+export function extractKeyValueOrFallback<T>(kv: KeyValue | null, fallback: T): T {
   const v = extractKeyValue<T>(kv);
   if (v === undefined) return fallback;
   return v;

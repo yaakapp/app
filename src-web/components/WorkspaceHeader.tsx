@@ -1,28 +1,23 @@
 import classnames from 'classnames';
+import { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { RequestSettingsDropdown } from './RequestSettingsDropdown';
+import { SidebarDisplayToggle } from './SidebarDisplayToggle';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 
 interface Props {
   className?: string;
 }
 
-export function WorkspaceHeader({ className }: Props) {
+export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const activeRequest = useActiveRequest();
-  const sidebarDisplay = useSidebarDisplay();
   return (
     <HStack justifyContent="center" alignItems="center" className={classnames(className, 'h-full')}>
       <HStack className="flex-1 -ml-2 pointer-events-none" alignItems="center">
-        <IconButton
-          onClick={sidebarDisplay.toggle}
-          className="pointer-events-auto"
-          size="sm"
-          title="Show sidebar"
-          icon="hamburger"
-        />
+        <SidebarDisplayToggle />
         <WorkspaceDropdown className="pointer-events-auto" />
       </HStack>
       <div className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none">
@@ -43,4 +38,4 @@ export function WorkspaceHeader({ className }: Props) {
       </div>
     </HStack>
   );
-}
+});
