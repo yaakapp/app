@@ -78,25 +78,16 @@ export function RequestPane({ fullHeight, className }: Props) {
 
   return (
     <div
-      className={classnames(
-        className,
-        'h-full py-3 grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
-      )}
+      className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
       {activeRequest && (
         <>
-          <UrlBar
-            className="pl-3"
-            id={activeRequest.id}
-            url={activeRequest.url}
-            method={activeRequest.method}
-          />
+          <UrlBar id={activeRequest.id} url={activeRequest.url} method={activeRequest.method} />
           <Tabs
             value={activeTab.value}
             onChangeValue={activeTab.set}
             tabs={tabs}
             className="mt-2"
-            tabListClassName="pl-3"
             label="Request body"
           >
             <TabContent value="auth">
