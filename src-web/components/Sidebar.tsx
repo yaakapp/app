@@ -1,15 +1,16 @@
+import { dialog } from '@tauri-apps/api';
 import classnames from 'classnames';
 import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useConfirm } from '../hooks/useConfirm';
 import { useRequests } from '../hooks/useRequests';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
-import { Dialog } from './core/Dialog';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { DropMarker } from './DropMarker';
@@ -28,12 +29,12 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const unorderedRequests = useRequests();
   const activeRequest = useActiveRequest();
+  const confirm = useConfirm();
   const requests = useMemo(
     () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
     [unorderedRequests],
   );
 
-  const [open, setOpen] = useState<boolean>(false);
   return (
     <div className="relative h-full">
       <div
@@ -48,10 +49,13 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
-          <Dialog open={open} onOpenChange={setOpen} title={'Cool Thing'}>
-            Hello?
-          </Dialog>
-          <IconButton title="" icon="magicWand" onClick={() => setOpen(true)} />
+          <IconButton
+            title=""
+            icon="magicWand"
+            onClick={() =>
+              confirm({ title: 'Reset Requests', description: 'Do you want to do it?' })
+            }
+          />
           <ToggleThemeButton />
         </HStack>
       </div>

@@ -31,6 +31,7 @@ export default function Workspace() {
     null,
   );
 
+  // float/un-float sidebar on window resize
   useEffect(() => {
     if (windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH) {
       setFloating(true);
