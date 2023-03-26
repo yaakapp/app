@@ -64,7 +64,15 @@ export default function Workspace() {
   );
 
   return (
-    <div className="grid w-full h-full" style={styles}>
+    <div
+      className={classnames(
+        'grid w-full h-full',
+        // Animate sidebar width changes but only when not resizing
+        // because it's too slow to animate on mouse move
+        !isResizing && 'transition-all',
+      )}
+      style={styles}
+    >
       <div
         data-tauri-drag-region
         className="h-md px-3 w-full pl-20 bg-gray-50 border-b border-b-highlight text-gray-900 pt-[1px]"
