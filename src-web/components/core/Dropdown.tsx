@@ -161,8 +161,8 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     <Portal name="dropdown">
       <button aria-hidden title="close" className="fixed inset-0" onClick={onClose} />
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         role="menu"
         aria-orientation="vertical"
         dir="ltr"
