@@ -10,7 +10,7 @@ export const SidebarDisplayToggle = memo(function SidebarDisplayToggle() {
       className="pointer-events-auto"
       size="sm"
       title="Show sidebar"
-      icon="hamburger"
+      icon={sidebarDisplay.hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
     />
   );
 });

@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
 // https://vitejs.dev/config/
 const config = defineConfig({
-  plugins: [react({}), topLevelAwait()],
+  plugins: [svgr(), react({}), topLevelAwait()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // prevent vite from obscuring rust errors

@@ -10,6 +10,7 @@ import { HttpRequestBodyType } from '../lib/models';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
+import { EmptyStateText } from './EmptyStateText';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeaderEditor } from './HeaderEditor';
 import { ParametersEditor } from './ParameterEditor';
@@ -141,7 +142,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   onChange={handleBodyChange}
                 />
               ) : (
-                <div className="h-full text-gray-400 flex items-center justify-center">No Body</div>
+                <EmptyStateText>No Body</EmptyStateText>
               )}
             </TabContent>
           </Tabs>
