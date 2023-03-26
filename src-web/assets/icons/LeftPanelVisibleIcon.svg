@@ -1,0 +1,6 @@
+<svg width="100%" height="100%" viewBox="0 0 15 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+            <rect x="0" y="0" width="15" height="15" style="fill:none;"/>
+            <g transform="matrix(1,0,0,1,-16,-8.88178e-16)">
+                <path fill="currentColor" d="M18.5,1C17.672,1 17,1.672 17,2.5L17,12.5C17,13.328 17.672,14 18.5,14L28.5,14C29.328,14 30,13.328 30,12.5L30,2.5C30,1.672 29.328,1 28.5,1L18.5,1ZM28.5,13C28.776,13 29,12.776 29,12.5L29,2.5C29,2.224 28.776,2 28.5,2L22,2L22,13L28.5,13ZM18,11.535L21,12.285L21,13L18.5,13C18.224,13 18,12.776 18,12.5L18,11.535ZM18,10.504L21,11.254L21,9.81L18,9.06L18,10.504ZM18,8.029L21,8.779L21,7.327L18,6.577L18,8.029ZM18,5.546L21,6.296L21,4.833L18,4.083L18,5.546ZM21,3.802L18,3.052L18,2.5C18,2.224 18.224,2 18.5,2L21,2L21,3.802Z"/>
+            </g>
+</svg>

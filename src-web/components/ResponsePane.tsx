@@ -16,6 +16,7 @@ import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { StatusColor } from './core/StatusColor';
 import { Webview } from './core/Webview';
+import { EmptyStateText } from './EmptyStateText';
 
 interface Props {
   style?: CSSProperties;
@@ -109,7 +110,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         )}
       </HStack>
 
-      {!activeResponse ? null : activeResponse?.error ? (
+      {activeResponse === null ? (
+        <EmptyStateText>No Response</EmptyStateText>
+      ) : activeResponse?.error ? (
         <div className="p-1">
           <div className="text-white bg-red-500 px-3 py-3 rounded">{activeResponse.error}</div>
         </div>
