@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { buildKeyValueKey, getKeyValue, setKeyValue } from '../lib/keyValueStore';
 
@@ -24,6 +24,7 @@ export function useKeyValue<T extends Object>({
   key: string | string[];
   defaultValue: T;
 }) {
+  const queryClient = useQueryClient();
   const query = useQuery<T>({
     queryKey: keyValueQueryKey({ namespace, key }),
     queryFn: async () => getKeyValue({ namespace, key, fallback: defaultValue }),
@@ -31,6 +32,10 @@ export function useKeyValue<T extends Object>({
 
   const mutate = useMutation<T, unknown, T>({
     mutationFn: (value) => setKeyValue<T>({ namespace, key, value }),
+    onMutate: (value) => {
+      // k/v should be as fast as possible, so optimistically update the cache
+      queryClient.setQueryData(keyValueQueryKey({ namespace, key }), value);
+    },
   });
 
   const set = useCallback(
