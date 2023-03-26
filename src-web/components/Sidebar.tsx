@@ -38,7 +38,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         ref={sidebarRef}
         className={classnames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
       >
-        <VStack as="ul" className="relative py-3 overflow-auto" draggable={false}>
+        <VStack
+          as="ul"
+          className="relative py-3 overflow-y-auto overflow-x-visible"
+          draggable={false}
+        >
           <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
