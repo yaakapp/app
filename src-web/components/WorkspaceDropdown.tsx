@@ -57,7 +57,11 @@ export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: 
 
   return (
     <Dropdown items={items}>
-      <Button size="sm" className={classnames(className, '!px-2 truncate')} forDropdown>
+      <Button
+        size="sm"
+        className={classnames(className, 'text-gray-800 !px-2 truncate')}
+        forDropdown
+      >
         {activeWorkspace?.name}
       </Button>
     </Dropdown>
