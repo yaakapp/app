@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
 import { Children, cloneElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useKeyPressEvent } from 'react-use';
@@ -159,13 +160,15 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
   return (
     <Portal name="dropdown">
       <button aria-hidden title="close" className="fixed inset-0" onClick={onClose} />
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
         role="menu"
         aria-orientation="vertical"
         dir="ltr"
         ref={containerRef}
         style={containerStyles}
-        className={classnames(className, 'pointer-events-auto fixed z-50')}
+        className={classnames(className, 'mt-1 pointer-events-auto fixed z-50')}
       >
         <span
           style={triangleStyles}
@@ -199,7 +202,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
             })}
           </VStack>
         )}
-      </div>
+      </motion.div>
     </Portal>
   );
 }
