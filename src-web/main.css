@@ -23,6 +23,13 @@
         cursor: default;
     }
 
+    .hide-scrollbars {
+        &::-webkit-scrollbar-corner,
+        &::-webkit-scrollbar {
+            display: none !important;
+        }
+    }
+
     .destroy-pointer-event,
     .destroy-pointer-event * {
         pointer-events: none !important;
