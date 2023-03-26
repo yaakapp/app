@@ -11,6 +11,8 @@ const side = { gridArea: 'side' };
 const head = { gridArea: 'head' };
 const body = { gridArea: 'body' };
 
+const FLOATING_SIDEBAR_BREAKPOINT = 960;
+
 export default function Workspace() {
   const windowSize = useWindowSize();
   const styles = useMemo<CSSProperties>(
@@ -26,22 +28,16 @@ export default function Workspace() {
 
   return (
     <div className="grid w-full h-full" style={styles}>
-      <SidebarContainer style={side} floating={windowSize.width < 800}>
+      <SidebarContainer style={side} floating={windowSize.width < FLOATING_SIDEBAR_BREAKPOINT}>
         <Sidebar />
       </SidebarContainer>
       <HeaderContainer>
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderContainer>
-      <BodyContainer>
-        <RequestResponse />
-      </BodyContainer>
+      <RequestResponse style={body} vertical={windowSize.width < FLOATING_SIDEBAR_BREAKPOINT} />
     </div>
   );
 }
-
-const BodyContainer = memo(function BodyContainer({ children }: { children: ReactNode }) {
-  return <div style={body}>{children}</div>;
-});
 
 const HeaderContainer = memo(function HeaderContainer({ children }: { children: ReactNode }) {
   return (

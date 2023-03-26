@@ -69,6 +69,9 @@ export function Tabs<T>({
         <HStack space={1}>
           {tabs.map((t) => {
             const isActive = t.value === value;
+            const btnClassName = classnames(
+              isActive ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:text-gray-900',
+            );
             if (t.options) {
               return (
                 <RadioDropdown
@@ -81,9 +84,7 @@ export function Tabs<T>({
                     color="custom"
                     size="sm"
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
-                    className={classnames(
-                      isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
-                    )}
+                    className={btnClassName}
                   >
                     {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
                     <Icon icon="triangleDown" className="-mr-1.5" />
@@ -97,9 +98,7 @@ export function Tabs<T>({
                   color="custom"
                   size="sm"
                   onClick={() => handleTabChange(t.value)}
-                  className={classnames(
-                    isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900',
-                  )}
+                  className={btnClassName}
                 >
                   {t.label}
                 </Button>
