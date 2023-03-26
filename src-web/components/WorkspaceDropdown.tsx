@@ -36,21 +36,17 @@ export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: 
       ...workspaceItems,
       {
         type: 'separator',
-        label: activeWorkspace?.name,
-      },
-      {
-        label: 'Delete',
-        leftSlot: <Icon icon="trash" />,
-        onSelect: () => deleteWorkspace.mutate(),
-      },
-      {
-        type: 'separator',
         label: 'Actions',
       },
       {
         label: 'New Workspace',
         leftSlot: <Icon icon="plus" />,
         onSelect: () => createWorkspace.mutate({ name: 'New Workspace' }),
+      },
+      {
+        label: 'Delete Workspace',
+        leftSlot: <Icon icon="trash" />,
+        onSelect: () => deleteWorkspace.mutate(),
       },
     ];
   }, [workspaces, activeWorkspaceId]);
