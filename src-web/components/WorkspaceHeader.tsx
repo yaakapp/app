@@ -25,7 +25,7 @@ export function WorkspaceHeader({ className }: Props) {
         />
         <WorkspaceDropdown className="pointer-events-auto" />
       </HStack>
-      <div className="flex-[2] text-center text-gray-700 text-sm truncate pointer-events-none">
+      <div className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none">
         {activeRequest?.name}
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
