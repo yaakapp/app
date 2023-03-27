@@ -6,12 +6,12 @@ import { Icon } from './Icon';
 
 const colorStyles = {
   custom: '',
-  default: 'text-gray-700 enabled:hover:bg-gray-700/10 enabled:hover:text-gray-1000',
-  gray: 'text-gray-800 bg-highlight enabled:hover:bg-gray-500/20 enabled:hover:text-gray-1000',
-  primary: 'bg-blue-400 text-white hover:bg-blue-500',
-  secondary: 'bg-violet-400 text-white hover:bg-violet-500',
-  warning: 'bg-orange-400 text-white hover:bg-orange-500',
-  danger: 'bg-red-400 text-white hover:bg-red-500',
+  default: 'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000',
+  gray: 'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000',
+  primary: 'bg-blue-400 text-white enabled:hocus:bg-blue-500',
+  secondary: 'bg-violet-400 text-white enabled:hocus:bg-violet-500',
+  warning: 'bg-orange-400 text-white enabled:hocus:bg-orange-500',
+  danger: 'bg-red-400 text-white enabled:hocus:bg-red-500',
 };
 
 export type ButtonProps = HTMLAttributes<HTMLElement> & {
@@ -44,7 +44,8 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
       classnames(
         className,
         'outline-none whitespace-nowrap',
-        'border border-transparent focus-visible:border-blue-300',
+        // 'border border-transparent focus-visible:border-focus',
+        'focus-visible:ring ring-blue-300',
         'rounded-md flex items-center',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',

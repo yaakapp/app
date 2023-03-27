@@ -34,7 +34,7 @@ export function Dialog({
   );
 
   return (
-    <Overlay open={open} onClick={onClose} portalName="dialog">
+    <Overlay open={open} onClose={onClose} portalName="dialog">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
           role="dialog"
