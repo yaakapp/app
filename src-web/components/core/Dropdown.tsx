@@ -1,8 +1,9 @@
 import classnames from 'classnames';
+import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
 import { Children, cloneElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useKeyPressEvent } from 'react-use';
+import { useKeyPressEvent, useMount } from 'react-use';
 import { Portal } from '../Portal';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
@@ -82,6 +83,10 @@ interface MenuProps {
 function Menu({ className, items, onClose, triggerRect }: MenuProps) {
   if (triggerRect === undefined) return null;
 
+  useMount(() => {
+    console.log(document.activeElement);
+  });
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
 
@@ -155,53 +160,71 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     },
     [onClose],
   );
+
+  const handleFocus = useCallback(
+    (i: DropdownItem) => {
+      const index = items.findIndex((item) => item === i) ?? null;
+      setSelectedIndex(index);
+    },
+    [items],
+  );
+
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   return (
     <Portal name="dropdown">
-      <button aria-hidden title="close" className="fixed inset-0" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, y: -5, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        role="menu"
-        aria-orientation="vertical"
-        dir="ltr"
-        ref={containerRef}
-        style={containerStyles}
-        className={classnames(className, 'mt-1 pointer-events-auto fixed z-50')}
-      >
-        <span
-          style={triangleStyles}
-          aria-hidden
-          className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
-        />
-        {containerStyles && (
-          <VStack
-            space={0.5}
-            ref={initMenu}
-            style={menuStyles}
-            className={classnames(
-              className,
-              'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-              'border-gray-200 overflow-auto mb-1 mx-0.5',
-            )}
+      <FocusTrap>
+        <div>
+          <div tabIndex={-1} aria-hidden className="fixed inset-0" onClick={onClose} />
+          <motion.div
+            tabIndex={0}
+            initial={{ opacity: 0, y: -5, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            role="menu"
+            aria-orientation="vertical"
+            dir="ltr"
+            ref={containerRef}
+            style={containerStyles}
+            className={classnames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
           >
-            {items.map((item, i) => {
-              if (item.type === 'separator')
-                return <Separator key={i} className="my-1.5" label={item.label} />;
-              if (item.hidden) return null;
-              return (
-                <MenuItem
-                  focused={i === selectedIndex}
-                  onSelect={handleSelect}
-                  key={i + item.label}
-                  item={item}
-                />
-              );
-            })}
-          </VStack>
-        )}
-      </motion.div>
+            <span
+              aria-hidden
+              style={triangleStyles}
+              className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+            />
+            {containerStyles && (
+              <VStack
+                space={0.5}
+                ref={initMenu}
+                style={menuStyles}
+                className={classnames(
+                  className,
+                  'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
+                  'border-gray-200 overflow-auto mb-1 mx-0.5',
+                )}
+              >
+                {items.map((item, i) => {
+                  if (item.type === 'separator') {
+                    return <Separator key={i} className="my-1.5" label={item.label} />;
+                  }
+                  if (item.hidden) {
+                    return null;
+                  }
+                  return (
+                    <MenuItem
+                      focused={i === selectedIndex}
+                      onFocus={handleFocus}
+                      onSelect={handleSelect}
+                      key={i + item.label}
+                      item={item}
+                    />
+                  );
+                })}
+              </VStack>
+            )}
+          </motion.div>
+        </div>
+      </FocusTrap>
     </Portal>
   );
 }
@@ -210,11 +233,13 @@ interface MenuItemProps {
   className?: string;
   item: DropdownItem;
   onSelect: (item: DropdownItem) => void;
+  onFocus: (item: DropdownItem) => void;
   focused: boolean;
 }
 
-function MenuItem({ className, focused, item, onSelect, ...props }: MenuItemProps) {
+function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: MenuItemProps) {
   const handleClick = useCallback(() => onSelect?.(item), [item, onSelect]);
+  const handleFocus = useCallback(() => onFocus?.(item), [item, onFocus]);
 
   const initRef = useCallback(
     (el: HTMLButtonElement | null) => {
@@ -231,9 +256,10 @@ function MenuItem({ className, focused, item, onSelect, ...props }: MenuItemProp
   return (
     <button
       ref={initRef}
-      tabIndex={focused ? 0 : -1}
+      tabIndex={-1}
       onMouseEnter={(e) => e.currentTarget.focus()}
       onMouseLeave={(e) => e.currentTarget.blur()}
+      onFocus={handleFocus}
       onClick={handleClick}
       className={classnames(
         className,

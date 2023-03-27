@@ -51,7 +51,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
       className={classnames(
         className,
         'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 ',
-        'dark:bg-gray-100 rounded-md overflow-hidden border border-highlight',
+        'dark:bg-gray-100 rounded-md border border-highlight',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
@@ -103,6 +103,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                   icon="triangleDown"
                   className="ml-auto"
                   size="sm"
+                  iconSize="sm"
                 />
               </Dropdown>
             </HStack>
