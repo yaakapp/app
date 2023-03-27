@@ -108,12 +108,13 @@ export default function Workspace() {
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
       {floating ? (
-        <Overlay open={!sidebar.hidden} portalName="sidebar" onClick={sidebar.hide}>
+        <Overlay open={!sidebar.hidden} portalName="sidebar" onClose={sidebar.hide}>
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className={classnames(
               'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
+              'grid grid-rows-[auto_1fr]',
             )}
           >
             <HeaderSize className="border-transparent">

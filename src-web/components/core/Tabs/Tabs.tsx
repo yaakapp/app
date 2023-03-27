@@ -67,6 +67,8 @@ export function Tabs<T>({
         className={classnames(
           tabListClassName,
           'h-md flex items-center overflow-x-auto pb-0.5 hide-scrollbars',
+          // Give space for button focus states within overflow boundary
+          'px-2 -mx-2',
         )}
       >
         <HStack space={1} className="flex-shrink-0">

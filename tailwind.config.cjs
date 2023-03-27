@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin')
+
 /** @type {import("tailwindcss").Config} */
 module.exports = {
   darkMode: ["class", "[data-appearance=\"dark\"]"],
@@ -59,7 +61,10 @@ module.exports = {
     }
   },
   plugins: [
-    require("@tailwindcss/container-queries")
+    require("@tailwindcss/container-queries"),
+    plugin(function({ addVariant }) {
+      addVariant('hocus', ['&:hover', '&:focus'])
+    })
   ]
 };
 
