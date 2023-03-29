@@ -62,9 +62,14 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     });
     const req: HttpRequest = { ...baseRequest, body, id: '' };
     sendEphemeralRequest(req).then((response) => {
-      const { data } = JSON.parse(response.body);
-      const schema = buildClientSchema(data);
-      setGraphqlExtension(graphql(schema, {}));
+      try {
+        const { data } = JSON.parse(response.body);
+        const schema = buildClientSchema(data);
+        setGraphqlExtension(graphql(schema, {}));
+      } catch (err) {
+        console.log('Failed to parse introspection query', err);
+        return;
+      }
     });
   }, [baseRequest.url]);
 

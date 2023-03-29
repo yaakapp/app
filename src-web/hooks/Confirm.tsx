@@ -13,10 +13,10 @@ export function Confirm({ hide }: Props) {
 
   return (
     <HStack space={2} justifyContent="end">
-      <Button color="gray" onClick={hide}>
+      <Button className="focus" color="gray" onClick={hide}>
         Cancel
       </Button>
-      <Button ref={focusRef} color="primary">
+      <Button className="focus" ref={focusRef} color="primary">
         Confirm
       </Button>
     </HStack>
