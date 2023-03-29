@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
+import { appWindow } from '@tauri-apps/api/window';
 import { MotionConfig } from 'framer-motion';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -16,11 +17,13 @@ import type { SidebarDisplay } from '../hooks/useSidebarDisplay';
 import { sidebarDisplayDefaultValue, sidebarDisplayKey } from '../hooks/useSidebarDisplay';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
+import { debounce } from '../lib/debounce';
 import { extractKeyValue, getKeyValue, setKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { AppRouter } from './AppRouter';
 import { DialogProvider } from './DialogContext';
-import { appWindow, WebviewWindow } from '@tauri-apps/api/window';
+
+const UPDATE_DEBOUNCE_MILLIS = 500;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,7 +36,7 @@ const queryClient = new QueryClient({
 
 const localStoragePersister = createSyncStoragePersister({
   storage: window.localStorage,
-  throttleTime: 1000,
+  throttleTime: 1000, // 1 second
 });
 
 persistQueryClient({
@@ -42,40 +45,47 @@ persistQueryClient({
   maxAge: 1000 * 60 * 60 * 24, // 24 hours
 });
 
-await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
-  if (keyValue.updatedBy === appWindow.label) return;
-  queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));
-});
+await listen(
+  'updated_key_value',
+  debounce(({ payload: keyValue }: { payload: KeyValue }) => {
+    if (keyValue.updatedBy === appWindow.label) return;
+    queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));
+  }, UPDATE_DEBOUNCE_MILLIS),
+);
 
-await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
-  if (request.updatedBy === appWindow.label) return;
+await listen(
+  'updated_request',
+  debounce(({ payload: request }: { payload: HttpRequest }) => {
+    if (request.updatedBy === appWindow.label) return;
 
-  queryClient.setQueryData(
-    requestsQueryKey(request.workspaceId),
-    (requests: HttpRequest[] = []) => {
-      const newRequests = [];
-      let found = false;
-      for (const r of requests) {
-        if (r.id === request.id) {
-          found = true;
-          newRequests.push(request);
-        } else {
-          newRequests.push(r);
+    queryClient.setQueryData(
+      requestsQueryKey(request.workspaceId),
+      (requests: HttpRequest[] = []) => {
+        const newRequests = [];
+        let found = false;
+        for (const r of requests) {
+          if (r.id === request.id) {
+            found = true;
+            newRequests.push(request);
+          } else {
+            newRequests.push(r);
+          }
         }
-      }
-      if (!found) {
-        newRequests.push(request);
-      }
-      return newRequests;
-    },
-  );
-});
+        if (!found) {
+          newRequests.push(request);
+        }
+        return newRequests;
+      },
+    );
+  }, UPDATE_DEBOUNCE_MILLIS),
+);
 
 await listen('updated_response', ({ payload: response }: { payload: HttpResponse }) => {
   queryClient.setQueryData(
     responsesQueryKey(response.requestId),
     (responses: HttpResponse[] = []) => {
-      if (response.updatedBy === appWindow.label) return;
+      // We want updates from every response
+      // if (response.updatedBy === appWindow.label) return;
 
       const newResponses = [];
       let found = false;
@@ -95,26 +105,29 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
   );
 });
 
-await listen('updated_workspace', ({ payload: workspace }: { payload: Workspace }) => {
-  queryClient.setQueryData(workspacesQueryKey(), (workspaces: Workspace[] = []) => {
-    if (workspace.updatedBy === appWindow.label) return;
+await listen(
+  'updated_workspace',
+  debounce(({ payload: workspace }: { payload: Workspace }) => {
+    queryClient.setQueryData(workspacesQueryKey(), (workspaces: Workspace[] = []) => {
+      if (workspace.updatedBy === appWindow.label) return;
 
-    const newWorkspaces = [];
-    let found = false;
-    for (const w of workspaces) {
-      if (w.id === workspace.id) {
-        found = true;
-        newWorkspaces.push(workspace);
-      } else {
-        newWorkspaces.push(w);
+      const newWorkspaces = [];
+      let found = false;
+      for (const w of workspaces) {
+        if (w.id === workspace.id) {
+          found = true;
+          newWorkspaces.push(workspace);
+        } else {
+          newWorkspaces.push(w);
+        }
       }
-    }
-    if (!found) {
-      newWorkspaces.push(workspace);
-    }
-    return newWorkspaces;
-  });
-});
+      if (!found) {
+        newWorkspaces.push(workspace);
+      }
+      return newWorkspaces;
+    });
+  }, UPDATE_DEBOUNCE_MILLIS),
+);
 
 await listen(
   'deleted_model',

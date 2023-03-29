@@ -1,9 +1,9 @@
-use std::collections::HashMap;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use std::collections::HashMap;
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -189,7 +189,11 @@ pub async fn create_workspace(
     get_workspace(&id, pool).await
 }
 
-pub async fn duplicate_request(id: &str, updated_by: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
+pub async fn duplicate_request(
+    id: &str,
+    updated_by: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<HttpRequest, sqlx::Error> {
     let existing = get_request(id, pool)
         .await
         .expect("Failed to get request to duplicate");

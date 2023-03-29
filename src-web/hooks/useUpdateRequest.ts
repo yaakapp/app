@@ -6,27 +6,25 @@ import { requestsQueryKey } from './useRequests';
 
 export function useUpdateRequest(id: string | null) {
   const queryClient = useQueryClient();
-  return useMutation<void, unknown, Partial<HttpRequest>>({
-    mutationFn: async (patch) => {
+  return useMutation<void, unknown, Partial<HttpRequest> | ((r: HttpRequest) => HttpRequest)>({
+    mutationFn: async (v) => {
       const request = await getRequest(id);
       if (request == null) {
         throw new Error("Can't update a null request");
       }
 
-      const updatedRequest = { ...request, ...patch };
-
-      console.log('UPDATING REQUEST', patch);
-      await invoke('update_request', {
-        request: updatedRequest,
-      });
+      const newRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
+      await invoke('update_request', { request: newRequest });
     },
-    onMutate: async (patch) => {
+    onMutate: async (v) => {
       const request = await getRequest(id);
       if (request === null) return;
+
+      const newRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
       queryClient.setQueryData(
         requestsQueryKey(request?.workspaceId),
         (requests: HttpRequest[] | undefined) =>
-          requests?.map((r) => (r.id === request.id ? { ...r, ...patch } : r)),
+          requests?.map((r) => (r.id === newRequest.id ? newRequest : r)),
       );
     },
   });

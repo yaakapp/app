@@ -1,4 +1,3 @@
-import { dialog } from '@tauri-apps/api';
 import classnames from 'classnames';
 import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
@@ -99,14 +98,15 @@ function SidebarItems({
 
       const shouldUpdateAll = afterPriority - beforePriority < 1;
       if (shouldUpdateAll) {
-        newRequests.forEach((r, i) => {
-          updateRequest.mutate({ id: r.id, sortPriority: i * 1000 });
+        newRequests.forEach(({ id }, i) => {
+          const sortPriority = i * 1000;
+          const update = (r: HttpRequest) => ({ ...r, sortPriority });
+          updateRequest.mutate({ id, update });
         });
       } else {
-        updateRequest.mutate({
-          id: requestId,
-          sortPriority: afterPriority - (afterPriority - beforePriority) / 2,
-        });
+        const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
+        const update = (r: HttpRequest) => ({ ...r, sortPriority });
+        updateRequest.mutate({ id: requestId, update });
       }
     },
     [hoveredIndex, requests],
@@ -149,7 +149,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
   const [editing, setEditing] = useState<boolean>(false);
 
   const handleSubmitNameEdit = useCallback(async (el: HTMLInputElement) => {
-    await updateRequest.mutate({ name: el.value });
+    await updateRequest.mutate((r) => ({ ...r, name: el.value }));
     setEditing(false);
   }, []);
 

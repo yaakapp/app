@@ -7,7 +7,17 @@ import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
-import { BODY_TYPE_GRAPHQL, BODY_TYPE_JSON, BODY_TYPE_NONE, BODY_TYPE_XML } from '../lib/models';
+import {
+  AUTH_TYPE_BASIC,
+  AUTH_TYPE_BEARER,
+  AUTH_TYPE_NONE,
+  BODY_TYPE_GRAPHQL,
+  BODY_TYPE_JSON,
+  BODY_TYPE_NONE,
+  BODY_TYPE_XML,
+} from '../lib/models';
+import { BasicAuth } from './BasicAuth';
+import { BearerAuth } from './BearerAuth';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
@@ -43,10 +53,11 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               options: {
                 value: activeRequest.bodyType,
                 items: [
-                  { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
                   { label: 'JSON', value: BODY_TYPE_JSON },
                   { label: 'XML', value: BODY_TYPE_XML },
                   { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
+                  { type: 'separator' },
+                  { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
                 ],
                 onChange: async (bodyType) => {
                   const patch: Partial<HttpRequest> = { bodyType };
@@ -76,21 +87,36 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               options: {
                 value: activeRequest.authenticationType,
                 items: [
-                  { label: 'No Auth', shortLabel: 'Auth', value: null },
-                  { label: 'Basic', value: 'basic' },
+                  { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
+                  { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
+                  { type: 'separator' },
+                  { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
                 ],
-                onChange: async (a) => {
-                  await updateRequest.mutate({
-                    authenticationType: a,
-                    authentication: { username: '', password: '' },
-                  });
+                onChange: async (authenticationType) => {
+                  let authentication: HttpRequest['authentication'] = activeRequest?.authentication;
+                  if (authenticationType === AUTH_TYPE_BASIC) {
+                    authentication = {
+                      username: authentication.username ?? '',
+                      password: authentication.password ?? '',
+                    };
+                  } else if (authenticationType === AUTH_TYPE_BEARER) {
+                    authentication = {
+                      token: authentication.token ?? '',
+                    };
+                  }
+                  await updateRequest.mutate({ authenticationType, authentication });
                 },
               },
             },
             { value: 'params', label: 'URL Params' },
             { value: 'headers', label: 'Headers' },
           ],
-    [activeRequest?.bodyType, activeRequest?.headers, activeRequest?.authenticationType],
+    [
+      activeRequest?.bodyType,
+      activeRequest?.headers,
+      activeRequest?.authenticationType,
+      activeRequest?.authentication,
+    ],
   );
 
   const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);
@@ -123,24 +149,38 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             label="Request body"
           >
             <TabContent value="auth">
-              <div className="flex items-center justify-center min-h-[5rem]">
-                <header>Hello</header>
-              </div>
+              {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
+                <BasicAuth
+                  key={forceUpdateKey}
+                  requestId={activeRequest.id}
+                  authentication={activeRequest.authentication}
+                />
+              ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
+                <BearerAuth
+                  key={forceUpdateKey}
+                  requestId={activeRequest.id}
+                  authentication={activeRequest.authentication}
+                />
+              ) : (
+                <EmptyStateText>
+                  No Authentication {activeRequest.authenticationType}
+                </EmptyStateText>
+              )}
             </TabContent>
             <TabContent value="headers">
               <HeaderEditor
-                key={`${activeRequest.id}::${forceUpdateHeaderEditorKey}`}
+                key={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
             </TabContent>
             <TabContent value="params">
-              <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
+              <ParametersEditor key={forceUpdateKey} parameters={[]} onChange={() => null} />
             </TabContent>
             <TabContent value="body" className="pl-3 mt-1">
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
-                  key={activeRequest.id}
+                  key={forceUpdateKey}
                   useTemplating
                   placeholder="..."
                   className="!bg-gray-50"
@@ -152,7 +192,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 />
               ) : activeRequest.bodyType === BODY_TYPE_XML ? (
                 <Editor
-                  key={activeRequest.id}
+                  key={forceUpdateKey}
                   useTemplating
                   placeholder="..."
                   className="!bg-gray-50"
@@ -163,7 +203,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
                 <GraphQLEditor
-                  key={activeRequest.id}
+                  key={forceUpdateKey}
                   baseRequest={activeRequest}
                   className="!bg-gray-50"
                   defaultValue={activeRequest?.body ?? ''}
