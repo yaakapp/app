@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { appWindow } from '@tauri-apps/api/window';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
 import { requestsQueryKey } from './useRequests';
@@ -19,6 +20,9 @@ export function useUpdateRequest(id: string | null) {
     onMutate: async (v) => {
       const request = await getRequest(id);
       if (request === null) return;
+
+      // Sync updatedBy so that the UI doesn't think the update is coming from elsewhere
+      request.updatedBy = appWindow.label;
 
       const newRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
       queryClient.setQueryData(

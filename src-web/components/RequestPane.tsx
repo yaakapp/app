@@ -125,8 +125,12 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [],
   );
 
-  const forceUpdateKey =
-    activeRequest?.updatedBy === appWindow.label ? undefined : activeRequest?.updatedAt;
+  const forceUpdateKey = useMemo(() => {
+    if (activeRequest == null) return undefined;
+    if (activeRequest.updatedBy === appWindow.label) return appWindow.label;
+    return `${appWindow.label}::${activeRequest?.updatedAt}`;
+  }, [activeRequest]);
+  console.log('FORCE UPDATE KEY', forceUpdateKey);
 
   return (
     <div
