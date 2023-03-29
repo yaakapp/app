@@ -13,16 +13,16 @@ use std::env::current_dir;
 use std::fs::create_dir_all;
 
 use base64::Engine;
+use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
-use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
+use sqlx::{Pool, Sqlite};
+use tauri::regex::Regex;
 use tauri::{AppHandle, Menu, MenuItem, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
-use tauri::regex::Regex;
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
@@ -538,12 +538,6 @@ fn main() {
         .system_tray(system_tray)
         .setup(|app| {
             let handle = app.handle();
-            std::thread::spawn(move || {
-                let win = create_window(handle);
-                if let Err(e) = win.show() {
-                    println!("Failed to show window {}", e)
-                }
-            });
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app.path_resolver().app_data_dir().unwrap(),
@@ -559,11 +553,21 @@ fn main() {
                     .connect(url.as_str())
                     .await
                     .expect("Failed to connect to database");
+
+                // Create the initial window
+                let app_id = get_or_create_client_id(&pool).await;
+                let win = create_window(handle, app_id);
+                if let Err(e) = win.show() {
+                    println!("Failed to show window {}", e)
+                }
+
+                // Setup the DB handle
                 let m = Mutex::new(pool);
                 migrate_db(app.handle(), &m)
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
+
                 Ok(())
             })
         })
@@ -609,7 +613,7 @@ fn is_dev() -> bool {
     env.unwrap_or("production") != "production"
 }
 
-fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
+fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
     let default_menu = Menu::os_default("Yaak".to_string().as_str());
     let mut test_menu = Menu::new()
         .add_item(
@@ -646,8 +650,9 @@ fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
 
     let submenu = Submenu::new("Test Menu", test_menu);
 
+    let window_num = handle.windows().len();
+    let window_id = format!("{}_{}", app_id, window_num);
     let menu = default_menu.add_submenu(submenu);
-    let window_id = generate_id("win");
     let win = tauri::WindowBuilder::new(
         &handle,
         window_id,
@@ -664,28 +669,26 @@ fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
     .expect("failed to build window");
 
     let win2 = win.clone();
-    win.on_menu_event(move |event| {
-        match event.menu_item_id() {
-            "quit" => std::process::exit(0),
-            "close" => win2.close().unwrap(),
-            "zoom_reset" => win2.emit("zoom", 0).unwrap(),
-            "zoom_in" => win2.emit("zoom", 1).unwrap(),
-            "zoom_out" => win2.emit("zoom", -1).unwrap(),
-            "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
-            "refresh" => win2.emit("refresh", true).unwrap(),
-            "send_request" => win2.emit("send_request", true).unwrap(),
-            "new_window" => {
-                create_window(handle.clone()).show().unwrap();
+    win.on_menu_event(move |event| match event.menu_item_id() {
+        "quit" => std::process::exit(0),
+        "close" => win2.close().unwrap(),
+        "zoom_reset" => win2.emit("zoom", 0).unwrap(),
+        "zoom_in" => win2.emit("zoom", 1).unwrap(),
+        "zoom_out" => win2.emit("zoom", -1).unwrap(),
+        "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
+        "refresh" => win2.emit("refresh", true).unwrap(),
+        "send_request" => win2.emit("send_request", true).unwrap(),
+        "new_window" => {
+            create_window(handle.clone(), app_id.clone());
+        }
+        "toggle_devtools" => {
+            if win2.is_devtools_open() {
+                win2.close_devtools();
+            } else {
+                win2.open_devtools();
             }
-            "toggle_devtools" => {
-                if win2.is_devtools_open() {
-                    win2.close_devtools();
-                } else {
-                    win2.open_devtools();
-                }
-            }
-            _ => {}
-        };
+        }
+        _ => {}
     });
 
     let win3 = win.clone();
@@ -706,4 +709,17 @@ fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
     win.position_traffic_lights();
 
     win
+}
+
+async fn get_or_create_client_id(pool: &Pool<Sqlite>) -> String {
+    match models::get_key_value("global", "client_id", pool).await {
+        Some(kv) => kv.value,
+        None => {
+            let id = &generate_id("yaak");
+            models::set_key_value("global", "client_id", id, pool)
+                .await
+                .expect("Failed to set client id")
+                .value
+        }
+    }
 }

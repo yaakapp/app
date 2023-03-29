@@ -2,7 +2,7 @@ export interface BaseModel {
   readonly id: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly updatedBy: string;
+  updatedBy: string;
 }
 
 export interface Workspace extends BaseModel {
