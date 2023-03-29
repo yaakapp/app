@@ -13,12 +13,10 @@ import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { routePaths } from '../hooks/useRoutes';
-import type { SidebarDisplay } from '../hooks/useSidebarDisplay';
-import { sidebarDisplayDefaultValue, sidebarDisplayKey } from '../hooks/useSidebarDisplay';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { debounce } from '../lib/debounce';
-import { extractKeyValue, getKeyValue, setKeyValue } from '../lib/keyValueStore';
+import { extractKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { AppRouter } from './AppRouter';
 import { DialogProvider } from './DialogContext';
@@ -159,17 +157,6 @@ await listen('send_request', async () => {
 
 await listen('refresh', () => {
   location.reload();
-});
-
-await listen('toggle_sidebar', async () => {
-  const display = await getKeyValue<SidebarDisplay>({
-    key: sidebarDisplayKey,
-    fallback: sidebarDisplayDefaultValue,
-  });
-  await setKeyValue({
-    key: sidebarDisplayKey,
-    value: { width: display.width, hidden: !display.hidden },
-  });
 });
 
 await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
