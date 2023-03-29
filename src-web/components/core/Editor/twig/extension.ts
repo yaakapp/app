@@ -3,8 +3,8 @@ import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
+import { placeholders } from '../placeholder';
 import { textLanguageName } from '../text/extension';
-import { placeholders } from '../widgets';
 import { completions } from './completion';
 import { parser as twigParser } from './twig';
 
