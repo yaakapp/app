@@ -3,11 +3,13 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
+import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
 export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> &
   Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'> & {
     name: string;
+    type?: 'text' | 'password';
     label: string;
     hideLabel?: boolean;
     labelClassName?: string;
@@ -27,6 +29,7 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
 
 export function Input({
   label,
+  type = 'text',
   hideLabel,
   className,
   containerClassName,
@@ -42,6 +45,7 @@ export function Input({
   require,
   ...props
 }: InputProps) {
+  const [obscured, setObscured] = useState(type === 'password');
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const id = `input-${name}`;
   const inputClassName = classnames(
@@ -90,12 +94,23 @@ export function Input({
         <Editor
           id={id}
           singleLine
+          type={type === 'password' && !obscured ? 'text' : type}
           defaultValue={defaultValue}
           placeholder={placeholder}
           onChange={handleChange}
           className={inputClassName}
           {...props}
         />
+        {type === 'password' && (
+          <IconButton
+            title={obscured ? `Show ${label}` : `Obscure ${label}`}
+            size="xs"
+            className="mr-0.5"
+            iconSize="sm"
+            icon={obscured ? 'eyeClosed' : 'eye'}
+            onClick={() => setObscured((o) => !o)}
+          />
+        )}
         {rightSlot}
       </HStack>
     </VStack>

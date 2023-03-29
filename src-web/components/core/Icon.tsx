@@ -13,6 +13,7 @@ import {
   DotsHorizontalIcon,
   DotsVerticalIcon,
   DragHandleDots2Icon,
+  EyeClosedIcon,
   EyeOpenIcon,
   GearIcon,
   HamburgerMenuIcon,
@@ -33,10 +34,10 @@ import {
   TriangleRightIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
-import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPanelHiddenIcon.svg';
-import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftPanelVisibleIcon.svg';
 import classnames from 'classnames';
 import { memo } from 'react';
+import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPanelHiddenIcon.svg';
+import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftPanelVisibleIcon.svg';
 
 const icons = {
   archive: ArchiveIcon,
@@ -53,6 +54,7 @@ const icons = {
   dotsV: DotsVerticalIcon,
   drag: DragHandleDots2Icon,
   eye: EyeOpenIcon,
+  eyeClosed: EyeClosedIcon,
   gear: GearIcon,
   hamburger: HamburgerMenuIcon,
   home: HomeIcon,

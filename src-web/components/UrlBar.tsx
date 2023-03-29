@@ -52,7 +52,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
         }
         rightSlot={
           <IconButton
-            size="xs"
+            size="sm"
             title="Send Request"
             type="submit"
             color="custom"

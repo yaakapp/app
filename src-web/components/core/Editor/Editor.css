@@ -98,6 +98,11 @@
     }
 }
 
+/* Obscure text for password fields */
+.cm-wrapper.cm-obscure-text .cm-line {
+    -webkit-text-security: disc;
+}
+
 .cm-editor .cm-gutterElement {
     @apply flex items-center;
     transition: color var(--transition-duration);

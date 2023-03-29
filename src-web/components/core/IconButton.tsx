@@ -51,6 +51,7 @@ const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
         '!px-0',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-8',
+        size === 'xs' && 'w-7',
       )}
       size={size}
       {...props}
