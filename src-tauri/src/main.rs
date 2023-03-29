@@ -7,23 +7,22 @@
 #[macro_use]
 extern crate objc;
 
-use base64::Engine;
 use std::collections::HashMap;
 use std::env;
 use std::env::current_dir;
 use std::fs::create_dir_all;
 
-use http::header::{HeaderName, ACCEPT, USER_AGENT};
+use base64::Engine;
 use http::{HeaderMap, HeaderValue, Method};
+use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use reqwest::redirect::Policy;
-use serde::Serialize;
+use sqlx::{Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::types::{Json, JsonValue};
-use sqlx::{Pool, Sqlite};
-use tauri::regex::Regex;
-use tauri::{AppHandle, Menu, MenuItem, Runtime, State, Submenu, TitleBarStyle, Window, Wry};
+use sqlx::types::Json;
+use tauri::{AppHandle, Menu, MenuItem, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
+use tauri::regex::Regex;
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;

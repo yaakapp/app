@@ -5,7 +5,7 @@ import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/vie
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -15,6 +15,7 @@ import { singleLineExt } from './singleLine';
 export interface _EditorProps {
   id?: string;
   readOnly?: boolean;
+  type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
   contentType?: string;
@@ -33,6 +34,7 @@ export interface _EditorProps {
 
 export function _Editor({
   readOnly,
+  type = 'text',
   heightMode,
   contentType,
   autoFocus,
@@ -117,21 +119,18 @@ export function _Editor({
     };
   }, [wrapperRef.current, languageExtension]);
 
-  const cmContainer = useMemo(
-    () => (
-      <div
-        ref={wrapperRef}
-        dangerouslySetInnerHTML={{ __html: '' }}
-        className={classnames(
-          className,
-          'cm-wrapper text-base bg-gray-50',
-          heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
-          singleLine ? 'cm-singleline' : 'cm-multiline',
-          readOnly && 'cm-readonly',
-        )}
-      />
-    ),
-    [],
+  const cmContainer = (
+    <div
+      ref={wrapperRef}
+      className={classnames(
+        className,
+        'cm-wrapper text-base bg-gray-50',
+        type === 'password' && 'cm-obscure-text',
+        heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
+        singleLine ? 'cm-singleline' : 'cm-multiline',
+        readOnly && 'cm-readonly',
+      )}
+    />
   );
 
   if (singleLine) {

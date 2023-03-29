@@ -108,7 +108,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 },
               },
             },
-            { value: 'params', label: 'URL Params' },
+            // { value: 'params', label: 'URL Params' },
             { value: 'headers', label: 'Headers' },
           ],
     [

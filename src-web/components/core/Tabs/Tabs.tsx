@@ -101,7 +101,10 @@ export function Tabs({
                     {option && 'shortLabel' in option
                       ? option.shortLabel
                       : option?.label ?? 'Unknown'}
-                    <Icon icon="triangleDown" className="-mr-1.5" />
+                    <Icon
+                      icon="triangleDown"
+                      className={classnames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
+                    />
                   </Button>
                 </RadioDropdown>
               );

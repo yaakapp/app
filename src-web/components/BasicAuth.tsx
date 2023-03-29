@@ -29,6 +29,7 @@ export function BasicAuth({ requestId, authentication }: Props) {
         label="Password"
         name="password"
         size="sm"
+        type="password"
         defaultValue={`${authentication.password}`}
         onChange={(password: string) => {
           updateRequest.mutate((r) => ({
