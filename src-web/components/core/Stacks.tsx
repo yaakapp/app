@@ -54,7 +54,7 @@ export const VStack = forwardRef(function VStack(
 });
 
 type BaseStackProps = HTMLAttributes<HTMLElement> & {
-  as?: ComponentType | 'ul';
+  as?: ComponentType | 'ul' | 'form';
   space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center';
   justifyContent?: 'start' | 'center' | 'end';

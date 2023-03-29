@@ -82,7 +82,9 @@ export function Tabs({
               isActive ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:text-gray-900',
             );
             if ('options' in t) {
-              const option = t.options.items.find((i) => i.value === t.options?.value);
+              const option = t.options.items.find(
+                (i) => 'value' in i && i.value === t.options?.value,
+              );
               return (
                 <RadioDropdown
                   key={t.value}
@@ -96,7 +98,9 @@ export function Tabs({
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={btnClassName}
                   >
-                    {option?.shortLabel ?? option?.label ?? 'Unknown'}
+                    {option && 'shortLabel' in option
+                      ? option.shortLabel
+                      : option?.label ?? 'Unknown'}
                     <Icon icon="triangleDown" className="-mr-1.5" />
                   </Button>
                 </RadioDropdown>

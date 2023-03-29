@@ -1,27 +1,29 @@
 #![cfg_attr(
-all(not(debug_assertions), target_os = "windows"),
-windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 #[cfg(target_os = "macos")]
 #[macro_use]
 extern crate objc;
 
+use base64::Engine;
 use std::collections::HashMap;
 use std::env;
 use std::env::current_dir;
 use std::fs::create_dir_all;
 
+use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
-use http::header::{ACCEPT, HeaderName, USER_AGENT};
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
+use serde::Serialize;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::types::{Json};
-use tauri::{AppHandle, Menu, MenuItem, State, Submenu, TitleBarStyle, Window, Wry};
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
+use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
+use tauri::{AppHandle, Menu, MenuItem, Runtime, State, Submenu, TitleBarStyle, Window, Wry};
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
@@ -133,6 +135,41 @@ async fn actually_send_ephemeral_request(
         headers.insert(header_name, header_value);
     }
 
+    if let Some(b) = &request.authentication_type {
+        let empty_value = &serde_json::to_value("").unwrap();
+        if b == "basic" {
+            let a = request.authentication.0;
+            let auth = format!(
+                "{}:{}",
+                a.get("username")
+                    .unwrap_or(empty_value)
+                    .as_str()
+                    .unwrap_or(""),
+                a.get("password")
+                    .unwrap_or(empty_value)
+                    .as_str()
+                    .unwrap_or(""),
+            );
+            let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
+            headers.insert(
+                "Authorization",
+                HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),
+            );
+        } else if b == "bearer" {
+            let token = request
+                .authentication
+                .0
+                .get("token")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or("");
+            headers.insert(
+                "Authorization",
+                HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+            );
+        }
+    }
+
     let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
     let builder = client.request(m, url_string.to_string()).headers(headers);
@@ -151,7 +188,8 @@ async fn actually_send_ephemeral_request(
 
     let resp = client.execute(sendable_req).await;
 
-    let p = window.app_handle()
+    let p = window
+        .app_handle()
         .path_resolver()
         .resolve_resource("plugins/plugin.ts")
         .expect("failed to resolve resource");
@@ -177,7 +215,10 @@ async fn actually_send_ephemeral_request(
             response = models::update_response_if_id(response, window.label(), pool)
                 .await
                 .expect("Failed to update response");
-            window.app_handle().emit_all("updated_response", &response).unwrap();
+            window
+                .app_handle()
+                .emit_all("updated_response", &response)
+                .unwrap();
             Ok(response)
         }
         Err(e) => response_err(response, e.to_string(), window, pool).await,
@@ -196,10 +237,14 @@ async fn send_request(
         .await
         .expect("Failed to get request");
 
-    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], window.label(), pool)
-        .await
-        .expect("Failed to create response");
-    window.app_handle().emit_all("updated_response", &response).unwrap();
+    let response =
+        models::create_response(&req.id, 0, "", 0, None, "", vec![], window.label(), pool)
+            .await
+            .expect("Failed to create response");
+    window
+        .app_handle()
+        .emit_all("updated_response", &response)
+        .unwrap();
 
     actually_send_ephemeral_request(req, response, window, pool).await?;
     Ok(())
@@ -215,7 +260,10 @@ async fn response_err(
     response = models::update_response_if_id(response, window.label(), pool)
         .await
         .expect("Failed to update response");
-    window.app_handle().emit_all("updated_response", &response).unwrap();
+    window
+        .app_handle()
+        .emit_all("updated_response", &response)
+        .unwrap();
     Ok(response)
 }
 
@@ -294,10 +342,11 @@ async fn create_request(
         window.label(),
         pool,
     )
-        .await
-        .expect("Failed to create request");
+    .await
+    .expect("Failed to create request");
 
-    window.app_handle()
+    window
+        .app_handle()
         .emit_all("updated_request", &created_request)
         .unwrap();
 
@@ -314,7 +363,10 @@ async fn duplicate_request(
     let request = models::duplicate_request(id, window.label(), pool)
         .await
         .expect("Failed to duplicate request");
-    window.app_handle().emit_all("updated_request", &request).unwrap();
+    window
+        .app_handle()
+        .emit_all("updated_request", &request)
+        .unwrap();
     Ok(request.id)
 }
 
@@ -352,10 +404,11 @@ async fn update_request(
         window.label(),
         pool,
     )
-        .await
-        .expect("Failed to update request");
+    .await
+    .expect("Failed to update request");
 
-    window.app_handle()
+    window
+        .app_handle()
         .emit_all("updated_request", updated_request)
         .unwrap();
 
@@ -444,10 +497,14 @@ async fn workspaces(
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace =
-            models::create_workspace("My Project", "This is the default workspace", window.label(), pool)
-                .await
-                .expect("Failed to create workspace");
+        let workspace = models::create_workspace(
+            "My Project",
+            "This is the default workspace",
+            window.label(),
+            pool,
+        )
+        .await
+        .expect("Failed to create workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -597,15 +654,15 @@ fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
         window_id,
         tauri::WindowUrl::App("workspaces".into()),
     )
-        .menu(menu)
-        .fullscreen(false)
-        .resizable(true)
-        .inner_size(1100.0, 600.0)
-        .hidden_title(true)
-        .title("Yaak")
-        .title_bar_style(TitleBarStyle::Overlay)
-        .build()
-        .expect("failed to build window");
+    .menu(menu)
+    .fullscreen(false)
+    .resizable(true)
+    .inner_size(1100.0, 600.0)
+    .hidden_title(true)
+    .title("Yaak")
+    .title_bar_style(TitleBarStyle::Overlay)
+    .build()
+    .expect("failed to build window");
 
     let win2 = win.clone();
     win.on_menu_event(move |event| {

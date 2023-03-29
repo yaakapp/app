@@ -1,30 +1,39 @@
 import { useMemo } from 'react';
-import type { DropdownProps } from './Dropdown';
+import type { DropdownItemSeparator, DropdownProps } from './Dropdown';
 import { Dropdown } from './Dropdown';
 import { Icon } from './Icon';
 
-export interface RadioDropdownItem<T> {
-  label: string;
-  shortLabel?: string;
-  value: T;
-}
+export type RadioDropdownItem =
+  | {
+      type?: 'default';
+      label: string;
+      shortLabel?: string;
+      value: string | null;
+    }
+  | DropdownItemSeparator;
 
-export interface RadioDropdownProps<T = string | null> {
-  value: T;
-  onChange: (value: T) => void;
-  items: RadioDropdownItem<T>[];
+export interface RadioDropdownProps {
+  value: string | null;
+  onChange: (value: string | null) => void;
+  items: RadioDropdownItem[];
   children: DropdownProps['children'];
 }
 
-export function RadioDropdown<T>({ value, items, onChange, children }: RadioDropdownProps<T>) {
+export function RadioDropdown({ value, items, onChange, children }: RadioDropdownProps) {
   const dropdownItems = useMemo(
     () =>
-      items.map(({ label, shortLabel, value: v }) => ({
-        label,
-        shortLabel,
-        onSelect: () => onChange(v),
-        leftSlot: <Icon icon={value === v ? 'check' : 'empty'} />,
-      })),
+      items.map((item) => {
+        if (item.type === 'separator') {
+          return item;
+        } else {
+          return {
+            label: item.label,
+            shortLabel: item.shortLabel,
+            onSelect: () => onChange(item.value),
+            leftSlot: <Icon icon={value === item.value ? 'check' : 'empty'} />,
+          };
+        }
+      }),
     [value, items],
   );
 

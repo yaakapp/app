@@ -69,7 +69,7 @@ export function Input({
         htmlFor={id}
         className={classnames(
           labelClassName,
-          'font-semibold text-sm uppercase text-gray-700',
+          'font-semibold text-xs uppercase text-gray-700',
           hideLabel && 'sr-only',
         )}
       >

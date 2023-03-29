@@ -24,6 +24,7 @@ export const BODY_TYPE_XML = 'text/xml';
 
 export const AUTH_TYPE_NONE = null;
 export const AUTH_TYPE_BASIC = 'basic';
+export const AUTH_TYPE_BEARER = 'bearer';
 
 export interface HttpRequest extends BaseModel {
   readonly workspaceId: string;
@@ -33,7 +34,7 @@ export interface HttpRequest extends BaseModel {
   url: string;
   body: string | null;
   bodyType: string | null;
-  authentication: any | null;
+  authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
   auth: Record<string, string | number | null>;
   authType: string | null;
