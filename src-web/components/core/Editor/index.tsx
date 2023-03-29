@@ -1,6 +1,10 @@
 import { memo } from 'react';
-import { _Editor } from './Editor';
-import type { _EditorProps } from './Editor';
 
-export type EditorProps = _EditorProps;
-export const Editor = memo(_Editor);
+export type { EditorProps } from './Editor';
+const editor = await import('./Editor');
+
+export const Editor = memo(editor.Editor);
+export const graphql = editor.graphql;
+export const getIntrospectionQuery = editor.getIntrospectionQuery;
+export const buildClientSchema = editor.buildClientSchema;
+export const formatGraphQL = editor.formatSdl;

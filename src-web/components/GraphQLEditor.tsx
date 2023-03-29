@@ -1,13 +1,16 @@
 import type { Extension } from '@codemirror/state';
-import { graphql } from 'cm6-graphql';
-import { formatSdl } from 'format-graphql';
-import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
 import { useEffect, useMemo, useState } from 'react';
 import { useUniqueKey } from '../hooks/useUniqueKey';
 import type { HttpRequest } from '../lib/models';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import type { EditorProps } from './core/Editor';
-import { Editor } from './core/Editor';
+import {
+  buildClientSchema,
+  Editor,
+  formatGraphQL,
+  getIntrospectionQuery,
+  graphql,
+} from './core/Editor';
 import { Separator } from './core/Separator';
 
 type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'> & {
@@ -83,7 +86,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         onChange={handleChangeQuery}
         contentType="application/graphql"
         placeholder="..."
-        format={formatSdl}
+        format={formatGraphQL}
         {...extraEditorProps}
       />
       <Separator variant="primary" />
