@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowSize } from 'react-use';
 import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { WINDOW_FLOATING_SIDEBAR_WIDTH } from '../lib/constants';
+import { Button } from './core/Button';
 import { Overlay } from './Overlay';
 import { RequestResponse } from './RequestResponse';
 import { ResizeHandle } from './ResizeHandle';
@@ -89,6 +90,14 @@ export default function Workspace() {
     }),
     [sideWidth, floating],
   );
+
+  if (windowSize.width <= 100) {
+    return (
+      <div>
+        <Button>Send</Button>
+      </div>
+    );
+  }
 
   return (
     <div

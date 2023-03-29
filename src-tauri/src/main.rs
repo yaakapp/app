@@ -18,13 +18,15 @@ use reqwest::redirect::Policy;
 use sqlx::{Pool, Sqlite};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::types::Json;
-use tauri::{AppHandle, Menu, MenuItem, State, Submenu, Wry};
+use sqlx::types::{Json};
+use tauri::{AppHandle, Menu, MenuItem, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tauri::regex::Regex;
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
+
+use crate::models::generate_id;
 
 mod models;
 mod runtime;
@@ -60,18 +62,18 @@ async fn migrate_db(
 #[tauri::command]
 async fn send_ephemeral_request(
     request: models::HttpRequest,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
-    return actually_send_ephemeral_request(request, response, app_handle, pool).await;
+    return actually_send_ephemeral_request(request, response, window, pool).await;
 }
 
 async fn actually_send_ephemeral_request(
     request: models::HttpRequest,
     mut response: models::HttpResponse,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
@@ -131,8 +133,8 @@ async fn actually_send_ephemeral_request(
         headers.insert(header_name, header_value);
     }
 
-    let m =
-        Method::from_bytes(request.method.to_uppercase().as_bytes()).expect("Failed to create method");
+    let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
+        .expect("Failed to create method");
     let builder = client.request(m, url_string.to_string()).headers(headers);
 
     let sendable_req_result = match (request.body, request.body_type) {
@@ -143,13 +145,13 @@ async fn actually_send_ephemeral_request(
     let sendable_req = match sendable_req_result {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle, pool).await;
+            return response_err(response, e.to_string(), window, pool).await;
         }
     };
 
     let resp = client.execute(sendable_req).await;
 
-    let p = app_handle
+    let p = window.app_handle()
         .path_resolver()
         .resolve_resource("plugins/plugin.ts")
         .expect("failed to resolve resource");
@@ -172,19 +174,19 @@ async fn actually_send_ephemeral_request(
             response.url = v.url().to_string();
             response.body = v.text().await.expect("Failed to get body");
             response.elapsed = start.elapsed().as_millis() as i64;
-            response = models::update_response_if_id(response, pool)
+            response = models::update_response_if_id(response, window.label(), pool)
                 .await
                 .expect("Failed to update response");
-            app_handle.emit_all("updated_response", &response).unwrap();
+            window.app_handle().emit_all("updated_response", &response).unwrap();
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
+        Err(e) => response_err(response, e.to_string(), window, pool).await,
     }
 }
 
 #[tauri::command]
 async fn send_request(
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
 ) -> Result<(), String> {
@@ -194,26 +196,26 @@ async fn send_request(
         .await
         .expect("Failed to get request");
 
-    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
+    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], window.label(), pool)
         .await
         .expect("Failed to create response");
-    app_handle.emit_all("updated_response", &response).unwrap();
+    window.app_handle().emit_all("updated_response", &response).unwrap();
 
-    actually_send_ephemeral_request(req, response, app_handle, pool).await?;
+    actually_send_ephemeral_request(req, response, window, pool).await?;
     Ok(())
 }
 
 async fn response_err(
     mut response: models::HttpResponse,
     error: String,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     response.error = Some(error.clone());
-    response = models::update_response_if_id(response, pool)
+    response = models::update_response_if_id(response, window.label(), pool)
         .await
         .expect("Failed to update response");
-    app_handle.emit_all("updated_response", &response).unwrap();
+    window.app_handle().emit_all("updated_response", &response).unwrap();
     Ok(response)
 }
 
@@ -237,10 +239,9 @@ async fn set_key_value(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
-    let created_key_value =
-        models::set_key_value(namespace, key, value, pool)
-            .await
-            .expect("Failed to create key value");
+    let created_key_value = models::set_key_value(namespace, key, value, pool)
+        .await
+        .expect("Failed to create key value");
 
     app_handle
         .emit_all("updated_key_value", &created_key_value)
@@ -252,14 +253,16 @@ async fn set_key_value(
 #[tauri::command]
 async fn create_workspace(
     name: &str,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
-    let created_workspace =
-        models::create_workspace(name, "", pool).await.expect("Failed to create workspace");
+    let created_workspace = models::create_workspace(name, "", window.label(), pool)
+        .await
+        .expect("Failed to create workspace");
 
-    app_handle
+    window
+        .app_handle()
         .emit_all("updated_workspace", &created_workspace)
         .unwrap();
 
@@ -271,17 +274,30 @@ async fn create_request(
     workspace_id: &str,
     name: &str,
     sort_priority: f64,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
     let headers = Vec::new();
-    let created_request =
-        models::upsert_request(None, workspace_id, name, "GET", None, None, "", headers, sort_priority, pool)
-            .await
-            .expect("Failed to create request");
+    let created_request = models::upsert_request(
+        None,
+        workspace_id,
+        name,
+        "GET",
+        None,
+        None,
+        HashMap::new(),
+        None,
+        "",
+        headers,
+        sort_priority,
+        window.label(),
+        pool,
+    )
+        .await
+        .expect("Failed to create request");
 
-    app_handle
+    window.app_handle()
         .emit_all("updated_request", &created_request)
         .unwrap();
 
@@ -291,21 +307,21 @@ async fn create_request(
 #[tauri::command]
 async fn duplicate_request(
     id: &str,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
-    let request = models::duplicate_request(id, pool).await.expect("Failed to duplicate request");
-    app_handle
-        .emit_all("updated_request", &request)
-        .unwrap();
+    let request = models::duplicate_request(id, window.label(), pool)
+        .await
+        .expect("Failed to duplicate request");
+    window.app_handle().emit_all("updated_request", &request).unwrap();
     Ok(request.id)
 }
 
 #[tauri::command]
 async fn update_request(
     request: models::HttpRequest,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
@@ -320,6 +336,7 @@ async fn update_request(
         None => None,
     };
 
+    // TODO: Figure out how to make this better
     let updated_request = models::upsert_request(
         Some(request.id.as_str()),
         request.workspace_id.as_str(),
@@ -327,15 +344,18 @@ async fn update_request(
         request.method.as_str(),
         body,
         request.body_type,
+        request.authentication.0,
+        request.authentication_type,
         request.url.as_str(),
         request.headers.0,
         request.sort_priority,
+        window.label(),
         pool,
     )
         .await
         .expect("Failed to update request");
 
-    app_handle
+    window.app_handle()
         .emit_all("updated_request", updated_request)
         .unwrap();
 
@@ -373,7 +393,9 @@ async fn get_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-    models::get_request(id, pool).await.map_err(|e| e.to_string())
+    models::get_request(id, pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -415,15 +437,17 @@ async fn delete_all_responses(
 #[tauri::command]
 async fn workspaces(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    window: Window<Wry>,
 ) -> Result<Vec<models::Workspace>, String> {
     let pool = &*db_instance.lock().await;
     let workspaces = models::find_workspaces(pool)
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace = models::create_workspace("My Project", "This is the default workspace", pool)
-            .await
-            .expect("Failed to create workspace");
+        let workspace =
+            models::create_workspace("My Project", "This is the default workspace", window.label(), pool)
+                .await
+                .expect("Failed to create workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -454,36 +478,16 @@ fn main() {
     let tray_menu = SystemTrayMenu::new().add_item(quit);
     let system_tray = SystemTray::new().with_menu(tray_menu);
 
-    let default_menu = Menu::os_default("Yaak".to_string().as_str());
-    let mut test_menu = Menu::new()
-        .add_item(CustomMenuItem::new("send_request".to_string(), "Send Request").accelerator("CmdOrCtrl+r"))
-        .add_item(CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size").accelerator("CmdOrCtrl+0"))
-        .add_item(CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"))
-        .add_item(CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"))
-        .add_item(CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar").accelerator("CmdOrCtrl+b"));
-    if is_dev() {
-        test_menu = test_menu
-            .add_native_item(MenuItem::Separator)
-            .add_item(CustomMenuItem::new("refresh".to_string(), "Refresh").accelerator("CmdOrCtrl + Shift + r"))
-            .add_item(CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools").accelerator("CmdOrCtrl + Option + i"));
-    }
-
-    let submenu = Submenu::new("Test Menu", test_menu);
-
-    let menu = default_menu.add_submenu(submenu);
-
     tauri::Builder::default()
-        .menu(menu)
         .system_tray(system_tray)
         .setup(|app| {
-            let win = app.get_window("main").unwrap();
-
-            #[cfg(target_os = "macos")]
-            win.position_traffic_lights();
-
-            Ok(())
-        })
-        .setup(|app| {
+            let handle = app.handle();
+            std::thread::spawn(move || {
+                let win = create_window(handle);
+                if let Err(e) = win.show() {
+                    println!("Failed to show window {}", e)
+                }
+            });
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app.path_resolver().app_data_dir().unwrap(),
@@ -521,40 +525,6 @@ fn main() {
                 };
             }
         })
-        .on_menu_event(|event| {
-            match event.menu_item_id() {
-                "quit" => std::process::exit(0),
-                "close" => event.window().close().unwrap(),
-                "zoom_reset" => event.window().emit("zoom", 0).unwrap(),
-                "zoom_in" => event.window().emit("zoom", 1).unwrap(),
-                "zoom_out" => event.window().emit("zoom", -1).unwrap(),
-                "toggle_sidebar" => event.window().emit("toggle_sidebar", true).unwrap(),
-                "refresh" => event.window().emit("refresh", true).unwrap(),
-                "send_request" => event.window().emit("send_request", true).unwrap(),
-                "toggle_devtools" => {
-                    if event.window().is_devtools_open() {
-                        event.window().close_devtools();
-                    } else {
-                        event.window().open_devtools();
-                    }
-                }
-                _ => {}
-            };
-        })
-        .on_window_event(|e| {
-            let apply_offset = || {
-                let win = e.window();
-
-                #[cfg(target_os = "macos")]
-                win.position_traffic_lights();
-            };
-
-            match e.event() {
-                WindowEvent::Resized(..) => apply_offset(),
-                WindowEvent::ThemeChanged(..) => apply_offset(),
-                _ => {}
-            }
-        })
         .invoke_handler(tauri::generate_handler![
             greet,
             workspaces,
@@ -581,4 +551,103 @@ fn main() {
 fn is_dev() -> bool {
     let env = option_env!("YAAK_ENV");
     env.unwrap_or("production") != "production"
+}
+
+fn create_window(handle: AppHandle<Wry>) -> Window<Wry> {
+    let default_menu = Menu::os_default("Yaak".to_string().as_str());
+    let mut test_menu = Menu::new()
+        .add_item(
+            CustomMenuItem::new("send_request".to_string(), "Send Request")
+                .accelerator("CmdOrCtrl+r"),
+        )
+        .add_item(
+            CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size")
+                .accelerator("CmdOrCtrl+0"),
+        )
+        .add_item(
+            CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"),
+        )
+        .add_item(
+            CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"),
+        )
+        .add_item(
+            CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
+                .accelerator("CmdOrCtrl+b"),
+        );
+    if is_dev() {
+        test_menu = test_menu
+            .add_native_item(MenuItem::Separator)
+            .add_item(
+                CustomMenuItem::new("refresh".to_string(), "Refresh")
+                    .accelerator("CmdOrCtrl + Shift + r"),
+            )
+            .add_item(
+                CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
+                    .accelerator("CmdOrCtrl + Option + i"),
+            )
+            .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
+    }
+
+    let submenu = Submenu::new("Test Menu", test_menu);
+
+    let menu = default_menu.add_submenu(submenu);
+    let window_id = generate_id("win");
+    let win = tauri::WindowBuilder::new(
+        &handle,
+        window_id,
+        tauri::WindowUrl::App("workspaces".into()),
+    )
+        .menu(menu)
+        .fullscreen(false)
+        .resizable(true)
+        .inner_size(1100.0, 600.0)
+        .hidden_title(true)
+        .title("Yaak")
+        .title_bar_style(TitleBarStyle::Overlay)
+        .build()
+        .expect("failed to build window");
+
+    let win2 = win.clone();
+    win.on_menu_event(move |event| {
+        match event.menu_item_id() {
+            "quit" => std::process::exit(0),
+            "close" => win2.close().unwrap(),
+            "zoom_reset" => win2.emit("zoom", 0).unwrap(),
+            "zoom_in" => win2.emit("zoom", 1).unwrap(),
+            "zoom_out" => win2.emit("zoom", -1).unwrap(),
+            "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
+            "refresh" => win2.emit("refresh", true).unwrap(),
+            "send_request" => win2.emit("send_request", true).unwrap(),
+            "new_window" => {
+                create_window(handle.clone()).show().unwrap();
+            }
+            "toggle_devtools" => {
+                if win2.is_devtools_open() {
+                    win2.close_devtools();
+                } else {
+                    win2.open_devtools();
+                }
+            }
+            _ => {}
+        };
+    });
+
+    let win3 = win.clone();
+    win.on_window_event(move |e| {
+        let apply_offset = || {
+            #[cfg(target_os = "macos")]
+            win3.position_traffic_lights();
+        };
+
+        match e {
+            WindowEvent::Resized(..) => apply_offset(),
+            WindowEvent::ThemeChanged(..) => apply_offset(),
+            _ => {}
+        }
+    });
+
+    #[cfg(target_os = "macos")]
+    win.position_traffic_lights();
+
+    win
 }

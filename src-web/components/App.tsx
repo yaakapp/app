@@ -1,6 +1,5 @@
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
@@ -21,6 +20,7 @@ import { extractKeyValue, getKeyValue, setKeyValue } from '../lib/keyValueStore'
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { AppRouter } from './AppRouter';
 import { DialogProvider } from './DialogContext';
+import { appWindow, WebviewWindow } from '@tauri-apps/api/window';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,10 +43,13 @@ persistQueryClient({
 });
 
 await listen('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
+  if (keyValue.updatedBy === appWindow.label) return;
   queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));
 });
 
 await listen('updated_request', ({ payload: request }: { payload: HttpRequest }) => {
+  if (request.updatedBy === appWindow.label) return;
+
   queryClient.setQueryData(
     requestsQueryKey(request.workspaceId),
     (requests: HttpRequest[] = []) => {
@@ -72,6 +75,8 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
   queryClient.setQueryData(
     responsesQueryKey(response.requestId),
     (responses: HttpResponse[] = []) => {
+      if (response.updatedBy === appWindow.label) return;
+
       const newResponses = [];
       let found = false;
       for (const r of responses) {
@@ -92,6 +97,8 @@ await listen('updated_response', ({ payload: response }: { payload: HttpResponse
 
 await listen('updated_workspace', ({ payload: workspace }: { payload: Workspace }) => {
   queryClient.setQueryData(workspacesQueryKey(), (workspaces: Workspace[] = []) => {
+    if (workspace.updatedBy === appWindow.label) return;
+
     const newWorkspaces = [];
     let found = false;
     for (const w of workspaces) {
@@ -175,7 +182,7 @@ export function App() {
           <DndProvider backend={HTML5Backend}>
             <DialogProvider>
               <AppRouter />
-              <ReactQueryDevtools initialIsOpen={false} />
+              {/*<ReactQueryDevtools initialIsOpen={false} />*/}
             </DialogProvider>
           </DndProvider>
         </HelmetProvider>

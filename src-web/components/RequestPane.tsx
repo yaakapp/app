@@ -1,3 +1,4 @@
+import { appWindow } from '@tauri-apps/api/window';
 import classnames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
@@ -6,7 +7,7 @@ import { useKeyValue } from '../hooks/useKeyValue';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
-import { HttpRequestBodyType } from '../lib/models';
+import { BODY_TYPE_GRAPHQL, BODY_TYPE_JSON, BODY_TYPE_NONE, BODY_TYPE_XML } from '../lib/models';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
@@ -32,45 +33,64 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     defaultValue: 'body',
   });
 
-  const tabs: TabItem<HttpRequest['bodyType']>[] = useMemo(
-    () => [
-      {
-        value: 'body',
-        label: activeRequest?.bodyType ?? 'No Body',
-        options: {
-          onChange: async (bodyType: HttpRequest['bodyType']) => {
-            const patch: Partial<HttpRequest> = { bodyType };
-            if (bodyType == HttpRequestBodyType.GraphQL) {
-              patch.method = 'POST';
-              patch.headers = [
-                ...(activeRequest?.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
-                  []),
-                {
-                  name: 'Content-Type',
-                  value: 'application/json',
-                  enabled: true,
+  const tabs: TabItem[] = useMemo(
+    () =>
+      activeRequest === null
+        ? []
+        : [
+            {
+              value: 'body',
+              options: {
+                value: activeRequest.bodyType,
+                items: [
+                  { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
+                  { label: 'JSON', value: BODY_TYPE_JSON },
+                  { label: 'XML', value: BODY_TYPE_XML },
+                  { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
+                ],
+                onChange: async (bodyType) => {
+                  const patch: Partial<HttpRequest> = { bodyType };
+                  if (bodyType == BODY_TYPE_GRAPHQL) {
+                    patch.method = 'POST';
+                    patch.headers = [
+                      ...(activeRequest?.headers.filter(
+                        (h) => h.name.toLowerCase() !== 'content-type',
+                      ) ?? []),
+                      {
+                        name: 'Content-Type',
+                        value: 'application/json',
+                        enabled: true,
+                      },
+                    ];
+                    setTimeout(() => {
+                      setForceUpdateHeaderEditorKey((u) => u + 1);
+                    }, 100);
+                  }
+                  await updateRequest.mutate(patch);
                 },
-              ];
-              setTimeout(() => {
-                setForceUpdateHeaderEditorKey((u) => u + 1);
-              }, 100);
-            }
-            await updateRequest.mutate(patch);
-          },
-          value: activeRequest?.bodyType ?? null,
-          items: [
-            { label: 'No Body', value: null },
-            { label: 'JSON', value: HttpRequestBodyType.JSON },
-            { label: 'XML', value: HttpRequestBodyType.XML },
-            { label: 'GraphQL', value: HttpRequestBodyType.GraphQL },
+              },
+            },
+            {
+              value: 'auth',
+              label: 'Auth',
+              options: {
+                value: activeRequest.authenticationType,
+                items: [
+                  { label: 'No Auth', shortLabel: 'Auth', value: null },
+                  { label: 'Basic', value: 'basic' },
+                ],
+                onChange: async (a) => {
+                  await updateRequest.mutate({
+                    authenticationType: a,
+                    authentication: { username: '', password: '' },
+                  });
+                },
+              },
+            },
+            { value: 'params', label: 'URL Params' },
+            { value: 'headers', label: 'Headers' },
           ],
-        },
-      },
-      { value: 'params', label: 'URL Params' },
-      { value: 'headers', label: 'Headers' },
-      { value: 'auth', label: 'Auth' },
-    ],
-    [activeRequest?.bodyType, activeRequest?.headers],
+    [activeRequest?.bodyType, activeRequest?.headers, activeRequest?.authenticationType],
   );
 
   const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);
@@ -79,6 +99,9 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [],
   );
 
+  const forceUpdateKey =
+    activeRequest?.updatedBy === appWindow.label ? undefined : activeRequest?.updatedAt;
+
   return (
     <div
       style={style}
@@ -86,7 +109,12 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     >
       {activeRequest && (
         <>
-          <UrlBar id={activeRequest.id} url={activeRequest.url} method={activeRequest.method} />
+          <UrlBar
+            key={forceUpdateKey}
+            id={activeRequest.id}
+            url={activeRequest.url}
+            method={activeRequest.method}
+          />
           <Tabs
             value={activeTab.value}
             onChangeValue={activeTab.set}
@@ -110,7 +138,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               <ParametersEditor key={activeRequestId} parameters={[]} onChange={() => null} />
             </TabContent>
             <TabContent value="body" className="pl-3 mt-1">
-              {activeRequest.bodyType === HttpRequestBodyType.JSON ? (
+              {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
                   key={activeRequest.id}
                   useTemplating
@@ -122,7 +150,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   onChange={handleBodyChange}
                   format={(v) => tryFormatJson(v)}
                 />
-              ) : activeRequest.bodyType === HttpRequestBodyType.XML ? (
+              ) : activeRequest.bodyType === BODY_TYPE_XML ? (
                 <Editor
                   key={activeRequest.id}
                   useTemplating
@@ -133,7 +161,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   contentType="text/xml"
                   onChange={handleBodyChange}
                 />
-              ) : activeRequest.bodyType === HttpRequestBodyType.GraphQL ? (
+              ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
                 <GraphQLEditor
                   key={activeRequest.id}
                   baseRequest={activeRequest}

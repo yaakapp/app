@@ -3,7 +3,7 @@ import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
 import { Children, cloneElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useKeyPressEvent, useMount } from 'react-use';
+import { useKeyPressEvent } from 'react-use';
 import { Portal } from '../Portal';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
@@ -83,10 +83,6 @@ interface MenuProps {
 function Menu({ className, items, onClose, triggerRect }: MenuProps) {
   if (triggerRect === undefined) return null;
 
-  useMount(() => {
-    console.log(document.activeElement);
-  });
-
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
 
@@ -97,6 +93,10 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     const menuBox = el.getBoundingClientRect();
     setMenuStyles({ maxHeight: windowBox.height - menuBox.top - 5 });
   }, []);
+
+  useKeyPressEvent('Escape', () => {
+    onClose();
+  });
 
   useKeyPressEvent('ArrowUp', () => {
     setSelectedIndex((currIndex) => {

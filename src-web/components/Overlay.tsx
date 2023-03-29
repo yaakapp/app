@@ -35,6 +35,8 @@ export function Overlay({ zIndex = 30, open, onClose, portalName, children }: Pr
               onClick={onClose}
               className="absolute inset-0 bg-gray-600/60 dark:bg-black/50"
             />
+            {/* Add region to still be able to drag the window */}
+            <div data-tauri-drag-region className="absolute top-0 left-0 right-0 h-md" />
             {children}
           </motion.div>
         </FocusTrap>
