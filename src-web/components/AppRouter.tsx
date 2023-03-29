@@ -1,8 +1,9 @@
 import { Suspense } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
-import Workspace from './Workspace';
+import { useTauriListeners } from '../hooks/useTauriListeners';
 import RouteError from './RouteError';
+import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 
 const router = createBrowserRouter([
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
+  useTauriListeners();
   return (
     <Suspense>
       <RouterProvider router={router} />

@@ -41,12 +41,14 @@ export function useKeyValue<T extends Object>({
   const set = useCallback(
     (value: ((v: T) => T) | T) => {
       if (typeof value === 'function') {
-        mutate.mutate(value(query.data ?? defaultValue));
+        getKeyValue({ namespace, key, fallback: defaultValue }).then((kv) => {
+          mutate.mutate(value(kv));
+        });
       } else {
         mutate.mutate(value);
       }
     },
-    [query.data, defaultValue],
+    [defaultValue],
   );
 
   const reset = useCallback(() => mutate.mutate(defaultValue), [defaultValue]);
