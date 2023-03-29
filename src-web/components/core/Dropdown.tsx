@@ -8,6 +8,11 @@ import { Portal } from '../Portal';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
 
+export type DropdownItemSeparator = {
+  type: 'separator';
+  label?: string;
+};
+
 export type DropdownItem =
   | {
       type?: 'default';
@@ -18,10 +23,7 @@ export type DropdownItem =
       rightSlot?: ReactNode;
       onSelect?: () => void;
     }
-  | {
-      type: 'separator';
-      label?: string;
-    };
+  | DropdownItemSeparator;
 
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
