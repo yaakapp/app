@@ -45,7 +45,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
         className,
         'outline-none whitespace-nowrap',
         // 'border border-transparent focus-visible:border-focus',
-        'focus-visible:ring ring-blue-300',
+        'focus-visible-or-class:ring ring-blue-300',
         'rounded-md flex items-center',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',

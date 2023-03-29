@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
-import { act } from 'react-dom/test-utils';
+import { useMemo } from 'react';
 import type { Workspace } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useWorkspaces } from './useWorkspaces';

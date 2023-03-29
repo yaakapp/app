@@ -1,7 +1,8 @@
 export interface BaseModel {
   readonly id: string;
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly updatedBy: string;
 }
 
 export interface Workspace extends BaseModel {
@@ -16,11 +17,13 @@ export interface HttpHeader {
   enabled?: boolean;
 }
 
-export enum HttpRequestBodyType {
-  GraphQL = 'graphql',
-  JSON = 'application/json',
-  XML = 'text/xml',
-}
+export const BODY_TYPE_NONE = null;
+export const BODY_TYPE_GRAPHQL = 'graphql';
+export const BODY_TYPE_JSON = 'application/json';
+export const BODY_TYPE_XML = 'text/xml';
+
+export const AUTH_TYPE_NONE = null;
+export const AUTH_TYPE_BASIC = 'basic';
 
 export interface HttpRequest extends BaseModel {
   readonly workspaceId: string;
@@ -29,7 +32,11 @@ export interface HttpRequest extends BaseModel {
   name: string;
   url: string;
   body: string | null;
-  bodyType: HttpRequestBodyType | null;
+  bodyType: string | null;
+  authentication: any | null;
+  authenticationType: string | null;
+  auth: Record<string, string | number | null>;
+  authType: string | null;
   method: string;
   headers: HttpHeader[];
 }

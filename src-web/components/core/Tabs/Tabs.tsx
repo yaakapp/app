@@ -7,23 +7,27 @@ import type { RadioDropdownProps } from '../RadioDropdown';
 import { RadioDropdown } from '../RadioDropdown';
 import { HStack } from '../Stacks';
 
-export type TabItem<T = string> = {
-  value: string;
-  label: string;
-  options?: Omit<RadioDropdownProps<T>, 'children'>;
-};
+export type TabItem =
+  | {
+      value: string;
+      label: string;
+    }
+  | {
+      value: string;
+      options: Omit<RadioDropdownProps, 'children'>;
+    };
 
-interface Props<T = unknown> {
+interface Props {
   label: string;
   value?: string;
   onChangeValue: (value: string) => void;
-  tabs: TabItem<T>[];
+  tabs: TabItem[];
   tabListClassName?: string;
   className?: string;
   children: ReactNode;
 }
 
-export function Tabs<T>({
+export function Tabs({
   value,
   onChangeValue,
   label,
@@ -31,7 +35,7 @@ export function Tabs<T>({
   tabs,
   className,
   tabListClassName,
-}: Props<T>) {
+}: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const handleTabChange = (value: string) => {
@@ -77,7 +81,8 @@ export function Tabs<T>({
             const btnClassName = classnames(
               isActive ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:text-gray-900',
             );
-            if (t.options) {
+            if ('options' in t) {
+              const option = t.options.items.find((i) => i.value === t.options?.value);
               return (
                 <RadioDropdown
                   key={t.value}
@@ -91,7 +96,7 @@ export function Tabs<T>({
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={btnClassName}
                   >
-                    {t.options.items.find((i) => i.value === t.options?.value)?.label ?? ''}
+                    {option?.shortLabel ?? option?.label ?? 'Unknown'}
                     <Icon icon="triangleDown" className="-mr-1.5" />
                   </Button>
                 </RadioDropdown>

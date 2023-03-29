@@ -5,10 +5,11 @@ import { Icon } from './Icon';
 
 export interface RadioDropdownItem<T> {
   label: string;
+  shortLabel?: string;
   value: T;
 }
 
-export interface RadioDropdownProps<T> {
+export interface RadioDropdownProps<T = string | null> {
   value: T;
   onChange: (value: T) => void;
   items: RadioDropdownItem<T>[];
@@ -18,8 +19,9 @@ export interface RadioDropdownProps<T> {
 export function RadioDropdown<T>({ value, items, onChange, children }: RadioDropdownProps<T>) {
   const dropdownItems = useMemo(
     () =>
-      items.map(({ label, value: v }) => ({
+      items.map(({ label, shortLabel, value: v }) => ({
         label,
+        shortLabel,
         onSelect: () => onChange(v),
         leftSlot: <Icon icon={value === v ? 'check' : 'empty'} />,
       })),
