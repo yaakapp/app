@@ -12,7 +12,12 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
 
-export interface _EditorProps {
+// Export some things so all the code-split parts are in this file
+export { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
+export { graphql } from 'cm6-graphql';
+export { formatSdl } from 'format-graphql';
+
+export interface EditorProps {
   id?: string;
   readOnly?: boolean;
   type?: 'text' | 'password';
@@ -32,7 +37,7 @@ export interface _EditorProps {
   autocomplete?: GenericCompletionConfig;
 }
 
-export function _Editor({
+export function Editor({
   readOnly,
   type = 'text',
   heightMode,
@@ -48,18 +53,18 @@ export function _Editor({
   singleLine,
   format,
   autocomplete,
-}: _EditorProps) {
+}: EditorProps) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   // Use ref so we can update the onChange handler without re-initializing the editor
-  const handleChange = useRef<_EditorProps['onChange']>(onChange);
+  const handleChange = useRef<EditorProps['onChange']>(onChange);
   useEffect(() => {
     handleChange.current = onChange;
   }, [onChange]);
 
   // Use ref so we can update the onChange handler without re-initializing the editor
-  const handleFocus = useRef<_EditorProps['onFocus']>(onFocus);
+  const handleFocus = useRef<EditorProps['onFocus']>(onFocus);
   useEffect(() => {
     handleFocus.current = onFocus;
   }, [onFocus]);
@@ -167,10 +172,10 @@ function getExtensions({
   singleLine,
   onChange,
   onFocus,
-}: Pick<_EditorProps, 'singleLine' | 'readOnly'> & {
+}: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
-  onChange: MutableRefObject<_EditorProps['onChange']>;
-  onFocus: MutableRefObject<_EditorProps['onFocus']>;
+  onChange: MutableRefObject<EditorProps['onChange']>;
+  onFocus: MutableRefObject<EditorProps['onFocus']>;
 }) {
   // TODO: Ensure tooltips render inside the dialog if we are in one.
   const parent =
