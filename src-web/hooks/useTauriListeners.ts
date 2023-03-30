@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { listen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { debounce } from '../lib/debounce';
@@ -26,6 +27,13 @@ export function useTauriListeners() {
         if (unmounted) unsub();
         else unsubFns.push(unsub);
       });
+
+    listen('refresh', () => {
+      location.reload();
+    }).then((unsub) => {
+      if (unmounted) unsub();
+      else unsubFns.push(unsub);
+    });
 
     appWindow
       .listen(

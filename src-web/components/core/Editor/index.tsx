@@ -1,7 +1,10 @@
 import { memo } from 'react';
+import * as editor from './Editor';
 
 export type { EditorProps } from './Editor';
-const editor = await import('./Editor');
+// TODO: Figure out why code-splitting breaks production build from
+//   showing any content
+// const editor = await import('./Editor');
 
 export const Editor = memo(editor.Editor);
 export const graphql = editor.graphql;
