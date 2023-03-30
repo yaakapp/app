@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import { useKeyValue } from './useKeyValue';
 
 const START_WIDTH = 200;
@@ -15,6 +16,7 @@ export interface SidebarDisplay {
 
 export function useSidebarDisplay() {
   const display = useKeyValue<SidebarDisplay>({
+    namespace: NAMESPACE_NO_SYNC,
     key: sidebarDisplayKey,
     defaultValue: sidebarDisplayDefaultValue,
   });

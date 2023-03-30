@@ -1,10 +1,10 @@
 import classnames from 'classnames';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import { Overlay } from '../Overlay';
 import { IconButton } from './IconButton';
-import { HStack, VStack } from './Stacks';
+import { VStack } from './Stacks';
 
 export interface DialogProps {
   children: ReactNode;
