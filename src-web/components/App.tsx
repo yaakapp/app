@@ -14,6 +14,9 @@ const queryClient = new QueryClient({
     queries: {
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours
       networkMode: 'offlineFirst',
+
+      // It's a desktop app, so this isn't necessary
+      refetchOnWindowFocus: false,
     },
   },
 });
