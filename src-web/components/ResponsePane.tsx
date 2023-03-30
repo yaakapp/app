@@ -103,7 +103,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                   icon="triangleDown"
                   className="ml-auto"
                   size="sm"
-                  iconSize="sm"
+                  iconSize="md"
                 />
               </Dropdown>
             </HStack>

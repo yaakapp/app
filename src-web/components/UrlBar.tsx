@@ -54,11 +54,11 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
         }
         rightSlot={
           <IconButton
-            size="sm"
+            size="xs"
+            iconSize="sm"
             title="Send Request"
             type="submit"
-            color="custom"
-            className="!px-2 mr-0.5"
+            className="w-8 mr-0.5"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
             disabled={loading}
