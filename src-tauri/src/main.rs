@@ -216,7 +216,9 @@ async fn actually_send_ephemeral_request(
             response = models::update_response_if_id(response, pool)
                 .await
                 .expect("Failed to update response");
-            emit_all_others(&window, "updated_response", &response);
+            window
+                .emit_all("updated_model", &response)
+                .expect("Failed to emit updated_model");
             Ok(response)
         }
         Err(e) => response_err(response, e.to_string(), window, pool).await,
@@ -238,7 +240,9 @@ async fn send_request(
     let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
         .await
         .expect("Failed to create response");
-    emit_all_others(&window, "updated_response", &response);
+    window
+        .emit_all("updated_model", &response)
+        .expect("Failed to emit updated_model");
 
     actually_send_ephemeral_request(req, response, window, pool).await?;
     Ok(())
@@ -254,7 +258,7 @@ async fn response_err(
     response = models::update_response_if_id(response, pool)
         .await
         .expect("Failed to update response");
-    emit_all_others(&window, "updated_response", &response);
+    emit_all_others(&window, "updated_model", &response);
     Ok(response)
 }
 
@@ -282,7 +286,7 @@ async fn set_key_value(
         .await
         .expect("Failed to create key value");
 
-    emit_all_others(&window, "updated_key_value", &created_key_value);
+    emit_all_others(&window, "updated_model", &created_key_value);
 
     Ok(())
 }
@@ -298,7 +302,7 @@ async fn create_workspace(
         .await
         .expect("Failed to create workspace");
 
-    emit_all_others(&window, "updated_workspace", &created_workspace);
+    emit_all_others(&window, "updated_model", &created_workspace);
 
     Ok(created_workspace.id)
 }
@@ -330,7 +334,7 @@ async fn create_request(
     .await
     .expect("Failed to create request");
 
-    emit_all_others(&window, "updated_request", &created_request);
+    emit_all_others(&window, "updated_model", &created_request);
 
     Ok(created_request.id)
 }
@@ -345,7 +349,7 @@ async fn duplicate_request(
     let request = models::duplicate_request(id, pool)
         .await
         .expect("Failed to duplicate request");
-    emit_all_others(&window, "updated_request", &request);
+    emit_all_others(&window, "updated_model", &request);
     Ok(request.id)
 }
 
@@ -385,7 +389,7 @@ async fn update_request(
     .await
     .expect("Failed to update request");
 
-    emit_all_others(&window, "updated_request", updated_request);
+    emit_all_others(&window, "updated_model", updated_request);
 
     Ok(())
 }

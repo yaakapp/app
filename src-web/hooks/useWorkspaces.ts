@@ -1,8 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { Workspace } from '../lib/models';
-import { useQuery } from '@tanstack/react-query';
 
-export function workspacesQueryKey() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/ban-types
+export function workspacesQueryKey(_?: {}) {
   return ['workspaces'];
 }
 

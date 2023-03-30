@@ -1,8 +1,8 @@
 import classnames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useKeyValue } from '../hooks/useKeyValue';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
@@ -33,15 +33,14 @@ interface Props {
   className?: string;
 }
 
+const useActiveTab = createGlobalState<string>('body');
+
 export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
-  const activeTab = useKeyValue<string>({
-    key: ['active_request_body_tab'],
-    defaultValue: 'body',
-  });
+  const [activeTab, setActiveTab] = useActiveTab();
 
   const tabs: TabItem[] = useMemo(
     () =>
@@ -136,8 +135,8 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
         <>
           <UrlBar id={activeRequest.id} url={activeRequest.url} method={activeRequest.method} />
           <Tabs
-            value={activeTab.value}
-            onChangeValue={activeTab.set}
+            value={activeTab}
+            onChangeValue={setActiveTab}
             tabs={tabs}
             className="mt-2"
             label="Request body"
