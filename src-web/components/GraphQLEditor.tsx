@@ -1,6 +1,5 @@
 import type { Extension } from '@codemirror/state';
 import { useEffect, useMemo, useState } from 'react';
-import { useUniqueKey } from '../hooks/useUniqueKey';
 import type { HttpRequest } from '../lib/models';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import type { EditorProps } from './core/Editor';
@@ -13,7 +12,10 @@ import {
 } from './core/Editor';
 import { Separator } from './core/Separator';
 
-type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'defaultValue' | 'className'> & {
+type Props = Pick<
+  EditorProps,
+  'heightMode' | 'onChange' | 'defaultValue' | 'className' | 'forceUpdateKey'
+> & {
   baseRequest: HttpRequest;
 };
 
@@ -24,7 +26,6 @@ interface GraphQLBody {
 }
 
 export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
-  const queryKey = useUniqueKey();
   const { query, variables } = useMemo<GraphQLBody>(() => {
     if (!defaultValue) {
       return { query: '', variables: {} };
@@ -79,7 +80,6 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
-        key={queryKey.key}
         heightMode="auto"
         defaultValue={query ?? ''}
         languageExtension={graphqlExtension}
