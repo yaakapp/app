@@ -62,7 +62,10 @@ export function useTauriListeners() {
           : null;
 
       if (queryKey === null) {
-        throw new Error('Unrecognized updated model ' + payload.model);
+        if (payload.model) {
+          console.log('Unrecognized updated model:', payload);
+        }
+        return;
       }
 
       const skipSync = payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC;

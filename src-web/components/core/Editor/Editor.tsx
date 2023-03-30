@@ -6,7 +6,7 @@ import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/vie
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -20,13 +20,13 @@ export { formatSdl } from 'format-graphql';
 
 export interface EditorProps {
   id?: string;
-  forceUpdateKey?: string;
   readOnly?: boolean;
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
   contentType?: string;
   languageExtension?: Extension;
+  forceUpdateKey?: string;
   autoFocus?: boolean;
   defaultValue?: string;
   placeholder?: string;
@@ -39,12 +39,24 @@ export interface EditorProps {
   autocomplete?: GenericCompletionConfig;
 }
 
-export function Editor({
+export function Editor({ defaultValue, forceUpdateKey, ...props }: EditorProps) {
+  // In order to not have the editor render too much, we combine forceUpdateKey
+  // here with default value so that we only send new props to the editor when
+  // forceUpdateKey changes. The editor can then use the defaultValue to force
+  // update instead of using both forceUpdateKey and defaultValue.
+  //
+  // NOTE: This was originally done to fix a bug where the editor would unmount
+  //   and remount after the first change event, something to do with React
+  //   StrictMode. This fixes it, though, and actually makes more sense
+  const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey]);
+  return <_Editor defaultValue={fixedDefaultValue} {...props} />;
+}
+
+const _Editor = memo(function _Editor({
   readOnly,
   type = 'text',
   heightMode,
   contentType,
-  forceUpdateKey,
   autoFocus,
   placeholder,
   useTemplating,
@@ -56,7 +68,7 @@ export function Editor({
   singleLine,
   format,
   autocomplete,
-}: EditorProps) {
+}: Omit<EditorProps, 'forceUpdateKey'>) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -94,7 +106,7 @@ export function Editor({
     if (cm.current === null) return;
     const { view } = cm.current;
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: defaultValue ?? '' } });
-  }, [forceUpdateKey]);
+  }, [defaultValue]);
 
   // Initialize the editor when ref mounts
   useEffect(() => {
@@ -173,7 +185,7 @@ export function Editor({
       )}
     </div>
   );
-}
+});
 
 function getExtensions({
   container,

@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import * as editor from './Editor';
 
 export type { EditorProps } from './Editor';
@@ -6,7 +5,7 @@ export type { EditorProps } from './Editor';
 //   showing any content
 // const editor = await import('./Editor');
 
-export const Editor = memo(editor.Editor);
+export const Editor = editor.Editor;
 export const graphql = editor.graphql;
 export const getIntrospectionQuery = editor.getIntrospectionQuery;
 export const buildClientSchema = editor.buildClientSchema;
