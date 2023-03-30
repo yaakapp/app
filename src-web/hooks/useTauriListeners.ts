@@ -9,7 +9,7 @@ import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useSidebarDisplay } from './useSidebarDisplay';
 
 const unsubFns: (() => void)[] = [];
-const UPDATE_DEBOUNCE_MILLIS = 500;
+export const UPDATE_DEBOUNCE_MILLIS = 1000;
 
 export function useTauriListeners() {
   const sidebarDisplay = useSidebarDisplay();
