@@ -14,7 +14,7 @@ export function useDeleteRequest(id: string | null) {
     },
     onSuccess: async () => {
       if (workspaceId === null || id === null) return;
-      await queryClient.invalidateQueries(requestsQueryKey(workspaceId));
+      await queryClient.invalidateQueries(requestsQueryKey({ workspaceId }));
     },
   });
 }

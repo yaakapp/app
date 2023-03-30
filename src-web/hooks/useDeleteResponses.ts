@@ -11,7 +11,7 @@ export function useDeleteResponses(requestId?: string) {
     },
     onSuccess: async () => {
       if (!requestId) return;
-      await queryClient.invalidateQueries(responsesQueryKey(requestId));
+      await queryClient.invalidateQueries(responsesQueryKey({ requestId }));
     },
   });
 }

@@ -3,23 +3,28 @@ import type { DropdownItemSeparator, DropdownProps } from './Dropdown';
 import { Dropdown } from './Dropdown';
 import { Icon } from './Icon';
 
-export type RadioDropdownItem =
+export type RadioDropdownItem<T = string | null> =
   | {
       type?: 'default';
       label: string;
       shortLabel?: string;
-      value: string | null;
+      value: T;
     }
   | DropdownItemSeparator;
 
-export interface RadioDropdownProps {
-  value: string | null;
-  onChange: (value: string | null) => void;
-  items: RadioDropdownItem[];
+export interface RadioDropdownProps<T = string | null> {
+  value: T;
+  onChange: (value: T) => void;
+  items: RadioDropdownItem<T>[];
   children: DropdownProps['children'];
 }
 
-export function RadioDropdown({ value, items, onChange, children }: RadioDropdownProps) {
+export function RadioDropdown<T = string | null>({
+  value,
+  items,
+  onChange,
+  children,
+}: RadioDropdownProps<T>) {
   const dropdownItems = useMemo(
     () =>
       items.map((item) => {

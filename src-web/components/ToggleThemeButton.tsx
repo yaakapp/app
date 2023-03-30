@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTheme } from '../hooks/useTheme';
-import { toggleAppearance } from '../lib/theme/window';
 import { IconButton } from './core/IconButton';
 
 export function ToggleThemeButton() {

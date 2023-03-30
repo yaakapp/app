@@ -33,7 +33,6 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
-import { render } from 'react-dom';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
