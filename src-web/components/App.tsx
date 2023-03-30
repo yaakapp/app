@@ -51,33 +51,6 @@ await listen(
   }, UPDATE_DEBOUNCE_MILLIS),
 );
 
-await listen(
-  'updated_request',
-  debounce(({ payload: request }: { payload: HttpRequest }) => {
-    if (request.updatedBy === appWindow.label) return;
-
-    queryClient.setQueryData(
-      requestsQueryKey(request.workspaceId),
-      (requests: HttpRequest[] = []) => {
-        const newRequests = [];
-        let found = false;
-        for (const r of requests) {
-          if (r.id === request.id) {
-            found = true;
-            newRequests.push(request);
-          } else {
-            newRequests.push(r);
-          }
-        }
-        if (!found) {
-          newRequests.push(request);
-        }
-        return newRequests;
-      },
-    );
-  }, UPDATE_DEBOUNCE_MILLIS),
-);
-
 await listen('updated_response', ({ payload: response }: { payload: HttpResponse }) => {
   queryClient.setQueryData(
     responsesQueryKey(response.requestId),

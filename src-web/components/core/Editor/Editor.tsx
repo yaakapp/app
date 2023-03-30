@@ -1,6 +1,7 @@
 import { defaultKeymap } from '@codemirror/commands';
 import type { Extension } from '@codemirror/state';
-import { Compartment, EditorState } from '@codemirror/state';
+import { Compartment, EditorState, Transaction } from '@codemirror/state';
+import type { ViewUpdate } from '@codemirror/view';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
@@ -19,6 +20,7 @@ export { formatSdl } from 'format-graphql';
 
 export interface EditorProps {
   id?: string;
+  forceUpdateKey?: string;
   readOnly?: boolean;
   type?: 'text' | 'password';
   className?: string;
@@ -42,6 +44,7 @@ export function Editor({
   type = 'text',
   heightMode,
   contentType,
+  forceUpdateKey,
   autoFocus,
   placeholder,
   useTemplating,
@@ -86,6 +89,15 @@ export function Editor({
     const ext = getLanguageExtension({ contentType, useTemplating, autocomplete });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType, autocomplete]);
+
+  useEffect(() => {
+    if (cm.current === null) return;
+    const { view, languageCompartment } = cm.current;
+    const newDoc = defaultValue;
+    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: newDoc ?? '' } });
+    const ext = getLanguageExtension({ contentType, useTemplating, autocomplete });
+    view.dispatch({ effects: languageCompartment.reconfigure(ext) });
+  }, [forceUpdateKey]);
 
   // Initialize the editor when ref mounts
   useEffect(() => {
@@ -218,11 +230,25 @@ function getExtensions({
 
     // Handle onChange
     EditorView.updateListener.of((update) => {
-      if (onChange && update.docChanged) {
+      if (onChange && update.docChanged && isViewUpdateFromUserInput(update)) {
         onChange.current?.(update.state.doc.toString());
       }
     }),
   ];
+}
+
+function isViewUpdateFromUserInput(viewUpdate: ViewUpdate) {
+  // Make sure document has changed, ensuring user events like selections don't count.
+  if (viewUpdate.docChanged) {
+    // Check transactions for any that are direct user input, not changes from Y.js or another extension.
+    for (const transaction of viewUpdate.transactions) {
+      // Not using Transaction.isUserEvent because that only checks for a specific User event type ( "input", "delete", etc.). Checking the annotation directly allows for any type of user event.
+      const userEventType = transaction.annotation(Transaction.userEvent);
+      if (userEventType) return userEventType;
+    }
+  }
+
+  return false;
 }
 
 const syncGutterBg = ({

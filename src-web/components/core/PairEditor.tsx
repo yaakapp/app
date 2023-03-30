@@ -14,6 +14,7 @@ import { Input } from './Input';
 export type PairEditorProps = {
   pairs: Pair[];
   onChange: (pairs: Pair[]) => void;
+  forceUpdateKey?: string;
   className?: string;
   namePlaceholder?: string;
   valuePlaceholder?: string;
@@ -36,6 +37,7 @@ type PairContainer = {
 
 export const PairEditor = memo(function PairEditor({
   pairs: originalPairs,
+  forceUpdateKey,
   nameAutocomplete,
   valueAutocomplete,
   namePlaceholder,
@@ -52,6 +54,15 @@ export const PairEditor = memo(function PairEditor({
     const pairs = nonEmpty.map((pair) => newPairContainer(pair));
     return [...pairs, newPairContainer()];
   });
+
+  useEffect(() => {
+    // Remove empty headers on initial render
+    // TODO: Make this not refresh the entire editor when forceUpdateKey changes, using some
+    //  sort of diff method or deterministic IDs based on array index and update key
+    const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
+    const pairs = nonEmpty.map((pair) => newPairContainer(pair));
+    setPairs([...pairs, newPairContainer()]);
+  }, [forceUpdateKey]);
 
   const setPairsAndSave = useCallback(
     (fn: (pairs: PairContainer[]) => PairContainer[]) => {
@@ -139,6 +150,7 @@ export const PairEditor = memo(function PairEditor({
               pairContainer={p}
               className="py-1"
               isLast={isLast}
+              forceUpdateKey={forceUpdateKey}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
               namePlaceholder={namePlaceholder}
@@ -179,6 +191,7 @@ type FormRowProps = {
   | 'valuePlaceholder'
   | 'nameValidate'
   | 'valueValidate'
+  | 'forceUpdateKey'
 >;
 
 const FormRow = memo(function FormRow({
@@ -190,6 +203,7 @@ const FormRow = memo(function FormRow({
   onMove,
   onEnd,
   isLast,
+  forceUpdateKey,
   nameAutocomplete,
   valueAutocomplete,
   namePlaceholder,
@@ -287,6 +301,7 @@ const FormRow = memo(function FormRow({
           require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
           validate={nameValidate}
           useTemplating
+          forceUpdateKey={forceUpdateKey}
           containerClassName={classnames(isLast && 'border-dashed')}
           defaultValue={pairContainer.pair.name}
           label="Name"
@@ -301,6 +316,7 @@ const FormRow = memo(function FormRow({
           size="sm"
           containerClassName={classnames(isLast && 'border-dashed')}
           validate={valueValidate}
+          forceUpdateKey={forceUpdateKey}
           defaultValue={pairContainer.pair.value}
           label="Value"
           name="value"

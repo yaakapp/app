@@ -15,7 +15,9 @@ use std::fs::create_dir_all;
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
+use objc::runtime::ivar_getOffset;
 use reqwest::redirect::Policy;
+use serde::Serialize;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
@@ -26,8 +28,6 @@ use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
-
-use crate::models::generate_id;
 
 mod models;
 mod runtime;
@@ -101,6 +101,8 @@ async fn actually_send_ephemeral_request(
         url_string = format!("http://{}", url_string);
     }
 
+    println!("Sending request to {}", url_string);
+
     let client = reqwest::Client::builder()
         .redirect(Policy::none())
         .build()
@@ -114,7 +116,7 @@ async fn actually_send_ephemeral_request(
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
-        if h.enabled == false {
+        if !h.enabled {
             continue;
         }
         let header_name = match HeaderName::from_bytes(h.name.as_bytes()) {
@@ -214,10 +216,7 @@ async fn actually_send_ephemeral_request(
             response = models::update_response_if_id(response, window.label(), pool)
                 .await
                 .expect("Failed to update response");
-            window
-                .app_handle()
-                .emit_all("updated_response", &response)
-                .unwrap();
+            emit_all_others(&window, "updated_response", &response);
             Ok(response)
         }
         Err(e) => response_err(response, e.to_string(), window, pool).await,
@@ -240,10 +239,7 @@ async fn send_request(
         models::create_response(&req.id, 0, "", 0, None, "", vec![], window.label(), pool)
             .await
             .expect("Failed to create response");
-    window
-        .app_handle()
-        .emit_all("updated_response", &response)
-        .unwrap();
+    emit_all_others(&window, "updated_response", &response);
 
     actually_send_ephemeral_request(req, response, window, pool).await?;
     Ok(())
@@ -259,10 +255,7 @@ async fn response_err(
     response = models::update_response_if_id(response, window.label(), pool)
         .await
         .expect("Failed to update response");
-    window
-        .app_handle()
-        .emit_all("updated_response", &response)
-        .unwrap();
+    emit_all_others(&window, "updated_response", &response);
     Ok(response)
 }
 
@@ -282,7 +275,7 @@ async fn set_key_value(
     namespace: &str,
     key: &str,
     value: &str,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
@@ -290,9 +283,7 @@ async fn set_key_value(
         .await
         .expect("Failed to create key value");
 
-    app_handle
-        .emit_all("updated_key_value", &created_key_value)
-        .unwrap();
+    emit_all_others(&window, "updated_key_value", &created_key_value);
 
     Ok(())
 }
@@ -308,10 +299,7 @@ async fn create_workspace(
         .await
         .expect("Failed to create workspace");
 
-    window
-        .app_handle()
-        .emit_all("updated_workspace", &created_workspace)
-        .unwrap();
+    emit_all_others(&window, "updated_workspace", &created_workspace);
 
     Ok(created_workspace.id)
 }
@@ -344,10 +332,7 @@ async fn create_request(
     .await
     .expect("Failed to create request");
 
-    window
-        .app_handle()
-        .emit_all("updated_request", &created_request)
-        .unwrap();
+    emit_all_others(&window, "updated_request", &created_request);
 
     Ok(created_request.id)
 }
@@ -362,10 +347,7 @@ async fn duplicate_request(
     let request = models::duplicate_request(id, window.label(), pool)
         .await
         .expect("Failed to duplicate request");
-    window
-        .app_handle()
-        .emit_all("updated_request", &request)
-        .unwrap();
+    emit_all_others(&window, "updated_request", &request);
     Ok(request.id)
 }
 
@@ -406,17 +388,14 @@ async fn update_request(
     .await
     .expect("Failed to update request");
 
-    window
-        .app_handle()
-        .emit_all("updated_request", updated_request)
-        .unwrap();
+    emit_all_others(&window, "updated_request", updated_request);
 
     Ok(())
 }
 
 #[tauri::command]
 async fn delete_request(
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
 ) -> Result<(), String> {
@@ -424,7 +403,7 @@ async fn delete_request(
     let req = models::delete_request(request_id, pool)
         .await
         .expect("Failed to delete request");
-    app_handle.emit_all("deleted_model", req).unwrap();
+    emit_all_others(&window, "deleted_model", req);
     Ok(())
 }
 
@@ -464,14 +443,14 @@ async fn responses(
 #[tauri::command]
 async fn delete_response(
     id: &str,
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<(), String> {
     let pool = &*db_instance.lock().await;
     let response = models::delete_response(id, pool)
         .await
         .expect("Failed to delete response");
-    app_handle.emit_all("deleted_model", response).unwrap();
+    emit_all_others(&window, "deleted_model", response);
     Ok(())
 }
 
@@ -512,7 +491,7 @@ async fn workspaces(
 
 #[tauri::command]
 async fn delete_workspace(
-    app_handle: AppHandle<Wry>,
+    window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     id: &str,
 ) -> Result<(), String> {
@@ -520,7 +499,7 @@ async fn delete_workspace(
     let workspace = models::delete_workspace(id, pool)
         .await
         .expect("Failed to delete workspace");
-    app_handle.emit_all("deleted_model", workspace).unwrap();
+    emit_all_others(&window, "deleted_model", workspace);
     Ok(())
 }
 
@@ -715,11 +694,22 @@ async fn get_or_create_client_id(pool: &Pool<Sqlite>) -> String {
     match models::get_key_value("global", "client_id", pool).await {
         Some(kv) => kv.value,
         None => {
-            let id = &generate_id("yaak");
+            let id = &models::generate_id("yaak");
             models::set_key_value("global", "client_id", id, pool)
                 .await
                 .expect("Failed to set client id")
                 .value
         }
+    }
+}
+
+/// Emit an event to all windows except the current one
+fn emit_all_others<S: Serialize + Clone>(current_window: &Window<Wry>, event: &str, payload: S) {
+    let windows = current_window.app_handle().windows();
+    for window in windows.values() {
+        if window.label() == current_window.label() {
+            continue;
+        }
+        window.emit(event, &payload).unwrap();
     }
 }
