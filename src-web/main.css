@@ -14,13 +14,15 @@
         box-shadow var(--transition-duration);
     }
 
+    ::selection {
+        @apply bg-selection;
+    }
+
     /* Disable user selection to make it more "app-like" */
     :not(input):not(textarea),
     :not(input):not(textarea)::after,
     :not(input):not(textarea)::before {
-        -webkit-user-select: none;
-        user-select: none;
-        cursor: default;
+        @apply select-none cursor-default;
     }
 
     .hide-scrollbars {
@@ -28,11 +30,6 @@
         &::-webkit-scrollbar {
             display: none !important;
         }
-    }
-
-    .destroy-pointer-event,
-    .destroy-pointer-event * {
-        pointer-events: none !important;
     }
 
     /* Style the scrollbars */
