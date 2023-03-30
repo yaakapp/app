@@ -49,7 +49,7 @@ export function useTauriListeners() {
       }
     });
 
-    listenDebounced('updated_model', ({ payload }: { payload: Model }) => {
+    listenDebounced('created_model', ({ payload }: { payload: Model }) => {
       const queryKey =
         payload.model === 'http_request'
           ? requestsQueryKey(payload)
@@ -63,7 +63,7 @@ export function useTauriListeners() {
 
       if (queryKey === null) {
         if (payload.model) {
-          console.log('Unrecognized updated model:', payload);
+          console.log('Unrecognized created model:', payload);
         }
         return;
       }
@@ -71,27 +71,33 @@ export function useTauriListeners() {
       const skipSync = payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC;
 
       if (!skipSync) {
-        queryClient.setQueryData(queryKey, (values: Model[] = []) => {
-          const newValues = [];
-          let found = false;
-          for (const v of values) {
-            if (modelsEq(v, payload)) {
-              found = true;
-              newValues.push(payload);
-            } else {
-              newValues.push(v);
-            }
-          }
+        queryClient.setQueryData(queryKey, (values: Model[] = []) => [...values, payload]);
+      }
+    });
 
-          // Doesn't exist already, so add it to the list
-          if (!found) newValues.push(payload);
+    listenDebounced('updated_model', ({ payload }: { payload: Model }) => {
+      const queryKey =
+        payload.model === 'http_request'
+          ? requestsQueryKey(payload)
+          : payload.model === 'http_response'
+          ? responsesQueryKey(payload)
+          : payload.model === 'workspace'
+          ? workspacesQueryKey(payload)
+          : payload.model === 'key_value'
+          ? keyValueQueryKey(payload)
+          : null;
 
-          if (payload.model === 'http_request') {
-            setTimeout(() => wasUpdatedExternally(payload.id), 50);
-          }
+      if (queryKey === null) {
+        console.log('Unrecognized updated model:', payload);
+        return;
+      }
 
-          return newValues;
-        });
+      const skipSync = payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC;
+
+      if (!skipSync) {
+        queryClient.setQueryData(queryKey, (values: Model[] = []) =>
+          values.map((v) => (modelsEq(v, payload) ? payload : v)),
+        );
       }
     });
 

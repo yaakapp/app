@@ -241,7 +241,7 @@ async fn send_request(
         .await
         .expect("Failed to create response");
     window
-        .emit_all("updated_model", &response)
+        .emit_all("created_model", &response)
         .expect("Failed to emit updated_model");
 
     actually_send_ephemeral_request(req, response, window, pool).await?;
@@ -302,7 +302,9 @@ async fn create_workspace(
         .await
         .expect("Failed to create workspace");
 
-    emit_all_others(&window, "updated_model", &created_workspace);
+    window
+        .emit_all("created_model", &created_workspace)
+        .expect("Failed to emit event");
 
     Ok(created_workspace.id)
 }
@@ -334,7 +336,9 @@ async fn create_request(
     .await
     .expect("Failed to create request");
 
-    emit_all_others(&window, "updated_model", &created_request);
+    window
+        .emit_all("created_model", &created_request)
+        .expect("Failed to emit event");
 
     Ok(created_request.id)
 }
