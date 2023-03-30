@@ -1,18 +1,18 @@
+import { Navigate } from 'react-router-dom';
+import { useKeyValue } from '../hooks/useKeyValue';
+import { useRoutes } from '../hooks/useRoutes';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { Button } from './core/Button';
 import { Heading } from './core/Heading';
-import { VStack } from './core/Stacks';
 
 export default function Workspaces() {
+  const lastWorkspace = useKeyValue<string | null>({ key: 'last_workspace', defaultValue: null });
+  const routes = useRoutes();
   const workspaces = useWorkspaces();
-  return (
-    <VStack as="ul" className="p-12" space={1}>
-      <Heading>Workspaces</Heading>
-      {workspaces.map((w) => (
-        <Button key={w.id} color="gray" to={`/workspaces/${w.id}`}>
-          {w.name}
-        </Button>
-      ))}
-    </VStack>
-  );
+  const workspace = workspaces[0];
+
+  if (workspace === undefined) {
+    return <Heading>There are no workspaces</Heading>;
+  }
+
+  return <Navigate to={routes.paths.workspace({ workspaceId: workspace.id })} />;
 }

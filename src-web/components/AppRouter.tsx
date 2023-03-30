@@ -1,6 +1,14 @@
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { useEffect } from 'react';
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+  useLocation,
+} from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
 import { useTauriListeners } from '../hooks/useTauriListeners';
+import { setLastLocation } from '../lib/lastLocation';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
@@ -9,6 +17,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     errorElement: <RouteError />,
+    element: <RouterRoot />,
     children: [
       {
         path: '/',
@@ -34,8 +43,14 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
-  console.log('AppRouter');
   useTauriListeners();
-  console.log('AppRouter 2');
   return <RouterProvider router={router} />;
+}
+
+function RouterRoot() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    setLastLocation(pathname).catch(console.error);
+  }, [pathname]);
+  return <Outlet />;
 }

@@ -11,13 +11,12 @@ export async function setKeyValue<T>({
   namespace?: string;
   key: string | string[];
   value: T;
-}): Promise<T> {
+}): Promise<void> {
   await invoke('set_key_value', {
     namespace,
     key: buildKeyValueKey(key),
     value: JSON.stringify(value),
   });
-  return value;
 }
 
 export async function getKeyValue<T>({
