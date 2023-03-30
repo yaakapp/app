@@ -15,7 +15,6 @@ use std::fs::create_dir_all;
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
-use objc::runtime::ivar_getOffset;
 use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
