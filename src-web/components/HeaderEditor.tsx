@@ -9,15 +9,17 @@ import type { PairEditorProps } from './core/PairEditor';
 import { PairEditor } from './core/PairEditor';
 
 type Props = {
+  forceUpdateKey: string;
   headers: HttpRequest['headers'];
   onChange: (headers: HttpRequest['headers']) => void;
 };
 
-export function HeaderEditor({ headers, onChange }: Props) {
+export function HeaderEditor({ headers, onChange, forceUpdateKey }: Props) {
   return (
     <PairEditor
       pairs={headers}
       onChange={onChange}
+      forceUpdateKey={forceUpdateKey}
       nameValidate={validateHttpHeader}
       nameAutocomplete={nameAutocomplete}
       valueAutocomplete={valueAutocomplete}

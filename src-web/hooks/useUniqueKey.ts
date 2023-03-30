@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export function useUniqueKey(len = 10): { key: string; regenerate: () => void } {
   const [key, setKey] = useState<string>(() => generate(len));
-  return { key, regenerate: () => setKey(generate(len)) };
+  return { key, wasUpdatedExternally: () => setKey(generate(len)) };
 }
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

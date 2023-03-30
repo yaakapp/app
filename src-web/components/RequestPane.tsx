@@ -3,8 +3,8 @@ import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useKeyValue } from '../hooks/useKeyValue';
+import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
-import { useWindowFocus } from '../hooks/useWindowFocus';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
 import {
@@ -125,13 +125,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [],
   );
 
-  const visible = useWindowFocus();
-  const multiWindowKey = useMemo(() => {
-    // If the window has focus, don't ever force an update
-    if (visible) return undefined;
-    // If the window is not focused, force an update if the request has been updated
-    return activeRequest?.updatedAt;
-  }, [visible, activeRequest?.updatedAt]);
+  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest?.id ?? null);
 
   return (
     <div
@@ -140,12 +134,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     >
       {activeRequest && (
         <>
-          <UrlBar
-            key={multiWindowKey}
-            id={activeRequest.id}
-            url={activeRequest.url}
-            method={activeRequest.method}
-          />
+          <UrlBar id={activeRequest.id} url={activeRequest.url} method={activeRequest.method} />
           <Tabs
             value={activeTab.value}
             onChangeValue={activeTab.set}
@@ -156,13 +145,13 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             <TabContent value="auth">
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
                 <BasicAuth
-                  key={multiWindowKey}
+                  key={forceUpdateKey}
                   requestId={activeRequest.id}
                   authentication={activeRequest.authentication}
                 />
               ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
                 <BearerAuth
-                  key={multiWindowKey}
+                  key={forceUpdateKey}
                   requestId={activeRequest.id}
                   authentication={activeRequest.authentication}
                 />
@@ -174,18 +163,22 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             </TabContent>
             <TabContent value="headers">
               <HeaderEditor
-                key={`${forceUpdateHeaderEditorKey}::${multiWindowKey}`}
+                forceUpdateKey={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
             </TabContent>
             <TabContent value="params">
-              <ParametersEditor key={multiWindowKey} parameters={[]} onChange={() => null} />
+              <ParametersEditor
+                forceUpdateKey={forceUpdateKey}
+                parameters={[]}
+                onChange={() => null}
+              />
             </TabContent>
             <TabContent value="body" className="pl-3 mt-1">
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
-                  key={multiWindowKey}
+                  forceUpdateKey={forceUpdateKey}
                   useTemplating
                   placeholder="..."
                   className="!bg-gray-50"
@@ -197,7 +190,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 />
               ) : activeRequest.bodyType === BODY_TYPE_XML ? (
                 <Editor
-                  key={multiWindowKey}
+                  forceUpdateKey={forceUpdateKey}
                   useTemplating
                   placeholder="..."
                   className="!bg-gray-50"
@@ -208,7 +201,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
                 <GraphQLEditor
-                  key={multiWindowKey}
+                  forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
                   className="!bg-gray-50"
                   defaultValue={activeRequest?.body ?? ''}

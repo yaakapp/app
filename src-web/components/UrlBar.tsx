@@ -2,6 +2,7 @@ import classnames from 'classnames';
 import type { FormEvent } from 'react';
 import { memo, useCallback } from 'react';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
@@ -19,6 +20,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   const handleMethodChange = useCallback((method: string) => updateRequest.mutate({ method }), []);
   const handleUrlChange = useCallback((url: string) => updateRequest.mutate({ url }), []);
   const loading = useIsResponseLoading(requestId);
+  const { updateKey } = useRequestUpdateKey(requestId);
 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
@@ -32,13 +34,13 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     <form onSubmit={handleSubmit} className={classnames('url-bar', className)}>
       <Input
         size="sm"
-        key={requestId}
         hideLabel
         useTemplating
         contentType="url"
         className="px-0"
         name="url"
         label="Enter URL"
+        forceUpdateKey={updateKey}
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-50"
         onChange={handleUrlChange}
         defaultValue={url}

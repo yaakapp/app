@@ -1,23 +1,62 @@
-import { listen } from '@tauri-apps/api/event';
+import { useQueryClient } from '@tanstack/react-query';
+import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
+import { debounce } from '../lib/debounce';
+import type { HttpRequest } from '../lib/models';
+import { requestsQueryKey } from './useRequests';
+import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useSidebarDisplay } from './useSidebarDisplay';
 
 const unsubFns: (() => void)[] = [];
+const UPDATE_DEBOUNCE_MILLIS = 500;
 
 export function useTauriListeners() {
   const sidebarDisplay = useSidebarDisplay();
+  const queryClient = useQueryClient();
+  const { wasUpdatedExternally } = useRequestUpdateKey(null);
+
   useEffect(() => {
     let unmounted = false;
 
-    listen('toggle_sidebar', async () => {
-      sidebarDisplay.toggle();
-    }).then((fn) => {
-      if (unmounted) {
-        fn();
-      } else {
-        unsubFns.push(fn);
-      }
-    });
+    appWindow
+      .listen('toggle_sidebar', async () => {
+        sidebarDisplay.toggle();
+      })
+      .then((unsub) => {
+        if (unmounted) unsub();
+        else unsubFns.push(unsub);
+      });
+
+    appWindow
+      .listen(
+        'updated_request',
+        debounce(({ payload: request }: { payload: HttpRequest }) => {
+          queryClient.setQueryData(
+            requestsQueryKey(request.workspaceId),
+            (requests: HttpRequest[] = []) => {
+              const newRequests = [];
+              let found = false;
+              for (const r of requests) {
+                if (r.id === request.id) {
+                  found = true;
+                  newRequests.push(request);
+                } else {
+                  newRequests.push(r);
+                }
+              }
+              if (!found) {
+                newRequests.push(request);
+              }
+              setTimeout(() => wasUpdatedExternally(request.id), 50);
+              return newRequests;
+            },
+          );
+        }, UPDATE_DEBOUNCE_MILLIS),
+      )
+      .then((unsub) => {
+        if (unmounted) unsub();
+        else unsubFns.push(unsub);
+      });
 
     return () => {
       unmounted = true;

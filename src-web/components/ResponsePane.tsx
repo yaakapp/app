@@ -122,7 +122,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
       ) : viewMode === 'pretty' && contentType.includes('json') ? (
         <Editor
           readOnly
-          key={`${contentType}:${activeResponse.updatedAt}:pretty`}
+          forceUpdateKey={activeResponse.updatedAt}
           className="bg-gray-50 dark:!bg-gray-100"
           defaultValue={tryFormatJson(activeResponse?.body)}
           contentType={contentType}
@@ -130,7 +130,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
       ) : activeResponse?.body ? (
         <Editor
           readOnly
-          key={`${contentType}:${activeResponse.updatedAt}`}
+          forceUpdateKey={activeResponse.updatedAt}
           className="bg-gray-50 dark:!bg-gray-100"
           defaultValue={activeResponse?.body}
           contentType={contentType}
