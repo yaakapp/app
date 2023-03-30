@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
@@ -43,6 +43,7 @@ export function Input({
   defaultValue,
   validate,
   require,
+  forceUpdateKey,
   ...props
 }: InputProps) {
   const [obscured, setObscured] = useState(type === 'password');
@@ -62,10 +63,10 @@ export function Input({
     return true;
   }, [currentValue, validate, require]);
 
-  const handleChange = (value: string) => {
+  const handleChange = useCallback((value: string) => {
     setCurrentValue(value);
     onChange?.(value);
-  };
+  }, []);
 
   return (
     <VStack className="w-full">
@@ -96,6 +97,7 @@ export function Input({
           singleLine
           type={type === 'password' && !obscured ? 'text' : type}
           defaultValue={defaultValue}
+          forceUpdateKey={forceUpdateKey}
           placeholder={placeholder}
           onChange={handleChange}
           className={inputClassName}

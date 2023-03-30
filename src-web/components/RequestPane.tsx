@@ -39,8 +39,9 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
   const updateRequest = useUpdateRequest(activeRequestId);
-  const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const [activeTab, setActiveTab] = useActiveTab();
+  const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
+  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest?.id ?? null);
 
   const tabs: TabItem[] = useMemo(
     () =>
@@ -60,7 +61,11 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 ],
                 onChange: async (bodyType) => {
                   const patch: Partial<HttpRequest> = { bodyType };
-                  if (bodyType == BODY_TYPE_GRAPHQL) {
+                  if (bodyType === BODY_TYPE_NONE) {
+                    patch.headers = activeRequest?.headers.filter(
+                      (h) => h.name.toLowerCase() !== 'content-type',
+                    );
+                  } else if (bodyType == BODY_TYPE_GRAPHQL || bodyType === BODY_TYPE_JSON) {
                     patch.method = 'POST';
                     patch.headers = [
                       ...(activeRequest?.headers.filter(
@@ -72,14 +77,17 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                         enabled: true,
                       },
                     ];
-                    setTimeout(() => {
-                      setForceUpdateHeaderEditorKey((u) => u + 1);
-                    }, 100);
                   }
+
+                  // Force update header editor so any changed headers are reflected
+                  setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
+
                   await updateRequest.mutate(patch);
                 },
               },
             },
+            // { value: 'params', label: 'URL Params' },
+            { value: 'headers', label: 'Headers' },
             {
               value: 'auth',
               label: 'Auth',
@@ -107,8 +115,6 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 },
               },
             },
-            // { value: 'params', label: 'URL Params' },
-            { value: 'headers', label: 'Headers' },
           ],
     [
       activeRequest?.bodyType,
@@ -123,8 +129,6 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
     [],
   );
-
-  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest?.id ?? null);
 
   return (
     <div
