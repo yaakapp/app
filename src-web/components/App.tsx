@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { MotionConfig } from 'framer-motion';
+import { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
@@ -128,10 +129,6 @@ await listen('send_request', async () => {
   await invoke('send_request', { requestId });
 });
 
-await listen('refresh', () => {
-  location.reload();
-});
-
 await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
   const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
@@ -148,14 +145,17 @@ await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
 });
 
 export function App() {
+  console.log('STARTING APP');
   return (
     <QueryClientProvider client={queryClient}>
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>
             <DialogProvider>
-              <AppRouter />
-              {/*<ReactQueryDevtools initialIsOpen={false} />*/}
+              <Suspense>
+                <AppRouter />
+                {/*<ReactQueryDevtools initialIsOpen={false} />*/}
+              </Suspense>
             </DialogProvider>
           </DndProvider>
         </HelmetProvider>
