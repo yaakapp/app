@@ -22,7 +22,7 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
-use tauri::{AppHandle, Menu, MenuItem, State, Submenu, TitleBarStyle, Window, Wry};
+use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
 
@@ -213,7 +213,7 @@ async fn actually_send_ephemeral_request(
             response.url = v.url().to_string();
             response.body = v.text().await.expect("Failed to get body");
             response.elapsed = start.elapsed().as_millis() as i64;
-            response = models::update_response_if_id(response, window.label(), pool)
+            response = models::update_response_if_id(response, pool)
                 .await
                 .expect("Failed to update response");
             emit_all_others(&window, "updated_response", &response);
@@ -235,10 +235,9 @@ async fn send_request(
         .await
         .expect("Failed to get request");
 
-    let response =
-        models::create_response(&req.id, 0, "", 0, None, "", vec![], window.label(), pool)
-            .await
-            .expect("Failed to create response");
+    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
+        .await
+        .expect("Failed to create response");
     emit_all_others(&window, "updated_response", &response);
 
     actually_send_ephemeral_request(req, response, window, pool).await?;
@@ -252,7 +251,7 @@ async fn response_err(
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     response.error = Some(error.clone());
-    response = models::update_response_if_id(response, window.label(), pool)
+    response = models::update_response_if_id(response, pool)
         .await
         .expect("Failed to update response");
     emit_all_others(&window, "updated_response", &response);
@@ -295,7 +294,7 @@ async fn create_workspace(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
-    let created_workspace = models::create_workspace(name, "", window.label(), pool)
+    let created_workspace = models::create_workspace(name, "", pool)
         .await
         .expect("Failed to create workspace");
 
@@ -326,7 +325,6 @@ async fn create_request(
         "",
         headers,
         sort_priority,
-        window.label(),
         pool,
     )
     .await
@@ -344,7 +342,7 @@ async fn duplicate_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
     let pool = &*db_instance.lock().await;
-    let request = models::duplicate_request(id, window.label(), pool)
+    let request = models::duplicate_request(id, pool)
         .await
         .expect("Failed to duplicate request");
     emit_all_others(&window, "updated_request", &request);
@@ -382,7 +380,6 @@ async fn update_request(
         request.url.as_str(),
         request.headers.0,
         request.sort_priority,
-        window.label(),
         pool,
     )
     .await
@@ -468,21 +465,16 @@ async fn delete_all_responses(
 #[tauri::command]
 async fn workspaces(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-    window: Window<Wry>,
 ) -> Result<Vec<models::Workspace>, String> {
     let pool = &*db_instance.lock().await;
     let workspaces = models::find_workspaces(pool)
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace = models::create_workspace(
-            "My Project",
-            "This is the default workspace",
-            window.label(),
-            pool,
-        )
-        .await
-        .expect("Failed to create workspace");
+        let workspace =
+            models::create_workspace("My Project", "This is the default workspace", pool)
+                .await
+                .expect("Failed to create workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -516,7 +508,6 @@ fn main() {
     tauri::Builder::default()
         .system_tray(system_tray)
         .setup(|app| {
-            let handle = app.handle();
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app.path_resolver().app_data_dir().unwrap(),
@@ -532,13 +523,6 @@ fn main() {
                     .connect(url.as_str())
                     .await
                     .expect("Failed to connect to database");
-
-                // Create the initial window
-                let app_id = get_or_create_client_id(&pool).await;
-                let win = create_window(handle, app_id);
-                if let Err(e) = win.show() {
-                    println!("Failed to show window {}", e)
-                }
 
                 // Setup the DB handle
                 let m = Mutex::new(pool);
@@ -583,8 +567,17 @@ fn main() {
             delete_response,
             delete_all_responses,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app_handle, event| match event {
+            RunEvent::Ready => {
+                create_window(app_handle);
+            }
+
+            // ExitRequested { api, .. } => {
+            // }
+            _ => {}
+        });
 }
 
 fn is_dev() -> bool {
@@ -592,7 +585,7 @@ fn is_dev() -> bool {
     env.unwrap_or("production") != "production"
 }
 
-fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
+fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
     let default_menu = Menu::os_default("Yaak".to_string().as_str());
     let mut test_menu = Menu::new()
         .add_item(
@@ -630,9 +623,9 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
     let submenu = Submenu::new("Test Menu", test_menu);
 
     let window_num = handle.windows().len();
-    let window_id = format!("{}_{}", app_id, window_num);
+    let window_id = format!("wnd_{}", window_num);
     let menu = default_menu.add_submenu(submenu);
-    let win = tauri::WindowBuilder::new(&handle, window_id, tauri::WindowUrl::App("".into()))
+    let win = tauri::WindowBuilder::new(handle, window_id, tauri::WindowUrl::App("".into()))
         .menu(menu)
         .fullscreen(false)
         .resizable(true)
@@ -644,6 +637,7 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
         .expect("failed to build window");
 
     let win2 = win.clone();
+    let handle2 = handle.clone();
     win.on_menu_event(move |event| match event.menu_item_id() {
         "quit" => std::process::exit(0),
         "close" => win2.close().unwrap(),
@@ -653,9 +647,7 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
         "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
         "refresh" => win2.emit("refresh", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
-        "new_window" => {
-            create_window(handle.clone(), app_id.clone());
-        }
+        "new_window" => _ = create_window(&handle2),
         "toggle_devtools" => {
             if win2.is_devtools_open() {
                 win2.close_devtools();
@@ -676,6 +668,10 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
         match e {
             WindowEvent::Resized(..) => apply_offset(),
             WindowEvent::ThemeChanged(..) => apply_offset(),
+            WindowEvent::CloseRequested { .. } => {
+                println!("CLOSE REQUESTED");
+                // api.prevent_close();
+            }
             _ => {}
         }
     });
@@ -684,19 +680,6 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
     win.position_traffic_lights();
 
     win
-}
-
-async fn get_or_create_client_id(pool: &Pool<Sqlite>) -> String {
-    match models::get_key_value("global", "client_id", pool).await {
-        Some(kv) => kv.value,
-        None => {
-            let id = &models::generate_id("yaak");
-            models::set_key_value("global", "client_id", id, pool)
-                .await
-                .expect("Failed to set client id")
-                .value
-        }
-    }
 }
 
 /// Emit an event to all windows except the current one

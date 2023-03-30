@@ -15,7 +15,7 @@ export function keyValueQueryKey({
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function useKeyValue<T extends Object>({
+export function useKeyValue<T extends Object | null>({
   namespace = DEFAULT_NAMESPACE,
   key,
   defaultValue,
@@ -30,12 +30,10 @@ export function useKeyValue<T extends Object>({
     queryFn: async () => getKeyValue({ namespace, key, fallback: defaultValue }),
   });
 
-  const mutate = useMutation<T, unknown, T>({
+  const mutate = useMutation<void, unknown, T>({
     mutationFn: (value) => setKeyValue<T>({ namespace, key, value }),
-    onMutate: (value) => {
-      // k/v should be as fast as possible, so optimistically update the cache
-      queryClient.setQueryData(keyValueQueryKey({ namespace, key }), value);
-    },
+    // k/v should be as fast as possible, so optimistically update the cache
+    onMutate: (value) => queryClient.setQueryData(keyValueQueryKey({ namespace, key }), value),
   });
 
   const set = useCallback(

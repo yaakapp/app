@@ -14,6 +14,7 @@ import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { routePaths } from '../hooks/useRoutes';
+import { UPDATE_DEBOUNCE_MILLIS } from '../hooks/useTauriListeners';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { debounce } from '../lib/debounce';
@@ -21,8 +22,6 @@ import { extractKeyValue } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, KeyValue, Workspace } from '../lib/models';
 import { AppRouter } from './AppRouter';
 import { DialogProvider } from './DialogContext';
-
-const UPDATE_DEBOUNCE_MILLIS = 500;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -145,7 +144,6 @@ await listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
 });
 
 export function App() {
-  console.log('STARTING APP');
   return (
     <QueryClientProvider client={queryClient}>
       <MotionConfig transition={{ duration: 0.1 }}>
