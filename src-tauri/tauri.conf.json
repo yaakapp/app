@@ -11,7 +11,19 @@
     "version": "0.0.2"
   },
   "tauri": {
-    "windows": [],
+    "windows": [
+      {
+        "fullscreen": false,
+        "hiddenTitle": true,
+        "resizable": true,
+        "title": "Yaak",
+        "titleBarStyle": "Overlay",
+        "height": 600,
+        "width": 1100,
+        "minWidth": 400,
+        "minHeight": 400
+      }
+    ],
     "allowlist": {
       "all": false,
       "fs": {

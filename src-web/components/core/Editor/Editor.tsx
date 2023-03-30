@@ -92,11 +92,8 @@ export function Editor({
 
   useEffect(() => {
     if (cm.current === null) return;
-    const { view, languageCompartment } = cm.current;
-    const newDoc = defaultValue;
-    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: newDoc ?? '' } });
-    const ext = getLanguageExtension({ contentType, useTemplating, autocomplete });
-    view.dispatch({ effects: languageCompartment.reconfigure(ext) });
+    const { view } = cm.current;
+    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: defaultValue ?? '' } });
   }, [forceUpdateKey]);
 
   // Initialize the editor when ref mounts

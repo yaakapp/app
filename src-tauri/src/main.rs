@@ -56,6 +56,7 @@ async fn migrate_db(
     println!("Running migrations at {}", p.to_string_lossy());
     let m = Migrator::new(p).await.expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
+    println!("Migrations complete");
     Ok(())
 }
 
@@ -611,7 +612,8 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
         .add_item(
             CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
                 .accelerator("CmdOrCtrl+b"),
-        );
+        )
+        .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
     if is_dev() {
         test_menu = test_menu
             .add_native_item(MenuItem::Separator)
@@ -622,8 +624,7 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
             .add_item(
                 CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
                     .accelerator("CmdOrCtrl + Option + i"),
-            )
-            .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
+            );
     }
 
     let submenu = Submenu::new("Test Menu", test_menu);
@@ -631,20 +632,16 @@ fn create_window(handle: AppHandle<Wry>, app_id: String) -> Window<Wry> {
     let window_num = handle.windows().len();
     let window_id = format!("{}_{}", app_id, window_num);
     let menu = default_menu.add_submenu(submenu);
-    let win = tauri::WindowBuilder::new(
-        &handle,
-        window_id,
-        tauri::WindowUrl::App("workspaces".into()),
-    )
-    .menu(menu)
-    .fullscreen(false)
-    .resizable(true)
-    .inner_size(1100.0, 600.0)
-    .hidden_title(true)
-    .title("Yaak")
-    .title_bar_style(TitleBarStyle::Overlay)
-    .build()
-    .expect("failed to build window");
+    let win = tauri::WindowBuilder::new(&handle, window_id, tauri::WindowUrl::App("".into()))
+        .menu(menu)
+        .fullscreen(false)
+        .resizable(true)
+        .inner_size(1100.0, 600.0)
+        .hidden_title(true)
+        .title("Yaak")
+        .title_bar_style(TitleBarStyle::Overlay)
+        .build()
+        .expect("failed to build window");
 
     let win2 = win.clone();
     win.on_menu_event(move |event| match event.menu_item_id() {

@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
 import { useTauriListeners } from '../hooks/useTauriListeners';
@@ -35,10 +34,8 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
+  console.log('AppRouter');
   useTauriListeners();
-  return (
-    <Suspense>
-      <RouterProvider router={router} />
-    </Suspense>
-  );
+  console.log('AppRouter 2');
+  return <RouterProvider router={router} />;
 }
