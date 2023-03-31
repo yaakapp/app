@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
 const colorStyles = {
-  custom: '',
-  default: 'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000',
-  gray: 'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000',
-  primary: 'bg-blue-400 text-white enabled:hocus:bg-blue-500',
-  secondary: 'bg-violet-400 text-white enabled:hocus:bg-violet-500',
-  warning: 'bg-orange-400 text-white enabled:hocus:bg-orange-500',
-  danger: 'bg-red-400 text-white enabled:hocus:bg-red-500',
+  custom: 'ring-blue-500/50',
+  default:
+    'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
+  gray: 'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
+  primary: 'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
+  secondary: 'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
+  warning: 'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
+  danger: 'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
 };
 
 export type ButtonProps = HTMLAttributes<HTMLElement> & {
@@ -43,9 +44,9 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     () =>
       classnames(
         className,
+        'opacity-90 hover:opacity-100',
         'outline-none whitespace-nowrap',
-        // 'border border-transparent focus-visible:border-focus',
-        'focus-visible-or-class:ring ring-blue-300',
+        'focus-visible-or-class:ring',
         'rounded-md flex items-center',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',

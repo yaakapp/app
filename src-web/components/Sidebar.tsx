@@ -4,7 +4,6 @@ import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useSta
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useConfirm } from '../hooks/useConfirm';
 import { useRequests } from '../hooks/useRequests';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -28,7 +27,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const unorderedRequests = useRequests();
   const activeRequest = useActiveRequest();
-  const confirm = useConfirm();
   const requests = useMemo(
     () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
     [unorderedRequests],
@@ -218,8 +216,8 @@ const _SidebarItem = forwardRef(function SidebarItem(
             title="Request Options"
             icon="dotsH"
             className={classnames(
-              'absolute right-0 top-0 transition-opacity opacity-0',
-              'group-hover/item:opacity-100 focus-visible:opacity-100',
+              'absolute right-0 top-0 transition-opacity !opacity-0',
+              'group-hover/item:!opacity-100 focus-visible:!opacity-100',
             )}
           />
         </RequestActionsDropdown>
