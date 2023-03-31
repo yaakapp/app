@@ -13,7 +13,7 @@ import { Button } from './core/Button';
 import { IconButton } from './core/IconButton';
 import { HStack, VStack } from './core/Stacks';
 import { DropMarker } from './DropMarker';
-import { RequestSettingsDropdown } from './RequestSettingsDropdown';
+import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { ToggleThemeButton } from './ToggleThemeButton';
 
 interface Props {
@@ -218,7 +218,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
             </span>
           )}
         </Button>
-        <RequestSettingsDropdown requestId={requestId}>
+        <RequestActionsDropdown requestId={requestId}>
           <IconButton
             color="custom"
             size="sm"
@@ -229,7 +229,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
               'group-hover/item:opacity-100 focus-visible:opacity-100',
             )}
           />
-        </RequestSettingsDropdown>
+        </RequestActionsDropdown>
       </div>
     </li>
   );
