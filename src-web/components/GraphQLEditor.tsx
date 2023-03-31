@@ -60,12 +60,13 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   const editorViewRef = useRef<EditorView>(null);
 
   useEffect(() => {
+    let unmounted = false;
     const body = JSON.stringify({
       query: getIntrospectionQuery(),
       operationName: 'IntrospectionQuery',
     });
-    const req: HttpRequest = { ...baseRequest, body, id: '' };
-    sendEphemeralRequest(req).then((response) => {
+    sendEphemeralRequest({ ...baseRequest, body }).then((response) => {
+      if (unmounted) return;
       try {
         if (editorViewRef.current) {
           const { data } = JSON.parse(response.body);
@@ -77,6 +78,9 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         return;
       }
     });
+    return () => {
+      unmounted = true;
+    };
   }, [baseRequest.url]);
 
   return (
