@@ -1,6 +1,8 @@
 import type { HTMLAttributes, ReactElement } from 'react';
+import { useConfirm } from '../hooks/useConfirm';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
+import { useRequest } from '../hooks/useRequest';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 
@@ -9,9 +11,11 @@ interface Props {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
 }
 
-export function RequestSettingsDropdown({ requestId, children }: Props) {
+export function RequestActionsDropdown({ requestId, children }: Props) {
+  const request = useRequest(requestId ?? null);
   const deleteRequest = useDeleteRequest(requestId ?? null);
   const duplicateRequest = useDuplicateRequest({ id: requestId, navigateAfter: true });
+  const confirm = useConfirm();
 
   return (
     <Dropdown
@@ -23,7 +27,17 @@ export function RequestSettingsDropdown({ requestId, children }: Props) {
         },
         {
           label: 'Delete',
-          onSelect: deleteRequest.mutate,
+          onSelect: async () => {
+            const confirmed = await confirm({
+              title: 'Delete Request',
+              description: `Are you sure you want to delete "${request?.name}"?`,
+              confirmButtonColor: 'danger',
+              confirmButtonText: 'Delete',
+            });
+            if (confirmed) {
+              deleteRequest.mutate();
+            }
+          },
           leftSlot: <Icon icon="trash" />,
         },
       ]}
