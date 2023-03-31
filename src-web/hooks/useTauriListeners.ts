@@ -1,13 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { EventCallback } from '@tauri-apps/api/event';
+import { listen as tauriListen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
 import { matchPath } from 'react-router-dom';
 import { useEffectOnce } from 'react-use';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { debounce } from '../lib/debounce';
-import { extractKeyValue, NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
-import type { HttpRequest, HttpResponse, KeyValue, Model, Workspace } from '../lib/models';
+import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
+import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { keyValueQueryKey } from './useKeyValue';
 import { requestsQueryKey } from './useRequests';
@@ -30,7 +31,7 @@ export function useTauriListeners() {
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     function listen<T>(event: string, fn: EventCallback<T>) {
-      appWindow.listen(event, fn).then((unsub) => {
+      tauriListen(event, fn).then((unsub) => {
         if (unmounted) unsub();
         else unsubFns.push(unsub);
       });
@@ -43,13 +44,10 @@ export function useTauriListeners() {
     listen('toggle_sidebar', sidebarDisplay.toggle);
     listen('refresh', () => location.reload());
 
-    listenDebounced('updated_key_value', ({ payload: keyValue }: { payload: KeyValue }) => {
-      if (keyValue.namespace !== NAMESPACE_NO_SYNC) {
-        queryClient.setQueryData(keyValueQueryKey(keyValue), extractKeyValue(keyValue));
-      }
-    });
+    listenDebounced<Model>('created_model', ({ payload, windowLabel }) => {
+      const cameFromSameWindow = windowLabel === appWindow.label;
+      if (cameFromSameWindow) return;
 
-    listenDebounced('created_model', ({ payload }: { payload: Model }) => {
       const queryKey =
         payload.model === 'http_request'
           ? requestsQueryKey(payload)
@@ -71,11 +69,14 @@ export function useTauriListeners() {
       const skipSync = payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC;
 
       if (!skipSync) {
-        queryClient.setQueryData(queryKey, (values: Model[] = []) => [...values, payload]);
+        queryClient.setQueryData<Model[]>(queryKey, (values) => [...(values ?? []), payload]);
       }
     });
 
-    listenDebounced('updated_model', ({ payload }: { payload: Model }) => {
+    listenDebounced<Model>('updated_model', ({ payload, windowLabel }) => {
+      const cameFromSameWindow = windowLabel === appWindow.label;
+      if (cameFromSameWindow) return;
+
       const queryKey =
         payload.model === 'http_request'
           ? requestsQueryKey(payload)
@@ -94,26 +95,30 @@ export function useTauriListeners() {
 
       const skipSync = payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC;
 
+      if (payload.model === 'http_request') {
+        wasUpdatedExternally(payload.id);
+      }
+
       if (!skipSync) {
-        queryClient.setQueryData(queryKey, (values: Model[] = []) =>
-          values.map((v) => (modelsEq(v, payload) ? payload : v)),
+        queryClient.setQueryData<Model[]>(queryKey, (values) =>
+          values?.map((v) => (modelsEq(v, payload) ? payload : v)),
         );
       }
     });
 
-    listen('deleted_model', ({ payload: model }: { payload: Model }) => {
+    listen<Model>('deleted_model', ({ payload }) => {
       function removeById<T extends { id: string }>(model: T) {
         return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id);
       }
 
-      if (model.model === 'workspace') {
-        queryClient.setQueryData(workspacesQueryKey(), removeById<Workspace>(model));
-      } else if (model.model === 'http_request') {
-        queryClient.setQueryData(requestsQueryKey(model), removeById<HttpRequest>(model));
-      } else if (model.model === 'http_response') {
-        queryClient.setQueryData(responsesQueryKey(model), removeById<HttpResponse>(model));
-      } else if (model.model === 'key_value') {
-        queryClient.setQueryData(keyValueQueryKey(model), undefined);
+      if (payload.model === 'workspace') {
+        queryClient.setQueryData<Workspace[]>(workspacesQueryKey(), removeById(payload));
+      } else if (payload.model === 'http_request') {
+        queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(payload), removeById(payload));
+      } else if (payload.model === 'http_response') {
+        queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
+      } else if (payload.model === 'key_value') {
+        queryClient.setQueryData(keyValueQueryKey(payload), undefined);
       }
     });
 

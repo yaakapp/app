@@ -5,7 +5,7 @@ import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { SidebarActions } from './SidebarActions';
-import { WorkspaceDropdown } from './WorkspaceDropdown';
+import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 
 interface Props {
   className?: string;
@@ -21,13 +21,12 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     >
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
-        <WorkspaceDropdown className="pointer-events-auto" />
+        <WorkspaceActionsDropdown className="pointer-events-auto" />
       </HStack>
       <div className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none">
         {activeRequest?.name}
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
-        <IconButton size="sm" title="" icon="magnifyingGlass" />
         {activeRequest && (
           <RequestActionsDropdown requestId={activeRequest?.id}>
             <IconButton

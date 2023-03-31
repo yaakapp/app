@@ -86,7 +86,8 @@ pub async fn set_key_value(
     key: &str,
     value: &str,
     pool: &Pool<Sqlite>,
-) -> Option<KeyValue> {
+) -> (KeyValue, bool) {
+    let existing = get_key_value(namespace, key, pool).await;
     sqlx::query!(
         r#"
             INSERT INTO key_values (namespace, key, value)
@@ -102,7 +103,10 @@ pub async fn set_key_value(
     .await
     .expect("Failed to insert key value");
 
-    get_key_value(namespace, key, pool).await
+    let kv = get_key_value(namespace, key, pool)
+        .await
+        .expect("Failed to get key value");
+    return (kv, existing.is_none());
 }
 
 pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {

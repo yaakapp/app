@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import { Overlay } from '../Overlay';
+import { Heading } from './Heading';
 import { IconButton } from './IconButton';
-import { VStack } from './Stacks';
 
 export interface DialogProps {
   children: ReactNode;
@@ -13,14 +13,14 @@ export interface DialogProps {
   title: ReactNode;
   description?: ReactNode;
   className?: string;
-  wide?: boolean;
+  size?: 'sm' | 'md' | 'full' | 'dynamic';
   hideX?: boolean;
 }
 
 export function Dialog({
   children,
   className,
-  wide,
+  size = 'full',
   open,
   onClose,
   title,
@@ -48,9 +48,12 @@ export function Dialog({
             className={classnames(
               className,
               'relative bg-gray-50 pointer-events-auto',
-              'w-[20rem] max-h-[80vh] p-5 rounded-lg overflow-auto',
+              'max-h-[80vh] p-5 rounded-lg overflow-auto',
               'dark:border border-gray-200 shadow-md shadow-black/10',
-              wide && 'w-[80vw] max-w-[50rem]',
+              size === 'sm' && 'w-[25rem]',
+              size === 'md' && 'w-[45rem]',
+              size === 'full' && 'w-[80vw]',
+              size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >
             {!hideX && (
@@ -63,13 +66,11 @@ export function Dialog({
                 className="ml-auto absolute right-1 top-1"
               />
             )}
-            <VStack space={3}>
-              <h1 className="text-xl font-semibold w-full" id={titleId}>
-                {title}
-              </h1>
-              {description && <p id={descriptionId}>{description}</p>}
-              <div>{children}</div>
-            </VStack>
+            <Heading className="text-xl font-semibold w-full" id={titleId}>
+              {title}
+            </Heading>
+            {description && <p id={descriptionId}>{description}</p>}
+            <div className="mt-6">{children}</div>
           </motion.div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { Dialog } from './core/Dialog';
 type DialogEntry = {
   id: string;
   render: ({ hide }: { hide: () => void }) => React.ReactNode;
-} & Pick<DialogProps, 'title' | 'description' | 'hideX' | 'className'>;
+} & Pick<DialogProps, 'title' | 'description' | 'hideX' | 'className' | 'size'>;
 
 type DialogEntryOptionalId = Omit<DialogEntry, 'id'> & { id?: string };
 
