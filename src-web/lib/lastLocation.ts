@@ -1,11 +1,11 @@
-import { getKeyValue, setKeyValue } from './keyValueStore';
+import { getKeyValue, NAMESPACE_NO_SYNC, setKeyValue } from './keyValueStore';
 
 export async function getLastLocation(): Promise<string> {
-  return getKeyValue({ key: 'last_location', fallback: '/' });
+  return getKeyValue({ namespace: NAMESPACE_NO_SYNC, key: 'last_location', fallback: '/' });
 }
 
 export async function setLastLocation(pathname: string): Promise<void> {
-  return setKeyValue({ key: 'last_location', value: pathname });
+  return setKeyValue({ namespace: NAMESPACE_NO_SYNC, key: 'last_location', value: pathname });
 }
 
 export async function syncLastLocation(): Promise<void> {

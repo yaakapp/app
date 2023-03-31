@@ -21,8 +21,8 @@ export function useUpdateRequest(id: string | null) {
       if (request === null) return;
 
       const newRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
-      queryClient.setQueryData(requestsQueryKey(request), (requests: HttpRequest[] | undefined) =>
-        requests?.map((r) => (r.id === newRequest.id ? newRequest : r)),
+      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(request), (requests) =>
+        (requests ?? []).map((r) => (r.id === newRequest.id ? newRequest : r)),
       );
     },
   });

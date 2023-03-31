@@ -2,20 +2,27 @@ import type { ButtonProps } from '../components/core/Button';
 import { Button } from '../components/core/Button';
 import { HStack } from '../components/core/Stacks';
 
-interface Props {
+export interface ConfirmProps {
   hide: () => void;
   onResult: (result: boolean) => void;
-  confirmButtonColor?: ButtonProps['color'];
-  confirmButtonText?: string;
+  variant?: 'delete' | 'confirm';
 }
-export function Confirm({
-  hide,
-  onResult,
-  confirmButtonColor = 'primary',
-  confirmButtonText = 'Confirm',
-}: Props) {
+
+const colors: Record<NonNullable<ConfirmProps['variant']>, ButtonProps['color']> = {
+  delete: 'danger',
+  confirm: 'primary',
+};
+
+const confirmButtonTexts: Record<NonNullable<ConfirmProps['variant']>, string> = {
+  delete: 'Delete',
+  confirm: 'Confirm',
+};
+
+export function Confirm({ hide, onResult, variant = 'confirm' }: ConfirmProps) {
   const focusRef = (el: HTMLButtonElement | null) => {
-    el?.focus();
+    setTimeout(() => {
+      el?.focus();
+    });
   };
 
   const handleHide = () => {
@@ -33,8 +40,8 @@ export function Confirm({
       <Button className="focus" color="gray" onClick={handleHide}>
         Cancel
       </Button>
-      <Button className="focus" ref={focusRef} color={confirmButtonColor} onClick={handleSuccess}>
-        {confirmButtonText}
+      <Button className="focus" ref={focusRef} color={colors[variant]} onClick={handleSuccess}>
+        {confirmButtonTexts[variant]}
       </Button>
     </HStack>
   );

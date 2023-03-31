@@ -1,26 +1,31 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
-import { useActiveWorkspace } from './useActiveWorkspace';
-import { useRequests } from './useRequests';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { requestsQueryKey, useRequests } from './useRequests';
 import { useRoutes } from './useRoutes';
 
 export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) {
-  const workspace = useActiveWorkspace();
+  const workspaceId = useActiveWorkspaceId();
   const routes = useRoutes();
   const requests = useRequests();
+  const queryClient = useQueryClient();
 
-  return useMutation<string, unknown, Partial<Pick<HttpRequest, 'name' | 'sortPriority'>>>({
+  return useMutation<HttpRequest, unknown, Partial<Pick<HttpRequest, 'name' | 'sortPriority'>>>({
     mutationFn: (patch) => {
-      if (workspace === null) {
+      if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
       const sortPriority = maxSortPriority(requests) + 1000;
-      return invoke('create_request', { sortPriority, workspaceId: workspace.id, ...patch });
+      return invoke('create_request', { sortPriority, workspaceId, ...patch });
     },
-    onSuccess: async (requestId) => {
-      if (navigateAfter && workspace !== null) {
-        routes.navigate('request', { workspaceId: workspace.id, requestId });
+    onSuccess: async (request) => {
+      queryClient.setQueryData<HttpRequest[]>(
+        requestsQueryKey({ workspaceId: request.workspaceId }),
+        (requests) => [...(requests ?? []), request],
+      );
+      if (navigateAfter) {
+        routes.navigate('request', { workspaceId: request.workspaceId, requestId: request.id });
       }
     },
   });
