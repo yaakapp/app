@@ -6,7 +6,8 @@ import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/vie
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
+import { useUnmount } from 'react-use';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -48,8 +49,8 @@ export function Editor({ defaultValue, forceUpdateKey, ...props }: EditorProps) 
   // NOTE: This was originally done to fix a bug where the editor would unmount
   //   and remount after the first change event, something to do with React
   //   StrictMode. This fixes it, though, and actually makes more sense
-  const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey, props.type]);
-  return <_Editor defaultValue={fixedDefaultValue} {...props} />;
+  // const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey, props.type]);
+  return <_Editor defaultValue={defaultValue} forceUpdateKey={forceUpdateKey} {...props} />;
 }
 
 const _Editor = memo(function _Editor({
@@ -61,6 +62,7 @@ const _Editor = memo(function _Editor({
   placeholder,
   useTemplating,
   defaultValue,
+  forceUpdateKey,
   languageExtension,
   onChange,
   onFocus,
@@ -68,9 +70,15 @@ const _Editor = memo(function _Editor({
   singleLine,
   format,
   autocomplete,
-}: Omit<EditorProps, 'forceUpdateKey'>) {
+}: EditorProps) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+
+  // Unmount editor when we're done
+  useUnmount(() => {
+    cm.current?.view.destroy();
+    cm.current = null;
+  });
 
   // Use ref so we can update the onChange handler without re-initializing the editor
   const handleChange = useRef<EditorProps['onChange']>(onChange);
@@ -106,7 +114,7 @@ const _Editor = memo(function _Editor({
     if (cm.current === null) return;
     const { view } = cm.current;
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: defaultValue ?? '' } });
-  }, [defaultValue]);
+  }, [forceUpdateKey]);
 
   // Initialize the editor when ref mounts
   useEffect(() => {
@@ -139,10 +147,6 @@ const _Editor = memo(function _Editor({
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
-    return () => {
-      view.destroy();
-      cm.current = null;
-    };
   }, [wrapperRef.current, languageExtension]);
 
   const cmContainer = (
