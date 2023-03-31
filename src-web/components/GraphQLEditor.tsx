@@ -1,15 +1,10 @@
-import type { Extension } from '@codemirror/state';
-import { useEffect, useMemo, useState } from 'react';
+import { updateSchema } from 'cm6-graphql';
+import type { EditorView } from 'codemirror';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { HttpRequest } from '../lib/models';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import type { EditorProps } from './core/Editor';
-import {
-  buildClientSchema,
-  Editor,
-  formatGraphQL,
-  getIntrospectionQuery,
-  graphql,
-} from './core/Editor';
+import { buildClientSchema, Editor, formatGraphQL, getIntrospectionQuery } from './core/Editor';
 import { Separator } from './core/Separator';
 
 type Props = Pick<
@@ -41,23 +36,28 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     }
   }, [defaultValue]);
 
-  const handleChange = (b: GraphQLBody) => {
-    onChange?.(JSON.stringify(b, null, 2));
-  };
+  const handleChange = useCallback(
+    (b: GraphQLBody) => onChange?.(JSON.stringify(b, null, 2)),
+    [onChange],
+  );
 
-  const handleChangeQuery = (query: string) => {
-    handleChange({ query, variables });
-  };
+  const handleChangeQuery = useCallback(
+    (query: string) => handleChange({ query, variables }),
+    [handleChange],
+  );
 
-  const handleChangeVariables = (variables: string) => {
-    try {
-      handleChange({ query, variables: JSON.parse(variables) });
-    } catch (e) {
-      // Meh, not much we can do here
-    }
-  };
+  const handleChangeVariables = useCallback(
+    (variables: string) => {
+      try {
+        handleChange({ query, variables: JSON.parse(variables) });
+      } catch (e) {
+        // Meh, not much we can do here
+      }
+    },
+    [handleChange],
+  );
 
-  const [graphqlExtension, setGraphqlExtension] = useState<Extension>();
+  const editorViewRef = useRef<EditorView>(null);
 
   useEffect(() => {
     const body = JSON.stringify({
@@ -67,9 +67,11 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     const req: HttpRequest = { ...baseRequest, body, id: '' };
     sendEphemeralRequest(req).then((response) => {
       try {
-        const { data } = JSON.parse(response.body);
-        const schema = buildClientSchema(data);
-        setGraphqlExtension(graphql(schema, {}));
+        if (editorViewRef.current) {
+          const { data } = JSON.parse(response.body);
+          const schema = buildClientSchema(data);
+          updateSchema(editorViewRef.current, schema);
+        }
       } catch (err) {
         console.log('Failed to parse introspection query', err);
         return;
@@ -80,9 +82,9 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
+        ref={editorViewRef}
         heightMode="auto"
         defaultValue={query ?? ''}
-        languageExtension={graphqlExtension}
         onChange={handleChangeQuery}
         contentType="application/graphql"
         placeholder="..."
