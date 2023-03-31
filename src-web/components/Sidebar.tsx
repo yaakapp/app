@@ -48,13 +48,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
         <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
-          <IconButton
-            title=""
-            icon="magicWand"
-            onClick={() =>
-              confirm({ title: 'Reset Requests', description: 'Do you want to do it?' })
-            }
-          />
           <ToggleThemeButton />
         </HStack>
       </div>
