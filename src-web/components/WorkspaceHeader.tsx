@@ -3,8 +3,8 @@ import { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
-import { RequestSettingsDropdown } from './RequestSettingsDropdown';
-import { SidebarDisplayToggle } from './SidebarDisplayToggle';
+import { RequestActionsDropdown } from './RequestActionsDropdown';
+import { SidebarActions } from './SidebarActions';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 
 interface Props {
@@ -19,8 +19,8 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       alignItems="center"
       className={classnames(className, 'w-full h-full')}
     >
-      <HStack className="flex-1 pointer-events-none" alignItems="center">
-        <SidebarDisplayToggle />
+      <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
+        <SidebarActions />
         <WorkspaceDropdown className="pointer-events-auto" />
       </HStack>
       <div className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none">
@@ -29,14 +29,14 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
         <IconButton size="sm" title="" icon="magnifyingGlass" />
         {activeRequest && (
-          <RequestSettingsDropdown requestId={activeRequest?.id}>
+          <RequestActionsDropdown requestId={activeRequest?.id}>
             <IconButton
               size="sm"
               title="Request Options"
               icon="gear"
               className="pointer-events-auto"
             />
-          </RequestSettingsDropdown>
+          </RequestActionsDropdown>
         )}
       </div>
     </HStack>

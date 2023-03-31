@@ -11,11 +11,12 @@ import { useWindowSize } from 'react-use';
 import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
 import { WINDOW_FLOATING_SIDEBAR_WIDTH } from '../lib/constants';
 import { Button } from './core/Button';
+import { HStack } from './core/Stacks';
 import { Overlay } from './Overlay';
 import { RequestResponse } from './RequestResponse';
 import { ResizeHandle } from './ResizeHandle';
 import { Sidebar } from './Sidebar';
-import { SidebarDisplayToggle } from './SidebarDisplayToggle';
+import { SidebarActions } from './SidebarActions';
 import { WorkspaceHeader } from './WorkspaceHeader';
 
 const side = { gridArea: 'side' };
@@ -127,7 +128,9 @@ export default function Workspace() {
             )}
           >
             <HeaderSize className="border-transparent">
-              <SidebarDisplayToggle />
+              <HStack space={0.5}>
+                <SidebarActions />
+              </HStack>
             </HeaderSize>
             <Sidebar />
           </motion.div>
