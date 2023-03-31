@@ -215,7 +215,9 @@ async fn actually_send_ephemeral_request(
             response = models::update_response_if_id(response, pool)
                 .await
                 .expect("Failed to update response");
-            emit_side_effect(app_handle, "updated_model", &response);
+            if request.id != "" {
+                emit_side_effect(app_handle, "updated_model", &response);
+            }
             Ok(response)
         }
         Err(e) => response_err(response, e.to_string(), app_handle, pool).await,

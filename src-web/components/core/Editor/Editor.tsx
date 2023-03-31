@@ -1,13 +1,11 @@
 import { defaultKeymap } from '@codemirror/commands';
-import type { Extension } from '@codemirror/state';
 import { Compartment, EditorState, Transaction } from '@codemirror/state';
 import type { ViewUpdate } from '@codemirror/view';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { memo, useEffect, useRef } from 'react';
-import { useUnmount } from 'react-use';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -26,7 +24,6 @@ export interface EditorProps {
   className?: string;
   heightMode?: 'auto' | 'full';
   contentType?: string;
-  languageExtension?: Extension;
   forceUpdateKey?: string;
   autoFocus?: boolean;
   defaultValue?: string;
@@ -40,45 +37,28 @@ export interface EditorProps {
   autocomplete?: GenericCompletionConfig;
 }
 
-export function Editor({ defaultValue, forceUpdateKey, ...props }: EditorProps) {
-  // In order to not have the editor render too much, we combine forceUpdateKey
-  // here with default value so that we only send new props to the editor when
-  // forceUpdateKey changes. The editor can then use the defaultValue to force
-  // update instead of using both forceUpdateKey and defaultValue.
-  //
-  // NOTE: This was originally done to fix a bug where the editor would unmount
-  //   and remount after the first change event, something to do with React
-  //   StrictMode. This fixes it, though, and actually makes more sense
-  // const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey, props.type]);
-  return <_Editor defaultValue={defaultValue} forceUpdateKey={forceUpdateKey} {...props} />;
-}
-
-const _Editor = memo(function _Editor({
-  readOnly,
-  type = 'text',
-  heightMode,
-  contentType,
-  autoFocus,
-  placeholder,
-  useTemplating,
-  defaultValue,
-  forceUpdateKey,
-  languageExtension,
-  onChange,
-  onFocus,
-  className,
-  singleLine,
-  format,
-  autocomplete,
-}: EditorProps) {
+export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
+  {
+    readOnly,
+    type = 'text',
+    heightMode,
+    contentType,
+    autoFocus,
+    placeholder,
+    useTemplating,
+    defaultValue,
+    forceUpdateKey,
+    onChange,
+    onFocus,
+    className,
+    singleLine,
+    format,
+    autocomplete,
+  }: EditorProps,
+  ref,
+) {
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-
-  // Unmount editor when we're done
-  useUnmount(() => {
-    cm.current?.view.destroy();
-    cm.current = null;
-  });
+  useImperativeHandle(ref, () => cm.current?.view);
 
   // Use ref so we can update the onChange handler without re-initializing the editor
   const handleChange = useRef<EditorProps['onChange']>(onChange);
@@ -117,13 +97,18 @@ const _Editor = memo(function _Editor({
   }, [forceUpdateKey]);
 
   // Initialize the editor when ref mounts
-  useEffect(() => {
-    if (wrapperRef.current === null || cm.current !== null) return;
+  const initEditorRef = useCallback((container: HTMLDivElement | null) => {
+    if (container === null) {
+      cm.current?.view.destroy();
+      cm.current = null;
+      return;
+    }
+
     let view: EditorView;
     try {
       const languageCompartment = new Compartment();
-      const langExt =
-        languageExtension ?? getLanguageExtension({ contentType, useTemplating, autocomplete });
+      const langExt = getLanguageExtension({ contentType, useTemplating, autocomplete });
+
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
         extensions: [
@@ -132,7 +117,7 @@ const _Editor = memo(function _Editor({
             placeholderExt(placeholderElFromText(placeholder ?? '')),
           ),
           ...getExtensions({
-            container: wrapperRef.current,
+            container,
             onChange: handleChange,
             onFocus: handleFocus,
             readOnly,
@@ -140,18 +125,19 @@ const _Editor = memo(function _Editor({
           }),
         ],
       });
-      view = new EditorView({ state, parent: wrapperRef.current });
+
+      view = new EditorView({ state, parent: container });
       cm.current = { view, languageCompartment };
-      syncGutterBg({ parent: wrapperRef.current, className });
+      syncGutterBg({ parent: container, className });
       if (autoFocus) view.focus();
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
-  }, [wrapperRef.current, languageExtension]);
+  }, []);
 
   const cmContainer = (
     <div
-      ref={wrapperRef}
+      ref={initEditorRef}
       className={classnames(
         className,
         'cm-wrapper text-base bg-gray-50',
