@@ -19,8 +19,8 @@ export function useUpdateAnyRequest() {
     onMutate: async ({ id, update }) => {
       const request = await getRequest(id);
       if (request === null) return;
-      queryClient.setQueryData(requestsQueryKey(request), (requests: HttpRequest[] | undefined) =>
-        requests?.map((r) => (r.id === request.id ? update(r) : r)),
+      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(request), (requests) =>
+        (requests ?? []).map((r) => (r.id === request.id ? update(r) : r)),
       );
     },
   });

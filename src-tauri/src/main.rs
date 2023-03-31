@@ -25,6 +25,7 @@ use tauri::regex::Regex;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
+use tokio::task::spawn_local;
 
 use window_ext::WindowExt;
 
@@ -63,18 +64,18 @@ async fn migrate_db(
 #[tauri::command]
 async fn send_ephemeral_request(
     request: models::HttpRequest,
-    window: Window<Wry>,
+    app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
-    return actually_send_ephemeral_request(request, response, window, pool).await;
+    return actually_send_ephemeral_request(request, &response, &app_handle, pool).await;
 }
 
 async fn actually_send_ephemeral_request(
     request: models::HttpRequest,
-    mut response: models::HttpResponse,
-    window: Window<Wry>,
+    response: &models::HttpResponse,
+    app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
@@ -183,22 +184,22 @@ async fn actually_send_ephemeral_request(
     let sendable_req = match sendable_req_result {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), window, pool).await;
+            return response_err(response, e.to_string(), &app_handle, pool).await;
         }
     };
 
-    let resp = client.execute(sendable_req).await;
+    let raw_response = client.execute(sendable_req).await;
 
-    let p = window
-        .app_handle()
+    let p = app_handle
         .path_resolver()
         .resolve_resource("plugins/plugin.ts")
         .expect("failed to resolve resource");
 
     runtime::run_plugin_sync(p.to_str().unwrap()).unwrap();
 
-    match resp {
+    match raw_response {
         Ok(v) => {
+            let mut response = response.clone();
             response.status = v.status().as_u16() as i64;
             response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
             response.headers = Json(
@@ -216,12 +217,10 @@ async fn actually_send_ephemeral_request(
             response = models::update_response_if_id(response, pool)
                 .await
                 .expect("Failed to update response");
-            window
-                .emit_all("updated_model", &response)
-                .expect("Failed to emit updated_model");
+            emit_side_effect(app_handle, "updated_model", &response);
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), window, pool).await,
+        Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
 }
 
@@ -230,7 +229,7 @@ async fn send_request(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
-) -> Result<(), String> {
+) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
 
     let req = models::get_request(request_id, pool)
@@ -240,25 +239,31 @@ async fn send_request(
     let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
         .await
         .expect("Failed to create response");
-    window
-        .emit_all("created_model", &response)
-        .expect("Failed to emit updated_model");
 
-    actually_send_ephemeral_request(req, response, window, pool).await?;
-    Ok(())
+    let response2 = response.clone();
+    let app_handle2 = window.app_handle().clone();
+    let pool2 = pool.clone();
+    tokio::spawn(async move {
+        actually_send_ephemeral_request(req, &response2, &app_handle2, &pool2)
+            .await
+            .expect("Failed to send request");
+    });
+
+    emit_and_return(&window, "created_model", response)
 }
 
 async fn response_err(
-    mut response: models::HttpResponse,
+    response: &models::HttpResponse,
     error: String,
-    window: Window<Wry>,
+    app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
+    let mut response = response.clone();
     response.error = Some(error.clone());
     response = models::update_response_if_id(response, pool)
         .await
         .expect("Failed to update response");
-    emit_all_others(&window, "updated_model", &response);
+    emit_side_effect(app_handle, "updated_model", &response);
     Ok(response)
 }
 
@@ -280,15 +285,15 @@ async fn set_key_value(
     value: &str,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<(), String> {
+) -> Result<models::KeyValue, String> {
     let pool = &*db_instance.lock().await;
-    let created_key_value = models::set_key_value(namespace, key, value, pool)
-        .await
-        .expect("Failed to create key value");
+    let (key_value, created) = models::set_key_value(namespace, key, value, pool).await;
 
-    emit_all_others(&window, "updated_model", &created_key_value);
-
-    Ok(())
+    if created {
+        emit_and_return(&window, "created_model", key_value)
+    } else {
+        emit_and_return(&window, "updated_model", key_value)
+    }
 }
 
 #[tauri::command]
@@ -296,17 +301,13 @@ async fn create_workspace(
     name: &str,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<String, String> {
+) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
     let created_workspace = models::create_workspace(name, "", pool)
         .await
         .expect("Failed to create workspace");
 
-    window
-        .emit_all("created_model", &created_workspace)
-        .expect("Failed to emit event");
-
-    Ok(created_workspace.id)
+    emit_and_return(&window, "created_model", created_workspace)
 }
 
 #[tauri::command]
@@ -316,7 +317,7 @@ async fn create_request(
     sort_priority: f64,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<String, String> {
+) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
     let headers = Vec::new();
     let created_request = models::upsert_request(
@@ -336,11 +337,7 @@ async fn create_request(
     .await
     .expect("Failed to create request");
 
-    window
-        .emit_all("created_model", &created_request)
-        .expect("Failed to emit event");
-
-    Ok(created_request.id)
+    emit_and_return(&window, "created_model", created_request)
 }
 
 #[tauri::command]
@@ -348,13 +345,12 @@ async fn duplicate_request(
     id: &str,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<String, String> {
+) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
     let request = models::duplicate_request(id, pool)
         .await
         .expect("Failed to duplicate request");
-    emit_all_others(&window, "updated_model", &request);
-    Ok(request.id)
+    emit_and_return(&window, "updated_model", request)
 }
 
 #[tauri::command]
@@ -362,7 +358,7 @@ async fn update_request(
     request: models::HttpRequest,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<(), String> {
+) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
 
     // TODO: Figure out how to make this better
@@ -393,9 +389,7 @@ async fn update_request(
     .await
     .expect("Failed to update request");
 
-    emit_all_others(&window, "updated_model", updated_request);
-
-    Ok(())
+    emit_and_return(&window, "updated_model", updated_request)
 }
 
 #[tauri::command]
@@ -403,13 +397,12 @@ async fn delete_request(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
-) -> Result<(), String> {
+) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
     let req = models::delete_request(request_id, pool)
         .await
         .expect("Failed to delete request");
-    emit_all_others(&window, "deleted_model", req);
-    Ok(())
+    emit_and_return(&window, "deleted_model", req)
 }
 
 #[tauri::command]
@@ -450,13 +443,12 @@ async fn delete_response(
     id: &str,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<(), String> {
+) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::delete_response(id, pool)
         .await
         .expect("Failed to delete response");
-    emit_all_others(&window, "deleted_model", response);
-    Ok(())
+    emit_and_return(&window, "deleted_model", response)
 }
 
 #[tauri::command]
@@ -494,13 +486,12 @@ async fn delete_workspace(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     id: &str,
-) -> Result<(), String> {
+) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
     let workspace = models::delete_workspace(id, pool)
         .await
         .expect("Failed to delete workspace");
-    emit_all_others(&window, "deleted_model", workspace);
-    Ok(())
+    emit_and_return(&window, "deleted_model", workspace)
 }
 
 #[tauri::command]
@@ -690,13 +681,17 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
     win
 }
 
-/// Emit an event to all windows except the current one
-fn emit_all_others<S: Serialize + Clone>(current_window: &Window<Wry>, event: &str, payload: S) {
-    let windows = current_window.app_handle().windows();
-    for window in windows.values() {
-        if window.label() == current_window.label() {
-            continue;
-        }
-        window.emit(event, &payload).unwrap();
-    }
+/// Emit an event to all windows, with a source window
+fn emit_and_return<S: Serialize + Clone, E>(
+    current_window: &Window<Wry>,
+    event: &str,
+    payload: S,
+) -> Result<S, E> {
+    current_window.emit_all(event, &payload).unwrap();
+    Ok(payload)
+}
+
+/// Emit an event to all windows, used for side-effects where there is no source window to attribute. This
+fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle<Wry>, event: &str, payload: S) {
+    app_handle.emit_all(event, &payload).unwrap();
 }

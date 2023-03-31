@@ -5,6 +5,7 @@ import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useRequest } from '../hooks/useRequest';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
+import { InlineCode } from './core/InlineCode';
 
 interface Props {
   requestId: string;
@@ -30,9 +31,12 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
           onSelect: async () => {
             const confirmed = await confirm({
               title: 'Delete Request',
-              description: `Are you sure you want to delete "${request?.name}"?`,
-              confirmButtonColor: 'danger',
-              confirmButtonText: 'Delete',
+              variant: 'delete',
+              description: (
+                <>
+                  Are you sure you want to delete <InlineCode>{request?.name}</InlineCode>?
+                </>
+              ),
             });
             if (confirmed) {
               deleteRequest.mutate();

@@ -10,12 +10,13 @@ import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
+import { InlineCode } from './core/InlineCode';
 
 type Props = {
   className?: string;
 };
 
-export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: Props) {
+export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ className }: Props) {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
@@ -51,9 +52,12 @@ export const WorkspaceDropdown = memo(function WorkspaceDropdown({ className }: 
         onSelect: async () => {
           const confirmed = await confirm({
             title: 'Delete Workspace',
-            description: `Are you sure you want to delete "${activeWorkspace?.name}"?`,
-            confirmButtonColor: 'danger',
-            confirmButtonText: 'Delete',
+            variant: 'delete',
+            description: (
+              <>
+                Are you sure you want to delete <InlineCode>{activeWorkspace?.name}</InlineCode>?
+              </>
+            ),
           });
           if (confirmed) {
             deleteWorkspace.mutate();
