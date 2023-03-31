@@ -8,7 +8,6 @@
 extern crate objc;
 
 use std::collections::HashMap;
-use std::env;
 use std::env::current_dir;
 use std::fs::create_dir_all;
 
@@ -25,7 +24,6 @@ use tauri::regex::Regex;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, Wry};
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
 use tokio::sync::Mutex;
-use tokio::task::spawn_local;
 
 use window_ext::WindowExt;
 
