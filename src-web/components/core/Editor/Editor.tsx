@@ -48,7 +48,7 @@ export function Editor({ defaultValue, forceUpdateKey, ...props }: EditorProps) 
   // NOTE: This was originally done to fix a bug where the editor would unmount
   //   and remount after the first change event, something to do with React
   //   StrictMode. This fixes it, though, and actually makes more sense
-  const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey]);
+  const fixedDefaultValue = useMemo(() => defaultValue, [forceUpdateKey, props.type]);
   return <_Editor defaultValue={fixedDefaultValue} {...props} />;
 }
 
