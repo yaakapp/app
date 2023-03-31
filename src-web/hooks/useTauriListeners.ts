@@ -3,8 +3,8 @@ import { invoke } from '@tauri-apps/api';
 import type { EventCallback } from '@tauri-apps/api/event';
 import { listen as tauriListen } from '@tauri-apps/api/event';
 import { appWindow } from '@tauri-apps/api/window';
+import { useEffect } from 'react';
 import { matchPath } from 'react-router-dom';
-import { useEffectOnce } from 'react-use';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { debounce } from '../lib/debounce';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
@@ -26,7 +26,7 @@ export function useTauriListeners() {
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
-  useEffectOnce(() => {
+  useEffect(() => {
     let unmounted = false;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -41,12 +41,11 @@ export function useTauriListeners() {
       listen(event, debounce(fn, UPDATE_DEBOUNCE_MILLIS));
     }
 
-    listen('toggle_sidebar', sidebarDisplay.toggle);
-    listen('refresh', () => location.reload());
+    listen<void>('toggle_sidebar', sidebarDisplay.toggle);
+    listen<void>('refresh', () => location.reload());
 
     listenDebounced<Model>('created_model', ({ payload, windowLabel }) => {
-      const cameFromSameWindow = windowLabel === appWindow.label;
-      if (cameFromSameWindow) return;
+      if (windowLabel === appWindow.label && payload.model !== 'http_response') return;
 
       const queryKey =
         payload.model === 'http_request'
@@ -74,8 +73,7 @@ export function useTauriListeners() {
     });
 
     listenDebounced<Model>('updated_model', ({ payload, windowLabel }) => {
-      const cameFromSameWindow = windowLabel === appWindow.label;
-      if (cameFromSameWindow) return;
+      if (windowLabel === appWindow.label && payload.model !== 'http_response') return;
 
       const queryKey =
         payload.model === 'http_request'
@@ -122,7 +120,10 @@ export function useTauriListeners() {
       }
     });
 
-    listen('send_request', async () => {
+    // TODO: Just call this from the backend instead of this way
+    listen('send_request', async ({ windowLabel }) => {
+      if (windowLabel !== appWindow.label) return;
+
       const params = matchPath(routePaths.request(), window.location.pathname);
       const requestId = params?.params.requestId;
       if (typeof requestId !== 'string') {
@@ -131,7 +132,8 @@ export function useTauriListeners() {
       await invoke('send_request', { requestId });
     });
 
-    listen('zoom', ({ payload: zoomDelta }: { payload: number }) => {
+    listen<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {
+      if (windowLabel !== appWindow.label) return;
       const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
       let newFontSize;
