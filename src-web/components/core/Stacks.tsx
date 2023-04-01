@@ -25,7 +25,7 @@ export const HStack = forwardRef(function HStack(
   return (
     <BaseStack
       ref={ref}
-      className={classnames(className, 'flex-row', space && gapClasses[space])}
+      className={classnames(className, 'flex-row', space != null && gapClasses[space])}
       {...props}
     >
       {children}
@@ -45,7 +45,7 @@ export const VStack = forwardRef(function VStack(
   return (
     <BaseStack
       ref={ref}
-      className={classnames(className, 'flex-col', space && gapClasses[space])}
+      className={classnames(className, 'flex-col', space != null && gapClasses[space])}
       {...props}
     >
       {children}

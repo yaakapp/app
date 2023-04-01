@@ -8,6 +8,10 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "eslint-config-prettier"
   ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: ['./tsconfig.json'],
+  },
   ignorePatterns: ["src-tauri/**/*"],
   settings: {
     react: {
@@ -16,13 +20,14 @@ module.exports = {
     "import/resolver": {
       node: {
         paths: ["src-web"],
-        extensions: [".js", ".jsx", ".ts", ".tsx"]
+        extensions: [".ts", ".tsx"]
       }
     }
   },
   rules: {
     "jsx-a11y/no-autofocus": "warn",
     "react/react-in-jsx-scope": "off",
+    "import/no-unresolved": "off",
     "@typescript-eslint/consistent-type-imports": ["error", {
       prefer: "type-imports",
       disallowTypeAnnotations: true,

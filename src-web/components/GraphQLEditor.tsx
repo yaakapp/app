@@ -22,7 +22,7 @@ interface GraphQLBody {
 
 export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
   const { query, variables } = useMemo<GraphQLBody>(() => {
-    if (!defaultValue) {
+    if (defaultValue === undefined) {
       return { query: '', variables: {} };
     }
     try {
@@ -61,6 +61,11 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
 
   // Refetch the schema when the URL changes
   useEffect(() => {
+    // First, clear the schema
+    if (editorViewRef.current) {
+      updateSchema(editorViewRef.current, undefined);
+    }
+
     let unmounted = false;
     const body = JSON.stringify({
       query: getIntrospectionQuery(),
@@ -76,14 +81,15 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         updateSchema(editorViewRef.current, schema);
       } catch (err) {
         console.log('Failed to parse introspection query', err);
-        updateSchema(editorViewRef.current, undefined);
-        return;
       }
     });
+
     return () => {
       unmounted = true;
     };
-  }, [baseRequest, baseRequest.url]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseRequest.url]);
 
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">

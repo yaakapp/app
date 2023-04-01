@@ -18,7 +18,8 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src-web"
+    "src-web",
+    "vite.config.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
