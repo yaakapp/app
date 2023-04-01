@@ -90,7 +90,7 @@ impl deno_core::ModuleLoader for TsModuleLoader {
                 | MediaType::Dcts
                 | MediaType::Tsx => (ModuleType::JavaScript, true),
                 MediaType::Json => (ModuleType::Json, false),
-                _ => panic!("Unknown extension {:?}", path),
+                _ => panic!("Unknown extension {:?}", path.extension()),
             };
 
             // Read the file, transpile if necessary.
