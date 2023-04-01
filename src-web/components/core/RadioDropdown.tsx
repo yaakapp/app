@@ -39,7 +39,7 @@ export function RadioDropdown<T = string | null>({
           };
         }
       }),
-    [value, items],
+    [items, value, onChange],
   );
 
   return <Dropdown items={dropdownItems}>{children}</Dropdown>;

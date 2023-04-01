@@ -62,6 +62,8 @@ export const PairEditor = memo(function PairEditor({
     const nonEmpty = originalPairs.filter((h) => !(h.name === '' && h.value === ''));
     const pairs = nonEmpty.map((pair) => newPairContainer(pair));
     setPairs([...pairs, newPairContainer()]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceUpdateKey]);
 
   const setPairsAndSave = useCallback(
@@ -99,19 +101,19 @@ export const PairEditor = memo(function PairEditor({
         return newPairs;
       });
     },
-    [hoveredIndex],
+    [hoveredIndex, setPairsAndSave],
   );
 
   const handleChange = useCallback(
     (pair: PairContainer) =>
       setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair))),
-    [],
+    [setPairsAndSave],
   );
 
   const handleDelete = useCallback(
     (pair: PairContainer) =>
       setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id)),
-    [],
+    [setPairsAndSave],
   );
 
   const handleFocus = useCallback(
@@ -216,17 +218,17 @@ const FormRow = memo(function FormRow({
 
   const handleChangeEnabled = useMemo(
     () => (enabled: boolean) => onChange({ id, pair: { ...pairContainer.pair, enabled } }),
-    [onChange, pairContainer.pair.name, pairContainer.pair.value],
+    [id, onChange, pairContainer.pair],
   );
 
   const handleChangeName = useMemo(
     () => (name: string) => onChange({ id, pair: { ...pairContainer.pair, name } }),
-    [onChange, pairContainer.pair.value, pairContainer.pair.enabled],
+    [onChange, id, pairContainer.pair],
   );
 
   const handleChangeValue = useMemo(
     () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value } }),
-    [onChange, pairContainer.pair.name, pairContainer.pair.enabled],
+    [onChange, id, pairContainer.pair],
   );
 
   const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);

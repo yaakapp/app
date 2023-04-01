@@ -64,7 +64,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
 
   const handleReset = useCallback(
     () => (vertical ? heightKv.set(DEFAULT) : widthKv.set(DEFAULT)),
-    [vertical],
+    [heightKv, vertical, widthKv],
   );
 
   const handleResizeStart = useCallback(
@@ -110,7 +110,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [widthKv.value, heightKv.value, vertical],
+    [width, height, vertical, heightKv, widthKv],
   );
 
   return (

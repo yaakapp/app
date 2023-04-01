@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { buildKeyValueKey, getKeyValue, setKeyValue } from '../lib/keyValueStore';
 
 const DEFAULT_NAMESPACE = 'app';
@@ -46,15 +46,18 @@ export function useKeyValue<T extends Object | null>({
         mutate.mutate(value);
       }
     },
-    [defaultValue],
+    [defaultValue, key, mutate, namespace],
   );
 
-  const reset = useCallback(() => mutate.mutate(defaultValue), [defaultValue]);
+  const reset = useCallback(() => mutate.mutate(defaultValue), [mutate, defaultValue]);
 
-  return {
-    value: query.data,
-    isLoading: query.isLoading,
-    set,
-    reset,
-  };
+  return useMemo(
+    () => ({
+      value: query.data,
+      isLoading: query.isLoading,
+      set,
+      reset,
+    }),
+    [query.data, query.isLoading, reset, set],
+  );
 }

@@ -43,7 +43,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
 
   const handleChangeQuery = useCallback(
     (query: string) => handleChange({ query, variables }),
-    [handleChange],
+    [handleChange, variables],
   );
 
   const handleChangeVariables = useCallback(
@@ -54,11 +54,12 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         // Meh, not much we can do here
       }
     },
-    [handleChange],
+    [handleChange, query],
   );
 
   const editorViewRef = useRef<EditorView>(null);
 
+  // Refetch the schema when the URL changes
   useEffect(() => {
     let unmounted = false;
     const body = JSON.stringify({
@@ -67,43 +68,44 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     });
     sendEphemeralRequest({ ...baseRequest, body }).then((response) => {
       if (unmounted) return;
+      if (!editorViewRef.current) return;
       try {
-        if (editorViewRef.current) {
-          const { data } = JSON.parse(response.body);
-          const schema = buildClientSchema(data);
-          updateSchema(editorViewRef.current, schema);
-        }
+        const { data } = JSON.parse(response.body);
+        const schema = buildClientSchema(data);
+        console.log('SET SCHEMA', schema, baseRequest.url);
+        updateSchema(editorViewRef.current, schema);
       } catch (err) {
         console.log('Failed to parse introspection query', err);
+        updateSchema(editorViewRef.current, undefined);
         return;
       }
     });
     return () => {
       unmounted = true;
     };
-  }, [baseRequest.url]);
+  }, [baseRequest, baseRequest.url]);
 
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
-        ref={editorViewRef}
-        heightMode="auto"
-        defaultValue={query ?? ''}
-        onChange={handleChangeQuery}
         contentType="application/graphql"
-        placeholder="..."
+        defaultValue={query ?? ''}
         format={formatGraphQL}
+        heightMode="auto"
+        onChange={handleChangeQuery}
+        placeholder="..."
+        ref={editorViewRef}
         {...extraEditorProps}
       />
       <Separator variant="primary" />
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
-        useTemplating
-        heightMode="auto"
-        placeholder="{}"
-        defaultValue={JSON.stringify(variables, null, 2)}
-        onChange={handleChangeVariables}
         contentType="application/json"
+        defaultValue={JSON.stringify(variables, null, 2)}
+        heightMode="auto"
+        onChange={handleChangeVariables}
+        placeholder="{}"
+        useTemplating
         {...extraEditorProps}
       />
     </div>

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import { useKeyValue } from './useKeyValue';
 
@@ -28,12 +28,15 @@ export function useSidebarDisplay() {
       const hidden = width < COLLAPSE_WIDTH;
       display.set({ hidden, width: Math.max(MIN_WIDTH, width) });
     },
-    [display.set],
+    [display],
   );
-  const hide = useCallback(() => display.set((v) => ({ ...v, hidden: true })), []);
-  const show = useCallback(() => display.set((v) => ({ ...v, hidden: false })), []);
-  const toggle = useCallback(() => display.set((v) => ({ ...v, hidden: !v.hidden })), []);
+  const hide = useCallback(() => display.set((v) => ({ ...v, hidden: true })), [display]);
+  const show = useCallback(() => display.set((v) => ({ ...v, hidden: false })), [display]);
+  const toggle = useCallback(() => display.set((v) => ({ ...v, hidden: !v.hidden })), [display]);
   const reset = display.reset;
 
-  return { width, hidden, set, reset, hide, show, toggle };
+  return useMemo(
+    () => ({ width, hidden, set, reset, hide, show, toggle }),
+    [hidden, hide, reset, set, show, toggle, width],
+  );
 }

@@ -100,7 +100,7 @@ function SidebarItems({
         updateRequest.mutate({ id: requestId, update });
       }
     },
-    [hoveredIndex, requests],
+    [hoveredIndex, requests, updateRequest],
   );
 
   return (
@@ -139,10 +139,13 @@ const _SidebarItem = forwardRef(function SidebarItem(
   const updateRequest = useUpdateRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
 
-  const handleSubmitNameEdit = useCallback(async (el: HTMLInputElement) => {
-    await updateRequest.mutate((r) => ({ ...r, name: el.value }));
-    setEditing(false);
-  }, []);
+  const handleSubmitNameEdit = useCallback(
+    async (el: HTMLInputElement) => {
+      await updateRequest.mutate((r) => ({ ...r, name: el.value }));
+      setEditing(false);
+    },
+    [updateRequest],
+  );
 
   const handleFocus = useCallback((el: HTMLInputElement | null) => {
     el?.focus();
@@ -171,7 +174,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
           break;
       }
     },
-    [active],
+    [handleSubmitNameEdit],
   );
 
   return (

@@ -42,7 +42,7 @@ export default function Workspace() {
       setFloating(false);
       sidebar.show();
     }
-  }, [windowSize.width]);
+  }, [sidebar, windowSize.width]);
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -73,7 +73,7 @@ export default function Workspace() {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [sidebar.width, sidebar.hidden],
+    [sidebar],
   );
 
   const sideWidth = sidebar.hidden ? 0 : sidebar.width;
