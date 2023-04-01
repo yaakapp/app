@@ -7,7 +7,6 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
-import { useTauriListeners } from '../hooks/useTauriListeners';
 import { setLastLocation } from '../lib/lastLocation';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
@@ -43,7 +42,6 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
-  useTauriListeners();
   return <RouterProvider router={router} />;
 }
 
