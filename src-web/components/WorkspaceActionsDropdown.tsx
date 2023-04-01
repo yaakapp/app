@@ -65,7 +65,15 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
         },
       },
     ];
-  }, [workspaces, activeWorkspaceId]);
+  }, [
+    workspaces,
+    activeWorkspaceId,
+    routes,
+    createWorkspace,
+    confirm,
+    activeWorkspace?.name,
+    deleteWorkspace,
+  ]);
 
   return (
     <Dropdown items={items}>

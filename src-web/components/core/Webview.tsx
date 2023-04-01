@@ -13,7 +13,7 @@ export function Webview({ body, url, contentType }: Props) {
       return body.replace(/<head>/gi, `<head><base href="${url}"/>`);
     }
     return body;
-  }, [body, contentType]);
+  }, [url, body, contentType]);
 
   return (
     <div className="px-2 pb-2">

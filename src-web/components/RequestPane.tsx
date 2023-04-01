@@ -116,18 +116,16 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               },
             },
           ],
-    [
-      activeRequest?.bodyType,
-      activeRequest?.headers,
-      activeRequest?.authenticationType,
-      activeRequest?.authentication,
-    ],
+    [activeRequest, updateRequest],
   );
 
-  const handleBodyChange = useCallback((body: string) => updateRequest.mutate({ body }), []);
+  const handleBodyChange = useCallback(
+    (body: string) => updateRequest.mutate({ body }),
+    [updateRequest],
+  );
   const handleHeadersChange = useCallback(
     (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
-    [],
+    [updateRequest],
   );
 
   return (

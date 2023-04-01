@@ -63,10 +63,13 @@ export function Input({
     return true;
   }, [currentValue, validate, require]);
 
-  const handleChange = useCallback((value: string) => {
-    setCurrentValue(value);
-    onChange?.(value);
-  }, []);
+  const handleChange = useCallback(
+    (value: string) => {
+      setCurrentValue(value);
+      onChange?.(value);
+    },
+    [onChange],
+  );
 
   return (
     <VStack className="w-full">

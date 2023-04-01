@@ -88,12 +88,14 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({ contentType, useTemplating, autocomplete });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete]);
+  }, [contentType, autocomplete, useTemplating]);
 
   useEffect(() => {
     if (cm.current === null) return;
     const { view } = cm.current;
     view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: defaultValue ?? '' } });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceUpdateKey]);
 
   // Initialize the editor when ref mounts
@@ -133,6 +135,8 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cmContainer = (

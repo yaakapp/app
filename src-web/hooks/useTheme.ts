@@ -13,16 +13,12 @@ export function useTheme() {
     defaultValue: getAppearance(),
   });
 
-  const themeChange = (appearance: Appearance) => {
-    appearanceKv.set(appearance);
-  };
-
   const handleToggleAppearance = async () => {
     appearanceKv.set(appearanceKv.value === 'dark' ? 'light' : 'dark');
   };
 
   // Set appearance when preferred theme changes
-  useEffect(() => subscribeToPreferredAppearanceChange(themeChange), []);
+  useEffect(() => subscribeToPreferredAppearanceChange(appearanceKv.set), [appearanceKv.set]);
 
   // Sync appearance when k/v changes
   useEffect(() => setAppearance(appearanceKv.value), [appearanceKv.value]);

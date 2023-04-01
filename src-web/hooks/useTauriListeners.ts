@@ -87,7 +87,9 @@ export function useTauriListeners() {
           : null;
 
       if (queryKey === null) {
-        console.log('Unrecognized updated model:', payload);
+        if (payload.model) {
+          console.log('Unrecognized updated model:', payload);
+        }
         return;
       }
 
@@ -154,5 +156,5 @@ export function useTauriListeners() {
         unsub();
       }
     };
-  }, []);
+  }, [queryClient, sidebarDisplay.toggle, wasUpdatedExternally]);
 }
