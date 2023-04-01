@@ -192,6 +192,7 @@ pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequ
     let existing = get_request(id, pool)
         .await
         .expect("Failed to get request to duplicate");
+
     // TODO: Figure out how to make this better
     let b2;
     let body = match existing.body {
@@ -213,7 +214,7 @@ pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequ
         existing.authentication_type,
         existing.url.as_str(),
         existing.headers.0,
-        existing.sort_priority,
+        existing.sort_priority + 0.001,
         pool,
     )
     .await
