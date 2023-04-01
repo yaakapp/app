@@ -54,7 +54,7 @@ export function Dropdown({ children, items }: DropdownProps) {
   const handleClose = useCallback(() => {
     setOpen(false);
     ref.current?.focus();
-  }, [ref.current]);
+  }, []);
 
   useEffect(() => {
     ref.current?.setAttribute('aria-expanded', open.toString());
@@ -63,7 +63,7 @@ export function Dropdown({ children, items }: DropdownProps) {
   const triggerRect = useMemo(() => {
     if (!open) return null;
     return ref.current?.getBoundingClientRect();
-  }, [ref.current, open]);
+  }, [open]);
 
   return (
     <>
@@ -83,8 +83,6 @@ interface MenuProps {
 }
 
 function Menu({ className, items, onClose, triggerRect }: MenuProps) {
-  if (triggerRect === undefined) return null;
-
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
 

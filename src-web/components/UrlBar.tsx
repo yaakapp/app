@@ -17,8 +17,14 @@ type Props = Pick<HttpRequest, 'id' | 'url' | 'method'> & {
 export const UrlBar = memo(function UrlBar({ id: requestId, url, method, className }: Props) {
   const sendRequest = useSendRequest(requestId);
   const updateRequest = useUpdateRequest(requestId);
-  const handleMethodChange = useCallback((method: string) => updateRequest.mutate({ method }), []);
-  const handleUrlChange = useCallback((url: string) => updateRequest.mutate({ url }), []);
+  const handleMethodChange = useCallback(
+    (method: string) => updateRequest.mutate({ method }),
+    [updateRequest],
+  );
+  const handleUrlChange = useCallback(
+    (url: string) => updateRequest.mutate({ url }),
+    [updateRequest],
+  );
   const loading = useIsResponseLoading(requestId);
   const { updateKey } = useRequestUpdateKey(requestId);
 

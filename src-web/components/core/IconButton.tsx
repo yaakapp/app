@@ -36,7 +36,7 @@ const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
       if (showConfirm) setConfirmed();
       onClick?.(e);
     },
-    [onClick],
+    [onClick, setConfirmed, showConfirm],
   );
   return (
     <Button

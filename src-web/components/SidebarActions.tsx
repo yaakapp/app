@@ -8,7 +8,7 @@ export const SidebarActions = memo(function SidebarDisplayToggle() {
   const createRequest = useCreateRequest({ navigateAfter: true });
   const handleCreateRequest = useCallback(() => {
     createRequest.mutate({ name: 'New Request' });
-  }, []);
+  }, [createRequest]);
 
   return (
     <>
