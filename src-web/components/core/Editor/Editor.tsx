@@ -5,7 +5,7 @@ import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/vie
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject } from 'react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { IconButton } from '../IconButton';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
@@ -37,7 +37,7 @@ export interface EditorProps {
   autocomplete?: GenericCompletionConfig;
 }
 
-export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
+const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
     readOnly,
     type = 'text',
@@ -176,6 +176,8 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     </div>
   );
 });
+
+export const Editor = memo(_Editor);
 
 function getExtensions({
   container,
