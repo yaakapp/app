@@ -1,9 +1,11 @@
-use deno_ast::{MediaType, ParseParams, SourceTextInfo};
-use deno_core::error::AnyError;
-use deno_core::{op, Extension, JsRuntime, ModuleSource, ModuleType, RuntimeOptions};
 use std::rc::Rc;
 
+use deno_ast::{MediaType, ParseParams, SourceTextInfo};
+use deno_core::error::AnyError;
 use deno_core::futures::FutureExt;
+use deno_core::{
+    normalize_path, op, Extension, JsRuntime, ModuleCode, ModuleSource, ModuleType, RuntimeOptions,
+};
 use futures::executor;
 
 pub fn run_plugin_sync(file_path: &str) -> Result<(), AnyError> {
@@ -26,7 +28,9 @@ pub async fn run_plugin(file_path: &str) -> Result<(), AnyError> {
         .execute_script("<runtime>", include_str!("runtime.js"))
         .expect("Failed to execute runtime.js");
 
-    let main_module = deno_core::resolve_path(file_path).expect("Failed to resolve path");
+    let current_dir = &std::env::current_dir().expect("Unable to get CWD");
+    let main_module =
+        deno_core::resolve_path(file_path, current_dir).expect("Failed to resolve path");
     let mod_id = runtime
         .load_main_module(&main_module, None)
         .await
@@ -66,12 +70,14 @@ impl deno_core::ModuleLoader for TsModuleLoader {
     ) -> std::pin::Pin<Box<deno_core::ModuleSourceFuture>> {
         let module_specifier = module_specifier.clone();
         async move {
-            let path = module_specifier.to_file_path().unwrap();
+            let path = module_specifier
+                .to_file_path()
+                .expect("Failed to convert to file path");
 
             // Determine what the MediaType is (this is done based on the file
             // extension) and whether transpiling is required.
-            let media_type = MediaType::from(&path);
-            let (module_type, should_transpile) = match MediaType::from(&path) {
+            let media_type = MediaType::from_path(&path);
+            let (module_type, should_transpile) = match media_type {
                 MediaType::JavaScript | MediaType::Mjs | MediaType::Cjs => {
                     (ModuleType::JavaScript, false)
                 }
@@ -84,7 +90,7 @@ impl deno_core::ModuleLoader for TsModuleLoader {
                 | MediaType::Dcts
                 | MediaType::Tsx => (ModuleType::JavaScript, true),
                 MediaType::Json => (ModuleType::Json, false),
-                _ => panic!("Unknown extension {:?}", path.extension()),
+                _ => panic!("Unknown extension {:?}", path),
             };
 
             // Read the file, transpile if necessary.
@@ -105,7 +111,7 @@ impl deno_core::ModuleLoader for TsModuleLoader {
 
             // Load and return module.
             let module = ModuleSource {
-                code: code.into_bytes().into_boxed_slice(),
+                code: ModuleCode::from(code),
                 module_type,
                 module_url_specified: module_specifier.to_string(),
                 module_url_found: module_specifier.to_string(),

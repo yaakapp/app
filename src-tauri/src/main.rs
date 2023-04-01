@@ -630,7 +630,10 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         .resizable(true)
         .inner_size(1100.0, 600.0)
         .hidden_title(true)
-        .title("Yaak")
+        .title(match is_dev() {
+            true => "Yaak",
+            false => "Yaak Dev",
+        })
         .title_bar_style(TitleBarStyle::Overlay)
         .build()
         .expect("failed to build window");
