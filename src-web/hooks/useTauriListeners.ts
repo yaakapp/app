@@ -154,5 +154,5 @@ export function useTauriListeners() {
         unsub();
       }
     };
-  });
+  }, []);
 }
