@@ -3,9 +3,7 @@ use std::rc::Rc;
 use deno_ast::{MediaType, ParseParams, SourceTextInfo};
 use deno_core::error::AnyError;
 use deno_core::futures::FutureExt;
-use deno_core::{
-    normalize_path, op, Extension, JsRuntime, ModuleCode, ModuleSource, ModuleType, RuntimeOptions,
-};
+use deno_core::{op, Extension, JsRuntime, ModuleCode, ModuleSource, ModuleType, RuntimeOptions};
 use futures::executor;
 
 pub fn run_plugin_sync(file_path: &str) -> Result<(), AnyError> {
