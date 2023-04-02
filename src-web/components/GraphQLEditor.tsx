@@ -1,11 +1,13 @@
 import { updateSchema } from 'cm6-graphql';
 import type { EditorView } from 'codemirror';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import type { HttpRequest } from '../lib/models';
-import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
+import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
-import { buildClientSchema, Editor, formatGraphQL, getIntrospectionQuery } from './core/Editor';
+import { Editor, formatGraphQL } from './core/Editor';
 import { Separator } from './core/Separator';
+import { useDialog } from './DialogContext';
 
 type Props = Pick<
   EditorProps,
@@ -21,6 +23,9 @@ interface GraphQLBody {
 }
 
 export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
+  const editorViewRef = useRef<EditorView>(null);
+  const introspection = useIntrospectGraphQL(baseRequest);
+
   const { query, variables } = useMemo<GraphQLBody>(() => {
     if (defaultValue === undefined) {
       return { query: '', variables: {} };
@@ -57,39 +62,13 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     [handleChange, query],
   );
 
-  const editorViewRef = useRef<EditorView>(null);
-
   // Refetch the schema when the URL changes
   useEffect(() => {
-    // First, clear the schema
-    if (editorViewRef.current) {
-      updateSchema(editorViewRef.current, undefined);
-    }
+    if (editorViewRef.current === null) return;
+    updateSchema(editorViewRef.current, introspection.data);
+  }, [introspection.data]);
 
-    let unmounted = false;
-    const body = JSON.stringify({
-      query: getIntrospectionQuery(),
-      operationName: 'IntrospectionQuery',
-    });
-    sendEphemeralRequest({ ...baseRequest, body }).then((response) => {
-      if (unmounted) return;
-      if (!editorViewRef.current) return;
-      try {
-        const { data } = JSON.parse(response.body);
-        const schema = buildClientSchema(data);
-        console.log('SET SCHEMA', schema, baseRequest.url);
-        updateSchema(editorViewRef.current, schema);
-      } catch (err) {
-        console.log('Failed to parse introspection query', err);
-      }
-    });
-
-    return () => {
-      unmounted = true;
-    };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseRequest.url]);
+  const dialog = useDialog();
 
   return (
     <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
@@ -101,6 +80,23 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         onChange={handleChangeQuery}
         placeholder="..."
         ref={editorViewRef}
+        actions={
+          introspection.error && (
+            <Button
+              size="xs"
+              color="danger"
+              onClick={() => {
+                dialog.show({
+                  title: 'Introspection Failed',
+                  size: 'sm',
+                  render: () => <div>{introspection.error?.message}</div>,
+                });
+              }}
+            >
+              Introspection Failed
+            </Button>
+          )
+        }
         {...extraEditorProps}
       />
       <Separator variant="primary" />

@@ -631,8 +631,8 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         .inner_size(1100.0, 600.0)
         .hidden_title(true)
         .title(match is_dev() {
-            true => "Yaak",
-            false => "Yaak Dev",
+            true => "Yaak Dev",
+            false => "Yaak",
         })
         .title_bar_style(TitleBarStyle::Overlay)
         .build()
