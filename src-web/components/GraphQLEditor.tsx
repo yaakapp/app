@@ -81,19 +81,22 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         placeholder="..."
         ref={editorViewRef}
         actions={
-          introspection.error && (
+          (introspection.error || introspection.isLoading) && (
             <Button
               size="xs"
-              color="danger"
+              color={introspection.error ? 'danger' : 'gray'}
+              isLoading={introspection.isLoading}
               onClick={() => {
                 dialog.show({
                   title: 'Introspection Failed',
                   size: 'sm',
-                  render: () => <div>{introspection.error?.message}</div>,
+                  render: () => (
+                    <div className="whitespace-pre-wrap">{introspection.error?.message}</div>
+                  ),
                 });
               }}
             >
-              Introspection Failed
+              {introspection.error ? 'Introspection Failed' : 'Introspecting'}
             </Button>
           )
         }

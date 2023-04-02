@@ -21,6 +21,7 @@ import {
 } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
+import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
@@ -90,7 +91,17 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               },
             },
             // { value: 'params', label: 'URL Params' },
-            { value: 'headers', label: 'Headers' },
+            {
+              value: 'headers',
+              label: (
+                <div className="flex items-center">
+                  Headers
+                  <CountBadge
+                    count={activeRequest.headers.filter((h) => h.name && h.value).length}
+                  />
+                </div>
+              ),
+            },
             {
               value: 'auth',
               label: 'Auth',
@@ -150,10 +161,10 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
           <UrlBar id={activeRequest.id} url={activeRequest.url} method={activeRequest.method} />
           <Tabs
             value={activeTab}
+            label="Request"
             onChangeValue={setActiveTab}
             tabs={tabs}
-            className="mt-2"
-            label="Request body"
+            className="mt-1"
           >
             <TabContent value="auth">
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
@@ -188,7 +199,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 onChange={() => null}
               />
             </TabContent>
-            <TabContent value="body" className="pl-3 mt-1">
+            <TabContent value="body" className="mt-1">
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
                   forceUpdateKey={forceUpdateKey}
