@@ -17,6 +17,7 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
     containerClassName?: string;
     onChange?: (value: string) => void;
     onFocus?: () => void;
+    onBlur?: () => void;
     defaultValue?: string;
     leftSlot?: ReactNode;
     rightSlot?: ReactNode;
@@ -45,6 +46,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     defaultValue,
     validate,
     require,
+    onFocus,
+    onBlur,
     forceUpdateKey,
     ...props
   }: InputProps,
@@ -52,6 +55,18 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
 ) {
   const [obscured, setObscured] = useState(type === 'password');
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
+  const [focused, setFocused] = useState(false);
+
+  const handleOnFocus = useCallback(() => {
+    setFocused(true);
+    onFocus?.();
+  }, [onFocus]);
+
+  const handleOnBlur = useCallback(() => {
+    setFocused(false);
+    onBlur?.();
+  }, [onBlur]);
+
   const id = `input-${name}`;
   const inputClassName = classnames(
     className,
@@ -92,7 +107,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         className={classnames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
-          'border border-highlight focus-within:border-focus',
+          'border border-highlight',
+          focused && 'border-focus',
           !isValid && '!border-invalid',
           size === 'md' && 'h-md leading-md',
           size === 'sm' && 'h-sm leading-sm',
@@ -109,6 +125,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           placeholder={placeholder}
           onChange={handleChange}
           className={inputClassName}
+          onFocus={handleOnFocus}
+          onBlur={handleOnBlur}
           {...props}
         />
         {type === 'password' && (

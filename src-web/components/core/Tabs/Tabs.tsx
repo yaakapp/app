@@ -10,7 +10,7 @@ import { HStack } from '../Stacks';
 export type TabItem =
   | {
       value: string;
-      label: string;
+      label: ReactNode;
     }
   | {
       value: string;
@@ -73,16 +73,17 @@ export function Tabs({
         aria-label={label}
         className={classnames(
           tabListClassName,
-          'h-md flex items-center overflow-x-auto pb-0.5 hide-scrollbars',
+          'h-md flex items-center overflow-x-auto hide-scrollbars',
           // Give space for button focus states within overflow boundary
           'px-2 -mx-2',
         )}
       >
-        <HStack space={1} className="flex-shrink-0">
+        <HStack space={3} className="-ml-1 flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classnames(
-              isActive ? 'bg-gray-100 text-gray-800' : 'text-gray-600 hover:text-gray-900',
+              '!px-1',
+              isActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-800',
             );
             if ('options' in t) {
               const option = t.options.items.find(

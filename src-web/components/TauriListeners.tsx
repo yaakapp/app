@@ -7,7 +7,6 @@ import { responsesQueryKey } from '../hooks/useResponses';
 import { useTauriEvent } from '../hooks/useTauriEvent';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
-import { debounce } from '../lib/debounce';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
@@ -42,40 +41,37 @@ export function TauriListeners() {
     }
   });
 
-  useTauriEvent<Model>(
-    'updated_model',
-    debounce(({ payload, windowLabel }) => {
-      if (shouldIgnoreEvent(payload, windowLabel)) return;
+  useTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
+    if (shouldIgnoreEvent(payload, windowLabel)) return;
 
-      const queryKey =
-        payload.model === 'http_request'
-          ? requestsQueryKey(payload)
-          : payload.model === 'http_response'
-          ? responsesQueryKey(payload)
-          : payload.model === 'workspace'
-          ? workspacesQueryKey(payload)
-          : payload.model === 'key_value'
-          ? keyValueQueryKey(payload)
-          : null;
+    const queryKey =
+      payload.model === 'http_request'
+        ? requestsQueryKey(payload)
+        : payload.model === 'http_response'
+        ? responsesQueryKey(payload)
+        : payload.model === 'workspace'
+        ? workspacesQueryKey(payload)
+        : payload.model === 'key_value'
+        ? keyValueQueryKey(payload)
+        : null;
 
-      if (queryKey === null) {
-        if (payload.model) {
-          console.log('Unrecognized updated model:', payload);
-        }
-        return;
+    if (queryKey === null) {
+      if (payload.model) {
+        console.log('Unrecognized updated model:', payload);
       }
+      return;
+    }
 
-      if (payload.model === 'http_request') {
-        wasUpdatedExternally(payload.id);
-      }
+    if (payload.model === 'http_request') {
+      wasUpdatedExternally(payload.id);
+    }
 
-      if (!shouldIgnoreModel(payload)) {
-        queryClient.setQueryData<Model[]>(queryKey, (values) =>
-          values?.map((v) => (modelsEq(v, payload) ? payload : v)),
-        );
-      }
-    }, 500),
-  );
+    if (!shouldIgnoreModel(payload)) {
+      queryClient.setQueryData<Model[]>(queryKey, (values) =>
+        values?.map((v) => (modelsEq(v, payload) ? payload : v)),
+      );
+    }
+  });
 
   useTauriEvent<Model>('deleted_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
@@ -107,7 +103,8 @@ export function TauriListeners() {
 
     document.documentElement.style.fontSize = `${newFontSize}px`;
   });
-  return <></>;
+
+  return null;
 }
 
 function removeById<T extends { id: string }>(model: T) {

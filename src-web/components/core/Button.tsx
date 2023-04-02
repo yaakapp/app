@@ -18,6 +18,7 @@ const colorStyles = {
 export type ButtonProps = HTMLAttributes<HTMLElement> & {
   to?: string;
   color?: keyof typeof colorStyles;
+  isLoading?: boolean;
   size?: 'sm' | 'md' | 'xs';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
@@ -30,6 +31,7 @@ export type ButtonProps = HTMLAttributes<HTMLElement> & {
 const _Button = forwardRef<any, ButtonProps>(function Button(
   {
     to,
+    isLoading,
     className,
     children,
     forDropdown,
@@ -68,8 +70,9 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
   } else {
     return (
       <button ref={ref} className={classes} {...props}>
+        {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
         {children}
-        {forDropdown && <Icon icon="chevronDown" size="sm" className="ml-1 -mr-1" />}
+        {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
       </button>
     );
   }
