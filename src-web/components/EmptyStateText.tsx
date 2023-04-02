@@ -5,5 +5,9 @@ interface Props {
 }
 
 export function EmptyStateText({ children }: Props) {
-  return <div className="h-full text-gray-400 flex items-center justify-center">{children}</div>;
+  return (
+    <div className="rounded-lg border border-dashed border-highlight h-full text-gray-400 flex items-center justify-center">
+      {children}
+    </div>
+  );
 }

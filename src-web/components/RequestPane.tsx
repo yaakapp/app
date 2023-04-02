@@ -96,9 +96,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               label: (
                 <div className="flex items-center">
                   Headers
-                  <CountBadge
-                    count={activeRequest.headers.filter((h) => h.name && h.value).length}
-                  />
+                  <CountBadge count={activeRequest.headers.filter((h) => h.name).length} />
                 </div>
               ),
             },
@@ -164,7 +162,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             label="Request"
             onChangeValue={setActiveTab}
             tabs={tabs}
-            className="mt-1"
+            tabListClassName="mt-2"
           >
             <TabContent value="auth">
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
@@ -199,7 +197,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 onChange={() => null}
               />
             </TabContent>
-            <TabContent value="body" className="mt-1">
+            <TabContent value="body">
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
                   forceUpdateKey={forceUpdateKey}
