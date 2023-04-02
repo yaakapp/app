@@ -167,9 +167,11 @@ const _SidebarItem = forwardRef(function SidebarItem(
     async (e: KeyboardEvent<HTMLInputElement>) => {
       switch (e.key) {
         case 'Enter':
+          e.preventDefault();
           await handleSubmitNameEdit(e.currentTarget);
           break;
         case 'Escape':
+          e.preventDefault();
           setEditing(false);
           break;
       }
