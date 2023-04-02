@@ -28,6 +28,10 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
         run: |
@@ -49,9 +53,9 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'App v__VERSION__'
+          tagName: 'v__VERSION__'
+          releaseName: 'Release __VERSION__'
           releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: '--target universal-apple-darwin'
