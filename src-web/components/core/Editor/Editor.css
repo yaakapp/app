@@ -47,7 +47,7 @@
         }
 
         .placeholder-widget {
-            @apply text-[0.9em] text-gray-800 dark:text-gray-900 px-1 rounded cursor-default dark:shadow;
+            @apply text-xs text-gray-800 dark:text-gray-900 px-1 rounded cursor-default dark:shadow;
 
             /* NOTE: Background and border are translucent so we can see text selection through it */
             @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;

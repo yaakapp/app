@@ -33,6 +33,7 @@ export interface EditorProps {
   useTemplating?: boolean;
   onChange?: (value: string) => void;
   onFocus?: () => void;
+  onBlur?: () => void;
   singleLine?: boolean;
   format?: (v: string) => string;
   autocomplete?: GenericCompletionConfig;
@@ -52,6 +53,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     forceUpdateKey,
     onChange,
     onFocus,
+    onBlur,
     className,
     singleLine,
     format,
@@ -74,6 +76,12 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     handleFocus.current = onFocus;
   }, [onFocus]);
+
+  // Use ref so we can update the onChange handler without re-initializing the editor
+  const handleBlur = useRef<EditorProps['onBlur']>(onBlur);
+  useEffect(() => {
+    handleBlur.current = onBlur;
+  }, [onBlur]);
 
   // Update placeholder
   const placeholderCompartment = useRef(new Compartment());
@@ -125,6 +133,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             container,
             onChange: handleChange,
             onFocus: handleFocus,
+            onBlur: handleBlur,
             readOnly,
             singleLine,
           }),
@@ -195,10 +204,12 @@ function getExtensions({
   singleLine,
   onChange,
   onFocus,
+  onBlur,
 }: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
   onFocus: MutableRefObject<EditorProps['onFocus']>;
+  onBlur: MutableRefObject<EditorProps['onBlur']>;
 }) {
   // TODO: Ensure tooltips render inside the dialog if we are in one.
   const parent =
@@ -234,9 +245,8 @@ function getExtensions({
 
     // Handle onFocus
     EditorView.domEventHandlers({
-      focus: () => {
-        onFocus.current?.();
-      },
+      focus: onFocus.current,
+      blur: onBlur.current,
     }),
 
     // Handle onChange
