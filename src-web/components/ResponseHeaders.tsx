@@ -8,7 +8,7 @@ interface Props {
 
 export function ResponseHeaders({ headers }: Props) {
   return (
-    <dl className="font-mono text-xs table-fixed w-full">
+    <dl className="text-xs w-full font-mono">
       {headers.map((h, i) => {
         return (
           <HStack
@@ -17,7 +17,7 @@ export function ResponseHeaders({ headers }: Props) {
             className={classnames(i > 0 && 'border-t border-highlightSecondary', 'py-1')}
           >
             <dd className="w-1/3 text-violet-600 select-text cursor-text">{h.name}</dd>
-            <dt className="w-2/3 text-blue-600 select-text cursor-text break-all">{h.value}</dt>
+            <dt className="w-2/3 select-text cursor-text break-all">{h.value}</dt>
           </HStack>
         );
       })}
