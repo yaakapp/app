@@ -11,8 +11,10 @@ import { DialogProvider } from './DialogContext';
 import { TauriListeners } from './TauriListeners';
 
 const queryClient = new QueryClient({
+  logger: undefined,
   defaultOptions: {
     queries: {
+      retry: false,
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours
       networkMode: 'offlineFirst',
 
