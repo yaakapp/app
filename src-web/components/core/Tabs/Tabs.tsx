@@ -81,7 +81,9 @@ export function Tabs({
         <HStack space={1} className="flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
-            const btnClassName = classnames(isActive ? 'bg-highlightSecondary' : 'text-gray-600');
+            // const btnClassName = classnames(isActive ? 'bg-highlightSecondary' : 'text-gray-600');
+            const btnClassName = classnames(isActive ? '' : 'text-gray-600', '!px-0 mr-4 ml-[1px]');
+
             if ('options' in t) {
               const option = t.options.items.find(
                 (i) => 'value' in i && i.value === t.options?.value,
