@@ -4,9 +4,10 @@ import type { ViewUpdate } from '@codemirror/view';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classnames from 'classnames';
 import { EditorView } from 'codemirror';
-import type { MutableRefObject } from 'react';
+import type { MutableRefObject, ReactNode } from 'react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { IconButton } from '../IconButton';
+import { HStack } from '../Stacks';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
@@ -35,6 +36,7 @@ export interface EditorProps {
   singleLine?: boolean;
   format?: (v: string) => string;
   autocomplete?: GenericCompletionConfig;
+  actions?: ReactNode;
 }
 
 const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
@@ -54,6 +56,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     singleLine,
     format,
     autocomplete,
+    actions,
   }: EditorProps,
   ref,
 ) {
@@ -161,21 +164,24 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     <div className="group relative h-full w-full">
       {cmContainer}
       {format && (
-        <IconButton
-          showConfirm
-          size="sm"
-          title="Reformat contents"
-          icon="magicWand"
-          className="absolute bottom-2 right-0 transition-opacity opacity-0 group-hover:opacity-70"
-          onClick={() => {
-            if (cm.current === null) return;
-            const { doc } = cm.current.view.state;
-            const insert = format(doc.toString());
-            // Update editor and blur because the cursor will reset anyway
-            cm.current.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
-            cm.current.view.contentDOM.blur();
-          }}
-        />
+        <HStack space={0.5} alignItems="center" className="absolute bottom-2 right-0 ">
+          {actions}
+          <IconButton
+            showConfirm
+            size="sm"
+            title="Reformat contents"
+            icon="magicWand"
+            className="transition-opacity opacity-0 group-hover:opacity-70"
+            onClick={() => {
+              if (cm.current === null) return;
+              const { doc } = cm.current.view.state;
+              const insert = format(doc.toString());
+              // Update editor and blur because the cursor will reset anyway
+              cm.current.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
+              cm.current.view.contentDOM.blur();
+            }}
+          />
+        </HStack>
       )}
     </div>
   );
