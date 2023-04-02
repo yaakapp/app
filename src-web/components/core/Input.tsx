@@ -1,6 +1,7 @@
 import classnames from 'classnames';
+import type { EditorView } from 'codemirror';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
@@ -27,25 +28,28 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
     require?: boolean;
   };
 
-export function Input({
-  label,
-  type = 'text',
-  hideLabel,
-  className,
-  containerClassName,
-  labelClassName,
-  onChange,
-  placeholder,
-  size = 'md',
-  name,
-  leftSlot,
-  rightSlot,
-  defaultValue,
-  validate,
-  require,
-  forceUpdateKey,
-  ...props
-}: InputProps) {
+export const Input = forwardRef<EditorView | undefined, InputProps>(function Input(
+  {
+    label,
+    type = 'text',
+    hideLabel,
+    className,
+    containerClassName,
+    labelClassName,
+    onChange,
+    placeholder,
+    size = 'md',
+    name,
+    leftSlot,
+    rightSlot,
+    defaultValue,
+    validate,
+    require,
+    forceUpdateKey,
+    ...props
+  }: InputProps,
+  ref,
+) {
   const [obscured, setObscured] = useState(type === 'password');
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const id = `input-${name}`;
@@ -96,6 +100,7 @@ export function Input({
       >
         {leftSlot}
         <Editor
+          ref={ref}
           id={id}
           singleLine
           type={type === 'password' && !obscured ? 'text' : type}
@@ -120,7 +125,7 @@ export function Input({
       </HStack>
     </VStack>
   );
-}
+});
 
 function validateRequire(v: string) {
   return v.length > 0;

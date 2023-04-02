@@ -1,9 +1,11 @@
 import classnames from 'classnames';
+import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
+import { useTauriEvent } from '../hooks/useTauriEvent';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { IconButton } from './core/IconButton';
@@ -15,6 +17,7 @@ type Props = Pick<HttpRequest, 'id' | 'url' | 'method'> & {
 };
 
 export const UrlBar = memo(function UrlBar({ id: requestId, url, method, className }: Props) {
+  const inputRef = useRef<EditorView>(null);
   const sendRequest = useSendRequest(requestId);
   const updateRequest = useUpdateRequest(requestId);
   const handleMethodChange = useCallback(
@@ -36,9 +39,14 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     [sendRequest],
   );
 
+  useTauriEvent('focus_url', () => {
+    inputRef.current?.focus();
+  });
+
   return (
     <form onSubmit={handleSubmit} className={classnames('url-bar', className)}>
       <Input
+        ref={inputRef}
         size="sm"
         hideLabel
         useTemplating

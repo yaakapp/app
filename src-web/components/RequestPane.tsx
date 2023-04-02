@@ -1,9 +1,12 @@
+import { invoke } from '@tauri-apps/api';
+import { appWindow } from '@tauri-apps/api/window';
 import classnames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
+import { useTauriEvent } from '../hooks/useTauriEvent';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
@@ -126,6 +129,16 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
   const handleHeadersChange = useCallback(
     (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
     [updateRequest],
+  );
+
+  useTauriEvent(
+    'send_request',
+    async ({ windowLabel }) => {
+      if (windowLabel !== appWindow.label) return;
+      console.log('SEND REQUEST', activeRequest?.url);
+      await invoke('send_request', { requestId: activeRequestId });
+    },
+    [activeRequestId],
   );
 
   return (
