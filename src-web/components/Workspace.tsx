@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWindowSize } from 'react-use';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
+import { useTauriEvent } from '../hooks/useTauriEvent';
 import { WINDOW_FLOATING_SIDEBAR_WIDTH } from '../lib/constants';
 import { Button } from './core/Button';
 import { HStack } from './core/Stacks';
@@ -27,7 +28,7 @@ const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
   const { set: setWidth, value: width, reset: resetWidth } = useSidebarWidth();
-  const { show, hide, hidden } = useSidebarHidden();
+  const { show, hide, hidden, toggle } = useSidebarHidden();
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -35,6 +36,8 @@ export default function Workspace() {
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
+
+  useTauriEvent('toggle_sidebar', toggle);
 
   // float/un-float sidebar on window resize
   useEffect(() => {
