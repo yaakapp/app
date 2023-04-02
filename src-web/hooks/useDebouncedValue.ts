@@ -1,13 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { useDebouncedSetState } from './useDebouncedSetState';
 
-export function useDebouncedValue<T extends string | number>(value: T, delay = 1000) {
-  const [state, setState] = useState<T>(value);
-  const timeout = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    clearTimeout(timeout.current ?? 0);
-    timeout.current = setTimeout(() => setState(value), delay);
-  }, [value, delay]);
-
+export function useDebouncedValue<T extends string | number>(value: T, delay?: number) {
+  const [state, setState] = useDebouncedSetState<T>(value, delay);
+  useEffect(() => setState(value), [setState, value]);
   return state;
 }

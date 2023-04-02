@@ -605,6 +605,9 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
             CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
                 .accelerator("CmdOrCtrl+b"),
         )
+        .add_item(
+            CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
+        )
         .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
     if is_dev() {
         test_menu = test_menu
@@ -647,8 +650,9 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         "zoom_in" => win2.emit("zoom", 1).unwrap(),
         "zoom_out" => win2.emit("zoom", -1).unwrap(),
         "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
-        "refresh" => win2.emit("refresh", true).unwrap(),
+        "focus_url" => win2.emit("focus_url", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
+        "refresh" => win2.eval("location.reload()").unwrap(),
         "new_window" => _ = create_window(&handle2),
         "toggle_devtools" => {
             if win2.is_devtools_open() {
