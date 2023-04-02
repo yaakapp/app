@@ -11,9 +11,12 @@ const introspectionRequestBody = JSON.stringify({
 });
 
 export function useIntrospectGraphQL(baseRequest: HttpRequest) {
-  const url = useDebouncedValue(baseRequest.url);
+  // Debounce the URL because it can change rapidly, and we don't
+  // want to send so many requests.
+  const debouncedUrl = useDebouncedValue(baseRequest.url);
+
   return useQuery<GraphQLSchema, Error>({
-    queryKey: ['introspectGraphQL', { url }],
+    queryKey: ['introspectGraphQL', { url: debouncedUrl }],
     refetchOnWindowFocus: true,
     // staleTime: 1000 * 60 * 60, // 1 hour
     refetchInterval: 1000 * 60, // Refetch every minute

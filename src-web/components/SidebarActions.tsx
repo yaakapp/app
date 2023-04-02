@@ -1,10 +1,10 @@
 import { memo, useCallback } from 'react';
 import { useCreateRequest } from '../hooks/useCreateRequest';
-import { useSidebarDisplay } from '../hooks/useSidebarDisplay';
+import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { IconButton } from './core/IconButton';
 
 export const SidebarActions = memo(function SidebarDisplayToggle() {
-  const sidebarDisplay = useSidebarDisplay();
+  const { hidden, toggle } = useSidebarHidden();
   const createRequest = useCreateRequest({ navigateAfter: true });
   const handleCreateRequest = useCallback(() => {
     createRequest.mutate({ name: 'New Request' });
@@ -13,11 +13,11 @@ export const SidebarActions = memo(function SidebarDisplayToggle() {
   return (
     <>
       <IconButton
-        onClick={sidebarDisplay.toggle}
+        onClick={toggle}
         className="pointer-events-auto"
         size="sm"
         title="Show sidebar"
-        icon={sidebarDisplay.hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
+        icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
       />
       <IconButton
         onClick={handleCreateRequest}

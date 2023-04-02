@@ -15,14 +15,14 @@ import { requestsQueryKey } from './useRequests';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { responsesQueryKey } from './useResponses';
 import { routePaths } from './useRoutes';
-import { useSidebarDisplay } from './useSidebarDisplay';
+import { useSidebarHidden } from './useSidebarHidden';
 import { workspacesQueryKey } from './useWorkspaces';
 
 const unsubFns: (() => void)[] = [];
 export const UPDATE_DEBOUNCE_MILLIS = 100;
 
 export function useTauriListeners() {
-  const sidebarDisplay = useSidebarDisplay();
+  const { toggle } = useSidebarHidden();
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
@@ -41,7 +41,7 @@ export function useTauriListeners() {
       listen(event, debounce(fn, UPDATE_DEBOUNCE_MILLIS));
     }
 
-    listen<void>('toggle_sidebar', sidebarDisplay.toggle);
+    listen<void>('toggle_sidebar', toggle);
     listen<void>('refresh', () => location.reload());
 
     listenDebounced<Model>('created_model', ({ payload, windowLabel }) => {
@@ -156,5 +156,5 @@ export function useTauriListeners() {
         unsub();
       }
     };
-  }, [queryClient, sidebarDisplay.toggle, wasUpdatedExternally]);
+  }, [queryClient, toggle, wasUpdatedExternally]);
 }
