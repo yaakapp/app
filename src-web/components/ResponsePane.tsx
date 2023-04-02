@@ -78,7 +78,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
                     onSelect: toggleViewMode,
                   },
-                  { type: 'separator' },
+                  { type: 'separator', label: 'Actions' },
                   {
                     label: 'Clear Response',
                     onSelect: deleteResponse.mutate,
@@ -90,7 +90,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     hidden: responses.length <= 1,
                     disabled: responses.length === 0,
                   },
-                  { type: 'separator' },
+                  { type: 'separator', label: 'History' },
                   ...responses.slice(0, 10).map((r) => ({
                     label: r.status + ' - ' + r.elapsed + ' ms',
                     leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
