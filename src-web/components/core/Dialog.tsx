@@ -2,6 +2,7 @@ import classnames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
+import { useKeyPressEvent } from 'react-use';
 import { Overlay } from '../Overlay';
 import { Heading } from './Heading';
 import { IconButton } from './IconButton';
@@ -32,6 +33,11 @@ export function Dialog({
     () => (description ? Math.random().toString(36).slice(2) : undefined),
     [description],
   );
+
+  useKeyPressEvent('Escape', (e) => {
+    e.preventDefault();
+    onClose();
+  });
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">

@@ -94,11 +94,13 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     setMenuStyles({ maxHeight: windowBox.height - menuBox.top - 5 });
   }, []);
 
-  useKeyPressEvent('Escape', () => {
+  useKeyPressEvent('Escape', (e) => {
+    e.preventDefault();
     onClose();
   });
 
-  useKeyPressEvent('ArrowUp', () => {
+  useKeyPressEvent('ArrowUp', (e) => {
+    e.preventDefault();
     setSelectedIndex((currIndex) => {
       let nextIndex = (currIndex ?? 0) - 1;
       const maxTries = items.length;
@@ -115,7 +117,8 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     });
   });
 
-  useKeyPressEvent('ArrowDown', () => {
+  useKeyPressEvent('ArrowDown', (e) => {
+    e.preventDefault();
     setSelectedIndex((currIndex) => {
       let nextIndex = (currIndex ?? -1) + 1;
       const maxTries = items.length;
