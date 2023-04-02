@@ -135,7 +135,6 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     'send_request',
     async ({ windowLabel }) => {
       if (windowLabel !== appWindow.label) return;
-      console.log('SEND REQUEST', activeRequest?.url);
       await invoke('send_request', { requestId: activeRequestId });
     },
     [activeRequestId],
