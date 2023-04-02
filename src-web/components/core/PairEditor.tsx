@@ -117,13 +117,12 @@ export const PairEditor = memo(function PairEditor({
   );
 
   const handleFocus = useCallback(
-    (pair: PairContainer) => {
-      const isLast = pair.id === pairs[pairs.length - 1]?.id;
-      if (isLast) {
-        setPairs((pairs) => [...pairs, newPairContainer()]);
-      }
-    },
-    [pairs],
+    (pair: PairContainer) =>
+      setPairs((pairs) => {
+        const isLast = pair.id === pairs[pairs.length - 1]?.id;
+        return isLast ? [...pairs, newPairContainer()] : pairs;
+      }),
+    [],
   );
 
   // Ensure there's always at least one pair
@@ -138,7 +137,7 @@ export const PairEditor = memo(function PairEditor({
       className={classnames(
         className,
         '@container',
-        'overflow-auto max-h-full pb-2 grid',
+        'pb-2 grid',
         // Move over the width of the drag handle
         '-ml-3',
       )}

@@ -21,6 +21,7 @@ import { StatusColor } from './core/StatusColor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { Webview } from './core/Webview';
 import { EmptyStateText } from './EmptyStateText';
+import { ResponseHeaders } from './ResponseHeaders';
 
 interface Props {
   style?: CSSProperties;
@@ -81,7 +82,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     >
       <HStack
         alignItems="center"
-        className="italic text-gray-700 text-sm w-full flex-shrink-0 -mb-1"
+        className={classnames(
+          'italic text-gray-700 text-sm w-full flex-shrink-0',
+          // Remove a bit of space because the tabs have lots too
+          '-mb-1.5',
+        )}
       >
         {activeResponse && (
           <>
@@ -171,14 +176,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             ) : null}
           </TabContent>
           <TabContent value="headers">
-            <ul>
-              {activeResponse?.headers.map((h) => (
-                <li key={h.name} className="font-mono text-xs">
-                  <span className="text-violet-600 select-text cursor-text">{h.name}</span>:{' '}
-                  <span className="text-blue-600 select-text cursor-text">{h.value}</span>
-                </li>
-              ))}
-            </ul>
+            <ResponseHeaders headers={activeResponse?.headers ?? []} />
           </TabContent>
         </Tabs>
       )}

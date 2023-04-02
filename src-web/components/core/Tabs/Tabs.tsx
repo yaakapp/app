@@ -73,18 +73,15 @@ export function Tabs({
         aria-label={label}
         className={classnames(
           tabListClassName,
-          'h-md flex items-center overflow-x-auto hide-scrollbars',
-          // Give space for button focus states within overflow boundary
+          'flex items-center overflow-x-auto hide-scrollbars mt-1 mb-2',
+          // Give space for button focus states within overflow boundary.
           'px-2 -mx-2',
         )}
       >
-        <HStack space={3} className="-ml-1 flex-shrink-0">
+        <HStack space={1} className="flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
-            const btnClassName = classnames(
-              '!px-1',
-              isActive ? 'text-gray-900' : 'text-gray-600 hover:text-gray-800',
-            );
+            const btnClassName = classnames(isActive ? 'bg-highlightSecondary' : 'text-gray-600');
             if ('options' in t) {
               const option = t.options.items.find(
                 (i) => 'value' in i && i.value === t.options?.value,
@@ -148,7 +145,7 @@ export const TabContent = memo(function TabContent({
     <div
       tabIndex={-1}
       data-tab={value}
-      className={classnames(className, 'tab-content', 'hidden w-full h-full')}
+      className={classnames(className, 'tab-content', 'overflow-auto hidden w-full h-full')}
     >
       {children}
     </div>
