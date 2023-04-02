@@ -32,6 +32,7 @@ module.exports = {
       "sans": ["Inter", "sans-serif"]
     },
     fontSize: {
+      '3xs': "0.6rem",
       '2xs': "0.7rem",
       xs: "0.8rem",
       sm: "0.9rem",
