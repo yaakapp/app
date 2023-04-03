@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-#        platform: [ ubuntu-latest, macos-latest, windows-latest ]
+        #        platform: [ ubuntu-latest, macos-latest, windows-latest ]
         platform: [ macos-latest ]
 
     steps:
@@ -39,7 +39,9 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-      - uses: tauri-apps/tauri-action@v0
+      # Pin dev version to get non-default targets
+      # https://github.com/tauri-apps/tauri-action/issues/356
+      - uses: tauri-apps/tauri-action@dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
