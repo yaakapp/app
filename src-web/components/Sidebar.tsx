@@ -192,7 +192,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
           justify="start"
           onKeyDown={handleKeyDown}
           className={classnames(
-            editing && 'focus-within:border-focus',
+            editing && 'ring-1 focus-within:ring-focus',
             active
               ? 'bg-highlight text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',

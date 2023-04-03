@@ -54,7 +54,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
 
   const tabs = useMemo(
     () => [
-      { label: 'Body', value: 'body' },
+      { label: 'Preview', value: 'body' },
       {
         label: (
           <div className="flex items-center">
