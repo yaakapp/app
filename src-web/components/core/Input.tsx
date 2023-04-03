@@ -57,12 +57,12 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const [focused, setFocused] = useState(false);
 
-  const handleOnFocus = useCallback(() => {
+  const handleFocus = useCallback(() => {
     setFocused(true);
     onFocus?.();
   }, [onFocus]);
 
-  const handleOnBlur = useCallback(() => {
+  const handleBlur = useCallback(() => {
     setFocused(false);
     onBlur?.();
   }, [onBlur]);
@@ -107,8 +107,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         className={classnames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
-          'border border-highlight',
-          focused && 'border-focus',
+          'border',
+          focused ? 'border-focus' : 'border-highlight',
           !isValid && '!border-invalid',
           size === 'md' && 'h-md leading-md',
           size === 'sm' && 'h-sm leading-sm',
@@ -125,8 +125,8 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           placeholder={placeholder}
           onChange={handleChange}
           className={inputClassName}
-          onFocus={handleOnFocus}
-          onBlur={handleOnBlur}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           {...props}
         />
         {type === 'password' && (
