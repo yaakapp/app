@@ -79,11 +79,8 @@ async fn actually_send_ephemeral_request(
     let start = std::time::Instant::now();
     let mut url_string = request.url.to_string();
 
-    let mut variables = HashMap::new();
-    variables.insert("PROJECT_ID", "project_123");
-    variables.insert("TOKEN", "s3cret");
-    variables.insert("DOMAIN", "schier.co");
-    variables.insert("BASE_URL", "https://schier.co");
+    let variables: HashMap<&str, &str> = HashMap::new();
+    // variables.insert("", "");
 
     let re = Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}").expect("Failed to create regex");
     url_string = re
@@ -608,6 +605,14 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         .add_item(
             CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
         )
+        .add_item(
+            CustomMenuItem::new("new_request".to_string(), "New Request")
+                .accelerator("CmdOrCtrl+n"),
+        )
+        .add_item(
+            CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
+                .accelerator("CmdOrCtrl+d"),
+        )
         .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
     if is_dev() {
         test_menu = test_menu
@@ -652,6 +657,8 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
         "focus_url" => win2.emit("focus_url", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
+        "new_request" => _ = win2.emit("new_request", true).unwrap(),
+        "duplicate_request" => _ = win2.emit("duplicate_request", true).unwrap(),
         "refresh" => win2.eval("location.reload()").unwrap(),
         "new_window" => _ = create_window(&handle2),
         "toggle_devtools" => {
