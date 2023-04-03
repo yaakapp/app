@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2023.0.6"
+    "version": "2023.0.7"
   },
   "tauri": {
     "windows": [],
