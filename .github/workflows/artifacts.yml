@@ -58,5 +58,4 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          includeDebug: true
           args: '--target universal-apple-darwin'
