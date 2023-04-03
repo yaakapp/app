@@ -13,6 +13,7 @@ interface Props {
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const activeRequest = useActiveRequest();
+
   return (
     <HStack
       justifyContent="center"

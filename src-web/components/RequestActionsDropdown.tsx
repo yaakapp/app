@@ -4,6 +4,7 @@ import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useRequest } from '../hooks/useRequest';
 import { Dropdown } from './core/Dropdown';
+import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 
@@ -25,6 +26,7 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
           label: 'Duplicate',
           onSelect: duplicateRequest.mutate,
           leftSlot: <Icon icon="copy" />,
+          rightSlot: <HotKey>⌘D</HotKey>,
         },
         {
           label: 'Delete',

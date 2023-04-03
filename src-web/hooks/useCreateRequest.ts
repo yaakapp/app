@@ -16,8 +16,9 @@ export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) 
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
-      const sortPriority = maxSortPriority(requests) + 1000;
-      return invoke('create_request', { sortPriority, workspaceId, ...patch });
+      patch.name = patch.name || 'New Request';
+      patch.sortPriority = patch.sortPriority || maxSortPriority(requests) + 1000;
+      return invoke('create_request', { workspaceId, ...patch });
     },
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
