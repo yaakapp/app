@@ -266,7 +266,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onClick={handleClick}
       className={classnames(
         className,
-        'min-w-[8rem] outline-none px-2 mx-1.5 h-7 flex items-center text-sm text-gray-700 whitespace-nowrap pr-4',
+        'min-w-[8rem] outline-none px-2 mx-1.5 h-7 flex items-center text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-900 rounded',
       )}
       {...props}

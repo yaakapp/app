@@ -3,18 +3,8 @@ import type { CompletionContext } from '@codemirror/autocomplete';
 const openTag = '${[ ';
 const closeTag = ' ]}';
 
-const variables = [
-  { name: 'DOMAIN' },
-  { name: 'BASE_URL' },
-  { name: 'CONTENT_THINGY' },
-  { name: 'TOKEN' },
-  { name: 'PROJECT_ID' },
-  { name: 'DUMMY' },
-  { name: 'DUMMY_2' },
-  { name: 'STRIPE_PUB_KEY' },
-  { name: 'RAILWAY_TOKEN' },
-  { name: 'SECRET' },
-  { name: 'PORT' },
+const variables: { name: string }[] = [
+  // TODO: Put variables here
 ];
 
 const MIN_MATCH_VAR = 2;

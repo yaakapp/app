@@ -80,105 +80,109 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
-      <HStack
-        alignItems="center"
-        className={classnames(
-          'italic text-gray-700 text-sm w-full flex-shrink-0',
-          // Remove a bit of space because the tabs have lots too
-          '-mb-1.5',
-        )}
-      >
-        {activeResponse && (
-          <>
-            <div className="whitespace-nowrap p-3 py-2">
-              <StatusColor statusCode={activeResponse.status}>
-                {activeResponse.status}
-                {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
-              </StatusColor>
-              &nbsp;&bull;&nbsp;
-              {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
-              {Math.round(activeResponse.body.length / 1000)} KB
-            </div>
+      {activeResponse && (
+        <>
+          <HStack
+            alignItems="center"
+            className={classnames(
+              'italic text-gray-700 text-sm w-full flex-shrink-0',
+              // Remove a bit of space because the tabs have lots too
+              '-mb-1.5',
+            )}
+          >
+            {activeResponse && (
+              <>
+                <div className="whitespace-nowrap p-3 py-2">
+                  <StatusColor statusCode={activeResponse.status}>
+                    {activeResponse.status}
+                    {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
+                  </StatusColor>
+                  &nbsp;&bull;&nbsp;
+                  {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
+                  {Math.round(activeResponse.body.length / 1000)} KB
+                </div>
 
-            <Dropdown
-              items={[
-                {
-                  label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
-                  onSelect: toggleViewMode,
-                },
-                { type: 'separator', label: 'Actions' },
-                {
-                  label: 'Clear Response',
-                  onSelect: deleteResponse.mutate,
-                  disabled: responses.length === 0,
-                },
-                {
-                  label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
-                  onSelect: deleteAllResponses.mutate,
-                  hidden: responses.length <= 1,
-                  disabled: responses.length === 0,
-                },
-                { type: 'separator', label: 'History' },
-                ...responses.slice(0, 10).map((r) => ({
-                  label: r.status + ' - ' + r.elapsed + ' ms',
-                  leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
-                  onSelect: () => setPinnedResponseId(r.id),
-                })),
-              ]}
+                <Dropdown
+                  items={[
+                    {
+                      label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
+                      onSelect: toggleViewMode,
+                    },
+                    { type: 'separator', label: 'Actions' },
+                    {
+                      label: 'Clear Response',
+                      onSelect: deleteResponse.mutate,
+                      disabled: responses.length === 0,
+                    },
+                    {
+                      label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
+                      onSelect: deleteAllResponses.mutate,
+                      hidden: responses.length <= 1,
+                      disabled: responses.length === 0,
+                    },
+                    { type: 'separator', label: 'History' },
+                    ...responses.slice(0, 10).map((r) => ({
+                      label: r.status + ' - ' + r.elapsed + ' ms',
+                      leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
+                      onSelect: () => setPinnedResponseId(r.id),
+                    })),
+                  ]}
+                >
+                  <IconButton
+                    title="Show response history"
+                    icon="triangleDown"
+                    className="ml-auto"
+                    size="sm"
+                    iconSize="md"
+                  />
+                </Dropdown>
+              </>
+            )}
+          </HStack>
+
+          {activeResponse?.error ? (
+            <Banner className="m-2">{activeResponse.error}</Banner>
+          ) : (
+            <Tabs
+              value={activeTab}
+              onChangeValue={setActiveTab}
+              label="Response"
+              className="px-3"
+              tabs={tabs}
             >
-              <IconButton
-                title="Show response history"
-                icon="triangleDown"
-                className="ml-auto"
-                size="sm"
-                iconSize="md"
-              />
-            </Dropdown>
-          </>
-        )}
-      </HStack>
-
-      {activeResponse?.error ? (
-        <Banner className="m-2">{activeResponse.error}</Banner>
-      ) : (
-        <Tabs
-          value={activeTab}
-          onChangeValue={setActiveTab}
-          label="Response"
-          className="px-3"
-          tabs={tabs}
-        >
-          <TabContent value="body">
-            {activeResponse === null ? (
-              <EmptyStateText>No Response</EmptyStateText>
-            ) : viewMode === 'pretty' && contentType.includes('html') ? (
-              <Webview
-                body={activeResponse.body}
-                contentType={contentType}
-                url={activeResponse.url}
-              />
-            ) : viewMode === 'pretty' && contentType.includes('json') ? (
-              <Editor
-                readOnly
-                forceUpdateKey={`pretty::${activeResponse.updatedAt}`}
-                className="bg-gray-50 dark:!bg-gray-100"
-                defaultValue={tryFormatJson(activeResponse?.body)}
-                contentType={contentType}
-              />
-            ) : activeResponse?.body ? (
-              <Editor
-                readOnly
-                forceUpdateKey={activeResponse.updatedAt}
-                className="bg-gray-50 dark:!bg-gray-100"
-                defaultValue={activeResponse?.body}
-                contentType={contentType}
-              />
-            ) : null}
-          </TabContent>
-          <TabContent value="headers">
-            <ResponseHeaders headers={activeResponse?.headers ?? []} />
-          </TabContent>
-        </Tabs>
+              <TabContent value="body">
+                {!activeResponse.body ? (
+                  <EmptyStateText>No Response</EmptyStateText>
+                ) : viewMode === 'pretty' && contentType.includes('html') ? (
+                  <Webview
+                    body={activeResponse.body}
+                    contentType={contentType}
+                    url={activeResponse.url}
+                  />
+                ) : viewMode === 'pretty' && contentType.includes('json') ? (
+                  <Editor
+                    readOnly
+                    forceUpdateKey={`pretty::${activeResponse.updatedAt}`}
+                    className="bg-gray-50 dark:!bg-gray-100"
+                    defaultValue={tryFormatJson(activeResponse?.body)}
+                    contentType={contentType}
+                  />
+                ) : activeResponse?.body ? (
+                  <Editor
+                    readOnly
+                    forceUpdateKey={activeResponse.updatedAt}
+                    className="bg-gray-50 dark:!bg-gray-100"
+                    defaultValue={activeResponse?.body}
+                    contentType={contentType}
+                  />
+                ) : null}
+              </TabContent>
+              <TabContent value="headers">
+                <ResponseHeaders headers={activeResponse?.headers ?? []} />
+              </TabContent>
+            </Tabs>
+          )}
+        </>
       )}
     </div>
   );
