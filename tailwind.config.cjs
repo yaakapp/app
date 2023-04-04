@@ -16,13 +16,13 @@ module.exports = {
         "xs": "0.8rem"
       },
       height: {
-        "xs": "1.5rem",
+        "xs": "1.75rem",
         "sm": "2.0rem",
         "md": "2.5rem"
       },
       lineHeight: {
         // HACK: Minus 2 to account for borders inside inputs
-        "xs": "calc(1.5rem - 2px)",
+        "xs": "calc(1.75rem - 2px)",
         "sm": "calc(2.0rem - 2px)",
         "md": "calc(2.5rem - 2px)"
       },
