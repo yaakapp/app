@@ -15,7 +15,7 @@ interface Props {
 
 export function RequestActionsDropdown({ requestId, children }: Props) {
   const request = useRequest(requestId ?? null);
-  const deleteRequest = useDeleteRequest(requestId ?? null);
+  const deleteRequest = useDeleteRequest(request);
   const duplicateRequest = useDuplicateRequest({ id: requestId, navigateAfter: true });
   const confirm = useConfirm();
 

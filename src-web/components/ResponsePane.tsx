@@ -9,6 +9,7 @@ import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpResponse } from '../lib/models';
+import { isResponseLoading } from '../lib/models';
 import { pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
@@ -17,7 +18,7 @@ import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
-import { StatusColor } from './core/StatusColor';
+import { StatusTag } from './core/StatusTag';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { Webview } from './core/Webview';
@@ -93,7 +94,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
-      {activeResponse && (
+      {activeResponse?.error && <Banner className="m-2">{activeResponse.error}</Banner>}
+      {activeResponse && !activeResponse.error && !isResponseLoading(activeResponse) && (
         <>
           <HStack
             alignItems="center"
@@ -106,22 +108,15 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             {activeResponse && (
               <HStack alignItems="center" className="w-full">
                 <div className="whitespace-nowrap px-3">
-                  <StatusColor statusCode={activeResponse.status}>
-                    {activeResponse.status}
-                    {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
-                  </StatusColor>
-                  &nbsp;&bull;&nbsp;
-                  {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
-                  {(activeResponse.body.length / 1000).toFixed(1)} KB
+                  <StatusTag response={activeResponse} />
+                  {activeResponse.elapsed > 0 && <>&nbsp;&bull;&nbsp;{activeResponse.elapsed}ms</>}
+                  {activeResponse.body.length > 0 && (
+                    <>&nbsp;&bull;&nbsp;{(activeResponse.body.length / 1000).toFixed(1)} KB</>
+                  )}
                 </div>
 
                 <Dropdown
                   items={[
-                    {
-                      label: viewMode === 'pretty' ? 'View Raw' : 'View Prettified',
-                      onSelect: toggleViewMode,
-                    },
-                    { type: 'separator', label: 'Actions' },
                     {
                       label: 'Clear Response',
                       onSelect: deleteResponse.mutate,
@@ -153,9 +148,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             )}
           </HStack>
 
-          {activeResponse?.error ? (
-            <Banner className="m-2">{activeResponse.error}</Banner>
-          ) : (
+          {
             <Tabs
               value={activeTab}
               onChangeValue={setActiveTab}
@@ -196,7 +189,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                 ) : null}
               </TabContent>
             </Tabs>
-          )}
+          }
         </>
       )}
     </div>

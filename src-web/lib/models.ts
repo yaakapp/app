@@ -72,3 +72,7 @@ export interface HttpResponse extends BaseModel {
   readonly url: string;
   readonly headers: HttpHeader[];
 }
+
+export function isResponseLoading(response: HttpResponse): boolean {
+  return !(response.body || response.status || response.error);
+}
