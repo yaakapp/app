@@ -46,7 +46,6 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     () =>
       classnames(
         className,
-        'opacity-90 hover:opacity-100',
         'outline-none whitespace-nowrap',
         'focus-visible-or-class:ring',
         'rounded-md flex items-center',
