@@ -101,6 +101,7 @@ async fn actually_send_ephemeral_request(
 
     let client = reqwest::Client::builder()
         .redirect(Policy::none())
+        // .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to build client");
 
