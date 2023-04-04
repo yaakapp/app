@@ -1,7 +1,4 @@
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { persistQueryClient } from '@tanstack/react-query-persist-client';
 import { MotionConfig } from 'framer-motion';
 import { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -16,24 +13,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      cacheTime: 1000 * 60 * 60 * 24, // 24 hours
+      refetchOnWindowFocus: true,
       networkMode: 'offlineFirst',
-
-      // It's a desktop app, so this isn't necessary
-      refetchOnWindowFocus: false,
     },
   },
-});
-
-const localStoragePersister = createSyncStoragePersister({
-  storage: window.localStorage,
-  throttleTime: 1000, // 1 second
-});
-
-persistQueryClient({
-  queryClient,
-  persister: localStoragePersister,
-  maxAge: 1000 * 60 * 60 * 24, // 24 hours
 });
 
 export function App() {
@@ -46,7 +29,7 @@ export function App() {
               <Suspense>
                 <AppRouter />
                 <TauriListeners />
-                <ReactQueryDevtools initialIsOpen={false} />
+                {/*<ReactQueryDevtools initialIsOpen={false} />*/}
               </Suspense>
             </DialogProvider>
           </DndProvider>

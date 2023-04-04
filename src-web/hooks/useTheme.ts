@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
-import { getKeyValue } from '../lib/keyValueStore';
 import type { Appearance } from '../lib/theme/window';
 import {
   getAppearance,
-  getPreferredAppearance,
   setAppearance,
   subscribeToPreferredAppearanceChange,
 } from '../lib/theme/window';
@@ -26,14 +24,7 @@ export function useTheme() {
   useEffect(() => setAppearance(appearanceKv.value), [appearanceKv.value]);
 
   return {
-    appearance: appearanceKv.value ?? getAppearance(),
+    appearance: appearanceKv.value,
     toggleAppearance: handleToggleAppearance,
   };
-}
-
-export async function getAppearanceKv() {
-  return getKeyValue<Appearance>({
-    key: 'appearance',
-    fallback: getPreferredAppearance(),
-  });
 }
