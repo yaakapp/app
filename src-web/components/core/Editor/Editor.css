@@ -183,19 +183,16 @@
             @apply bg-highlight text-gray-900;
         }
 
-        & > ul > li:hover {
-            @apply text-gray-800;
-        }
-
         .cm-completionIcon {
             @apply text-sm flex items-center pb-0.5 flex-shrink-0;
         }
 
         .cm-completionLabel {
+            @apply text-gray-700;
         }
 
         .cm-completionDetail {
-            @apply ml-auto pl-4;
+            @apply ml-auto pl-6;
         }
     }
 }

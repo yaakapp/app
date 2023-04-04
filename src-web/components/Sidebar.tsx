@@ -4,15 +4,18 @@ import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useSta
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useRequests } from '../hooks/useRequests';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
+import { isResponseLoading } from '../lib/models';
 import { Button } from './core/Button';
-import { IconButton } from './core/IconButton';
+import { Icon } from './core/Icon';
 import { HStack, VStack } from './core/Stacks';
+import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { ToggleThemeButton } from './ToggleThemeButton';
 
 interface Props {
@@ -136,7 +139,9 @@ const _SidebarItem = forwardRef(function SidebarItem(
   { className, requestName, requestId, workspaceId, active }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
+  const latestResponse = useLatestResponse(requestId);
   const updateRequest = useUpdateRequest(requestId);
+  const deleteRequest = useDeleteRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
 
   const handleSubmitNameEdit = useCallback(
@@ -159,12 +164,17 @@ const _SidebarItem = forwardRef(function SidebarItem(
         e.preventDefault();
         setEditing(true);
       }
+      if (active && (e.key === 'Backspace' || e.key === 'Delete')) {
+        e.preventDefault();
+        deleteRequest.mutate();
+      }
     },
-    [active],
+    [active, deleteRequest],
   );
 
   const handleInputKeyDown = useCallback(
     async (e: KeyboardEvent<HTMLInputElement>) => {
+      e.stopPropagation();
       switch (e.key) {
         case 'Enter':
           e.preventDefault();
@@ -183,12 +193,12 @@ const _SidebarItem = forwardRef(function SidebarItem(
     <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
       <div className="relative">
         <Button
+          tabIndex={0}
           color="custom"
           size="sm"
           to={`/workspaces/${workspaceId}/requests/${requestId}`}
           draggable={false} // Item should drag, not the link
           onDoubleClick={() => setEditing(true)}
-          onClick={active ? () => setEditing(true) : undefined}
           justify="start"
           onKeyDown={handleKeyDown}
           className={classnames(
@@ -196,8 +206,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
             active
               ? 'bg-highlight text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            // Move out of the way when trash is shown
-            'group-hover/item:pr-7',
           )}
         >
           {editing ? (
@@ -213,19 +221,20 @@ const _SidebarItem = forwardRef(function SidebarItem(
               {requestName || 'New Request'}
             </span>
           )}
+          {latestResponse && (
+            <div className="ml-auto">
+              {isResponseLoading(latestResponse) ? (
+                <Icon spin size="sm" icon="update" />
+              ) : (
+                <StatusTag
+                  asBackground
+                  className="px-0.5 rounded-sm font-mono text-2xs"
+                  response={latestResponse}
+                />
+              )}
+            </div>
+          )}
         </Button>
-        <RequestActionsDropdown requestId={requestId}>
-          <IconButton
-            color="custom"
-            size="sm"
-            title="Request Options"
-            icon="dotsH"
-            className={classnames(
-              'absolute right-0 top-0 transition-opacity !opacity-0',
-              'group-hover/item:!opacity-100 focus-visible:!opacity-100',
-            )}
-          />
-        </RequestActionsDropdown>
       </div>
     </li>
   );
