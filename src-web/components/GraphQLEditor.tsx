@@ -71,7 +71,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   const dialog = useDialog();
 
   return (
-    <div className="pb-2 h-full grid grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
+    <div className="pb-2 h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
         contentType="application/graphql"
         defaultValue={query ?? ''}
