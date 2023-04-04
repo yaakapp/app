@@ -35,6 +35,7 @@ export interface EditorProps {
   onFocus?: () => void;
   onBlur?: () => void;
   singleLine?: boolean;
+  wrapLines?: boolean;
   format?: (v: string) => string;
   autocomplete?: GenericCompletionConfig;
   actions?: ReactNode;
@@ -59,6 +60,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     format,
     autocomplete,
     actions,
+    wrapLines,
   }: EditorProps,
   ref,
 ) {
@@ -93,6 +95,15 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     cm.current?.view.dispatch({ effects: effect });
   }, [placeholder]);
 
+  // Update wrap lines
+  const wrapLinesCompartment = useRef(new Compartment());
+  useEffect(() => {
+    if (cm.current === null) return;
+    const ext = wrapLines ? [EditorView.lineWrapping] : [];
+    const effect = wrapLinesCompartment.current.reconfigure(ext);
+    cm.current?.view.dispatch({ effects: effect });
+  }, [wrapLines]);
+
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -126,16 +137,15 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
         doc: `${defaultValue ?? ''}`,
         extensions: [
           languageCompartment.of(langExt),
-          placeholderCompartment.current.of(
-            placeholderExt(placeholderElFromText(placeholder ?? '')),
-          ),
+          placeholderCompartment.current.of([]),
+          wrapLinesCompartment.current.of([]),
           ...getExtensions({
             container,
+            readOnly,
+            singleLine,
             onChange: handleChange,
             onFocus: handleFocus,
             onBlur: handleBlur,
-            readOnly,
-            singleLine,
           }),
         ],
       });
