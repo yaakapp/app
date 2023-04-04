@@ -195,7 +195,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
         <Button
           tabIndex={0}
           color="custom"
-          size="sm"
+          size="xs"
           to={`/workspaces/${workspaceId}/requests/${requestId}`}
           draggable={false} // Item should drag, not the link
           onDoubleClick={() => setEditing(true)}
@@ -226,11 +226,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
               {isResponseLoading(latestResponse) ? (
                 <Icon spin size="sm" icon="update" />
               ) : (
-                <StatusTag
-                  asBackground
-                  className="px-0.5 rounded-sm font-mono text-2xs"
-                  response={latestResponse}
-                />
+                <StatusTag className="text-2xs" response={latestResponse} />
               )}
             </div>
           )}
