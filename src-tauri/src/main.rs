@@ -186,12 +186,23 @@ async fn actually_send_ephemeral_request(
 
     let raw_response = client.execute(sendable_req).await;
 
-    let p = app_handle
-        .path_resolver()
-        .resolve_resource("plugins/plugin.ts")
-        .expect("failed to resolve resource");
+    let plugin_rel_path = "plugins/plugin.ts";
+    let plugin_path = match app_handle.path_resolver().resolve_resource(plugin_rel_path) {
+        Some(p) => p,
+        None => {
+            return response_err(
+                response,
+                format!("Plugin not found at {}", plugin_rel_path),
+                &app_handle,
+                pool,
+            )
+            .await;
+        }
+    };
 
-    runtime::run_plugin_sync(p.to_str().unwrap()).unwrap();
+    if let Err(e) = runtime::run_plugin_sync(plugin_path.to_str().unwrap()) {
+        return response_err(response, e.to_string(), &app_handle, pool).await;
+    }
 
     match raw_response {
         Ok(v) => {

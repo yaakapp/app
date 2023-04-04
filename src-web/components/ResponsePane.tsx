@@ -18,6 +18,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { StatusColor } from './core/StatusColor';
+import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { Webview } from './core/Webview';
 import { EmptyStateText } from './EmptyStateText';
@@ -53,9 +54,20 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     [activeResponse],
   );
 
-  const tabs = useMemo(
+  const tabs: TabItem[] = useMemo(
     () => [
-      { label: 'Preview', value: 'body' },
+      {
+        value: 'body',
+        label: 'Preview',
+        options: {
+          value: viewMode,
+          onChange: toggleViewMode,
+          items: [
+            { label: 'Pretty', value: 'pretty' },
+            { label: 'Raw', value: 'raw' },
+          ],
+        },
+      },
       {
         label: (
           <div className="flex items-center">
@@ -68,7 +80,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         value: 'headers',
       },
     ],
-    [activeResponse?.headers],
+    [activeResponse?.headers, toggleViewMode, viewMode],
   );
 
   return (
