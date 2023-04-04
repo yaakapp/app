@@ -226,7 +226,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
               {isResponseLoading(latestResponse) ? (
                 <Icon spin size="sm" icon="update" />
               ) : (
-                <StatusTag className="text-2xs" response={latestResponse} />
+                <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
               )}
             </div>
           )}

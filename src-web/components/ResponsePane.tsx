@@ -156,8 +156,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               value={activeTab}
               onChangeValue={setActiveTab}
               label="Response"
-              className="px-3"
               tabs={tabs}
+              className="ml-3 mr-1"
+              tabListClassName="mt-1.5"
             >
               <TabContent value="headers">
                 <ResponseHeaders headers={activeResponse?.headers ?? []} />
