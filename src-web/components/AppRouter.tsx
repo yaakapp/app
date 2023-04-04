@@ -1,13 +1,5 @@
-import { useEffect } from 'react';
-import {
-  createBrowserRouter,
-  Navigate,
-  Outlet,
-  RouterProvider,
-  useLocation,
-} from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
-import { setLastLocation } from '../lib/lastLocation';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
@@ -16,7 +8,6 @@ const router = createBrowserRouter([
   {
     path: '/',
     errorElement: <RouteError />,
-    element: <RouterRoot />,
     children: [
       {
         path: '/',
@@ -43,12 +34,4 @@ const router = createBrowserRouter([
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
-}
-
-function RouterRoot() {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    setLastLocation(pathname).catch(console.error);
-  }, [pathname]);
-  return <Outlet />;
 }
