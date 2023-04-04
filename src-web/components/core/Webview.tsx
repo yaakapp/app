@@ -16,12 +16,12 @@ export function Webview({ body, url, contentType }: Props) {
   }, [url, body, contentType]);
 
   return (
-    <div className="px-2 pb-2">
+    <div className="h-full pb-3">
       <iframe
         title="Response preview"
         srcDoc={contentForIframe}
         sandbox="allow-scripts allow-same-origin"
-        className="h-full w-full rounded-md border border-gray-100/20"
+        className="h-full w-full rounded border border-highlightSecondary"
       />
     </div>
   );

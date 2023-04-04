@@ -15,9 +15,14 @@ export default function RouteError() {
         <pre className="text-sm select-auto cursor-text bg-gray-100 p-3 rounded whitespace-normal">
           {message}
         </pre>
-        <Button to="/" color="primary">
-          Go Home
-        </Button>
+        <VStack space={2}>
+          <Button to="/" color="primary">
+            Go Home
+          </Button>
+          <Button color="secondary" onClick={() => window.location.reload()}>
+            Refresh
+          </Button>
+        </VStack>
       </VStack>
     </div>
   );
