@@ -21,6 +21,7 @@ import { StatusColor } from './core/StatusColor';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { Webview } from './core/Webview';
 import { EmptyStateText } from './EmptyStateText';
+import { ImageView } from './ImageView';
 import { ResponseHeaders } from './ResponseHeaders';
 
 interface Props {
@@ -91,15 +92,15 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             )}
           >
             {activeResponse && (
-              <>
-                <div className="whitespace-nowrap p-3 py-2">
+              <HStack alignItems="center" className="w-full">
+                <div className="whitespace-nowrap px-3">
                   <StatusColor statusCode={activeResponse.status}>
                     {activeResponse.status}
                     {activeResponse.statusReason && ` ${activeResponse.statusReason}`}
                   </StatusColor>
                   &nbsp;&bull;&nbsp;
                   {activeResponse.elapsed}ms &nbsp;&bull;&nbsp;
-                  {Math.round(activeResponse.body.length / 1000)} KB
+                  {(activeResponse.body.length / 1000).toFixed(1)} KB
                 </div>
 
                 <Dropdown
@@ -136,7 +137,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     iconSize="md"
                   />
                 </Dropdown>
-              </>
+              </HStack>
             )}
           </HStack>
 
@@ -150,6 +151,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               className="px-3"
               tabs={tabs}
             >
+              <TabContent value="headers">
+                <ResponseHeaders headers={activeResponse?.headers ?? []} />
+              </TabContent>
               <TabContent value="body">
                 {!activeResponse.body ? (
                   <EmptyStateText>No Response</EmptyStateText>
@@ -167,6 +171,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     defaultValue={tryFormatJson(activeResponse?.body)}
                     contentType={contentType}
                   />
+                ) : contentType.startsWith('image') ? (
+                  <ImageView data={activeResponse?.body} />
                 ) : activeResponse?.body ? (
                   <Editor
                     readOnly
@@ -176,9 +182,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     contentType={contentType}
                   />
                 ) : null}
-              </TabContent>
-              <TabContent value="headers">
-                <ResponseHeaders headers={activeResponse?.headers ?? []} />
               </TabContent>
             </Tabs>
           )}
