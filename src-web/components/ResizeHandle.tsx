@@ -30,8 +30,8 @@ export function ResizeHandle({
       style={style}
       className={classnames(
         className,
-        'group z-10 flex cursor-ew-resize',
-        vertical ? 'w-full h-3 cursor-ns-resize' : 'h-full w-3 cursor-ew-resize',
+        'group z-10 flex',
+        vertical ? 'w-full h-3 cursor-row-resize' : 'h-full w-3 cursor-col-resize',
         justify === 'center' && 'justify-center',
         justify === 'end' && 'justify-end',
         justify === 'start' && 'justify-start',
@@ -46,9 +46,9 @@ export function ResizeHandle({
       {isResizing && (
         <div
           className={classnames(
-            'fixed -left-20 -right-20 -top-20 -bottom-20 cursor-ew-resize',
-            vertical && 'cursor-ns-resize',
-            !vertical && 'cursor-ew-resize',
+            'fixed -left-20 -right-20 -top-20 -bottom-20',
+            vertical && 'cursor-row-resize',
+            !vertical && 'cursor-col-resize',
           )}
         />
       )}
