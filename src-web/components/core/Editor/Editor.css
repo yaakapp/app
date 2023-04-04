@@ -188,15 +188,14 @@
         }
 
         .cm-completionIcon {
-            @apply text-sm flex items-center pb-0.5;
+            @apply text-sm flex items-center pb-0.5 flex-shrink-0;
         }
-
 
         .cm-completionLabel {
         }
 
         .cm-completionDetail {
-            @apply ml-auto;
+            @apply ml-auto pl-4;
         }
     }
 }
