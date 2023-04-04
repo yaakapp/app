@@ -15,7 +15,7 @@ export function StatusTag({ asBackground, response, className }: Props) {
       <span
         className={classnames(
           className,
-          'text-white bg-opacity-90',
+          'text-white bg-opacity-90 dark:bg-opacity-50',
           status >= 0 && status < 100 && 'bg-red-600',
           status >= 100 && status < 200 && 'bg-yellow-600',
           status >= 200 && status < 300 && 'bg-green-600',

@@ -12,7 +12,7 @@ const darkTheme: AppTheme = {
       colors: {
         gray: '#6b5b98',
         red: '#ff417b',
-        orange: '#ff9411',
+        orange: '#ff9011',
         yellow: '#e8d13f',
         green: '#43e76f',
         blue: '#219dff',
@@ -31,11 +31,11 @@ const lightTheme: AppTheme = {
       colors: {
         gray: '#7f8fb0',
         red: '#ec3f87',
-        orange: '#ff8b00',
+        orange: '#ff8000',
         yellow: '#e7cf24',
         green: '#00d365',
         blue: '#0090ff',
-        pink: '#f670f6',
+        pink: '#ea6cea',
         violet: '#ac6cff',
       },
     },
@@ -48,14 +48,6 @@ export function getAppearance(): Appearance {
     return docAppearance;
   }
   return getPreferredAppearance();
-}
-
-export function toggleAppearance(): Appearance {
-  const currentTheme =
-    document.documentElement.getAttribute('data-appearance') ?? getPreferredAppearance();
-  const newAppearance = currentTheme === 'dark' ? 'light' : 'dark';
-  setAppearance(newAppearance);
-  return newAppearance;
 }
 
 export function setAppearance(a?: Appearance) {

@@ -84,6 +84,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     [activeResponse?.headers, toggleViewMode, viewMode],
   );
 
+  // Don't render until we know the view mode
+  if (viewMode === undefined) return null;
+
   return (
     <div
       style={style}
