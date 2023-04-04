@@ -149,7 +149,7 @@ export const TabContent = memo(function TabContent({
     <div
       tabIndex={-1}
       data-tab={value}
-      className={classnames(className, 'tab-content', 'overflow-auto hidden w-full h-full')}
+      className={classnames(className, 'tab-content', 'hidden w-full h-full')}
     >
       {children}
     </div>

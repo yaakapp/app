@@ -137,7 +137,7 @@ export const PairEditor = memo(function PairEditor({
       className={classnames(
         className,
         '@container',
-        'pb-2 grid',
+        'pb-2 grid overflow-auto max-h-full',
         // Move over the width of the drag handle
         '-ml-3',
       )}
