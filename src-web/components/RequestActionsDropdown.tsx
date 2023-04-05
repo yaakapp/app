@@ -1,12 +1,11 @@
 import type { HTMLAttributes, ReactElement } from 'react';
-import { useConfirm } from '../hooks/useConfirm';
+import React from 'react';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
-import { useRequest } from '../hooks/useRequest';
+import { useTheme } from '../hooks/useTheme';
 import { Dropdown } from './core/Dropdown';
 import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
-import { InlineCode } from './core/InlineCode';
 
 interface Props {
   requestId: string;
@@ -14,10 +13,9 @@ interface Props {
 }
 
 export function RequestActionsDropdown({ requestId, children }: Props) {
-  const request = useRequest(requestId ?? null);
-  const deleteRequest = useDeleteRequest(request);
+  const deleteRequest = useDeleteRequest(requestId);
   const duplicateRequest = useDuplicateRequest({ id: requestId, navigateAfter: true });
-  const confirm = useConfirm();
+  const { appearance, toggleAppearance } = useTheme();
 
   return (
     <Dropdown
@@ -30,21 +28,14 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
         },
         {
           label: 'Delete',
-          onSelect: async () => {
-            const confirmed = await confirm({
-              title: 'Delete Request',
-              variant: 'delete',
-              description: (
-                <>
-                  Are you sure you want to delete <InlineCode>{request?.name}</InlineCode>?
-                </>
-              ),
-            });
-            if (confirmed) {
-              deleteRequest.mutate();
-            }
-          },
+          onSelect: deleteRequest.mutate,
           leftSlot: <Icon icon="trash" />,
+        },
+        { type: 'separator', label: 'Yaak Settings' },
+        {
+          label: appearance === 'dark' ? 'Light Theme' : 'Dark Theme',
+          onSelect: toggleAppearance,
+          leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
         },
       ]}
     >
