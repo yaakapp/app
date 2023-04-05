@@ -13,6 +13,7 @@ export function StatusTag({ response, className }: Props) {
     <span
       className={classnames(
         className,
+        'font-mono',
         status >= 0 && status < 100 && 'text-red-600',
         status >= 100 && status < 200 && 'text-green-600',
         status >= 200 && status < 300 && 'text-green-600',

@@ -1,7 +1,6 @@
 import classnames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useConfirm } from '../hooks/useConfirm';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { useRoutes } from '../hooks/useRoutes';
@@ -10,7 +9,6 @@ import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
-import { InlineCode } from './core/InlineCode';
 
 type Props = {
   className?: string;
@@ -21,9 +19,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
-  const deleteWorkspace = useDeleteWorkspace(activeWorkspaceId);
+  const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
   const routes = useRoutes();
-  const confirm = useConfirm();
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems = workspaces.map((w) => ({
@@ -49,20 +46,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
       {
         label: 'Delete Workspace',
         leftSlot: <Icon icon="trash" />,
-        onSelect: async () => {
-          const confirmed = await confirm({
-            title: 'Delete Workspace',
-            variant: 'delete',
-            description: (
-              <>
-                Are you sure you want to delete <InlineCode>{activeWorkspace?.name}</InlineCode>?
-              </>
-            ),
-          });
-          if (confirmed) {
-            deleteWorkspace.mutate();
-          }
-        },
+        onSelect: deleteWorkspace.mutate,
       },
     ];
   }, [

@@ -13,10 +13,9 @@ import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
-import { HStack, VStack } from './core/Stacks';
+import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { ToggleThemeButton } from './ToggleThemeButton';
 
 interface Props {
   className?: string;
@@ -48,9 +47,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         >
           <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
         </VStack>
-        <HStack className="mx-1 pb-1" alignItems="center" justifyContent="end">
-          <ToggleThemeButton />
-        </HStack>
       </div>
     </div>
   );
