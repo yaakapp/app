@@ -9,9 +9,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-12
             target: aarch64-apple-darwin
-          - os: macos-latest
+          - os: macos-12
             target: x86_64-apple-darwin
 
     runs-on: ${{ matrix.os }}
