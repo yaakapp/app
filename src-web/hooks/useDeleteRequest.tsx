@@ -3,16 +3,12 @@ import { invoke } from '@tauri-apps/api';
 import { InlineCode } from '../components/core/InlineCode';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
-import { useActiveRequestId } from './useActiveRequestId';
 import { useConfirm } from './useConfirm';
 import { requestsQueryKey } from './useRequests';
 import { responsesQueryKey } from './useResponses';
-import { useRoutes } from './useRoutes';
 
 export function useDeleteRequest(id: string | null) {
   const queryClient = useQueryClient();
-  const activeRequestId = useActiveRequestId();
-  const routes = useRoutes();
   const confirm = useConfirm();
 
   return useMutation<HttpRequest | null, string>({
@@ -39,9 +35,6 @@ export function useDeleteRequest(id: string | null) {
       queryClient.setQueryData<HttpRequest[]>(requestsQueryKey({ workspaceId }), (requests) =>
         (requests ?? []).filter((r) => r.id !== requestId),
       );
-      if (activeRequestId === requestId) {
-        routes.navigate('workspace', { workspaceId });
-      }
     },
   });
 }

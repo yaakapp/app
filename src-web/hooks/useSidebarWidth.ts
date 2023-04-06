@@ -5,6 +5,6 @@ export function useSidebarWidth() {
   return useKeyValue<number>({
     namespace: NAMESPACE_NO_SYNC,
     key: 'sidebar_width',
-    defaultValue: 200,
+    defaultValue: 220,
   });
 }

@@ -6,7 +6,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 import { DialogProvider } from './DialogContext';
-import { TauriListeners } from './TauriListeners';
 
 const queryClient = new QueryClient({
   logger: undefined,
@@ -28,7 +27,6 @@ export function App() {
             <DialogProvider>
               <Suspense>
                 <AppRouter />
-                <TauriListeners />
                 {/*<ReactQueryDevtools initialIsOpen={false} />*/}
               </Suspense>
             </DialogProvider>

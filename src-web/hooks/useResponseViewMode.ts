@@ -1,15 +1,11 @@
-import { useKeyValue } from './useKeyValue';
+import { useLocalStorage } from 'react-use';
 
-export function useResponseViewMode(requestId?: string): [string | undefined, () => void] {
-  const v = useKeyValue<string>({
-    namespace: 'app',
-    key: ['response_view_mode', requestId ?? 'n/a'],
-    defaultValue: 'pretty',
-  });
-
-  const toggle = () => {
-    v.set(v.value === 'pretty' ? 'raw' : 'pretty');
-  };
-
-  return [v.value, toggle];
+export function useResponseViewMode(
+  requestId?: string,
+): [string | undefined, (m: 'pretty' | 'raw') => void] {
+  const [value, setValue] = useLocalStorage<'pretty' | 'raw'>(
+    `response_view_mode::${requestId}`,
+    'pretty',
+  );
+  return [value, setValue];
 }
