@@ -39,7 +39,7 @@
 
         /* Style gutters */
         .cm-gutters {
-            @apply border-0 text-gray-500/50 opacity-95;
+            @apply border-0 text-gray-500/50;
 
             .cm-gutterElement {
                 @apply cursor-default;

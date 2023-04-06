@@ -22,7 +22,7 @@ use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, Wry};
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowEvent};
+use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
@@ -509,12 +509,7 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let tray_menu = SystemTrayMenu::new().add_item(quit);
-    let system_tray = SystemTray::new().with_menu(tray_menu);
-
     tauri::Builder::default()
-        .system_tray(system_tray)
         .setup(|app| {
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
@@ -541,20 +536,6 @@ fn main() {
 
                 Ok(())
             })
-        })
-        .on_system_tray_event(|app, event| {
-            if let SystemTrayEvent::MenuItemClick { id, .. } = event {
-                match id.as_str() {
-                    "quit" => {
-                        std::process::exit(0);
-                    }
-                    "hide" => {
-                        let window = app.get_window("main").unwrap();
-                        window.hide().unwrap();
-                    }
-                    _ => {}
-                };
-            }
         })
         .invoke_handler(tauri::generate_handler![
             greet,
