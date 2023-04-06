@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export type RouteParamsWorkspace = {
@@ -27,17 +28,20 @@ export const routePaths = {
 
 export function useRoutes() {
   const navigate = useNavigate();
-  return {
-    navigate<T extends keyof typeof routePaths>(
-      path: T,
-      ...params: Parameters<(typeof routePaths)[T]>
-    ) {
-      // Not sure how to make TS work here, but it's good from the
-      // outside caller perspective.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const resolvedPath = routePaths[path](...(params as any));
-      navigate(resolvedPath);
-    },
-    paths: routePaths,
-  };
+  return useMemo(
+    () => ({
+      navigate<T extends keyof typeof routePaths>(
+        path: T,
+        ...params: Parameters<(typeof routePaths)[T]>
+      ) {
+        // Not sure how to make TS work here, but it's good from the
+        // outside caller perspective.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resolvedPath = routePaths[path](...(params as any));
+        navigate(resolvedPath);
+      },
+      paths: routePaths,
+    }),
+    [navigate],
+  );
 }

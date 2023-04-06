@@ -1,5 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
@@ -14,6 +16,14 @@ import { modelsEq } from '../lib/models';
 export function TauriListeners() {
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
+
+  const activeRequestId = useActiveRequestId();
+  const duplicateRequest = useDuplicateRequest({ id: activeRequestId, navigateAfter: true });
+
+  // TODO: Put this somewhere better
+  useTauriEvent('duplicate_request', () => {
+    duplicateRequest.mutate();
+  });
 
   useTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;

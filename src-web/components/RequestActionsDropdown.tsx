@@ -24,7 +24,7 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
           label: 'Duplicate',
           onSelect: duplicateRequest.mutate,
           leftSlot: <Icon icon="copy" />,
-          rightSlot: <HotKey>⌘D</HotKey>,
+          rightSlot: <HotKey modifier="Meta" keyName="D" />,
         },
         {
           label: 'Delete',
