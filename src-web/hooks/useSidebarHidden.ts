@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useKeyValue } from './useKeyValue';
 
 export function useSidebarHidden() {
+  const activeWorkspaceId = useActiveWorkspaceId();
   const { set, value } = useKeyValue<boolean>({
     namespace: NAMESPACE_NO_SYNC,
-    key: 'sidebar_hidden',
+    key: ['sidebar_hidden', activeWorkspaceId ?? 'n/a'],
     defaultValue: false,
   });
 

@@ -1,10 +1,10 @@
-import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
-import { useKeyValue } from './useKeyValue';
+import { useCallback, useMemo } from 'react';
+import { useLocalStorage } from 'react-use';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function useSidebarWidth() {
-  return useKeyValue<number>({
-    namespace: NAMESPACE_NO_SYNC,
-    key: 'sidebar_width',
-    defaultValue: 220,
-  });
+  const activeWorkspaceId = useActiveWorkspaceId();
+  const [width, setWidth] = useLocalStorage<number>(`sidebar_width::${activeWorkspaceId}`, 220);
+  const resetWidth = useCallback(() => setWidth(220), [setWidth]);
+  return useMemo(() => ({ width, setWidth, resetWidth }), [width, setWidth, resetWidth]);
 }
