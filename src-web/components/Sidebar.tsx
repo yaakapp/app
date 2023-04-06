@@ -198,7 +198,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
           onDoubleClick={handleStartEditing}
           onKeyDown={handleKeyDown}
           className={classnames(
-            'flex items-center text-sm h-xs px-2 rounded-md',
+            'flex items-center text-sm h-xs px-2 rounded-md transition-colors',
             editing && 'ring-1 focus-within:ring-focus',
             isActive
               ? 'bg-highlight text-gray-900'
