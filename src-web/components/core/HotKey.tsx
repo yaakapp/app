@@ -1,15 +1,21 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
 
-export function HotKey({ children }: HTMLAttributes<HTMLSpanElement>) {
+interface Props {
+  modifier: 'Meta' | 'Control' | 'Shift';
+  keyName: string;
+}
+
+const keys: Record<Props['modifier'], string> = {
+  Control: '⌃',
+  Meta: '⌘',
+  Shift: '⇧',
+};
+
+export function HotKey({ modifier, keyName }: Props) {
   return (
-    <span
-      className={classnames(
-        'bg-highlightSecondary bg-opacity-20 px-1.5 py-0.5 rounded text-sm',
-        'font-mono text-gray-500 tracking-widest',
-      )}
-    >
-      {children}
+    <span className={classnames('text-sm text-gray-600')}>
+      {keys[modifier]}
+      {keyName}
     </span>
   );
 }

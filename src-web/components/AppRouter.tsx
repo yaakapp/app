@@ -1,6 +1,7 @@
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import { routePaths } from '../hooks/useRoutes';
 import RouteError from './RouteError';
+import { TauriListeners } from './TauriListeners';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 
@@ -8,6 +9,12 @@ const router = createBrowserRouter([
   {
     path: '/',
     errorElement: <RouteError />,
+    element: (
+      <>
+        <Outlet />
+        <TauriListeners />
+      </>
+    ),
     children: [
       {
         path: '/',

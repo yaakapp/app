@@ -3,7 +3,8 @@ import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
-import { useActiveRequest } from '../hooks/useActiveRequest';
+import { NavLink } from 'react-router-dom';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useRequests } from '../hooks/useRequests';
@@ -11,7 +12,6 @@ import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
-import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -28,7 +28,6 @@ enum ItemTypes {
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const unorderedRequests = useRequests();
-  const activeRequest = useActiveRequest();
   const requests = useMemo(
     () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
     [unorderedRequests],
@@ -45,20 +44,14 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           className="relative py-3 overflow-y-auto overflow-x-visible"
           draggable={false}
         >
-          <SidebarItems activeRequestId={activeRequest?.id} requests={requests} />
+          <SidebarItems requests={requests} />
         </VStack>
       </div>
     </div>
   );
 });
 
-function SidebarItems({
-  requests,
-  activeRequestId,
-}: {
-  requests: HttpRequest[];
-  activeRequestId?: string;
-}) {
+function SidebarItems({ requests }: { requests: HttpRequest[] }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
 
@@ -112,7 +105,6 @@ function SidebarItems({
             requestId={r.id}
             requestName={r.name}
             workspaceId={r.workspaceId}
-            active={r.id === activeRequestId}
             onMove={handleMove}
             onEnd={handleEnd}
           />
@@ -128,17 +120,18 @@ type SidebarItemProps = {
   requestId: string;
   requestName: string;
   workspaceId: string;
-  active?: boolean;
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  { className, requestName, requestId, workspaceId, active }: SidebarItemProps,
+  { className, requestName, requestId, workspaceId }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const latestResponse = useLatestResponse(requestId);
   const updateRequest = useUpdateRequest(requestId);
   const deleteRequest = useDeleteRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
+  const activeRequestId = useActiveRequestId();
+  const isActive = activeRequestId === requestId;
 
   const handleSubmitNameEdit = useCallback(
     async (el: HTMLInputElement) => {
@@ -156,16 +149,16 @@ const _SidebarItem = forwardRef(function SidebarItem(
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
       // Hitting enter on active request during keyboard nav will start edit
-      if (active && e.key === 'Enter') {
+      if (isActive && e.key === 'Enter') {
         e.preventDefault();
         setEditing(true);
       }
-      if (active && (e.key === 'Backspace' || e.key === 'Delete')) {
+      if (isActive && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
         deleteRequest.mutate();
       }
     },
-    [active, deleteRequest],
+    [isActive, deleteRequest],
   );
 
   const handleInputKeyDown = useCallback(
@@ -185,21 +178,29 @@ const _SidebarItem = forwardRef(function SidebarItem(
     [handleSubmitNameEdit],
   );
 
+  const handleStartEditing = useCallback(() => setEditing(true), [setEditing]);
+
+  const handleBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      handleSubmitNameEdit(e.currentTarget).catch(console.error);
+    },
+    [handleSubmitNameEdit],
+  );
+
   return (
     <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
       <div className="relative">
-        <Button
+        <NavLink
           tabIndex={0}
           color="custom"
-          size="xs"
           to={`/workspaces/${workspaceId}/requests/${requestId}`}
           draggable={false} // Item should drag, not the link
-          onDoubleClick={() => setEditing(true)}
-          justify="start"
+          onDoubleClick={handleStartEditing}
           onKeyDown={handleKeyDown}
           className={classnames(
+            'flex items-center text-sm h-xs px-2 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
-            active
+            isActive
               ? 'bg-highlight text-gray-900'
               : 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
           )}
@@ -209,7 +210,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
               ref={handleFocus}
               defaultValue={requestName}
               className="bg-transparent outline-none w-full"
-              onBlur={(e) => handleSubmitNameEdit(e.currentTarget)}
+              onBlur={handleBlur}
               onKeyDown={handleInputKeyDown}
             />
           ) : (
@@ -226,7 +227,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
               )}
             </div>
           )}
-        </Button>
+        </NavLink>
       </div>
     </li>
   );
@@ -248,7 +249,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   requestName,
   requestId,
   workspaceId,
-  active,
   onMove,
   onEnd,
 }: DraggableSidebarItemProps) {
@@ -290,7 +290,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       requestName={requestName}
       requestId={requestId}
       workspaceId={workspaceId}
-      active={active}
     />
   );
 });

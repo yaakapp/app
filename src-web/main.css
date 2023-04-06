@@ -33,20 +33,24 @@
     }
 
     /* Style the scrollbars */
-    ::-webkit-scrollbar-corner,
-    ::-webkit-scrollbar {
-        @apply w-1.5 h-1.5;
-    }
+    * {
+        ::-webkit-scrollbar-corner,
+        ::-webkit-scrollbar {
+            @apply w-1.5 h-1.5;
+        }
 
-    .scrollbar-track,
-    ::-webkit-scrollbar-corner,
-    ::-webkit-scrollbar {
-        @apply bg-transparent;
-    }
+        .scrollbar-track,
+        ::-webkit-scrollbar-corner,
+        ::-webkit-scrollbar {
+            @apply bg-transparent;
+        }
 
-    .scrollbar-thumb,
-    ::-webkit-scrollbar-thumb {
-        @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
+        &:hover {
+            &.scrollbar-thumb,
+            &::-webkit-scrollbar-thumb {
+                @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
+            }
+        }
     }
 
     iframe {

@@ -1,6 +1,6 @@
 import classnames from 'classnames';
 import type { MouseEvent } from 'react';
-import { forwardRef, memo, useCallback } from 'react';
+import { forwardRef, useCallback } from 'react';
 import { useTimedBoolean } from '../../hooks/useTimedBoolean';
 import type { ButtonProps } from './Button';
 import { Button } from './Button';
@@ -15,7 +15,7 @@ type Props = IconProps &
     title: string;
   };
 
-const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
+export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
   {
     showConfirm,
     icon,
@@ -69,5 +69,3 @@ const _IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
     </Button>
   );
 });
-
-export const IconButton = memo(_IconButton);

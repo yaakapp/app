@@ -40,7 +40,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : responses[responses.length - 1] ?? null;
-  const [viewMode, toggleViewMode] = useResponseViewMode(activeResponse?.requestId);
+  const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
@@ -62,7 +62,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         label: 'Preview',
         options: {
           value: viewMode,
-          onChange: toggleViewMode,
+          onChange: setViewMode,
           items: [
             { label: 'Pretty', value: 'pretty' },
             { label: 'Raw', value: 'raw' },
@@ -81,7 +81,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         value: 'headers',
       },
     ],
-    [activeResponse?.headers, toggleViewMode, viewMode],
+    [activeResponse?.headers, setViewMode, viewMode],
   );
 
   // Don't render until we know the view mode
