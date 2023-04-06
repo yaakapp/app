@@ -2,7 +2,8 @@ import useResizeObserver from '@react-hook/resize-observer';
 import classnames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
-import { useKeyValue } from '../hooks/useKeyValue';
+import { useLocalStorage } from 'react-use';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { clamp } from '../lib/clamp';
 import { RequestPane } from './RequestPane';
 import { ResizeHandle } from './ResizeHandle';
@@ -24,10 +25,10 @@ const STACK_VERTICAL_WIDTH = 650;
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [vertical, setVertical] = useState<boolean>(false);
-  const widthKv = useKeyValue<number>({ key: 'body_width', defaultValue: DEFAULT });
-  const heightKv = useKeyValue<number>({ key: 'body_height', defaultValue: DEFAULT });
-  const width = widthKv.value ?? DEFAULT;
-  const height = heightKv.value ?? DEFAULT;
+  const [widthRaw, setWidth] = useLocalStorage<number>(`body_width::${useActiveWorkspaceId()}`);
+  const [heightRaw, setHeight] = useLocalStorage<number>(`body_height::${useActiveWorkspaceId()}`);
+  const width = widthRaw ?? DEFAULT;
+  const height = heightRaw ?? DEFAULT;
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
@@ -63,8 +64,8 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   };
 
   const handleReset = useCallback(
-    () => (vertical ? heightKv.set(DEFAULT) : widthKv.set(DEFAULT)),
-    [heightKv, vertical, widthKv],
+    () => (vertical ? setHeight(DEFAULT) : setWidth(DEFAULT)),
+    [setHeight, vertical, setWidth],
   );
 
   const handleResizeStart = useCallback(
@@ -89,7 +90,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
               MIN_HEIGHT_PX,
               maxHeightPx,
             );
-            heightKv.set(newHeightPx / containerRect.height);
+            setHeight(newHeightPx / containerRect.height);
           } else {
             const maxWidthPx = containerRect.width - MIN_WIDTH_PX;
             const newWidthPx = clamp(
@@ -97,7 +98,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
               MIN_WIDTH_PX,
               maxWidthPx,
             );
-            widthKv.set(newWidthPx / containerRect.width);
+            setWidth(newWidthPx / containerRect.width);
           }
         },
         up: (e: MouseEvent) => {
@@ -110,7 +111,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [width, height, vertical, heightKv, widthKv],
+    [width, height, vertical, setHeight, setWidth],
   );
 
   return (

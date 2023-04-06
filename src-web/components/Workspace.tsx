@@ -27,7 +27,7 @@ const body = { gridArea: 'body' };
 const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
-  const { set: setWidth, value: width, reset: resetWidth } = useSidebarWidth();
+  const { setWidth, width, resetWidth } = useSidebarWidth();
   const { show, hide, hidden, toggle } = useSidebarHidden();
 
   const windowSize = useWindowSize();
