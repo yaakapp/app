@@ -119,13 +119,6 @@ export default function Workspace() {
         !isResizing && 'transition-all',
       )}
     >
-      <HeaderSize
-        data-tauri-drag-region
-        className="w-full bg-gray-50 border-b border-b-highlight text-gray-900"
-        style={head}
-      >
-        <WorkspaceHeader className="pointer-events-none" />
-      </HeaderSize>
       {floating ? (
         <Overlay open={!hidden} portalName="sidebar" onClose={hide}>
           <motion.div
@@ -162,6 +155,13 @@ export default function Workspace() {
           />
         </>
       )}
+      <HeaderSize
+        data-tauri-drag-region
+        className="w-full bg-gray-50 border-b border-b-highlight text-gray-900"
+        style={head}
+      >
+        <WorkspaceHeader className="pointer-events-none" />
+      </HeaderSize>
       <RequestResponse style={body} />
     </div>
   );
