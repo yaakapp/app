@@ -26,7 +26,7 @@ export const routePaths = {
   },
 };
 
-export function useRoutes() {
+export function useAppRoutes() {
   const navigate = useNavigate();
   return useMemo(
     () => ({

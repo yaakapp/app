@@ -103,7 +103,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
           <HStack
             alignItems="center"
             className={classnames(
-              'italic text-gray-700 text-sm w-full flex-shrink-0',
+              'text-gray-700 text-sm w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
               '-mb-1.5',
             )}

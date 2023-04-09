@@ -1,10 +1,10 @@
 import classnames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
-import { useRoutes } from '../hooks/useRoutes';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
@@ -25,7 +25,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
   const prompt = usePrompt();
-  const routes = useRoutes();
+  const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems = workspaces.map((w) => ({

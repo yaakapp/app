@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
-import { routePaths } from '../hooks/useRoutes';
+import { routePaths } from '../hooks/useAppRoutes';
+import { GlobalHooks } from './GlobalHooks';
 import RouteError from './RouteError';
-import { TauriListeners } from './TauriListeners';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 
@@ -9,12 +9,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     errorElement: <RouteError />,
-    element: (
-      <>
-        <Outlet />
-        <TauriListeners />
-      </>
-    ),
+    element: <Layout />,
     children: [
       {
         path: '/',
@@ -41,4 +36,13 @@ const router = createBrowserRouter([
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
+}
+
+function Layout() {
+  return (
+    <>
+      <Outlet />
+      <GlobalHooks />
+    </>
+  );
 }

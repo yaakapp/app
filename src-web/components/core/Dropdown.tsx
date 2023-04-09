@@ -5,8 +5,10 @@ import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode
 import React, {
   Children,
   cloneElement,
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -39,21 +41,50 @@ export interface DropdownProps {
   items: DropdownItem[];
 }
 
-export function Dropdown({ children, items }: DropdownProps) {
+export interface DropdownRef {
+  isOpen: boolean;
+  open: (activeIndex?: number) => void;
+  close?: () => void;
+  next?: () => void;
+  prev?: () => void;
+  select?: () => void;
+}
+
+export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
+  { children, items }: DropdownProps,
+  ref,
+) {
   const [open, setOpen] = useState<boolean>(false);
-  const ref = useRef<HTMLButtonElement>(null);
+  const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number>();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
+
+  useImperativeHandle(ref, () => ({
+    ...menuRef.current,
+    isOpen: open,
+    open: (activeIndex?: number) => {
+      if (activeIndex === undefined) {
+        setDefaultSelectedIndex(undefined);
+      } else {
+        setDefaultSelectedIndex(activeIndex >= 0 ? activeIndex : items.length + activeIndex);
+      }
+      setOpen(true);
+    },
+  }));
+
   const child = useMemo(() => {
     const existingChild = Children.only(children);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const props: any = {
       ...existingChild.props,
-      ref,
+      ref: buttonRef,
       'aria-haspopup': 'true',
       onClick:
         existingChild.props?.onClick ??
         ((e: MouseEvent<HTMLButtonElement>) => {
           e.preventDefault();
           e.stopPropagation();
+          setDefaultSelectedIndex(undefined);
           setOpen((o) => !o);
         }),
     };
@@ -62,37 +93,48 @@ export function Dropdown({ children, items }: DropdownProps) {
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    ref.current?.focus();
+    buttonRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    ref.current?.setAttribute('aria-expanded', open.toString());
+    buttonRef.current?.setAttribute('aria-expanded', open.toString());
   }, [open]);
 
   const triggerRect = useMemo(() => {
     if (!open) return null;
-    return ref.current?.getBoundingClientRect();
+    return buttonRef.current?.getBoundingClientRect();
   }, [open]);
 
   return (
     <>
       {child}
       {open && triggerRect && (
-        <Menu items={items} triggerRect={triggerRect} onClose={handleClose} />
+        <Menu
+          ref={menuRef}
+          defaultSelectedIndex={defaultSelectedIndex}
+          items={items}
+          triggerRect={triggerRect}
+          onClose={handleClose}
+        />
       )}
     </>
   );
-}
+});
 
 interface MenuProps {
   className?: string;
+  defaultSelectedIndex?: number;
   items: DropdownProps['items'];
   triggerRect: DOMRect;
   onClose: () => void;
 }
 
-function Menu({ className, items, onClose, triggerRect }: MenuProps) {
+const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen'>, MenuProps>(function Menu(
+  { className, items, onClose, triggerRect, defaultSelectedIndex }: MenuProps,
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultSelectedIndex ?? null);
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
 
   // Calculate the max height so we can scroll
@@ -119,8 +161,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     onClose();
   });
 
-  useKeyPressEvent('ArrowUp', (e) => {
-    e.preventDefault();
+  const handlePrev = useCallback(() => {
     setSelectedIndex((currIndex) => {
       let nextIndex = (currIndex ?? 0) - 1;
       const maxTries = items.length;
@@ -135,10 +176,9 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       }
       return nextIndex;
     });
-  });
+  }, [items]);
 
-  useKeyPressEvent('ArrowDown', (e) => {
-    e.preventDefault();
+  const handleNext = useCallback(() => {
     setSelectedIndex((currIndex) => {
       let nextIndex = (currIndex ?? -1) + 1;
       const maxTries = items.length;
@@ -153,7 +193,43 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       }
       return nextIndex;
     });
+  }, [items]);
+
+  useKeyPressEvent('ArrowUp', (e) => {
+    e.preventDefault();
+    handlePrev();
   });
+
+  useKeyPressEvent('ArrowDown', (e) => {
+    e.preventDefault();
+    handleNext();
+  });
+
+  const handleSelect = useCallback(
+    (i: DropdownItem) => {
+      onClose();
+      setSelectedIndex(null);
+      if (i.type !== 'separator') {
+        i.onSelect?.();
+      }
+    },
+    [onClose],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      close: onClose,
+      prev: handlePrev,
+      next: handleNext,
+      select: () => {
+        const item = items[selectedIndex ?? -1] ?? null;
+        if (!item) return;
+        handleSelect(item);
+      },
+    }),
+    [handleNext, handlePrev, handleSelect, items, onClose, selectedIndex],
+  );
 
   const { containerStyles, triangleStyles } = useMemo<{
     containerStyles: CSSProperties;
@@ -173,17 +249,6 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     return { containerStyles, triangleStyles };
   }, [triggerRect]);
 
-  const handleSelect = useCallback(
-    (i: DropdownItem) => {
-      onClose();
-      setSelectedIndex(null);
-      if (i.type !== 'separator') {
-        i.onSelect?.();
-      }
-    },
-    [onClose],
-  );
-
   const handleFocus = useCallback(
     (i: DropdownItem) => {
       const index = items.findIndex((item) => item === i) ?? null;
@@ -191,8 +256,6 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     },
     [items],
   );
-
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   return (
     <Portal name="dropdown">
@@ -251,7 +314,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
       </FocusTrap>
     </Portal>
   );
-}
+});
 
 interface MenuItemProps {
   className?: string;
@@ -293,7 +356,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       )}
       {...props}
     >
-      {item.leftSlot && <div className="w-6">{item.leftSlot}</div>}
+      {item.leftSlot && <div className="w-6 flex justify-start">{item.leftSlot}</div>}
       <div>{item.label}</div>
       {item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
     </button>

@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
+import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
@@ -24,8 +25,8 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <SidebarActions />
         <WorkspaceActionsDropdown className="pointer-events-auto" />
       </HStack>
-      <div className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none">
-        {activeRequest?.name}
+      <div>
+        <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
         {activeRequest && (
