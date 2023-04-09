@@ -78,7 +78,16 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
       {
         label: 'Create Workspace',
         leftSlot: <Icon icon="plus" />,
-        onSelect: () => createWorkspace.mutate({ name: 'Workspace' }),
+        onSelect: async () => {
+          const name = await prompt({
+            name: 'name',
+            label: 'Name',
+            defaultValue: '',
+            description: 'Enter a name for the new workspace',
+            title: 'Create Workspace',
+          });
+          createWorkspace.mutate({ name });
+        },
       },
     ];
   }, [
