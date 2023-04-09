@@ -3,7 +3,7 @@ import { Button } from '../components/core/Button';
 import { HStack } from '../components/core/Stacks';
 
 export interface ConfirmProps {
-  hide: () => void;
+  onHide: () => void;
   onResult: (result: boolean) => void;
   variant?: 'delete' | 'confirm';
 }
@@ -18,7 +18,7 @@ const confirmButtonTexts: Record<NonNullable<ConfirmProps['variant']>, string> =
   confirm: 'Confirm',
 };
 
-export function Confirm({ hide, onResult, variant = 'confirm' }: ConfirmProps) {
+export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps) {
   const focusRef = (el: HTMLButtonElement | null) => {
     setTimeout(() => {
       el?.focus();
@@ -27,16 +27,16 @@ export function Confirm({ hide, onResult, variant = 'confirm' }: ConfirmProps) {
 
   const handleHide = () => {
     onResult(false);
-    hide();
+    onHide();
   };
 
   const handleSuccess = () => {
     onResult(true);
-    hide();
+    onHide();
   };
 
   return (
-    <HStack space={2} justifyContent="end">
+    <HStack space={2} justifyContent="end" className="mt-6">
       <Button className="focus" color="gray" onClick={handleHide}>
         Cancel
       </Button>

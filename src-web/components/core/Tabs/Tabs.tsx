@@ -73,17 +73,17 @@ export function Tabs({
         aria-label={label}
         className={classnames(
           tabListClassName,
-          'flex items-center overflow-x-auto hide-scrollbars mt-1 mb-2',
+          'flex items-center overflow-x-auto overflow-y-visible hide-scrollbars mt-1 mb-2',
           // Give space for button focus states within overflow boundary.
-          'px-2 -mx-2',
+          '-mx-5 pl-3 py-1',
         )}
       >
-        <HStack space={1} className="flex-shrink-0">
+        <HStack space={2} className="flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classnames(
               isActive ? '' : 'text-gray-600 hover:text-gray-800',
-              '!px-0 mr-4 ml-[1px]',
+              '!px-2 ml-[1px]',
             );
 
             if ('options' in t) {
