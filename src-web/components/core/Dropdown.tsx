@@ -2,7 +2,15 @@ import classnames from 'classnames';
 import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
-import { Children, cloneElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  Children,
+  cloneElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useKeyPressEvent } from 'react-use';
 import { Portal } from '../Portal';
 import { Separator } from './Separator';
@@ -17,6 +25,7 @@ export type DropdownItem =
   | {
       type?: 'default';
       label: string;
+      variant?: 'danger';
       disabled?: boolean;
       hidden?: boolean;
       leftSlot?: ReactNode;
@@ -93,6 +102,17 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
     const menuBox = el.getBoundingClientRect();
     setMenuStyles({ maxHeight: windowBox.height - menuBox.top - 5 });
   }, []);
+
+  // Close menu on space bar
+  const handleMenuKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        onClose();
+      }
+    },
+    [onClose],
+  );
 
   useKeyPressEvent('Escape', (e) => {
     e.preventDefault();
@@ -181,6 +201,7 @@ function Menu({ className, items, onClose, triggerRect }: MenuProps) {
           <div tabIndex={-1} aria-hidden className="fixed inset-0" onClick={onClose} />
           <motion.div
             tabIndex={0}
+            onKeyDown={handleMenuKeyDown}
             initial={{ opacity: 0, y: -5, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             role="menu"
@@ -268,6 +289,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 h-7 flex items-center text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-900 rounded',
+        item.variant === 'danger' && 'text-red-600',
       )}
       {...props}
     >

@@ -21,7 +21,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
         variant: 'delete',
         description: (
           <>
-            Are you sure you want to delete <InlineCode>{workspace?.name}</InlineCode>?
+            Permanently delete <InlineCode>{workspace?.name}</InlineCode>?
           </>
         ),
       });

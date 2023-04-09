@@ -2,11 +2,12 @@ import classnames from 'classnames';
 import type { HttpResponse } from '../../lib/models';
 
 interface Props {
-  response: Pick<HttpResponse, 'status' | 'error'>;
+  response: Pick<HttpResponse, 'status' | 'statusReason' | 'error'>;
   className?: string;
+  showReason?: boolean;
 }
 
-export function StatusTag({ response, className }: Props) {
+export function StatusTag({ response, className, showReason }: Props) {
   const { status, error } = response;
   const label = error ? 'ERR' : status;
   return (
@@ -22,7 +23,7 @@ export function StatusTag({ response, className }: Props) {
         status >= 500 && 'text-red-600',
       )}
     >
-      {label}
+      {label} {showReason && response.statusReason && response.statusReason}
     </span>
   );
 }

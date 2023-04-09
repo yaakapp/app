@@ -45,13 +45,20 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <DialogContext.Provider value={state}>
       {children}
-      {dialogs.map(({ id, render, ...props }) => (
-        <Dialog open key={id} onClose={() => actions.hide(id)} {...props}>
-          {render({ hide: () => actions.hide(id) })}
-        </Dialog>
+      {dialogs.map((props: DialogEntry) => (
+        <DialogInstance key={props.id} {...props} />
       ))}
     </DialogContext.Provider>
   );
 };
+
+function DialogInstance({ id, render, ...props }: DialogEntry) {
+  const { actions } = useContext(DialogContext);
+  return (
+    <Dialog open onClose={() => actions.hide(id)} {...props}>
+      {render({ hide: () => actions.hide(id) })}
+    </Dialog>
+  );
+}
 
 export const useDialog = () => useContext(DialogContext).actions;

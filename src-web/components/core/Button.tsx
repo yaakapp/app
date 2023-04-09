@@ -36,6 +36,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     children,
     forDropdown,
     color,
+    type = 'button',
     justify = 'center',
     size = 'md',
     ...props
@@ -68,7 +69,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     );
   } else {
     return (
-      <button ref={ref} className={classes} {...props}>
+      <button ref={ref} type={type} className={classes} {...props}>
         {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
         {children}
         {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}

@@ -423,6 +423,24 @@ pub async fn update_response_if_id(
     return update_response(response, pool).await;
 }
 
+pub async fn update_workspace(
+    workspace: Workspace,
+    pool: &Pool<Sqlite>,
+) -> Result<Workspace, sqlx::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE workspaces SET (name, updated_at) =
+            (?, CURRENT_TIMESTAMP) WHERE id = ?;
+        "#,
+        workspace.name,
+        workspace.id,
+    )
+    .execute(pool)
+    .await
+    .expect("Failed to update workspace");
+    get_workspace(&workspace.id, pool).await
+}
+
 pub async fn update_response(
     response: HttpResponse,
     pool: &Pool<Sqlite>,

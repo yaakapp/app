@@ -111,7 +111,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             {activeResponse && (
               <HStack alignItems="center" className="w-full">
                 <div className="whitespace-nowrap px-3">
-                  <StatusTag response={activeResponse} />
+                  <StatusTag showReason response={activeResponse} />
                   {activeResponse.elapsed > 0 && <>&nbsp;&bull;&nbsp;{activeResponse.elapsed}ms</>}
                   {activeResponse.body.length > 0 && (
                     <>&nbsp;&bull;&nbsp;{(activeResponse.body.length / 1000).toFixed(1)} KB</>
@@ -165,7 +165,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               </TabContent>
               <TabContent value="body">
                 {!activeResponse.body ? (
-                  <EmptyStateText>No Response</EmptyStateText>
+                  <EmptyStateText>Empty Body</EmptyStateText>
                 ) : viewMode === 'pretty' && contentType.includes('html') ? (
                   <Webview
                     body={activeResponse.body}

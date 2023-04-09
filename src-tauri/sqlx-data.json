@@ -506,6 +506,16 @@
     },
     "query": "\n            INSERT INTO key_values (namespace, key, value)\n            VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               value = excluded.value\n        "
   },
+  "e0f41023d877d94b7609ce910a71bd89c4827a558654b8ae14d85e6ba86990cf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\n            UPDATE workspaces SET (name, updated_at) =\n            (?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
+  },
   "e3ade0a69348d512e47e964bded9d7d890b92fdc1e01c6c22fa5e91f943639f2": {
     "describe": {
       "columns": [
