@@ -3,8 +3,6 @@ import { useKeyPressEvent } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
 import { Button } from './core/Button';
@@ -24,7 +22,7 @@ export function RecentRequestsDropdown() {
     if (!e.ctrlKey) return;
     if (!dropdownRef.current?.isOpen) {
       // Set to 1 because the first item is the active request
-      dropdownRef.current?.open(e.shiftKey ? -1 : 1);
+      dropdownRef.current?.open(e.shiftKey ? -1 : 0);
     }
 
     if (e.shiftKey) {
@@ -39,11 +37,6 @@ export function RecentRequestsDropdown() {
   const recentRequestIds = useRecentRequests();
   const requests = useRequests();
   const routes = useAppRoutes();
-  const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
-  const duplicateRequest = useDuplicateRequest({
-    id: activeRequest?.id ?? null,
-    navigateAfter: true,
-  });
 
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
@@ -65,32 +58,12 @@ export function RecentRequestsDropdown() {
       });
     }
 
-    // Show max 30 items
-    const fixedItems: DropdownItem[] = [
-      // {
-      //   label: 'Duplicate',
-      //   onSelect: duplicateRequest.mutate,
-      //   leftSlot: <Icon icon="copy" />,
-      //   rightSlot: <HotKey modifier="Meta" keyName="D" />,
-      // },
-      // {
-      //   label: 'Delete',
-      //   onSelect: deleteRequest.mutate,
-      //   variant: 'danger',
-      //   leftSlot: <Icon icon="trash" />,
-      // },
-    ];
-
     // No recent requests to show
     if (recentRequestItems.length === 0) {
-      return fixedItems;
+      return [];
     }
 
-    return [
-      // ...fixedItems,
-      // { type: 'separator', label: 'Recent Requests' },
-      ...recentRequestItems.slice(0, 20),
-    ];
+    return recentRequestItems.slice(0, 20);
   }, [activeWorkspaceId, recentRequestIds, requests, routes]);
 
   return (
