@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey } from './useRequests';
-import { useRoutes } from './useRoutes';
 
 export function useDuplicateRequest({
   id,
@@ -13,7 +13,7 @@ export function useDuplicateRequest({
   navigateAfter: boolean;
 }) {
   const workspaceId = useActiveWorkspaceId();
-  const routes = useRoutes();
+  const routes = useAppRoutes();
   const queryClient = useQueryClient();
   return useMutation<HttpRequest, string>({
     mutationFn: async () => {

@@ -1,10 +1,10 @@
 import { Navigate } from 'react-router-dom';
-import { useRoutes } from '../hooks/useRoutes';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Heading } from './core/Heading';
 
 export default function Workspaces() {
-  const routes = useRoutes();
+  const routes = useAppRoutes();
   const workspaces = useWorkspaces();
   const workspace = workspaces[0];
 

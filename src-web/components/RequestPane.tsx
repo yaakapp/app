@@ -162,7 +162,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             label="Request"
             onChangeValue={setActiveTab}
             tabs={tabs}
-            tabListClassName="mt-2"
+            tabListClassName="mt-2 !mb-1.5"
           >
             <TabContent value="auth">
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (

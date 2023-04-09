@@ -3,15 +3,15 @@ import { invoke } from '@tauri-apps/api';
 import { InlineCode } from '../components/core/InlineCode';
 import type { Workspace } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useAppRoutes } from './useAppRoutes';
 import { useConfirm } from './useConfirm';
 import { requestsQueryKey } from './useRequests';
-import { useRoutes } from './useRoutes';
 import { workspacesQueryKey } from './useWorkspaces';
 
 export function useDeleteWorkspace(workspace: Workspace | null) {
   const queryClient = useQueryClient();
   const activeWorkspaceId = useActiveWorkspaceId();
-  const routes = useRoutes();
+  const routes = useAppRoutes();
   const confirm = useConfirm();
 
   return useMutation<Workspace | null, string>({

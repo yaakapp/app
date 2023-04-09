@@ -13,7 +13,7 @@ import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
 
-export function TauriListeners() {
+export function GlobalHooks() {
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 

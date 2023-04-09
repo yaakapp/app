@@ -29,6 +29,7 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
         {
           label: 'Delete',
           onSelect: deleteRequest.mutate,
+          variant: 'danger',
           leftSlot: <Icon icon="trash" />,
         },
         { type: 'separator', label: 'Yaak Settings' },
