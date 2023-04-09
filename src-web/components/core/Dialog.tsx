@@ -76,7 +76,7 @@ export function Dialog({
               {title}
             </Heading>
             {description && <p id={descriptionId}>{description}</p>}
-            <div className="mt-6">{children}</div>
+            <div className="mt-4">{children}</div>
           </motion.div>
         </div>
       </div>

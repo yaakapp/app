@@ -19,7 +19,7 @@ export function useDeleteRequest(id: string | null) {
         variant: 'delete',
         description: (
           <>
-            Are you sure you want to delete <InlineCode>{request?.name}</InlineCode>?
+            Permanently delete <InlineCode>{request?.name}</InlineCode>?
           </>
         ),
       });

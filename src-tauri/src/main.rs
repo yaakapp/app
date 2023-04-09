@@ -363,6 +363,21 @@ async fn duplicate_request(
 }
 
 #[tauri::command]
+async fn update_workspace(
+    workspace: models::Workspace,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Workspace, String> {
+    let pool = &*db_instance.lock().await;
+
+    let updated_workspace = models::update_workspace(workspace, pool)
+        .await
+        .expect("Failed to update request");
+
+    emit_and_return(&window, "updated_model", updated_workspace)
+}
+
+#[tauri::command]
 async fn update_request(
     request: models::HttpRequest,
     window: Window<Wry>,
@@ -432,6 +447,17 @@ async fn get_request(
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
     models::get_request(id, pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn get_workspace(
+    id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Workspace, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_workspace(id, pool)
         .await
         .map_err(|e| e.to_string())
 }
@@ -546,8 +572,10 @@ fn main() {
             send_ephemeral_request,
             duplicate_request,
             create_request,
+            get_workspace,
             create_workspace,
             delete_workspace,
+            update_workspace,
             update_request,
             delete_request,
             responses,

@@ -20,7 +20,7 @@ export function useConfirm() {
         description,
         hideX: true,
         size: 'sm',
-        render: ({ hide }) => Confirm({ hide, variant, onResult }),
+        render: ({ hide }) => Confirm({ onHide: hide, variant, onResult }),
       });
     });
 }

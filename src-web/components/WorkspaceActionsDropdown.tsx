@@ -3,12 +3,15 @@ import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
+import { usePrompt } from '../hooks/usePrompt';
 import { useRoutes } from '../hooks/useRoutes';
+import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
+import { InlineCode } from './core/InlineCode';
 
 type Props = {
   className?: string;
@@ -19,7 +22,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
+  const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
+  const prompt = usePrompt();
   const routes = useRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
@@ -32,31 +37,59 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
       },
     }));
 
+    const activeWorkspaceItems: DropdownItem[] =
+      workspaces.length <= 1
+        ? []
+        : [
+            ...workspaceItems,
+            {
+              type: 'separator',
+              label: activeWorkspace?.name,
+            },
+          ];
+
     return [
-      ...workspaceItems,
+      ...activeWorkspaceItems,
       {
-        type: 'separator',
-        label: 'Actions',
+        label: 'Rename',
+        leftSlot: <Icon icon="pencil" />,
+        onSelect: async () => {
+          const name = await prompt({
+            title: 'Rename Workspace',
+            description: (
+              <>
+                Enter a new name for <InlineCode>{activeWorkspace?.name}</InlineCode>
+              </>
+            ),
+            name: 'name',
+            label: 'Name',
+            defaultValue: activeWorkspace?.name,
+          });
+          updateWorkspace.mutate({ name });
+        },
       },
       {
-        label: 'New Workspace',
-        leftSlot: <Icon icon="plus" />,
-        onSelect: () => createWorkspace.mutate({ name: 'New Workspace' }),
-      },
-      {
-        label: 'Delete Workspace',
+        label: 'Delete',
         leftSlot: <Icon icon="trash" />,
         onSelect: deleteWorkspace.mutate,
+        variant: 'danger',
+      },
+      { type: 'separator' },
+      {
+        label: 'Create Workspace',
+        leftSlot: <Icon icon="plus" />,
+        onSelect: () => createWorkspace.mutate({ name: 'Workspace' }),
       },
     ];
   }, [
     workspaces,
+    deleteWorkspace.mutate,
     activeWorkspaceId,
     routes,
-    createWorkspace,
-    confirm,
+    prompt,
     activeWorkspace?.name,
-    deleteWorkspace,
+    updateWorkspace,
+    createWorkspace,
   ]);
 
   return (
