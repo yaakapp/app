@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { Workspace } from '../lib/models';
-import { useRoutes } from './useRoutes';
+import { useAppRoutes } from './useAppRoutes';
 import { workspacesQueryKey } from './useWorkspaces';
 
 export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }) {
-  const routes = useRoutes();
+  const routes = useAppRoutes();
   const queryClient = useQueryClient();
   return useMutation<Workspace, unknown, Pick<Workspace, 'name'>>({
     mutationFn: (patch) => {

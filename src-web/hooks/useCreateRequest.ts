@@ -2,12 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey, useRequests } from './useRequests';
-import { useRoutes } from './useRoutes';
 
 export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) {
   const workspaceId = useActiveWorkspaceId();
-  const routes = useRoutes();
+  const routes = useAppRoutes();
   const requests = useRequests();
   const queryClient = useQueryClient();
 
