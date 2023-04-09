@@ -27,5 +27,5 @@ export function useRecentRequests() {
     });
   }, [activeRequestId, setHistory]);
 
-  return history;
+  return history.slice(1);
 }

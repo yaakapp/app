@@ -257,6 +257,8 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen'>, MenuProps>(functio
     [items],
   );
 
+  if (items.length === 0) return null;
+
   return (
     <Portal name="dropdown">
       <FocusTrap>
