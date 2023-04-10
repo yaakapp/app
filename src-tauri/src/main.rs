@@ -634,6 +634,10 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
             CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
                 .accelerator("CmdOrCtrl+d"),
         )
+        .add_item(
+            CustomMenuItem::new("focus_sidebar".to_string(), "Focus Sidebar")
+                .accelerator("CmdOrCtrl+1"),
+        )
         .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
     if is_dev() {
         test_menu = test_menu
@@ -677,6 +681,7 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         "zoom_out" => win2.emit("zoom", -1).unwrap(),
         "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
         "focus_url" => win2.emit("focus_url", true).unwrap(),
+        "focus_sidebar" => win2.emit("focus_sidebar", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
         "new_request" => _ = win2.emit("new_request", true).unwrap(),
         "duplicate_request" => _ = win2.emit("duplicate_request", true).unwrap(),

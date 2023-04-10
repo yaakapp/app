@@ -139,11 +139,8 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div
-            style={side}
-            className={classnames('overflow-hidden bg-gray-100 border-r border-highlight')}
-          >
-            <Sidebar />
+          <div style={side} className={classnames('overflow-hidden bg-gray-100')}>
+            <Sidebar className="border-r border-highlight" />
           </div>
           <ResizeHandle
             className="-translate-x-3"
