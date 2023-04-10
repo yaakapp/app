@@ -26,7 +26,7 @@ export type DropdownItemSeparator = {
 export type DropdownItem =
   | {
       type?: 'default';
-      label: string;
+      label: ReactNode;
       variant?: 'danger';
       disabled?: boolean;
       hidden?: boolean;
