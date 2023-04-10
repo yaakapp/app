@@ -32,6 +32,7 @@ export function RadioDropdown<T = string | null>({
           return item;
         } else {
           return {
+            key: item.label,
             label: item.label,
             shortLabel: item.shortLabel,
             onSelect: () => onChange(item.value),

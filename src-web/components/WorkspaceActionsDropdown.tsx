@@ -29,6 +29,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems = workspaces.map((w) => ({
+      key: w.id,
       label: w.name,
       leftSlot: activeWorkspaceId === w.id ? <Icon icon="check" /> : <Icon icon="empty" />,
       onSelect: () => {
@@ -51,6 +52,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
     return [
       ...activeWorkspaceItems,
       {
+        key: 'rename',
         label: 'Rename',
         leftSlot: <Icon icon="pencil" />,
         onSelect: async () => {
@@ -69,6 +71,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
         },
       },
       {
+        key: 'delete',
         label: 'Delete',
         leftSlot: <Icon icon="trash" />,
         onSelect: deleteWorkspace.mutate,
@@ -76,6 +79,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
       },
       { type: 'separator' },
       {
+        key: 'create-workspace',
         label: 'Create Workspace',
         leftSlot: <Icon icon="plus" />,
         onSelect: async () => {
