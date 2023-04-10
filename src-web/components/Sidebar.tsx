@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import type { ForwardedRef, KeyboardEvent } from 'react';
+import type { ForwardedRef } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
@@ -45,7 +45,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const focusActiveRequest = useCallback(
     (forcedIndex?: number) => {
       const index = forcedIndex ?? requests.findIndex((r) => r.id === activeRequestId);
-      setSelectedIndex(index >= 0 ? index : 0);
+      if (index < 0) return;
+      setSelectedIndex(index >= 0 ? index : undefined);
       setHasFocus(true);
       sidebarRef.current?.focus();
     },
@@ -66,12 +67,27 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   const handleFocus = useCallback(() => focusActiveRequest(), [focusActiveRequest]);
   const handleBlur = useCallback(() => setHasFocus(false), []);
+  const handleDeleteKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!hasFocus) return;
+      e.preventDefault();
+
+      const selectedRequest = requests[selectedIndex ?? -1];
+      if (selectedRequest === undefined) return;
+      deleteAnyRequest.mutate(selectedRequest.id);
+    },
+    [deleteAnyRequest, hasFocus, requests, selectedIndex],
+  );
+
+  useKeyPressEvent('Backspace', handleDeleteKey);
+  useKeyPressEvent('Delete', handleDeleteKey);
 
   useTauriEvent(
     'focus_sidebar',
     () => {
       if (hidden) return;
-      focusActiveRequest();
+      // Select 0 index on focus if none selected
+      focusActiveRequest(selectedIndex ?? 0);
     },
     [focusActiveRequest, hidden],
   );
@@ -111,14 +127,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     undefined,
     [hasFocus, requests, selectedIndex],
   );
-
-  useKeyPressEvent('Backspace', (e) => {
-    if (!hasFocus) return;
-    e.preventDefault();
-    const selectedRequest = requests[selectedIndex ?? -1];
-    if (selectedRequest === undefined) return;
-    deleteAnyRequest.mutate(selectedRequest.id);
-  });
 
   return (
     <div aria-hidden={hidden} className="relative h-full">
@@ -255,7 +263,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
   }, []);
 
   const handleInputKeyDown = useCallback(
-    async (e: KeyboardEvent<HTMLInputElement>) => {
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
       e.stopPropagation();
       switch (e.key) {
         case 'Enter':
