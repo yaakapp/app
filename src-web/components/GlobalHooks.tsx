@@ -1,7 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
-import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
@@ -16,14 +14,6 @@ import { modelsEq } from '../lib/models';
 export function GlobalHooks() {
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
-
-  const activeRequestId = useActiveRequestId();
-  const duplicateRequest = useDuplicateRequest({ id: activeRequestId, navigateAfter: true });
-
-  // TODO: Put this somewhere better
-  useTauriEvent('duplicate_request', () => {
-    duplicateRequest.mutate();
-  });
 
   useTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
@@ -40,9 +30,7 @@ export function GlobalHooks() {
         : null;
 
     if (queryKey === null) {
-      if (payload.model) {
-        console.log('Unrecognized created model:', payload);
-      }
+      console.log('Unrecognized created model:', payload);
       return;
     }
 
@@ -66,9 +54,7 @@ export function GlobalHooks() {
         : null;
 
     if (queryKey === null) {
-      if (payload.model) {
-        console.log('Unrecognized updated model:', payload);
-      }
+      console.log('Unrecognized updated model:', payload);
       return;
     }
 
@@ -125,7 +111,8 @@ const shouldIgnoreEvent = (payload: Model, windowLabel: string) =>
   windowLabel === appWindow.label && payload.model !== 'http_response';
 
 const shouldIgnoreModel = (payload: Model) => {
-  if (payload.model === 'http_response') return false;
-  if (payload.model === 'key_value' && payload.namespace === NAMESPACE_NO_SYNC) return false;
-  return true;
+  if (payload.model === 'key_value') {
+    return payload.namespace === NAMESPACE_NO_SYNC;
+  }
+  return false;
 };
