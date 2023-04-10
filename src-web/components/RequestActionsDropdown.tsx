@@ -24,6 +24,11 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
     dropdownRef.current?.toggle();
   });
 
+  // TODO: Put this somewhere better
+  useTauriEvent('duplicate_request', () => {
+    duplicateRequest.mutate();
+  });
+
   return (
     <Dropdown
       ref={dropdownRef}
