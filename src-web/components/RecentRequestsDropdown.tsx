@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useKeyPressEvent } from 'react-use';
+import { useKey, useKeyPressEvent } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
@@ -12,31 +12,33 @@ import { Dropdown } from './core/Dropdown';
 
 export function RecentRequestsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
+  const activeRequest = useActiveRequest();
+  const activeWorkspaceId = useActiveWorkspaceId();
+  const recentRequestIds = useRecentRequests();
+  const requests = useRequests();
+  const routes = useAppRoutes();
 
   useKeyPressEvent('Control', undefined, () => {
     // Key up
     dropdownRef.current?.select?.();
   });
 
-  useKeyPressEvent('Tab', (e) => {
-    if (!e.ctrlKey) return;
-    if (!dropdownRef.current?.isOpen) {
-      // Set to 1 because the first item is the active request
-      dropdownRef.current?.open(e.shiftKey ? -1 : 0);
-    }
+  useKey(
+    'Tab',
+    (e) => {
+      if (!e.ctrlKey || recentRequestIds.length === 0) return;
 
-    if (e.shiftKey) {
-      dropdownRef.current?.prev?.();
-    } else {
-      dropdownRef.current?.next?.();
-    }
-  });
+      if (!dropdownRef.current?.isOpen) {
+        // Set to 1 because the first item is the active request
+        dropdownRef.current?.open(e.shiftKey ? -1 : 0);
+      }
 
-  const activeRequest = useActiveRequest();
-  const activeWorkspaceId = useActiveWorkspaceId();
-  const recentRequestIds = useRecentRequests();
-  const requests = useRequests();
-  const routes = useAppRoutes();
+      if (e.shiftKey) dropdownRef.current?.prev?.();
+      else dropdownRef.current?.next?.();
+    },
+    undefined,
+    [recentRequestIds.length],
+  );
 
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
@@ -72,7 +74,7 @@ export function RecentRequestsDropdown() {
         size="sm"
         className="pointer-events-auto flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none"
       >
-        {activeRequest?.name}
+        {activeRequest?.name ?? <span className="text-gray-400">No Request</span>}
       </Button>
     </Dropdown>
   );
