@@ -3,11 +3,14 @@ import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
-import { NavLink } from 'react-router-dom';
+import { useKeyPressEvent } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
-import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useRequests } from '../hooks/useRequests';
+import { useSidebarHidden } from '../hooks/useSidebarHidden';
+import { useTauriEvent } from '../hooks/useTauriEvent';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
@@ -26,17 +29,96 @@ enum ItemTypes {
 }
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
+  const { hidden } = useSidebarHidden();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const activeRequestId = useActiveRequestId();
   const unorderedRequests = useRequests();
+  const deleteAnyRequest = useDeleteAnyRequest();
+  const routes = useAppRoutes();
   const requests = useMemo(
     () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
     [unorderedRequests],
   );
+  const [hasFocus, setHasFocus] = useState<boolean>(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>();
+
+  const focusActiveRequest = useCallback(
+    (forcedIndex?: number) => {
+      const index = forcedIndex ?? requests.findIndex((r) => r.id === activeRequestId);
+      setSelectedIndex(index >= 0 ? index : 0);
+      sidebarRef.current?.focus();
+    },
+    [activeRequestId, requests],
+  );
+
+  const handleSelect = useCallback(
+    (requestId: string) => {
+      const index = requests.findIndex((r) => r.id === requestId);
+      const request = requests[index];
+      if (!request || request.id === activeRequestId) return;
+      routes.navigate('request', { requestId, workspaceId: request.workspaceId });
+      setSelectedIndex(index);
+      focusActiveRequest(index);
+    },
+    [activeRequestId, focusActiveRequest, requests, routes],
+  );
+
+  const handleFocus = useCallback(() => setHasFocus(true), []);
+  const handleBlur = useCallback(() => setHasFocus(false), []);
+
+  useTauriEvent(
+    'focus_sidebar',
+    () => {
+      if (hidden) return;
+      focusActiveRequest();
+    },
+    [focusActiveRequest, hidden],
+  );
+
+  useKeyPressEvent('Enter', (e) => {
+    if (!hasFocus) return;
+    const request = requests[selectedIndex ?? -1];
+    if (!request || request.id === activeRequestId) return;
+    e.preventDefault();
+    routes.navigate('request', { requestId: request.id, workspaceId: request.workspaceId });
+  });
+
+  useKeyPressEvent('ArrowUp', () => {
+    if (!hasFocus) return;
+    let newIndex = (selectedIndex ?? requests.length) - 1;
+    if (newIndex < 0) {
+      newIndex = requests.length - 1;
+    }
+    setSelectedIndex(newIndex);
+  });
+
+  useKeyPressEvent('ArrowDown', () => {
+    if (!hasFocus) return;
+    let newIndex = (selectedIndex ?? -1) + 1;
+    if (newIndex > requests.length - 1) {
+      newIndex = 0;
+    }
+    setSelectedIndex(newIndex);
+  });
+
+  useKeyPressEvent('Backspace', (e) => {
+    if (!hasFocus) return;
+    e.preventDefault();
+    const selectedRequest = requests[selectedIndex ?? -1];
+    if (selectedRequest === undefined) return;
+    deleteAnyRequest.mutate(selectedRequest.id);
+  });
 
   return (
-    <div className="relative h-full">
+    <div aria-hidden={hidden} className="relative h-full">
       <div
+        role="menu"
+        aria-orientation="vertical"
+        dir="ltr"
         ref={sidebarRef}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        tabIndex={hidden ? -1 : 0}
         className={classnames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
       >
         <VStack
@@ -44,14 +126,26 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           className="relative py-3 overflow-y-auto overflow-x-visible"
           draggable={false}
         >
-          <SidebarItems requests={requests} />
+          <SidebarItems
+            selectedIndex={selectedIndex}
+            requests={requests}
+            focused={hasFocus}
+            onSelect={handleSelect}
+          />
         </VStack>
       </div>
     </div>
   );
 });
 
-function SidebarItems({ requests }: { requests: HttpRequest[] }) {
+interface SidebarItemsProps {
+  requests: HttpRequest[];
+  focused: boolean;
+  selectedIndex?: number;
+  onSelect: (requestId: string) => void;
+}
+
+function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarItemsProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
 
@@ -102,11 +196,13 @@ function SidebarItems({ requests }: { requests: HttpRequest[] }) {
           {hoveredIndex === i && <DropMarker />}
           <DraggableSidebarItem
             key={r.id}
+            selected={selectedIndex === i}
             requestId={r.id}
             requestName={r.name}
-            workspaceId={r.workspaceId}
             onMove={handleMove}
             onEnd={handleEnd}
+            useProminentStyles={focused}
+            onSelect={onSelect}
           />
         </Fragment>
       ))}
@@ -119,16 +215,17 @@ type SidebarItemProps = {
   className?: string;
   requestId: string;
   requestName: string;
-  workspaceId: string;
+  useProminentStyles?: boolean;
+  selected?: boolean;
+  onSelect: (requestId: string) => void;
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  { className, requestName, requestId, workspaceId }: SidebarItemProps,
+  { className, requestName, requestId, useProminentStyles, selected, onSelect }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const latestResponse = useLatestResponse(requestId);
   const updateRequest = useUpdateRequest(requestId);
-  const deleteRequest = useDeleteRequest(requestId);
   const [editing, setEditing] = useState<boolean>(false);
   const activeRequestId = useActiveRequestId();
   const isActive = activeRequestId === requestId;
@@ -145,21 +242,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
     el?.focus();
     el?.select();
   }, []);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLElement>) => {
-      // Hitting enter on active request during keyboard nav will start edit
-      if (isActive && e.key === 'Enter') {
-        e.preventDefault();
-        setEditing(true);
-      }
-      if (isActive && (e.key === 'Backspace' || e.key === 'Delete')) {
-        e.preventDefault();
-        deleteRequest.mutate();
-      }
-    },
-    [isActive, deleteRequest],
-  );
 
   const handleInputKeyDown = useCallback(
     async (e: KeyboardEvent<HTMLInputElement>) => {
@@ -187,48 +269,52 @@ const _SidebarItem = forwardRef(function SidebarItem(
     [handleSubmitNameEdit],
   );
 
+  const handleSelect = useCallback(() => {
+    onSelect(requestId);
+  }, [onSelect, requestId]);
+
   return (
     <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
-      <div className="relative">
-        <NavLink
-          tabIndex={0}
-          color="custom"
-          to={`/workspaces/${workspaceId}/requests/${requestId}`}
-          draggable={false} // Item should drag, not the link
-          onDoubleClick={handleStartEditing}
-          onKeyDown={handleKeyDown}
-          className={classnames(
-            'flex items-center text-sm h-xs px-2 rounded-md transition-colors',
-            editing && 'ring-1 focus-within:ring-focus',
-            isActive
-              ? 'bg-highlight text-gray-900'
-              : 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-          )}
-        >
-          {editing ? (
-            <input
-              ref={handleFocus}
-              defaultValue={requestName}
-              className="bg-transparent outline-none w-full"
-              onBlur={handleBlur}
-              onKeyDown={handleInputKeyDown}
-            />
-          ) : (
-            <span className={classnames('truncate', !requestName && 'text-gray-400 italic')}>
-              {requestName || 'New Request'}
-            </span>
-          )}
-          {latestResponse && (
-            <div className="ml-auto">
-              {isResponseLoading(latestResponse) ? (
-                <Icon spin size="sm" icon="update" />
-              ) : (
-                <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
-              )}
-            </div>
-          )}
-        </NavLink>
-      </div>
+      <button
+        tabIndex={-1}
+        color="custom"
+        onClick={handleSelect}
+        draggable={false} // Item should drag, not the link
+        onDoubleClick={handleStartEditing}
+        data-active={isActive}
+        data-selected={selected}
+        className={classnames(
+          // 'outline-none',
+          'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
+          editing && 'ring-1 focus-within:ring-focus',
+          isActive && 'bg-highlight text-gray-800',
+          !isActive && 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
+          selected && useProminentStyles && '!bg-violet-500/20 text-gray-900',
+        )}
+      >
+        {editing ? (
+          <input
+            ref={handleFocus}
+            defaultValue={requestName}
+            className="bg-transparent outline-none w-full"
+            onBlur={handleBlur}
+            onKeyDown={handleInputKeyDown}
+          />
+        ) : (
+          <span className={classnames('truncate', !requestName && 'text-gray-400 italic')}>
+            {requestName || 'New Request'}
+          </span>
+        )}
+        {latestResponse && (
+          <div className="ml-auto">
+            {isResponseLoading(latestResponse) ? (
+              <Icon spin size="sm" icon="update" />
+            ) : (
+              <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
+            )}
+          </div>
+        )}
+      </button>
     </li>
   );
 });
@@ -241,16 +327,15 @@ type DraggableSidebarItemProps = SidebarItemProps & {
 
 type DragItem = {
   id: string;
-  workspaceId: string;
   requestName: string;
 };
 
 const DraggableSidebarItem = memo(function DraggableSidebarItem({
   requestName,
   requestId,
-  workspaceId,
   onMove,
   onEnd,
+  ...props
 }: DraggableSidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
 
@@ -272,7 +357,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(
     () => ({
       type: ItemTypes.REQUEST,
-      item: () => ({ id: requestId, requestName, workspaceId }),
+      item: () => ({ id: requestId, requestName }),
       collect: (m) => ({ isDragging: m.isDragging() }),
       options: { dropEffect: 'move' },
       end: () => onEnd(requestId),
@@ -289,7 +374,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       className={classnames(isDragging && 'opacity-20')}
       requestName={requestName}
       requestId={requestId}
-      workspaceId={workspaceId}
+      {...props}
     />
   );
 });

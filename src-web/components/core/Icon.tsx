@@ -36,6 +36,7 @@ import {
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classnames from 'classnames';
+import type { HTMLAttributes } from 'react';
 import { memo } from 'react';
 import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPanelHiddenIcon.svg';
 import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftPanelVisibleIcon.svg';
@@ -78,7 +79,7 @@ const icons = {
   triangleRight: TriangleRightIcon,
   update: UpdateIcon,
   x: Cross2Icon,
-  empty: () => <span />,
+  empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,
 };
 
 export interface IconProps {
