@@ -49,6 +49,7 @@ export function RecentRequestsDropdown() {
       if (request === undefined) continue;
 
       recentRequestItems.push({
+        key: request.id,
         label: request.name,
         leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
         onSelect: () => {
@@ -71,8 +72,9 @@ export function RecentRequestsDropdown() {
   return (
     <Dropdown ref={dropdownRef} items={items}>
       <Button
+        disabled={activeRequest === null}
         size="sm"
-        className="pointer-events-auto flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none"
+        className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none"
       >
         {activeRequest?.name ?? <span className="text-gray-400">No Request</span>}
       </Button>

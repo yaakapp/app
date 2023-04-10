@@ -131,11 +131,13 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                 <Dropdown
                   items={[
                     {
+                      key: 'clear-single',
                       label: 'Clear Response',
                       onSelect: deleteResponse.mutate,
                       disabled: responses.length === 0,
                     },
                     {
+                      key: 'clear-all',
                       label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
                       onSelect: deleteAllResponses.mutate,
                       hidden: responses.length <= 1,
@@ -143,6 +145,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     },
                     { type: 'separator', label: 'History' },
                     ...responses.slice(0, 10).map((r) => ({
+                      key: r.id,
                       label: (
                         <HStack space={2}>
                           <StatusTag className="text-xs" response={r} />

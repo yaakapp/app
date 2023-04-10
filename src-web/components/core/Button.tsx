@@ -39,6 +39,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     type = 'button',
     justify = 'center',
     size = 'md',
+    disabled,
     ...props
   }: ButtonProps,
   ref,
@@ -50,6 +51,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
         'outline-none whitespace-nowrap',
         'focus-visible-or-class:ring',
         'rounded-md flex items-center',
+        disabled ? 'pointer-events-none' : 'pointer-events-auto',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
@@ -57,7 +59,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
         size === 'sm' && 'h-sm px-2.5 text-sm',
         size === 'xs' && 'h-xs px-2 text-sm',
       ),
-    [color, size, justify, className],
+    [className, disabled, color, justify, size],
   );
 
   if (typeof to === 'string') {
@@ -69,7 +71,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     );
   } else {
     return (
-      <button ref={ref} type={type} className={classes} {...props}>
+      <button ref={ref} type={type} className={classes} disabled={disabled} {...props}>
         {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
         {children}
         {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
