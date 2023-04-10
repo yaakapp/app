@@ -34,12 +34,14 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
       ref={dropdownRef}
       items={[
         {
+          key: 'duplicate',
           label: 'Duplicate',
           onSelect: duplicateRequest.mutate,
           leftSlot: <Icon icon="copy" />,
           rightSlot: <HotKey modifier="Meta" keyName="D" />,
         },
         {
+          key: 'delete',
           label: 'Delete',
           onSelect: deleteRequest.mutate,
           variant: 'danger',
@@ -47,6 +49,7 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
         },
         { type: 'separator', label: 'Yaak Settings' },
         {
+          key: 'appearance',
           label: appearance === 'dark' ? 'Light Theme' : 'Dark Theme',
           onSelect: toggleAppearance,
           leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,

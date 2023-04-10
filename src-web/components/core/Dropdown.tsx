@@ -25,6 +25,7 @@ export type DropdownItemSeparator = {
 
 export type DropdownItem =
   | {
+      key: string;
       type?: 'default';
       label: ReactNode;
       variant?: 'danger';
@@ -306,7 +307,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                       focused={i === selectedIndex}
                       onFocus={handleFocus}
                       onSelect={handleSelect}
-                      key={i + item.label}
+                      key={item.key}
                       item={item}
                     />
                   );

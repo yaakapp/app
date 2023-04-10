@@ -25,7 +25,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <SidebarActions />
         <WorkspaceActionsDropdown className="pointer-events-auto" />
       </HStack>
-      <div>
+      <div className="pointer-events-none">
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
