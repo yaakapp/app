@@ -13,7 +13,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useKeyPressEvent } from 'react-use';
+import { useKey, useKeyPressEvent } from 'react-use';
 import { Portal } from '../Portal';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
@@ -44,6 +44,7 @@ export interface DropdownProps {
 export interface DropdownRef {
   isOpen: boolean;
   open: (activeIndex?: number) => void;
+  toggle: () => void;
   close?: () => void;
   next?: () => void;
   prev?: () => void;
@@ -62,6 +63,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
     isOpen: open,
+    toggle: () => setOpen(!open),
     open: (activeIndex?: number) => {
       if (activeIndex === undefined) {
         setDefaultSelectedIndex(undefined);
@@ -129,7 +131,7 @@ interface MenuProps {
   onClose: () => void;
 }
 
-const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen'>, MenuProps>(function Menu(
+const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuProps>(function Menu(
   { className, items, onClose, triggerRect, defaultSelectedIndex }: MenuProps,
   ref,
 ) {
@@ -195,12 +197,12 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen'>, MenuProps>(functio
     });
   }, [items]);
 
-  useKeyPressEvent('ArrowUp', (e) => {
+  useKey('ArrowUp', (e) => {
     e.preventDefault();
     handlePrev();
   });
 
-  useKeyPressEvent('ArrowDown', (e) => {
+  useKey('ArrowDown', (e) => {
     e.preventDefault();
     handleNext();
   });

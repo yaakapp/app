@@ -3,7 +3,7 @@ import type { ForwardedRef, KeyboardEvent } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
-import { useKeyPressEvent } from 'react-use';
+import { useKey, useKeyPressEvent } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
@@ -84,23 +84,33 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     routes.navigate('request', { requestId: request.id, workspaceId: request.workspaceId });
   });
 
-  useKeyPressEvent('ArrowUp', () => {
-    if (!hasFocus) return;
-    let newIndex = (selectedIndex ?? requests.length) - 1;
-    if (newIndex < 0) {
-      newIndex = requests.length - 1;
-    }
-    setSelectedIndex(newIndex);
-  });
+  useKey(
+    'ArrowUp',
+    () => {
+      if (!hasFocus) return;
+      let newIndex = (selectedIndex ?? requests.length) - 1;
+      if (newIndex < 0) {
+        newIndex = requests.length - 1;
+      }
+      setSelectedIndex(newIndex);
+    },
+    undefined,
+    [hasFocus, requests, selectedIndex],
+  );
 
-  useKeyPressEvent('ArrowDown', () => {
-    if (!hasFocus) return;
-    let newIndex = (selectedIndex ?? -1) + 1;
-    if (newIndex > requests.length - 1) {
-      newIndex = 0;
-    }
-    setSelectedIndex(newIndex);
-  });
+  useKey(
+    'ArrowDown',
+    () => {
+      if (!hasFocus) return;
+      let newIndex = (selectedIndex ?? -1) + 1;
+      if (newIndex > requests.length - 1) {
+        newIndex = 0;
+      }
+      setSelectedIndex(newIndex);
+    },
+    undefined,
+    [hasFocus, requests, selectedIndex],
+  );
 
   useKeyPressEvent('Backspace', (e) => {
     if (!hasFocus) return;

@@ -631,6 +631,10 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
                 .accelerator("CmdOrCtrl+n"),
         )
         .add_item(
+            CustomMenuItem::new("toggle_settings".to_string(), "Toggle Settings")
+                .accelerator("CmdOrCtrl+,"),
+        )
+        .add_item(
             CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
                 .accelerator("CmdOrCtrl+d"),
         )
@@ -684,6 +688,7 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         "focus_sidebar" => win2.emit("focus_sidebar", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
         "new_request" => _ = win2.emit("new_request", true).unwrap(),
+        "toggle_settings" => _ = win2.emit("toggle_settings", true).unwrap(),
         "duplicate_request" => _ = win2.emit("duplicate_request", true).unwrap(),
         "refresh" => win2.eval("location.reload()").unwrap(),
         "new_window" => _ = create_window(&handle2),
