@@ -76,7 +76,7 @@ export function RecentRequestsDropdown() {
         size="sm"
         className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none"
       >
-        {activeRequest?.name ?? <span className="text-gray-400">No Request</span>}
+        {activeRequest?.name ?? 'No Request'}
       </Button>
     </Dropdown>
   );
