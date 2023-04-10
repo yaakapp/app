@@ -51,7 +51,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
         'outline-none whitespace-nowrap',
         'focus-visible-or-class:ring',
         'rounded-md flex items-center',
-        disabled ? 'pointer-events-none' : 'pointer-events-auto',
+        disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
