@@ -358,7 +358,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       )}
       {...props}
     >
-      {item.leftSlot && <div className="w-6 flex justify-start">{item.leftSlot}</div>}
+      {item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       <div>{item.label}</div>
       {item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
     </button>

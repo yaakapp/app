@@ -48,7 +48,7 @@ export function RecentRequestsDropdown() {
 
       recentRequestItems.push({
         label: request.name,
-        leftSlot: <CountBadge className="!mx-0" count={recentRequestItems.length + 1} />,
+        leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
