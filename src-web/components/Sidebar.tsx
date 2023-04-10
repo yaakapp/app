@@ -46,6 +46,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     (forcedIndex?: number) => {
       const index = forcedIndex ?? requests.findIndex((r) => r.id === activeRequestId);
       setSelectedIndex(index >= 0 ? index : 0);
+      setHasFocus(true);
       sidebarRef.current?.focus();
     },
     [activeRequestId, requests],
@@ -63,7 +64,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     [activeRequestId, focusActiveRequest, requests, routes],
   );
 
-  const handleFocus = useCallback(() => setHasFocus(true), []);
+  const handleFocus = useCallback(() => focusActiveRequest(), [focusActiveRequest]);
   const handleBlur = useCallback(() => setHasFocus(false), []);
 
   useTauriEvent(
