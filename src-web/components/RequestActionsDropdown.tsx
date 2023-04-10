@@ -1,8 +1,10 @@
 import type { HTMLAttributes, ReactElement } from 'react';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
+import { useTauriEvent } from '../hooks/useTauriEvent';
 import { useTheme } from '../hooks/useTheme';
+import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
@@ -15,10 +17,16 @@ interface Props {
 export function RequestActionsDropdown({ requestId, children }: Props) {
   const deleteRequest = useDeleteRequest(requestId);
   const duplicateRequest = useDuplicateRequest({ id: requestId, navigateAfter: true });
+  const dropdownRef = useRef<DropdownRef>(null);
   const { appearance, toggleAppearance } = useTheme();
+
+  useTauriEvent('toggle_settings', () => {
+    dropdownRef.current?.toggle();
+  });
 
   return (
     <Dropdown
+      ref={dropdownRef}
       items={[
         {
           label: 'Duplicate',
