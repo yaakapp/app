@@ -111,11 +111,21 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             {activeResponse && (
               <HStack alignItems="center" className="w-full">
                 <div className="whitespace-nowrap px-3">
-                  <StatusTag showReason response={activeResponse} />
-                  {activeResponse.elapsed > 0 && <>&nbsp;&bull;&nbsp;{activeResponse.elapsed}ms</>}
-                  {activeResponse.body.length > 0 && (
-                    <>&nbsp;&bull;&nbsp;{(activeResponse.body.length / 1000).toFixed(1)} KB</>
-                  )}
+                  <HStack space={2}>
+                    <StatusTag showReason response={activeResponse} />
+                    {activeResponse.elapsed > 0 && (
+                      <>
+                        <span>&bull;</span>
+                        <span>{activeResponse.elapsed}ms</span>
+                      </>
+                    )}
+                    {activeResponse.body.length > 0 && (
+                      <>
+                        <span>&bull;</span>
+                        <span>{(activeResponse.body.length / 1000).toFixed(1)} KB</span>
+                      </>
+                    )}
+                  </HStack>
                 </div>
 
                 <Dropdown
@@ -133,7 +143,12 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     },
                     { type: 'separator', label: 'History' },
                     ...responses.slice(0, 10).map((r) => ({
-                      label: r.status + ' - ' + r.elapsed + ' ms',
+                      label: (
+                        <HStack space={2}>
+                          <StatusTag className="text-xs" response={r} />
+                          <span>&bull;</span> <span>{r.elapsed}ms</span>
+                        </HStack>
+                      ),
                       leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
                       onSelect: () => setPinnedResponseId(r.id),
                     })),
