@@ -19,12 +19,6 @@ const confirmButtonTexts: Record<NonNullable<ConfirmProps['variant']>, string> =
 };
 
 export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps) {
-  const focusRef = (el: HTMLButtonElement | null) => {
-    setTimeout(() => {
-      el?.focus();
-    });
-  };
-
   const handleHide = () => {
     onResult(false);
     onHide();
@@ -40,7 +34,7 @@ export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps)
       <Button className="focus" color="gray" onClick={handleHide}>
         Cancel
       </Button>
-      <Button className="focus" ref={focusRef} color={colors[variant]} onClick={handleSuccess}>
+      <Button autoFocus className="focus" color={colors[variant]} onClick={handleSuccess}>
         {confirmButtonTexts[variant]}
       </Button>
     </HStack>
