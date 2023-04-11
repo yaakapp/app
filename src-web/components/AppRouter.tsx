@@ -1,5 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
-import { routePaths } from '../hooks/useAppRoutes';
+import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
+import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useRequests } from '../hooks/useRequests';
 import { GlobalHooks } from './GlobalHooks';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
@@ -21,7 +23,7 @@ const router = createBrowserRouter([
       },
       {
         path: routePaths.workspace({ workspaceId: ':workspaceId' }),
-        element: <Workspace />,
+        element: <WorkspaceOrRedirect />,
       },
       {
         path: routePaths.request({
@@ -36,6 +38,23 @@ const router = createBrowserRouter([
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
+}
+
+function WorkspaceOrRedirect() {
+  const recentRequests = useRecentRequests();
+  const requests = useRequests();
+  const request = requests.find((r) => r.id === recentRequests[0]);
+  const routes = useAppRoutes();
+
+  if (request === undefined) {
+    return <Workspace />;
+  }
+
+  return (
+    <Navigate
+      to={routes.paths.request({ workspaceId: request.workspaceId, requestId: request.id })}
+    />
+  );
 }
 
 function Layout() {

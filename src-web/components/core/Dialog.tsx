@@ -62,6 +62,13 @@ export function Dialog({
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >
+            <Heading className="text-xl font-semibold w-full" id={titleId}>
+              {title}
+            </Heading>
+            {description && <p id={descriptionId}>{description}</p>}
+            <div className="mt-4">{children}</div>
+
+            {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
               <IconButton
                 onClick={onClose}
@@ -72,11 +79,6 @@ export function Dialog({
                 className="ml-auto absolute right-1 top-1"
               />
             )}
-            <Heading className="text-xl font-semibold w-full" id={titleId}>
-              {title}
-            </Heading>
-            {description && <p id={descriptionId}>{description}</p>}
-            <div className="mt-4">{children}</div>
           </motion.div>
         </div>
       </div>

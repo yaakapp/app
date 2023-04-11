@@ -57,16 +57,21 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     (requestId: string) => {
       const index = requests.findIndex((r) => r.id === requestId);
       const request = requests[index];
-      if (!request || request.id === activeRequestId) return;
+      if (!request) return;
       routes.navigate('request', { requestId, workspaceId: request.workspaceId });
       setSelectedIndex(index);
       focusActiveRequest(index);
     },
-    [activeRequestId, focusActiveRequest, requests, routes],
+    [focusActiveRequest, requests, routes],
   );
 
-  const handleFocus = useCallback(() => focusActiveRequest(), [focusActiveRequest]);
+  const handleFocus = useCallback(() => {
+    if (hasFocus) return;
+    focusActiveRequest(selectedIndex ?? 0);
+  }, [focusActiveRequest, hasFocus, selectedIndex]);
+
   const handleBlur = useCallback(() => setHasFocus(false), []);
+
   const handleDeleteKey = useCallback(
     (e: KeyboardEvent) => {
       if (!hasFocus) return;
@@ -85,11 +90,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   useTauriEvent(
     'focus_sidebar',
     () => {
-      if (hidden) return;
+      if (hidden || hasFocus) return;
       // Select 0 index on focus if none selected
       focusActiveRequest(selectedIndex ?? 0);
     },
-    [focusActiveRequest, hidden],
+    [focusActiveRequest, hidden, activeRequestId],
   );
 
   useKeyPressEvent('Enter', (e) => {
