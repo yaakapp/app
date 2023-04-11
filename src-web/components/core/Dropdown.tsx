@@ -15,6 +15,7 @@ import React, {
 } from 'react';
 import { useKey, useKeyPressEvent } from 'react-use';
 import { Portal } from '../Portal';
+import { Button } from './Button';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
 
@@ -346,16 +347,18 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
   if (item.type === 'separator') return <Separator className="my-1.5" />;
 
   return (
-    <button
+    <Button
       ref={initRef}
+      size="xs"
       tabIndex={-1}
       onMouseEnter={(e) => e.currentTarget.focus()}
       onMouseLeave={(e) => e.currentTarget.blur()}
       onFocus={handleFocus}
       onClick={handleClick}
+      justify="start"
       className={classnames(
         className,
-        'min-w-[8rem] outline-none px-2 mx-1.5 h-7 flex items-center text-sm text-gray-700 whitespace-nowrap',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-900 rounded',
         item.variant === 'danger' && 'text-red-600',
       )}
@@ -371,6 +374,6 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         {item.label}
       </div>
       {item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
-    </button>
+    </Button>
   );
 }

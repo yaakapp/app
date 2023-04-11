@@ -21,7 +21,9 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
-use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, Wry};
+use tauri::{
+    AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, WindowUrl, Wry,
+};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tokio::sync::Mutex;
 
@@ -517,6 +519,12 @@ async fn workspaces(
 }
 
 #[tauri::command]
+async fn new_window(window: Window<Wry>, url: &str) -> Result<(), String> {
+    create_window(&window.app_handle(), Some(url));
+    Ok(())
+}
+
+#[tauri::command]
 async fn delete_workspace(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -527,11 +535,6 @@ async fn delete_workspace(
         .await
         .expect("Failed to delete workspace");
     emit_and_return(&window, "deleted_model", workspace)
-}
-
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
 fn main() {
@@ -564,7 +567,7 @@ fn main() {
             })
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
+            new_window,
             workspaces,
             get_request,
             requests,
@@ -588,7 +591,7 @@ fn main() {
         .expect("error while running tauri application")
         .run(|app_handle, event| match event {
             RunEvent::Ready => {
-                create_window(app_handle);
+                create_window(app_handle, None);
             }
 
             // ExitRequested { api, .. } => {
@@ -602,7 +605,7 @@ fn is_dev() -> bool {
     env.unwrap_or("production") != "production"
 }
 
-fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
+fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let default_menu = Menu::os_default("Yaak".to_string().as_str());
     let mut test_menu = Menu::new()
         .add_item(
@@ -661,19 +664,23 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}", window_num);
     let menu = default_menu.add_submenu(submenu);
-    let win = tauri::WindowBuilder::new(handle, window_id, tauri::WindowUrl::App("".into()))
-        .menu(menu)
-        .fullscreen(false)
-        .resizable(true)
-        .inner_size(1100.0, 600.0)
-        .hidden_title(true)
-        .title(match is_dev() {
-            true => "Yaak Dev",
-            false => "Yaak",
-        })
-        .title_bar_style(TitleBarStyle::Overlay)
-        .build()
-        .expect("failed to build window");
+    let win = tauri::WindowBuilder::new(
+        handle,
+        window_id,
+        WindowUrl::App(url.unwrap_or_default().into()),
+    )
+    .menu(menu)
+    .fullscreen(false)
+    .resizable(true)
+    .inner_size(1100.0, 600.0)
+    .hidden_title(true)
+    .title(match is_dev() {
+        true => "Yaak Dev",
+        false => "Yaak",
+    })
+    .title_bar_style(TitleBarStyle::Overlay)
+    .build()
+    .expect("failed to build window");
 
     let win2 = win.clone();
     let handle2 = handle.clone();
@@ -691,7 +698,7 @@ fn create_window(handle: &AppHandle<Wry>) -> Window<Wry> {
         "toggle_settings" => _ = win2.emit("toggle_settings", true).unwrap(),
         "duplicate_request" => _ = win2.emit("duplicate_request", true).unwrap(),
         "refresh" => win2.eval("location.reload()").unwrap(),
-        "new_window" => _ = create_window(&handle2),
+        "new_window" => _ = create_window(&handle2, None),
         "toggle_devtools" => {
             if win2.is_devtools_open() {
                 win2.close_devtools();

@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api';
 import classnames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
@@ -12,6 +13,8 @@ import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
+import { HStack } from './core/Stacks';
+import { useDialog } from './DialogContext';
 
 type Props = {
   className?: string;
@@ -24,6 +27,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
+  const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();
 
@@ -31,10 +35,46 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
     const workspaceItems = workspaces.map((w) => ({
       key: w.id,
       label: w.name,
-      leftSlot: activeWorkspaceId === w.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-      onSelect: () => {
-        if (w.id === activeWorkspaceId) return;
-        routes.navigate('workspace', { workspaceId: w.id });
+      onSelect: async () => {
+        dialog.show({
+          id: 'open-workspace',
+          size: 'sm',
+          title: 'Open Workspace',
+          description: (
+            <>
+              Where would you like to open <InlineCode>{w.name}</InlineCode>?
+            </>
+          ),
+          render: ({ hide }) => {
+            return (
+              <HStack space={2} justifyContent="end" className="mt-6">
+                <Button
+                  className="focus"
+                  color="gray"
+                  rightSlot={<Icon icon="openNewWindow" />}
+                  onClick={async () => {
+                    hide();
+                    await invoke('new_window', {
+                      url: routes.paths.workspace({ workspaceId: w.id }),
+                    });
+                  }}
+                >
+                  New Window
+                </Button>
+                <Button
+                  className="focus"
+                  color="gray"
+                  onClick={() => {
+                    hide();
+                    routes.navigate('workspace', { workspaceId: w.id });
+                  }}
+                >
+                  This Window
+                </Button>
+              </HStack>
+            );
+          },
+        });
       },
     }));
 

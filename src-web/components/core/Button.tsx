@@ -1,7 +1,6 @@
 import classnames from 'classnames';
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, memo, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -15,8 +14,7 @@ const colorStyles = {
   danger: 'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
 };
 
-export type ButtonProps = HTMLAttributes<HTMLElement> & {
-  to?: string;
+export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
   color?: keyof typeof colorStyles;
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'xs';
@@ -25,12 +23,12 @@ export type ButtonProps = HTMLAttributes<HTMLElement> & {
   forDropdown?: boolean;
   disabled?: boolean;
   title?: string;
+  rightSlot?: ReactNode;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _Button = forwardRef<any, ButtonProps>(function Button(
+const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
-    to,
     isLoading,
     className,
     children,
@@ -39,6 +37,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     type = 'button',
     justify = 'center',
     size = 'md',
+    rightSlot,
     disabled,
     ...props
   }: ButtonProps,
@@ -48,7 +47,7 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     () =>
       classnames(
         className,
-        'outline-none whitespace-nowrap',
+        'flex-shrink-0 outline-none whitespace-nowrap',
         'focus-visible-or-class:ring',
         'rounded-md flex items-center',
         disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
@@ -62,22 +61,14 @@ const _Button = forwardRef<any, ButtonProps>(function Button(
     [className, disabled, color, justify, size],
   );
 
-  if (typeof to === 'string') {
-    return (
-      <Link ref={ref} to={to} className={classes} {...props}>
-        {children}
-        {forDropdown && <Icon icon="chevronDown" className="ml-1 -mr-1" />}
-      </Link>
-    );
-  } else {
-    return (
-      <button ref={ref} type={type} className={classes} disabled={disabled} {...props}>
-        {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
-        {children}
-        {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
-      </button>
-    );
-  }
+  return (
+    <button ref={ref} type={type} className={classes} disabled={disabled} {...props}>
+      {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
+      {children}
+      {rightSlot && <div className="ml-1">{rightSlot}</div>}
+      {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
+    </button>
+  );
 });
 
 export const Button = memo(_Button);

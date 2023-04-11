@@ -1,13 +1,18 @@
 import { useEffect } from 'react';
 import { createGlobalState, useEffectOnce, useLocalStorage } from 'react-use';
 import { useActiveRequestId } from './useActiveRequestId';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 const useHistoryState = createGlobalState<string[]>([]);
 
 export function useRecentRequests() {
-  const [history, setHistory] = useHistoryState();
+  const activeWorkspaceId = useActiveWorkspaceId();
   const activeRequestId = useActiveRequestId();
-  const [lsState, setLSState] = useLocalStorage<string[]>('recent_requests', []);
+  const [history, setHistory] = useHistoryState();
+  const [lsState, setLSState] = useLocalStorage<string[]>(
+    'recent_requests::' + activeWorkspaceId,
+    [],
+  );
 
   useEffect(() => {
     setLSState(history);
