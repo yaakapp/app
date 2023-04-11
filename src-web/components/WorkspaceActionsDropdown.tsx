@@ -51,6 +51,17 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
                 <Button
                   className="focus"
                   color="gray"
+                  onClick={() => {
+                    hide();
+                    routes.navigate('workspace', { workspaceId: w.id });
+                  }}
+                >
+                  This Window
+                </Button>
+                <Button
+                  autoFocus
+                  className="focus"
+                  color="gray"
                   rightSlot={<Icon icon="openNewWindow" />}
                   onClick={async () => {
                     hide();
@@ -60,16 +71,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
                   }}
                 >
                   New Window
-                </Button>
-                <Button
-                  className="focus"
-                  color="gray"
-                  onClick={() => {
-                    hide();
-                    routes.navigate('workspace', { workspaceId: w.id });
-                  }}
-                >
-                  This Window
                 </Button>
               </HStack>
             );

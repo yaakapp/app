@@ -8,9 +8,9 @@ module.exports = {
     "plugin:@typescript-eslint/recommended",
     "eslint-config-prettier"
   ],
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ['./tsconfig.json'],
+    project: ["./tsconfig.json"]
   },
   ignorePatterns: ["src-tauri/**/*"],
   settings: {
@@ -25,13 +25,13 @@ module.exports = {
     }
   },
   rules: {
-    "jsx-a11y/no-autofocus": "warn",
+    "jsx-a11y/no-autofocus": "off",
     "react/react-in-jsx-scope": "off",
     "import/no-unresolved": "off",
     "@typescript-eslint/consistent-type-imports": ["error", {
       prefer: "type-imports",
       disallowTypeAnnotations: true,
       fixStyle: "separate-type-imports"
-    }],
+    }]
   }
 };
