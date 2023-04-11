@@ -55,7 +55,7 @@ export function Dialog({
               className,
               'relative bg-gray-50 pointer-events-auto',
               'max-h-[80vh] p-5 rounded-lg overflow-auto',
-              'dark:border border-gray-200 shadow-md shadow-black/10',
+              'dark:border border-highlight shadow shadow-black/10',
               size === 'sm' && 'w-[25rem]',
               size === 'md' && 'w-[45rem]',
               size === 'full' && 'w-[80vw]',
