@@ -244,6 +244,7 @@ pub async fn upsert_request(
     };
     let headers_json = Json(headers);
     let auth_json = Json(authentication);
+    let trimmed_name = name.trim();
     sqlx::query!(
         r#"
             INSERT INTO http_requests (
@@ -274,7 +275,7 @@ pub async fn upsert_request(
         "#,
         id,
         workspace_id,
-        name,
+        trimmed_name,
         url,
         method,
         body,
@@ -427,12 +428,13 @@ pub async fn update_workspace(
     workspace: Workspace,
     pool: &Pool<Sqlite>,
 ) -> Result<Workspace, sqlx::Error> {
+    let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"
             UPDATE workspaces SET (name, updated_at) =
             (?, CURRENT_TIMESTAMP) WHERE id = ?;
         "#,
-        workspace.name,
+        trimmed_name,
         workspace.id,
     )
     .execute(pool)
