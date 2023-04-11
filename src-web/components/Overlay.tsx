@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import FocusTrap from 'focus-trap-react';
-import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { Portal } from './Portal';
 
 interface Props {
@@ -33,7 +33,7 @@ export function Overlay({ zIndex = 30, open, onClose, portalName, children }: Pr
             <div
               aria-hidden
               onClick={onClose}
-              className="absolute inset-0 bg-gray-600/60 dark:bg-black/50"
+              className="absolute inset-0 bg-gray-600/30 dark:bg-black/30 backdrop-blur-sm"
             />
             {/* Add region to still be able to drag the window */}
             <div data-tauri-drag-region className="absolute top-0 left-0 right-0 h-md" />
