@@ -9,7 +9,8 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::create_dir_all;
+use std::fs::{create_dir_all, File};
+use std::io::Write;
 
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
@@ -221,9 +222,29 @@ async fn actually_send_ephemeral_request(
                     .collect(),
             );
             response.url = v.url().to_string();
-            response.body = v.text().await.expect("Failed to get body");
+            let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
+            response.content_length = Some(body_bytes.len() as i64);
+            if body_bytes.len() > 1000 {
+                let dir = app_handle.path_resolver().app_data_dir().unwrap();
+                let body_path = dir.join(response.id.clone());
+                let mut f = File::options()
+                    .create(true)
+                    .write(true)
+                    .open(&body_path)
+                    .expect("Failed to open file");
+                f.write_all(body_bytes.as_slice())
+                    .expect("Failed to write to file");
+                response.body_path = Some(
+                    body_path
+                        .to_str()
+                        .expect("Failed to get body path")
+                        .to_string(),
+                );
+            } else {
+                response.body = Some(body_bytes);
+            }
             response.elapsed = start.elapsed().as_millis() as i64;
-            response = models::update_response_if_id(response, pool)
+            response = models::update_response_if_id(&response, pool)
                 .await
                 .expect("Failed to update response");
             if request.id != "" {
@@ -247,7 +268,7 @@ async fn send_request(
         .await
         .expect("Failed to get request");
 
-    let response = models::create_response(&req.id, 0, "", 0, None, "", vec![], pool)
+    let response = models::create_response(&req.id, 0, "", 0, None, None, None, None, vec![], pool)
         .await
         .expect("Failed to create response");
 
@@ -271,7 +292,7 @@ async fn response_err(
 ) -> Result<models::HttpResponse, String> {
     let mut response = response.clone();
     response.error = Some(error.clone());
-    response = models::update_response_if_id(response, pool)
+    response = models::update_response_if_id(&response, pool)
         .await
         .expect("Failed to update response");
     emit_side_effect(app_handle, "updated_model", &response);

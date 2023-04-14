@@ -68,16 +68,6 @@
     },
     "query": "\n            DELETE FROM http_responses\n            WHERE request_id = ?\n        "
   },
-  "318ed5a1126fe00719393cf4e6c788ee5a265af88b7253f61a475f78c6774ef6": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 9
-      }
-    },
-    "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                url,\n                status,\n                status_reason,\n                body,\n                headers\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);\n        "
-  },
   "448a1d1f1866ab42c0f81fcf8eb2930bf21dfdd43ca4831bc1a198cf45ac3732": {
     "describe": {
       "columns": [],
@@ -87,6 +77,16 @@
       }
     },
     "query": "\n            DELETE FROM http_requests\n            WHERE id = ?\n        "
+  },
+  "62475fd9483fb5eda01c937949da2ef66ac7005b4be06b87aa6210d462348aca": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 10
+      }
+    },
+    "query": "\n            UPDATE http_responses SET (\n                elapsed,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body,\n                body_path,\n                error,\n                headers,\n                updated_at\n            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
   },
   "6f0cb5a6d1e8dbc8cdfcc3c7e7944b2c83c22cb795b9d6b98fe067dabec9680b": {
     "describe": {
@@ -194,15 +194,15 @@
     },
     "query": "\n            DELETE FROM workspaces\n            WHERE id = ?\n        "
   },
-  "a83698dcf9a815b881097133edb31a34ba25e7c6c114d463c495342a85371639": {
+  "8947a2a90478277c42fe9b06bc1fa98197642a4d281a3dbc101be2c9c1fec36c": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 8
+        "Right": 11
       }
     },
-    "query": "\n            UPDATE http_responses SET (elapsed, url, status, status_reason, body, error, headers, updated_at) =\n            (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
+    "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body,\n                body_path,\n                headers\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n        "
   },
   "b19c275180909a39342b13c3cdcf993781636913ae590967f5508c46a56dc961": {
     "describe": {
@@ -213,6 +213,108 @@
       }
     },
     "query": "\n            INSERT INTO http_requests (\n                id,\n                workspace_id,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication,\n                authentication_type,\n                headers,\n                sort_priority\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               method = excluded.method,\n               headers = excluded.headers,\n               body = excluded.body,\n               body_type = excluded.body_type,\n               authentication = excluded.authentication,\n               authentication_type = excluded.authentication_type,\n               url = excluded.url,\n               sort_priority = excluded.sort_priority\n        "
+  },
+  "c23c61b05a4c9e04ab0c1fc2c579d6f2a82a37aeed8addf9861b4985f2a5422e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "request_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 5,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "url",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 7,
+          "type_info": "Int64"
+        },
+        {
+          "name": "status_reason",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "content_length",
+          "ordinal": 9,
+          "type_info": "Int64"
+        },
+        {
+          "name": "body",
+          "ordinal": 10,
+          "type_info": "Blob"
+        },
+        {
+          "name": "body_path",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "elapsed",
+          "ordinal": 12,
+          "type_info": "Int64"
+        },
+        {
+          "name": "error",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
+          "ordinal": 14,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
   },
   "caf3f21bf291dfbd36446592066e96c1f83abe96f6ea9211a3e049eb9c58a8c8": {
     "describe": {
@@ -406,96 +508,6 @@
     },
     "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        "
   },
-  "d5ad6d5f82fe837fa9215bd4619ec18a7c95b3088d4fbf9825f2d1d28069d1ce": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "model",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "workspace_id",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "request_id",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 4,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 5,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "status",
-          "ordinal": 6,
-          "type_info": "Int64"
-        },
-        {
-          "name": "status_reason",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "body",
-          "ordinal": 8,
-          "type_info": "Text"
-        },
-        {
-          "name": "elapsed",
-          "ordinal": 9,
-          "type_info": "Int64"
-        },
-        {
-          "name": "url",
-          "ordinal": 10,
-          "type_info": "Text"
-        },
-        {
-          "name": "error",
-          "ordinal": 11,
-          "type_info": "Text"
-        },
-        {
-          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
-          "ordinal": 12,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            SELECT id, model, workspace_id, request_id, updated_at,\n                created_at, status, status_reason, body, elapsed, url, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at ASC\n        "
-  },
   "d80c09497771e3641022e73ec6c6a87e73a551f88a948a5445d754922b82b50b": {
     "describe": {
       "columns": [],
@@ -516,7 +528,7 @@
     },
     "query": "\n            UPDATE workspaces SET (name, updated_at) =\n            (?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
   },
-  "e3ade0a69348d512e47e964bded9d7d890b92fdc1e01c6c22fa5e91f943639f2": {
+  "e7bba61f8d60fb021c027d829b070e7087041e0f30252754aaaa85223b614896": {
     "describe": {
       "columns": [
         {
@@ -550,38 +562,48 @@
           "type_info": "Datetime"
         },
         {
-          "name": "status",
+          "name": "url",
           "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 7,
           "type_info": "Int64"
         },
         {
           "name": "status_reason",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "body",
           "ordinal": 8,
           "type_info": "Text"
         },
         {
-          "name": "elapsed",
+          "name": "content_length",
           "ordinal": 9,
           "type_info": "Int64"
         },
         {
-          "name": "url",
+          "name": "body",
           "ordinal": 10,
-          "type_info": "Text"
+          "type_info": "Blob"
         },
         {
-          "name": "error",
+          "name": "body_path",
           "ordinal": 11,
           "type_info": "Text"
         },
         {
-          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
+          "name": "elapsed",
           "ordinal": 12,
+          "type_info": "Int64"
+        },
+        {
+          "name": "error",
+          "ordinal": 13,
+          "type_info": "Text"
+        },
+        {
+          "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
+          "ordinal": 14,
           "type_info": "Text"
         }
       ],
@@ -593,9 +615,11 @@
         false,
         false,
         false,
+        false,
         true,
-        false,
-        false,
+        true,
+        true,
+        true,
         false,
         true,
         false
@@ -604,7 +628,7 @@
         "Right": 1
       }
     },
-    "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at,\n                status, status_reason, body, elapsed, url, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
+    "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at ASC\n        "
   },
   "f116d8cf9aad828135bb8c3a4c8b8e6b857ae13303989e9133a33b2d1cf20e96": {
     "describe": {

@@ -1,19 +1,21 @@
 import { useMemo } from 'react';
+import { useResponseBodyText } from '../../hooks/useResponseBodyText';
+import type { HttpResponse } from '../../lib/models';
 
 interface Props {
-  body: string;
-  contentType: string;
-  url: string;
+  response: HttpResponse;
 }
 
-export function Webview({ body, url, contentType }: Props) {
+export function WebPageViewer({ response }: Props) {
+  const { url } = response;
+  const body = useResponseBodyText(response) ?? '';
+
   const contentForIframe: string | undefined = useMemo(() => {
-    if (!contentType.includes('html')) return;
     if (body.includes('<head>')) {
       return body.replace(/<head>/gi, `<head><base href="${url}"/>`);
     }
     return body;
-  }, [url, body, contentType]);
+  }, [url, body]);
 
   return (
     <div className="h-full pb-3">
