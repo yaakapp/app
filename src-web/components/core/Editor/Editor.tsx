@@ -233,7 +233,9 @@ function getExtensions({
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
     ...(singleLine ? [singleLineExt()] : []),
     ...(!singleLine ? [multiLineExtensions] : []),
-    ...(readOnly ? [EditorState.readOnly.of(true)] : []),
+    ...(readOnly
+      ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
+      : []),
     ...(singleLine
       ? [
           EditorView.domEventHandlers({
