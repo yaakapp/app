@@ -35,6 +35,7 @@
     "@tanstack/react-query-persist-client": "^4.28.0",
     "@tauri-apps/api": "^1.2.0",
     "@vitejs/plugin-react": "^3.1.0",
+    "buffer": "^6.0.3",
     "classnames": "^2.3.2",
     "cm6-graphql": "^0.0.4-canary-b30a2325.0",
     "codemirror": "^6.0.1",

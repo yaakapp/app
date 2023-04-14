@@ -5,26 +5,26 @@ import { createGlobalState } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteResponse } from '../hooks/useDeleteResponse';
 import { useDeleteResponses } from '../hooks/useDeleteResponses';
+import { useResponseContentType } from '../hooks/useResponseContentType';
 import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import { tryFormatJson } from '../lib/formatters';
 import type { HttpResponse } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { Dropdown } from './core/Dropdown';
-import { Editor } from './core/Editor';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
-import { Webview } from './core/Webview';
 import { EmptyStateText } from './EmptyStateText';
-import { ImageView } from './ImageView';
 import { ResponseHeaders } from './ResponseHeaders';
+import { ImageViewer } from './responseViewers/ImageViewer';
+import { TextViewer } from './responseViewers/TextViewer';
+import { WebPageViewer } from './responseViewers/WebPageViewer';
 
 interface Props {
   style?: CSSProperties;
@@ -48,12 +48,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
   // Unset pinned response when a new one comes in
   useEffect(() => setPinnedResponseId(null), [responses.length]);
 
-  const contentType = useMemo(
-    () =>
-      activeResponse?.headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ??
-      'text/plain',
-    [activeResponse],
-  );
+  const contentType = useResponseContentType(activeResponse);
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -83,9 +78,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     ],
     [activeResponse?.headers, setViewMode, viewMode],
   );
-
-  // Don't render until we know the view mode
-  if (viewMode === undefined) return null;
 
   return (
     <div
@@ -119,10 +111,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                         <span>{activeResponse.elapsed}ms</span>
                       </>
                     )}
-                    {activeResponse.body.length > 0 && (
+                    {activeResponse.contentLength && (
                       <>
                         <span>&bull;</span>
-                        <span>{(activeResponse.body.length / 1000).toFixed(1)} KB</span>
+                        <span>{(activeResponse.contentLength / 1000).toFixed(1)} KB</span>
                       </>
                     )}
                   </HStack>
@@ -169,49 +161,29 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             )}
           </HStack>
 
-          {
-            <Tabs
-              value={activeTab}
-              onChangeValue={setActiveTab}
-              label="Response"
-              tabs={tabs}
-              className="ml-3 mr-1"
-              tabListClassName="mt-1.5"
-            >
-              <TabContent value="headers">
-                <ResponseHeaders headers={activeResponse?.headers ?? []} />
-              </TabContent>
-              <TabContent value="body">
-                {!activeResponse.body ? (
-                  <EmptyStateText>Empty Body</EmptyStateText>
-                ) : viewMode === 'pretty' && contentType.includes('html') ? (
-                  <Webview
-                    body={activeResponse.body}
-                    contentType={contentType}
-                    url={activeResponse.url}
-                  />
-                ) : viewMode === 'pretty' && contentType.includes('json') ? (
-                  <Editor
-                    readOnly
-                    forceUpdateKey={`pretty::${activeResponse.updatedAt}`}
-                    className="bg-gray-50 dark:!bg-gray-100"
-                    defaultValue={tryFormatJson(activeResponse?.body)}
-                    contentType={contentType}
-                  />
-                ) : contentType.startsWith('image') ? (
-                  <ImageView data={activeResponse?.body} />
-                ) : activeResponse?.body ? (
-                  <Editor
-                    readOnly
-                    forceUpdateKey={activeResponse.updatedAt}
-                    className="bg-gray-50 dark:!bg-gray-100"
-                    defaultValue={activeResponse?.body}
-                    contentType={contentType}
-                  />
-                ) : null}
-              </TabContent>
-            </Tabs>
-          }
+          <Tabs
+            value={activeTab}
+            onChangeValue={setActiveTab}
+            label="Response"
+            tabs={tabs}
+            className="ml-3 mr-1"
+            tabListClassName="mt-1.5"
+          >
+            <TabContent value="headers">
+              <ResponseHeaders headers={activeResponse?.headers ?? []} />
+            </TabContent>
+            <TabContent value="body">
+              {!activeResponse.contentLength ? (
+                <EmptyStateText>Empty Body</EmptyStateText>
+              ) : viewMode === 'pretty' && contentType?.includes('html') ? (
+                <WebPageViewer response={activeResponse} />
+              ) : contentType?.startsWith('image') ? (
+                <ImageViewer response={activeResponse} />
+              ) : (
+                <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
+              )}
+            </TabContent>
+          </Tabs>
         </>
       )}
     </div>

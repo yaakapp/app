@@ -32,7 +32,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
 ) {
   const [confirmed, setConfirmed] = useTimedBoolean();
   const handleClick = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
+    (e: MouseEvent<HTMLButtonElement>) => {
       if (showConfirm) setConfirmed();
       onClick?.(e);
     },

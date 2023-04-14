@@ -35,6 +35,10 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
         );
       }
 
+      if (response.body === null) {
+        return Promise.reject(new Error('Empty body returned in response'));
+      }
+
       const { data } = JSON.parse(response.body);
       return buildClientSchema(data);
     },

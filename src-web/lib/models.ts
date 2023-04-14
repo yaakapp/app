@@ -64,7 +64,9 @@ export interface HttpResponse extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'http_response';
   readonly requestId: string;
-  readonly body: string;
+  readonly body: number[] | null;
+  readonly bodyPath: string | null;
+  readonly contentLength: number | null;
   readonly error: string;
   readonly status: number;
   readonly elapsed: number;

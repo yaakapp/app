@@ -14,9 +14,15 @@
     "windows": [],
     "allowlist": {
       "all": false,
+      "protocol": {
+        "assetScope": ["$APPDATA/*"],
+        "asset":  true
+      },
       "fs": {
+        "readFile": true,
         "scope": [
-          "$RESOURCE/*"
+          "$RESOURCE/*",
+          "$APPDATA/*"
         ]
       },
       "shell": {
@@ -60,7 +66,8 @@
         "timestampUrl": ""
       }
     },
-    "security": {},
+    "security": {
+    },
     "systemTray": {
       "iconAsTemplate": true,
       "iconPath": "icons/icon.png"

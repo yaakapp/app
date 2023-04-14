@@ -137,11 +137,11 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
     ];
   }, [
     workspaces,
+    activeWorkspace?.name,
     deleteWorkspace.mutate,
-    activeWorkspaceId,
+    dialog,
     routes,
     prompt,
-    activeWorkspace?.name,
     updateWorkspace,
     createWorkspace,
   ]);

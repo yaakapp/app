@@ -63,10 +63,12 @@ pub struct HttpResponse {
     pub updated_at: NaiveDateTime,
     pub error: Option<String>,
     pub url: String,
+    pub content_length: Option<i64>,
     pub elapsed: i64,
     pub status: i64,
     pub status_reason: Option<String>,
-    pub body: String,
+    pub body: Option<Vec<u8>>,
+    pub body_path: Option<String>,
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
@@ -373,7 +375,9 @@ pub async fn create_response(
     url: &str,
     status: i64,
     status_reason: Option<&str>,
-    body: &str,
+    content_length: Option<i64>,
+    body: Option<Vec<u8>>,
+    body_path: Option<&str>,
     headers: Vec<HttpResponseHeader>,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
@@ -392,10 +396,12 @@ pub async fn create_response(
                 url,
                 status,
                 status_reason,
+                content_length,
                 body,
+                body_path,
                 headers
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         "#,
         id,
         request_id,
@@ -404,7 +410,9 @@ pub async fn create_response(
         url,
         status,
         status_reason,
+        content_length,
         body,
+        body_path,
         headers_json,
     )
     .execute(pool)
@@ -415,11 +423,11 @@ pub async fn create_response(
 }
 
 pub async fn update_response_if_id(
-    response: HttpResponse,
+    response: &HttpResponse,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
     if response.id == "" {
-        return Ok(response);
+        return Ok(response.clone());
     }
     return update_response(response, pool).await;
 }
@@ -444,20 +452,32 @@ pub async fn update_workspace(
 }
 
 pub async fn update_response(
-    response: HttpResponse,
+    response: &HttpResponse,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let headers_json = Json(response.headers);
+    let headers_json = Json(&response.headers);
     sqlx::query!(
         r#"
-            UPDATE http_responses SET (elapsed, url, status, status_reason, body, error, headers, updated_at) =
-            (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
+            UPDATE http_responses SET (
+                elapsed,
+                url,
+                status,
+                status_reason,
+                content_length,
+                body,
+                body_path,
+                error,
+                headers,
+                updated_at
+            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
         "#,
         response.elapsed,
         response.url,
         response.status,
         response.status_reason,
+        response.content_length,
         response.body,
+        response.body_path,
         response.error,
         headers_json,
         response.id,
@@ -469,11 +489,11 @@ pub async fn update_response(
 }
 
 pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
-    sqlx::query_as_unchecked!(
+    sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, created_at,
-                status, status_reason, body, elapsed, url, error,
+            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
+                status, status_reason, content_length, body, body_path, elapsed, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE id = ?
@@ -491,8 +511,8 @@ pub async fn find_responses(
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at,
-                created_at, status, status_reason, body, elapsed, url, error,
+            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
+                status, status_reason, content_length, body, body_path, elapsed, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE request_id = ?
