@@ -35,7 +35,8 @@ export function GlobalHooks() {
     }
 
     if (!shouldIgnoreModel(payload)) {
-      queryClient.setQueryData<Model[]>(queryKey, (values) => [...(values ?? []), payload]);
+      // Order newest first
+      queryClient.setQueryData<Model[]>(queryKey, (values) => [payload, ...(values ?? [])]);
     }
   });
 

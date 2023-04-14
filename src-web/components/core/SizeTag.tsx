@@ -21,8 +21,8 @@ export function SizeTag({ contentLength }: Props) {
   }
 
   return (
-    <>
+    <span title={`${contentLength} bytes`}>
       {Math.round(num * 10) / 10} {unit}
-    </>
+    </span>
   );
 }
