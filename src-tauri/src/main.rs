@@ -224,25 +224,27 @@ async fn actually_send_ephemeral_request(
             response.url = v.url().to_string();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.content_length = Some(body_bytes.len() as i64);
-            if body_bytes.len() > 1000 {
-                let dir = app_handle.path_resolver().app_data_dir().unwrap();
-                let body_path = dir.join(response.id.clone());
-                let mut f = File::options()
-                    .create(true)
-                    .write(true)
-                    .open(&body_path)
-                    .expect("Failed to open file");
-                f.write_all(body_bytes.as_slice())
-                    .expect("Failed to write to file");
-                response.body_path = Some(
-                    body_path
-                        .to_str()
-                        .expect("Failed to get body path")
-                        .to_string(),
-                );
-            } else {
+            let dir = app_handle.path_resolver().app_data_dir().unwrap();
+            let body_path = dir.join(response.id.clone());
+            let mut f = File::options()
+                .create(true)
+                .write(true)
+                .open(&body_path)
+                .expect("Failed to open file");
+            f.write_all(body_bytes.as_slice())
+                .expect("Failed to write to file");
+
+            // Also story body directly on the model, if small enough
+            if body_bytes.len() < 100_000 {
                 response.body = Some(body_bytes);
             }
+
+            response.body_path = Some(
+                body_path
+                    .to_str()
+                    .expect("Failed to get body path")
+                    .to_string(),
+            );
             response.elapsed = start.elapsed().as_millis() as i64;
             response = models::update_response_if_id(&response, pool)
                 .await
