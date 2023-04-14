@@ -234,7 +234,7 @@ async fn actually_send_ephemeral_request(
             f.write_all(body_bytes.as_slice())
                 .expect("Failed to write to file");
 
-            // Also story body directly on the model, if small enough
+            // Also store body directly on the model, if small enough
             if body_bytes.len() < 100_000 {
                 response.body = Some(body_bytes);
             }
