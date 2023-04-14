@@ -14,8 +14,10 @@ import { pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { Dropdown } from './core/Dropdown';
+import { DurationTag } from './core/DurationTag';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import type { TabItem } from './core/Tabs/Tabs';
@@ -108,13 +110,13 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     {activeResponse.elapsed > 0 && (
                       <>
                         <span>&bull;</span>
-                        <span>{activeResponse.elapsed}ms</span>
+                        <DurationTag millis={activeResponse.elapsed} />
                       </>
                     )}
-                    {activeResponse.contentLength && (
+                    {!!activeResponse.contentLength && (
                       <>
                         <span>&bull;</span>
-                        <span>{(activeResponse.contentLength / 1000).toFixed(1)} KB</span>
+                        <SizeTag contentLength={activeResponse.contentLength} />
                       </>
                     )}
                   </HStack>
