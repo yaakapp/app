@@ -9,13 +9,13 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
 
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
+use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
@@ -30,6 +30,8 @@ use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
+
+use crate::models::generate_id;
 
 mod models;
 mod runtime;
@@ -225,29 +227,33 @@ async fn actually_send_ephemeral_request(
             response.url = v.url().to_string();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.content_length = Some(body_bytes.len() as i64);
-            let dir = app_handle.path_resolver().app_data_dir().unwrap();
-            let base_dir = dir.join("responses");
-            create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
-            let body_path = base_dir.join(response.id.clone());
-            let mut f = File::options()
-                .create(true)
-                .write(true)
-                .open(&body_path)
-                .expect("Failed to open file");
-            f.write_all(body_bytes.as_slice())
-                .expect("Failed to write to file");
+
+            {
+                // Write body to FS
+                let dir = app_handle.path_resolver().app_data_dir().unwrap();
+                let base_dir = dir.join("responses");
+                create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
+                let body_path = base_dir.join(response.id.clone());
+                let mut f = File::options()
+                    .create(true)
+                    .write(true)
+                    .open(&body_path)
+                    .expect("Failed to open file");
+                f.write_all(body_bytes.as_slice())
+                    .expect("Failed to write to file");
+                response.body_path = Some(
+                    body_path
+                        .to_str()
+                        .expect("Failed to get body path")
+                        .to_string(),
+                );
+            }
 
             // Also store body directly on the model, if small enough
             if body_bytes.len() < 100_000 {
                 response.body = Some(body_bytes);
             }
 
-            response.body_path = Some(
-                body_path
-                    .to_str()
-                    .expect("Failed to get body path")
-                    .to_string(),
-            );
             response.elapsed = start.elapsed().as_millis() as i64;
             response = models::update_response_if_id(&response, pool)
                 .await
@@ -688,7 +694,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let submenu = Submenu::new("Test Menu", test_menu);
 
     let window_num = handle.windows().len();
-    let window_id = format!("wnd_{}", window_num);
+    let window_id = format!("wnd_{}_{}", window_num, generate_id(None));
     let menu = default_menu.add_submenu(submenu);
     let win = tauri::WindowBuilder::new(
         handle,
@@ -699,6 +705,11 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     .fullscreen(false)
     .resizable(true)
     .inner_size(1100.0, 600.0)
+    .position(
+        // Randomly offset so windows don't stack exactly
+        100.0 + random::<f64>() * 30.0,
+        100.0 + random::<f64>() * 30.0,
+    )
     .hidden_title(true)
     .title(match is_dev() {
         true => "Yaak Dev",

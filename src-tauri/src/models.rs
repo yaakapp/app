@@ -177,7 +177,7 @@ pub async fn create_workspace(
     description: &str,
     pool: &Pool<Sqlite>,
 ) -> Result<Workspace, sqlx::Error> {
-    let id = generate_id("wk");
+    let id = generate_id(Some("wk"));
     sqlx::query!(
         r#"
             INSERT INTO workspaces (id, name, description)
@@ -241,7 +241,7 @@ pub async fn upsert_request(
     let id = match id {
         Some(v) => v,
         None => {
-            generated_id = generate_id("rq");
+            generated_id = generate_id(Some("rq"));
             generated_id.as_str()
         }
     };
@@ -382,7 +382,7 @@ pub async fn create_response(
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
     let req = get_request(request_id, pool).await?;
-    let id = generate_id("rp");
+    let id = generate_id(Some("rp"));
     let headers_json = Json(headers);
     sqlx::query!(
         r#"
@@ -573,9 +573,10 @@ pub async fn delete_all_responses(
     Ok(())
 }
 
-pub fn generate_id(prefix: &str) -> String {
-    format!(
-        "{prefix}_{}",
-        Alphanumeric.sample_string(&mut rand::thread_rng(), 10)
-    )
+pub fn generate_id(prefix: Option<&str>) -> String {
+    let id = Alphanumeric.sample_string(&mut rand::thread_rng(), 10);
+    return match prefix {
+        None => id,
+        Some(p) => format!("{p}_{id}"),
+    };
 }
