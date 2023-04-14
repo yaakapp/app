@@ -9,6 +9,7 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
+use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
 
@@ -225,7 +226,9 @@ async fn actually_send_ephemeral_request(
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.content_length = Some(body_bytes.len() as i64);
             let dir = app_handle.path_resolver().app_data_dir().unwrap();
-            let body_path = dir.join(response.id.clone());
+            let base_dir = dir.join("responses");
+            create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
+            let body_path = base_dir.join(response.id.clone());
             let mut f = File::options()
                 .create(true)
                 .write(true)

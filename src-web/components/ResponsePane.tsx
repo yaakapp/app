@@ -5,6 +5,7 @@ import { createGlobalState } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useDeleteResponse } from '../hooks/useDeleteResponse';
 import { useDeleteResponses } from '../hooks/useDeleteResponses';
+import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
 import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
@@ -38,10 +39,11 @@ const useActiveTab = createGlobalState<string>('body');
 export const ResponsePane = memo(function ResponsePane({ style, className }: Props) {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequestId = useActiveRequestId();
+  const latestResponse = useLatestResponse(activeRequestId);
   const responses = useResponses(activeRequestId);
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
-    : responses[0] ?? null;
+    : latestResponse ?? null;
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
