@@ -180,7 +180,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               ) : viewMode === 'pretty' && contentType?.includes('html') ? (
                 <WebPageViewer response={activeResponse} />
               ) : contentType?.startsWith('image') ? (
-                <ImageViewer response={activeResponse} />
+                <ImageViewer className="pb-2" response={activeResponse} />
               ) : (
                 <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
               )}
