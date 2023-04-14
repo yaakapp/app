@@ -75,7 +75,6 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
             className="w-8 mr-0.5"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
-            disabled={loading}
           />
         }
       />

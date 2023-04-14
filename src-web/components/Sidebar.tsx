@@ -67,8 +67,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   const handleFocus = useCallback(() => {
     if (hasFocus) return;
-    focusActiveRequest(selectedIndex ?? 0);
-  }, [focusActiveRequest, hasFocus, selectedIndex]);
+    focusActiveRequest();
+  }, [focusActiveRequest, hasFocus]);
 
   const handleBlur = useCallback(() => setHasFocus(false), []);
 

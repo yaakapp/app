@@ -24,10 +24,10 @@ export interface EditorProps {
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
-  contentType?: string;
+  contentType?: string | null;
   forceUpdateKey?: string;
   autoFocus?: boolean;
-  defaultValue?: string;
+  defaultValue?: string | null;
   placeholder?: string;
   tooltipContainer?: HTMLElement;
   useTemplating?: boolean;
