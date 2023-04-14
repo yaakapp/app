@@ -15,14 +15,14 @@
     "allowlist": {
       "all": false,
       "protocol": {
-        "assetScope": ["$APPDATA/*"],
+        "assetScope": ["$APPDATA/responses/*"],
         "asset":  true
       },
       "fs": {
         "readFile": true,
         "scope": [
           "$RESOURCE/*",
-          "$APPDATA/*"
+          "$APPDATA/responses/*"
         ]
       },
       "shell": {

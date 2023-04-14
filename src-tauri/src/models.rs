@@ -154,9 +154,7 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
 }
 
 pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, sqlx::Error> {
-    let workspace = get_workspace(id, pool)
-        .await
-        .expect("Failed to get request to delete");
+    let workspace = get_workspace(id, pool).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM workspaces
@@ -166,6 +164,11 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
     )
     .execute(pool)
     .await;
+
+    for r in find_responses_by_workspace_id(id, pool).await? {
+        delete_response(&r.id, pool).await?;
+    }
+
     Ok(workspace)
 }
 
@@ -185,16 +188,13 @@ pub async fn create_workspace(
         description,
     )
     .execute(pool)
-    .await
-    .expect("Failed to insert new workspace");
+    .await?;
 
     get_workspace(&id, pool).await
 }
 
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let existing = get_request(id, pool)
-        .await
-        .expect("Failed to get request to duplicate");
+    let existing = get_request(id, pool).await?;
 
     // TODO: Figure out how to make this better
     let b2;
@@ -289,8 +289,7 @@ pub async fn upsert_request(
         sort_priority,
     )
     .execute(pool)
-    .await
-    .expect("Failed to insert new request");
+    .await?;
     get_request(id, pool).await
 }
 
@@ -354,9 +353,7 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
 }
 
 pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let req = get_request(id, pool)
-        .await
-        .expect("Failed to get request to delete");
+    let req = get_request(id, pool).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_requests
@@ -366,6 +363,8 @@ pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest
     )
     .execute(pool)
     .await;
+
+    delete_all_responses(id, pool).await?;
 
     Ok(req)
 }
@@ -382,9 +381,7 @@ pub async fn create_response(
     headers: Vec<HttpResponseHeader>,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let req = get_request(request_id, pool)
-        .await
-        .expect("Failed to get request");
+    let req = get_request(request_id, pool).await?;
     let id = generate_id("rp");
     let headers_json = Json(headers);
     sqlx::query!(
@@ -417,8 +414,7 @@ pub async fn create_response(
         headers_json,
     )
     .execute(pool)
-    .await
-    .expect("Failed to insert new response");
+    .await?;
 
     get_response(&id, pool).await
 }
@@ -447,8 +443,8 @@ pub async fn update_workspace(
         workspace.id,
     )
     .execute(pool)
-    .await
-    .expect("Failed to update workspace");
+    .await?;
+
     get_workspace(&workspace.id, pool).await
 }
 
@@ -484,8 +480,7 @@ pub async fn update_response(
         response.id,
     )
     .execute(pool)
-    .await
-    .expect("Failed to update response");
+    .await?;
     get_response(&response.id, pool).await
 }
 
@@ -525,10 +520,28 @@ pub async fn find_responses(
     .await
 }
 
+pub async fn find_responses_by_workspace_id(
+    workspace_id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<Vec<HttpResponse>, sqlx::Error> {
+    sqlx::query_as!(
+        HttpResponse,
+        r#"
+            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
+                status, status_reason, content_length, body, body_path, elapsed, error,
+                headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
+            FROM http_responses
+            WHERE workspace_id = ?
+            ORDER BY created_at DESC
+        "#,
+        workspace_id,
+    )
+    .fetch_all(pool)
+    .await
+}
+
 pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
-    let resp = get_response(id, pool)
-        .await
-        .expect("Failed to get response to delete");
+    let resp = get_response(id, pool).await?;
 
     // Delete the body file if it exists
     if let Some(p) = resp.body_path.clone() {

@@ -8,7 +8,8 @@ export function useResponseBodyText(response: HttpResponse) {
     initialData: null,
     queryFn: async () => {
       if (response.body) {
-        return String.fromCharCode.apply(null, response.body);
+        const uint8Array = Uint8Array.of(...response.body);
+        return new TextDecoder().decode(uint8Array);
       }
 
       if (response.bodyPath) {
