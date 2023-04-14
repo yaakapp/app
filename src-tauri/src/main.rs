@@ -236,6 +236,7 @@ async fn actually_send_ephemeral_request(
                 let body_path = base_dir.join(response.id.clone());
                 let mut f = File::options()
                     .create(true)
+                    .truncate(true)
                     .write(true)
                     .open(&body_path)
                     .expect("Failed to open file");
