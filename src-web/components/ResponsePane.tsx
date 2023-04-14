@@ -41,7 +41,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
   const responses = useResponses(activeRequestId);
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
-    : responses[responses.length - 1] ?? null;
+    : responses[0] ?? null;
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
@@ -138,7 +138,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                       disabled: responses.length === 0,
                     },
                     { type: 'separator', label: 'History' },
-                    ...responses.slice(0, 10).map((r) => ({
+                    ...responses.slice(0, 20).map((r) => ({
                       key: r.id,
                       label: (
                         <HStack space={2}>
@@ -146,7 +146,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                           <span>&bull;</span> <span>{r.elapsed}ms</span>
                         </HStack>
                       ),
-                      leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <></>,
+                      leftSlot:
+                        activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
                       onSelect: () => setPinnedResponseId(r.id),
                     })),
                   ]}

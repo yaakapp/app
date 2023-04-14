@@ -18,8 +18,8 @@ export function DurationTag({ millis }: Props) {
   }
 
   return (
-    <>
+    <span title={`${millis} milliseconds`}>
       {Math.round(num * 10) / 10} {unit}
-    </>
+    </span>
   );
 }
