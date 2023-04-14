@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fs;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
@@ -516,7 +517,7 @@ pub async fn find_responses(
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE request_id = ?
-            ORDER BY created_at ASC
+            ORDER BY created_at DESC
         "#,
         request_id,
     )
@@ -528,6 +529,13 @@ pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRespon
     let resp = get_response(id, pool)
         .await
         .expect("Failed to get response to delete");
+
+    // Delete the body file if it exists
+    if let Some(p) = resp.body_path.clone() {
+        if let Err(e) = fs::remove_file(p) {
+            println!("Failed to delete body file: {}", e);
+        };
+    }
 
     let _ = sqlx::query!(
         r#"
@@ -546,16 +554,9 @@ pub async fn delete_all_responses(
     request_id: &str,
     pool: &Pool<Sqlite>,
 ) -> Result<(), sqlx::Error> {
-    let _ = sqlx::query!(
-        r#"
-            DELETE FROM http_responses
-            WHERE request_id = ?
-        "#,
-        request_id,
-    )
-    .execute(pool)
-    .await;
-
+    for r in find_responses(request_id, pool).await? {
+        delete_response(&r.id, pool).await?;
+    }
     Ok(())
 }
 
