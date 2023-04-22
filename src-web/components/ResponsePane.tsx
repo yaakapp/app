@@ -25,6 +25,7 @@ import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { ResponseHeaders } from './ResponseHeaders';
+import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { TextViewer } from './responseViewers/TextViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
@@ -184,6 +185,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                 <WebPageViewer response={activeResponse} />
               ) : contentType?.startsWith('image') ? (
                 <ImageViewer className="pb-2" response={activeResponse} />
+              ) : contentType?.match(/csv|tab-separated/) ? (
+                <CsvViewer className="pb-2" response={activeResponse} />
               ) : (
                 <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
               )}
