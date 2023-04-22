@@ -1,0 +1,39 @@
+import classnames from 'classnames';
+import Papa from 'papaparse';
+import { useMemo } from 'react';
+import { useResponseBodyText } from '../../hooks/useResponseBodyText';
+import type { HttpResponse } from '../../lib/models';
+
+interface Props {
+  response: HttpResponse;
+  className?: string;
+}
+
+export function CsvViewer({ response, className }: Props) {
+  const body = useResponseBodyText(response);
+
+  const parsed = useMemo(() => {
+    if (body === null) return null;
+    return Papa.parse<string[]>(body);
+  }, [body]);
+
+  if (parsed === null) return null;
+
+  return (
+    <div className="overflow-auto h-full">
+      <table className={classnames(className, 'text-sm')}>
+        <tbody>
+          {parsed.data.map((row, i) => (
+            <tr key={i} className={classnames('border-l border-t', i > 0 && 'border-b')}>
+              {row.map((col, j) => (
+                <td key={j} className="border-r px-1.5">
+                  {col}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
