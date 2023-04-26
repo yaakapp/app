@@ -303,6 +303,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
         tabIndex={-1}
         color="custom"
         onClick={handleSelect}
+        disabled={editing}
         draggable={false} // Item should drag, not the link
         onDoubleClick={handleStartEditing}
         data-active={isActive}
