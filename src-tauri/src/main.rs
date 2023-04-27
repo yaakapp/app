@@ -23,9 +23,9 @@ use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
-use tauri::{
-    AppHandle, Menu, MenuItem, RunEvent, State, Submenu, TitleBarStyle, Window, WindowUrl, Wry,
-};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
+use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tokio::sync::Mutex;
 
@@ -697,7 +697,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}_{}", window_num, generate_id(None));
     let menu = default_menu.add_submenu(submenu);
-    let win = tauri::WindowBuilder::new(
+    let mut win_builder = tauri::WindowBuilder::new(
         handle,
         window_id,
         WindowUrl::App(url.unwrap_or_default().into()),
@@ -711,14 +711,20 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         100.0 + random::<f64>() * 30.0,
         100.0 + random::<f64>() * 30.0,
     )
-    .hidden_title(true)
     .title(match is_dev() {
         true => "Yaak Dev",
         false => "Yaak",
-    })
-    .title_bar_style(TitleBarStyle::Overlay)
-    .build()
-    .expect("failed to build window");
+    });
+
+    // Add macOS-only things
+    #[cfg(target_os = "macos")]
+    {
+        win_builder = win_builder
+            .hidden_title(true)
+            .title_bar_style(TitleBarStyle::Overlay);
+    }
+
+    let win = win_builder.build().expect("failed to build window");
 
     let win2 = win.clone();
     let handle2 = handle.clone();
