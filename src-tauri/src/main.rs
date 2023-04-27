@@ -750,7 +750,6 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let win3 = win.clone();
     win.on_window_event(move |e| {
         let apply_offset = || {
-            #[cfg(target_os = "macos")]
             win3.position_traffic_lights();
         };
 
@@ -765,9 +764,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         }
     });
 
-    #[cfg(target_os = "macos")]
     win.position_traffic_lights();
-
     win
 }
 

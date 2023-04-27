@@ -14,6 +14,9 @@
     "windows": [],
     "allowlist": {
       "all": false,
+      "os": {
+        "all": true
+      },
       "protocol": {
         "assetScope": ["$APPDATA/responses/*"],
         "asset":  true
