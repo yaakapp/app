@@ -8,6 +8,7 @@ import type {
 } from 'react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useTauriEvent } from '../hooks/useTauriEvent';
@@ -169,11 +170,15 @@ interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 function HeaderSize({ className, ...props }: HeaderSizeProps) {
+  const platform = useOsInfo();
   return (
     <div
       className={classnames(
         className,
         'h-md pt-[1px] flex items-center w-full pr-3 pl-20 border-b',
+        platform?.osType === 'Darwin' && 'pl-20',
+        platform?.osType === 'Linux' && 'pr-20',
+        platform?.osType === 'Windows_NT' && 'pr-20',
       )}
       {...props}
     />
