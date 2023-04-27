@@ -2321,6 +2321,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "os_info"
+version = "3.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "006e42d5b888366f1880eda20371fedde764ed2213dc8496f49622fa0c99cd5e"
+dependencies = [
+ "log",
+ "serde",
+ "winapi",
+]
+
+[[package]]
 name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4025,6 +4036,7 @@ dependencies = [
  "objc",
  "once_cell",
  "open",
+ "os_info",
  "percent-encoding",
  "rand 0.8.5",
  "raw-window-handle",
