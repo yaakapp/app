@@ -233,7 +233,10 @@ async fn actually_send_ephemeral_request(
                 let dir = app_handle.path_resolver().app_data_dir().unwrap();
                 let base_dir = dir.join("responses");
                 create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
-                let body_path = base_dir.join(response.id.clone());
+                let body_path = match response.id == "" {
+                    false => base_dir.join(response.id.clone()),
+                    true => base_dir.join(uuid::Uuid::new_v4().to_string()),
+                };
                 let mut f = File::options()
                     .create(true)
                     .truncate(true)
