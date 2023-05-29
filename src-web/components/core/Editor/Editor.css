@@ -156,7 +156,7 @@
 
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-sm;
+    @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-[0.75rem];
 
     &.cm-completionInfo-right {
         @apply ml-1;
