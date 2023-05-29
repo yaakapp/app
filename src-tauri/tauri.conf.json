@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "0.1.0"
+    "version": "2023.0.17"
   },
   "tauri": {
     "windows": [],
@@ -49,13 +49,20 @@
         "icons/icon.ico"
       ],
       "identifier": "co.schier.yaak",
-      "longDescription": "",
+      "longDescription": "The best cross-platform visual API client",
       "resources": [
         "plugins/*",
         "migrations/*"
       ],
-      "shortDescription": "",
-      "targets": "all",
+      "shortDescription": "The best API client",
+      "targets": [
+        "deb",
+        "appimage",
+        "nsis",
+        "app",
+        "dmg",
+        "updater"
+      ],
       "deb": {
         "depends": []
       },

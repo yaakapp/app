@@ -3,6 +3,7 @@ import type { GraphQLSchema } from 'graphql';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { HttpRequest } from '../lib/models';
+import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -35,11 +36,12 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
         );
       }
 
-      if (response.body === null) {
+      const body = await getResponseBodyText(response);
+      if (body === null) {
         return Promise.reject(new Error('Empty body returned in response'));
       }
 
-      const { data } = JSON.parse(response.body);
+      const { data } = JSON.parse(body);
       return buildClientSchema(data);
     },
   });
