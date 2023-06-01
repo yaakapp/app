@@ -8,9 +8,9 @@ const darkTheme: AppTheme = {
   appearance: 'dark',
   layers: {
     root: {
-      blackPoint: 0.2,
+      blackPoint: 0.09,
       colors: {
-        gray: '#6b5b98',
+        gray: '#9b8ebe',
         red: '#ff417b',
         orange: '#fd9014',
         yellow: '#e8d13f',

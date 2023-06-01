@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import type { GraphQLSchema } from 'graphql';
+import type { IntrospectionQuery } from 'graphql';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocalStorage } from 'react-use';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { HttpRequest } from '../lib/models';
@@ -13,18 +14,23 @@ const introspectionRequestBody = JSON.stringify({
 });
 
 export function useIntrospectGraphQL(baseRequest: HttpRequest) {
-  // Debounce the URL because it can change rapidly, and we don't
-  // want to send so many requests.
+  // Debounce the request because it can change rapidly and we don't
+  // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
+  const [introspection, setIntrospection] = useLocalStorage<IntrospectionQuery>(
+    `introspection:${baseRequest.id}`,
+  );
 
-  return useQuery<GraphQLSchema, Error>({
-    queryKey: ['introspectGraphQL', { url: request.url, method: request.method }],
-    refetchInterval: 1000 * 60, // Refetch every minute
-    queryFn: async () => {
-      const response = await minPromiseMillis(
-        sendEphemeralRequest({ ...baseRequest, body: introspectionRequestBody }),
-        700,
-      );
+  const introspectionInterval = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    const fetchIntrospection = async () => {
+      setIsLoading(true);
+      setError(undefined);
+      const args = { ...baseRequest, body: introspectionRequestBody };
+      const response = await minPromiseMillis(sendEphemeralRequest(args), 700);
 
       if (response.error) {
         return Promise.reject(new Error(response.error));
@@ -42,7 +48,27 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       }
 
       const { data } = JSON.parse(body);
-      return buildClientSchema(data);
-    },
-  });
+      setIntrospection(data);
+    };
+
+    const runIntrospection = () => {
+      fetchIntrospection()
+        .catch((e) => setError(e.message))
+        .finally(() => setIsLoading(false));
+    };
+
+    // Do it again on an interval
+    clearInterval(introspectionInterval.current);
+    introspectionInterval.current = setInterval(runIntrospection, 1000 * 60);
+    runIntrospection(); // Run immediately
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request.id, request.method]);
+
+  const schema = useMemo(
+    () => (introspection ? buildClientSchema(introspection) : undefined),
+    [introspection],
+  );
+
+  return { schema, isLoading, error };
 }
