@@ -24,8 +24,7 @@ interface GraphQLBody {
 
 export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
-  const introspection = useIntrospectGraphQL(baseRequest);
-
+  const { schema, isLoading, error } = useIntrospectGraphQL(baseRequest);
   const { query, variables } = useMemo<GraphQLBody>(() => {
     if (defaultValue === undefined) {
       return { query: '', variables: {} };
@@ -65,8 +64,8 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   // Refetch the schema when the URL changes
   useEffect(() => {
     if (editorViewRef.current === null) return;
-    updateSchema(editorViewRef.current, introspection.data);
-  }, [introspection.data]);
+    updateSchema(editorViewRef.current, schema);
+  }, [schema]);
 
   const dialog = useDialog();
 
@@ -81,22 +80,20 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         placeholder="..."
         ref={editorViewRef}
         actions={
-          (introspection.error || introspection.isLoading) && (
+          (error || isLoading) && (
             <Button
               size="xs"
-              color={introspection.error ? 'danger' : 'gray'}
-              isLoading={introspection.isLoading}
+              color={error ? 'danger' : 'gray'}
+              isLoading={isLoading}
               onClick={() => {
                 dialog.show({
                   title: 'Introspection Failed',
                   size: 'sm',
-                  render: () => (
-                    <div className="whitespace-pre-wrap">{introspection.error?.message}</div>
-                  ),
+                  render: () => <div className="whitespace-pre-wrap">{error}</div>,
                 });
               }}
             >
-              {introspection.error ? 'Introspection Failed' : 'Introspecting'}
+              {error ? 'Introspection Failed' : 'Introspecting'}
             </Button>
           )
         }
