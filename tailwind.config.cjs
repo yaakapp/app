@@ -29,7 +29,21 @@ module.exports = {
     },
     fontFamily: {
       "mono": ["JetBrains Mono", "Menlo", "monospace"],
-      "sans": ["Inter", "sans-serif"]
+      "sans": [
+        "Inter",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Oxygen-Sans",
+        "Ubuntu",
+        "Cantarell",
+        "Helvetica Neue",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+      ],
     },
     fontSize: {
       '3xs': "0.6rem",
