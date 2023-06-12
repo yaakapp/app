@@ -1,6 +1,7 @@
 import { useRouteError } from 'react-router-dom';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { Button } from './core/Button';
+import { FormattedError } from './core/FormattedError';
 import { Heading } from './core/Heading';
 import { VStack } from './core/Stacks';
 
@@ -14,9 +15,7 @@ export default function RouteError() {
     <div className="flex items-center justify-center h-full">
       <VStack space={5} className="max-w-[30rem] !h-auto">
         <Heading>Route Error 🔥</Heading>
-        <pre className="text-sm select-auto cursor-text bg-gray-100 p-3 rounded whitespace-normal">
-          {message}
-        </pre>
+        <FormattedError>{message}</FormattedError>
         <VStack space={2}>
           <Button
             color="primary"

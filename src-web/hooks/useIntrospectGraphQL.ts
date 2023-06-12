@@ -1,5 +1,5 @@
 import type { IntrospectionQuery } from 'graphql';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
@@ -17,6 +17,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   // Debounce the request because it can change rapidly and we don't
   // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
+  const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
   const [introspection, setIntrospection] = useLocalStorage<IntrospectionQuery>(
@@ -63,12 +64,16 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     runIntrospection(); // Run immediately
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request.id, request.method]);
+  }, [request.id, request.url, request.method, refetchKey]);
+
+  const refetch = useCallback(() => {
+    setRefetchKey((k) => k + 1);
+  }, []);
 
   const schema = useMemo(
     () => (introspection ? buildClientSchema(introspection) : undefined),
     [introspection],
   );
 
-  return { schema, isLoading, error };
+  return { schema, isLoading, error, refetch };
 }

@@ -6,6 +6,7 @@ import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
 import { Editor, formatGraphQL } from './core/Editor';
+import { FormattedError } from './core/FormattedError';
 import { Separator } from './core/Separator';
 import { useDialog } from './DialogContext';
 
@@ -24,7 +25,7 @@ interface GraphQLBody {
 
 export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
-  const { schema, isLoading, error } = useIntrospectGraphQL(baseRequest);
+  const { schema, isLoading, error, refetch } = useIntrospectGraphQL(baseRequest);
   const { query, variables } = useMemo<GraphQLBody>(() => {
     if (defaultValue === undefined) {
       return { query: '', variables: {} };
@@ -89,7 +90,25 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
                 dialog.show({
                   title: 'Introspection Failed',
                   size: 'sm',
-                  render: () => <div className="whitespace-pre-wrap">{error}</div>,
+                  id: 'introspection-failed',
+                  render: () => (
+                    <div className="whitespace-pre-wrap">
+                      <FormattedError>{error ?? 'unknown'}</FormattedError>
+                      <div className="w-full mt-3">
+                        <Button
+                          onClick={() => {
+                            dialog.hide('introspection-failed');
+                            refetch();
+                          }}
+                          className="ml-auto"
+                          color="secondary"
+                          size="sm"
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    </div>
+                  ),
                 });
               }}
             >
