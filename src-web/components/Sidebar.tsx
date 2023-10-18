@@ -242,6 +242,7 @@ type SidebarItemProps = {
   useProminentStyles?: boolean;
   selected?: boolean;
   onSelect: (requestId: string) => void;
+  draggable?: boolean;
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
@@ -300,16 +301,13 @@ const _SidebarItem = forwardRef(function SidebarItem(
   return (
     <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
       <button
-        tabIndex={-1}
-        color="custom"
+        // tabIndex={-1} // Will prevent drag-n-drop
         onClick={handleSelect}
         disabled={editing}
-        draggable={false} // Item should drag, not the link
         onDoubleClick={handleStartEditing}
         data-active={isActive}
         data-selected={selected}
         className={classnames(
-          // 'outline-none',
           'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
           editing && 'ring-1 focus-within:ring-focus',
           isActive && 'bg-highlight text-gray-800',
@@ -396,6 +394,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   return (
     <SidebarItem
       ref={ref}
+      draggable
       className={classnames(isDragging && 'opacity-20')}
       requestName={requestName}
       requestId={requestId}
