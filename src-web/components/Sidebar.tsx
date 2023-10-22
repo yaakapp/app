@@ -256,8 +256,8 @@ const _SidebarItem = forwardRef(function SidebarItem(
   const isActive = activeRequestId === requestId;
 
   const handleSubmitNameEdit = useCallback(
-    async (el: HTMLInputElement) => {
-      await updateRequest.mutate((r) => ({ ...r, name: el.value }));
+    (el: HTMLInputElement) => {
+      updateRequest.mutate((r) => ({ ...r, name: el.value }));
       setEditing(false);
     },
     [updateRequest],
@@ -274,7 +274,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
       switch (e.key) {
         case 'Enter':
           e.preventDefault();
-          await handleSubmitNameEdit(e.currentTarget);
+          handleSubmitNameEdit(e.currentTarget);
           break;
         case 'Escape':
           e.preventDefault();
@@ -289,7 +289,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
 
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      handleSubmitNameEdit(e.currentTarget).catch(console.error);
+      handleSubmitNameEdit(e.currentTarget);
     },
     [handleSubmitNameEdit],
   );
@@ -341,6 +341,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
     </li>
   );
 });
+
 const SidebarItem = memo(_SidebarItem);
 
 type DraggableSidebarItemProps = SidebarItemProps & {
@@ -365,7 +366,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   const [, connectDrop] = useDrop<DragItem, void>(
     {
       accept: ItemTypes.REQUEST,
-      hover: (item, monitor) => {
+      hover: (_, monitor) => {
         if (!ref.current) return;
         const hoverBoundingRect = ref.current?.getBoundingClientRect();
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
