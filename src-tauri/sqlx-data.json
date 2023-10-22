@@ -398,6 +398,70 @@
     },
     "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body,\n                body_path,\n                headers\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n        "
   },
+  "986763e31599881f287ef378002fc35d8e983af10a30a9aa4ade606dacf83260": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "data!: Json<HashMap<String, JsonValue>>",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT id, workspace_id, model, created_at, updated_at, name,\n                data AS \"data!: Json<HashMap<String, JsonValue>>\"\n            FROM environments\n            WHERE workspace_id = ?\n        "
+  },
+  "ab7294b681f1202ef06aaa26885147ead2db6ac740023793cda1e1c92665d996": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "\n            INSERT INTO environments (\n                id,\n                workspace_id,\n                name,\n                data\n            )\n            VALUES (?, ?, ?, ?)\n        "
+  },
   "b19c275180909a39342b13c3cdcf993781636913ae590967f5508c46a56dc961": {
     "describe": {
       "columns": [],
@@ -731,5 +795,59 @@
       }
     },
     "query": "\n            INSERT INTO workspaces (id, name, description)\n            VALUES (?, ?, ?)\n        "
+  },
+  "fb89f653780b3f3ab0dd0bb2af30c8d3945203819cb9df7bdd331df56a6ae690": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "data!: Json<HashMap<String, JsonValue>>",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                data AS \"data!: Json<HashMap<String, JsonValue>>\"\n            FROM environments\n            WHERE id = ?\n        "
   }
 }

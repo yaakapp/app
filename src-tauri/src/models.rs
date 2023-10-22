@@ -18,6 +18,18 @@ pub struct Workspace {
     pub description: String,
 }
 
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Environment {
+    pub id: String,
+    pub workspace_id: String,
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub name: String,
+    pub data: Json<HashMap<String, JsonValue>>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequestHeader {
@@ -31,11 +43,11 @@ pub struct HttpRequestHeader {
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequest {
     pub id: String,
+    pub workspace_id: String,
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub sort_priority: f64,
-    pub workspace_id: String,
     pub name: String,
     pub url: String,
     pub method: String,
@@ -191,6 +203,74 @@ pub async fn create_workspace(
     .await?;
 
     get_workspace(&id, pool).await
+}
+
+pub async fn find_environments(
+    workspace_id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<Vec<Environment>, sqlx::Error> {
+    sqlx::query_as!(
+        Environment,
+        r#"
+            SELECT id, workspace_id, model, created_at, updated_at, name,
+                data AS "data!: Json<HashMap<String, JsonValue>>"
+            FROM environments
+            WHERE workspace_id = ?
+        "#,
+        workspace_id,
+    )
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn create_environment(
+    workspace_id: &str,
+    name: &str,
+    data: HashMap<String, JsonValue>,
+    pool: &Pool<Sqlite>,
+) -> Result<Environment, sqlx::Error> {
+    let id = generate_id(Some("en"));
+    let data_json = Json(data);
+    let trimmed_name = name.trim();
+    sqlx::query!(
+        r#"
+            INSERT INTO environments (
+                id,
+                workspace_id,
+                name,
+                data
+            )
+            VALUES (?, ?, ?, ?)
+        "#,
+        id,
+        workspace_id,
+        trimmed_name,
+        data_json,
+    )
+    .execute(pool)
+    .await?;
+    get_environment(&id, pool).await
+}
+
+pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
+    sqlx::query_as!(
+        Environment,
+        r#"
+            SELECT
+                id,
+                model,
+                workspace_id,
+                created_at,
+                updated_at,
+                name,
+                data AS "data!: Json<HashMap<String, JsonValue>>"
+            FROM environments
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .fetch_one(pool)
+    .await
 }
 
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {

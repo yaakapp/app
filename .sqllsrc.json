@@ -1,0 +1,5 @@
+{
+  "name": "yaak-dev",
+  "adapter": "sqlite3",
+  "filename": "src-tauri/db.sqlite"
+}
