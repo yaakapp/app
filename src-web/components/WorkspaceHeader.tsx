@@ -7,6 +7,8 @@ import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
+import { Button } from './core/Button';
+import { useDialog } from './DialogContext';
 
 interface Props {
   className?: string;
@@ -14,6 +16,7 @@ interface Props {
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const activeRequest = useActiveRequest();
+  const dialog = useDialog();
 
   return (
     <HStack
@@ -24,6 +27,14 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
         <WorkspaceActionsDropdown className="pointer-events-auto" />
+        <Button onClick={() => {
+          dialog.show({
+            title: 'Testing',
+            render: () => <div>These are THE environments</div>
+          })
+        }}>
+          Environments
+        </Button>
       </HStack>
       <div className="pointer-events-none">
         <RecentRequestsDropdown />
