@@ -18,10 +18,12 @@ use http::{HeaderMap, HeaderValue, Method};
 use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
+use serde_json::json;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use tauri::api::path::data_dir;
 use tauri::regex::Regex;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
@@ -31,7 +33,7 @@ use tokio::sync::Mutex;
 
 use window_ext::WindowExt;
 
-use crate::models::generate_id;
+use crate::models::{find_environments, generate_id};
 
 mod models;
 mod window_ext;
@@ -84,15 +86,18 @@ async fn actually_send_ephemeral_request(
     let start = std::time::Instant::now();
     let mut url_string = request.url.to_string();
 
-    let variables: HashMap<&str, &str> = HashMap::new();
-    // variables.insert("", "");
+    let environments = find_environments(&request.workspace_id, pool)
+        .await
+        .expect("Failed to find environments");
+    let environment: models::Environment = environments.first().unwrap().clone();
+    let variables = environment.data;
 
     let re = Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}").expect("Failed to create regex");
     url_string = re
         .replace(&url_string, |caps: &tauri::regex::Captures| {
             let key = caps.get(1).unwrap().as_str();
             match variables.get(key) {
-                Some(v) => v,
+                Some(v) => v.as_str().unwrap(),
                 None => "",
             }
         })

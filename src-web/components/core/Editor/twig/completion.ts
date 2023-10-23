@@ -4,7 +4,7 @@ const openTag = '${[ ';
 const closeTag = ' ]}';
 
 const variables: { name: string }[] = [
-  // TODO: Put variables here
+  { name: 'foo' }
 ];
 
 const MIN_MATCH_VAR = 2;
