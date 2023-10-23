@@ -1,3 +1,15 @@
+
+export const BODY_TYPE_NONE = null;
+export const BODY_TYPE_GRAPHQL = 'graphql';
+export const BODY_TYPE_JSON = 'application/json';
+export const BODY_TYPE_XML = 'text/xml';
+
+export const AUTH_TYPE_NONE = null;
+export const AUTH_TYPE_BASIC = 'basic';
+export const AUTH_TYPE_BEARER = 'bearer';
+
+export type Model = Workspace | HttpRequest | HttpResponse | KeyValue | Environment;
+
 export interface BaseModel {
   readonly id: string;
   readonly createdAt: string;
@@ -16,25 +28,11 @@ export interface HttpHeader {
   enabled?: boolean;
 }
 
-export const BODY_TYPE_NONE = null;
-export const BODY_TYPE_GRAPHQL = 'graphql';
-export const BODY_TYPE_JSON = 'application/json';
-export const BODY_TYPE_XML = 'text/xml';
-
-export const AUTH_TYPE_NONE = null;
-export const AUTH_TYPE_BASIC = 'basic';
-export const AUTH_TYPE_BEARER = 'bearer';
-
-export type Model = Workspace | HttpRequest | HttpResponse | KeyValue;
-
-export function modelsEq(a: Model, b: Model) {
-  if (a.model === 'key_value' && b.model === 'key_value') {
-    return a.key === b.key && a.namespace === b.namespace;
-  }
-  if ('id' in a && 'id' in b) {
-    return a.id === b.id;
-  }
-  return false;
+export interface Environment extends BaseModel {
+  readonly workspaceId: string;
+  readonly model: 'environment';
+  name: string;
+  data: Record<string, string | number | boolean | null | undefined>;
 }
 
 export interface HttpRequest extends BaseModel {
@@ -77,4 +75,14 @@ export interface HttpResponse extends BaseModel {
 
 export function isResponseLoading(response: HttpResponse): boolean {
   return !(response.body || response.status || response.error);
+}
+
+export function modelsEq(a: Model, b: Model) {
+  if (a.model === 'key_value' && b.model === 'key_value') {
+    return a.key === b.key && a.namespace === b.namespace;
+  }
+  if ('id' in a && 'id' in b) {
+    return a.id === b.id;
+  }
+  return false;
 }

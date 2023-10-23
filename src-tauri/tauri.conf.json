@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2023.0.19"
+    "version": "2023.0.20"
   },
   "tauri": {
     "windows": [],
@@ -18,8 +18,10 @@
         "all": true
       },
       "protocol": {
-        "assetScope": ["$APPDATA/responses/*"],
-        "asset":  true
+        "assetScope": [
+          "$APPDATA/responses/*"
+        ],
+        "asset": true
       },
       "fs": {
         "readFile": true,
@@ -51,7 +53,6 @@
       "identifier": "co.schier.yaak",
       "longDescription": "The best cross-platform visual API client",
       "resources": [
-        "plugins/*",
         "migrations/*"
       ],
       "shortDescription": "The best API client",
@@ -76,8 +77,7 @@
         "timestampUrl": ""
       }
     },
-    "security": {
-    },
+    "security": {},
     "systemTray": {
       "iconAsTemplate": true,
       "iconPath": "icons/icon.png"

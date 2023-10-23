@@ -20,7 +20,7 @@ use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::types::Json;
+use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
 use tauri::regex::Regex;
 #[cfg(target_os = "macos")]
@@ -34,7 +34,6 @@ use window_ext::WindowExt;
 use crate::models::generate_id;
 
 mod models;
-mod runtime;
 mod window_ext;
 
 #[derive(serde::Serialize)]
@@ -191,24 +190,6 @@ async fn actually_send_ephemeral_request(
     };
 
     let raw_response = client.execute(sendable_req).await;
-
-    let plugin_rel_path = "plugins/plugin.ts";
-    let plugin_path = match app_handle.path_resolver().resolve_resource(plugin_rel_path) {
-        Some(p) => p,
-        None => {
-            return response_err(
-                response,
-                format!("Plugin not found at {}", plugin_rel_path),
-                &app_handle,
-                pool,
-            )
-            .await;
-        }
-    };
-
-    if let Err(e) = runtime::run_plugin_sync(plugin_path.to_str().unwrap()) {
-        return response_err(response, e.to_string(), &app_handle, pool).await;
-    }
 
     match raw_response {
         Ok(v) => {
@@ -479,6 +460,29 @@ async fn requests(
 }
 
 #[tauri::command]
+async fn environments(
+    workspace_id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<models::Environment>, String> {
+    let pool = &*db_instance.lock().await;
+    let environments = models::find_environments(workspace_id, pool)
+        .await
+        .expect("Failed to find environments");
+
+    println!("");
+    if environments.is_empty() {
+        println!("CREATING DEFAULT ENVIRONMENT");
+        let data: HashMap<String, JsonValue> = HashMap::new();
+        let environment = models::create_environment(workspace_id, "Default", data, pool)
+            .await
+            .expect("Failed to create default environment");
+        Ok(vec![environment])
+    } else {
+        Ok(environments)
+    }
+}
+
+#[tauri::command]
 async fn get_request(
     id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -603,10 +607,12 @@ fn main() {
             })
         })
         .invoke_handler(tauri::generate_handler![
-            new_window,
             workspaces,
-            get_request,
+            environments,
             requests,
+            responses,
+            new_window,
+            get_request,
             send_request,
             send_ephemeral_request,
             duplicate_request,
@@ -617,7 +623,6 @@ fn main() {
             update_workspace,
             update_request,
             delete_request,
-            responses,
             get_key_value,
             set_key_value,
             delete_response,
