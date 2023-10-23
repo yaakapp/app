@@ -397,6 +397,22 @@ async fn update_workspace(
 }
 
 #[tauri::command]
+async fn update_environment(
+    environment: models::Environment,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Environment, String> {
+    let pool = &*db_instance.lock().await;
+
+    let updated_environment =
+        models::update_environment(environment.id.as_str(), environment.data.0, pool)
+            .await
+            .expect("Failed to update request");
+
+    emit_and_return(&window, "updated_model", updated_environment)
+}
+
+#[tauri::command]
 async fn update_request(
     request: models::HttpRequest,
     window: Window<Wry>,
@@ -449,7 +465,7 @@ async fn delete_request(
 }
 
 #[tauri::command]
-async fn requests(
+async fn list_requests(
     workspace_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::HttpRequest>, String> {
@@ -460,7 +476,7 @@ async fn requests(
 }
 
 #[tauri::command]
-async fn environments(
+async fn list_environments(
     workspace_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::Environment>, String> {
@@ -494,6 +510,17 @@ async fn get_request(
 }
 
 #[tauri::command]
+async fn get_environment(
+    id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Environment, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_environment(id, pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn get_workspace(
     id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -505,7 +532,7 @@ async fn get_workspace(
 }
 
 #[tauri::command]
-async fn responses(
+async fn list_responses(
     request_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::HttpResponse>, String> {
@@ -540,7 +567,7 @@ async fn delete_all_responses(
 }
 
 #[tauri::command]
-async fn workspaces(
+async fn list_workspaces(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::Workspace>, String> {
     let pool = &*db_instance.lock().await;
@@ -607,26 +634,28 @@ fn main() {
             })
         })
         .invoke_handler(tauri::generate_handler![
-            workspaces,
-            environments,
-            requests,
-            responses,
-            new_window,
-            get_request,
-            send_request,
-            send_ephemeral_request,
-            duplicate_request,
             create_request,
-            get_workspace,
             create_workspace,
-            delete_workspace,
-            update_workspace,
-            update_request,
-            delete_request,
-            get_key_value,
-            set_key_value,
-            delete_response,
             delete_all_responses,
+            delete_request,
+            delete_response,
+            delete_workspace,
+            duplicate_request,
+            get_key_value,
+            get_environment,
+            get_request,
+            get_workspace,
+            list_environments,
+            list_requests,
+            list_responses,
+            list_workspaces,
+            new_window,
+            send_ephemeral_request,
+            send_request,
+            set_key_value,
+            update_environment,
+            update_request,
+            update_workspace,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

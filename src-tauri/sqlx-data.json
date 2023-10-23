@@ -378,6 +378,16 @@
     },
     "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        "
   },
+  "80bc37d283b67a70919c7b03a106fe563829741fb2c2fbd34ae4d8f581ecb697": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\n            UPDATE environments\n            SET (data, updated_at) = (?, CURRENT_TIMESTAMP)\n            WHERE id = ?;\n        "
+  },
   "84be2b954870ab181738656ecd4d03fca2ff21012947014c79626abfce8e999b": {
     "describe": {
       "columns": [],

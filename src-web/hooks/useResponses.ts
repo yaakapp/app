@@ -13,7 +13,7 @@ export function useResponses(requestId: string | null) {
       initialData: [],
       queryKey: responsesQueryKey({ requestId: requestId ?? 'n/a' }),
       queryFn: async () => {
-        return (await invoke('responses', {
+        return (await invoke('list_responses', {
           requestId,
         })) as HttpResponse[];
       },
