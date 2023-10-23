@@ -83,12 +83,12 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ classN
       workspaces.length <= 1
         ? []
         : [
-            ...workspaceItems,
-            {
-              type: 'separator',
-              label: activeWorkspace?.name,
-            },
-          ];
+          ...workspaceItems,
+          {
+            type: 'separator',
+            label: activeWorkspace?.name,
+          },
+        ];
 
     return [
       ...activeWorkspaceItems,
