@@ -5,10 +5,16 @@ import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { placeholders } from '../placeholder';
 import { textLanguageName } from '../text/extension';
-import { completions } from './completion';
+import { twigCompletion } from './completion';
 import { parser as twigParser } from './twig';
+import type { Environment } from '../../../../lib/models';
 
-export function twig(base: LanguageSupport, autocomplete?: GenericCompletionConfig) {
+export function twig(base: LanguageSupport, environment: Environment | null, autocomplete?: GenericCompletionConfig) {
+  // TODO: fill variables here
+  const data = environment?.data ?? {};
+  const options = Object.keys(data).map(key => ({ name: key }));
+  const completions = twigCompletion({ options });
+
   const language = mixLanguage(base);
   const completion = language.data.of({ autocomplete: completions });
   const completionBase = base.language.data.of({ autocomplete: completions });

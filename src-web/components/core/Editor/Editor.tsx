@@ -12,6 +12,7 @@ import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
+import { useEnvironments } from '../../../hooks/useEnvironments';
 
 // Export some things so all the code-split parts are in this file
 export { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
@@ -64,6 +65,9 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   }: EditorProps,
   ref,
 ) {
+  const environments = useEnvironments();
+  const environment = environments[0] ?? null;
+
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);
 
@@ -108,9 +112,9 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
-    const ext = getLanguageExtension({ contentType, useTemplating, autocomplete });
+    const ext = getLanguageExtension({ contentType, environment, useTemplating, autocomplete });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete, useTemplating]);
+  }, [contentType, autocomplete, useTemplating, environment]);
 
   useEffect(() => {
     if (cm.current === null) return;
@@ -131,7 +135,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     let view: EditorView;
     try {
       const languageCompartment = new Compartment();
-      const langExt = getLanguageExtension({ contentType, useTemplating, autocomplete });
+      const langExt = getLanguageExtension({ contentType, useTemplating, autocomplete, environment });
 
       const state = EditorState.create({
         doc: `${defaultValue ?? ''}`,
@@ -238,21 +242,21 @@ function getExtensions({
       : []),
     ...(singleLine
       ? [
-          EditorView.domEventHandlers({
-            focus: (e, view) => {
-              // select all text on focus, like a regular input does
-              view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
-            },
-            keydown: (e) => {
-              // Submit nearest form on enter if there is one
-              if (e.key === 'Enter') {
-                const el = e.currentTarget as HTMLElement;
-                const form = el.closest('form');
-                form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-              }
-            },
-          }),
-        ]
+        EditorView.domEventHandlers({
+          focus: (_, view) => {
+            // select all text on focus, like a regular input does
+            view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+          },
+          keydown: (e) => {
+            // Submit nearest form on enter if there is one
+            if (e.key === 'Enter') {
+              const el = e.currentTarget as HTMLElement;
+              const form = el.closest('form');
+              form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+          },
+        }),
+      ]
       : []),
 
     // Handle onFocus
