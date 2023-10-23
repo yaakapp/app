@@ -13,7 +13,8 @@
     "build:icon": "tauri icon src-tauri/icons/icon.png",
     "build:frontend": "vite build",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.1",
@@ -72,6 +73,8 @@
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.2",
     "postcss": "^8.4.21",
     "postcss-nesting": "^11.2.1",
     "prettier": "^2.8.4",
@@ -81,5 +84,9 @@
     "vite-plugin-svgr": "^2.4.0",
     "vite-plugin-top-level-await": "^1.2.4",
     "vitest": "^0.29.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --cache --fix",
+    "*.{js,css,md}": "prettier --write"
   }
 }
