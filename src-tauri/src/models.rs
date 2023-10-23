@@ -252,6 +252,27 @@ pub async fn create_environment(
     get_environment(&id, pool).await
 }
 
+pub async fn update_environment(
+    id: &str,
+    data: HashMap<String, JsonValue>,
+    pool: &Pool<Sqlite>,
+) -> Result<Environment, sqlx::Error> {
+    println!("DATA: {}", data.clone().len());
+    let json_data = Json(data);
+    sqlx::query!(
+        r#"
+            UPDATE environments
+            SET (data, updated_at) = (?, CURRENT_TIMESTAMP)
+            WHERE id = ?;
+        "#,
+        json_data,
+        id,
+    )
+    .execute(pool)
+    .await?;
+    get_environment(id, pool).await
+}
+
 pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
     sqlx::query_as!(
         Environment,
