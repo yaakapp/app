@@ -12,6 +12,7 @@ import { useDialog } from './DialogContext';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { Environment } from '../lib/models';
 import { Editor } from './core/Editor';
+import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 
 interface Props {
   className?: string;
@@ -19,6 +20,7 @@ interface Props {
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const environments = useEnvironments();
+  const updateEnvironment = useUpdateEnvironment();
   const activeRequest = useActiveRequest();
   const dialog = useDialog();
 
@@ -34,12 +36,14 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <Button onClick={() => {
           dialog.show({
             title: 'Environments',
-            render: () => <EnvironmentList
-              environments={environments}
-              onChange={data => {
-                console.log('data', data);
-              }}
-            />
+            render: () => <div>
+              {environments.map(e => (
+                <EnvironmentList
+                  key={e.id}
+                  environment={e}
+                />
+              ))}
+            </div>
           })
         }}>
           Environments
@@ -65,25 +69,22 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
 });
 
 interface EnvironmentListProps {
-  environments: Environment[];
-  onChange: (data: string) => void;
+  environment: Environment;
 }
 
-const EnvironmentList = function({ environments, onChange }: EnvironmentListProps) {
-  // For some reason useActiveWorkspaceId() doesn't work in modals (?)
-  return <ul className="inline">
-    {environments.map(e => (
-      <li key={e.id}>
-        <div>
-          {e.name}
-        </div>
-        <Editor
-          contentType="application/json"
-          className='w-full h-[400px] !bg-gray-50'
-          defaultValue={JSON.stringify(e.data, null, 2)}
-          onChange={onChange}
-        />
-      </li>
-    ))}
-  </ul>
+const EnvironmentList = function({ environment }: EnvironmentListProps) {
+  const updateEnvironment = useUpdateEnvironment(environment.id)
+  return (
+    <div>
+      <h1>{environment.name}</h1>
+      <Editor
+        contentType="application/json"
+        className='w-full h-[400px] !bg-gray-50'
+        defaultValue={JSON.stringify(environment.data, null, 2)}
+        onChange={data => {
+          updateEnvironment.mutate({ data: JSON.parse(data) });
+        }}
+      />
+    </div>
+  );
 };
