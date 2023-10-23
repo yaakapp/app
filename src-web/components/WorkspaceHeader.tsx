@@ -20,7 +20,6 @@ interface Props {
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const environments = useEnvironments();
-  const updateEnvironment = useUpdateEnvironment();
   const activeRequest = useActiveRequest();
   const dialog = useDialog();
 
@@ -82,7 +81,11 @@ const EnvironmentList = function({ environment }: EnvironmentListProps) {
         className='w-full h-[400px] !bg-gray-50'
         defaultValue={JSON.stringify(environment.data, null, 2)}
         onChange={data => {
-          updateEnvironment.mutate({ data: JSON.parse(data) });
+          try {
+            updateEnvironment.mutate({ data: JSON.parse(data) });
+          } catch (err) {
+            // That's okay
+          }
         }}
       />
     </div>

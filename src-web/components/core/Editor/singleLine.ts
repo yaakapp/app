@@ -6,8 +6,8 @@ export function singleLineExt() {
     (tr: Transaction): TransactionSpec | TransactionSpec[] => {
       if (!tr.isUserEvent('input')) return tr;
 
-      const trs: TransactionSpec[] = [];
-      tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
+      const specs: TransactionSpec[] = [];
+      tr.changes.iterChanges((_, toA, fromB, toB, inserted) => {
         let insert = '';
         let newlinesRemoved = 0;
         for (const line of inserted) {
@@ -21,9 +21,10 @@ export function singleLineExt() {
         const selection = EditorSelection.create([cursor], 0);
 
         const changes = [{ from: fromB, to: toA, insert }];
-        trs.push({ ...tr, selection, changes });
+        specs.push({ ...tr, selection, changes });
       });
-      return trs;
+
+      return specs;
     },
   );
 }
