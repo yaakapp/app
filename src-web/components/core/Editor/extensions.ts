@@ -37,6 +37,7 @@ import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
+import type { Environment } from '../../../lib/models';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -95,8 +96,9 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 export function getLanguageExtension({
   contentType,
   useTemplating = false,
+  environment,
   autocomplete,
-}: Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
+}: { environment: Environment | null } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   if (contentType === 'application/graphql') {
     return graphql();
   }
@@ -106,7 +108,7 @@ export function getLanguageExtension({
     return base ? base : [];
   }
 
-  return twig(base, autocomplete);
+  return twig(base, environment, autocomplete);
 }
 
 export const baseExtensions = [
