@@ -344,6 +344,22 @@ async fn create_workspace(
 }
 
 #[tauri::command]
+async fn create_environment(
+    workspace_id: &str,
+    name: &str,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Environment, String> {
+    let pool = &*db_instance.lock().await;
+    let data: HashMap<String, JsonValue> = HashMap::new();
+    let created_environment = models::create_environment(workspace_id, name, data, pool)
+        .await
+        .expect("Failed to create environment");
+
+    emit_and_return(&window, "created_model", created_environment)
+}
+
+#[tauri::command]
 async fn create_request(
     workspace_id: &str,
     name: &str,
@@ -639,6 +655,7 @@ fn main() {
             })
         })
         .invoke_handler(tauri::generate_handler![
+            create_environment,
             create_request,
             create_workspace,
             delete_all_responses,

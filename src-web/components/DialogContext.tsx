@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import type { DialogProps } from './core/Dialog';
 import { Dialog } from './core/Dialog';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 
 type DialogEntry = {
   id: string;
@@ -54,9 +56,11 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
 
 function DialogInstance({ id, render, ...props }: DialogEntry) {
   const { actions } = useContext(DialogContext);
+  const children = render({ hide: () => actions.hide(id) });
+  console.log("ACITEV WORKSPAXCE ID 2", useActiveWorkspaceId());
   return (
     <Dialog open onClose={() => actions.hide(id)} {...props}>
-      {render({ hide: () => actions.hide(id) })}
+      {children}
     </Dialog>
   );
 }

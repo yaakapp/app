@@ -6,6 +6,7 @@ import { GlobalHooks } from './GlobalHooks';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
+import { DialogProvider } from './DialogContext';
 
 const router = createBrowserRouter([
   {
@@ -59,9 +60,9 @@ function WorkspaceOrRedirect() {
 
 function Layout() {
   return (
-    <>
+    <DialogProvider>
       <Outlet />
       <GlobalHooks />
-    </>
+    </DialogProvider>
   );
 }
