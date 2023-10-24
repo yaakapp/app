@@ -40,7 +40,7 @@ export function Overlay({ zIndex = 30, open, onClose, portalName, children }: Pr
             {children}
           </motion.div>
         </FocusTrap>
-      )}
+      )} 
     </Portal>
   );
 }

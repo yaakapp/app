@@ -5,7 +5,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
-import { DialogProvider } from './DialogContext';
 
 const queryClient = new QueryClient({
   logger: undefined,
@@ -24,12 +23,10 @@ export function App() {
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>
-            <DialogProvider>
               <Suspense>
                 <AppRouter />
                 {/*<ReactQueryDevtools initialIsOpen={false} />*/}
               </Suspense>
-            </DialogProvider>
           </DndProvider>
         </HelmetProvider>
       </MotionConfig>
