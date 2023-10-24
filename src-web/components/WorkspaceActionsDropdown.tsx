@@ -20,7 +20,7 @@ type Props = {
   className?: string;
 };
 
-export const WorkspaceActionsDropdown = memo(function WorkspaceDropdown({ className }: Props) {
+export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({ className }: Props) {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
