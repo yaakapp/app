@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { usePrompt } from '../hooks/usePrompt';
@@ -7,19 +6,24 @@ import type { Environment } from '../lib/models';
 import { Button } from './core/Button';
 import { Editor } from './core/Editor';
 import classnames from 'classnames';
+import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 
-export const EnvironmentEditDialog = function () {
+export const EnvironmentEditDialog = function() {
   const prompt = usePrompt();
   const environments = useEnvironments();
   const createEnvironment = useCreateEnvironment();
-  const [activeEnvironment, setActiveEnvironment] = useState<Environment | null>(null);
+  const [activeEnvironment, setActiveEnvironment] = useActiveEnvironment();
 
   return (
     <div className="h-full grid gap-3 grid-cols-[auto_minmax(0,1fr)]">
-      <aside className="h-full min-w-[120px] pr-3 border-r border-gray-200">
+      <aside className="relative h-full min-w-[200px] pr-3 border-r border-gray-200">
         {environments.map((e) => (
           <Button
-            className={classnames('w-full', activeEnvironment?.id === e.id && 'bg-highlight')}
+            size="sm"
+            className={classnames(
+              'w-full',
+              activeEnvironment?.id === e.id && 'bg-gray-100 text-gray-1000',
+            )}
             justify="start"
             key={e.id}
             onClick={() => {
@@ -30,6 +34,8 @@ export const EnvironmentEditDialog = function () {
           </Button>
         ))}
         <Button
+          size="sm"
+          className="mr-5 absolute bottom-0 left-0 right-0"
           color="gray"
           onClick={async () => {
             const name = await prompt({
@@ -41,7 +47,7 @@ export const EnvironmentEditDialog = function () {
             createEnvironment.mutate({ name });
           }}
         >
-          Create Environment
+          New Environment
         </Button>
       </aside>
       {activeEnvironment != null && <EnvironmentEditor environment={activeEnvironment} />}
@@ -49,7 +55,7 @@ export const EnvironmentEditDialog = function () {
   );
 };
 
-const EnvironmentEditor = function ({ environment }: { environment: Environment }) {
+const EnvironmentEditor = function({ environment }: { environment: Environment }) {
   const updateEnvironment = useUpdateEnvironment(environment.id);
   return (
     <Editor

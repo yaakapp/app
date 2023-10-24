@@ -254,6 +254,7 @@ pub async fn create_environment(
 
 pub async fn update_environment(
     id: &str,
+    name: &str,
     data: HashMap<String, JsonValue>,
     pool: &Pool<Sqlite>,
 ) -> Result<Environment, sqlx::Error> {
@@ -262,9 +263,10 @@ pub async fn update_environment(
     sqlx::query!(
         r#"
             UPDATE environments
-            SET (data, updated_at) = (?, CURRENT_TIMESTAMP)
+            SET (name, data, updated_at) = (?, ?, CURRENT_TIMESTAMP)
             WHERE id = ?;
         "#,
+        name,
         json_data,
         id,
     )
