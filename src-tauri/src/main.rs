@@ -425,10 +425,14 @@ async fn update_environment(
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
 
-    let updated_environment =
-        models::update_environment(environment.id.as_str(), environment.data.0, pool)
-            .await
-            .expect("Failed to update request");
+    let updated_environment = models::update_environment(
+        environment.id.as_str(),
+        environment.name.as_str(),
+        environment.data.0,
+        pool,
+    )
+    .await
+    .expect("Failed to update request");
 
     emit_and_return(&window, "updated_model", updated_environment)
 }

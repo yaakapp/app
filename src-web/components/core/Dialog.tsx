@@ -53,6 +53,7 @@ export function Dialog({
             animate={{ top: 0, scale: 1 }}
             className={classnames(
               className,
+              'h-full gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',
               'p-5 rounded-lg overflow-auto',
               'dark:border border-highlight shadow shadow-black/10',
@@ -66,8 +67,7 @@ export function Dialog({
               {title}
             </Heading>
             {description && <p id={descriptionId}>{description}</p>}
-            <div className="h-full w-full mt-4">{children}</div>
-
+            <div className="h-full w-full">{children}</div>
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
               <IconButton
