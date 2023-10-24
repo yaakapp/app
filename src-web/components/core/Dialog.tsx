@@ -54,11 +54,11 @@ export function Dialog({
             className={classnames(
               className,
               'relative bg-gray-50 pointer-events-auto',
-              'max-h-[80vh] p-5 rounded-lg overflow-auto',
+              'p-5 rounded-lg overflow-auto',
               'dark:border border-highlight shadow shadow-black/10',
-              size === 'sm' && 'w-[25rem]',
-              size === 'md' && 'w-[45rem]',
-              size === 'full' && 'w-[80vw]',
+              size === 'sm' && 'w-[25rem] max-h-[80vh]',
+              size === 'md' && 'w-[45rem] max-h-[80vh]',
+              size === 'full' && 'w-[calc(100vw-8em)] h-[calc(100vh-8em)]',
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >
@@ -66,7 +66,7 @@ export function Dialog({
               {title}
             </Heading>
             {description && <p id={descriptionId}>{description}</p>}
-            <div className="mt-4">{children}</div>
+            <div className="h-full w-full mt-4">{children}</div>
 
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
