@@ -10,7 +10,7 @@ npm run tauri-dev
 
 # Migration commands
 cd src-tauri
-cargo sqlx migrate add <name>
+cargo sqlx migrate add ${MIGRATION_NAME}
 cargo sqlx migrate run --database-url 'sqlite://db.sqlite?mode=rw'
 cargo sqlx prepare --database-url 'sqlite://db.sqlite'
 ```
