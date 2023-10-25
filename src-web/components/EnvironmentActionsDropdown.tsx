@@ -106,13 +106,14 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       },
     ];
   }, [
-    environments,
-    activeEnvironment?.name,
     // deleteEnvironment.mutate,
-    dialog,
-    prompt,
-    updateEnvironment,
+    activeEnvironment?.name,
     createEnvironment,
+    dialog,
+    environments,
+    prompt,
+    setActiveEnvironment,
+    updateEnvironment,
   ]);
 
   return (
@@ -122,7 +123,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         className={classnames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
       >
-        {activeEnvironment?.name ?? 'No Env'}
+        {activeEnvironment?.name ?? <span className="italic text-gray-500">No Environment</span>}
       </Button>
     </Dropdown>
   );
