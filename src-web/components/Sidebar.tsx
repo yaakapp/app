@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { ForwardedRef } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
@@ -19,6 +19,7 @@ import { Icon } from './core/Icon';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 interface Props {
   className?: string;
@@ -32,6 +33,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeRequestId = useActiveRequestId();
+  const activeEnvironmentId = useActiveEnvironmentId();
   const unorderedRequests = useRequests();
   const deleteAnyRequest = useDeleteAnyRequest();
   const routes = useAppRoutes();
@@ -58,11 +60,15 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const index = requests.findIndex((r) => r.id === requestId);
       const request = requests[index];
       if (!request) return;
-      routes.navigate('request', { requestId, workspaceId: request.workspaceId });
+      routes.navigate('request', {
+        requestId,
+        workspaceId: request.workspaceId,
+        environmentId: activeEnvironmentId,
+      });
       setSelectedIndex(index);
       focusActiveRequest(index);
     },
-    [focusActiveRequest, requests, routes],
+    [focusActiveRequest, requests, routes, activeEnvironmentId],
   );
 
   const handleFocus = useCallback(() => {
@@ -143,7 +149,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         onFocus={handleFocus}
         onBlur={handleBlur}
         tabIndex={hidden ? -1 : 0}
-        className={classnames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
+        className={classNames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
       >
         <VStack
           as="ul"
@@ -299,7 +305,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
   }, [onSelect, requestId]);
 
   return (
-    <li ref={ref} className={classnames(className, 'block group/item px-2 pb-0.5')}>
+    <li ref={ref} className={classNames(className, 'block group/item px-2 pb-0.5')}>
       <button
         // tabIndex={-1} // Will prevent drag-n-drop
         onClick={handleSelect}
@@ -307,7 +313,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
         onDoubleClick={handleStartEditing}
         data-active={isActive}
         data-selected={selected}
-        className={classnames(
+        className={classNames(
           'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
           editing && 'ring-1 focus-within:ring-focus',
           isActive && 'bg-highlight text-gray-800',
@@ -324,7 +330,7 @@ const _SidebarItem = forwardRef(function SidebarItem(
             onKeyDown={handleInputKeyDown}
           />
         ) : (
-          <span className={classnames('truncate', !requestName && 'text-gray-400 italic')}>
+          <span className={classNames('truncate', !requestName && 'text-gray-400 italic')}>
             {requestName || 'New Request'}
           </span>
         )}
@@ -396,7 +402,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
     <SidebarItem
       ref={ref}
       draggable
-      className={classnames(isDragging && 'opacity-20')}
+      className={classNames(isDragging && 'opacity-20')}
       requestName={requestName}
       requestId={requestId}
       {...props}

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { MouseEvent } from 'react';
 import { forwardRef, useCallback } from 'react';
 import { useTimedBoolean } from '../../hooks/useTimedBoolean';
@@ -45,7 +45,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       disabled={icon === 'empty'}
       tabIndex={tabIndex ?? icon === 'empty' ? -1 : undefined}
       onClick={handleClick}
-      className={classnames(
+      className={classNames(
         className,
         'flex-shrink-0 text-gray-700 hover:text-gray-1000',
         '!px-0',
@@ -60,7 +60,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         size={iconSize}
         icon={confirmed ? 'check' : icon}
         spin={spin}
-        className={classnames(
+        className={classNames(
           iconClassName,
           props.disabled && 'opacity-70',
           confirmed && 'text-green-600',

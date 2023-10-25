@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
 import { memo, useCallback, useRef } from 'react';
@@ -44,7 +44,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   });
 
   return (
-    <form onSubmit={handleSubmit} className={classnames('url-bar', className)}>
+    <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
       <Input
         ref={inputRef}
         size="sm"

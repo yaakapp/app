@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
@@ -278,7 +278,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
             dir="ltr"
             ref={containerRef}
             style={containerStyles}
-            className={classnames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
+            className={classNames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
           >
             <span
               aria-hidden
@@ -290,7 +290,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 space={0.5}
                 ref={initMenu}
                 style={menuStyles}
-                className={classnames(
+                className={classNames(
                   className,
                   'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
                   'border-gray-200 overflow-auto mb-1 mx-0.5',
@@ -356,7 +356,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onFocus={handleFocus}
       onClick={handleClick}
       justify="start"
-      className={classnames(
+      className={classNames(
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-900 rounded',
@@ -366,7 +366,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
     >
       {item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       <div
-        className={classnames(
+        className={classNames(
           // Add padding on right when no right slot, for some visual balance
           !item.rightSlot && 'pr-4',
         )}

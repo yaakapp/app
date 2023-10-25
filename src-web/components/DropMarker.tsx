@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import React, { memo } from 'react';
 
 interface Props {
@@ -9,7 +9,7 @@ export const DropMarker = memo(
   function DropMarker({ className }: Props) {
     return (
       <div
-        className={classnames(
+        className={classNames(
           className,
           'relative w-full h-0 overflow-visible pointer-events-none',
         )}

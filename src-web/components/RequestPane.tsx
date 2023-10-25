@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api';
 import { appWindow } from '@tauri-apps/api/window';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
@@ -152,7 +152,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
   return (
     <div
       style={style}
-      className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
+      className={classNames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
       {activeRequest && (
         <>

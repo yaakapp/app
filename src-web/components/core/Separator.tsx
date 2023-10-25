@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 
 interface Props {
   orientation?: 'horizontal' | 'vertical';
@@ -14,10 +14,10 @@ export function Separator({
   label,
 }: Props) {
   return (
-    <div role="separator" className={classnames(className, 'flex items-center')}>
+    <div role="separator" className={classNames(className, 'flex items-center')}>
       {label && <div className="text-xs text-gray-500 mx-2 whitespace-nowrap">{label}</div>}
       <div
-        className={classnames(
+        className={classNames(
           variant === 'primary' && 'bg-highlight',
           variant === 'secondary' && 'bg-highlightSecondary',
           orientation === 'horizontal' && 'w-full h-[1px]',

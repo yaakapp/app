@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React from 'react';
 
@@ -28,7 +28,7 @@ export function ResizeHandle({
       aria-hidden
       draggable
       style={style}
-      className={classnames(
+      className={classNames(
         className,
         'group z-10 flex',
         vertical ? 'w-full h-3 cursor-row-resize' : 'h-full w-3 cursor-col-resize',
@@ -45,7 +45,7 @@ export function ResizeHandle({
       {/* Show global overlay with cursor style to ensure cursor remains the same when moving quickly */}
       {isResizing && (
         <div
-          className={classnames(
+          className={classNames(
             'fixed -left-20 -right-20 -top-20 -bottom-20',
             vertical && 'cursor-row-resize',
             !vertical && 'cursor-col-resize',

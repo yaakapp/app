@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
@@ -15,6 +15,7 @@ import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { HStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 type Props = {
   className?: string;
@@ -24,6 +25,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
+  const environmentId = useActiveEnvironmentId();
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
@@ -53,7 +55,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   color="gray"
                   onClick={() => {
                     hide();
-                    routes.navigate('workspace', { workspaceId: w.id });
+                    routes.navigate('workspace', { workspaceId: w.id, environmentId });
                   }}
                 >
                   This Window
@@ -66,7 +68,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     await invoke('new_window', {
-                      url: routes.paths.workspace({ workspaceId: w.id }),
+                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
                     });
                   }}
                 >
@@ -150,7 +152,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     <Dropdown items={items}>
       <Button
         size="sm"
-        className={classnames(className, 'text-gray-800 !px-2 truncate')}
+        className={classNames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
       >
         {activeWorkspace?.name}

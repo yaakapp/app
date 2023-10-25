@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { IconButton } from './core/IconButton';
@@ -20,7 +20,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     <HStack
       justifyContent="center"
       alignItems="center"
-      className={classnames(className, 'w-full h-full')}
+      className={classNames(className, 'w-full h-full')}
     >
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
