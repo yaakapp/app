@@ -1,23 +1,17 @@
 import classnames from 'classnames';
 import type { CSSProperties } from 'react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { useCallback, memo, useEffect, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
-import { useDeleteResponse } from '../hooks/useDeleteResponse';
-import { useDeleteResponses } from '../hooks/useDeleteResponses';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
 import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import type { HttpResponse } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
-import { pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
-import { Dropdown } from './core/Dropdown';
 import { DurationTag } from './core/DurationTag';
-import { Icon } from './core/Icon';
-import { IconButton } from './core/IconButton';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -29,6 +23,7 @@ import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { TextViewer } from './responseViewers/TextViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
+import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 
 interface Props {
   style?: CSSProperties;
@@ -46,14 +41,16 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : latestResponse ?? null;
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
-  const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
-  const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
 
   // Unset pinned response when a new one comes in
   useEffect(() => setPinnedResponseId(null), [responses.length]);
 
   const contentType = useResponseContentType(activeResponse);
+
+  const handlePinnedResponse = useCallback((r: HttpResponse) => {
+    setPinnedResponseId(r.id);
+  }, [setPinnedResponseId])
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -125,44 +122,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                   </HStack>
                 </div>
 
-                <Dropdown
-                  items={[
-                    {
-                      key: 'clear-single',
-                      label: 'Clear Response',
-                      onSelect: deleteResponse.mutate,
-                      disabled: responses.length === 0,
-                    },
-                    {
-                      key: 'clear-all',
-                      label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
-                      onSelect: deleteAllResponses.mutate,
-                      hidden: responses.length <= 1,
-                      disabled: responses.length === 0,
-                    },
-                    { type: 'separator', label: 'History' },
-                    ...responses.slice(0, 20).map((r) => ({
-                      key: r.id,
-                      label: (
-                        <HStack space={2}>
-                          <StatusTag className="text-xs" response={r} />
-                          <span>&bull;</span> <span>{r.elapsed}ms</span>
-                        </HStack>
-                      ),
-                      leftSlot:
-                        activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-                      onSelect: () => setPinnedResponseId(r.id),
-                    })),
-                  ]}
-                >
-                  <IconButton
-                    title="Show response history"
-                    icon="triangleDown"
-                    className="ml-auto"
-                    size="sm"
-                    iconSize="md"
-                  />
-                </Dropdown>
+                <RecentResponsesDropdown
+                  responses={responses}
+                  activeResponse={activeResponse}
+                  onPinnedResponse={handlePinnedResponse}
+                />
               </HStack>
             )}
           </HStack>
