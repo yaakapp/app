@@ -4,18 +4,21 @@ import type { Environment } from '../lib/models';
 import { environmentsQueryKey } from './useEnvironments';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useAppRoutes } from './useAppRoutes';
 
 export function useCreateEnvironment() {
+  const environmentId = useActiveEnvironmentId();
   const workspaceId = useActiveWorkspaceId();
   const queryClient = useQueryClient();
-  const [, setActiveEnvironmentId ] = useActiveEnvironmentId();
+  const routes = useAppRoutes();
+
   return useMutation<Environment, unknown, Pick<Environment, 'name'>>({
     mutationFn: (patch) => {
       return invoke('create_environment', { ...patch, workspaceId });
     },
     onSuccess: async (environment) => {
       if (workspaceId == null) return;
-      setActiveEnvironmentId(environment.id);
+      routes.navigate('workspace', { workspaceId, environmentId });
       queryClient.setQueryData<Environment[]>(
         environmentsQueryKey({ workspaceId }),
         (environments) => [...(environments ?? []), environment],

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { useCallback, memo, useEffect, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
@@ -84,7 +84,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
   return (
     <div
       style={style}
-      className={classnames(
+      className={classNames(
         className,
         'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
         'dark:bg-gray-100 rounded-md border border-highlight',
@@ -96,7 +96,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         <>
           <HStack
             alignItems="center"
-            className={classnames(
+            className={classNames(
               'text-gray-700 text-sm w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
               '-mb-1.5',

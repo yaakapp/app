@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { ReactNode } from 'react';
 
 interface Props {
@@ -10,7 +10,7 @@ export function WindowDragRegion({ className, ...props }: Props) {
   return (
     <div
       data-tauri-drag-region
-      className={classnames(className, 'w-full flex-shrink-0')}
+      className={classNames(className, 'w-full flex-shrink-0')}
       {...props}
     />
   );

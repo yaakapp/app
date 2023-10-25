@@ -1,14 +1,12 @@
 import { useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import type { RouteParamsRequest } from './useAppRoutes';
 
-export function useActiveEnvironmentId(): [string | null, (id: string) => void] {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const id = searchParams.get('environmentId') ?? null;
+export function useActiveEnvironmentId(): string | null {
+  const { environmentId } = useParams<RouteParamsRequest>();
+  if (environmentId == null || environmentId === '__default__') {
+    return null;
+  }
 
-  const setId = useCallback((id: string) => {
-    searchParams.set('environmentId', id)
-    setSearchParams(searchParams);
-  }, [searchParams, setSearchParams])
-
-  return [id, setId];
+  return environmentId;
 }

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { useCallback } from 'react';
 import { Icon } from './Icon';
 
@@ -20,7 +20,7 @@ export function Checkbox({ checked, onChange, className, disabled }: Props) {
       aria-checked={checked ? 'true' : 'false'}
       disabled={disabled}
       onClick={handleClick}
-      className={classnames(
+      className={classNames(
         className,
         'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',
         'focus:border-focus',

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { HttpResponse } from '../../lib/models';
 
 interface Props {
@@ -12,7 +12,7 @@ export function StatusTag({ response, className, showReason }: Props) {
   const label = error ? 'ERR' : status;
   return (
     <span
-      className={classnames(
+      className={classNames(
         className,
         'font-mono',
         status >= 0 && status < 100 && 'text-red-600',

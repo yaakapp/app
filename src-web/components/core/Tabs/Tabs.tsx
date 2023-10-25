@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { Button } from '../Button';
@@ -67,11 +67,11 @@ export function Tabs({
   return (
     <div
       ref={ref}
-      className={classnames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
+      className={classNames(className, 'h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1')}
     >
       <div
         aria-label={label}
-        className={classnames(
+        className={classNames(
           tabListClassName,
           'flex items-center overflow-x-auto overflow-y-visible hide-scrollbars mt-1 mb-2',
           // Give space for button focus states within overflow boundary.
@@ -81,7 +81,7 @@ export function Tabs({
         <HStack space={2} className="flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
-            const btnClassName = classnames(
+            const btnClassName = classNames(
               isActive ? '' : 'text-gray-600 hover:text-gray-800',
               '!px-2 ml-[1px]',
             );
@@ -108,7 +108,7 @@ export function Tabs({
                       : option?.label ?? 'Unknown'}
                     <Icon
                       icon="triangleDown"
-                      className={classnames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
+                      className={classNames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
                     />
                   </Button>
                 </RadioDropdown>
@@ -149,7 +149,7 @@ export const TabContent = memo(function TabContent({
     <div
       tabIndex={-1}
       data-tab={value}
-      className={classnames(className, 'tab-content', 'hidden w-full h-full')}
+      className={classNames(className, 'tab-content', 'hidden w-full h-full')}
     >
       {children}
     </div>

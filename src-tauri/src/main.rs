@@ -7,35 +7,30 @@
 #[macro_use]
 extern crate objc;
 
-use std::collections::HashMap;
-use std::env::current_dir;
-use std::fs::{create_dir_all, File};
-use std::io::Write;
-
+use crate::models::{find_environments, generate_id};
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
 use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
-use serde_json::json;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
-use tauri::api::path::data_dir;
-use tauri::regex::Regex;
+use std::collections::HashMap;
+use std::env::current_dir;
+use std::fs::{create_dir_all, File};
+use std::io::Write;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tokio::sync::Mutex;
-
 use window_ext::WindowExt;
 
-use crate::models::{find_environments, generate_id};
-
 mod models;
+mod render;
 mod window_ext;
 
 #[derive(serde::Serialize)]
@@ -84,24 +79,13 @@ async fn actually_send_ephemeral_request(
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
-    let mut url_string = request.url.to_string();
 
     let environments = find_environments(&request.workspace_id, pool)
         .await
         .expect("Failed to find environments");
     let environment: models::Environment = environments.first().unwrap().clone();
-    let variables = environment.data;
 
-    let re = Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}").expect("Failed to create regex");
-    url_string = re
-        .replace(&url_string, |caps: &tauri::regex::Captures| {
-            let key = caps.get(1).unwrap().as_str();
-            match variables.get(key) {
-                Some(v) => v.as_str().unwrap(),
-                None => "",
-            }
-        })
-        .to_string();
+    let mut url_string = render::render(&request.url, environment.clone());
 
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);

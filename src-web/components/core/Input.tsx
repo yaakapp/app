@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
@@ -68,7 +68,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   }, [onBlur]);
 
   const id = `input-${name}`;
-  const inputClassName = classnames(
+  const inputClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
     // Bump things over if the slots are occupied
@@ -94,7 +94,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     <VStack className="w-full">
       <label
         htmlFor={id}
-        className={classnames(
+        className={classNames(
           labelClassName,
           'font-semibold text-xs uppercase text-gray-700',
           hideLabel && 'sr-only',
@@ -104,7 +104,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
       </label>
       <HStack
         alignItems="center"
-        className={classnames(
+        className={classNames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
           'border',

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type {
   CSSProperties,
@@ -113,7 +113,7 @@ export default function Workspace() {
   return (
     <div
       style={styles}
-      className={classnames(
+      className={classNames(
         'grid w-full h-full',
         // Animate sidebar width changes but only when not resizing
         // because it's too slow to animate on mouse move
@@ -125,7 +125,7 @@ export default function Workspace() {
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className={classnames(
+            className={classNames(
               'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
@@ -140,7 +140,7 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div style={side} className={classnames('overflow-hidden bg-gray-100')}>
+          <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
             <Sidebar className="border-r border-highlight" />
           </div>
           <ResizeHandle
@@ -173,7 +173,7 @@ function HeaderSize({ className, ...props }: HeaderSizeProps) {
   const platform = useOsInfo();
   return (
     <div
-      className={classnames(
+      className={classNames(
         className,
         'h-md pt-[1px] flex items-center w-full pr-3 pl-20 border-b',
         platform?.osType === 'Darwin' && 'pl-20',

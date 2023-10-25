@@ -1,5 +1,5 @@
 import useResizeObserver from '@react-hook/resize-observer';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
@@ -120,7 +120,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
       <ResizeHandle
         style={drag}
         isResizing={isResizing}
-        className={classnames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
+        className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
         onResizeStart={handleResizeStart}
         onReset={handleReset}
         side={vertical ? 'top' : 'left'}

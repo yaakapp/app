@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 
 interface Props {
   count: number;
@@ -10,7 +10,7 @@ export function CountBadge({ count, className }: Props) {
   return (
     <div
       aria-hidden
-      className={classnames(
+      className={classNames(
         className,
         'opacity-70 border border-highlight text-3xs rounded mb-0.5 px-1 ml-1 h-4 font-mono',
       )}
