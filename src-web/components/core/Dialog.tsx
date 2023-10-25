@@ -53,7 +53,7 @@ export function Dialog({
             animate={{ top: 0, scale: 1 }}
             className={classnames(
               className,
-              'h-full gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
+              'gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',
               'p-5 rounded-lg overflow-auto',
               'dark:border border-highlight shadow shadow-black/10',
