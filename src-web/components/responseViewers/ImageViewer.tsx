@@ -1,5 +1,5 @@
 import { convertFileSrc } from '@tauri-apps/api/tauri';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { HttpResponse } from '../../lib/models';
 
 interface Props {
@@ -17,7 +17,7 @@ export function ImageViewer({ response, className }: Props) {
     <img
       src={src}
       alt="Response preview"
-      className={classnames(className, 'max-w-full max-h-full')}
+      className={classNames(className, 'max-w-full max-h-full')}
     />
   );
 }

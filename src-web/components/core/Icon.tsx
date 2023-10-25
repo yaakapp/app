@@ -36,7 +36,7 @@ import {
   TriangleRightIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { HTMLAttributes } from 'react';
 import { memo } from 'react';
 import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPanelHiddenIcon.svg';
@@ -95,7 +95,7 @@ export const Icon = memo(function Icon({ icon, spin, size = 'md', className }: I
   const Component = icons[icon] ?? icons.question;
   return (
     <Component
-      className={classnames(
+      className={classNames(
         className,
         'text-inherit',
         size === 'md' && 'h-4 w-4',

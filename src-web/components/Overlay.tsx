@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
@@ -26,7 +26,7 @@ export function Overlay({ zIndex = 30, open, onClose, portalName, children }: Pr
       {open && (
         <FocusTrap>
           <motion.div
-            className={classnames('fixed inset-0', zIndexes[zIndex])}
+            className={classNames('fixed inset-0', zIndexes[zIndex])}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >

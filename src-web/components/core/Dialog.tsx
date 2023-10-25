@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
@@ -51,7 +51,7 @@ export function Dialog({
           <motion.div
             initial={{ top: 5, scale: 0.97 }}
             animate={{ top: 0, scale: 1 }}
-            className={classnames(
+            className={classNames(
               className,
               'gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',

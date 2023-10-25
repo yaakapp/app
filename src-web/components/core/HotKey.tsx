@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 
 interface Props {
   modifier: 'Meta' | 'Control' | 'Shift';
@@ -13,7 +13,7 @@ const keys: Record<Props['modifier'], string> = {
 
 export function HotKey({ modifier, keyName }: Props) {
   return (
-    <span className={classnames('text-sm text-gray-600')}>
+    <span className={classNames('text-sm text-gray-600')}>
       {keys[modifier]}
       {keyName}
     </span>

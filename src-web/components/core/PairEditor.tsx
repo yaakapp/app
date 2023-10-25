@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
@@ -134,7 +134,7 @@ export const PairEditor = memo(function PairEditor({
 
   return (
     <div
-      className={classnames(
+      className={classNames(
         className,
         '@container',
         'pb-2 grid overflow-auto max-h-full',
@@ -264,7 +264,7 @@ const FormRow = memo(function FormRow({
   return (
     <div
       ref={ref}
-      className={classnames(
+      className={classNames(
         className,
         'group grid grid-cols-[auto_auto_minmax(0,1fr)_auto]',
         'grid-rows-1 items-center',
@@ -273,7 +273,7 @@ const FormRow = memo(function FormRow({
     >
       {!isLast ? (
         <div
-          className={classnames(
+          className={classNames(
             'py-2 h-7 w-3 flex items-center',
             'justify-center opacity-0 hover:opacity-100',
           )}
@@ -286,11 +286,11 @@ const FormRow = memo(function FormRow({
       <Checkbox
         disabled={isLast}
         checked={isLast ? false : !!pairContainer.pair.enabled}
-        className={classnames('mr-2', isLast && '!opacity-disabled')}
+        className={classNames('mr-2', isLast && '!opacity-disabled')}
         onChange={handleChangeEnabled}
       />
       <div
-        className={classnames(
+        className={classNames(
           'grid items-center',
           '@xs:gap-2 @xs:!grid-rows-1 @xs:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
           'gap-0.5 grid-cols-1 grid-rows-2',
@@ -303,7 +303,7 @@ const FormRow = memo(function FormRow({
           validate={nameValidate}
           useTemplating
           forceUpdateKey={forceUpdateKey}
-          containerClassName={classnames(isLast && 'border-dashed')}
+          containerClassName={classNames(isLast && 'border-dashed')}
           defaultValue={pairContainer.pair.name}
           label="Name"
           name="name"
@@ -315,7 +315,7 @@ const FormRow = memo(function FormRow({
         <Input
           hideLabel
           size="sm"
-          containerClassName={classnames(isLast && 'border-dashed')}
+          containerClassName={classNames(isLast && 'border-dashed')}
           validate={valueValidate}
           forceUpdateKey={forceUpdateKey}
           defaultValue={pairContainer.pair.value}

@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, memo, useMemo } from 'react';
 import { Icon } from './Icon';
@@ -45,7 +45,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
 ) {
   const classes = useMemo(
     () =>
-      classnames(
+      classNames(
         className,
         'flex-shrink-0 outline-none whitespace-nowrap',
         'focus-visible-or-class:ring',

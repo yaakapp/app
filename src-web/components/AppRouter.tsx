@@ -7,6 +7,7 @@ import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 import { DialogProvider } from './DialogContext';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 const router = createBrowserRouter([
   {
@@ -23,12 +24,16 @@ const router = createBrowserRouter([
         element: <Workspaces />,
       },
       {
-        path: routePaths.workspace({ workspaceId: ':workspaceId' }),
+        path: routePaths.workspace({
+          workspaceId: ':workspaceId',
+          environmentId: ':environmentId',
+        }),
         element: <WorkspaceOrRedirect />,
       },
       {
         path: routePaths.request({
           workspaceId: ':workspaceId',
+          environmentId: ':environmentId',
           requestId: ':requestId',
         }),
         element: <Workspace />,
@@ -42,18 +47,23 @@ export function AppRouter() {
 }
 
 function WorkspaceOrRedirect() {
+  const environmentId = useActiveEnvironmentId();
   const recentRequests = useRecentRequests();
   const requests = useRequests();
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
 
-  if (request === undefined) {
+  if (request === undefined || environmentId === null) {
     return <Workspace />;
   }
 
   return (
     <Navigate
-      to={routes.paths.request({ workspaceId: request.workspaceId, requestId: request.id })}
+      to={routes.paths.request({
+        workspaceId: request.workspaceId,
+        environmentId,
+        requestId: request.id,
+      })}
     />
   );
 }

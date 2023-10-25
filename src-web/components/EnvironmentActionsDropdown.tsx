@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
@@ -12,6 +12,7 @@ import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { usePrompt } from '../hooks/usePrompt';
 import { useDialog } from './DialogContext';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 
 type Props = {
   className?: string;
@@ -21,11 +22,12 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   className,
 }: Props) {
   const environments = useEnvironments();
-  const [activeEnvironment, setActiveEnvironment] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
   const updateEnvironment = useUpdateEnvironment(activeEnvironment?.id ?? null);
   const createEnvironment = useCreateEnvironment();
   const prompt = usePrompt();
   const dialog = useDialog();
+  const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
     const environmentItems = environments.map(
@@ -33,7 +35,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         key: e.id,
         label: e.name,
         onSelect: async () => {
-          setActiveEnvironment(e);
+          routes.setEnvironment(e);
         },
       }),
       [],
@@ -112,15 +114,15 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
     dialog,
     environments,
     prompt,
-    setActiveEnvironment,
     updateEnvironment,
+    routes,
   ]);
 
   return (
     <Dropdown items={items}>
       <Button
         size="sm"
-        className={classnames(className, 'text-gray-800 !px-2 truncate')}
+        className={classNames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
       >
         {activeEnvironment?.name ?? <span className="italic text-gray-500">No Environment</span>}

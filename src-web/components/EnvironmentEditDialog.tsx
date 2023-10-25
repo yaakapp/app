@@ -5,14 +5,17 @@ import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import type { Environment } from '../lib/models';
 import { Button } from './core/Button';
 import { Editor } from './core/Editor';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
+import { Link } from 'react-router-dom';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 
 export const EnvironmentEditDialog = function() {
+  const routes = useAppRoutes();
   const prompt = usePrompt();
   const environments = useEnvironments();
   const createEnvironment = useCreateEnvironment();
-  const [activeEnvironment, setActiveEnvironment] = useActiveEnvironment();
+  const activeEnvironment = useActiveEnvironment();
 
   return (
     <div className="h-full grid gap-3 grid-cols-[auto_minmax(0,1fr)]">
@@ -20,14 +23,14 @@ export const EnvironmentEditDialog = function() {
         {environments.map((e) => (
           <Button
             size="sm"
-            className={classnames(
+            className={classNames(
               'w-full',
               activeEnvironment?.id === e.id && 'bg-gray-100 text-gray-1000',
             )}
             justify="start"
             key={e.id}
             onClick={() => {
-              setActiveEnvironment(e);
+              routes.setEnvironment(e);
             }}
           >
             {e.name}

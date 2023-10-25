@@ -2,7 +2,7 @@ import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState, Transaction } from '@codemirror/state';
 import type { ViewUpdate } from '@codemirror/view';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
-import classnames from 'classnames';
+import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
@@ -168,7 +168,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   const cmContainer = (
     <div
       ref={initEditorRef}
-      className={classnames(
+      className={classNames(
         className,
         'cm-wrapper text-base bg-gray-50',
         type === 'password' && 'cm-obscure-text',

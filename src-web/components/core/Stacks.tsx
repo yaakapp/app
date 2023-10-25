@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classNames from 'classnames';
 import type { ComponentType, ForwardedRef, HTMLAttributes, ReactNode } from 'react';
 import { forwardRef } from 'react';
 
@@ -25,7 +25,7 @@ export const HStack = forwardRef(function HStack(
   return (
     <BaseStack
       ref={ref}
-      className={classnames(className, 'flex-row', space != null && gapClasses[space])}
+      className={classNames(className, 'flex-row', space != null && gapClasses[space])}
       {...props}
     >
       {children}
@@ -45,7 +45,7 @@ export const VStack = forwardRef(function VStack(
   return (
     <BaseStack
       ref={ref}
-      className={classnames(className, 'flex-col', space != null && gapClasses[space])}
+      className={classNames(className, 'flex-col', space != null && gapClasses[space])}
       {...props}
     >
       {children}
@@ -69,7 +69,7 @@ const BaseStack = forwardRef(function BaseStack(
   return (
     <Component
       ref={ref}
-      className={classnames(
+      className={classNames(
         className,
         'flex',
         alignItems === 'center' && 'items-center',
