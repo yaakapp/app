@@ -5,7 +5,7 @@ import { memo, useCallback, useRef } from 'react';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { IconButton } from './core/IconButton';
@@ -39,7 +39,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     [sendRequest],
   );
 
-  useTauriEvent('focus_url', () => {
+  useListenToTauriEvent('focus_url', () => {
     inputRef.current?.focus();
   });
 

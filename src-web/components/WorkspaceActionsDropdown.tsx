@@ -9,6 +9,7 @@ import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Button } from './core/Button';
+import type { ButtonProps } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -17,12 +18,11 @@ import { HStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
-type Props = {
-  className?: string;
-};
+type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown'>;
 
 export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   className,
+  ...buttonProps
 }: Props) {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
@@ -36,9 +36,10 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
-    const workspaceItems = workspaces.map((w) => ({
+    const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
       key: w.id,
       label: w.name,
+      rightSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : undefined,
       onSelect: async () => {
         dialog.show({
           id: 'open-workspace',
@@ -147,6 +148,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     ];
   }, [
     activeWorkspace?.name,
+    activeWorkspaceId,
     createWorkspace,
     deleteWorkspace.mutate,
     dialog,
@@ -163,6 +165,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         size="sm"
         className={classNames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
+        leftSlot={<img src="https://yaak.app/logo.svg" alt="Workspace logo" className="w-4 h-4 mr-1" />}
+        {...buttonProps}
       >
         {activeWorkspace?.name}
       </Button>

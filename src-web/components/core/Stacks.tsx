@@ -57,7 +57,7 @@ type BaseStackProps = HTMLAttributes<HTMLElement> & {
   as?: ComponentType | 'ul' | 'form';
   space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center';
-  justifyContent?: 'start' | 'center' | 'end';
+  justifyContent?: 'start' | 'center' | 'end' | 'between';
 };
 
 const BaseStack = forwardRef(function BaseStack(
@@ -77,6 +77,7 @@ const BaseStack = forwardRef(function BaseStack(
         justifyContent === 'start' && 'justify-start',
         justifyContent === 'center' && 'justify-center',
         justifyContent === 'end' && 'justify-end',
+        justifyContent === 'between' && 'justify-between',
       )}
       {...props}
     >

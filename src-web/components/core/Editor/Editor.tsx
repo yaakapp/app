@@ -35,6 +35,7 @@ export interface EditorProps {
   onChange?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  onSubmit?: () => void;
   singleLine?: boolean;
   wrapLines?: boolean;
   format?: (v: string) => string;
@@ -56,6 +57,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     onChange,
     onFocus,
     onBlur,
+    onSubmit,
     className,
     singleLine,
     format,
@@ -76,6 +78,12 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     handleChange.current = onChange;
   }, [onChange]);
+
+  // Use ref so we can update the onChange handler without re-initializing the editor
+  const handleSubmit = useRef<EditorProps['onSubmit']>(onSubmit);
+  useEffect(() => {
+    handleSubmit.current = onSubmit;
+  }, [onSubmit]);
 
   // Use ref so we can update the onChange handler without re-initializing the editor
   const handleFocus = useRef<EditorProps['onFocus']>(onFocus);
@@ -113,6 +121,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({ contentType, environment, useTemplating, autocomplete });
+    console.log("EXT", ext);
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType, autocomplete, useTemplating, environment]);
 
@@ -147,6 +156,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             container,
             readOnly,
             singleLine,
+            onSubmit: handleSubmit,
             onChange: handleChange,
             onFocus: handleFocus,
             onBlur: handleBlur,
@@ -219,11 +229,13 @@ function getExtensions({
   onChange,
   onFocus,
   onBlur,
+  onSubmit,
 }: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
   onFocus: MutableRefObject<EditorProps['onFocus']>;
   onBlur: MutableRefObject<EditorProps['onBlur']>;
+  onSubmit: MutableRefObject<EditorProps['onSubmit']>;
 }) {
   // TODO: Ensure tooltips render inside the dialog if we are in one.
   const parent =
@@ -249,10 +261,8 @@ function getExtensions({
           },
           keydown: (e) => {
             // Submit nearest form on enter if there is one
-            if (e.key === 'Enter') {
-              const el = e.currentTarget as HTMLElement;
-              const form = el.closest('form');
-              form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            if (onSubmit != null && e.key === 'Enter') {
+              onSubmit.current?.();
             }
           },
         }),

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useActiveRequestId } from './useActiveRequestId';
 import type { Environment } from '../lib/models';
+import { useCallback } from 'react';
 
 export type RouteParamsWorkspace = {
   workspaceId: string;
@@ -39,38 +39,42 @@ export const routePaths = {
 export function useAppRoutes() {
   const workspaceId = useActiveWorkspaceId();
   const requestId = useActiveRequestId();
+  const nav = useNavigate();
 
-  const navigate = useNavigate();
-  return useMemo(
-    () => ({
-      setEnvironment({ id: environmentId }: Environment) {
-        if (workspaceId == null) {
-          this.navigate('workspaces');
-        } else if (requestId == null) {
-          this.navigate('workspace', {
-            workspaceId: workspaceId,
-            environmentId: environmentId ?? null,
-          });
-        } else {
-          this.navigate('request', {
-            workspaceId,
-            environmentId: environmentId ?? null,
-            requestId,
-          });
-        }
-      },
-      navigate<T extends keyof typeof routePaths>(
-        path: T,
-        ...params: Parameters<(typeof routePaths)[T]>
-      ) {
-        // Not sure how to make TS work here, but it's good from the
-        // outside caller perspective.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resolvedPath = routePaths[path](...(params as any));
-        navigate(resolvedPath);
-      },
-      paths: routePaths,
-    }),
-    [navigate, requestId, workspaceId],
+  const navigate = useCallback(<T extends keyof typeof routePaths>(
+    path: T,
+    ...params: Parameters<(typeof routePaths)[T]>
+  ) => {
+    // Not sure how to make TS work here, but it's good from the
+    // outside caller perspective.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resolvedPath = routePaths[path](...(params as any));
+    nav(resolvedPath);
+  }, [nav]);
+
+  const setEnvironment = useCallback(
+    ({ id: environmentId }: Environment) => {
+      if (workspaceId == null) {
+        navigate('workspaces');
+      } else if (requestId == null) {
+        navigate('workspace', {
+          workspaceId: workspaceId,
+          environmentId: environmentId ?? null,
+        });
+      } else {
+        navigate('request', {
+          workspaceId,
+          environmentId: environmentId ?? null,
+          requestId,
+        });
+      }
+    },
+    [navigate, workspaceId, requestId],
   );
+
+  return {
+    paths: routePaths,
+    navigate,
+    setEnvironment,
+  };
 }

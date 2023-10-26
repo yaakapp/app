@@ -23,6 +23,7 @@ export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
   forDropdown?: boolean;
   disabled?: boolean;
   title?: string;
+  leftSlot?: ReactNode;
   rightSlot?: ReactNode;
 };
 
@@ -37,6 +38,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     type = 'button',
     justify = 'center',
     size = 'md',
+    leftSlot,
     rightSlot,
     disabled,
     ...props
@@ -63,7 +65,11 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
 
   return (
     <button ref={ref} type={type} className={classes} disabled={disabled} {...props}>
-      {isLoading && <Icon icon="update" size={size} className="animate-spin mr-1" />}
+      {isLoading ? (
+        <Icon icon="update" size={size} className="animate-spin mr-1" />
+      ) : leftSlot ? (
+        <div className="mr-1">{leftSlot}</div>
+      ) : null}
       {children}
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
       {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}

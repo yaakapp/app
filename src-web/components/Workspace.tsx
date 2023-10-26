@@ -6,12 +6,12 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from 'react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { WINDOW_FLOATING_SIDEBAR_WIDTH } from '../lib/constants';
 import { Button } from './core/Button';
 import { HStack } from './core/Stacks';
@@ -38,7 +38,7 @@ export default function Workspace() {
     null,
   );
 
-  useTauriEvent('toggle_sidebar', toggle);
+  useListenToTauriEvent('toggle_sidebar', toggle);
 
   // float/un-float sidebar on window resize
   useEffect(() => {
