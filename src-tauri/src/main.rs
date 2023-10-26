@@ -480,6 +480,19 @@ async fn delete_request(
 }
 
 #[tauri::command]
+async fn delete_environment(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    environment_id: &str,
+) -> Result<models::Environment, String> {
+    let pool = &*db_instance.lock().await;
+    let req = models::delete_environment(environment_id, pool)
+        .await
+        .expect("Failed to delete environment");
+    emit_and_return(&window, "deleted_model", req)
+}
+
+#[tauri::command]
 async fn list_requests(
     workspace_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -600,10 +613,10 @@ async fn new_window(window: Window<Wry>, url: &str) -> Result<(), String> {
 async fn delete_workspace(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-    id: &str,
+    workspace_id: &str,
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
-    let workspace = models::delete_workspace(id, pool)
+    let workspace = models::delete_workspace(workspace_id, pool)
         .await
         .expect("Failed to delete workspace");
     emit_and_return(&window, "deleted_model", workspace)
@@ -643,6 +656,7 @@ fn main() {
             create_request,
             create_workspace,
             delete_all_responses,
+            delete_environment,
             delete_request,
             delete_response,
             delete_workspace,
