@@ -23,6 +23,8 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 import { IconButton } from './core/IconButton';
 import { useCreateRequest } from '../hooks/useCreateRequest';
+import { appWindow } from '@tauri-apps/api/window';
+import { invoke } from '@tauri-apps/api';
 
 interface Props {
   className?: string;
@@ -47,6 +49,9 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   );
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>();
+
+  // TODO: Move these listeners to a central place
+  useListenToTauriEvent('create_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
     (forcedIndex?: number) => {
@@ -169,7 +174,12 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
             className="text-left mb-0"
             justify="start"
           />
-          <IconButton size="sm" icon="plusCircle" title="Create Request" onClick={() => createRequest.mutate({})} />
+          <IconButton
+            size="sm"
+            icon="plusCircle"
+            title="Create Request"
+            onClick={() => createRequest.mutate({})}
+          />
         </HStack>
         <VStack
           as="ul"

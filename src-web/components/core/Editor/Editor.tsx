@@ -13,6 +13,7 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
 import { useEnvironments } from '../../../hooks/useEnvironments';
+import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 
 // Export some things so all the code-split parts are in this file
 export { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
@@ -67,8 +68,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   }: EditorProps,
   ref,
 ) {
-  const environments = useEnvironments();
-  const environment = environments[0] ?? null;
+  const environment = useActiveEnvironment();
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);
@@ -121,7 +121,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({ contentType, environment, useTemplating, autocomplete });
-    console.log("EXT", ext);
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType, autocomplete, useTemplating, environment]);
 
