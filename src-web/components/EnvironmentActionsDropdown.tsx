@@ -34,11 +34,12 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       (e) => ({
         key: e.id,
         label: e.name,
+        rightSlot: e.id === activeEnvironment?.id ? <Icon icon="check" /> : undefined,
         onSelect: async () => {
           routes.setEnvironment(e);
         },
       }),
-      [],
+      [activeEnvironment?.id],
     );
     const activeEnvironmentItems: DropdownItem[] =
       environments.length <= 1
@@ -99,7 +100,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
           const name = await prompt({
             name: 'name',
             label: 'Name',
-            defaultValue: '',
+            defaultValue: 'My Environment',
             description: 'Enter a name for the new environment',
             title: 'Create Environment',
           });
