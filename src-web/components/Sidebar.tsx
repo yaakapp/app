@@ -51,7 +51,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number>();
 
   // TODO: Move these listeners to a central place
-  useListenToTauriEvent('create_request', async () => createRequest.mutate({}));
+  useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
     (forcedIndex?: number) => {
