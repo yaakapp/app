@@ -57,7 +57,6 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
 function DialogInstance({ id, render, ...props }: DialogEntry) {
   const { actions } = useContext(DialogContext);
   const children = render({ hide: () => actions.hide(id) });
-  console.log("ACITEV WORKSPAXCE ID 2", useActiveWorkspaceId());
   return (
     <Dialog open onClose={() => actions.hide(id)} {...props}>
       {children}
