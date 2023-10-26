@@ -99,10 +99,10 @@ export function getLanguageExtension({
   environment,
   autocomplete,
 }: { environment: Environment | null } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
-  if (contentType === 'application/graphql') {
+  const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
+  if (justContentType === 'application/graphql') {
     return graphql();
   }
-  const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   const base = syntaxExtensions[justContentType] ?? text();
   if (!useTemplating) {
     return base ? base : [];

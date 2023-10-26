@@ -29,6 +29,7 @@ export function Prompt({ onHide, label, name, defaultValue, onResult }: PromptPr
       <VStack space={6}>
         <Input
           hideLabel
+          require
           label={label}
           name={name}
           defaultValue={defaultValue}

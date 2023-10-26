@@ -4,7 +4,7 @@ import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
@@ -15,7 +15,7 @@ export function GlobalHooks() {
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
-  useTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
     const queryKey =
@@ -40,7 +40,7 @@ export function GlobalHooks() {
     }
   });
 
-  useTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
     const queryKey =
@@ -70,7 +70,7 @@ export function GlobalHooks() {
     }
   });
 
-  useTauriEvent<Model>('deleted_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('deleted_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
     if (shouldIgnoreModel(payload)) return;
@@ -85,7 +85,7 @@ export function GlobalHooks() {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
     }
   });
-  useTauriEvent<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {
+  useListenToTauriEvent<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {
     if (windowLabel !== appWindow.label) return;
     const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 

@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
@@ -90,8 +90,17 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     [onChange],
   );
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const handleSubmit = useCallback(() => {
+    const form = wrapperRef.current?.closest('form');
+    if (!isValid || form == null) return;
+
+    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  }, [isValid]);
+
   return (
-    <VStack className="w-full">
+    <VStack ref={wrapperRef} className="w-full">
       <label
         htmlFor={id}
         className={classNames(
@@ -119,6 +128,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           ref={ref}
           id={id}
           singleLine
+          onSubmit={handleSubmit}
           type={type === 'password' && !obscured ? 'text' : type}
           defaultValue={defaultValue}
           forceUpdateKey={forceUpdateKey}
