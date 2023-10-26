@@ -23,8 +23,6 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 import { IconButton } from './core/IconButton';
 import { useCreateRequest } from '../hooks/useCreateRequest';
-import { appWindow } from '@tauri-apps/api/window';
-import { invoke } from '@tauri-apps/api';
 
 interface Props {
   className?: string;
