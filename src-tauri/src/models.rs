@@ -252,13 +252,27 @@ pub async fn create_environment(
     get_environment(&id, pool).await
 }
 
+pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
+    let env = get_environment(id, pool).await?;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM environments
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(pool)
+    .await;
+
+    Ok(env)
+}
+
 pub async fn update_environment(
     id: &str,
     name: &str,
     data: HashMap<String, JsonValue>,
     pool: &Pool<Sqlite>,
 ) -> Result<Environment, sqlx::Error> {
-    println!("DATA: {}", data.clone().len());
     let json_data = Json(data);
     sqlx::query!(
         r#"
@@ -457,6 +471,10 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
 
 pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
     let req = get_request(id, pool).await?;
+
+    // DB deletes will cascade but this will delete the files
+    delete_all_responses(id, pool).await?;
+
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_requests
@@ -466,8 +484,6 @@ pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest
     )
     .execute(pool)
     .await;
-
-    delete_all_responses(id, pool).await?;
 
     Ok(req)
 }

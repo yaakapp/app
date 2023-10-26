@@ -13,6 +13,7 @@ import { usePrompt } from '../hooks/usePrompt';
 import { useDialog } from './DialogContext';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
 
 type Props = {
   className?: string;
@@ -24,13 +25,14 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   const environments = useEnvironments();
   const activeEnvironment = useActiveEnvironment();
   const updateEnvironment = useUpdateEnvironment(activeEnvironment?.id ?? null);
+  const deleteEnvironment = useDeleteEnvironment(activeEnvironment);
   const createEnvironment = useCreateEnvironment();
   const prompt = usePrompt();
   const dialog = useDialog();
   const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
-    const environmentItems = environments.map(
+    const environmentItems: DropdownItem[] = environments.map(
       (e) => ({
         key: e.id,
         label: e.name,
@@ -41,57 +43,58 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       }),
       [activeEnvironment?.id],
     );
-    const activeEnvironmentItems: DropdownItem[] =
-      environments.length <= 1
-        ? []
-        : [
-            ...environmentItems,
-            {
-              type: 'separator',
-              label: activeEnvironment?.name,
-            },
-          ];
 
     return [
-      ...activeEnvironmentItems,
-      {
-        key: 'edit',
-        label: 'Edit',
-        leftSlot: <Icon icon="sun" />,
-        onSelect: async () => {
-          dialog.show({
-            title: 'Environments',
-            render: () => <EnvironmentEditDialog />,
-          });
-        },
-      },
-      {
-        key: 'rename',
-        label: 'Rename',
-        leftSlot: <Icon icon="pencil" />,
-        onSelect: async () => {
-          const name = await prompt({
-            title: 'Rename Environment',
-            description: (
-              <>
-                Enter a new name for <InlineCode>{activeEnvironment?.name}</InlineCode>
-              </>
-            ),
-            name: 'name',
-            label: 'Name',
-            defaultValue: activeEnvironment?.name,
-          });
-          updateEnvironment.mutate({ name });
-        },
-      },
-      // {
-      //   key: 'delete',
-      //   label: 'Delete',
-      //   leftSlot: <Icon icon="trash" />,
-      //   onSelect: deleteEnv.mutate,
-      //   variant: 'danger',
-      // },
-      { type: 'separator' },
+      ...environmentItems,
+      ...((environmentItems.length > 0
+        ? [{ type: 'separator', label: activeEnvironment?.name }]
+        : []) as DropdownItem[]),
+      ...((activeEnvironment != null
+        ? [
+            {
+              key: 'rename',
+              label: 'Rename',
+              leftSlot: <Icon icon="pencil" />,
+              onSelect: async () => {
+                const name = await prompt({
+                  title: 'Rename Environment',
+                  description: (
+                    <>
+                      Enter a new name for <InlineCode>{activeEnvironment?.name}</InlineCode>
+                    </>
+                  ),
+                  name: 'name',
+                  label: 'Name',
+                  defaultValue: activeEnvironment?.name,
+                });
+                updateEnvironment.mutate({ name });
+              },
+            },
+            {
+              key: 'delete',
+              label: 'Delete',
+              leftSlot: <Icon icon="trash" />,
+              onSelect: deleteEnvironment.mutate,
+              variant: 'danger',
+            },
+            { type: 'separator' },
+          ]
+        : []) as DropdownItem[]),
+      ...((environments.length > 0
+        ? [
+            {
+              key: 'edit',
+              label: 'Manage Environments',
+              leftSlot: <Icon icon="gear" />,
+              onSelect: async () => {
+                dialog.show({
+                  title: 'Environments',
+                  render: () => <EnvironmentEditDialog />,
+                });
+              },
+            },
+          ]
+        : []) as DropdownItem[]),
       {
         key: 'create-environment',
         label: 'Create Environment',
@@ -110,12 +113,13 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
     ];
   }, [
     // deleteEnvironment.mutate,
-    activeEnvironment?.name,
+    activeEnvironment,
     createEnvironment,
     dialog,
     environments,
     prompt,
     updateEnvironment,
+    deleteEnvironment,
     routes,
   ]);
 

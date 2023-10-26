@@ -26,7 +26,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_workspace', { id: workspace?.id });
+      return invoke('delete_workspace', { workspaceId: workspace?.id });
     },
     onSuccess: async (workspace) => {
       if (workspace === null) return;

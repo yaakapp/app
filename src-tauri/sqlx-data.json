@@ -472,6 +472,16 @@
     },
     "query": "\n            INSERT INTO environments (\n                id,\n                workspace_id,\n                name,\n                data\n            )\n            VALUES (?, ?, ?, ?)\n        "
   },
+  "aeb0712785a9964d516dc8939bc54aa8206ad852e608b362d014b67a0f21b0ed": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            DELETE FROM environments\n            WHERE id = ?\n        "
+  },
   "b19c275180909a39342b13c3cdcf993781636913ae590967f5508c46a56dc961": {
     "describe": {
       "columns": [],
