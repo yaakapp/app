@@ -22,6 +22,7 @@ import { DropMarker } from './DropMarker';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 import { IconButton } from './core/IconButton';
+import { useCreateRequest } from '../hooks/useCreateRequest';
 
 interface Props {
   className?: string;
@@ -33,6 +34,7 @@ enum ItemTypes {
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
+  const createRequest = useCreateRequest({ navigateAfter: true });
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeRequestId = useActiveRequestId();
   const activeEnvironmentId = useActiveEnvironmentId();
@@ -156,13 +158,18 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           'h-full relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
         )}
       >
-        <HStack className="mt-1 mb-2 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
+        <HStack
+          className="mt-1 mb-2 pt-1 mx-2"
+          justifyContent="between"
+          alignItems="center"
+          space={1}
+        >
           <WorkspaceActionsDropdown
             forDropdown={false}
             className="text-left mb-0"
             justify="start"
           />
-          <IconButton size="sm" icon="plusCircle" title="Create Request" />
+          <IconButton size="sm" icon="plusCircle" title="Create Request" onClick={() => createRequest.mutate({})} />
         </HStack>
         <VStack
           as="ul"

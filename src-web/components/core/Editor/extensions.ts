@@ -5,7 +5,6 @@ import {
   completionKeymap,
 } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { html } from '@codemirror/lang-html';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
@@ -87,7 +86,7 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
   'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
-  'text/html': html(),
+  'text/html': xml(), // HTML as xml because HTML is oddly slow
   'application/xml': xml(),
   'text/xml': xml(),
   url: url(),
@@ -98,14 +97,17 @@ export function getLanguageExtension({
   useTemplating = false,
   environment,
   autocomplete,
-}: { environment: Environment | null } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
+}: { environment: Environment | null } & Pick<
+  EditorProps,
+  'contentType' | 'useTemplating' | 'autocomplete'
+>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {
     return graphql();
   }
   const base = syntaxExtensions[justContentType] ?? text();
   if (!useTemplating) {
-    return base ? base : [];
+    return base;
   }
 
   return twig(base, environment, autocomplete);
