@@ -53,7 +53,7 @@ function WorkspaceOrRedirect() {
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
 
-  if (request === undefined || environmentId === null) {
+  if (request === undefined) {
     return <Workspace />;
   }
 
@@ -61,7 +61,7 @@ function WorkspaceOrRedirect() {
     <Navigate
       to={routes.paths.request({
         workspaceId: request.workspaceId,
-        environmentId,
+        environmentId: environmentId ?? undefined,
         requestId: request.id,
       })}
     />

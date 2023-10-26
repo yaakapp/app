@@ -83,9 +83,13 @@ async fn actually_send_ephemeral_request(
     let environments = find_environments(&request.workspace_id, pool)
         .await
         .expect("Failed to find environments");
-    let environment: models::Environment = environments.first().unwrap().clone();
 
-    let mut url_string = render::render(&request.url, environment.clone());
+    // TODO: Use active environment
+    let environment = environments.first();
+    let mut url_string = match environment {
+        Some(e) => render::render(&request.url, e.clone()),
+        None => request.url.to_string(), 
+    };
 
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);

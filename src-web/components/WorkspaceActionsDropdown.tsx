@@ -21,7 +21,9 @@ type Props = {
   className?: string;
 };
 
-export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({ className }: Props) {
+export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
+  className,
+}: Props) {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
@@ -55,7 +57,10 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   color="gray"
                   onClick={() => {
                     hide();
-                    routes.navigate('workspace', { workspaceId: w.id, environmentId });
+                    routes.navigate('workspace', {
+                      workspaceId: w.id,
+                      environmentId: environmentId ?? undefined,
+                    });
                   }}
                 >
                   This Window
@@ -68,7 +73,10 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     await invoke('new_window', {
-                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
+                      url: routes.paths.workspace({
+                        workspaceId: w.id,
+                        environmentId: environmentId ?? undefined,
+                      }),
                     });
                   }}
                 >
@@ -85,12 +93,12 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       workspaces.length <= 1
         ? []
         : [
-          ...workspaceItems,
-          {
-            type: 'separator',
-            label: activeWorkspace?.name,
-          },
-        ];
+            ...workspaceItems,
+            {
+              type: 'separator',
+              label: activeWorkspace?.name,
+            },
+          ];
 
     return [
       ...activeWorkspaceItems,
@@ -138,14 +146,15 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       },
     ];
   }, [
-    workspaces,
     activeWorkspace?.name,
+    createWorkspace,
     deleteWorkspace.mutate,
     dialog,
-    routes,
+    environmentId,
     prompt,
+    routes,
     updateWorkspace,
-    createWorkspace,
+    workspaces,
   ]);
 
   return (

@@ -6,7 +6,7 @@ import type { Environment } from '../lib/models';
 
 export type RouteParamsWorkspace = {
   workspaceId: string;
-  environmentId: string | null;
+  environmentId?: string;
 };
 
 export type RouteParamsRequest = RouteParamsWorkspace & {
@@ -55,7 +55,7 @@ export function useAppRoutes() {
           this.navigate('request', {
             workspaceId,
             environmentId: environmentId ?? null,
-            requestId: requestId,
+            requestId,
           });
         }
       },
