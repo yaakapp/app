@@ -17,13 +17,19 @@ export interface GenericCompletionConfig {
 
 export function genericCompletion({ options, minMatch = 1 }: GenericCompletionConfig) {
   return function completions(context: CompletionContext) {
-    const toMatch = context.matchBefore(/^.*/);
-    if (toMatch === null) return null;
+    const toMatch = context.matchBefore(/\w*/);
+
+    // Only match if we're at the start of the line
+    if (toMatch === null || toMatch.from > 0) return null;
 
     const matchedMinimumLength = toMatch.to - toMatch.from >= minMatch;
     if (!matchedMinimumLength && !context.explicit) return null;
 
     const optionsWithoutExactMatches = options.filter((o) => o.label !== toMatch.text);
-    return { from: toMatch.from, options: optionsWithoutExactMatches, info: 'hello', };
+    return { 
+      validFor: () => true, // Not really sure why this is all it needs
+      from: toMatch.from,
+      options: optionsWithoutExactMatches,
+    };
   };
 }

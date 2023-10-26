@@ -1,4 +1,5 @@
 import type { CompletionContext } from '@codemirror/autocomplete';
+import { w } from '@tauri-apps/api/clipboard-79413165';
 
 const openTag = '${[ ';
 const closeTag = ' ]}';
@@ -12,7 +13,7 @@ export interface TwigCompletionConfig {
 }
 
 const MIN_MATCH_VAR = 2;
-const MIN_MATCH_NAME = 3;
+const MIN_MATCH_NAME = 1;
 
 export function twigCompletion({ options }: TwigCompletionConfig) {
   return function completions(context: CompletionContext) {
@@ -37,16 +38,17 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
     // TODO: Figure out how to make autocomplete stay open if opened explicitly. It sucks when you explicitly
     //  open it, then it closes when you type the next character.
     return {
+      validFor: () => true, // Not really sure why this is all it needs
       from: toMatch.from,
       options: options
         .map((v) => ({
           label: toStartOfVariable ? `${openTag}${v.name}${closeTag}` : v.name,
           apply: `${openTag}${v.name}${closeTag}`,
           type: 'variable',
-          matchLen,
+          matchLen: matchLen,
         }))
         // Filter out exact matches
         .filter((o) => o.label !== toMatch.text),
     };
-  }
+  };
 }
