@@ -30,6 +30,7 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeaderEditor } from './HeaderEditor';
 import { ParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 interface Props {
   style?: CSSProperties;
@@ -42,6 +43,7 @@ const useActiveTab = createGlobalState<string>('body');
 export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
+  const activeEnvironmentId = useActiveEnvironmentId();
   const updateRequest = useUpdateRequest(activeRequestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
@@ -144,9 +146,9 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     'send_request',
     async ({ windowLabel }) => {
       if (windowLabel !== appWindow.label) return;
-      await invoke('send_request', { requestId: activeRequestId });
+      await invoke('send_request', { requestId: activeRequestId, environmentId: activeEnvironmentId });
     },
-    [activeRequestId],
+    [activeRequestId, activeEnvironmentId],
   );
 
   return (

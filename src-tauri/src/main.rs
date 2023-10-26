@@ -7,7 +7,7 @@
 #[macro_use]
 extern crate objc;
 
-use crate::models::{find_environments, generate_id};
+use crate::models::generate_id;
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
@@ -64,28 +64,27 @@ async fn migrate_db(
 #[tauri::command]
 async fn send_ephemeral_request(
     request: models::HttpRequest,
+    environment_id: &str,
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
-    return actually_send_ephemeral_request(request, &response, &app_handle, pool).await;
+    return actually_send_ephemeral_request(request, &response, &environment_id, &app_handle, pool).await;
 }
 
 async fn actually_send_ephemeral_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
+    environment_id: &str,
     app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
 
-    let environments = find_environments(&request.workspace_id, pool)
-        .await
-        .expect("Failed to find environments");
+    let environment = models::get_environment(environment_id, pool).await.ok();
 
     // TODO: Use active environment
-    let environment = environments.first();
     let mut url_string = match environment {
         Some(e) => render::render(&request.url, e.clone()),
         None => request.url.to_string(), 
@@ -250,6 +249,7 @@ async fn send_request(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
+    environment_id: Option<&str>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
 
@@ -262,10 +262,12 @@ async fn send_request(
         .expect("Failed to create response");
 
     let response2 = response.clone();
+    let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     let app_handle2 = window.app_handle().clone();
     let pool2 = pool.clone();
+
     tokio::spawn(async move {
-        actually_send_ephemeral_request(req, &response2, &app_handle2, &pool2)
+        actually_send_ephemeral_request(req, &response2, &environment_id2, &app_handle2, &pool2)
             .await
             .expect("Failed to send request");
     });
