@@ -4,8 +4,8 @@ use crate::models::Environment;
 
 pub fn render(template: &str, environment: Environment) -> String {
     let variables = environment.data;
-    let re = Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}").expect("Failed to create regex");
-    let rendered = re
+    Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}")
+        .expect("Failed to create regex")
         .replace(template, |caps: &tauri::regex::Captures| {
             let key = caps.get(1).unwrap().as_str();
             match variables.get(key) {
@@ -19,7 +19,5 @@ pub fn render(template: &str, environment: Environment) -> String {
                 None => "".to_string(),
             }
         })
-        .to_string();
-
-    rendered
+        .to_string()
 }
