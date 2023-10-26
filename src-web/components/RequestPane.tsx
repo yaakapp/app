@@ -6,7 +6,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
@@ -140,7 +140,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [updateRequest],
   );
 
-  useTauriEvent(
+  useListenToTauriEvent(
     'send_request',
     async ({ windowLabel }) => {
       if (windowLabel !== appWindow.label) return;

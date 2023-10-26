@@ -10,16 +10,18 @@ import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useRequests } from '../hooks/useRequests';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Icon } from './core/Icon';
-import { VStack } from './core/Stacks';
+import { HStack, VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
+import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
+import { IconButton } from './core/IconButton';
 
 interface Props {
   className?: string;
@@ -63,7 +65,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       routes.navigate('request', {
         requestId,
         workspaceId: request.workspaceId,
-        environmentId: activeEnvironmentId,
+        environmentId: activeEnvironmentId ?? undefined,
       });
       setSelectedIndex(index);
       focusActiveRequest(index);
@@ -93,7 +95,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useTauriEvent(
+  useListenToTauriEvent(
     'focus_sidebar',
     () => {
       if (hidden || hasFocus) return;
@@ -149,11 +151,22 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         onFocus={handleFocus}
         onBlur={handleBlur}
         tabIndex={hidden ? -1 : 0}
-        className={classNames(className, 'h-full relative grid grid-rows-[minmax(0,1fr)_auto]')}
+        className={classNames(
+          className,
+          'h-full relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
+        )}
       >
+        <HStack className="mt-1 mb-2 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
+          <WorkspaceActionsDropdown
+            forDropdown={false}
+            className="text-left mb-0"
+            justify="start"
+          />
+          <IconButton size="sm" icon="plusCircle" title="Create Request" />
+        </HStack>
         <VStack
           as="ul"
-          className="relative py-3 overflow-y-auto overflow-x-visible"
+          className="relative pb-3 overflow-y-auto overflow-x-visible"
           draggable={false}
         >
           <SidebarItems

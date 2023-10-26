@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
-import { useTauriEvent } from '../hooks/useTauriEvent';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { IconButton } from './core/IconButton';
 
 export const SidebarActions = memo(function SidebarActions() {
@@ -12,7 +12,7 @@ export const SidebarActions = memo(function SidebarActions() {
     createRequest.mutate({});
   }, [createRequest]);
 
-  useTauriEvent('new_request', () => {
+  useListenToTauriEvent('new_request', () => {
     createRequest.mutate({});
   });
 

@@ -498,17 +498,7 @@ async fn list_environments(
         .await
         .expect("Failed to find environments");
 
-    println!("");
-    if environments.is_empty() {
-        println!("CREATING DEFAULT ENVIRONMENT");
-        let data: HashMap<String, JsonValue> = HashMap::new();
-        let environment = models::create_environment(workspace_id, "Default", data, pool)
-            .await
-            .expect("Failed to create default environment");
-        Ok(vec![environment])
-    } else {
-        Ok(environments)
-    }
+    Ok(environments)
 }
 
 #[tauri::command]

@@ -2,12 +2,12 @@ import type { HTMLAttributes, ReactElement } from 'react';
 import React, { useRef } from 'react';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
-import { useTauriEvent } from '../hooks/useTauriEvent';
 import { useTheme } from '../hooks/useTheme';
 import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 
 interface Props {
   requestId: string;
@@ -20,12 +20,12 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
   const dropdownRef = useRef<DropdownRef>(null);
   const { appearance, toggleAppearance } = useTheme();
 
-  useTauriEvent('toggle_settings', () => {
+  useListenToTauriEvent('toggle_settings', () => {
     dropdownRef.current?.toggle();
   });
 
   // TODO: Put this somewhere better
-  useTauriEvent('duplicate_request', () => {
+  useListenToTauriEvent('duplicate_request', () => {
     duplicateRequest.mutate();
   });
 
