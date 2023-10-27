@@ -39,14 +39,16 @@ const placeholderMatcher = new BetterMatchDecorator({
 
     // Don't decorate if the cursor is inside the match
     for (const r of view.state.selection.ranges) {
-      if (r.from > matchStartPos && r.to <= matchEndPos) return null;
+      if (r.from > matchStartPos && r.to <= matchEndPos) {
+        return Decoration.replace({});
+      }
     }
 
     const groupMatch = match[1];
     if (groupMatch == null) {
       // Should never happen, but make TS happy
       console.warn('Group match was empty', match);
-      return null;
+      return Decoration.replace({});;
     }
 
     return Decoration.replace({
