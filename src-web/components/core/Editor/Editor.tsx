@@ -259,10 +259,6 @@ function getExtensions({
     ...(singleLine
       ? [
           EditorView.domEventHandlers({
-            focus: (_, view) => {
-              // select all text on focus, like a regular input does
-              view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
-            },
             keydown: (e) => {
               // Submit nearest form on enter if there is one
               if (onEnter != null && e.key === 'Enter') {
