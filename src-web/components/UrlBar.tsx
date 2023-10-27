@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
@@ -20,6 +20,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   const inputRef = useRef<EditorView>(null);
   const sendRequest = useSendRequest(requestId);
   const updateRequest = useUpdateRequest(requestId);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const handleMethodChange = useCallback(
     (method: string) => updateRequest.mutate({ method }),
     [updateRequest],
@@ -47,7 +48,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
       <Input
         ref={inputRef}
-        size="auto"
+        size={isFocused ? 'auto' : 'sm'}
         hideLabel
         useTemplating
         contentType="url"
@@ -55,6 +56,8 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
         name="url"
         label="Enter URL"
         forceUpdateKey={updateKey}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-50"
         onChange={handleUrlChange}
         defaultValue={url}

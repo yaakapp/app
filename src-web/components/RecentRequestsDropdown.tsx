@@ -9,6 +9,7 @@ import { Button } from './core/Button';
 import { CountBadge } from './core/CountBadge';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
+import classNames from 'classnames';
 
 export function RecentRequestsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
@@ -18,8 +19,16 @@ export function RecentRequestsDropdown() {
   const requests = useRequests();
   const routes = useAppRoutes();
 
+  // Toggle the menu on Cmd+k
+  useKey('k', (e) => {
+    if (e.metaKey) {
+      e.preventDefault();
+      dropdownRef.current?.toggle(0);
+    }
+  });
+
+  // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
-    // Key up
     dropdownRef.current?.select?.();
   });
 
@@ -29,8 +38,8 @@ export function RecentRequestsDropdown() {
       if (!e.ctrlKey || recentRequestIds.length === 0) return;
 
       if (!dropdownRef.current?.isOpen) {
-        // Set to 1 because the first item is the active request
         dropdownRef.current?.open(e.shiftKey ? -1 : 0);
+        return;
       }
 
       if (e.shiftKey) dropdownRef.current?.prev?.();
@@ -72,9 +81,11 @@ export function RecentRequestsDropdown() {
   return (
     <Dropdown ref={dropdownRef} items={items}>
       <Button
-        disabled={activeRequest === null}
         size="sm"
-        className="flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none"
+        className={classNames(
+          'flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none',
+          activeRequest === null && 'text-opacity-disabled italic',
+        )}
       >
         {activeRequest?.name ?? 'No Request'}
       </Button>

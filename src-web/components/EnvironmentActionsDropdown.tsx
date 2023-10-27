@@ -112,25 +112,28 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       },
     ];
   }, [
-    // deleteEnvironment.mutate,
     activeEnvironment,
     createEnvironment,
+    deleteEnvironment,
     dialog,
     environments,
     prompt,
-    updateEnvironment,
-    deleteEnvironment,
     routes,
+    updateEnvironment,
   ]);
 
   return (
     <Dropdown items={items}>
       <Button
-        size="sm"
-        className={classNames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
+        size="sm"
+        className={classNames(
+          className,
+          'text-gray-800 !px-2 truncate',
+          activeEnvironment == null && 'text-opacity-disabled italic',
+        )}
       >
-        {activeEnvironment?.name ?? <span className="italic text-gray-500">No Environment</span>}
+        {activeEnvironment?.name ?? 'No Environment'}
       </Button>
     </Dropdown>
   );
