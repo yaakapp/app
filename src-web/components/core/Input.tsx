@@ -116,9 +116,9 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           'border',
           focused ? 'border-focus' : 'border-highlight',
           !isValid && '!border-invalid',
-          size === 'md' && 'h-md leading-md',
-          size === 'sm' && 'h-sm leading-sm',
-          size === 'auto' && '!min-h-sm',
+          size === 'md' && 'h-md',
+          size === 'sm' && 'h-sm',
+          size === 'auto' && 'min-h-sm',
         )}
       >
         {leftSlot}
