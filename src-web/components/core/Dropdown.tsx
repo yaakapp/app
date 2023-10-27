@@ -46,7 +46,7 @@ export interface DropdownProps {
 export interface DropdownRef {
   isOpen: boolean;
   open: (activeIndex?: number) => void;
-  toggle: () => void;
+  toggle: (activeIndex?: number) => void;
   close?: () => void;
   next?: () => void;
   prev?: () => void;
@@ -65,8 +65,11 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
     isOpen: open,
-    toggle: () => setOpen(!open),
-    open: (activeIndex?: number) => {
+    toggle (activeIndex?: number) {
+      if (!open) this.open(activeIndex);
+      else setOpen(false);
+    },
+    open(activeIndex?: number) {
       if (activeIndex === undefined) {
         setDefaultSelectedIndex(undefined);
       } else {

@@ -162,7 +162,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         )}
       >
         <HStack
-          className="mt-1 mb-2 pt-1 mx-2"
+          className="mt-1 pt-1 mx-2"
           justifyContent="between"
           alignItems="center"
           space={1}
@@ -181,7 +181,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         </HStack>
         <VStack
           as="ul"
-          className="relative pb-3 overflow-y-auto overflow-x-visible"
+          className="relative pb-3 overflow-y-auto overflow-x-visible pt-2"
           draggable={false}
         >
           <SidebarItems
