@@ -17,7 +17,7 @@
     }
 
     .cm-line {
-      @apply text-gray-800 pl-1 pr-1.5;
+      @apply text-gray-800 caret-gray-800 pl-1 pr-1.5;
     }
 
     .cm-placeholder {

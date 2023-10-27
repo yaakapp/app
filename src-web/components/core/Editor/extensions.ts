@@ -37,6 +37,7 @@ import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 import type { Environment } from '../../../lib/models';
+import { EditorView } from 'codemirror';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -116,7 +117,6 @@ export function getLanguageExtension({
 export const baseExtensions = [
   highlightSpecialChars(),
   history(),
-  drawSelection(),
   dropCursor(),
   bracketMatching(),
   // TODO: Figure out how to debounce showing of autocomplete in a good way
