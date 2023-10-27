@@ -29,7 +29,7 @@ const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
-  const { show, hide, hidden, toggle } = useSidebarHidden();
+  const { hide, hidden, toggle } = useSidebarHidden();
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -43,15 +43,8 @@ export default function Workspace() {
   // float/un-float sidebar on window resize
   useEffect(() => {
     const shouldHide = windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH;
-    if (shouldHide && !hidden) {
-      setFloating(true);
-      hide();
-    } else if (!shouldHide && hidden) {
-      setFloating(false);
-      show();
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (shouldHide) setFloating(true);
+    else if (!shouldHide) setFloating(false);
   }, [windowSize.width]);
 
   const unsub = () => {
