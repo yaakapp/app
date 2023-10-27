@@ -56,7 +56,7 @@ export const VStack = forwardRef(function VStack(
 type BaseStackProps = HTMLAttributes<HTMLElement> & {
   as?: ComponentType | 'ul' | 'form';
   space?: keyof typeof gapClasses;
-  alignItems?: 'start' | 'center';
+  alignItems?: 'start' | 'center' | 'stretch';
   justifyContent?: 'start' | 'center' | 'end' | 'between';
 };
 
@@ -74,6 +74,7 @@ const BaseStack = forwardRef(function BaseStack(
         'flex',
         alignItems === 'center' && 'items-center',
         alignItems === 'start' && 'items-start',
+        alignItems === 'stretch' && 'items-stretch',
         justifyContent === 'start' && 'justify-start',
         justifyContent === 'center' && 'justify-center',
         justifyContent === 'end' && 'justify-end',

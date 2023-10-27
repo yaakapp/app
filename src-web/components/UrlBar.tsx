@@ -47,11 +47,11 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
       <Input
         ref={inputRef}
-        size="sm"
+        size="auto"
         hideLabel
         useTemplating
         contentType="url"
-        className="px-0"
+        className="px-0 py-0.5"
         name="url"
         label="Enter URL"
         forceUpdateKey={updateKey}
@@ -63,7 +63,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
           <RequestMethodDropdown
             method={method}
             onChange={handleMethodChange}
-            className="mx-0.5 h-full my-1"
+            className="!h-auto mx-0.5 my-0.5"
           />
         }
         rightSlot={
@@ -72,7 +72,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
             iconSize="sm"
             title="Send Request"
             type="submit"
-            className="w-8 mr-0.5"
+            className="!h-auto w-8 mr-0.5 my-0.5"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
           />
