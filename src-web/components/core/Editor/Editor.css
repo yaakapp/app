@@ -1,203 +1,210 @@
 .cm-wrapper {
-    @apply h-full overflow-hidden;
+  @apply h-full overflow-hidden;
+
+  .cm-editor {
+    @apply w-full block text-base;
+
+    * {
+      @apply cursor-text;
+    }
+
+    &.cm-focused {
+      outline: none !important;
+    }
+
+    .cm-content {
+      @apply py-0;
+    }
+
+    .cm-line {
+      @apply text-gray-800 pl-1 pr-1.5;
+    }
+
+    .cm-placeholder {
+      @apply text-placeholder;
+    }
+
+    .cm-scroller {
+      /* Inherit line-height from outside */
+      line-height: inherit;
+    }
+
+    /* Don't show selection on blurred input */
+    .cm-selectionBackground {
+      @apply bg-transparent;
+    }
+    &.cm-focused .cm-selectionBackground {
+      @apply bg-selection;
+    }
+
+    /* Style gutters */
+    .cm-gutters {
+      @apply border-0 text-gray-500/50;
+
+      .cm-gutterElement {
+        @apply cursor-default;
+      }
+    }
+
+    .placeholder-widget {
+      @apply text-xs text-gray-800 dark:text-gray-900 px-1 rounded cursor-default dark:shadow;
+
+      /* NOTE: Background and border are translucent so we can see text selection through it */
+      @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
+
+      /* Bring above on hover */
+      @apply hover:z-10 relative;
+    }
+  }
+
+  &.cm-singleline {
+    .cm-editor {
+      @apply w-full h-auto;
+    }
+
+    .cm-scroller {
+      @apply font-mono text-[0.8rem] overflow-hidden;
+    }
+
+    .cm-line {
+      @apply px-2 overflow-hidden;
+    }
+  }
+
+  &.cm-multiline {
+    &.cm-full-height {
+      @apply relative;
+
+      .cm-editor {
+        @apply inset-0 absolute;
+        position: absolute !important;
+      }
+    }
 
     .cm-editor {
-        @apply w-full block text-base;
-
-        * {
-            @apply cursor-text;
-        }
-
-        &.cm-focused {
-            outline: none !important;
-        }
-
-        .cm-content {
-            @apply py-0;
-        }
-
-        .cm-line {
-            @apply text-gray-800 pl-1 pr-1.5;
-        }
-
-        .cm-placeholder {
-            @apply text-placeholder;
-        }
-
-        .cm-scroller {
-            /* Inherit line-height from outside */
-            line-height: inherit;
-        }
-
-        /* Don't show selection on blurred input */
-        .cm-selectionBackground {
-            @apply bg-transparent;
-        }
-        &.cm-focused .cm-selectionBackground {
-            @apply bg-selection;
-        }
-
-        /* Style gutters */
-        .cm-gutters {
-            @apply border-0 text-gray-500/50;
-
-            .cm-gutterElement {
-                @apply cursor-default;
-            }
-        }
-
-        .placeholder-widget {
-            @apply text-xs text-gray-800 dark:text-gray-900 px-1 rounded cursor-default dark:shadow;
-
-            /* NOTE: Background and border are translucent so we can see text selection through it */
-            @apply bg-gray-300/40 border border-gray-300 border-opacity-40 hover:border-opacity-80;
-
-            /* Bring above on hover */
-            @apply hover:z-10 relative;
-        }
+      @apply h-full;
     }
 
-    &.cm-singleline {
-        .cm-editor {
-            @apply w-full h-auto;
-        }
+    .cm-scroller {
+      @apply font-mono text-[0.75rem];
 
-        .cm-scroller {
-            @apply font-mono text-[0.8rem] overflow-hidden;
-        }
-
-        .cm-line {
-            @apply px-2 overflow-hidden;
-        }
-    }
-
-    &.cm-multiline {
-        &.cm-full-height {
-            @apply relative;
-
-            .cm-editor {
-                @apply inset-0 absolute;
-                position: absolute !important;
-            }
-        }
-
-        .cm-editor {
-            @apply h-full;
-        }
-
-        .cm-scroller {
-            @apply font-mono text-[0.75rem];
-
-            /*
+      /*
              * Round corners or they'll stick out of the editor bounds of editor is rounded.
              * Could potentially be pushed up from the editor like we do with bg color but this
              * is probably fine.
              */
-            @apply rounded-lg;
-        }
+      @apply rounded-lg;
     }
+  }
 }
 
 /* Obscure text for password fields */
 .cm-wrapper.cm-obscure-text .cm-line {
-    -webkit-text-security: disc;
+  -webkit-text-security: disc;
 }
 
 .cm-editor .cm-gutterElement {
-    @apply flex items-center;
-    transition: color var(--transition-duration);
+  @apply flex items-center;
+  transition: color var(--transition-duration);
 }
 
 .cm-editor .fold-gutter-icon {
-    @apply pt-[0.25em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
+  @apply pt-[0.25em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
 }
 
 .cm-editor .fold-gutter-icon::after {
-    @apply block w-1.5 h-1.5 border-transparent -rotate-45
+  @apply block w-1.5 h-1.5 border-transparent -rotate-45
     border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
 }
 
 .cm-editor .fold-gutter-icon[data-open] {
-    @apply pt-[0.38em] pl-[0.3em];
+  @apply pt-[0.38em] pl-[0.3em];
 }
 
 .cm-editor .fold-gutter-icon[data-open]::after {
-    @apply rotate-[-135deg];
+  @apply rotate-[-135deg];
 }
 
 .cm-editor .fold-gutter-icon:hover {
-    @apply text-gray-900 bg-gray-300/50;
+  @apply text-gray-900 bg-gray-300/50;
 }
 
 .cm-editor .cm-foldPlaceholder {
-    @apply px-2 border border-gray-400/50 bg-gray-300/50 cursor-default;
-    @apply hover:text-gray-800 hover:border-gray-400;
+  @apply px-2 border border-gray-400/50 bg-gray-300/50 cursor-default;
+  @apply hover:text-gray-800 hover:border-gray-400;
 }
 
 .cm-editor .cm-activeLineGutter {
-    @apply bg-transparent;
+  @apply bg-transparent;
 }
 
 .cm-wrapper:not(.cm-readonly) .cm-editor {
-    &.cm-focused .cm-activeLineGutter {
-        @apply text-gray-600;
-    }
+  &.cm-focused .cm-activeLineGutter {
+    @apply text-gray-600;
+  }
 
-    .cm-cursor {
-        @apply border-l-2 border-gray-800;
-    }
+  .cm-cursor {
+    @apply border-l-2 border-gray-800;
+  }
 }
 
 .cm-singleline .cm-editor {
-    .cm-content {
-        @apply  h-full flex items-center;
+  .cm-content {
+    @apply h-full flex items-center;
+
+    /* Break characters on line wrapping mode, useful for URL field.
+     * We can make this dynamic if we need it to be configurable later 
+     */
+    &.cm-lineWrapping {
+      @apply break-all;
     }
+  }
 }
 
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
-    @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-[0.75rem];
+  @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-[0.75rem];
 
-    &.cm-completionInfo-right {
-        @apply ml-1 -mt-0.5 text-sm;
+  &.cm-completionInfo-right {
+    @apply ml-1 -mt-0.5 text-sm;
+  }
+
+  &.cm-completionInfo-right-narrow {
+    @apply ml-1;
+  }
+
+  * {
+    @apply transition-none;
+  }
+
+  &.cm-tooltip-autocomplete {
+    & > ul {
+      @apply p-1 max-h-[40vh];
     }
 
-    &.cm-completionInfo-right-narrow {
-        @apply ml-1;
+    & > ul > li {
+      @apply cursor-default px-2 rounded-sm text-gray-600 h-7 flex items-center;
     }
 
-    * {
-        @apply transition-none;
+    & > ul > li[aria-selected] {
+      @apply bg-highlight text-gray-900;
     }
 
-    &.cm-tooltip-autocomplete {
-        & > ul {
-            @apply p-1 max-h-[40vh];
-        }
-
-        & > ul > li {
-            @apply cursor-default px-2 rounded-sm text-gray-600 h-7 flex items-center;
-        }
-
-        & > ul > li[aria-selected] {
-            @apply bg-highlight text-gray-900;
-        }
-
-        .cm-completionIcon {
-            @apply text-sm flex items-center pb-0.5 flex-shrink-0;
-        }
-
-        .cm-completionLabel {
-            @apply text-gray-700;
-        }
-
-        .cm-completionDetail {
-            @apply ml-auto pl-6;
-        }
+    .cm-completionIcon {
+      @apply text-sm flex items-center pb-0.5 flex-shrink-0;
     }
+
+    .cm-completionLabel {
+      @apply text-gray-700;
+    }
+
+    .cm-completionDetail {
+      @apply ml-auto pl-6;
+    }
+  }
 }
 
 /* Add default icon. Needs low priority so it can be overwritten */
 .cm-completionIcon::after {
-    content: '𝑥';
+  content: '𝑥';
 }

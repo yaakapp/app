@@ -21,7 +21,7 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
     defaultValue?: string;
     leftSlot?: ReactNode;
     rightSlot?: ReactNode;
-    size?: 'sm' | 'md';
+    size?: 'sm' | 'md' | 'auto';
     className?: string;
     placeholder?: string;
     autoFocus?: boolean;
@@ -31,24 +31,24 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
 
 export const Input = forwardRef<EditorView | undefined, InputProps>(function Input(
   {
-    label,
-    type = 'text',
-    hideLabel,
     className,
     containerClassName,
-    labelClassName,
-    onChange,
-    placeholder,
-    size = 'md',
-    name,
-    leftSlot,
-    rightSlot,
     defaultValue,
-    validate,
-    require,
-    onFocus,
-    onBlur,
     forceUpdateKey,
+    hideLabel,
+    label,
+    labelClassName,
+    leftSlot,
+    name,
+    onBlur,
+    onChange,
+    onFocus,
+    placeholder,
+    require,
+    rightSlot,
+    size = 'md',
+    type = 'text',
+    validate,
     ...props
   }: InputProps,
   ref,
@@ -70,10 +70,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   const id = `input-${name}`;
   const inputClassName = classNames(
     className,
-    '!bg-transparent min-w-0 h-full w-full focus:outline-none placeholder:text-placeholder',
-    // Bump things over if the slots are occupied
-    leftSlot && 'pl-0.5 -ml-2',
-    rightSlot && 'pr-0.5 -mr-2',
+    '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
   );
 
   const isValid = useMemo(() => {
@@ -92,7 +89,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = useCallback(() => {
+  const handleEnter = useCallback(() => {
     const form = wrapperRef.current?.closest('form');
     if (!isValid || form == null) return;
 
@@ -112,7 +109,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         {label}
       </label>
       <HStack
-        alignItems="center"
+        alignItems="stretch"
         className={classNames(
           containerClassName,
           'relative w-full rounded-md text-gray-900',
@@ -121,24 +118,31 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           !isValid && '!border-invalid',
           size === 'md' && 'h-md leading-md',
           size === 'sm' && 'h-sm leading-sm',
+          size === 'auto' && '!min-h-sm',
         )}
       >
         {leftSlot}
-        <Editor
-          ref={ref}
-          id={id}
-          singleLine
-          onSubmit={handleSubmit}
-          type={type === 'password' && !obscured ? 'text' : type}
-          defaultValue={defaultValue}
-          forceUpdateKey={forceUpdateKey}
-          placeholder={placeholder}
-          onChange={handleChange}
-          className={inputClassName}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          {...props}
-        />
+        <HStack
+          alignItems="center"
+          className={classNames('w-full', leftSlot && 'pl-0.5 -ml-2', rightSlot && 'pr-0.5 -mr-2')}
+        >
+          <Editor
+            ref={ref}
+            id={id}
+            singleLine
+            wrapLines={size === 'auto'}
+            onEnter={handleEnter}
+            type={type === 'password' && !obscured ? 'text' : type}
+            defaultValue={defaultValue}
+            forceUpdateKey={forceUpdateKey}
+            placeholder={placeholder}
+            onChange={handleChange}
+            className={inputClassName}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            {...props}
+          />
+        </HStack>
         {type === 'password' && (
           <IconButton
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
