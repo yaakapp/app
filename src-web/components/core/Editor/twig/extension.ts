@@ -14,7 +14,7 @@ export function twig(
   environment: Environment | null,
   autocomplete?: GenericCompletionConfig,
 ) {
-  const variables = environment?.variables ?? [];
+  const variables = environment?.variables.filter(v => v.enabled) ?? [];
   const completions = twigCompletion({ options: variables });
 
   const language = mixLanguage(base);
