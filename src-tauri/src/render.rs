@@ -13,12 +13,18 @@ fn render_with_environment(template: &str, environment: &Environment) -> String 
     let mut map = HashMap::new();
     let variables = &environment.variables.0;
     for variable in variables {
-        map.insert(variable.name.as_str(), variable.value.as_str());
+        if !variable.enabled {
+            continue;
+        }
+        map.insert(
+            variable.name.as_str(), 
+            variable.value.as_str(),
+        );
     }
 
     Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}")
         .expect("Failed to create regex")
-        .replace(template, |caps: &tauri::regex::Captures| {
+        .replace_all(template, |caps: &tauri::regex::Captures| {
             let key = caps.get(1).unwrap().as_str();
             map.get(key).unwrap_or(&"")
         })
