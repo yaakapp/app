@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
@@ -24,7 +24,8 @@ export type PairEditorProps = {
   valueValidate?: InputProps['validate'];
 };
 
-type Pair = {
+export type Pair = {
+  id?: string;
   enabled?: boolean;
   name: string;
   value: string;
@@ -342,6 +343,8 @@ const FormRow = memo(function FormRow({
   );
 });
 
-const newPairContainer = (pair?: Pair): PairContainer => {
-  return { pair: pair ?? { name: '', value: '', enabled: true }, id: uuid() };
+const newPairContainer = (initialPair?: Pair): PairContainer => {
+  const id = initialPair?.id ?? uuid();
+  const pair = initialPair ?? { name: '', value: '', enabled: true };
+  return { id, pair };
 };

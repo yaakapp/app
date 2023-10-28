@@ -54,6 +54,8 @@
 
       /* Bring above on hover */
       @apply hover:z-10 relative;
+
+      -webkit-text-security: none;
     }
   }
 

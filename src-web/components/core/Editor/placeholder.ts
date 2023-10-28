@@ -48,7 +48,7 @@ const placeholderMatcher = new BetterMatchDecorator({
     if (groupMatch == null) {
       // Should never happen, but make TS happy
       console.warn('Group match was empty', match);
-      return Decoration.replace({});;
+      return Decoration.replace({});
     }
 
     return Decoration.replace({

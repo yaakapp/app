@@ -14,6 +14,7 @@ export function BearerAuth({ requestId, authentication }: Props) {
   return (
     <VStack className="my-2" space={2}>
       <Input
+        useTemplating
         label="Token"
         name="token"
         size="sm"

@@ -9,11 +9,13 @@ import { twigCompletion } from './completion';
 import { parser as twigParser } from './twig';
 import type { Environment } from '../../../../lib/models';
 
-export function twig(base: LanguageSupport, environment: Environment | null, autocomplete?: GenericCompletionConfig) {
-  // TODO: fill variables here
-  const data = environment?.data ?? {};
-  const options = Object.keys(data).map(key => ({ name: key }));
-  const completions = twigCompletion({ options });
+export function twig(
+  base: LanguageSupport,
+  environment: Environment | null,
+  autocomplete?: GenericCompletionConfig,
+) {
+  const variables = environment?.variables ?? [];
+  const completions = twigCompletion({ options: variables });
 
   const language = mixLanguage(base);
   const completion = language.data.of({ autocomplete: completions });

@@ -16,7 +16,7 @@ use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
-use sqlx::types::{Json, JsonValue};
+use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
 use std::collections::HashMap;
 use std::env::current_dir;
@@ -81,14 +81,10 @@ async fn actually_send_ephemeral_request(
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
-
     let environment = models::get_environment(environment_id, pool).await.ok();
+    let environment_ref = environment.as_ref();
 
-    // TODO: Use active environment
-    let mut url_string = match environment {
-        Some(e) => render::render(&request.url, e.clone()),
-        None => request.url.to_string(), 
-    };
+    let mut url_string = render::render(&request.url, environment.as_ref());
 
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);
@@ -110,57 +106,54 @@ async fn actually_send_ephemeral_request(
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
+
         if !h.enabled {
             continue;
         }
-        let header_name = match HeaderName::from_bytes(h.name.as_bytes()) {
+
+        let name = render::render(&h.name, environment_ref);
+        let value = render::render(&h.value, environment_ref);
+
+        let header_name = match HeaderName::from_bytes(name.as_bytes()) {
             Ok(n) => n,
             Err(e) => {
                 eprintln!("Failed to create header name: {}", e);
                 continue;
             }
         };
-        let header_value = match HeaderValue::from_str(h.value.as_str()) {
+        let header_value = match HeaderValue::from_str(value.as_str()) {
             Ok(n) => n,
             Err(e) => {
                 eprintln!("Failed to create header value: {}", e);
                 continue;
             }
         };
+        
         headers.insert(header_name, header_value);
     }
 
     if let Some(b) = &request.authentication_type {
         let empty_value = &serde_json::to_value("").unwrap();
+        let a = request.authentication.0;
+
         if b == "basic" {
-            let a = request.authentication.0;
-            let auth = format!(
-                "{}:{}",
-                a.get("username")
-                    .unwrap_or(empty_value)
-                    .as_str()
-                    .unwrap_or(""),
-                a.get("password")
-                    .unwrap_or(empty_value)
-                    .as_str()
-                    .unwrap_or(""),
-            );
+            let raw_username = a.get("username").unwrap_or(empty_value).as_str().unwrap_or("");
+            let raw_password = a.get("password").unwrap_or(empty_value).as_str().unwrap_or("");
+            let username = render::render(raw_username, environment_ref);
+            let password = render::render(raw_password, environment_ref);
+
+            let auth = format!( "{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),
             );
         } else if b == "bearer" {
-            let token = request
-                .authentication
-                .0
-                .get("token")
-                .unwrap_or(empty_value)
-                .as_str()
-                .unwrap_or("");
+            let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
+            let token = render::render(raw_token, environment_ref);
             headers.insert(
                 "Authorization",
-                HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+                HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
             );
         }
     }
@@ -170,7 +163,10 @@ async fn actually_send_ephemeral_request(
     let builder = client.request(m, url_string.to_string()).headers(headers);
 
     let sendable_req_result = match (request.body, request.body_type) {
-        (Some(b), Some(_)) => builder.body(b).build(),
+        (Some(raw_body), Some(_)) => {
+            let body = render::render(&raw_body, environment_ref);
+            builder.body(body).build()
+        },
         _ => builder.build(),
     };
 
@@ -341,8 +337,8 @@ async fn create_environment(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
-    let data: HashMap<String, JsonValue> = HashMap::new();
-    let created_environment = models::create_environment(workspace_id, name, data, pool)
+    let variables = Vec::new();
+    let created_environment = models::create_environment(workspace_id, name, variables, pool)
         .await
         .expect("Failed to create environment");
 
@@ -418,7 +414,7 @@ async fn update_environment(
     let updated_environment = models::update_environment(
         environment.id.as_str(),
         environment.name.as_str(),
-        environment.data.0,
+        environment.variables.0,
         pool,
     )
     .await

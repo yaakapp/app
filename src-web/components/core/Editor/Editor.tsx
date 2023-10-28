@@ -12,7 +12,6 @@ import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
-import { useEnvironments } from '../../../hooks/useEnvironments';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 
 // Export some things so all the code-split parts are in this file
