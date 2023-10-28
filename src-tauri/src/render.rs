@@ -16,10 +16,7 @@ fn render_with_environment(template: &str, environment: &Environment) -> String 
         if !variable.enabled {
             continue;
         }
-        map.insert(
-            variable.name.as_str(), 
-            variable.value.as_str(),
-        );
+        map.insert(variable.name.as_str(), variable.value.as_str());
     }
 
     Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}")

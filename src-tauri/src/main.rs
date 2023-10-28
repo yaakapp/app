@@ -70,7 +70,8 @@ async fn send_ephemeral_request(
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
-    return actually_send_ephemeral_request(request, &response, &environment_id, &app_handle, pool).await;
+    return actually_send_ephemeral_request(request, &response, &environment_id, &app_handle, pool)
+        .await;
 }
 
 async fn actually_send_ephemeral_request(
@@ -128,7 +129,7 @@ async fn actually_send_ephemeral_request(
                 continue;
             }
         };
-        
+
         headers.insert(header_name, header_value);
     }
 
@@ -137,12 +138,20 @@ async fn actually_send_ephemeral_request(
         let a = request.authentication.0;
 
         if b == "basic" {
-            let raw_username = a.get("username").unwrap_or(empty_value).as_str().unwrap_or("");
-            let raw_password = a.get("password").unwrap_or(empty_value).as_str().unwrap_or("");
+            let raw_username = a
+                .get("username")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or("");
+            let raw_password = a
+                .get("password")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or("");
             let username = render::render(raw_username, environment_ref);
             let password = render::render(raw_password, environment_ref);
 
-            let auth = format!( "{username}:{password}");
+            let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
             headers.insert(
                 "Authorization",
@@ -166,7 +175,7 @@ async fn actually_send_ephemeral_request(
         (Some(raw_body), Some(_)) => {
             let body = render::render(&raw_body, environment_ref);
             builder.body(body).build()
-        },
+        }
         _ => builder.build(),
     };
 
