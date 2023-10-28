@@ -39,20 +39,6 @@ pub struct EnvironmentVariable {
     pub value: String,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Variable {
-    pub id: String,
-    pub workspace_id: String,
-    pub environment_id: String,
-    pub model: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub name: String,
-    pub value: String,
-    pub sort_priority: f64,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequestHeader {
