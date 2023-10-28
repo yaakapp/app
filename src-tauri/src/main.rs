@@ -7,7 +7,6 @@
 #[macro_use]
 extern crate objc;
 
-use crate::models::generate_id;
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
@@ -26,8 +25,9 @@ use std::io::Write;
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
+use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
-use window_ext::WindowExt;
+use window_ext::TrafficLightWindowExt;
 
 mod models;
 mod render;
@@ -629,6 +629,7 @@ async fn delete_workspace(
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
@@ -686,7 +687,9 @@ fn main() {
         .expect("error while running tauri application")
         .run(|app_handle, event| match event {
             RunEvent::Ready => {
-                create_window(app_handle, None);
+                let w = create_window(app_handle, None);
+                w.restore_state(StateFlags::all())
+                    .expect("Failed to restore window state");
             }
 
             // ExitRequested { api, .. } => {
@@ -757,7 +760,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let submenu = Submenu::new("Test Menu", test_menu);
 
     let window_num = handle.windows().len();
-    let window_id = format!("wnd_{}_{}", window_num, generate_id(None));
+    let window_id = format!("wnd_{}", window_num);
     let menu = default_menu.add_submenu(submenu);
     let mut win_builder = tauri::WindowBuilder::new(
         handle,
