@@ -3,11 +3,11 @@ use tauri::{Runtime, Window};
 const TRAFFIC_LIGHT_OFFSET_X: f64 = 13.0;
 const TRAFFIC_LIGHT_OFFSET_Y: f64 = 18.0;
 
-pub trait WindowExt {
+pub trait TrafficLightWindowExt {
     fn position_traffic_lights(&self);
 }
 
-impl<R: Runtime> WindowExt for Window<R> {
+impl<R: Runtime> TrafficLightWindowExt for Window<R> {
     #[cfg(not(target_os = "macos"))]
     fn position_traffic_lights(&self) {
         // No-op
