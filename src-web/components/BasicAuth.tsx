@@ -14,6 +14,7 @@ export function BasicAuth({ requestId, authentication }: Props) {
   return (
     <VStack className="my-2" space={2}>
       <Input
+        useTemplating
         label="Username"
         name="username"
         size="sm"
@@ -26,6 +27,7 @@ export function BasicAuth({ requestId, authentication }: Props) {
         }}
       />
       <Input
+        useTemplating
         label="Password"
         name="password"
         size="sm"

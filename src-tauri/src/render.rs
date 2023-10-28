@@ -1,23 +1,26 @@
+use crate::models::Environment;
+use std::collections::HashMap;
 use tauri::regex::Regex;
 
-use crate::models::Environment;
+pub fn render(template: &str, environment: Option<&Environment>) -> String {
+    match environment {
+        Some(environment) => render_with_environment(template, environment),
+        None => template.to_string(),
+    }
+}
 
-pub fn render(template: &str, environment: Environment) -> String {
-    let variables = environment.data;
+fn render_with_environment(template: &str, environment: &Environment) -> String {
+    let mut map = HashMap::new();
+    let variables = &environment.variables.0;
+    for variable in variables {
+        map.insert(variable.name.as_str(), variable.value.as_str());
+    }
+
     Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}")
         .expect("Failed to create regex")
         .replace(template, |caps: &tauri::regex::Captures| {
             let key = caps.get(1).unwrap().as_str();
-            match variables.get(key) {
-                Some(v) => {
-                    if v.is_string() {
-                        v.as_str().expect("Should be string").to_string()
-                    } else {
-                        v.to_string()
-                    }
-                }
-                None => "".to_string(),
-            }
+            map.get(key).unwrap_or(&"")
         })
         .to_string()
 }
