@@ -22,7 +22,7 @@ export interface Workspace extends BaseModel {
   description: string;
 }
 
-export interface HttpHeader {
+export interface EnvironmentVariable {
   name: string;
   value: string;
   enabled?: boolean;
@@ -32,7 +32,13 @@ export interface Environment extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'environment';
   name: string;
-  data: Record<string, string | number | boolean | null | undefined>;
+  variables: EnvironmentVariable[];
+}
+
+export interface HttpHeader {
+  name: string;
+  value: string;
+  enabled?: boolean;
 }
 
 export interface HttpRequest extends BaseModel {

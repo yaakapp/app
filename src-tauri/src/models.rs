@@ -27,7 +27,30 @@ pub struct Environment {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub name: String,
-    pub data: Json<HashMap<String, JsonValue>>,
+    pub variables: Json<Vec<EnvironmentVariable>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnvironmentVariable {
+    #[serde(default)]
+    pub enabled: bool,
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Variable {
+    pub id: String,
+    pub workspace_id: String,
+    pub environment_id: String,
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub name: String,
+    pub value: String,
+    pub sort_priority: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -213,7 +236,7 @@ pub async fn find_environments(
         Environment,
         r#"
             SELECT id, workspace_id, model, created_at, updated_at, name,
-                data AS "data!: Json<HashMap<String, JsonValue>>"
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM environments
             WHERE workspace_id = ?
         "#,
@@ -226,26 +249,21 @@ pub async fn find_environments(
 pub async fn create_environment(
     workspace_id: &str,
     name: &str,
-    data: HashMap<String, JsonValue>,
+    variables: Vec<EnvironmentVariable>,
     pool: &Pool<Sqlite>,
 ) -> Result<Environment, sqlx::Error> {
     let id = generate_id(Some("en"));
-    let data_json = Json(data);
     let trimmed_name = name.trim();
+    let variables_json = Json(variables);
     sqlx::query!(
         r#"
-            INSERT INTO environments (
-                id,
-                workspace_id,
-                name,
-                data
-            )
+            INSERT INTO environments (id, workspace_id, name, variables)
             VALUES (?, ?, ?, ?)
         "#,
         id,
         workspace_id,
         trimmed_name,
-        data_json,
+        variables_json,
     )
     .execute(pool)
     .await?;
@@ -270,18 +288,18 @@ pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environ
 pub async fn update_environment(
     id: &str,
     name: &str,
-    data: HashMap<String, JsonValue>,
+    variables: Vec<EnvironmentVariable>,
     pool: &Pool<Sqlite>,
 ) -> Result<Environment, sqlx::Error> {
-    let json_data = Json(data);
+    let variables_json = Json(variables);
     sqlx::query!(
         r#"
             UPDATE environments
-            SET (name, data, updated_at) = (?, ?, CURRENT_TIMESTAMP)
+            SET (name, variables, updated_at) = (?, ?, CURRENT_TIMESTAMP)
             WHERE id = ?;
         "#,
         name,
-        json_data,
+        variables_json,
         id,
     )
     .execute(pool)
@@ -300,7 +318,7 @@ pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environmen
                 created_at,
                 updated_at,
                 name,
-                data AS "data!: Json<HashMap<String, JsonValue>>"
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM environments
             WHERE id = ?
         "#,

@@ -63,5 +63,7 @@ const validateHttpHeader = (v: string) => {
     return true;
   }
 
+  const hi = v.replace(/\$\{\[\s*[^\]\s]+\s*]}/gi, 'fo');
+  console.log('V', v, '-->', hi);
   return v.match(/^[a-zA-Z0-9-_]+$/) !== null;
 };

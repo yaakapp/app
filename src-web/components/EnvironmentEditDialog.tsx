@@ -1,16 +1,17 @@
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { usePrompt } from '../hooks/usePrompt';
-import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import type { Environment } from '../lib/models';
 import { Button } from './core/Button';
-import { Editor } from './core/Editor';
 import classNames from 'classnames';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
-import { Link } from 'react-router-dom';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { PairEditor } from './core/PairEditor';
+import type { PairEditorProps } from './core/PairEditor';
+import { useCallback } from 'react';
+import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 
-export const EnvironmentEditDialog = function() {
+export const EnvironmentEditDialog = function () {
   const routes = useAppRoutes();
   const prompt = usePrompt();
   const environments = useEnvironments();
@@ -58,21 +59,21 @@ export const EnvironmentEditDialog = function() {
   );
 };
 
-const EnvironmentEditor = function({ environment }: { environment: Environment }) {
+const EnvironmentEditor = function ({ environment }: { environment: Environment }) {
   const updateEnvironment = useUpdateEnvironment(environment.id);
+  const handleChange = useCallback<PairEditorProps['onChange']>(
+    (variables) => {
+      updateEnvironment.mutate({ variables });
+    },
+    [updateEnvironment],
+  );
   return (
-    <Editor
-      contentType="application/json"
-      className="w-full min-h-[40px] !bg-gray-50"
-      defaultValue={JSON.stringify(environment.data, null, 2)}
-      forceUpdateKey={environment.id}
-      onChange={(data) => {
-        try {
-          updateEnvironment.mutate({ data: JSON.parse(data) });
-        } catch (err) {
-          // That's okay
-        }
-      }}
-    />
+    <div>
+      <PairEditor
+        forceUpdateKey={environment.id}
+        pairs={environment.variables}
+        onChange={handleChange}
+      />
+    </div>
   );
 };
