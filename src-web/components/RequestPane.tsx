@@ -204,6 +204,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 <Editor
                   forceUpdateKey={forceUpdateKey}
                   useTemplating
+                  autocompleteVariables
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
@@ -216,6 +217,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 <Editor
                   forceUpdateKey={forceUpdateKey}
                   useTemplating
+                  autocompleteVariables
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
