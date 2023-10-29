@@ -148,6 +148,7 @@ export const multiLineExtensions = [
     },
   }),
   EditorState.allowMultipleSelections.of(true),
+  drawSelection(),
   indentOnInput(),
   closeBrackets(),
   rectangularSelection(),
