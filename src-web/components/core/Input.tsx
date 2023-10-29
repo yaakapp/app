@@ -8,7 +8,7 @@ import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
 export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> &
-  Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete' | 'forceUpdateKey'> & {
+  Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete' | 'forceUpdateKey' | 'autoFocus' | 'autoSelect'> & {
     name: string;
     type?: 'text' | 'password';
     label: string;
@@ -24,7 +24,6 @@ export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'on
     size?: 'sm' | 'md' | 'auto';
     className?: string;
     placeholder?: string;
-    autoFocus?: boolean;
     validate?: (v: string) => boolean;
     require?: boolean;
   };

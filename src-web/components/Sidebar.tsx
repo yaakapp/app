@@ -23,7 +23,6 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 import { IconButton } from './core/IconButton';
 import { useCreateRequest } from '../hooks/useCreateRequest';
-import { w } from '@tauri-apps/api/clipboard-79413165';
 
 interface Props {
   className?: string;
@@ -156,7 +155,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   );
 
   return (
-    <div aria-hidden={hidden} className="relative h-full">
+    <div aria-hidden={hidden} className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
       <HStack className="mt-1 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
         <WorkspaceActionsDropdown forDropdown={false} className="text-left mb-0" justify="start" />
         <IconButton
@@ -176,12 +175,12 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         tabIndex={hidden ? -1 : 0}
         className={classNames(
           className,
-          'h-full relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
+          'h-full grid grid-rows-[auto_minmax(0,1fr)_auto]',
         )}
       >
         <VStack
           as="ul"
-          className="relative pb-3 overflow-y-auto overflow-x-visible pt-2"
+          className="pb-3 overflow-y-auto overflow-x-visible pt-2"
           draggable={false}
         >
           <SidebarItems
@@ -249,7 +248,7 @@ function SidebarItems({ requests, focused, selectedIndex, onSelect, onClearSelec
         updateRequest.mutate({ id: requestId, update });
       }
     },
-    [hoveredIndex, requests, updateRequest],
+    [hoveredIndex, requests, updateRequest, onClearSelected],
   );
 
   return (
