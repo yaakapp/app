@@ -111,15 +111,6 @@ export const PairEditor = memo(function PairEditor({
     [hoveredIndex, setPairsAndSave],
   );
 
-  const handleSubmitRow = useCallback(
-    (pair: PairContainer) => {
-      const index = pairs.findIndex((p) => p.id === pair.id);
-      const id = pairs[index + 1]?.id ?? null;
-      setForceFocusPairId(id);
-    },
-    [pairs],
-  );
-
   const handleChange = useCallback(
     (pair: PairContainer) =>
       setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair))),
@@ -127,18 +118,26 @@ export const PairEditor = memo(function PairEditor({
   );
 
   const handleDelete = useCallback(
-    (pair: PairContainer) =>
-      setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id)),
-    [setPairsAndSave],
+    (pair: PairContainer, focusPrevious: boolean) => {
+      if (focusPrevious) {
+        const index = pairs.findIndex((p) => p.id === pair.id);
+        const id = pairs[index - 1]?.id ?? null;
+        setForceFocusPairId(id);
+      }
+      return setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
+    },
+    [setPairsAndSave, setForceFocusPairId, pairs],
   );
 
-  const handleFocus = useCallback((pair: PairContainer) => {
-    return setPairs((pairs) => {
-      setForceFocusPairId(null);
-      const isLast = pair.id === pairs[pairs.length - 1]?.id;
-      return isLast ? [...pairs, newPairContainer()] : pairs;
-    });
-  }, []);
+  const handleFocus = useCallback(
+    (pair: PairContainer) =>
+      setPairs((pairs) => {
+        setForceFocusPairId(null); // Remove focus override when something focused
+        const isLast = pair.id === pairs[pairs.length - 1]?.id;
+        return isLast ? [...pairs, newPairContainer()] : pairs;
+      }),
+    [],
+  );
 
   // Ensure there's always at least one pair
   useEffect(() => {
@@ -177,7 +176,6 @@ export const PairEditor = memo(function PairEditor({
               nameValidate={nameValidate}
               valueValidate={valueValidate}
               showDelete={!isLast}
-              onSubmit={handleSubmitRow}
               onChange={handleChange}
               onFocus={handleFocus}
               onDelete={handleDelete}
@@ -203,7 +201,7 @@ type FormRowProps = {
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
-  onDelete?: (pair: PairContainer) => void;
+  onDelete?: (pair: PairContainer, focusPrevious: boolean) => void;
   onFocus?: (pair: PairContainer) => void;
   onSubmit?: (pair: PairContainer) => void;
   isLast?: boolean;
@@ -235,7 +233,6 @@ const FormRow = memo(function FormRow({
   onEnd,
   onFocus,
   onMove,
-  onSubmit,
   pairContainer,
   showDelete,
   valueAutocomplete,
@@ -268,20 +265,9 @@ const FormRow = memo(function FormRow({
   );
 
   const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);
-  const handleDelete = useCallback(() => onDelete?.(pairContainer), [onDelete, pairContainer]);
-
-  const handleKeyDownName = useMemo(
-    () => (e: KeyboardEvent) => {
-      if (
-        e.key === 'Backspace' &&
-        pairContainer.pair.name === '' &&
-        pairContainer.pair.value === ''
-      ) {
-        e.preventDefault();
-        onDelete?.(pairContainer);
-      }
-    },
-    [pairContainer, onDelete],
+  const handleDelete = useCallback(
+    () => onDelete?.(pairContainer, false),
+    [onDelete, pairContainer],
   );
 
   const [, connectDrop] = useDrop<PairContainer>(
@@ -341,12 +327,7 @@ const FormRow = memo(function FormRow({
         className={classNames('mr-2', isLast && '!opacity-disabled')}
         onChange={handleChangeEnabled}
       />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onSubmit?.(pairContainer);
-        }}
+      <div
         className={classNames(
           'grid items-center',
           '@xs:gap-2 @xs:!grid-rows-1 @xs:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
@@ -365,7 +346,6 @@ const FormRow = memo(function FormRow({
           defaultValue={pairContainer.pair.name}
           label="Name"
           name="name"
-          onKeyDown={handleKeyDownName}
           onChange={handleChangeName}
           onFocus={handleFocus}
           placeholder={namePlaceholder ?? 'name'}
@@ -388,7 +368,7 @@ const FormRow = memo(function FormRow({
           autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
           autocompleteVariables={valueAutocompleteVariables}
         />
-      </form>
+      </div>
       <IconButton
         aria-hidden={!showDelete}
         disabled={!showDelete}
