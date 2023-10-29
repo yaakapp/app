@@ -63,7 +63,7 @@ const validateHttpHeader = (v: string) => {
     return true;
   }
 
-  const hi = v.replace(/\$\{\[\s*[^\]\s]+\s*]}/gi, 'fo');
-  console.log('V', v, '-->', hi);
-  return v.match(/^[a-zA-Z0-9-_]+$/) !== null;
+  // Template strings are not allowed so we replace them with a valid example string
+  const withoutTemplateStrings = v.replace(/\$\{\[\s*[^\]\s]+\s*]}/gi, '123');
+  return withoutTemplateStrings.match(/^[a-zA-Z0-9-_]+$/) !== null;
 };
