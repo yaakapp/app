@@ -32,6 +32,7 @@ use window_ext::TrafficLightWindowExt;
 mod models;
 mod render;
 mod window_ext;
+mod plugins;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -688,6 +689,7 @@ fn main() {
                 let w = create_window(app_handle, None);
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
+                plugins::test_plugins(&app_handle);
             }
 
             // ExitRequested { api, .. } => {

@@ -53,7 +53,8 @@
       "identifier": "co.schier.yaak",
       "longDescription": "The best cross-platform visual API client",
       "resources": [
-        "migrations/*"
+        "migrations/*",
+        "plugins/*"
       ],
       "shortDescription": "The best API client",
       "targets": [
