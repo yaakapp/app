@@ -7,7 +7,7 @@ import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 import { DialogProvider } from './DialogContext';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
+import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 
 const router = createBrowserRouter([
   {
@@ -47,8 +47,8 @@ export function AppRouter() {
 }
 
 function WorkspaceOrRedirect() {
-  const environmentId = useActiveEnvironmentId();
   const recentRequests = useRecentRequests();
+  const recentEnvironments = useRecentEnvironments();
   const requests = useRequests();
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
@@ -57,12 +57,15 @@ function WorkspaceOrRedirect() {
     return <Workspace />;
   }
 
+  const environmentId = recentEnvironments[0];
+  const { id: requestId, workspaceId } = request;
+
   return (
     <Navigate
       to={routes.paths.request({
-        workspaceId: request.workspaceId,
-        environmentId: environmentId ?? undefined,
-        requestId: request.id,
+        workspaceId,
+        environmentId,
+        requestId,
       })}
     />
   );
