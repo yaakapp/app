@@ -15,9 +15,10 @@ export function RecentRequestsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
-  const recentRequestIds = useRecentRequests();
   const requests = useRequests();
   const routes = useAppRoutes();
+  const allRecentRequestIds = useRecentRequests();
+  const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
 
   // Toggle the menu on Cmd+k
   useKey('k', (e) => {

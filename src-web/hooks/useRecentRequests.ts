@@ -14,23 +14,26 @@ export function useRecentRequests() {
     [],
   );
 
-  useEffect(() => {
-    setLSState(history);
-  }, [history, setLSState]);
-
+  // Load local storage state on initial render
   useEffectOnce(() => {
     if (lsState) {
       setHistory(lsState);
     }
   });
 
+  // Update local storage state when history changes
   useEffect(() => {
-    setHistory((h: string[]) => {
-      if (activeRequestId === null) return h;
-      const withoutCurrentRequest = h.filter((id) => id !== activeRequestId);
+    setLSState(history);
+  }, [history, setLSState]);
+
+  // Set history when active request changes
+  useEffect(() => {
+    setHistory((currentHistory: string[]) => {
+      if (activeRequestId === null) return currentHistory;
+      const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
       return [activeRequestId, ...withoutCurrentRequest];
     });
   }, [activeRequestId, setHistory]);
 
-  return history.slice(1);
+  return history;
 }
