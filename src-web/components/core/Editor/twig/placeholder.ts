@@ -9,7 +9,7 @@ class PlaceholderWidget extends WidgetType {
     super();
   }
   eq(other: PlaceholderWidget) {
-    return this.name == other.name;
+    return this.name == other.name && this.isExistingVariable == other.isExistingVariable;
   }
   toDOM() {
     const elt = document.createElement('span');
