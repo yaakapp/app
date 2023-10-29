@@ -13,14 +13,22 @@ import { modelsEq } from '../lib/models';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { setPathname } from '../lib/persistPathname';
 
 export function GlobalHooks() {
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
-
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
+
+  // Listen for location changes and update the pathname
+  const location = useLocation();
+  useEffect(() => {
+    setPathname(location.pathname);
+  }, [location.pathname]);
 
   useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
@@ -71,8 +79,9 @@ export function GlobalHooks() {
     }
 
     if (!shouldIgnoreModel(payload)) {
-      queryClient.setQueryData<Model[]>(queryKey, (values) =>
-        values?.map((v) => (modelsEq(v, payload) ? payload : v)),
+      queryClient.setQueryData<Model[]>(
+        queryKey,
+        (values) => values?.map((v) => (modelsEq(v, payload) ? payload : v)),
       );
     }
   });
