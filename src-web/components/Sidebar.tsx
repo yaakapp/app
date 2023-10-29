@@ -253,7 +253,7 @@ function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarIte
             key={r.id}
             selected={selectedIndex === i}
             requestId={r.id}
-            requestName={r.name + ' ' + r.sortPriority}
+            requestName={r.name}
             onMove={handleMove}
             onEnd={handleEnd}
             useProminentStyles={focused}
