@@ -3,11 +3,11 @@ import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
 import { GlobalHooks } from './GlobalHooks';
-import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
 import { DialogProvider } from './DialogContext';
-import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
+import RouteError from './RouteError';
 
 const router = createBrowserRouter([
   {
@@ -48,7 +48,7 @@ export function AppRouter() {
 
 function WorkspaceOrRedirect() {
   const recentRequests = useRecentRequests();
-  const recentEnvironments = useRecentEnvironments();
+  const activeEnvironmentId = useActiveEnvironmentId();
   const requests = useRequests();
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
@@ -57,8 +57,8 @@ function WorkspaceOrRedirect() {
     return <Workspace />;
   }
 
-  const environmentId = recentEnvironments[0];
   const { id: requestId, workspaceId } = request;
+  const environmentId = activeEnvironmentId ?? undefined;
 
   return (
     <Navigate

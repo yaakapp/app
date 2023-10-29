@@ -13,7 +13,9 @@ class PlaceholderWidget extends WidgetType {
   }
   toDOM() {
     const elt = document.createElement('span');
-    elt.className = `placeholder-widget ${!this.isExistingVariable ? 'placeholder-widget-error' : ''}`;
+    elt.className = `placeholder-widget ${
+      !this.isExistingVariable ? 'placeholder-widget-error' : ''
+    }`;
     elt.textContent = this.name;
     return elt;
   }

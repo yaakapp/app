@@ -4,7 +4,7 @@ import { w } from '@tauri-apps/api/clipboard-79413165';
 const openTag = '${[ ';
 const closeTag = ' ]}';
 
-export interface TwigCompletionOption {
+interface TwigCompletionOption {
   name: string;
 }
 
