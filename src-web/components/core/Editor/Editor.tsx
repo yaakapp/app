@@ -36,7 +36,6 @@ export interface EditorProps {
   onChange?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
-  onEnter?: () => void;
   onKeyDown?: (e: KeyboardEvent) => void;
   singleLine?: boolean;
   wrapLines?: boolean;
@@ -62,7 +61,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     onFocus,
     onBlur,
     onKeyDown,
-    onEnter,
     className,
     singleLine,
     format,
@@ -84,12 +82,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     handleChange.current = onChange;
   }, [onChange]);
-
-  // Use ref so we can update the onChange handler without re-initializing the editor
-  const handleEnter = useRef<EditorProps['onEnter']>(onEnter);
-  useEffect(() => {
-    handleEnter.current = onEnter;
-  }, [onEnter]);
 
   // Use ref so we can update the onChange handler without re-initializing the editor
   const handleFocus = useRef<EditorProps['onFocus']>(onFocus);
@@ -172,7 +164,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             container,
             readOnly,
             singleLine,
-            onEnter: handleEnter,
             onChange: handleChange,
             onFocus: handleFocus,
             onBlur: handleBlur,
@@ -252,13 +243,11 @@ function getExtensions({
   onFocus,
   onBlur,
   onKeyDown,
-  onEnter,
 }: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
   onFocus: MutableRefObject<EditorProps['onFocus']>;
   onBlur: MutableRefObject<EditorProps['onBlur']>;
-  onEnter: MutableRefObject<EditorProps['onEnter']>;
   onKeyDown: MutableRefObject<EditorProps['onKeyDown']>;
 }) {
   // TODO: Ensure tooltips render inside the dialog if we are in one.
@@ -275,18 +264,6 @@ function getExtensions({
     ...(!singleLine ? [multiLineExtensions] : []),
     ...(readOnly
       ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
-      : []),
-    ...(singleLine
-      ? [
-          EditorView.domEventHandlers({
-            keydown: (e) => {
-              // Submit nearest form on enter if there is one
-              if (onEnter != null && e.key === 'Enter') {
-                onEnter.current?.();
-              }
-            },
-          }),
-        ]
       : []),
 
     // Handle onFocus
