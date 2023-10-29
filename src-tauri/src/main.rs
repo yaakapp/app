@@ -340,11 +340,11 @@ async fn create_workspace(
 async fn create_environment(
     workspace_id: &str,
     name: &str,
+    variables: Vec<models::EnvironmentVariable>,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
-    let variables = Vec::new();
     let created_environment = models::create_environment(workspace_id, name, variables, pool)
         .await
         .expect("Failed to create environment");

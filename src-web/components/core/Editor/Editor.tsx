@@ -41,6 +41,7 @@ export interface EditorProps {
   wrapLines?: boolean;
   format?: (v: string) => string;
   autocomplete?: GenericCompletionConfig;
+  autocompleteVariables?: boolean;
   actions?: ReactNode;
 }
 
@@ -64,12 +65,14 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     singleLine,
     format,
     autocomplete,
+    autocompleteVariables,
     actions,
     wrapLines,
   }: EditorProps,
   ref,
 ) {
-  const environment = useActiveEnvironment();
+  const e = useActiveEnvironment();
+  const environment = autocompleteVariables ? e : null;
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);

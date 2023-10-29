@@ -153,12 +153,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   return (
     <Dropdown items={items}>
       <Button
+        forDropdown
         size="sm"
         className={classNames(className, 'text-gray-800 !px-2 truncate')}
-        forDropdown
-        leftSlot={
-          <img src="https://yaak.app/logo.svg" alt="Workspace logo" className="w-4 h-4 mr-1" />
-        }
         {...buttonProps}
       >
         {activeWorkspace?.name}

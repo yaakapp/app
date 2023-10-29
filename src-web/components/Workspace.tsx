@@ -29,7 +29,7 @@ const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
-  const { hide, hidden, toggle } = useSidebarHidden();
+  const { hide, show, hidden, toggle } = useSidebarHidden();
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -64,7 +64,14 @@ export default function Workspace() {
       moveState.current = {
         move: async (e: MouseEvent) => {
           e.preventDefault(); // Prevent text selection and things
-          setWidth(startWidth + (e.clientX - mouseStartX));
+          const newWidth = startWidth + (e.clientX - mouseStartX);
+          if (newWidth < 100) {
+            hide(); 
+            resetWidth();
+          } else  {
+            show();
+            setWidth(newWidth);
+          }
         },
         up: (e: MouseEvent) => {
           e.preventDefault();

@@ -17,6 +17,8 @@ type Props = {
 export function HeaderEditor({ headers, onChange, forceUpdateKey }: Props) {
   return (
     <PairEditor
+      valueAutocompleteVariables
+      nameAutocompleteVariables
       pairs={headers}
       onChange={onChange}
       forceUpdateKey={forceUpdateKey}

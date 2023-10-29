@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import type { DialogProps } from './core/Dialog';
 import { Dialog } from './core/Dialog';
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 
 type DialogEntry = {
   id: string;

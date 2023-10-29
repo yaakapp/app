@@ -37,7 +37,6 @@ import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 import type { Environment } from '../../../lib/models';
-import { EditorView } from 'codemirror';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
