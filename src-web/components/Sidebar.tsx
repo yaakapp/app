@@ -152,6 +152,15 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   return (
     <div aria-hidden={hidden} className="relative h-full">
+      <HStack className="mt-1 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
+        <WorkspaceActionsDropdown forDropdown={false} className="text-left mb-0" justify="start" />
+        <IconButton
+          size="sm"
+          icon="plusCircle"
+          title="Create Request"
+          onClick={() => createRequest.mutate({})}
+        />
+      </HStack>
       <div
         role="menu"
         aria-orientation="vertical"
@@ -165,19 +174,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           'h-full relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
         )}
       >
-        <HStack className="mt-1 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
-          <WorkspaceActionsDropdown
-            forDropdown={false}
-            className="text-left mb-0"
-            justify="start"
-          />
-          <IconButton
-            size="sm"
-            icon="plusCircle"
-            title="Create Request"
-            onClick={() => createRequest.mutate({})}
-          />
-        </HStack>
         <VStack
           as="ul"
           className="relative pb-3 overflow-y-auto overflow-x-visible pt-2"
@@ -227,8 +223,10 @@ function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarIte
       if (hoveredIndex > index) newRequests.splice(hoveredIndex - 1, 0, request);
       else newRequests.splice(hoveredIndex, 0, request);
 
-      const beforePriority = newRequests[hoveredIndex - 1]?.sortPriority ?? 0;
-      const afterPriority = newRequests[hoveredIndex + 1]?.sortPriority ?? 0;
+      // Do a simple find because the math is too hard
+      const newIndex = newRequests.findIndex((r) => r.id === requestId) ?? 0;
+      const beforePriority = newRequests[newIndex - 1]?.sortPriority ?? 0;
+      const afterPriority = newRequests[newIndex + 1]?.sortPriority ?? 0;
 
       const shouldUpdateAll = afterPriority - beforePriority < 1;
       if (shouldUpdateAll) {
@@ -255,7 +253,7 @@ function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarIte
             key={r.id}
             selected={selectedIndex === i}
             requestId={r.id}
-            requestName={r.name}
+            requestName={r.name + ' ' + r.sortPriority}
             onMove={handleMove}
             onEnd={handleEnd}
             useProminentStyles={focused}
