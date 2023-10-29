@@ -115,7 +115,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     const request = requests[selectedIndex ?? -1];
     if (!request || request.id === activeRequestId) return;
     e.preventDefault();
-    routes.navigate('request', { requestId: request.id, workspaceId: request.workspaceId });
+    routes.navigate('request', {
+      requestId: request.id,
+      workspaceId: request.workspaceId,
+      environmentId: activeEnvironmentId ?? undefined,
+    });
   });
 
   useKey(
@@ -161,12 +165,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           'h-full relative grid grid-rows-[auto_minmax(0,1fr)_auto]',
         )}
       >
-        <HStack
-          className="mt-1 pt-1 mx-2"
-          justifyContent="between"
-          alignItems="center"
-          space={1}
-        >
+        <HStack className="mt-1 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
           <WorkspaceActionsDropdown
             forDropdown={false}
             className="text-left mb-0"
