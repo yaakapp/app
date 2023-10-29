@@ -270,7 +270,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     <Portal name="dropdown">
       <FocusTrap>
         <div>
-          <div tabIndex={-1} aria-hidden className="fixed inset-0" onClick={onClose} />
+          <div tabIndex={-1} aria-hidden className="fixed inset-0 z-50" onClick={onClose} />
           <motion.div
             tabIndex={0}
             onKeyDown={handleMenuKeyDown}
