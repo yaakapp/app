@@ -36,7 +36,7 @@ export async function getKeyValue<T>({
   return extractKeyValueOrFallback(kv, fallback);
 }
 
-export function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
+function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
   if (kv === null) return undefined;
   try {
     return JSON.parse(kv.value) as T;
@@ -45,7 +45,7 @@ export function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
   }
 }
 
-export function extractKeyValueOrFallback<T>(kv: KeyValue | null, fallback: T): T {
+function extractKeyValueOrFallback<T>(kv: KeyValue | null, fallback: T): T {
   const v = extractKeyValue<T>(kv);
   if (v === undefined) return fallback;
   return v;
