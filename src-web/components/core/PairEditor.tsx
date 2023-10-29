@@ -10,6 +10,7 @@ import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
 import { Input } from './Input';
+import type { EditorView } from 'codemirror';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -20,6 +21,8 @@ export type PairEditorProps = {
   valuePlaceholder?: string;
   nameAutocomplete?: GenericCompletionConfig;
   valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
+  nameAutocompleteVariables?: boolean;
+  valueAutocompleteVariables?: boolean;
   nameValidate?: InputProps['validate'];
   valueValidate?: InputProps['validate'];
 };
@@ -37,17 +40,20 @@ type PairContainer = {
 };
 
 export const PairEditor = memo(function PairEditor({
-  pairs: originalPairs,
+  className,
   forceUpdateKey,
   nameAutocomplete,
-  valueAutocomplete,
+  nameAutocompleteVariables,
   namePlaceholder,
-  valuePlaceholder,
   nameValidate,
-  valueValidate,
-  className,
   onChange,
+  pairs: originalPairs,
+  valueAutocomplete,
+  valueAutocompleteVariables,
+  valuePlaceholder,
+  valueValidate,
 }: PairEditorProps) {
+  const [forceFocusPairId, setForceFocusPairId] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pairs, setPairs] = useState<PairContainer[]>(() => {
     // Remove empty headers on initial render
@@ -105,6 +111,15 @@ export const PairEditor = memo(function PairEditor({
     [hoveredIndex, setPairsAndSave],
   );
 
+  const handleSubmitRow = useCallback(
+    (pair: PairContainer) => {
+      const index = pairs.findIndex((p) => p.id === pair.id);
+      const id = pairs[index + 1]?.id ?? null;
+      setForceFocusPairId(id);
+    },
+    [pairs],
+  );
+
   const handleChange = useCallback(
     (pair: PairContainer) =>
       setPairsAndSave((pairs) => pairs.map((p) => (pair.id !== p.id ? p : pair))),
@@ -152,6 +167,9 @@ export const PairEditor = memo(function PairEditor({
               pairContainer={p}
               className="py-1"
               isLast={isLast}
+              nameAutocompleteVariables={nameAutocompleteVariables}
+              valueAutocompleteVariables={valueAutocompleteVariables}
+              forceFocusPairId={forceFocusPairId}
               forceUpdateKey={forceUpdateKey}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
@@ -159,6 +177,7 @@ export const PairEditor = memo(function PairEditor({
               valuePlaceholder={valuePlaceholder}
               nameValidate={nameValidate}
               valueValidate={valueValidate}
+              onSubmit={handleSubmitRow}
               onChange={handleChange}
               onFocus={handleFocus}
               onDelete={isLast ? undefined : handleDelete}
@@ -179,16 +198,20 @@ enum ItemTypes {
 type FormRowProps = {
   className?: string;
   pairContainer: PairContainer;
+  forceFocusPairId?: string | null;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
   onDelete?: (pair: PairContainer) => void;
   onFocus?: (pair: PairContainer) => void;
+  onSubmit?: (pair: PairContainer) => void;
   isLast?: boolean;
 } & Pick<
   PairEditorProps,
   | 'nameAutocomplete'
   | 'valueAutocomplete'
+  | 'nameAutocompleteVariables'
+  | 'valueAutocompleteVariables'
   | 'namePlaceholder'
   | 'valuePlaceholder'
   | 'nameValidate'
@@ -198,23 +221,34 @@ type FormRowProps = {
 
 const FormRow = memo(function FormRow({
   className,
-  pairContainer,
+  forceFocusPairId,
+  forceUpdateKey,
+  isLast,
+  nameAutocomplete,
+  namePlaceholder,
+  nameAutocompleteVariables,
+  valueAutocompleteVariables,
+  nameValidate,
   onChange,
   onDelete,
+  onEnd,
   onFocus,
   onMove,
-  onEnd,
-  isLast,
-  forceUpdateKey,
-  nameAutocomplete,
+  onSubmit,
+  pairContainer,
   valueAutocomplete,
-  namePlaceholder,
   valuePlaceholder,
-  nameValidate,
   valueValidate,
 }: FormRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<EditorView>(null);
+
+  useEffect(() => {
+    if (forceFocusPairId === pairContainer.id) {
+      nameInputRef.current?.focus();
+    }
+  }, [forceFocusPairId, pairContainer.id]);
 
   const handleChangeEnabled = useMemo(
     () => (enabled: boolean) => onChange({ id, pair: { ...pairContainer.pair, enabled } }),
@@ -237,7 +271,7 @@ const FormRow = memo(function FormRow({
   const [, connectDrop] = useDrop<PairContainer>(
     {
       accept: ItemTypes.ROW,
-      hover: (item, monitor) => {
+      hover: (_, monitor) => {
         if (!ref.current) return;
         const hoverBoundingRect = ref.current?.getBoundingClientRect();
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
@@ -285,12 +319,18 @@ const FormRow = memo(function FormRow({
         <span className="w-3" />
       )}
       <Checkbox
+        title={pairContainer.pair.enabled ? 'disable entry' : 'Enable item'}
         disabled={isLast}
         checked={isLast ? false : !!pairContainer.pair.enabled}
         className={classNames('mr-2', isLast && '!opacity-disabled')}
         onChange={handleChangeEnabled}
       />
-      <div
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onSubmit?.(pairContainer);
+        }}
         className={classNames(
           'grid items-center',
           '@xs:gap-2 @xs:!grid-rows-1 @xs:!grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
@@ -298,11 +338,12 @@ const FormRow = memo(function FormRow({
         )}
       >
         <Input
+          ref={nameInputRef}
           hideLabel
+          useTemplating
           size="sm"
           require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
           validate={nameValidate}
-          useTemplating
           forceUpdateKey={forceUpdateKey}
           containerClassName={classNames(isLast && 'border-dashed')}
           defaultValue={pairContainer.pair.name}
@@ -312,9 +353,11 @@ const FormRow = memo(function FormRow({
           onFocus={handleFocus}
           placeholder={namePlaceholder ?? 'name'}
           autocomplete={nameAutocomplete}
+          autocompleteVariables={nameAutocompleteVariables}
         />
         <Input
           hideLabel
+          useTemplating
           size="sm"
           containerClassName={classNames(isLast && 'border-dashed')}
           validate={valueValidate}
@@ -325,10 +368,10 @@ const FormRow = memo(function FormRow({
           onChange={handleChangeValue}
           onFocus={handleFocus}
           placeholder={valuePlaceholder ?? 'value'}
-          useTemplating
           autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
+          autocompleteVariables={valueAutocompleteVariables}
         />
-      </div>
+      </form>
       <IconButton
         aria-hidden={!onDelete}
         disabled={!onDelete}
