@@ -16,6 +16,7 @@ import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { HStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
+import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
 
 type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown'>;
 
@@ -54,26 +55,28 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                 <Button
                   className="focus"
                   color="gray"
-                  onClick={() => {
+                  rightSlot={<Icon icon="openNewWindow" />}
+                  onClick={async () => {
                     hide();
-                    routes.navigate('workspace', { workspaceId: w.id });
+                    const environmentId = (await getRecentEnvironments(w.id))[0];
+                    await invoke('new_window', {
+                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
+                    });
                   }}
                 >
-                  This Window
+                  New Window
                 </Button>
                 <Button
                   autoFocus
                   className="focus"
                   color="gray"
-                  rightSlot={<Icon icon="openNewWindow" />}
                   onClick={async () => {
                     hide();
-                    await invoke('new_window', {
-                      url: routes.paths.workspace({ workspaceId: w.id }),
-                    });
+                    const environmentId = (await getRecentEnvironments(w.id))[0];
+                    routes.navigate('workspace', { workspaceId: w.id, environmentId });
                   }}
                 >
-                  New Window
+                  This Window
                 </Button>
               </HStack>
             );
