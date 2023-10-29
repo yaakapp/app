@@ -19,6 +19,8 @@ cocoa = "0.25.0"
 
 [dependencies]
 base64 = "0.21.0"
+boa_engine = "0.17.3"
+boa_runtime = "0.17.3"
 chrono = { version = "0.4.23", features = ["serde"] }
 futures = "0.3.26"
 http = "0.2.8"
