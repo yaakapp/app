@@ -91,8 +91,6 @@ async fn actually_send_ephemeral_request(
         url_string = format!("http://{}", url_string);
     }
 
-    println!("Sending request to {}", url_string);
-
     let client = reqwest::Client::builder()
         .redirect(Policy::none())
         // .danger_accept_invalid_certs(true)
