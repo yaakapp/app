@@ -101,7 +101,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const handleEnter = useCallback(() => {
+  // Submit nearest form on Enter key press
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+
     const form = wrapperRef.current?.closest('form');
     if (!isValid || form == null) return;
 
@@ -147,7 +150,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             id={id}
             singleLine
             wrapLines={size === 'auto'}
-            onEnter={handleEnter}
+            onKeyDown={handleKeyDown}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
             forceUpdateKey={forceUpdateKey}
