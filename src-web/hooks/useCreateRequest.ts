@@ -4,9 +4,11 @@ import type { HttpRequest } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey, useRequests } from './useRequests';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
 export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) {
   const workspaceId = useActiveWorkspaceId();
+  const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
   const requests = useRequests();
   const queryClient = useQueryClient();
@@ -26,7 +28,11 @@ export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) 
         (requests) => [...(requests ?? []), request],
       );
       if (navigateAfter) {
-        routes.navigate('request', { workspaceId: request.workspaceId, requestId: request.id });
+        routes.navigate('request', {
+          workspaceId: request.workspaceId,
+          requestId: request.id,
+          environmentId: activeEnvironmentId ?? undefined,
+        });
       }
     },
   });

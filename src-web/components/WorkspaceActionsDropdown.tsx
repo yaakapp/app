@@ -16,7 +16,6 @@ import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { HStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown'>;
 
@@ -27,7 +26,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
-  const environmentId = useActiveEnvironmentId();
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
@@ -58,10 +56,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   color="gray"
                   onClick={() => {
                     hide();
-                    routes.navigate('workspace', {
-                      workspaceId: w.id,
-                      environmentId: environmentId ?? undefined,
-                    });
+                    routes.navigate('workspace', { workspaceId: w.id });
                   }}
                 >
                   This Window
@@ -74,10 +69,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     await invoke('new_window', {
-                      url: routes.paths.workspace({
-                        workspaceId: w.id,
-                        environmentId: environmentId ?? undefined,
-                      }),
+                      url: routes.paths.workspace({ workspaceId: w.id }),
                     });
                   }}
                 >
@@ -152,7 +144,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     createWorkspace,
     deleteWorkspace.mutate,
     dialog,
-    environmentId,
     prompt,
     routes,
     updateWorkspace,
@@ -165,7 +156,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         size="sm"
         className={classNames(className, 'text-gray-800 !px-2 truncate')}
         forDropdown
-        leftSlot={<img src="https://yaak.app/logo.svg" alt="Workspace logo" className="w-4 h-4 mr-1" />}
+        leftSlot={
+          <img src="https://yaak.app/logo.svg" alt="Workspace logo" className="w-4 h-4 mr-1" />
+        }
         {...buttonProps}
       >
         {activeWorkspace?.name}

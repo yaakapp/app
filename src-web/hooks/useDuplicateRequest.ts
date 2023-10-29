@@ -4,6 +4,7 @@ import type { HttpRequest } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey } from './useRequests';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
 export function useDuplicateRequest({
   id,
@@ -12,7 +13,8 @@ export function useDuplicateRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
-  const workspaceId = useActiveWorkspaceId();
+  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
   const queryClient = useQueryClient();
   return useMutation<HttpRequest, string>({
@@ -25,8 +27,12 @@ export function useDuplicateRequest({
         requestsQueryKey({ workspaceId: request.workspaceId }),
         (requests) => [...(requests ?? []), request],
       );
-      if (navigateAfter && workspaceId !== null) {
-        routes.navigate('request', { workspaceId, requestId: request.id });
+      if (navigateAfter && activeWorkspaceId !== null) {
+        routes.navigate('request', {
+          workspaceId: activeWorkspaceId,
+          requestId: request.id,
+          environmentId: activeEnvironmentId ?? undefined,
+        });
       }
     },
   });

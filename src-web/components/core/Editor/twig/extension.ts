@@ -3,7 +3,7 @@ import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
-import { placeholders } from '../placeholder';
+import { placeholders } from './placeholder';
 import { textLanguageName } from '../text/extension';
 import { twigCompletion } from './completion';
 import { parser as twigParser } from './twig';
@@ -29,7 +29,7 @@ export function twig(
     completion,
     completionBase,
     base.support,
-    placeholders,
+    placeholders(variables),
     ...additionalCompletion,
   ];
 }

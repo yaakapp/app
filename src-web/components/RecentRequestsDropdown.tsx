@@ -10,11 +10,13 @@ import { CountBadge } from './core/CountBadge';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import classNames from 'classnames';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 export function RecentRequestsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
+  const activeEnvironmentId = useActiveEnvironmentId();
   const requests = useRequests();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
@@ -65,6 +67,7 @@ export function RecentRequestsDropdown() {
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
+            environmentId: activeEnvironmentId ?? undefined,
             workspaceId: activeWorkspaceId,
           });
         },
@@ -77,7 +80,7 @@ export function RecentRequestsDropdown() {
     }
 
     return recentRequestItems.slice(0, 20);
-  }, [activeWorkspaceId, recentRequestIds, requests, routes]);
+  }, [activeWorkspaceId, activeEnvironmentId, recentRequestIds, requests, routes]);
 
   return (
     <Dropdown ref={dropdownRef} items={items}>
