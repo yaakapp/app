@@ -127,6 +127,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         onChange={handleChangeVariables}
         placeholder="{}"
         useTemplating
+        autocompleteVariables
         {...extraEditorProps}
       />
     </div>
