@@ -28,6 +28,7 @@ export interface EditorProps {
   contentType?: string | null;
   forceUpdateKey?: string;
   autoFocus?: boolean;
+  autoSelect?: boolean;
   defaultValue?: string | null;
   placeholder?: string;
   tooltipContainer?: HTMLElement;
@@ -50,6 +51,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     heightMode,
     contentType,
     autoFocus,
+    autoSelect,
     placeholder,
     useTemplating,
     defaultValue,
@@ -170,7 +172,12 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
       view = new EditorView({ state, parent: container });
       cm.current = { view, languageCompartment };
       syncGutterBg({ parent: container, className });
-      if (autoFocus) view.focus();
+      if (autoFocus) {
+        view.focus();
+      }
+      if (autoSelect) {
+        view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+      }
     } catch (e) {
       console.log('Failed to initialize Codemirror', e);
     }

@@ -30,6 +30,7 @@ export function Prompt({ onHide, label, name, defaultValue, onResult }: PromptPr
         <Input
           hideLabel
           require
+          autoSelect
           label={label}
           name={name}
           defaultValue={defaultValue}
