@@ -6,7 +6,7 @@ import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey, useRequests } from './useRequests';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
-export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) {
+export function useCreateRequest() {
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
@@ -27,13 +27,11 @@ export function useCreateRequest({ navigateAfter }: { navigateAfter: boolean }) 
         requestsQueryKey({ workspaceId: request.workspaceId }),
         (requests) => [...(requests ?? []), request],
       );
-      if (navigateAfter) {
-        routes.navigate('request', {
-          workspaceId: request.workspaceId,
-          requestId: request.id,
-          environmentId: activeEnvironmentId ?? undefined,
-        });
-      }
+      routes.navigate('request', {
+        workspaceId: request.workspaceId,
+        requestId: request.id,
+        environmentId: activeEnvironmentId ?? undefined,
+      });
     },
   });
 }

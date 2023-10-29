@@ -7,6 +7,7 @@ import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
+import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 
 interface Props {
   className?: string;
@@ -23,6 +24,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     >
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
+        <WorkspaceActionsDropdown />
         <EnvironmentActionsDropdown className="pointer-events-auto" />
       </HStack>
       <div className="pointer-events-none">

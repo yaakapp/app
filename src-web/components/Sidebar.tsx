@@ -16,13 +16,11 @@ import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Icon } from './core/Icon';
-import { HStack, VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
-import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
-import { IconButton } from './core/IconButton';
 import { useCreateRequest } from '../hooks/useCreateRequest';
+import { VStack } from './core/Stacks';
 
 interface Props {
   className?: string;
@@ -34,7 +32,7 @@ enum ItemTypes {
 
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
-  const createRequest = useCreateRequest({ navigateAfter: true });
+  const createRequest = useCreateRequest();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeRequestId = useActiveRequestId();
   const activeEnvironmentId = useActiveEnvironmentId();
@@ -156,15 +154,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   return (
     <div aria-hidden={hidden} className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <HStack className="mt-1 pt-1 mx-2" justifyContent="between" alignItems="center" space={1}>
-        <WorkspaceActionsDropdown forDropdown={false} className="text-left mb-0" justify="start" />
-        <IconButton
-          size="sm"
-          icon="plusCircle"
-          title="Create Request"
-          onClick={() => createRequest.mutate({})}
-        />
-      </HStack>
       <div
         role="menu"
         aria-orientation="vertical"

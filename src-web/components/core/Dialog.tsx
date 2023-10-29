@@ -11,7 +11,7 @@ export interface DialogProps {
   children: ReactNode;
   open: boolean;
   onClose: () => void;
-  title: ReactNode;
+  title?: ReactNode;
   description?: ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'full' | 'dynamic';
@@ -63,9 +63,13 @@ export function Dialog({
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >
-            <Heading className="text-xl font-semibold w-full" id={titleId}>
-              {title}
-            </Heading>
+            {title ? (
+              <Heading className="text-xl font-semibold w-full" id={titleId}>
+                {title}
+              </Heading>
+            ) : (
+              <span />
+            )}
             {description && <p id={descriptionId}>{description}</p>}
             <div className="h-full w-full">{children}</div>
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
