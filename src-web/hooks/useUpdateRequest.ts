@@ -20,9 +20,9 @@ export function useUpdateRequest(id: string | null) {
       const request = await getRequest(id);
       if (request === null) return;
 
-      const newRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
+      const patchedRequest = typeof v === 'function' ? v(request) : { ...request, ...v };
       queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(request), (requests) =>
-        (requests ?? []).map((r) => (r.id === newRequest.id ? newRequest : r)),
+        (requests ?? []).map((r) => (r.id === patchedRequest.id ? patchedRequest : r)),
       );
     },
   });
