@@ -7,8 +7,21 @@ import { Editor } from './Editor';
 import { IconButton } from './IconButton';
 import { HStack, VStack } from './Stacks';
 
-export type InputProps = Omit<HTMLAttributes<HTMLInputElement>, 'onChange' | 'onFocus'> &
-  Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete' | 'forceUpdateKey' | 'autoFocus' | 'autoSelect' | 'autocompleteVariables'> & {
+export type InputProps = Omit<
+  HTMLAttributes<HTMLInputElement>,
+  'onChange' | 'onFocus' | 'onKeyDown'
+> &
+  Pick<
+    EditorProps,
+    | 'contentType'
+    | 'useTemplating'
+    | 'autocomplete'
+    | 'forceUpdateKey'
+    | 'autoFocus'
+    | 'autoSelect'
+    | 'autocompleteVariables'
+    | 'onKeyDown'
+  > & {
     name: string;
     type?: 'text' | 'password';
     label: string;

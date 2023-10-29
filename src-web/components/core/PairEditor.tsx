@@ -132,14 +132,13 @@ export const PairEditor = memo(function PairEditor({
     [setPairsAndSave],
   );
 
-  const handleFocus = useCallback(
-    (pair: PairContainer) =>
-      setPairs((pairs) => {
-        const isLast = pair.id === pairs[pairs.length - 1]?.id;
-        return isLast ? [...pairs, newPairContainer()] : pairs;
-      }),
-    [],
-  );
+  const handleFocus = useCallback((pair: PairContainer) => {
+    return setPairs((pairs) => {
+      setForceFocusPairId(null);
+      const isLast = pair.id === pairs[pairs.length - 1]?.id;
+      return isLast ? [...pairs, newPairContainer()] : pairs;
+    });
+  }, []);
 
   // Ensure there's always at least one pair
   useEffect(() => {
@@ -177,10 +176,11 @@ export const PairEditor = memo(function PairEditor({
               valuePlaceholder={valuePlaceholder}
               nameValidate={nameValidate}
               valueValidate={valueValidate}
+              showDelete={!isLast}
               onSubmit={handleSubmitRow}
               onChange={handleChange}
               onFocus={handleFocus}
-              onDelete={isLast ? undefined : handleDelete}
+              onDelete={handleDelete}
               onEnd={handleEnd}
               onMove={handleMove}
             />
@@ -199,6 +199,7 @@ type FormRowProps = {
   className?: string;
   pairContainer: PairContainer;
   forceFocusPairId?: string | null;
+  showDelete?: boolean;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
@@ -236,6 +237,7 @@ const FormRow = memo(function FormRow({
   onMove,
   onSubmit,
   pairContainer,
+  showDelete,
   valueAutocomplete,
   valuePlaceholder,
   valueValidate,
@@ -267,6 +269,20 @@ const FormRow = memo(function FormRow({
 
   const handleFocus = useCallback(() => onFocus?.(pairContainer), [onFocus, pairContainer]);
   const handleDelete = useCallback(() => onDelete?.(pairContainer), [onDelete, pairContainer]);
+
+  const handleKeyDownName = useMemo(
+    () => (e: KeyboardEvent) => {
+      if (
+        e.key === 'Backspace' &&
+        pairContainer.pair.name === '' &&
+        pairContainer.pair.value === ''
+      ) {
+        e.preventDefault();
+        onDelete?.(pairContainer);
+      }
+    },
+    [pairContainer, onDelete],
+  );
 
   const [, connectDrop] = useDrop<PairContainer>(
     {
@@ -349,6 +365,7 @@ const FormRow = memo(function FormRow({
           defaultValue={pairContainer.pair.name}
           label="Name"
           name="name"
+          onKeyDown={handleKeyDownName}
           onChange={handleChangeName}
           onFocus={handleFocus}
           placeholder={namePlaceholder ?? 'name'}
@@ -373,13 +390,13 @@ const FormRow = memo(function FormRow({
         />
       </form>
       <IconButton
-        aria-hidden={!onDelete}
-        disabled={!onDelete}
+        aria-hidden={!showDelete}
+        disabled={!showDelete}
         color="custom"
-        icon={onDelete ? 'trash' : 'empty'}
+        icon={showDelete ? 'trash' : 'empty'}
         size="sm"
         title="Delete header"
-        onClick={handleDelete}
+        onClick={showDelete ? handleDelete : undefined}
         className="ml-0.5 !opacity-0 group-hover:!opacity-100 focus-visible:!opacity-100"
       />
     </div>

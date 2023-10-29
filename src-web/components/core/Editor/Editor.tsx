@@ -37,6 +37,7 @@ export interface EditorProps {
   onFocus?: () => void;
   onBlur?: () => void;
   onEnter?: () => void;
+  onKeyDown?: (e: KeyboardEvent) => void;
   singleLine?: boolean;
   wrapLines?: boolean;
   format?: (v: string) => string;
@@ -60,6 +61,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     onChange,
     onFocus,
     onBlur,
+    onKeyDown,
     onEnter,
     className,
     singleLine,
@@ -100,6 +102,12 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     handleBlur.current = onBlur;
   }, [onBlur]);
+
+  // Use ref so we can update the onChange handler without re-initializing the editor
+  const handleKeyDown = useRef<EditorProps['onKeyDown']>(onKeyDown);
+  useEffect(() => {
+    handleKeyDown.current = onKeyDown;
+  }, [onKeyDown]);
 
   // Update placeholder
   const placeholderCompartment = useRef(new Compartment());
@@ -168,6 +176,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             onChange: handleChange,
             onFocus: handleFocus,
             onBlur: handleBlur,
+            onKeyDown: handleKeyDown,
           }),
         ],
       });
@@ -242,6 +251,7 @@ function getExtensions({
   onChange,
   onFocus,
   onBlur,
+  onKeyDown,
   onEnter,
 }: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
@@ -249,6 +259,7 @@ function getExtensions({
   onFocus: MutableRefObject<EditorProps['onFocus']>;
   onBlur: MutableRefObject<EditorProps['onBlur']>;
   onEnter: MutableRefObject<EditorProps['onEnter']>;
+  onKeyDown: MutableRefObject<EditorProps['onKeyDown']>;
 }) {
   // TODO: Ensure tooltips render inside the dialog if we are in one.
   const parent =
@@ -282,6 +293,7 @@ function getExtensions({
     EditorView.domEventHandlers({
       focus: onFocus.current,
       blur: onBlur.current,
+      keydown: onKeyDown.current,
     }),
 
     // Handle onChange
