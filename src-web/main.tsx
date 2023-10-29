@@ -4,9 +4,9 @@ import { App } from './components/App';
 import { getKeyValue } from './lib/keyValueStore';
 import { getPreferredAppearance, setAppearance } from './lib/theme/window';
 import './main.css';
-import { initPathnamePersistance } from './lib/initPathnamePersistance';
+import { maybeRestorePathname } from './lib/persistPathname';
 
-await initPathnamePersistance();
+await maybeRestorePathname();
 
 setAppearance(
   await getKeyValue({
