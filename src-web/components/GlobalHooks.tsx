@@ -18,9 +18,12 @@ import { useEffect } from 'react';
 import { setPathname } from '../lib/persistPathname';
 
 export function GlobalHooks() {
+  // Include here so they always update, even
+  // if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
+
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
