@@ -10,8 +10,15 @@ import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
+import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
+import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 
 export function GlobalHooks() {
+  useRecentWorkspaces();
+  useRecentEnvironments();
+  useRecentRequests();
+
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
