@@ -23,6 +23,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 import { IconButton } from './core/IconButton';
 import { useCreateRequest } from '../hooks/useCreateRequest';
+import { w } from '@tauri-apps/api/clipboard-79413165';
 
 interface Props {
   className?: string;
@@ -77,6 +78,10 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     },
     [focusActiveRequest, requests, routes, activeEnvironmentId],
   );
+
+  const handleClearSelected = useCallback(() => {
+    setSelectedIndex(undefined);
+  }, [setSelectedIndex]);
 
   const handleFocus = useCallback(() => {
     if (hasFocus) return;
@@ -184,6 +189,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
             requests={requests}
             focused={hasFocus}
             onSelect={handleSelect}
+            onClearSelected={handleClearSelected}
           />
         </VStack>
       </div>
@@ -196,9 +202,10 @@ interface SidebarItemsProps {
   focused: boolean;
   selectedIndex?: number;
   onSelect: (requestId: string) => void;
+  onClearSelected: () => void;
 }
 
-function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarItemsProps) {
+function SidebarItems({ requests, focused, selectedIndex, onSelect, onClearSelected }: SidebarItemsProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
 
@@ -214,6 +221,7 @@ function SidebarItems({ requests, focused, selectedIndex, onSelect }: SidebarIte
     (requestId) => {
       if (hoveredIndex === null) return;
       setHoveredIndex(null);
+      onClearSelected();
 
       const index = requests.findIndex((r) => r.id === requestId);
       const request = requests[index];
