@@ -7,6 +7,7 @@ import type { HttpRequest } from '../lib/models';
 import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import { useDebouncedValue } from './useDebouncedValue';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
 const introspectionRequestBody = JSON.stringify({
   query: getIntrospectionQuery(),
@@ -17,6 +18,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   // Debounce the request because it can change rapidly and we don't
   // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
+  const activeEnvironmentId = useActiveEnvironmentId();
   const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
@@ -31,7 +33,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       setIsLoading(true);
       setError(undefined);
       const args = { ...baseRequest, body: introspectionRequestBody };
-      const response = await minPromiseMillis(sendEphemeralRequest(args), 700);
+      const response = await minPromiseMillis(sendEphemeralRequest(args, activeEnvironmentId), 700);
 
       if (response.error) {
         return Promise.reject(new Error(response.error));
