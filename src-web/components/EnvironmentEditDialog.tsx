@@ -37,7 +37,7 @@ export const EnvironmentEditDialog = function () {
       )}
     >
       {showSidebar && (
-        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[200px] pr-4 border-r border-gray-100">
+        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-4 border-r border-gray-100">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
             {environments.map((e) => (
               <Button
@@ -68,7 +68,13 @@ export const EnvironmentEditDialog = function () {
           </Button>
         </aside>
       )}
-      {activeEnvironment != null && <EnvironmentEditor environment={activeEnvironment} />}
+      {activeEnvironment != null ? (
+        <EnvironmentEditor environment={activeEnvironment} />
+      ) : (
+        <div className="flex w-full h-full items-center justify-center text-gray-400 italic">
+          select an environment
+        </div>
+      )}
     </div>
   );
 };

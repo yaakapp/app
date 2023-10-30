@@ -57,9 +57,10 @@ export function Dialog({
               'relative bg-gray-50 pointer-events-auto',
               'p-5 rounded-lg overflow-auto',
               'dark:border border-highlight shadow shadow-black/10',
+              'max-w-[90vw] max-h-[calc(100vh-8em)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
-              size === 'full' && 'w-[95vw] h-[calc(100vh-6em)]',
+              size === 'full' && 'w-[100vw] h-[100vh]',
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >

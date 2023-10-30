@@ -267,10 +267,11 @@ function getExtensions({
       : []),
 
     // Handle onFocus
+    // NOTE: These *must* be anonymous functions so the references update properly
     EditorView.domEventHandlers({
-      focus: onFocus.current,
-      blur: onBlur.current,
-      keydown: onKeyDown.current,
+      focus: () => onFocus.current?.(),
+      blur: () => onBlur.current?.(),
+      keydown: e => onKeyDown.current?.(e),
     }),
 
     // Handle onChange
