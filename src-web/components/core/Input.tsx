@@ -102,14 +102,17 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Submit nearest form on Enter key press
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key !== 'Enter') return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
 
-    const form = wrapperRef.current?.closest('form');
-    if (!isValid || form == null) return;
+      const form = wrapperRef.current?.closest('form');
+      if (!isValid || form == null) return;
 
-    form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-  }, [isValid]);
+      form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    },
+    [isValid],
+  );
 
   return (
     <VStack ref={wrapperRef} className="w-full">
