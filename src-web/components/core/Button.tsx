@@ -49,9 +49,9 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     () =>
       classNames(
         className,
-        'flex-shrink-0 outline-none whitespace-nowrap',
-        'focus-visible-or-class:ring',
-        'rounded-md flex items-center',
+        'whitespace-nowrap outline-none',
+        'flex-shrink-0 flex items-center',
+        'focus-visible-or-class:ring rounded-md',
         disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
         colorStyles[color || 'default'],
         justify === 'start' && 'justify-start',
@@ -70,7 +70,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       ) : leftSlot ? (
         <div className="mr-1">{leftSlot}</div>
       ) : null}
-      {children}
+      <div className="max-w-[15em] truncate">{children}</div>
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
       {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
     </button>

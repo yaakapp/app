@@ -83,7 +83,7 @@ export default function Workspace() {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [setWidth, width],
+    [setWidth, resetWidth, width, hide, show],
   );
 
   const sideWidth = hidden ? 0 : width;
@@ -121,7 +121,7 @@ export default function Workspace() {
       )}
     >
       {floating ? (
-        <Overlay open={!hidden} portalName="sidebar" onClose={hide}>
+        <Overlay open={!hidden} portalName="sidebar" onClose={hide} zIndex={10}>
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}

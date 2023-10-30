@@ -42,9 +42,9 @@ export const RecentResponsesDropdown = function ResponsePane({
         ...responses.slice(0, 20).map((r) => ({
           key: r.id,
           label: (
-            <HStack space={2}>
+            <HStack space={2} alignItems="center">
               <StatusTag className="text-xs" response={r} />
-              <span>&bull;</span> <span>{r.elapsed}ms</span>
+              <span>&bull;</span> <span className="font-mono text-xs">{r.elapsed}ms</span>
             </HStack>
           ),
           leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
