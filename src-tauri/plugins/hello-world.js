@@ -1,1 +1,0 @@
-sayHello('Plugin');
