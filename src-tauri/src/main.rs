@@ -65,13 +65,14 @@ async fn migrate_db(
 #[tauri::command]
 async fn send_ephemeral_request(
     request: models::HttpRequest,
-    environment_id: &str,
+    environment_id: Option<&str>,
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
-    return actually_send_ephemeral_request(request, &response, &environment_id, &app_handle, pool)
+    let environment_id2 = environment_id.unwrap_or("n/a").to_string();
+    return actually_send_ephemeral_request(request, &response, &environment_id2, &app_handle, pool)
         .await;
 }
 
