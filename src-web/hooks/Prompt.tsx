@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { Button } from '../components/core/Button';
 import type { InputProps } from '../components/core/Input';
 import { Input } from '../components/core/Input';
-import { HStack, VStack } from '../components/core/Stacks';
+import { HStack } from '../components/core/Stacks';
 
 export interface PromptProps {
   onHide: () => void;
@@ -25,26 +25,27 @@ export function Prompt({ onHide, label, name, defaultValue, onResult }: PromptPr
   );
 
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack space={6}>
-        <Input
-          hideLabel
-          require
-          autoSelect
-          label={label}
-          name={name}
-          defaultValue={defaultValue}
-          onChange={setValue}
-        />
-        <HStack space={2} justifyContent="end">
-          <Button className="focus" color="gray" onClick={onHide}>
-            Cancel
-          </Button>
-          <Button type="submit" className="focus" color="primary">
-            Save
-          </Button>
-        </HStack>
-      </VStack>
+    <form
+      className="grid grid-rows-[auto_auto] grid-cols-[minmax(0,1fr)] gap-6"
+      onSubmit={handleSubmit}
+    >
+      <Input
+        hideLabel
+        require
+        autoSelect
+        label={label}
+        name={name}
+        defaultValue={defaultValue}
+        onChange={setValue}
+      />
+      <HStack space={2} justifyContent="end">
+        <Button className="focus" color="gray" onClick={onHide}>
+          Cancel
+        </Button>
+        <Button type="submit" className="focus" color="primary">
+          Save
+        </Button>
+      </HStack>
     </form>
   );
 }

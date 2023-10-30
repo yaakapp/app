@@ -102,14 +102,16 @@ export function Tabs({
                     size="sm"
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={btnClassName}
+                    rightSlot={
+                      <Icon
+                        icon="triangleDown"
+                        className={classNames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
+                      />
+                    }
                   >
                     {option && 'shortLabel' in option
                       ? option.shortLabel
                       : option?.label ?? 'Unknown'}
-                    <Icon
-                      icon="triangleDown"
-                      className={classNames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
-                    />
                   </Button>
                 </RadioDropdown>
               );

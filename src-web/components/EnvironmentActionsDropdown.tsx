@@ -67,7 +67,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
               onSelect: showEnvironmentDialog,
             },
           ],
-    [activeEnvironment, environments, routes, prompt, createEnvironment, showEnvironmentDialog],
+    [activeEnvironment, environments, routes, createEnvironment, showEnvironmentDialog],
   );
 
   return (
