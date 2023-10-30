@@ -153,8 +153,9 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   );
 
   return (
-    <div aria-hidden={hidden} className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
-      <div
+    <div aria-hidden={hidden} className="h-full">
+      <VStack
+        as="ul"
         role="menu"
         aria-orientation="vertical"
         dir="ltr"
@@ -164,23 +165,17 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         tabIndex={hidden ? -1 : 0}
         className={classNames(
           className,
-          'h-full grid grid-rows-[auto_minmax(0,1fr)_auto]',
+          'h-full pb-3 overflow-y-scroll overflow-x-visible pt-2',
         )}
       >
-        <VStack
-          as="ul"
-          className="pb-3 overflow-y-auto overflow-x-visible pt-2"
-          draggable={false}
-        >
-          <SidebarItems
-            selectedIndex={selectedIndex}
-            requests={requests}
-            focused={hasFocus}
-            onSelect={handleSelect}
-            onClearSelected={handleClearSelected}
-          />
-        </VStack>
-      </div>
+        <SidebarItems
+          selectedIndex={selectedIndex}
+          requests={requests}
+          focused={hasFocus}
+          onSelect={handleSelect}
+          onClearSelected={handleClearSelected}
+        />
+      </VStack>
     </div>
   );
 });
@@ -193,7 +188,13 @@ interface SidebarItemsProps {
   onClearSelected: () => void;
 }
 
-function SidebarItems({ requests, focused, selectedIndex, onSelect, onClearSelected }: SidebarItemsProps) {
+function SidebarItems({
+  requests,
+  focused,
+  selectedIndex,
+  onSelect,
+  onClearSelected,
+}: SidebarItemsProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const updateRequest = useUpdateAnyRequest();
 
