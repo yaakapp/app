@@ -28,7 +28,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
 
   const showEnvironmentDialog = useCallback(() => {
     dialog.show({
-      title: "Manage Environments",
+      title: 'Manage Environments',
       render: () => <EnvironmentEditDialog />,
     });
   }, [dialog]);

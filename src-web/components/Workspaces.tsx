@@ -20,5 +20,6 @@ export default function Workspaces() {
     return <Heading>There are no workspaces</Heading>;
   }
 
+  // TODO: Somehow get recent environmentId for the workspace in here too
   return <Navigate to={routes.paths.workspace({ workspaceId })} />;
 }

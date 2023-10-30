@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { createGlobalState, useEffectOnce } from 'react-use';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useKeyValue } from './useKeyValue';
 import { NAMESPACE_GLOBAL, getKeyValue } from '../lib/keyValueStore';
+import { useEnvironments } from './useEnvironments';
 
 const useHistoryState = createGlobalState<string[]>([]);
 
@@ -12,6 +13,7 @@ const namespace = NAMESPACE_GLOBAL;
 const defaultValue: string[] = [];
 
 export function useRecentEnvironments() {
+  const environments = useEnvironments();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const [history, setHistory] = useHistoryState();
@@ -31,7 +33,7 @@ export function useRecentEnvironments() {
   // Update local storage state when history changes
   useEffect(() => {
     kv.set(history);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history]);
 
   // Set history when active request changes
@@ -43,7 +45,12 @@ export function useRecentEnvironments() {
     });
   }, [activeEnvironmentId, setHistory]);
 
-  return history;
+  const onlyValidIds = useMemo(
+    () => history.filter((id) => environments.some((e) => e.id === id)),
+    [history, environments],
+  );
+
+  return onlyValidIds;
 }
 
 export async function getRecentEnvironments(workspaceId: string) {

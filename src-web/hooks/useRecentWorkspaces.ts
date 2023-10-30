@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { createGlobalState, useEffectOnce, useLocalStorage } from 'react-use';
-import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useWorkspaces } from './useWorkspaces';
 
 const useHistoryState = createGlobalState<string[]>([]);
 
 export function useRecentWorkspaces() {
+  const workspaces = useWorkspaces();
   const activeWorkspaceId = useActiveWorkspaceId();
   const [history, setHistory] = useHistoryState();
   const [lsState, setLSState] = useLocalStorage<string[]>('recent_workspaces', []);
@@ -31,5 +32,10 @@ export function useRecentWorkspaces() {
     });
   }, [activeWorkspaceId, setHistory]);
 
-  return history;
+  const onlyValidIds = useMemo(
+    () => history.filter((id) => workspaces.some((w) => w.id === id)),
+    [history, workspaces],
+  );
+
+  return onlyValidIds;
 }
