@@ -12,12 +12,13 @@ import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import { HStack, VStack } from './core/Stacks';
 import { IconButton } from './core/IconButton';
 import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
-import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { usePrompt } from '../hooks/usePrompt';
 import { InlineCode } from './core/InlineCode';
+import { useWindowSize } from 'react-use';
+import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
 
 export const EnvironmentEditDialog = function () {
   const routes = useAppRoutes();
@@ -25,36 +26,48 @@ export const EnvironmentEditDialog = function () {
   const createEnvironment = useCreateEnvironment();
   const activeEnvironment = useActiveEnvironment();
 
+  const windowSize = useWindowSize();
+  const showSidebar = windowSize.width > 500;
+
   return (
-    <div className="h-full grid gap-x-8 grid-rows-[minmax(0,1fr)] grid-cols-[auto_minmax(0,1fr)]">
-      <div className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full min-w-[200px] pr-4 border-r border-gray-100">
-        <div className="h-full overflow-y-scroll">
-          {environments.map((e) => (
-            <Button
-              size="xs"
-              className={classNames(
-                'w-full',
-                activeEnvironment?.id === e.id && 'bg-gray-100 text-gray-1000',
-              )}
-              justify="start"
-              key={e.id}
-              onClick={() => {
-                routes.setEnvironment(e);
-              }}
-            >
-              {e.name}
-            </Button>
-          ))}
-        </div>
-        <Button
-          size="sm"
-          className="w-full"
-          color="gray"
-          onClick={() => createEnvironment.mutate()}
-        >
-          New Environment
-        </Button>
-      </div>
+    <div
+      className={classNames(
+        'h-full grid gap-x-8 grid-rows-[minmax(0,1fr)]',
+        showSidebar ? 'grid-cols-[auto_minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
+      )}
+    >
+      {showSidebar && (
+        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[200px] pr-4 border-r border-gray-100">
+          <div className="min-w-0 h-full w-full overflow-y-scroll">
+            {environments.map((e) => (
+              <Button
+                size="xs"
+                color="custom"
+                className={classNames(
+                  'w-full',
+                  'text-gray-600 hocus:text-gray-800',
+                  activeEnvironment?.id === e.id && 'bg-highlightSecondary !text-gray-900',
+                )}
+                justify="start"
+                key={e.id}
+                onClick={() => {
+                  routes.setEnvironment(e);
+                }}
+              >
+                {e.name}
+              </Button>
+            ))}
+          </div>
+          <Button
+            size="sm"
+            className="w-full"
+            color="gray"
+            onClick={() => createEnvironment.mutate()}
+          >
+            New Environment
+          </Button>
+        </aside>
+      )}
       {activeEnvironment != null && <EnvironmentEditor environment={activeEnvironment} />}
     </div>
   );
@@ -113,6 +126,12 @@ const EnvironmentEditor = function ({ environment }: { environment: Environment 
     [deleteEnvironment, updateEnvironment, environment.name, prompt],
   );
 
+  const validateName = useCallback((name: string) => {
+    // Empty just means the variable doesn't have a name yet, and is unusable
+    if (name === '') return true;
+    return name.match(/^[a-z_][a-z0-9_]*$/i) != null;
+  }, []);
+
   return (
     <VStack space={2}>
       <HStack space={2} className="justify-between">
@@ -124,6 +143,9 @@ const EnvironmentEditor = function ({ environment }: { environment: Environment 
       <PairEditor
         nameAutocomplete={nameAutocomplete}
         nameAutocompleteVariables={false}
+        namePlaceholder="VAR_NAME"
+        valuePlaceholder="variable value"
+        nameValidate={validateName}
         valueAutocompleteVariables={false}
         forceUpdateKey={environment.id}
         pairs={environment.variables}

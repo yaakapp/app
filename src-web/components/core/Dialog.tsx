@@ -59,7 +59,7 @@ export function Dialog({
               'dark:border border-highlight shadow shadow-black/10',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
-              size === 'full' && 'w-[calc(100vw-8em)] h-[calc(100vh-8em)]',
+              size === 'full' && 'w-[95vw] h-[calc(100vh-6em)]',
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >

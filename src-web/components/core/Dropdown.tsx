@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
 import React, {
@@ -13,11 +12,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useKey, useKeyPressEvent } from 'react-use';
-import { Portal } from '../Portal';
+import { useKey, useKeyPressEvent, useWindowSize } from 'react-use';
 import { Button } from './Button';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
+import { Overlay } from '../Overlay';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -65,7 +64,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
     isOpen: open,
-    toggle (activeIndex?: number) {
+    toggle(activeIndex?: number) {
       if (!open) this.open(activeIndex);
       else setOpen(false);
     },
@@ -107,10 +106,12 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
     buttonRef.current?.setAttribute('aria-expanded', open.toString());
   }, [open]);
 
+  const windowSize = useWindowSize();
   const triggerRect = useMemo(() => {
+    windowSize; // Make TS happy with this dep
     if (!open) return null;
     return buttonRef.current?.getBoundingClientRect();
-  }, [open]);
+  }, [open, windowSize]);
 
   return (
     <>
@@ -267,61 +268,59 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   if (items.length === 0) return null;
 
   return (
-    <Portal name="dropdown">
-      <FocusTrap>
-        <div>
-          <div tabIndex={-1} aria-hidden className="fixed inset-0 z-50" onClick={onClose} />
-          <motion.div
-            tabIndex={0}
-            onKeyDown={handleMenuKeyDown}
-            initial={{ opacity: 0, y: -5, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            role="menu"
-            aria-orientation="vertical"
-            dir="ltr"
-            ref={containerRef}
-            style={containerStyles}
-            className={classNames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
-          >
-            <span
-              aria-hidden
-              style={triangleStyles}
-              className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
-            />
-            {containerStyles && (
-              <VStack
-                space={0.5}
-                ref={initMenu}
-                style={menuStyles}
-                className={classNames(
-                  className,
-                  'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-                  'border-gray-200 overflow-auto mb-1 mx-0.5',
-                )}
-              >
-                {items.map((item, i) => {
-                  if (item.type === 'separator') {
-                    return <Separator key={i} className="my-1.5" label={item.label} />;
-                  }
-                  if (item.hidden) {
-                    return null;
-                  }
-                  return (
-                    <MenuItem
-                      focused={i === selectedIndex}
-                      onFocus={handleFocus}
-                      onSelect={handleSelect}
-                      key={item.key}
-                      item={item}
-                    />
-                  );
-                })}
-              </VStack>
-            )}
-          </motion.div>
-        </div>
-      </FocusTrap>
-    </Portal>
+    <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
+      <div>
+        <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={onClose} />
+        <motion.div
+          tabIndex={0}
+          onKeyDown={handleMenuKeyDown}
+          initial={{ opacity: 0, y: -5, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          role="menu"
+          aria-orientation="vertical"
+          dir="ltr"
+          ref={containerRef}
+          style={containerStyles}
+          className={classNames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
+        >
+          <span
+            aria-hidden
+            style={triangleStyles}
+            className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+          />
+          {containerStyles && (
+            <VStack
+              space={0.5}
+              ref={initMenu}
+              style={menuStyles}
+              className={classNames(
+                className,
+                'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
+                'border-gray-200 overflow-auto mb-1 mx-0.5',
+              )}
+            >
+              {items.map((item, i) => {
+                if (item.type === 'separator') {
+                  return <Separator key={i} className="my-1.5" label={item.label} />;
+                }
+                if (item.hidden) {
+                  return null;
+                }
+                return (
+                  <MenuItem
+                    focused={i === selectedIndex}
+                    onFocus={handleFocus}
+                    onSelect={handleSelect}
+                    key={item.key}
+                    item={item}
+                  />
+                );
+              })}
+            </VStack>
+          )}
+        </motion.div>
+      </div>
+    </Overlay>
   );
 });
 
@@ -359,6 +358,8 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onFocus={handleFocus}
       onClick={handleClick}
       justify="start"
+      leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
+      rightSlot={item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
       className={classNames(
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
@@ -367,7 +368,6 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       )}
       {...props}
     >
-      {item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       <div
         className={classNames(
           // Add padding on right when no right slot, for some visual balance
@@ -376,7 +376,6 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       >
         {item.label}
       </div>
-      {item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
     </Button>
   );
 }

@@ -154,6 +154,8 @@ export const PairEditor = memo(function PairEditor({
         'pb-2 grid overflow-auto max-h-full',
         // Move over the width of the drag handle
         '-ml-3',
+        // Pad to make room for the drag divider
+        'pt-0.5',
       )}
     >
       {pairs.map((p, i) => {
@@ -171,8 +173,8 @@ export const PairEditor = memo(function PairEditor({
               forceUpdateKey={forceUpdateKey}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
-              namePlaceholder={namePlaceholder}
-              valuePlaceholder={valuePlaceholder}
+              namePlaceholder={isLast ? namePlaceholder : ''}
+              valuePlaceholder={isLast ? valuePlaceholder : ''}
               nameValidate={nameValidate}
               valueValidate={valueValidate}
               showDelete={!isLast}
