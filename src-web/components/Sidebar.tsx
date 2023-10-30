@@ -165,7 +165,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         tabIndex={hidden ? -1 : 0}
         className={classNames(
           className,
-          'h-full pb-3 overflow-y-scroll overflow-x-visible pt-2',
+          'h-full pb-3 overflow-y-scroll overflow-x-visible hide-scrollbars pt-2',
         )}
       >
         <SidebarItems
