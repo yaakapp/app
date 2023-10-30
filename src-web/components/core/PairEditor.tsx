@@ -379,7 +379,7 @@ const FormRow = memo(function FormRow({
         size="sm"
         title="Delete header"
         onClick={showDelete ? handleDelete : undefined}
-        className="ml-0.5 !opacity-0 group-hover:!opacity-100 focus-visible:!opacity-100"
+        className="ml-0.5 group-hover:!opacity-100 focus-visible:!opacity-100"
       />
     </div>
   );
