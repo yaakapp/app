@@ -1,4 +1,6 @@
-use boa_engine::{js_string, property::Attribute, Context, Source};
+use boa_engine::{
+    js_string, property::Attribute, Context, JsArgs, NativeFunction, Source,
+};
 use boa_runtime::Console;
 use tauri::AppHandle;
 
@@ -13,24 +15,28 @@ pub fn test_plugins(app_handle: &AppHandle) {
     let mut context = Context::default();
     add_runtime(&mut context);
 
-    // Parse the source code
-    match context.eval(src) {
-        Ok(res) => {
-            println!(
-                "RESULT: {}",
-                res.to_string(&mut context).unwrap().to_std_string_escaped()
-            );
-        }
-        Err(e) => {
-            // Pretty print the error
-            eprintln!("Uncaught {e}");
-        }
-    };
+    // Add globals
+    context
+        .register_global_builtin_callable(
+            "sayHello",
+            1,
+            NativeFunction::from_fn_ptr(|_, args, context| {
+                let value: String = args
+                    .get_or_undefined(0)
+                    .try_js_into(context)
+                    .expect("failed to convert arg");
+
+                println!("Hello {}!", value);
+
+                Ok(value.into())
+            }),
+        )
+        .expect("failed to register global");
+
+    context.eval(src).expect("failed to execute script");
 }
 
-/// Adds the custom runtime to the context.
 fn add_runtime(context: &mut Context<'_>) {
-    // We first add the `console` object, to be able to call `console.log()`.
     let console = Console::init(context);
     context
         .register_global_property(js_string!(Console::NAME), console, Attribute::all())
