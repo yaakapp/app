@@ -45,6 +45,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       disabled={icon === 'empty'}
       tabIndex={tabIndex ?? icon === 'empty' ? -1 : undefined}
       onClick={handleClick}
+      innerClassName="flex items-center justify-center"
       className={classNames(
         className,
         'flex-shrink-0 text-gray-700 hover:text-gray-1000',

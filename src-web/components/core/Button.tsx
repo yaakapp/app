@@ -15,6 +15,7 @@ const colorStyles = {
 };
 
 export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
+  innerClassName?: string;
   color?: keyof typeof colorStyles;
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'xs';
@@ -32,6 +33,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     isLoading,
     className,
+    innerClassName,
     children,
     forDropdown,
     color,
@@ -70,7 +72,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       ) : leftSlot ? (
         <div className="mr-1">{leftSlot}</div>
       ) : null}
-      <div className="max-w-[15em] truncate">{children}</div>
+      <div className={classNames('max-w-[15em] truncate w-full text-left', innerClassName)}>{children}</div>
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
       {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
     </button>
