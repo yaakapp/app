@@ -15,6 +15,8 @@ export function BearerAuth({ requestId, authentication }: Props) {
     <VStack className="my-2" space={2}>
       <Input
         useTemplating
+        autocompleteVariables
+        type="password"
         label="Token"
         name="token"
         size="sm"
