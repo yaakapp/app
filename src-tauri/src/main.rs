@@ -640,7 +640,7 @@ fn main() {
         .setup(|app| {
             match app.get_cli_matches() {
                 Ok(matches) => {
-                    let cmd = matches.subcommand.unwrap();
+                    let cmd = matches.subcommand.unwrap_or_default();
                     if cmd.name == "import" {
                         let arg_file = cmd
                             .matches
