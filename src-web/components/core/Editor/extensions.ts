@@ -117,6 +117,7 @@ export const baseExtensions = [
   highlightSpecialChars(),
   history(),
   dropCursor(),
+  drawSelection(),
   bracketMatching(),
   // TODO: Figure out how to debounce showing of autocomplete in a good way
   // debouncedAutocompletionDisplay({ millis: 1000 }),
@@ -147,7 +148,6 @@ export const multiLineExtensions = [
     },
   }),
   EditorState.allowMultipleSelections.of(true),
-  drawSelection(),
   indentOnInput(),
   closeBrackets(),
   rectangularSelection(),
