@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::process::exit;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
@@ -30,9 +31,9 @@ use tokio::sync::Mutex;
 use window_ext::TrafficLightWindowExt;
 
 mod models;
+mod plugin;
 mod render;
 mod window_ext;
-mod plugin;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -72,8 +73,14 @@ async fn send_ephemeral_request(
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
-    return actually_send_ephemeral_request(request, &response, &environment_id2, &app_handle, pool)
-        .await;
+    return actually_send_ephemeral_request(
+        request,
+        &response,
+        &environment_id2,
+        &app_handle,
+        pool,
+    )
+    .await;
 }
 
 async fn actually_send_ephemeral_request(
@@ -631,6 +638,30 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
+            match app.get_cli_matches() {
+                Ok(matches) => {
+                    let cmd = matches.subcommand.unwrap();
+                    if cmd.name == "import" {
+                        let arg_file = cmd
+                            .matches
+                            .args
+                            .get("file")
+                            .unwrap()
+                            .value
+                            .as_str()
+                            .unwrap();
+                        plugin::run_plugin_import(&app.handle(), "insomnia-importer", arg_file);
+                        exit(0);
+                    } else if cmd.name == "hello" {
+                        plugin::run_plugin_hello(&app.handle(), "hello-world");
+                        exit(0);
+                    }
+                }
+                Err(e) => {
+                    println!("Nothing found: {}", e);
+                }
+            }
+
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app.path_resolver().app_data_dir().unwrap(),
@@ -690,7 +721,6 @@ fn main() {
                 let w = create_window(app_handle, None);
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
-                plugin::test_plugins(&app_handle);
             }
 
             // ExitRequested { api, .. } => {

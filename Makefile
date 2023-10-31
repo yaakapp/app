@@ -5,3 +5,7 @@ sqlx-prepare:
 
 dev:
 	npm run tauri-dev
+
+
+build:
+	./node_modules/.bin/tauri build

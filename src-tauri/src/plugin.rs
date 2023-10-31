@@ -1,3 +1,5 @@
+use std::fs;
+
 use boa_engine::{
     js_string,
     module::{ModuleLoader, SimpleModuleLoader},
@@ -7,15 +9,27 @@ use boa_engine::{
 use boa_runtime::Console;
 use tauri::AppHandle;
 
-pub fn test_plugins(app_handle: &AppHandle) {
+pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
+    run_plugin(app_handle, plugin_name, "hello", &[]);
+}
+
+pub fn run_plugin_import(
+    app_handle: &AppHandle,
+    plugin_name: &str,
+    file_path: &str,
+) {
+    let file = fs::read_to_string(file_path).expect("Unable to read file");
+    let file_contents = file.as_str();
+    run_plugin(app_handle, plugin_name, file_contents, &[]);
+}
+
+fn run_plugin(app_handle: &AppHandle, plugin_name: &str, entrypoint: &str, js_args: &[JsValue]) {
     let plugin_dir = app_handle
         .path_resolver()
-        .resolve_resource("plugins/hello-world")
-        .expect("failed to resolve plugin directory resource");
-    let plugin_entry_file = app_handle
-        .path_resolver()
-        .resolve_resource("plugins/hello-world/index.js")
-        .expect("failed to resolve plugin entry point resource");
+        .resolve_resource("plugins")
+        .expect("failed to resolve plugin directory resource")
+        .join(plugin_name);
+    let plugin_index_file = plugin_dir.join("index.js");
 
     // Module loader for the specific plugin
     let loader = &SimpleModuleLoader::new(plugin_dir).expect("failed to create module loader");
@@ -29,14 +43,14 @@ pub fn test_plugins(app_handle: &AppHandle) {
     add_runtime(context);
     add_globals(context);
 
-    let source = Source::from_filepath(&plugin_entry_file).expect("Error opening file");
+    let source = Source::from_filepath(&plugin_index_file).expect("Error opening file");
 
     // Can also pass a `Some(realm)` if you need to execute the module in another realm.
     let module = Module::parse(source, None, context).expect("failed to parse module");
 
     // Insert parsed entrypoint into the module loader
     // TODO: Is this needed if loaded from file already?
-    loader.insert(plugin_entry_file, module.clone());
+    loader.insert(plugin_index_file, module.clone());
 
     let _promise_result = module
         .load_link_evaluate(context)
@@ -58,17 +72,14 @@ pub fn test_plugins(app_handle: &AppHandle) {
 
     let namespace = module.namespace(context);
 
-    let entrypoint_fn = namespace
-        .get(js_string!("entrypoint"), context)
+    let _result = namespace
+        .get(js_string!(entrypoint), context)
         .expect("failed to get entrypoint")
         .as_callable()
         .cloned()
         .ok_or_else(|| JsNativeError::typ().with_message("export wasn't a function!"))
-        .expect("Failed to get entrypoint");
-
-    // Actually call the entrypoint function
-    let _result = entrypoint_fn
-        .call(&JsValue::undefined(), &[], context)
+        .expect("Failed to get entrypoint")
+        .call(&JsValue::undefined(), js_args, context)
         .expect("Failed to call entrypoint");
 }
 
