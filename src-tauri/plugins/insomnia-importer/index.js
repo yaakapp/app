@@ -13,13 +13,21 @@ export function pluginHookImport(contents) {
     return;
   }
 
-  const resources = parsed.resources || [];
-  for (const r of resources) {
+  if (!Array.isArray(parsed.resources)) {
+    return;
+  }
+
+  const importedResources = [];
+
+  for (const r of parsed.resources) {
     if (r._type === TYPE_REQUEST) {
-      importRequest(r);
+      importedResources.push(importRequest(r));
     }
   }
+
   console.log('CONTENTS', parsed._type, parsed.__export_format);
+
+  return importedResources;
 }
 
 function isObject(obj) {

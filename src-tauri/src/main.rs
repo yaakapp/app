@@ -638,30 +638,6 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
-            match app.get_cli_matches() {
-                Ok(matches) => {
-                    let cmd = matches.subcommand.unwrap_or_default();
-                    if cmd.name == "import" {
-                        let arg_file = cmd
-                            .matches
-                            .args
-                            .get("file")
-                            .unwrap()
-                            .value
-                            .as_str()
-                            .unwrap();
-                        plugin::run_plugin_import(&app.handle(), "insomnia-importer", arg_file);
-                        exit(0);
-                    } else if cmd.name == "hello" {
-                        plugin::run_plugin_hello(&app.handle(), "hello-world");
-                        exit(0);
-                    }
-                }
-                Err(e) => {
-                    println!("Nothing found: {}", e);
-                }
-            }
-
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app.path_resolver().app_data_dir().unwrap(),
@@ -672,6 +648,7 @@ fn main() {
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
             println!("Connecting to database at {}", url);
+
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
                     .connect(url.as_str())
@@ -679,11 +656,36 @@ fn main() {
                     .expect("Failed to connect to database");
 
                 // Setup the DB handle
-                let m = Mutex::new(pool);
+                let m = Mutex::new(pool.clone());
                 migrate_db(app.handle(), &m)
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
+
+                // TODO: Move this somewhere better
+                match app.get_cli_matches() {
+                    Ok(matches) => {
+                        let cmd = matches.subcommand.unwrap_or_default();
+                        if cmd.name == "import" {
+                            let arg_file = cmd
+                                .matches
+                                .args
+                                .get("file")
+                                .unwrap()
+                                .value
+                                .as_str()
+                                .unwrap();
+                            plugin::run_plugin_import(&app.handle(), pool, "insomnia-importer", arg_file).await;
+                            exit(0);
+                        } else if cmd.name == "hello" {
+                            plugin::run_plugin_hello(&app.handle(), "hello-world");
+                            exit(0);
+                        }
+                    }
+                    Err(e) => {
+                        println!("Nothing found: {}", e);
+                    }
+                }
 
                 Ok(())
             })

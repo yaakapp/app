@@ -48,14 +48,14 @@ pub struct HttpRequestHeader {
     pub value: String,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HttpRequest {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub id: String,
     pub workspace_id: String,
     pub model: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
     pub sort_priority: f64,
     pub name: String,
     pub url: String,

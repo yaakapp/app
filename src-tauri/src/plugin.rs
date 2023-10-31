@@ -7,29 +7,67 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
+use serde_json::json;
+use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
+
+use crate::models;
 
 pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
     run_plugin(app_handle, plugin_name, "hello", &[]);
 }
 
-pub fn run_plugin_import(
+pub async fn run_plugin_import(
     app_handle: &AppHandle,
+    pool: Pool<Sqlite>,
     plugin_name: &str,
     file_path: &str,
 ) {
     let file = fs::read_to_string(file_path).expect("Unable to read file");
     let file_contents = file.as_str();
-    run_plugin(app_handle, plugin_name, file_contents, &[]);
+    let result_json = run_plugin(
+        app_handle,
+        plugin_name,
+        "pluginHookImport",
+        &[js_string!(file_contents).into()],
+    );
+    let requests: Vec<models::HttpRequest> =
+        serde_json::from_value(result_json).expect("failed to parse result json");
+    for r in requests {
+        println!("Importing request: {:?}", r);
+        models::upsert_request(
+            Some(&r.id),
+            "wk_WN8Nrm2Awm", // "My Workspace"
+            &r.name,
+            &r.method,
+            r.body.as_deref(),
+            r.body_type,
+            r.authentication.0,
+            r.authentication_type,
+            &r.url,
+            r.headers.0,
+            r.sort_priority,
+            &pool,
+        )
+        .await
+        .expect("Failed to create request");
+    }
 }
 
-fn run_plugin(app_handle: &AppHandle, plugin_name: &str, entrypoint: &str, js_args: &[JsValue]) {
+fn run_plugin(
+    app_handle: &AppHandle,
+    plugin_name: &str,
+    entrypoint: &str,
+    js_args: &[JsValue],
+) -> serde_json::Value {
     let plugin_dir = app_handle
         .path_resolver()
         .resolve_resource("plugins")
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("index.js");
+
+    println!("Plugin dir: {:?}", plugin_dir);
 
     // Module loader for the specific plugin
     let loader = &SimpleModuleLoader::new(plugin_dir).expect("failed to create module loader");
@@ -72,7 +110,7 @@ fn run_plugin(app_handle: &AppHandle, plugin_name: &str, entrypoint: &str, js_ar
 
     let namespace = module.namespace(context);
 
-    let _result = namespace
+    let result = namespace
         .get(js_string!(entrypoint), context)
         .expect("failed to get entrypoint")
         .as_callable()
@@ -81,6 +119,13 @@ fn run_plugin(app_handle: &AppHandle, plugin_name: &str, entrypoint: &str, js_ar
         .expect("Failed to get entrypoint")
         .call(&JsValue::undefined(), js_args, context)
         .expect("Failed to call entrypoint");
+
+    match result.is_undefined() {
+        true => json!(null), // to_json doesn't work with undefined (yet)
+        false => result
+            .to_json(context)
+            .expect("failed to convert result to json"),
+    }
 }
 
 fn add_runtime(context: &mut Context<'_>) {

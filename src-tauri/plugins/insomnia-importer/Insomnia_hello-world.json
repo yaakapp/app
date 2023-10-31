@@ -5,12 +5,12 @@
   "__export_source": "insomnia.desktop.app:v8.3.0",
   "resources": [
     {
-      "_id": "req_c8ae891b0fe549a4a530a75da59b6e34",
+      "_id": "req_c8ae891b0fe539a4a530a75da59b6e34",
       "parentId": "wrk_ea69a78d6a0540f583d2ec80666a1724",
       "modified": 1698767088880,
       "created": 1698767077168,
       "url": "https://schier.co",
-      "name": "My Request",
+      "name": "Insomnia Request",
       "description": "",
       "method": "GET",
       "body": {},
