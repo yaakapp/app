@@ -7,14 +7,64 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
+use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde_json::json;
 use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
 
-use crate::models;
+use crate::models::{self, Environment, HttpRequest, Workspace};
 
 pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
     run_plugin(app_handle, plugin_name, "hello", &[]);
+}
+
+#[derive(Default, Debug)]
+struct ImportedResources {
+    requests: Vec<HttpRequest>,
+    environments: Vec<Environment>,
+    workspaces: Vec<Workspace>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum AnyResource {
+    HttpRequest(HttpRequest),
+    Workspace(Workspace),
+    Environment(Environment),
+}
+
+impl<'de> de::Deserialize<'de> for ImportedResources {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct DataVisitor;
+
+        impl<'de> Visitor<'de> for DataVisitor {
+            type Value = ImportedResources;
+
+            fn visit_seq<S>(self, mut seq: S) -> Result<Self::Value, S::Error>
+            where
+                S: SeqAccess<'de>,
+            {
+                let mut resources = ImportedResources::default();
+                while let Some(r) = seq.next_element::<AnyResource>()? {
+                    match r {
+                        AnyResource::HttpRequest(r) => resources.requests.push(r),
+                        AnyResource::Workspace(w) => resources.workspaces.push(w),
+                        AnyResource::Environment(e) => resources.environments.push(e),
+                    }
+                }
+                Ok(resources)
+            }
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a sequence of resources")
+            }
+        }
+
+        deserializer.deserialize_seq(DataVisitor)
+    }
 }
 
 pub async fn run_plugin_import(
@@ -31,9 +81,11 @@ pub async fn run_plugin_import(
         "pluginHookImport",
         &[js_string!(file_contents).into()],
     );
-    let requests: Vec<models::HttpRequest> =
+    let resources: ImportedResources =
         serde_json::from_value(result_json).expect("failed to parse result json");
-    for r in requests {
+    println!("Imported resources: {:?}", resources);
+    for fr in resources.requests {
+        let r = fr;
         println!("Importing request: {:?}", r);
         models::upsert_request(
             Some(&r.id),

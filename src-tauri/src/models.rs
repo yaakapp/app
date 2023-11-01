@@ -7,8 +7,8 @@ use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Workspace {
     pub id: String,
     pub model: String,
@@ -18,8 +18,8 @@ pub struct Workspace {
     pub description: String,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Environment {
     pub id: String,
     pub workspace_id: String,
@@ -30,26 +30,34 @@ pub struct Environment {
     pub variables: Json<Vec<EnvironmentVariable>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+fn default_enabled() -> bool {
+    true
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct EnvironmentVariable {
-    #[serde(default)]
+    #[serde(default = "default_enabled")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpRequestHeader {
-    #[serde(default)]
+    #[serde(default = "default_enabled")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
+}
+
+fn default_http_request_method() -> String {
+    "GET".to_string()
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpRequest {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -59,6 +67,7 @@ pub struct HttpRequest {
     pub sort_priority: f64,
     pub name: String,
     pub url: String,
+    #[serde(default = "default_http_request_method")]
     pub method: String,
     pub body: Option<String>,
     pub body_type: Option<String>,
@@ -67,15 +76,15 @@ pub struct HttpRequest {
     pub headers: Json<Vec<HttpRequestHeader>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpResponseHeader {
     pub name: String,
     pub value: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpResponse {
     pub id: String,
     pub model: String,
@@ -94,8 +103,8 @@ pub struct HttpResponse {
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct KeyValue {
     pub model: String,
     pub created_at: NaiveDateTime,

@@ -1,6 +1,10 @@
 import { importRequest } from './importers/request.js';
+import { importWorkspace } from './importers/workspace.js';
 
-const TYPE_REQUEST = 'request';
+const TYPES = {
+  workspace: 'workspace',
+  request: 'request',
+};
 
 export function pluginHookImport(contents) {
   const parsed = JSON.parse(contents);
@@ -9,25 +13,22 @@ export function pluginHookImport(contents) {
   }
 
   const { _type, __export_format } = parsed;
-  if (_type !== 'export' && __export_format !== 4) {
+  if (_type !== 'export' || __export_format !== 4 || !Array.isArray(parsed.resources)) {
     return;
   }
 
-  if (!Array.isArray(parsed.resources)) {
-    return;
-  }
-
-  const importedResources = [];
-
-  for (const r of parsed.resources) {
-    if (r._type === TYPE_REQUEST) {
-      importedResources.push(importRequest(r));
-    }
-  }
-
-  console.log('CONTENTS', parsed._type, parsed.__export_format);
-
-  return importedResources;
+  return parsed.resources
+    .map((r) => {
+      switch (r._type) {
+        case TYPES.workspace:
+          return importWorkspace(r);
+        case TYPES.request:
+          return importRequest(r);
+        default:
+          return null;
+      }
+    })
+    .filter(Boolean);
 }
 
 function isObject(obj) {
