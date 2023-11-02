@@ -36,12 +36,12 @@ export function pluginHookImport(contents) {
       console.log('UNKNOWN TYPE', v._type, JSON.stringify(v, null, 2));
     }
   }
+
+  // Filter out any `null` values
   resources.requests = resources.requests.filter(Boolean);
   resources.environments = resources.environments.filter(Boolean);
   resources.workspaces = resources.workspaces.filter(Boolean);
-  resources.environments = [];
-  resources.workspaces = [];
-  console.log('IMPORTING RESOURCES', JSON.stringify(resources, null, 2));
+
   return resources;
 }
 

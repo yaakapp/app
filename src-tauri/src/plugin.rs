@@ -46,6 +46,7 @@ pub async fn run_plugin_import(
     println!("Importing resources: {}", workspace_id.is_empty());
     if workspace_id.is_empty() {
         for w in resources.workspaces {
+            println!("Importing workspace: {:?}", w);
             let x = models::upsert_workspace(&pool, w)
                 .await
                 .expect("Failed to create workspace");
@@ -57,6 +58,7 @@ pub async fn run_plugin_import(
         if !workspace_id.is_empty() {
             e.workspace_id = workspace_id.to_string();
         }
+        println!("Importing environment: {:?}", e);
         let x = models::upsert_environment(&pool, e)
             .await
             .expect("Failed to create environment");
@@ -67,6 +69,7 @@ pub async fn run_plugin_import(
         if !workspace_id.is_empty() {
             r.workspace_id = workspace_id.to_string();
         }
+        println!("Importing request: {:?}", r);
         let x = models::upsert_request(&pool, r)
             .await
             .expect("Failed to create request");
