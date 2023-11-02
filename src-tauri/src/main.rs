@@ -255,6 +255,25 @@ async fn actually_send_ephemeral_request(
         Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
 }
+#[tauri::command]
+async fn import_data(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    file_paths: Vec<&str>,
+    workspace_id: Option<&str>,
+) -> Result<(), String> {
+    let pool = &*db_instance.lock().await;
+    let workspace_id2 = workspace_id.unwrap_or_default();
+    plugin::run_plugin_import(
+        &window.app_handle(),
+        pool,
+        "insomnia-importer",
+        file_paths.first().unwrap(),
+        workspace_id2,
+    )
+    .await;
+    Ok(())
+}
 
 #[tauri::command]
 async fn send_request(
@@ -660,9 +679,10 @@ fn main() {
                                 .unwrap();
                             plugin::run_plugin_import(
                                 &app.handle(),
-                                pool,
+                                &pool,
                                 "insomnia-importer",
                                 arg_file,
+                                "wk_WN8Nrm2Awm",
                             )
                             .await;
                             exit(0);
@@ -693,6 +713,7 @@ fn main() {
             get_environment,
             get_request,
             get_workspace,
+            import_data,
             list_environments,
             list_requests,
             list_responses,

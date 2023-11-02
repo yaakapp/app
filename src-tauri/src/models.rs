@@ -495,7 +495,10 @@ pub async fn upsert_workspace(
     pool: &Pool<Sqlite>,
     workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
-    let id = generate_id(Some("wk"));
+    let id = match workspace.id.as_str() {
+        "" => generate_id(Some("wk")),
+        _ => workspace.id.to_string(),
+    };
     let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"

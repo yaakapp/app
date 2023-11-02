@@ -31,7 +31,6 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
-        {activeRequest && (
           <RequestActionsDropdown requestId={activeRequest?.id}>
             <IconButton
               size="sm"
@@ -40,7 +39,6 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
               className="pointer-events-auto"
             />
           </RequestActionsDropdown>
-        )}
       </div>
     </HStack>
   );

@@ -9,7 +9,7 @@ export function importRequest(r, sortPriority = 0) {
     id: r._id,
     createdAt: new Date(r.created ?? Date.now()).toISOString().replace('Z', ''),
     updatedAt: new Date(r.updated ?? Date.now()).toISOString().replace('Z', ''),
-    workspaceId: '__CURRENT__',
+    workspaceId: r.parentId,
     model: 'http_request',
     sortPriority,
     name: r.name,

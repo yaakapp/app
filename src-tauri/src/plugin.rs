@@ -7,7 +7,7 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
-use serde::de::{self, Deserializer, SeqAccess, Visitor};
+use serde::Deserialize;
 use serde_json::json;
 use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
@@ -18,60 +18,19 @@ pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
     run_plugin(app_handle, plugin_name, "hello", &[]);
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Deserialize)]
 struct ImportedResources {
     requests: Vec<HttpRequest>,
     environments: Vec<Environment>,
     workspaces: Vec<Workspace>,
 }
 
-#[derive(serde::Deserialize)]
-#[serde(untagged)]
-enum AnyResource {
-    HttpRequest(HttpRequest),
-    Workspace(Workspace),
-    Environment(Environment),
-}
-
-impl<'de> de::Deserialize<'de> for ImportedResources {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct DataVisitor;
-
-        impl<'de> Visitor<'de> for DataVisitor {
-            type Value = ImportedResources;
-
-            fn visit_seq<S>(self, mut seq: S) -> Result<Self::Value, S::Error>
-            where
-                S: SeqAccess<'de>,
-            {
-                let mut resources = ImportedResources::default();
-                while let Some(r) = seq.next_element::<AnyResource>()? {
-                    match r {
-                        AnyResource::HttpRequest(r) => resources.requests.push(r),
-                        AnyResource::Workspace(w) => resources.workspaces.push(w),
-                        AnyResource::Environment(e) => resources.environments.push(e),
-                    }
-                }
-                Ok(resources)
-            }
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a sequence of resources")
-            }
-        }
-
-        deserializer.deserialize_seq(DataVisitor)
-    }
-}
-
 pub async fn run_plugin_import(
     app_handle: &AppHandle,
-    pool: Pool<Sqlite>,
+    pool: &Pool<Sqlite>,
     plugin_name: &str,
     file_path: &str,
+    workspace_id: &str,
 ) {
     let file = fs::read_to_string(file_path).expect("Unable to read file");
     let file_contents = file.as_str();
@@ -83,15 +42,35 @@ pub async fn run_plugin_import(
     );
     let resources: ImportedResources =
         serde_json::from_value(result_json).expect("failed to parse result json");
-    println!("Imported resources: {:?}", resources);
-    for e in resources.environments {
-        println!("Importing environments: {:?}", e);
+
+    println!("Importing resources: {}", workspace_id.is_empty());
+    if workspace_id.is_empty() {
+        for w in resources.workspaces {
+            let x = models::upsert_workspace(&pool, w)
+                .await
+                .expect("Failed to create workspace");
+            println!("Imported workspace: {}", x.name);
+        }
     }
-    for r in resources.requests {
+
+    for mut e in resources.environments {
+        if !workspace_id.is_empty() {
+            e.workspace_id = workspace_id.to_string();
+        }
+        let x = models::upsert_environment(&pool, e)
+            .await
+            .expect("Failed to create environment");
+        println!("Imported environment: {}", x.name);
+    }
+
+    for mut r in resources.requests {
+        if !workspace_id.is_empty() {
+            r.workspace_id = workspace_id.to_string();
+        }
         let x = models::upsert_request(&pool, r)
             .await
             .expect("Failed to create request");
-        println!("Imported request: {:?}", x);
+        println!("Imported request: {}", x.name);
     }
 }
 
