@@ -324,60 +324,24 @@ pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environmen
 }
 
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let existing = get_request(id, pool).await?;
+    let mut request = get_request(id, pool).await?.clone();
+    request.id = "".to_string();
 
-    // TODO: Figure out how to make this better
-    let b2;
-    let body = match existing.body {
-        Some(b) => {
-            b2 = b;
-            Some(b2.as_str())
-        }
-        None => None,
-    };
-
-    upsert_request(
-        None,
-        existing.workspace_id.as_str(),
-        existing.name.as_str(),
-        existing.method.as_str(),
-        body,
-        existing.body_type,
-        existing.authentication.0,
-        existing.authentication_type,
-        existing.url.as_str(),
-        existing.headers.0,
-        existing.sort_priority + 0.001,
-        pool,
-    )
-    .await
+    upsert_request(pool, request).await
 }
 
 pub async fn upsert_request(
-    id: Option<&str>,
-    workspace_id: &str,
-    name: &str,
-    method: &str,
-    body: Option<&str>,
-    body_type: Option<String>,
-    authentication: HashMap<String, JsonValue>,
-    authentication_type: Option<String>,
-    url: &str,
-    headers: Vec<HttpRequestHeader>,
-    sort_priority: f64,
     pool: &Pool<Sqlite>,
+    r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
-    let generated_id;
-    let id = match id {
-        Some(v) => v,
-        None => {
-            generated_id = generate_id(Some("rq"));
-            generated_id.as_str()
-        }
+    let id = match r.id.as_str() {
+        "" => generate_id(Some("rq")),
+        _ => r.id.to_string(),
     };
-    let headers_json = Json(headers);
-    let auth_json = Json(authentication);
-    let trimmed_name = name.trim();
+    let headers_json = Json(r.headers);
+    let auth_json = Json(r.authentication);
+    let trimmed_name = r.name.trim();
+
     sqlx::query!(
         r#"
             INSERT INTO http_requests (
@@ -407,20 +371,21 @@ pub async fn upsert_request(
                sort_priority = excluded.sort_priority
         "#,
         id,
-        workspace_id,
+        r.workspace_id,
         trimmed_name,
-        url,
-        method,
-        body,
-        body_type,
+        r.url,
+        r.method,
+        r.body,
+        r.body_type,
         auth_json,
-        authentication_type,
+        r.authentication_type,
         headers_json,
-        sort_priority,
+        r.sort_priority,
     )
     .execute(pool)
     .await?;
-    get_request(id, pool).await
+
+    get_request(&id, pool).await
 }
 
 pub async fn find_requests(

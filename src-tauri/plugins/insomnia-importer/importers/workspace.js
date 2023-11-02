@@ -1,6 +1,6 @@
 /**
  * Import an Insomnia workspace object.
- * @param {Object} w - The request object to import.
+ * @param {Object} w - The workspace object to import.
  */
 export function importWorkspace(w) {
   console.log('IMPORTING Workpace', w._id, w.name, JSON.stringify(w, null, 2));

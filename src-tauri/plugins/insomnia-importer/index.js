@@ -1,3 +1,4 @@
+import { importEnvironment } from './importers/environment.js';
 import { importRequest } from './importers/request.js';
 import { importWorkspace } from './importers/workspace.js';
 
@@ -18,12 +19,14 @@ export function pluginHookImport(contents) {
   }
 
   return parsed.resources
-    .map((r) => {
-      switch (r._type) {
+    .map((v) => {
+      switch (v._type) {
         case TYPES.workspace:
-          return importWorkspace(r);
+          return importWorkspace(v);
+        case TYPES.environment:
+          return importEnvironment(v);
         case TYPES.request:
-          return importRequest(r);
+          return importRequest(v);
         default:
           return null;
       }

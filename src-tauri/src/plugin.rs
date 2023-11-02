@@ -84,25 +84,14 @@ pub async fn run_plugin_import(
     let resources: ImportedResources =
         serde_json::from_value(result_json).expect("failed to parse result json");
     println!("Imported resources: {:?}", resources);
-    for fr in resources.requests {
-        let r = fr;
-        println!("Importing request: {:?}", r);
-        models::upsert_request(
-            Some(&r.id),
-            "wk_WN8Nrm2Awm", // "My Workspace"
-            &r.name,
-            &r.method,
-            r.body.as_deref(),
-            r.body_type,
-            r.authentication.0,
-            r.authentication_type,
-            &r.url,
-            r.headers.0,
-            r.sort_priority,
-            &pool,
-        )
-        .await
-        .expect("Failed to create request");
+    for e in resources.environments {
+        println!("Importing environments: {:?}", e);
+    }
+    for r in resources.requests {
+        let x = models::upsert_request(&pool, r)
+            .await
+            .expect("Failed to create request");
+        println!("Imported request: {:?}", x);
     }
 }
 

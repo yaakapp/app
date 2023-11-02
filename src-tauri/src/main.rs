@@ -370,20 +370,15 @@ async fn create_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-    let headers = Vec::new();
     let created_request = models::upsert_request(
-        None,
-        workspace_id,
-        name,
-        "GET",
-        None,
-        None,
-        HashMap::new(),
-        None,
-        "",
-        headers,
-        sort_priority,
         pool,
+        models::HttpRequest {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            method: "GET".to_string(),
+            sort_priority,
+            ..Default::default()
+        },
     )
     .await
     .expect("Failed to create request");
@@ -446,35 +441,9 @@ async fn update_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-
-    // TODO: Figure out how to make this better
-    let b2;
-    let body = match request.body {
-        Some(b) => {
-            b2 = b;
-            Some(b2.as_str())
-        }
-        None => None,
-    };
-
-    // TODO: Figure out how to make this better
-    let updated_request = models::upsert_request(
-        Some(request.id.as_str()),
-        request.workspace_id.as_str(),
-        request.name.as_str(),
-        request.method.as_str(),
-        body,
-        request.body_type,
-        request.authentication.0,
-        request.authentication_type,
-        request.url.as_str(),
-        request.headers.0,
-        request.sort_priority,
-        pool,
-    )
-    .await
-    .expect("Failed to update request");
-
+    let updated_request = models::upsert_request(pool, request)
+        .await
+        .expect("Failed to update request");
     emit_and_return(&window, "updated_model", updated_request)
 }
 
@@ -675,7 +644,13 @@ fn main() {
                                 .value
                                 .as_str()
                                 .unwrap();
-                            plugin::run_plugin_import(&app.handle(), pool, "insomnia-importer", arg_file).await;
+                            plugin::run_plugin_import(
+                                &app.handle(),
+                                pool,
+                                "insomnia-importer",
+                                arg_file,
+                            )
+                            .await;
                             exit(0);
                         } else if cmd.name == "hello" {
                             plugin::run_plugin_hello(&app.handle(), "hello-world");
