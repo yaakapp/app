@@ -202,27 +202,6 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
     Ok(workspace)
 }
 
-pub async fn create_workspace(
-    name: &str,
-    description: &str,
-    pool: &Pool<Sqlite>,
-) -> Result<Workspace, sqlx::Error> {
-    let id = generate_id(Some("wk"));
-    sqlx::query!(
-        r#"
-            INSERT INTO workspaces (id, name, description)
-            VALUES (?, ?, ?)
-        "#,
-        id,
-        name,
-        description,
-    )
-    .execute(pool)
-    .await?;
-
-    get_workspace(&id, pool).await
-}
-
 pub async fn find_environments(
     workspace_id: &str,
     pool: &Pool<Sqlite>,
@@ -512,18 +491,24 @@ pub async fn update_response_if_id(
     return update_response(response, pool).await;
 }
 
-pub async fn update_workspace(
-    workspace: Workspace,
+pub async fn upsert_workspace(
     pool: &Pool<Sqlite>,
+    workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
+    let id = generate_id(Some("wk"));
     let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"
-            UPDATE workspaces SET (name, updated_at) =
-            (?, CURRENT_TIMESTAMP) WHERE id = ?;
+            INSERT INTO workspaces (id, name, description)
+            VALUES (?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
+               description = excluded.description
         "#,
+        id,
         trimmed_name,
-        workspace.id,
+        workspace.description,
     )
     .execute(pool)
     .await?;

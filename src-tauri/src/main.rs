@@ -338,9 +338,15 @@ async fn create_workspace(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
-    let created_workspace = models::create_workspace(name, "", pool)
-        .await
-        .expect("Failed to create workspace");
+    let created_workspace = models::upsert_workspace(
+        pool,
+        models::Workspace {
+            name: name.to_string(),
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -415,7 +421,7 @@ async fn update_workspace(
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
 
-    let updated_workspace = models::update_workspace(workspace, pool)
+    let updated_workspace = models::upsert_workspace(pool, workspace)
         .await
         .expect("Failed to update request");
 
@@ -577,10 +583,15 @@ async fn list_workspaces(
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace =
-            models::create_workspace("My Project", "This is the default workspace", pool)
-                .await
-                .expect("Failed to create workspace");
+        let workspace = models::upsert_workspace(
+            pool,
+            models::Workspace {
+                name: "My Project".to_string(),
+                ..Default::default()
+            },
+        )
+        .await
+        .expect("Failed to create workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)

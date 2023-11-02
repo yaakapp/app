@@ -160,16 +160,6 @@
     },
     "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE workspace_id = ?\n            ORDER BY created_at DESC\n        "
   },
-  "3ec4710d28a7f38608c96798d971217ac97788bcb639089d0c5750c0d339bc9a": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "\n            UPDATE environments\n            SET (name, variables, updated_at) = (?, ?, CURRENT_TIMESTAMP)\n            WHERE id = ?;\n        "
-  },
   "448a1d1f1866ab42c0f81fcf8eb2930bf21dfdd43ca4831bc1a198cf45ac3732": {
     "describe": {
       "columns": [],
@@ -452,16 +442,6 @@
     },
     "query": "\n            DELETE FROM workspaces\n            WHERE id = ?\n        "
   },
-  "86e32d6a6fadf35436f19b577a659c203a8d143cb3a8d6122951c5bf54a0888d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "\n            INSERT INTO environments (id, workspace_id, name, variables)\n            VALUES (?, ?, ?, ?)\n        "
-  },
   "8947a2a90478277c42fe9b06bc1fa98197642a4d281a3dbc101be2c9c1fec36c": {
     "describe": {
       "columns": [],
@@ -471,6 +451,16 @@
       }
     },
     "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body,\n                body_path,\n                headers\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n        "
+  },
+  "aea6a01bfb9e32a3ea3b35a0a0e1a0f282030436826350336e3bec71b1de9d93": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 3
+      }
+    },
+    "query": "\n            INSERT INTO workspaces (id, name, description)\n            VALUES (?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               description = excluded.description\n        "
   },
   "aeb0712785a9964d516dc8939bc54aa8206ad852e608b362d014b67a0f21b0ed": {
     "describe": {
