@@ -14,9 +14,9 @@ export function importRequest(r, sortPriority = 0) {
     sortPriority,
     name: r.name,
     url: r.url,
-    body: null,
+    body: null, // TODO: Import body
     bodyType: null,
-    authentication: {},
+    authentication: {}, // TODO: Import authentication
     authenticationType: null,
     method: r.method,
     headers: (r.headers ?? []).map(({ name, value, disabled }) => ({

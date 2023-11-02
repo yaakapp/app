@@ -7,7 +7,7 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
@@ -18,8 +18,8 @@ pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
     run_plugin(app_handle, plugin_name, "hello", &[]);
 }
 
-#[derive(Default, Debug, Deserialize)]
-struct ImportedResources {
+#[derive(Default, Debug, Deserialize, Serialize)]
+pub struct ImportedResources {
     requests: Vec<HttpRequest>,
     environments: Vec<Environment>,
     workspaces: Vec<Workspace>,
@@ -31,7 +31,7 @@ pub async fn run_plugin_import(
     plugin_name: &str,
     file_path: &str,
     workspace_id: &str,
-) {
+) -> ImportedResources {
     let file = fs::read_to_string(file_path).expect("Unable to read file");
     let file_contents = file.as_str();
     let result_json = run_plugin(
@@ -42,6 +42,7 @@ pub async fn run_plugin_import(
     );
     let resources: ImportedResources =
         serde_json::from_value(result_json).expect("failed to parse result json");
+    let mut imported_resources = ImportedResources::default();
 
     println!("Importing resources: {}", workspace_id.is_empty());
     if workspace_id.is_empty() {
@@ -50,6 +51,7 @@ pub async fn run_plugin_import(
             let x = models::upsert_workspace(&pool, w)
                 .await
                 .expect("Failed to create workspace");
+            imported_resources.workspaces.push(x.clone());
             println!("Imported workspace: {}", x.name);
         }
     }
@@ -62,6 +64,7 @@ pub async fn run_plugin_import(
         let x = models::upsert_environment(&pool, e)
             .await
             .expect("Failed to create environment");
+            imported_resources.environments.push(x.clone());
         println!("Imported environment: {}", x.name);
     }
 
@@ -73,8 +76,11 @@ pub async fn run_plugin_import(
         let x = models::upsert_request(&pool, r)
             .await
             .expect("Failed to create request");
+        imported_resources.requests.push(x.clone());
         println!("Imported request: {}", x.name);
     }
+
+    imported_resources
 }
 
 fn run_plugin(

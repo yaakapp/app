@@ -261,10 +261,10 @@ async fn import_data(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     file_paths: Vec<&str>,
     workspace_id: Option<&str>,
-) -> Result<(), String> {
+) -> Result<plugin::ImportedResources, String> {
     let pool = &*db_instance.lock().await;
     let workspace_id2 = workspace_id.unwrap_or_default();
-    plugin::run_plugin_import(
+    let imported = plugin::run_plugin_import(
         &window.app_handle(),
         pool,
         "insomnia-importer",
@@ -272,7 +272,7 @@ async fn import_data(
         workspace_id2,
     )
     .await;
-    Ok(())
+    Ok(imported)
 }
 
 #[tauri::command]
