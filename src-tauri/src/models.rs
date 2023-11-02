@@ -241,30 +241,6 @@ pub async fn find_environments(
     .await
 }
 
-pub async fn create_environment(
-    workspace_id: &str,
-    name: &str,
-    variables: Vec<EnvironmentVariable>,
-    pool: &Pool<Sqlite>,
-) -> Result<Environment, sqlx::Error> {
-    let id = generate_id(Some("en"));
-    let trimmed_name = name.trim();
-    let variables_json = Json(variables);
-    sqlx::query!(
-        r#"
-            INSERT INTO environments (id, workspace_id, name, variables)
-            VALUES (?, ?, ?, ?)
-        "#,
-        id,
-        workspace_id,
-        trimmed_name,
-        variables_json,
-    )
-    .execute(pool)
-    .await?;
-    get_environment(&id, pool).await
-}
-
 pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
     let env = get_environment(id, pool).await?;
     let _ = sqlx::query!(
@@ -280,26 +256,37 @@ pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environ
     Ok(env)
 }
 
-pub async fn update_environment(
-    id: &str,
-    name: &str,
-    variables: Vec<EnvironmentVariable>,
+pub async fn upsert_environment(
     pool: &Pool<Sqlite>,
+    environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
-    let variables_json = Json(variables);
+    let id = match environment.id.as_str() {
+        "" => generate_id(Some("ev")),
+        _ => environment.id.to_string(),
+    };
+    let trimmed_name = environment.name.trim();
     sqlx::query!(
         r#"
-            UPDATE environments
-            SET (name, variables, updated_at) = (?, ?, CURRENT_TIMESTAMP)
-            WHERE id = ?;
+            INSERT INTO environments (
+                id,
+                workspace_id,
+                name,
+                variables
+            )
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
+               variables = excluded.variables
         "#,
-        name,
-        variables_json,
         id,
+        environment.workspace_id,
+        trimmed_name,
+        environment.variables,
     )
     .execute(pool)
     .await?;
-    get_environment(id, pool).await
+    get_environment(&id, pool).await
 }
 
 pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
@@ -326,7 +313,6 @@ pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environmen
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
     let mut request = get_request(id, pool).await?.clone();
     request.id = "".to_string();
-
     upsert_request(pool, request).await
 }
 

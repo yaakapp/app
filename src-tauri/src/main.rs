@@ -354,9 +354,17 @@ async fn create_environment(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
-    let created_environment = models::create_environment(workspace_id, name, variables, pool)
-        .await
-        .expect("Failed to create environment");
+    let created_environment = models::upsert_environment(
+        pool,
+        models::Environment {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            variables: Json(variables),
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create environment");
 
     emit_and_return(&window, "created_model", created_environment)
 }
@@ -422,14 +430,9 @@ async fn update_environment(
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
 
-    let updated_environment = models::update_environment(
-        environment.id.as_str(),
-        environment.name.as_str(),
-        environment.variables.0,
-        pool,
-    )
-    .await
-    .expect("Failed to update request");
+    let updated_environment = models::upsert_environment(pool, environment)
+        .await
+        .expect("Failed to update environment");
 
     emit_and_return(&window, "updated_model", updated_environment)
 }

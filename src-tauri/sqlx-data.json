@@ -850,6 +850,16 @@
     },
     "query": "\n            INSERT INTO key_values (namespace, key, value)\n            VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               value = excluded.value\n        "
   },
+  "dcc2f405f8e29d0599d86bcde509187e9cc5fc647067eaa5c738cb24e2f081e5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "\n            INSERT INTO environments (\n                id,\n                workspace_id,\n                name,\n                variables\n            )\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               variables = excluded.variables\n        "
+  },
   "e0f41023d877d94b7609ce910a71bd89c4827a558654b8ae14d85e6ba86990cf": {
     "describe": {
       "columns": [],
