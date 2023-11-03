@@ -51,7 +51,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       )}
     >
       {showSidebar && (
-        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-4 border-r border-gray-100">
+        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
             <SidebarButton
               active={selectedEnvironmentId == null}
@@ -65,7 +65,6 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
                   key={e.id}
                   active={selectedEnvironmentId === e.id}
                   onClick={() => setSelectedEnvironmentId(e.id)}
-                  className="pl-2"
                 >
                   {e.name}
                 </SidebarButton>
@@ -224,11 +223,12 @@ function SidebarButton({
 }) {
   return (
     <button
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       className={classNames(
         className,
-        'flex text-sm text-left w-full mb-1 h-xs',
-        'text-gray-600 hocus:text-gray-800 focus:outline-none',
+        'flex items-center text-sm text-left w-full mb-1 h-xs rounded px-2',
+        'text-gray-600 hocus:text-gray-800 focus:bg-highlightSecondary outline-none',
         active && '!text-gray-900',
       )}
     >
