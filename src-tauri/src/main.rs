@@ -493,6 +493,69 @@ async fn delete_request(
 }
 
 #[tauri::command]
+async fn list_folders(
+    workspace_id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<models::Folder>, String> {
+    let pool = &*db_instance.lock().await;
+    models::find_folders(workspace_id, pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn create_folder(
+    workspace_id: &str,
+    name: &str,
+    sort_priority: f64,
+    folder_id: Option<&str>,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Folder, String> {
+    let pool = &*db_instance.lock().await;
+    let created_request = models::upsert_folder(
+        pool,
+        models::Folder {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            folder_id: folder_id.map(|s| s.to_string()),
+            sort_priority,
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create folder");
+
+    emit_and_return(&window, "created_model", created_request)
+}
+
+#[tauri::command]
+async fn update_folder(
+    folder: models::Folder,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Folder, String> {
+    let pool = &*db_instance.lock().await;
+    let updated_folder = models::upsert_folder(pool, folder)
+        .await
+        .expect("Failed to update request");
+    emit_and_return(&window, "updated_model", updated_folder)
+}
+
+#[tauri::command]
+async fn delete_folder(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    folder_id: &str,
+) -> Result<models::Folder, String> {
+    let pool = &*db_instance.lock().await;
+    let req = models::delete_folder(folder_id, pool)
+        .await
+        .expect("Failed to delete folder");
+    emit_and_return(&window, "deleted_model", req)
+}
+
+#[tauri::command]
 async fn delete_environment(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -527,6 +590,17 @@ async fn list_environments(
         .expect("Failed to find environments");
 
     Ok(environments)
+}
+
+#[tauri::command]
+async fn get_folder(
+    id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Folder, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_folder(id, pool)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -705,20 +779,24 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             create_environment,
+            create_folder,
             create_request,
             create_workspace,
             delete_all_responses,
             delete_environment,
+            delete_folder,
             delete_request,
             delete_response,
             delete_workspace,
             duplicate_request,
             get_key_value,
             get_environment,
+            get_folder,
             get_request,
             get_workspace,
             import_data,
             list_environments,
+            list_folders,
             list_requests,
             list_responses,
             list_workspaces,
@@ -727,6 +805,7 @@ fn main() {
             send_request,
             set_key_value,
             update_environment,
+            update_folder,
             update_request,
             update_workspace,
         ])
