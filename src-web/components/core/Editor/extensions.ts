@@ -36,7 +36,7 @@ import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
-import type { Environment } from '../../../lib/models';
+import type { Environment, Workspace } from '../../../lib/models';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -96,8 +96,9 @@ export function getLanguageExtension({
   contentType,
   useTemplating = false,
   environment,
+  workspace,
   autocomplete,
-}: { environment: Environment | null } & Pick<
+}: { environment: Environment | null; workspace: Workspace | null } & Pick<
   EditorProps,
   'contentType' | 'useTemplating' | 'autocomplete'
 >) {
@@ -110,7 +111,7 @@ export function getLanguageExtension({
     return base;
   }
 
-  return twig(base, environment, autocomplete);
+  return twig(base, environment, workspace, autocomplete);
 }
 
 export const baseExtensions = [

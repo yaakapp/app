@@ -13,6 +13,7 @@ import { baseExtensions, getLanguageExtension, multiLineExtensions } from './ext
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
+import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 
 // Export some things so all the code-split parts are in this file
 export { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
@@ -72,7 +73,9 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   ref,
 ) {
   const e = useActiveEnvironment();
+  const w = useActiveWorkspace();
   const environment = autocompleteVariables ? e : null;
+  const workspace = autocompleteVariables ? w : null;
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);
@@ -124,9 +127,15 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
-    const ext = getLanguageExtension({ contentType, environment, useTemplating, autocomplete });
+    const ext = getLanguageExtension({
+      contentType,
+      environment,
+      workspace,
+      useTemplating,
+      autocomplete,
+    });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete, useTemplating, environment]);
+  }, [contentType, autocomplete, useTemplating, environment, workspace]);
 
   useEffect(() => {
     if (cm.current === null) return;
@@ -152,6 +161,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
         useTemplating,
         autocomplete,
         environment,
+        workspace,
       });
 
       const state = EditorState.create({
@@ -271,7 +281,7 @@ function getExtensions({
     EditorView.domEventHandlers({
       focus: () => onFocus.current?.(),
       blur: () => onBlur.current?.(),
-      keydown: e => onKeyDown.current?.(e),
+      keydown: (e) => onKeyDown.current?.(e),
     }),
 
     // Handle onChange

@@ -7,14 +7,17 @@ import { placeholders } from './placeholder';
 import { textLanguageName } from '../text/extension';
 import { twigCompletion } from './completion';
 import { parser as twigParser } from './twig';
-import type { Environment } from '../../../../lib/models';
+import type { Environment, Workspace } from '../../../../lib/models';
 
 export function twig(
   base: LanguageSupport,
   environment: Environment | null,
+  workspace: Workspace | null,
   autocomplete?: GenericCompletionConfig,
 ) {
-  const variables = environment?.variables.filter(v => v.enabled) ?? [];
+  const variables =
+    [...(workspace?.variables ?? []), ...(environment?.variables ?? [])].filter((v) => v.enabled) ??
+    [];
   const completions = twigCompletion({ options: variables });
 
   const language = mixLanguage(base);
