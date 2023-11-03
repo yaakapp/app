@@ -228,7 +228,7 @@ function SidebarButton({
       className={classNames(
         className,
         'flex text-sm text-left w-full mb-1 h-xs',
-        'text-gray-600 hocus:text-gray-800 !ring-0',
+        'text-gray-600 hocus:text-gray-800 focus:outline-none',
         active && '!text-gray-900',
       )}
     >
