@@ -1,5 +1,15 @@
 {
   "db": "SQLite",
+  "02506ad41cc94cd937422ef1977a97174431f008a9fb4ce39667d587a858b876": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "\n            INSERT INTO folders (\n                id,\n                workspace_id,\n                folder_id,\n                name,\n                sort_priority\n            )\n            VALUES (?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               folder_id = excluded.folder_id,\n               sort_priority = excluded.sort_priority\n        "
+  },
   "06aaf8f4a17566f1d25da2a60f0baf4b5fc28c3cf0c001a84e25edf9eab3c7e3": {
     "describe": {
       "columns": [
@@ -57,6 +67,126 @@
       }
     },
     "query": "\n            DELETE FROM http_responses\n            WHERE id = ?\n        "
+  },
+  "1428d25b6aa3d6ec55742a968571fa951da0406d7bb32408883c584eae7dd53c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "folder_id",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "sort_priority",
+          "ordinal": 7,
+          "type_info": "Float"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                folder_id,\n                name,\n                sort_priority\n            FROM folders\n            WHERE id = ?\n        "
+  },
+  "1517b0f86c841b5f1247bd40c3a9b38ab001d846a410b6e3cd36f9e844d50ddb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "folder_id",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "sort_priority",
+          "ordinal": 7,
+          "type_info": "Float"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                folder_id,\n                name,\n                sort_priority\n            FROM folders\n            WHERE workspace_id = ?\n        "
   },
   "26072725d536c3cfdffd9a681d17c0ee2f246ca98e0459630a2430236d3bbdd2": {
     "describe": {
@@ -400,7 +530,17 @@
     },
     "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM environments\n            WHERE id = ?\n        "
   },
-  "6f0cb5a6d1e8dbc8cdfcc3c7e7944b2c83c22cb795b9d6b98fe067dabec9680b": {
+  "84be2b954870ab181738656ecd4d03fca2ff21012947014c79626abfce8e999b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            DELETE FROM workspaces\n            WHERE id = ?\n        "
+  },
+  "854536c80af3f86bb9a63b8ce059ad724374b545cb23481bb3b2ce07d7414220": {
     "describe": {
       "columns": [
         {
@@ -419,58 +559,63 @@
           "type_info": "Text"
         },
         {
-          "name": "created_at",
+          "name": "folder_id",
           "ordinal": 3,
-          "type_info": "Datetime"
+          "type_info": "Text"
         },
         {
-          "name": "updated_at",
+          "name": "created_at",
           "ordinal": 4,
           "type_info": "Datetime"
         },
         {
-          "name": "name",
+          "name": "updated_at",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": "Datetime"
         },
         {
-          "name": "url",
+          "name": "name",
           "ordinal": 6,
           "type_info": "Text"
         },
         {
-          "name": "method",
+          "name": "url",
           "ordinal": 7,
           "type_info": "Text"
         },
         {
-          "name": "body",
+          "name": "method",
           "ordinal": 8,
           "type_info": "Text"
         },
         {
-          "name": "body_type",
+          "name": "body",
           "ordinal": 9,
           "type_info": "Text"
         },
         {
-          "name": "authentication!: Json<HashMap<String, JsonValue>>",
+          "name": "body_type",
           "ordinal": 10,
           "type_info": "Text"
         },
         {
-          "name": "authentication_type",
+          "name": "authentication!: Json<HashMap<String, JsonValue>>",
           "ordinal": 11,
           "type_info": "Text"
         },
         {
-          "name": "sort_priority",
+          "name": "authentication_type",
           "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "sort_priority",
+          "ordinal": 13,
           "type_info": "Float"
         },
         {
           "name": "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>",
-          "ordinal": 13,
+          "ordinal": 14,
           "type_info": "Text"
         }
       ],
@@ -478,6 +623,7 @@
         false,
         false,
         false,
+        true,
         false,
         false,
         false,
@@ -494,17 +640,7 @@
         "Right": 1
       }
     },
-    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        "
-  },
-  "84be2b954870ab181738656ecd4d03fca2ff21012947014c79626abfce8e999b": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            DELETE FROM workspaces\n            WHERE id = ?\n        "
+    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        "
   },
   "8947a2a90478277c42fe9b06bc1fa98197642a4d281a3dbc101be2c9c1fec36c": {
     "describe": {
@@ -516,6 +652,118 @@
     },
     "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body,\n                body_path,\n                headers\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n        "
   },
+  "93aea3881dffb70a82325263740a0bb6477e78f27991ce7456b394e84383acb6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            DELETE FROM folders\n            WHERE id = ?\n        "
+  },
+  "a558e182f40286fe52bed5f03b2dc367b7229ab6bd9cda0a7ce219a438ccd5fd": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "workspace_id",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "folder_id",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 4,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 5,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "url",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "method",
+          "ordinal": 8,
+          "type_info": "Text"
+        },
+        {
+          "name": "body",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "body_type",
+          "ordinal": 10,
+          "type_info": "Text"
+        },
+        {
+          "name": "authentication!: Json<HashMap<String, JsonValue>>",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "authentication_type",
+          "ordinal": 12,
+          "type_info": "Text"
+        },
+        {
+          "name": "sort_priority",
+          "ordinal": 13,
+          "type_info": "Float"
+        },
+        {
+          "name": "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>",
+          "ordinal": 14,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        "
+  },
   "aeb0712785a9964d516dc8939bc54aa8206ad852e608b362d014b67a0f21b0ed": {
     "describe": {
       "columns": [],
@@ -525,16 +773,6 @@
       }
     },
     "query": "\n            DELETE FROM environments\n            WHERE id = ?\n        "
-  },
-  "b19c275180909a39342b13c3cdcf993781636913ae590967f5508c46a56dc961": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 11
-      }
-    },
-    "query": "\n            INSERT INTO http_requests (\n                id,\n                workspace_id,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication,\n                authentication_type,\n                headers,\n                sort_priority\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               method = excluded.method,\n               headers = excluded.headers,\n               body = excluded.body,\n               body_type = excluded.body_type,\n               authentication = excluded.authentication,\n               authentication_type = excluded.authentication_type,\n               url = excluded.url,\n               sort_priority = excluded.sort_priority\n        "
   },
   "ba2b34a77723f24f86e4c3c45274dbfec6ca130e16e592f948844c037bdc0593": {
     "describe": {
@@ -692,102 +930,6 @@
     },
     "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
   },
-  "ced098adb79c0ee64e223b6e02371ef253920a2c342275de0fa9c181529a4adc": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "model",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "workspace_id",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 3,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 4,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "name",
-          "ordinal": 5,
-          "type_info": "Text"
-        },
-        {
-          "name": "url",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "method",
-          "ordinal": 7,
-          "type_info": "Text"
-        },
-        {
-          "name": "body",
-          "ordinal": 8,
-          "type_info": "Text"
-        },
-        {
-          "name": "body_type",
-          "ordinal": 9,
-          "type_info": "Text"
-        },
-        {
-          "name": "authentication!: Json<HashMap<String, JsonValue>>",
-          "ordinal": 10,
-          "type_info": "Text"
-        },
-        {
-          "name": "authentication_type",
-          "ordinal": 11,
-          "type_info": "Text"
-        },
-        {
-          "name": "sort_priority",
-          "ordinal": 12,
-          "type_info": "Float"
-        },
-        {
-          "name": "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>",
-          "ordinal": 13,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        "
-  },
   "d80c09497771e3641022e73ec6c6a87e73a551f88a948a5445d754922b82b50b": {
     "describe": {
       "columns": [],
@@ -861,5 +1003,15 @@
       }
     },
     "query": "\n            INSERT INTO environments (\n                id,\n                workspace_id,\n                name,\n                variables\n            )\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               variables = excluded.variables\n        "
+  },
+  "e5b410442b00ee354bb58eb0e8fb2af06e9dea4bb24763d717c72a840450a759": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 12
+      }
+    },
+    "query": "\n            INSERT INTO http_requests (\n                id,\n                workspace_id,\n                folder_id,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication,\n                authentication_type,\n                headers,\n                sort_priority\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               folder_id = excluded.folder_id,\n               method = excluded.method,\n               headers = excluded.headers,\n               body = excluded.body,\n               body_type = excluded.body_type,\n               authentication = excluded.authentication,\n               authentication_type = excluded.authentication_type,\n               url = excluded.url,\n               sort_priority = excluded.sort_priority\n        "
   }
 }

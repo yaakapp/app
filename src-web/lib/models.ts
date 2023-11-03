@@ -29,6 +29,14 @@ export interface EnvironmentVariable {
   enabled?: boolean;
 }
 
+export interface Folder extends BaseModel {
+  readonly workspaceId: string;
+  readonly model: 'folder';
+  folderId: string | null;
+  sortPriority: number;
+  name: string;
+}
+
 export interface Environment extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'environment';
@@ -45,6 +53,7 @@ export interface HttpHeader {
 export interface HttpRequest extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'http_request';
+  folderId: string | null;
   sortPriority: number;
   name: string;
   url: string;

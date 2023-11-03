@@ -64,6 +64,7 @@ pub struct HttpRequest {
     pub updated_at: NaiveDateTime,
     pub id: String,
     pub workspace_id: String,
+    pub folder_id: Option<String>,
     pub model: String,
     pub sort_priority: f64,
     pub name: String,
@@ -75,6 +76,19 @@ pub struct HttpRequest {
     pub authentication: Json<HashMap<String, JsonValue>>,
     pub authentication_type: Option<String>,
     pub headers: Json<Vec<HttpRequestHeader>>,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Folder {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub id: String,
+    pub workspace_id: String,
+    pub folder_id: Option<String>,
+    pub model: String,
+    pub name: String,
+    pub sort_priority: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -292,6 +306,103 @@ pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environmen
     .await
 }
 
+pub async fn get_folder(id: &str, pool: &Pool<Sqlite>) -> Result<Folder, sqlx::Error> {
+    sqlx::query_as!(
+        Folder,
+        r#"
+            SELECT
+                id,
+                model,
+                workspace_id,
+                created_at,
+                updated_at,
+                folder_id,
+                name,
+                sort_priority
+            FROM folders
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn find_folders(
+    workspace_id: &str,
+    pool: &Pool<Sqlite>,
+) -> Result<Vec<Folder>, sqlx::Error> {
+    sqlx::query_as!(
+        Folder,
+        r#"
+            SELECT
+                id,
+                model,
+                workspace_id,
+                created_at,
+                updated_at,
+                folder_id,
+                name,
+                sort_priority
+            FROM folders
+            WHERE workspace_id = ?
+        "#,
+        workspace_id,
+    )
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn delete_folder(id: &str, pool: &Pool<Sqlite>) -> Result<Folder, sqlx::Error> {
+    let env = get_folder(id, pool).await?;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM folders
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(pool)
+    .await;
+
+    Ok(env)
+}
+
+pub async fn upsert_folder(pool: &Pool<Sqlite>, r: Folder) -> Result<Folder, sqlx::Error> {
+    let id = match r.id.as_str() {
+        "" => generate_id(Some("fl")),
+        _ => r.id.to_string(),
+    };
+    let trimmed_name = r.name.trim();
+
+    sqlx::query!(
+        r#"
+            INSERT INTO folders (
+                id,
+                workspace_id,
+                folder_id,
+                name,
+                sort_priority
+            )
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
+               folder_id = excluded.folder_id,
+               sort_priority = excluded.sort_priority
+        "#,
+        id,
+        r.workspace_id,
+        r.folder_id,
+        trimmed_name,
+        r.sort_priority,
+    )
+    .execute(pool)
+    .await?;
+
+    get_folder(&id, pool).await
+}
+
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
     let mut request = get_request(id, pool).await?.clone();
     request.id = "".to_string();
@@ -315,6 +426,7 @@ pub async fn upsert_request(
             INSERT INTO http_requests (
                 id,
                 workspace_id,
+                folder_id,
                 name,
                 url,
                 method,
@@ -325,10 +437,11 @@ pub async fn upsert_request(
                 headers,
                 sort_priority
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
+               folder_id = excluded.folder_id,
                method = excluded.method,
                headers = excluded.headers,
                body = excluded.body,
@@ -340,6 +453,7 @@ pub async fn upsert_request(
         "#,
         id,
         r.workspace_id,
+        r.folder_id,
         trimmed_name,
         r.url,
         r.method,
@@ -367,6 +481,7 @@ pub async fn find_requests(
                 id,
                 model,
                 workspace_id,
+                folder_id,
                 created_at,
                 updated_at,
                 name,
@@ -395,6 +510,7 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
                 id,
                 model,
                 workspace_id,
+                folder_id,
                 created_at,
                 updated_at,
                 name,
