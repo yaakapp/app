@@ -154,11 +154,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   return (
     <div aria-hidden={hidden} className="h-full">
-      <VStack
-        as="ul"
-        role="menu"
-        aria-orientation="vertical"
-        dir="ltr"
+      <aside
         ref={sidebarRef}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -175,7 +171,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           onSelect={handleSelect}
           onClearSelected={handleClearSelected}
         />
-      </VStack>
+      </aside>
     </div>
   );
 });
@@ -242,7 +238,7 @@ function SidebarItems({
   );
 
   return (
-    <>
+    <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr">
       {requests.map((r, i) => (
         <Fragment key={r.id}>
           {hoveredIndex === i && <DropMarker />}
@@ -259,7 +255,25 @@ function SidebarItems({
         </Fragment>
       ))}
       {hoveredIndex === requests.length && <DropMarker />}
-    </>
+      <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr" className="pl-3">
+        {requests.slice(0, 1).map((r, i) => (
+          <Fragment key={r.id}>
+            {hoveredIndex === i && <DropMarker />}
+            <DraggableSidebarItem
+              key={r.id}
+              selected={selectedIndex === i}
+              requestId={r.id}
+              requestName={r.name}
+              onMove={handleMove}
+              onEnd={handleEnd}
+              useProminentStyles={focused}
+              onSelect={onSelect}
+            />
+          </Fragment>
+        ))}
+        {hoveredIndex === requests.length && <DropMarker />}
+      </VStack>
+    </VStack>
   );
 }
 
