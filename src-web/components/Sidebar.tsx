@@ -197,7 +197,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const hoveredTree = treeParentMap[id];
       const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
       const target = hoveredTree?.children[dragIndex + (side === 'above' ? 0 : 1)]?.item;
-      console.log('SET HOVERED ID', target?.id);
       setHoveredId(target?.id ?? null);
     },
     [treeParentMap, setHoveredId],
@@ -221,13 +220,16 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
       const newChildren = targetTree.children.filter((c) => c.item.id !== itemId);
       const hoveredIndex = newChildren.findIndex((c) => c.item.id === hoveredId) ?? null;
-      if (hoveredIndex > index) newChildren.splice(hoveredIndex - 1, 0, child);
-      else newChildren.splice(hoveredIndex, 0, child);
+      if (hoveredIndex < index || targetTree.item.id !== parentTree.item.id) {
+        // Moving up or into a new tree is simply inserting before the hovered item
+        newChildren.splice(hoveredIndex, 0, child);
+      } else {
+        // Moving down has to account for the fact that the original item will be removed
+        newChildren.splice(hoveredIndex - 1, 0, child);
+      }
 
-      // Do a simple find because the math is too hard
-      const newIndex = newChildren.findIndex((r) => r.item.id === itemId) ?? 0;
-      const prev = newChildren[newIndex - 1]?.item;
-      const next = newChildren[newIndex + 1]?.item;
+      const prev = newChildren[hoveredIndex - 1]?.item;
+      const next = newChildren[hoveredIndex + 1]?.item;
       const beforePriority = prev == null || prev.model === 'workspace' ? 0 : prev.sortPriority;
       const afterPriority = next == null || next.model === 'workspace' ? 0 : next.sortPriority;
 
