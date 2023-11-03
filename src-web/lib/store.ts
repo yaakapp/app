@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api';
-import type { Environment, HttpRequest, Workspace } from './models';
+import type { Environment, Folder, HttpRequest, Workspace } from './models';
 
 export async function getRequest(id: string | null): Promise<HttpRequest | null> {
   if (id === null) return null;
@@ -17,6 +17,15 @@ export async function getEnvironment(id: string | null): Promise<Environment | n
     return null;
   }
   return environment;
+}
+
+export async function getFolder(id: string | null): Promise<Folder | null> {
+  if (id === null) return null;
+  const folder: Folder = (await invoke('get_folder', { id })) ?? null;
+  if (folder == null) {
+    return null;
+  }
+  return folder;
 }
 
 export async function getWorkspace(id: string | null): Promise<Workspace | null> {

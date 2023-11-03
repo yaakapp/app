@@ -16,6 +16,7 @@ class PlaceholderWidget extends WidgetType {
     elt.className = `placeholder-widget ${
       !this.isExistingVariable ? 'placeholder-widget-error' : ''
     }`;
+    elt.title = !this.isExistingVariable ? 'Variable not found in active environment' : '';
     elt.textContent = this.name;
     return elt;
   }
