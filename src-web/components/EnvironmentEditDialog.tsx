@@ -51,7 +51,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
               justify="start"
               className={classNames(
                 'w-full',
-                'text-gray-600 hocus:text-gray-800',
+                'text-gray-600 hocus:text-gray-800 !ring-0',
                 selectedEnvironment == null && 'bg-highlightSecondary !text-gray-900',
               )}
               onClick={() => {

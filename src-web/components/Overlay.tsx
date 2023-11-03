@@ -32,7 +32,7 @@ export function Overlay({
   return (
     <Portal name={portalName}>
       {open && (
-        <FocusTrap>
+        <FocusTrap> 
           <motion.div
             className={classNames('fixed inset-0', zIndexes[zIndex])}
             initial={{ opacity: 0 }}
