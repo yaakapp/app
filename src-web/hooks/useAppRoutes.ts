@@ -53,18 +53,18 @@ export function useAppRoutes() {
   }, [nav]);
 
   const setEnvironment = useCallback(
-    ({ id: environmentId }: Environment) => {
+    (environment: Environment | null) => {
       if (workspaceId == null) {
         navigate('workspaces');
       } else if (requestId == null) {
         navigate('workspace', {
           workspaceId: workspaceId,
-          environmentId: environmentId ?? null,
+          environmentId: environment == null ? undefined : environment.id,
         });
       } else {
         navigate('request', {
           workspaceId,
-          environmentId: environmentId ?? null,
+          environmentId: environment == null ? undefined : environment.id,
           requestId,
         });
       }

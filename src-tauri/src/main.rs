@@ -93,8 +93,11 @@ async fn actually_send_ephemeral_request(
     let start = std::time::Instant::now();
     let environment = models::get_environment(environment_id, pool).await.ok();
     let environment_ref = environment.as_ref();
+    let workspace = models::get_workspace(&request.workspace_id, pool)
+        .await
+        .expect("Failed to get workspace");
 
-    let mut url_string = render::render(&request.url, environment.as_ref());
+    let mut url_string = render::render(&request.url, &workspace, environment.as_ref());
 
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);
@@ -119,8 +122,8 @@ async fn actually_send_ephemeral_request(
             continue;
         }
 
-        let name = render::render(&h.name, environment_ref);
-        let value = render::render(&h.value, environment_ref);
+        let name = render::render(&h.name, &workspace, environment_ref);
+        let value = render::render(&h.value, &workspace, environment_ref);
 
         let header_name = match HeaderName::from_bytes(name.as_bytes()) {
             Ok(n) => n,
@@ -155,8 +158,8 @@ async fn actually_send_ephemeral_request(
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let username = render::render(raw_username, environment_ref);
-            let password = render::render(raw_password, environment_ref);
+            let username = render::render(raw_username, &workspace, environment_ref);
+            let password = render::render(raw_password, &workspace, environment_ref);
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
@@ -166,7 +169,7 @@ async fn actually_send_ephemeral_request(
             );
         } else if b == "bearer" {
             let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, environment_ref);
+            let token = render::render(raw_token, &workspace, environment_ref);
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
@@ -180,7 +183,7 @@ async fn actually_send_ephemeral_request(
 
     let sendable_req_result = match (request.body, request.body_type) {
         (Some(raw_body), Some(_)) => {
-            let body = render::render(&raw_body, environment_ref);
+            let body = render::render(&raw_body, &workspace, environment_ref);
             builder.body(body).build()
         }
         _ => builder.build(),
