@@ -1,7 +1,35 @@
-import type { AppTheme } from './theme';
+import type { AppTheme, AppThemeColors } from './theme';
 import { generateCSS, toTailwindVariable } from './theme';
 
 export type Appearance = 'dark' | 'light';
+
+enum Theme {
+  yaak = 'yaak',
+  catppuccin = 'catppuccin',
+}
+
+const themes: Record<Theme, AppThemeColors> = {
+  yaak: {
+    gray: '#6b5b98',
+    red: '#ff417b',
+    orange: '#fd9014',
+    yellow: '#e8d13f',
+    green: '#3fd265',
+    blue: '#219dff',
+    pink: '#ff6dff',
+    violet: '#b176ff',
+  },
+  catppuccin: {
+    gray: 'hsl(240, 23%, 47%)',
+    red: 'hsl(343, 91%, 74%)',
+    orange: 'hsl(23, 92%, 74%)',
+    yellow: 'hsl(41, 86%, 72%)',
+    green: 'hsl(115, 54%, 65%)',
+    blue: 'hsl(217, 92%, 65%)',
+    pink: 'hsl(316, 72%, 75%)',
+    violet: 'hsl(267, 84%, 70%)',
+  },
+};
 
 const darkTheme: AppTheme = {
   name: 'Default Dark',
@@ -9,16 +37,7 @@ const darkTheme: AppTheme = {
   layers: {
     root: {
       blackPoint: 0.2,
-      colors: {
-        gray: '#6b5b98',
-        red: '#ff417b',
-        orange: '#fd9014',
-        yellow: '#e8d13f',
-        green: '#3fd265',
-        blue: '#219dff',
-        pink: '#ff6dff',
-        violet: '#b176ff',
-      },
+      colors: themes.catppuccin,
     },
   },
 };

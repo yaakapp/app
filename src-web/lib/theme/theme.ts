@@ -40,9 +40,10 @@ export const appThemeVariants: AppThemeColorVariant[] = [
 ];
 
 export type AppThemeLayer = 'root' | 'sidebar' | 'titlebar' | 'content' | 'above';
+export type AppThemeColors = Record<AppThemeColor, string>;
 
 export interface AppThemeLayerStyle {
-  colors: Record<AppThemeColor, string>;
+  colors: AppThemeColors;
   blackPoint?: number;
   whitePoint?: number;
 }

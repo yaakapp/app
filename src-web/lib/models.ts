@@ -20,6 +20,7 @@ export interface Workspace extends BaseModel {
   readonly model: 'workspace';
   name: string;
   description: string;
+  variables: EnvironmentVariable[];
 }
 
 export interface EnvironmentVariable {

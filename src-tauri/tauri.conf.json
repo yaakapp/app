@@ -12,6 +12,23 @@
   },
   "tauri": {
     "windows": [],
+    "cli": {
+      "description": "Yaak CLI", 
+      "longDescription": "This is the Yaak CLI, yo", 
+      "beforeHelp": "u can use it to build, develop and manage your Yaak application.",
+      "afterHelp": "Have fun!",
+      "args": [], 
+      "subcommands": {
+        "import": {
+          "args": [{
+            "name": "file",
+            "short": "f",
+            "takesValue": true
+          }]
+        },
+        "hello": {}
+      }
+    },
     "allowlist": {
       "all": false,
       "os": {
@@ -36,6 +53,10 @@
       },
       "window": {
         "startDragging": true
+      },
+      "dialog": {
+        "all": false,
+        "open": true
       }
     },
     "bundle": {
@@ -54,7 +75,7 @@
       "longDescription": "The best cross-platform visual API client",
       "resources": [
         "migrations/*",
-        "plugins/*"
+        "../plugins/*"
       ],
       "shortDescription": "The best API client",
       "targets": [

@@ -34,6 +34,7 @@ import {
   TriangleDownIcon,
   TriangleLeftIcon,
   TriangleRightIcon,
+  DownloadIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classNames from 'classnames';
@@ -55,6 +56,7 @@ const icons = {
   dividerH: DividerHorizontalIcon,
   dotsH: DotsHorizontalIcon,
   dotsV: DotsVerticalIcon,
+  download: DownloadIcon,
   drag: DragHandleDots2Icon,
   eye: EyeOpenIcon,
   eyeClosed: EyeClosedIcon,
