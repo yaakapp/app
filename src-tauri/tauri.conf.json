@@ -75,7 +75,7 @@
       "longDescription": "The best cross-platform visual API client",
       "resources": [
         "migrations/*",
-        "plugins/*"
+        "../plugins/*"
       ],
       "shortDescription": "The best API client",
       "targets": [

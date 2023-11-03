@@ -85,9 +85,10 @@ export function RecentRequestsDropdown() {
   return (
     <Dropdown ref={dropdownRef} items={items}>
       <Button
+        data-tauri-drag-region
         size="sm"
         className={classNames(
-          'flex-[2] text-center text-gray-800 text-sm truncate pointer-events-none',
+          'flex-[2] text-center text-gray-800 text-sm truncate pointer-events-auto',
           activeRequest === null && 'text-opacity-disabled italic',
         )}
       >

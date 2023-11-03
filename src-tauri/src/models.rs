@@ -16,6 +16,7 @@ pub struct Workspace {
     pub updated_at: NaiveDateTime,
     pub name: String,
     pub description: String,
+    pub variables: Json<Vec<EnvironmentVariable>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -162,7 +163,8 @@ pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description
+            SELECT id, model, created_at, updated_at, name, description,
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces
         "#,
     )
@@ -174,7 +176,8 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description
+            SELECT id, model, created_at, updated_at, name, description,
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces WHERE id = ?
         "#,
         id,
@@ -502,16 +505,18 @@ pub async fn upsert_workspace(
     let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"
-            INSERT INTO workspaces (id, name, description)
-            VALUES (?, ?, ?)
+            INSERT INTO workspaces (id, name, description, variables)
+            VALUES (?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
-               description = excluded.description
+               description = excluded.description,
+               variables = excluded.variables
         "#,
         id,
         trimmed_name,
         workspace.description,
+        workspace.variables,
     )
     .execute(pool)
     .await?;

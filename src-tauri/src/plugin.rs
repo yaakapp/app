@@ -91,7 +91,7 @@ fn run_plugin(
 ) -> serde_json::Value {
     let plugin_dir = app_handle
         .path_resolver()
-        .resolve_resource("plugins")
+        .resolve_resource("../plugins")
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("index.js");
