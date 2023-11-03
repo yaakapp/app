@@ -15,7 +15,7 @@ export function useUpdateAnyFolder() {
         throw new Error("Can't update a null folder");
       }
 
-      await invoke('update_folder', { request: update(folder) });
+      await invoke('update_folder', { folder: update(folder) });
     },
     onMutate: async ({ id, update }) => {
       const folder = await getFolder(id);
