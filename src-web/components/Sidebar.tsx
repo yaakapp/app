@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import type { ForwardedRef } from 'react';
+import type { ForwardedRef, ReactNode } from 'react';
 import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
@@ -51,7 +51,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const activeWorkspace = useActiveWorkspace();
   const routes = useAppRoutes();
   const [hasFocus, setHasFocus] = useState<boolean>(false);
-  const [selectedIndex, setSelectedIndex] = useState<number>();
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedTree, setSelectedTree] = useState<TreeNode | null>(null);
 
   const { tree, treeParentMap } = useMemo<{
     tree: TreeNode | null;
@@ -85,36 +86,53 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
-    (forcedIndex?: number) => {
-      // TODO: Use tree to find index
-      const index = forcedIndex ?? requests.findIndex((r) => r.id === activeRequestId);
-      if (index < 0) return;
-      setSelectedIndex(index >= 0 ? index : undefined);
+    (forced?: { index: number; tree: TreeNode }) => {
+      const tree = forced?.tree ?? treeParentMap[activeRequestId ?? 'n/a'] ?? null;
+      const children = tree?.children ?? [];
+      const index = forced?.index ?? children.findIndex((m) => m.item.id === activeRequestId);
+      if (index < 0) {
+        return;
+      }
+
+      setSelectedIndex(index >= 0 ? index : null);
+      setSelectedTree(tree);
       setHasFocus(true);
       sidebarRef.current?.focus();
     },
-    [activeRequestId, requests],
+    [activeRequestId, treeParentMap],
   );
 
   const handleSelect = useCallback(
-    (requestId: string) => {
-      // TODO: Use tree to find index
-      const index = requests.findIndex((r) => r.id === requestId);
-      const request = requests[index];
-      if (!request) return;
-      routes.navigate('request', {
-        requestId,
-        workspaceId: request.workspaceId,
-        environmentId: activeEnvironmentId ?? undefined,
-      });
-      // setSelectedIndex(index);
-      // focusActiveRequest(index);
+    (id: string) => {
+      const tree = treeParentMap[id ?? 'n/a'] ?? null;
+      const children = tree?.children ?? [];
+      const index = children.findIndex((m) => m.item.id === id) ?? -99;
+      const node = children[index] ?? null;
+      if (node == null || tree == null || node.item.model === 'workspace') {
+        return;
+      }
+
+      const { item } = node;
+
+      if (item.model === 'folder') {
+        setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] }));
+      } else {
+        routes.navigate('request', {
+          requestId: id,
+          workspaceId: item.workspaceId,
+          environmentId: activeEnvironmentId ?? undefined,
+        });
+        setSelectedIndex(index);
+        setSelectedTree(tree);
+        focusActiveRequest({ index, tree });
+      }
     },
-    [requests, routes, activeEnvironmentId],
+    [treeParentMap, routes, activeEnvironmentId, focusActiveRequest],
   );
 
   const handleClearSelected = useCallback(() => {
-    setSelectedIndex(undefined);
+    setSelectedIndex(null);
+    setSelectedTree(null);
   }, [setSelectedIndex]);
 
   const handleFocus = useCallback(() => {
@@ -144,7 +162,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     () => {
       if (hidden || hasFocus) return;
       // Select 0 index on focus if none selected
-      focusActiveRequest(selectedIndex ?? 0);
+      focusActiveRequest(
+        selectedTree != null && selectedIndex != null
+          ? { index: selectedIndex ?? 0, tree: selectedTree }
+          : undefined,
+      );
     },
     [focusActiveRequest, hidden, activeRequestId],
   );
@@ -191,36 +213,45 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const updateAnyRequest = useUpdateAnyRequest();
   const updateAnyFolder = useUpdateAnyFolder();
 
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [hoveredTree, setHoveredTree] = useState<TreeNode | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
     (id, side) => {
-      const hoveredTree = treeParentMap[id];
+      const hoveredTree = treeParentMap[id] ?? null;
       const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
-      const target = hoveredTree?.children[dragIndex + (side === 'above' ? 0 : 1)]?.item;
-      setHoveredId(target?.id ?? null);
+      const hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
+      setHoveredTree(hoveredTree);
+      setHoveredIndex(hoveredIndex);
     },
-    [treeParentMap, setHoveredId],
+    [treeParentMap],
   );
 
+  const handleDragStart = useCallback<DraggableSidebarItemProps['onDragStart']>((id: string) => {
+    setDraggingId(id);
+  }, []);
+
   const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
-    (itemId) => {
-      if (hoveredId === null) return;
-      setHoveredId(null);
+    async (itemId) => {
+      setHoveredTree(null);
       handleClearSelected();
 
-      const targetTree = treeParentMap[hoveredId] ?? null;
-      if (targetTree == null) {
+      if (hoveredTree == null || hoveredIndex == null) {
         return;
       }
 
       const parentTree = treeParentMap[itemId] ?? null;
       const index = parentTree?.children.findIndex((n) => n.item.id === itemId) ?? -1;
       const child = parentTree?.children[index ?? -1];
-      if (child === undefined || parentTree == null) return;
+      if (child == null || parentTree == null) return;
 
-      const newChildren = targetTree.children.filter((c) => c.item.id !== itemId);
-      const hoveredIndex = newChildren.findIndex((c) => c.item.id === hoveredId) ?? null;
-      if (hoveredIndex < index || targetTree.item.id !== parentTree.item.id) {
+      const movedToDifferentTree = hoveredTree.item.id !== parentTree.item.id;
+      const movedUpInSameTree = !movedToDifferentTree && hoveredIndex < index;
+
+      const newChildren = hoveredTree.children.filter((c) => c.item.id !== itemId);
+      if (movedToDifferentTree || movedUpInSameTree) {
         // Moving up or into a new tree is simply inserting before the hovered item
         newChildren.splice(hoveredIndex, 0, child);
       } else {
@@ -233,32 +264,42 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const beforePriority = prev == null || prev.model === 'workspace' ? 0 : prev.sortPriority;
       const afterPriority = next == null || next.model === 'workspace' ? 0 : next.sortPriority;
 
-      const folderId = targetTree.item.model === 'folder' ? targetTree.item.id : null;
+      const folderId = hoveredTree.item.model === 'folder' ? hoveredTree.item.id : null;
       const shouldUpdateAll = afterPriority - beforePriority < 1;
 
       if (shouldUpdateAll) {
-        newChildren.forEach((child, i) => {
-          const sortPriority = i * 1000;
-          if (child.item.model === 'folder') {
-            const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
-            updateAnyFolder.mutate({ id: child.item.id, update: updateFolder });
-          } else if (child.item.model === 'http_request') {
-            const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-            updateAnyRequest.mutate({ id: child.item.id, update: updateRequest });
-          }
-        });
+        await Promise.all(
+          newChildren.map((child, i) => {
+            const sortPriority = i * 1000;
+            if (child.item.model === 'folder') {
+              const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
+              return updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
+            } else if (child.item.model === 'http_request') {
+              const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
+              return updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
+            }
+          }),
+        );
       } else {
         const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
         if (child.item.model === 'folder') {
           const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
-          updateAnyFolder.mutate({ id: child.item.id, update: updateFolder });
+          await updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
         } else if (child.item.model === 'http_request') {
           const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-          updateAnyRequest.mutate({ id: child.item.id, update: updateRequest });
+          await updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
         }
       }
+      setDraggingId(null);
     },
-    [hoveredId, handleClearSelected, treeParentMap, updateAnyFolder, updateAnyRequest],
+    [
+      hoveredIndex,
+      hoveredTree,
+      handleClearSelected,
+      treeParentMap,
+      updateAnyFolder,
+      updateAnyRequest,
+    ],
   );
 
   if (tree == null) {
@@ -280,12 +321,17 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         <SidebarItems
           treeParentMap={treeParentMap}
           selectedIndex={selectedIndex}
+          selectedTree={selectedTree}
+          collapsed={collapsed}
           tree={tree}
           focused={hasFocus}
+          draggingId={draggingId}
           onSelect={handleSelect}
-          hoveredId={hoveredId}
+          hoveredIndex={hoveredIndex}
+          hoveredTree={hoveredTree}
           handleMove={handleMove}
           handleEnd={handleEnd}
+          handleDragStart={handleDragStart}
         />
       </aside>
     </div>
@@ -295,55 +341,78 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 interface SidebarItemsProps {
   tree: TreeNode;
   focused: boolean;
-  selectedIndex?: number;
+  draggingId: string | null;
+  selectedIndex: number | null;
+  selectedTree: TreeNode | null;
   treeParentMap: Record<string, TreeNode>;
-  hoveredId: string | null;
+  hoveredTree: TreeNode | null;
+  hoveredIndex: number | null;
   handleMove: (id: string, side: 'above' | 'below') => void;
   handleEnd: (id: string) => void;
+  handleDragStart: (id: string) => void;
   onSelect: (requestId: string) => void;
+  collapsed: Record<string, boolean>;
 }
 
 function SidebarItems({
   tree,
   focused,
   selectedIndex,
+  selectedTree,
+  draggingId,
   onSelect,
   treeParentMap,
-  hoveredId,
+  collapsed,
+  hoveredTree,
+  hoveredIndex,
   handleEnd,
   handleMove,
+  handleDragStart,
 }: SidebarItemsProps) {
   return (
     <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr">
       {tree.children.map((child, i) => (
         <Fragment key={child.item.id}>
-          {hoveredId === child.item.id && <DropMarker />}
+          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && (
+            <DropMarker depth={tree.depth} />
+          )}
           <DraggableSidebarItem
-            selected={selectedIndex === i}
+            selected={selectedIndex === i && selectedTree?.item.id === tree.item.id}
             itemId={child.item.id}
             itemName={child.item.name}
             itemModel={child.item.model}
             onMove={handleMove}
             onEnd={handleEnd}
-            useProminentStyles={focused}
             onSelect={onSelect}
+            onDragStart={handleDragStart}
+            useProminentStyles={focused}
             className={classNames(tree.depth > 0 && 'border-l border-highlight ml-5')}
-          />
-          {child.item.model === 'folder' && (
-            <SidebarItems
-              treeParentMap={treeParentMap}
-              tree={child}
-              focused={focused}
-              selectedIndex={selectedIndex}
-              onSelect={onSelect}
-              handleMove={handleMove}
-              handleEnd={handleEnd}
-              hoveredId={hoveredId}
-            />
-          )}
+          >
+            {child.item.model === 'folder' &&
+              !collapsed[child.item.id] &&
+              draggingId !== child.item.id && (
+                <SidebarItems
+                  treeParentMap={treeParentMap}
+                  tree={child}
+                  collapsed={collapsed}
+                  draggingId={draggingId}
+                  hoveredTree={hoveredTree}
+                  hoveredIndex={hoveredIndex}
+                  focused={focused}
+                  selectedIndex={selectedIndex}
+                  selectedTree={selectedTree}
+                  onSelect={onSelect}
+                  handleMove={handleMove}
+                  handleEnd={handleEnd}
+                  handleDragStart={handleDragStart}
+                />
+              )}
+          </DraggableSidebarItem>
         </Fragment>
       ))}
-      {hoveredId === tree.children[tree.children.length - 1]?.item.id && <DropMarker />}
+      {hoveredIndex === tree.children.length && hoveredTree?.item.id === tree.item.id && (
+        <DropMarker depth={tree.depth} />
+      )}
     </VStack>
   );
 }
@@ -355,12 +424,21 @@ type SidebarItemProps = {
   itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
-  onSelect: (requestId: string) => void;
+  onSelect: (id: string) => void;
   draggable?: boolean;
+  children?: ReactNode;
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  { className, itemName, itemId, useProminentStyles, selected, onSelect }: SidebarItemProps,
+  {
+    children,
+    className,
+    itemName,
+    itemId,
+    useProminentStyles,
+    selected,
+    onSelect,
+  }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const latestResponse = useLatestResponse(itemId);
@@ -413,45 +491,49 @@ const _SidebarItem = forwardRef(function SidebarItem(
   }, [onSelect, itemId]);
 
   return (
-    <li ref={ref} className={classNames(className, 'block group/item px-2 pb-0.5')}>
-      <button
-        // tabIndex={-1} // Will prevent drag-n-drop
-        onClick={handleSelect}
-        disabled={editing}
-        onDoubleClick={handleStartEditing}
-        data-active={isActive}
-        data-selected={selected}
-        className={classNames(
-          'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
-          editing && 'ring-1 focus-within:ring-focus',
-          isActive && 'bg-highlight text-gray-800',
-          !isActive && 'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-          selected && useProminentStyles && '!bg-violet-500/20 text-gray-900',
-        )}
-      >
-        {editing ? (
-          <input
-            ref={handleFocus}
-            defaultValue={itemName}
-            className="bg-transparent outline-none w-full"
-            onBlur={handleBlur}
-            onKeyDown={handleInputKeyDown}
-          />
-        ) : (
-          <span className={classNames('truncate', !itemName && 'text-gray-400 italic')}>
-            {itemName || 'New Request'}
-          </span>
-        )}
-        {latestResponse && (
-          <div className="ml-auto">
-            {isResponseLoading(latestResponse) ? (
-              <Icon spin size="sm" icon="update" />
-            ) : (
-              <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
-            )}
-          </div>
-        )}
-      </button>
+    <li ref={ref}>
+      <div className={classNames(className, 'block group/item px-2 pb-0.5')}>
+        <button
+          // tabIndex={-1} // Will prevent drag-n-drop
+          onClick={handleSelect}
+          disabled={editing}
+          onDoubleClick={handleStartEditing}
+          data-active={isActive}
+          data-selected={selected}
+          className={classNames(
+            'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
+            editing && 'ring-1 focus-within:ring-focus',
+            isActive && 'bg-highlight text-gray-800',
+            !isActive &&
+              'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
+            selected && useProminentStyles && '!bg-violet-500/20 text-gray-900',
+          )}
+        >
+          {editing ? (
+            <input
+              ref={handleFocus}
+              defaultValue={itemName}
+              className="bg-transparent outline-none w-full"
+              onBlur={handleBlur}
+              onKeyDown={handleInputKeyDown}
+            />
+          ) : (
+            <span className={classNames('truncate', !itemName && 'text-gray-400 italic')}>
+              {itemName || 'New Request'}
+            </span>
+          )}
+          {latestResponse && (
+            <div className="ml-auto">
+              {isResponseLoading(latestResponse) ? (
+                <Icon spin size="sm" icon="update" />
+              ) : (
+                <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
+              )}
+            </div>
+          )}
+        </button>
+      </div>
+      {children}
     </li>
   );
 });
@@ -461,6 +543,8 @@ const SidebarItem = memo(_SidebarItem);
 type DraggableSidebarItemProps = SidebarItemProps & {
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
+  onDragStart: (id: string) => void;
+  children?: ReactNode;
 };
 
 type DragItem = {
@@ -474,6 +558,7 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   itemModel,
   onMove,
   onEnd,
+  onDragStart,
   ...props
 }: DraggableSidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
@@ -487,7 +572,6 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
         const clientOffset = monitor.getClientOffset();
         const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-        if (!monitor.isOver()) return;
         onMove(itemId, hoverClientY < hoverMiddleY ? 'above' : 'below');
       },
     },
@@ -497,7 +581,10 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(
     () => ({
       type: ItemTypes.REQUEST,
-      item: () => ({ id: itemId, itemName }),
+      item: () => {
+        onDragStart(itemId);
+        return { id: itemId, itemName };
+      },
       collect: (m) => ({ isDragging: m.isDragging() }),
       options: { dropEffect: 'move' },
       end: () => onEnd(itemId),
