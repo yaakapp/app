@@ -366,6 +366,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         'focus:bg-highlight focus:text-gray-900 rounded',
         item.variant === 'danger' && 'text-red-600',
       )}
+      innerClassName="!text-left"
       {...props}
     >
       <div

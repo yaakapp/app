@@ -46,10 +46,6 @@ export function Overlay({
                 variant === 'default' && 'bg-gray-600/30 dark:bg-black/30 backdrop-blur-sm',
               )}
             />
-            {/* Add region to still be able to drag the window */}
-            {variant !== 'transparent' && (
-              <div data-tauri-drag-region className="absolute top-0 left-0 right-0 h-md" />
-            )}
             <div className="bg-red-100">{children}</div>
           </motion.div>
         </FocusTrap>
