@@ -20,7 +20,6 @@ export function useCreateEnvironment() {
       const name = await prompt({
         name: 'name',
         title: 'Create Environment',
-        description: 'Enter a name for the new environment',
         label: 'Name',
         defaultValue: 'My Environment',
       });
