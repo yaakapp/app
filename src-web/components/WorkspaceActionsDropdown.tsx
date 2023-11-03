@@ -133,8 +133,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           const name = await prompt({
             name: 'name',
             label: 'Name',
-            defaultValue: '',
-            description: 'Enter a name for the new workspace',
+            defaultValue: 'My Workspace',
             title: 'Create Workspace',
           });
           createWorkspace.mutate({ name });

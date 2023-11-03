@@ -72,7 +72,15 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       ) : leftSlot ? (
         <div className="mr-1">{leftSlot}</div>
       ) : null}
-      <div className={classNames('max-w-[15em] truncate w-full text-left', innerClassName)}>{children}</div>
+      <div
+        className={classNames(
+          'max-w-[15em] truncate w-full',
+          justify === 'start' ? 'text-left' : 'text-center',
+          innerClassName,
+        )}
+      >
+        {children}
+      </div>
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
       {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
     </button>

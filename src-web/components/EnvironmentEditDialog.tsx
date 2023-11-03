@@ -16,7 +16,10 @@ import { Icon } from './core/Icon';
 import { usePrompt } from '../hooks/usePrompt';
 import { InlineCode } from './core/InlineCode';
 import { useWindowSize } from 'react-use';
-import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
+import type {
+  GenericCompletionConfig,
+  GenericCompletionOption,
+} from './core/Editor/genericCompletion';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 
@@ -25,8 +28,8 @@ interface Props {
 }
 
 export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
-  const [selectedEnvironment, setSelectedEnvironment] = useState<Environment | null>(
-    initialEnvironment,
+  const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<string | null>(
+    initialEnvironment?.id ?? null,
   );
   const environments = useEnvironments();
   const createEnvironment = useCreateEnvironment();
@@ -34,6 +37,11 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
 
   const windowSize = useWindowSize();
   const showSidebar = windowSize.width > 500;
+
+  const selectedEnvironment = useMemo(
+    () => environments.find((e) => e.id === selectedEnvironmentId) ?? null,
+    [environments, selectedEnvironmentId],
+  );
 
   return (
     <div
@@ -45,44 +53,30 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       {showSidebar && (
         <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-4 border-r border-gray-100">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
-            <Button
-              size="xs"
-              color="custom"
-              justify="start"
-              className={classNames(
-                'w-full',
-                'text-gray-600 hocus:text-gray-800 !ring-0',
-                selectedEnvironment == null && 'bg-highlightSecondary !text-gray-900',
-              )}
-              onClick={() => {
-                setSelectedEnvironment(null);
-              }}
+            <SidebarButton
+              active={selectedEnvironmentId == null}
+              onClick={() => setSelectedEnvironmentId(null)}
             >
               Base Environment
-            </Button>
-            {environments.map((e) => (
-              <Button
-                key={e.id}
-                justify="start"
-                size="xs"
-                color="custom"
-                className={classNames(
-                  'w-full',
-                  'text-gray-600 hocus:text-gray-800',
-                  selectedEnvironment?.id === e.id && 'bg-highlightSecondary !text-gray-900',
-                )}
-                onClick={() => {
-                  setSelectedEnvironment(e);
-                }}
-              >
-                {e.name}
-              </Button>
-            ))}
+            </SidebarButton>
+            <div className="ml-3 pl-2 border-l border-highlight">
+              {environments.map((e) => (
+                <SidebarButton
+                  key={e.id}
+                  active={selectedEnvironmentId === e.id}
+                  onClick={() => setSelectedEnvironmentId(e.id)}
+                  className="pl-2"
+                >
+                  {e.name}
+                </SidebarButton>
+              ))}
+            </div>
           </div>
           <Button
             size="sm"
-            className="w-full"
+            className="w-full text-center"
             color="gray"
+            justify="center"
             onClick={() => createEnvironment.mutate()}
           >
             New Environment
@@ -123,14 +117,32 @@ const EnvironmentEditor = function ({
     [updateWorkspace, updateEnvironment, environment],
   );
 
+  // Gather a list of env names from other environments, to help the user get them aligned
   const nameAutocomplete = useMemo<GenericCompletionConfig>(() => {
-    const allVariableNames = environments.flatMap((e) => e.variables.map((v) => v.name));
-    // Filter out empty strings and variables that already exist in the active environment
+    const otherEnvironments = environments.filter((e) => e.id !== environment?.id);
+    const allVariableNames =
+      environment == null
+        ? [
+            // Nothing to autocomplete if we're in the base environment
+          ]
+        : [
+            ...workspace.variables.map((v) => v.name),
+            ...otherEnvironments.flatMap((e) => e.variables.map((v) => v.name)),
+          ];
+
+    // Filter out empty strings and variables that already exist
     const variableNames = allVariableNames.filter(
       (name) => name != '' && !variables.find((v) => v.name === name),
     );
-    return { options: variableNames.map((name) => ({ label: name, type: 'constant' })) };
-  }, [environments, variables]);
+    const uniqueVariableNames = [...new Set(variableNames)];
+    const options = uniqueVariableNames.map(
+      (name): GenericCompletionOption => ({
+        label: name,
+        type: 'constant',
+      }),
+    );
+    return { options };
+  }, [environments, variables, workspace, environment]);
 
   const prompt = usePrompt();
   const items = useMemo<DropdownItem[] | null>(
@@ -198,3 +210,29 @@ const EnvironmentEditor = function ({
     </VStack>
   );
 };
+
+function SidebarButton({
+  children,
+  className,
+  active,
+  onClick,
+}: {
+  className?: string;
+  children: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={classNames(
+        className,
+        'flex text-sm text-left w-full mb-1 h-xs',
+        'text-gray-600 hocus:text-gray-800 !ring-0',
+        active && '!text-gray-900',
+      )}
+    >
+      {children}
+    </button>
+  );
+}
