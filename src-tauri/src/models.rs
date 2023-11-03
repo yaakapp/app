@@ -7,8 +7,8 @@ use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Workspace {
     pub id: String,
     pub model: String,
@@ -16,10 +16,11 @@ pub struct Workspace {
     pub updated_at: NaiveDateTime,
     pub name: String,
     pub description: String,
+    pub variables: Json<Vec<EnvironmentVariable>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Environment {
     pub id: String,
     pub workspace_id: String,
@@ -30,35 +31,44 @@ pub struct Environment {
     pub variables: Json<Vec<EnvironmentVariable>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+fn default_enabled() -> bool {
+    true
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct EnvironmentVariable {
-    #[serde(default)]
+    #[serde(default = "default_enabled")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpRequestHeader {
-    #[serde(default)]
+    #[serde(default = "default_enabled")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+fn default_http_request_method() -> String {
+    "GET".to_string()
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpRequest {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub id: String,
     pub workspace_id: String,
     pub model: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
     pub sort_priority: f64,
     pub name: String,
     pub url: String,
+    #[serde(default = "default_http_request_method")]
     pub method: String,
     pub body: Option<String>,
     pub body_type: Option<String>,
@@ -67,15 +77,15 @@ pub struct HttpRequest {
     pub headers: Json<Vec<HttpRequestHeader>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpResponseHeader {
     pub name: String,
     pub value: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
 pub struct HttpResponse {
     pub id: String,
     pub model: String,
@@ -94,8 +104,8 @@ pub struct HttpResponse {
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct KeyValue {
     pub model: String,
     pub created_at: NaiveDateTime,
@@ -153,7 +163,8 @@ pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description
+            SELECT id, model, created_at, updated_at, name, description,
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces
         "#,
     )
@@ -165,7 +176,8 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description
+            SELECT id, model, created_at, updated_at, name, description,
+                variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces WHERE id = ?
         "#,
         id,
@@ -193,27 +205,6 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
     Ok(workspace)
 }
 
-pub async fn create_workspace(
-    name: &str,
-    description: &str,
-    pool: &Pool<Sqlite>,
-) -> Result<Workspace, sqlx::Error> {
-    let id = generate_id(Some("wk"));
-    sqlx::query!(
-        r#"
-            INSERT INTO workspaces (id, name, description)
-            VALUES (?, ?, ?)
-        "#,
-        id,
-        name,
-        description,
-    )
-    .execute(pool)
-    .await?;
-
-    get_workspace(&id, pool).await
-}
-
 pub async fn find_environments(
     workspace_id: &str,
     pool: &Pool<Sqlite>,
@@ -232,30 +223,6 @@ pub async fn find_environments(
     .await
 }
 
-pub async fn create_environment(
-    workspace_id: &str,
-    name: &str,
-    variables: Vec<EnvironmentVariable>,
-    pool: &Pool<Sqlite>,
-) -> Result<Environment, sqlx::Error> {
-    let id = generate_id(Some("en"));
-    let trimmed_name = name.trim();
-    let variables_json = Json(variables);
-    sqlx::query!(
-        r#"
-            INSERT INTO environments (id, workspace_id, name, variables)
-            VALUES (?, ?, ?, ?)
-        "#,
-        id,
-        workspace_id,
-        trimmed_name,
-        variables_json,
-    )
-    .execute(pool)
-    .await?;
-    get_environment(&id, pool).await
-}
-
 pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
     let env = get_environment(id, pool).await?;
     let _ = sqlx::query!(
@@ -271,26 +238,37 @@ pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environ
     Ok(env)
 }
 
-pub async fn update_environment(
-    id: &str,
-    name: &str,
-    variables: Vec<EnvironmentVariable>,
+pub async fn upsert_environment(
     pool: &Pool<Sqlite>,
+    environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
-    let variables_json = Json(variables);
+    let id = match environment.id.as_str() {
+        "" => generate_id(Some("ev")),
+        _ => environment.id.to_string(),
+    };
+    let trimmed_name = environment.name.trim();
     sqlx::query!(
         r#"
-            UPDATE environments
-            SET (name, variables, updated_at) = (?, ?, CURRENT_TIMESTAMP)
-            WHERE id = ?;
+            INSERT INTO environments (
+                id,
+                workspace_id,
+                name,
+                variables
+            )
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
+               variables = excluded.variables
         "#,
-        name,
-        variables_json,
         id,
+        environment.workspace_id,
+        trimmed_name,
+        environment.variables,
     )
     .execute(pool)
     .await?;
-    get_environment(id, pool).await
+    get_environment(&id, pool).await
 }
 
 pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
@@ -315,60 +293,23 @@ pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environmen
 }
 
 pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let existing = get_request(id, pool).await?;
-
-    // TODO: Figure out how to make this better
-    let b2;
-    let body = match existing.body {
-        Some(b) => {
-            b2 = b;
-            Some(b2.as_str())
-        }
-        None => None,
-    };
-
-    upsert_request(
-        None,
-        existing.workspace_id.as_str(),
-        existing.name.as_str(),
-        existing.method.as_str(),
-        body,
-        existing.body_type,
-        existing.authentication.0,
-        existing.authentication_type,
-        existing.url.as_str(),
-        existing.headers.0,
-        existing.sort_priority + 0.001,
-        pool,
-    )
-    .await
+    let mut request = get_request(id, pool).await?.clone();
+    request.id = "".to_string();
+    upsert_request(pool, request).await
 }
 
 pub async fn upsert_request(
-    id: Option<&str>,
-    workspace_id: &str,
-    name: &str,
-    method: &str,
-    body: Option<&str>,
-    body_type: Option<String>,
-    authentication: HashMap<String, JsonValue>,
-    authentication_type: Option<String>,
-    url: &str,
-    headers: Vec<HttpRequestHeader>,
-    sort_priority: f64,
     pool: &Pool<Sqlite>,
+    r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
-    let generated_id;
-    let id = match id {
-        Some(v) => v,
-        None => {
-            generated_id = generate_id(Some("rq"));
-            generated_id.as_str()
-        }
+    let id = match r.id.as_str() {
+        "" => generate_id(Some("rq")),
+        _ => r.id.to_string(),
     };
-    let headers_json = Json(headers);
-    let auth_json = Json(authentication);
-    let trimmed_name = name.trim();
+    let headers_json = Json(r.headers);
+    let auth_json = Json(r.authentication);
+    let trimmed_name = r.name.trim();
+
     sqlx::query!(
         r#"
             INSERT INTO http_requests (
@@ -398,20 +339,21 @@ pub async fn upsert_request(
                sort_priority = excluded.sort_priority
         "#,
         id,
-        workspace_id,
+        r.workspace_id,
         trimmed_name,
-        url,
-        method,
-        body,
-        body_type,
+        r.url,
+        r.method,
+        r.body,
+        r.body_type,
         auth_json,
-        authentication_type,
+        r.authentication_type,
         headers_json,
-        sort_priority,
+        r.sort_priority,
     )
     .execute(pool)
     .await?;
-    get_request(id, pool).await
+
+    get_request(&id, pool).await
 }
 
 pub async fn find_requests(
@@ -552,18 +494,29 @@ pub async fn update_response_if_id(
     return update_response(response, pool).await;
 }
 
-pub async fn update_workspace(
-    workspace: Workspace,
+pub async fn upsert_workspace(
     pool: &Pool<Sqlite>,
+    workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
+    let id = match workspace.id.as_str() {
+        "" => generate_id(Some("wk")),
+        _ => workspace.id.to_string(),
+    };
     let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"
-            UPDATE workspaces SET (name, updated_at) =
-            (?, CURRENT_TIMESTAMP) WHERE id = ?;
+            INSERT INTO workspaces (id, name, description, variables)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
+               description = excluded.description,
+               variables = excluded.variables
         "#,
+        id,
         trimmed_name,
-        workspace.id,
+        workspace.description,
+        workspace.variables,
     )
     .execute(pool)
     .await?;

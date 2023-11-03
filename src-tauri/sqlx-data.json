@@ -160,16 +160,6 @@
     },
     "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE workspace_id = ?\n            ORDER BY created_at DESC\n        "
   },
-  "3ec4710d28a7f38608c96798d971217ac97788bcb639089d0c5750c0d339bc9a": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 3
-      }
-    },
-    "query": "\n            UPDATE environments\n            SET (name, variables, updated_at) = (?, ?, CURRENT_TIMESTAMP)\n            WHERE id = ?;\n        "
-  },
   "448a1d1f1866ab42c0f81fcf8eb2930bf21dfdd43ca4831bc1a198cf45ac3732": {
     "describe": {
       "columns": [],
@@ -179,6 +169,60 @@
       }
     },
     "query": "\n            DELETE FROM http_requests\n            WHERE id = ?\n        "
+  },
+  "5588db23df7f30dc75857e05395ebbcf2384e2ac0d7cb87f76d74c6d50781d7b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n            SELECT id, model, created_at, updated_at, name, description,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces\n        "
   },
   "5aa070e61995f8b1724efaa94c5f0cef5a4be6efda5d70354ad449d7d4b5aee4": {
     "describe": {
@@ -281,6 +325,16 @@
       }
     },
     "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n        "
+  },
+  "610223ad10b6e25926d486ba775a74b55625fcc4e6637d8a805d44ec3f3b9532": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "\n            INSERT INTO workspaces (id, name, description, variables)\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               description = excluded.description,\n               variables = excluded.variables\n        "
   },
   "62475fd9483fb5eda01c937949da2ef66ac7005b4be06b87aa6210d462348aca": {
     "describe": {
@@ -451,16 +505,6 @@
       }
     },
     "query": "\n            DELETE FROM workspaces\n            WHERE id = ?\n        "
-  },
-  "86e32d6a6fadf35436f19b577a659c203a8d143cb3a8d6122951c5bf54a0888d": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "\n            INSERT INTO environments (id, workspace_id, name, variables)\n            VALUES (?, ?, ?, ?)\n        "
   },
   "8947a2a90478277c42fe9b06bc1fa98197642a4d281a3dbc101be2c9c1fec36c": {
     "describe": {
@@ -648,102 +692,6 @@
     },
     "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        "
   },
-  "caf3f21bf291dfbd36446592066e96c1f83abe96f6ea9211a3e049eb9c58a8c8": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "model",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 2,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 3,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 5,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 1
-      }
-    },
-    "query": "\n            SELECT id, model, created_at, updated_at, name, description\n            FROM workspaces WHERE id = ?\n        "
-  },
-  "cea4cae52f16ec78aca9a47b17117422d4f165e5a3b308c70fd1a180382475ea": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Text"
-        },
-        {
-          "name": "model",
-          "ordinal": 1,
-          "type_info": "Text"
-        },
-        {
-          "name": "created_at",
-          "ordinal": 2,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 3,
-          "type_info": "Datetime"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "description",
-          "ordinal": 5,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "\n            SELECT id, model, created_at, updated_at, name, description\n            FROM workspaces\n        "
-  },
   "ced098adb79c0ee64e223b6e02371ef253920a2c342275de0fa9c181529a4adc": {
     "describe": {
       "columns": [
@@ -850,24 +798,68 @@
     },
     "query": "\n            INSERT INTO key_values (namespace, key, value)\n            VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               value = excluded.value\n        "
   },
-  "e0f41023d877d94b7609ce910a71bd89c4827a558654b8ae14d85e6ba86990cf": {
+  "dbe457087a7bccbca4c1d673aa8e547df04530a7f860a6ccd4e20126a7cdfa4f": {
     "describe": {
-      "columns": [],
-      "nullable": [],
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "model",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 2,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 3,
+          "type_info": "Datetime"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>",
+          "ordinal": 6,
+          "type_info": "Null"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
       "parameters": {
-        "Right": 2
+        "Right": 1
       }
     },
-    "query": "\n            UPDATE workspaces SET (name, updated_at) =\n            (?, CURRENT_TIMESTAMP) WHERE id = ?;\n        "
+    "query": "\n            SELECT id, model, created_at, updated_at, name, description,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces WHERE id = ?\n        "
   },
-  "f116d8cf9aad828135bb8c3a4c8b8e6b857ae13303989e9133a33b2d1cf20e96": {
+  "dcc2f405f8e29d0599d86bcde509187e9cc5fc647067eaa5c738cb24e2f081e5": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Right": 3
+        "Right": 4
       }
     },
-    "query": "\n            INSERT INTO workspaces (id, name, description)\n            VALUES (?, ?, ?)\n        "
+    "query": "\n            INSERT INTO environments (\n                id,\n                workspace_id,\n                name,\n                variables\n            )\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               variables = excluded.variables\n        "
   }
 }
