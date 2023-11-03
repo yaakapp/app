@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::process::exit;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
@@ -30,9 +31,9 @@ use tokio::sync::Mutex;
 use window_ext::TrafficLightWindowExt;
 
 mod models;
+mod plugin;
 mod render;
 mod window_ext;
-mod plugin;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -72,8 +73,14 @@ async fn send_ephemeral_request(
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::default();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
-    return actually_send_ephemeral_request(request, &response, &environment_id2, &app_handle, pool)
-        .await;
+    return actually_send_ephemeral_request(
+        request,
+        &response,
+        &environment_id2,
+        &app_handle,
+        pool,
+    )
+    .await;
 }
 
 async fn actually_send_ephemeral_request(
@@ -248,6 +255,25 @@ async fn actually_send_ephemeral_request(
         Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
 }
+#[tauri::command]
+async fn import_data(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    file_paths: Vec<&str>,
+    workspace_id: Option<&str>,
+) -> Result<plugin::ImportedResources, String> {
+    let pool = &*db_instance.lock().await;
+    let workspace_id2 = workspace_id.unwrap_or_default();
+    let imported = plugin::run_plugin_import(
+        &window.app_handle(),
+        pool,
+        "insomnia-importer",
+        file_paths.first().unwrap(),
+        workspace_id2,
+    )
+    .await;
+    Ok(imported)
+}
 
 #[tauri::command]
 async fn send_request(
@@ -331,9 +357,15 @@ async fn create_workspace(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
-    let created_workspace = models::create_workspace(name, "", pool)
-        .await
-        .expect("Failed to create workspace");
+    let created_workspace = models::upsert_workspace(
+        pool,
+        models::Workspace {
+            name: name.to_string(),
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -347,9 +379,17 @@ async fn create_environment(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
-    let created_environment = models::create_environment(workspace_id, name, variables, pool)
-        .await
-        .expect("Failed to create environment");
+    let created_environment = models::upsert_environment(
+        pool,
+        models::Environment {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            variables: Json(variables),
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create environment");
 
     emit_and_return(&window, "created_model", created_environment)
 }
@@ -363,20 +403,15 @@ async fn create_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-    let headers = Vec::new();
     let created_request = models::upsert_request(
-        None,
-        workspace_id,
-        name,
-        "GET",
-        None,
-        None,
-        HashMap::new(),
-        None,
-        "",
-        headers,
-        sort_priority,
         pool,
+        models::HttpRequest {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            method: "GET".to_string(),
+            sort_priority,
+            ..Default::default()
+        },
     )
     .await
     .expect("Failed to create request");
@@ -405,7 +440,7 @@ async fn update_workspace(
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
 
-    let updated_workspace = models::update_workspace(workspace, pool)
+    let updated_workspace = models::upsert_workspace(pool, workspace)
         .await
         .expect("Failed to update request");
 
@@ -420,14 +455,9 @@ async fn update_environment(
 ) -> Result<models::Environment, String> {
     let pool = &*db_instance.lock().await;
 
-    let updated_environment = models::update_environment(
-        environment.id.as_str(),
-        environment.name.as_str(),
-        environment.variables.0,
-        pool,
-    )
-    .await
-    .expect("Failed to update request");
+    let updated_environment = models::upsert_environment(pool, environment)
+        .await
+        .expect("Failed to update environment");
 
     emit_and_return(&window, "updated_model", updated_environment)
 }
@@ -439,35 +469,9 @@ async fn update_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
     let pool = &*db_instance.lock().await;
-
-    // TODO: Figure out how to make this better
-    let b2;
-    let body = match request.body {
-        Some(b) => {
-            b2 = b;
-            Some(b2.as_str())
-        }
-        None => None,
-    };
-
-    // TODO: Figure out how to make this better
-    let updated_request = models::upsert_request(
-        Some(request.id.as_str()),
-        request.workspace_id.as_str(),
-        request.name.as_str(),
-        request.method.as_str(),
-        body,
-        request.body_type,
-        request.authentication.0,
-        request.authentication_type,
-        request.url.as_str(),
-        request.headers.0,
-        request.sort_priority,
-        pool,
-    )
-    .await
-    .expect("Failed to update request");
-
+    let updated_request = models::upsert_request(pool, request)
+        .await
+        .expect("Failed to update request");
     emit_and_return(&window, "updated_model", updated_request)
 }
 
@@ -598,10 +602,15 @@ async fn list_workspaces(
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
-        let workspace =
-            models::create_workspace("My Project", "This is the default workspace", pool)
-                .await
-                .expect("Failed to create workspace");
+        let workspace = models::upsert_workspace(
+            pool,
+            models::Workspace {
+                name: "My Project".to_string(),
+                ..Default::default()
+            },
+        )
+        .await
+        .expect("Failed to create workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -641,6 +650,7 @@ fn main() {
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
             println!("Connecting to database at {}", url);
+
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
                     .connect(url.as_str())
@@ -648,11 +658,43 @@ fn main() {
                     .expect("Failed to connect to database");
 
                 // Setup the DB handle
-                let m = Mutex::new(pool);
+                let m = Mutex::new(pool.clone());
                 migrate_db(app.handle(), &m)
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
+
+                // TODO: Move this somewhere better
+                match app.get_cli_matches() {
+                    Ok(matches) => {
+                        let cmd = matches.subcommand.unwrap_or_default();
+                        if cmd.name == "import" {
+                            let arg_file = cmd
+                                .matches
+                                .args
+                                .get("file")
+                                .unwrap()
+                                .value
+                                .as_str()
+                                .unwrap();
+                            plugin::run_plugin_import(
+                                &app.handle(),
+                                &pool,
+                                "insomnia-importer",
+                                arg_file,
+                                "wk_WN8Nrm2Awm",
+                            )
+                            .await;
+                            exit(0);
+                        } else if cmd.name == "hello" {
+                            plugin::run_plugin_hello(&app.handle(), "hello-world");
+                            exit(0);
+                        }
+                    }
+                    Err(e) => {
+                        println!("Nothing found: {}", e);
+                    }
+                }
 
                 Ok(())
             })
@@ -671,6 +713,7 @@ fn main() {
             get_environment,
             get_request,
             get_workspace,
+            import_data,
             list_environments,
             list_requests,
             list_responses,
@@ -690,7 +733,6 @@ fn main() {
                 let w = create_window(app_handle, None);
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
-                plugin::test_plugins(&app_handle);
             }
 
             // ExitRequested { api, .. } => {

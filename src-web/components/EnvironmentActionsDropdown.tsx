@@ -10,7 +10,6 @@ import { useDialog } from './DialogContext';
 import { EnvironmentEditDialog } from './EnvironmentEditDialog';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
-import { usePrompt } from '../hooks/usePrompt';
 
 type Props = {
   className?: string;
@@ -23,15 +22,14 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   const activeEnvironment = useActiveEnvironment();
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
-  const prompt = usePrompt();
   const routes = useAppRoutes();
 
   const showEnvironmentDialog = useCallback(() => {
     dialog.show({
       title: 'Manage Environments',
-      render: () => <EnvironmentEditDialog />,
+      render: () => <EnvironmentEditDialog initialEnvironment={activeEnvironment} />,
     });
-  }, [dialog]);
+  }, [dialog, activeEnvironment]);
 
   const items: DropdownItem[] = useMemo(
     () =>
