@@ -24,12 +24,13 @@ use std::io::Write;
 use std::process::exit;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
-use tauri::{AppHandle, Menu, MenuItem, RunEvent, State, Submenu, Window, WindowUrl, Wry};
+use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 use window_ext::TrafficLightWindowExt;
 
+mod menu;
 mod models;
 mod plugin;
 mod render;
@@ -750,70 +751,31 @@ fn is_dev() -> bool {
 }
 
 fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
-    let default_menu = Menu::os_default("Yaak".to_string().as_str());
-    let mut test_menu = Menu::new()
-        .add_item(
-            CustomMenuItem::new("send_request".to_string(), "Send Request")
-                .accelerator("CmdOrCtrl+r"),
-        )
-        .add_item(
-            CustomMenuItem::new("zoom_reset".to_string(), "Zoom to Actual Size")
-                .accelerator("CmdOrCtrl+0"),
-        )
-        .add_item(
-            CustomMenuItem::new("zoom_in".to_string(), "Zoom In").accelerator("CmdOrCtrl+Plus"),
-        )
-        .add_item(
-            CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"),
-        )
-        .add_item(
-            CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
-                .accelerator("CmdOrCtrl+b"),
-        )
-        .add_item(
-            CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
-        )
-        .add_item(
-            CustomMenuItem::new("new_request".to_string(), "New Request")
-                .accelerator("CmdOrCtrl+n"),
-        )
-        .add_item(
-            CustomMenuItem::new("toggle_settings".to_string(), "Toggle Settings")
-                .accelerator("CmdOrCtrl+,"),
-        )
-        .add_item(
-            CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
-                .accelerator("CmdOrCtrl+d"),
-        )
-        .add_item(
-            CustomMenuItem::new("focus_sidebar".to_string(), "Focus Sidebar")
-                .accelerator("CmdOrCtrl+1"),
-        )
-        .add_item(CustomMenuItem::new("new_window".to_string(), "New Window"));
+    let mut app_menu = menu::os_default("Yaak".to_string().as_str());
     if is_dev() {
-        test_menu = test_menu
-            .add_native_item(MenuItem::Separator)
-            .add_item(
-                CustomMenuItem::new("refresh".to_string(), "Refresh")
-                    .accelerator("CmdOrCtrl + Shift + r"),
-            )
-            .add_item(
-                CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
-                    .accelerator("CmdOrCtrl + Option + i"),
-            );
+        let submenu = Submenu::new(
+            "Developer",
+            Menu::new()
+                .add_item(
+                    CustomMenuItem::new("refresh".to_string(), "Refresh")
+                        .accelerator("CmdOrCtrl + Shift + r"),
+                )
+                .add_item(
+                    CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
+                        .accelerator("CmdOrCtrl + Option + i"),
+                ),
+        );
+        app_menu = app_menu.add_submenu(submenu);
     }
-
-    let submenu = Submenu::new("Test Menu", test_menu);
 
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}", window_num);
-    let menu = default_menu.add_submenu(submenu);
     let mut win_builder = tauri::WindowBuilder::new(
         handle,
         window_id,
         WindowUrl::App(url.unwrap_or_default().into()),
     )
-    .menu(menu)
+    .menu(app_menu)
     .fullscreen(false)
     .resizable(true)
     .inner_size(1100.0, 600.0)
