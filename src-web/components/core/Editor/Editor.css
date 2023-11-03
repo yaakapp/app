@@ -58,7 +58,7 @@
       -webkit-text-security: none;
 
       &.placeholder-widget-error {
-        @apply bg-red-300/40 border-red-300 border-opacity-40;
+        @apply bg-red-300/40 border-red-300/80 border-opacity-40 hover:border-red-300 hover:bg-red-300/50;
       }
     }
   }

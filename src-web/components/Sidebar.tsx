@@ -13,7 +13,7 @@ import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
-import type { HttpRequest } from '../lib/models';
+import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Icon } from './core/Icon';
 import { StatusTag } from './core/StatusTag';
@@ -21,6 +21,9 @@ import { DropMarker } from './DropMarker';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { VStack } from './core/Stacks';
+import { useFolders } from '../hooks/useFolders';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 
 interface Props {
   className?: string;
@@ -30,27 +33,60 @@ enum ItemTypes {
   REQUEST = 'request',
 }
 
+interface TreeNode {
+  item: Workspace | Folder | HttpRequest;
+  children: TreeNode[];
+  depth: number;
+}
+
 export const Sidebar = memo(function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const createRequest = useCreateRequest();
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequestId = useActiveRequestId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const unorderedRequests = useRequests();
+  const requests = useRequests();
+  const folders = useFolders();
   const deleteAnyRequest = useDeleteAnyRequest();
+  const activeWorkspace = useActiveWorkspace();
   const routes = useAppRoutes();
-  const requests = useMemo(
-    () => [...unorderedRequests].sort((a, b) => a.sortPriority - b.sortPriority),
-    [unorderedRequests],
-  );
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedIndex, setSelectedIndex] = useState<number>();
+
+  const { tree, treeParentMap } = useMemo<{
+    tree: TreeNode | null;
+    treeParentMap: Record<string, TreeNode>;
+  }>(() => {
+    const treeParentMap: Record<string, TreeNode> = {};
+    if (activeWorkspace == null) {
+      return { tree: null, treeParentMap };
+    }
+
+    // Put requests and folders into a tree structure
+    const next = (node: TreeNode): TreeNode => {
+      const childItems = [...requests, ...folders].filter((f) =>
+        node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
+      );
+
+      childItems.sort((a, b) => a.sortPriority - b.sortPriority);
+      const depth = node.depth + 1;
+      for (const item of childItems) {
+        treeParentMap[item.id] = node;
+        node.children.push(next({ item, children: [], depth }));
+      }
+      return node;
+    };
+
+    const tree = next({ item: activeWorkspace, children: [], depth: 0 });
+    return { tree, treeParentMap };
+  }, [activeWorkspace, requests, folders]);
 
   // TODO: Move these listeners to a central place
   useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
     (forcedIndex?: number) => {
+      // TODO: Use tree to find index
       const index = forcedIndex ?? requests.findIndex((r) => r.id === activeRequestId);
       if (index < 0) return;
       setSelectedIndex(index >= 0 ? index : undefined);
@@ -62,6 +98,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   const handleSelect = useCallback(
     (requestId: string) => {
+      // TODO: Use tree to find index
       const index = requests.findIndex((r) => r.id === requestId);
       const request = requests[index];
       if (!request) return;
@@ -70,10 +107,10 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         workspaceId: request.workspaceId,
         environmentId: activeEnvironmentId ?? undefined,
       });
-      setSelectedIndex(index);
-      focusActiveRequest(index);
+      // setSelectedIndex(index);
+      // focusActiveRequest(index);
     },
-    [focusActiveRequest, requests, routes, activeEnvironmentId],
+    [requests, routes, activeEnvironmentId],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -151,6 +188,80 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     undefined,
     [hasFocus, requests, selectedIndex],
   );
+  const updateAnyRequest = useUpdateAnyRequest();
+  const updateAnyFolder = useUpdateAnyFolder();
+
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
+    (id, side) => {
+      const hoveredTree = treeParentMap[id];
+      const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
+      const target = hoveredTree?.children[dragIndex + (side === 'above' ? 0 : 1)]?.item;
+      console.log('SET HOVERED ID', target?.id);
+      setHoveredId(target?.id ?? null);
+    },
+    [treeParentMap, setHoveredId],
+  );
+
+  const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
+    (itemId) => {
+      if (hoveredId === null) return;
+      setHoveredId(null);
+      handleClearSelected();
+
+      const targetTree = treeParentMap[hoveredId] ?? null;
+      if (targetTree == null) {
+        return;
+      }
+
+      const parentTree = treeParentMap[itemId] ?? null;
+      const index = parentTree?.children.findIndex((n) => n.item.id === itemId) ?? -1;
+      const child = parentTree?.children[index ?? -1];
+      if (child === undefined || parentTree == null) return;
+
+      const newChildren = targetTree.children.filter((c) => c.item.id !== itemId);
+      const hoveredIndex = newChildren.findIndex((c) => c.item.id === hoveredId) ?? null;
+      if (hoveredIndex > index) newChildren.splice(hoveredIndex - 1, 0, child);
+      else newChildren.splice(hoveredIndex, 0, child);
+
+      // Do a simple find because the math is too hard
+      const newIndex = newChildren.findIndex((r) => r.item.id === itemId) ?? 0;
+      const prev = newChildren[newIndex - 1]?.item;
+      const next = newChildren[newIndex + 1]?.item;
+      const beforePriority = prev == null || prev.model === 'workspace' ? 0 : prev.sortPriority;
+      const afterPriority = next == null || next.model === 'workspace' ? 0 : next.sortPriority;
+
+      const folderId = targetTree.item.model === 'folder' ? targetTree.item.id : null;
+      const shouldUpdateAll = afterPriority - beforePriority < 1;
+
+      if (shouldUpdateAll) {
+        newChildren.forEach((child, i) => {
+          const sortPriority = i * 1000;
+          if (child.item.model === 'folder') {
+            const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
+            updateAnyFolder.mutate({ id: child.item.id, update: updateFolder });
+          } else if (child.item.model === 'http_request') {
+            const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
+            updateAnyRequest.mutate({ id: child.item.id, update: updateRequest });
+          }
+        });
+      } else {
+        const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
+        if (child.item.model === 'folder') {
+          const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
+          updateAnyFolder.mutate({ id: child.item.id, update: updateFolder });
+        } else if (child.item.model === 'http_request') {
+          const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
+          updateAnyRequest.mutate({ id: child.item.id, update: updateRequest });
+        }
+      }
+    },
+    [hoveredId, handleClearSelected, treeParentMap, updateAnyFolder, updateAnyRequest],
+  );
+
+  if (tree == null) {
+    return null;
+  }
 
   return (
     <div aria-hidden={hidden} className="h-full">
@@ -165,11 +276,14 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         )}
       >
         <SidebarItems
+          treeParentMap={treeParentMap}
           selectedIndex={selectedIndex}
-          requests={requests}
+          tree={tree}
           focused={hasFocus}
           onSelect={handleSelect}
-          onClearSelected={handleClearSelected}
+          hoveredId={hoveredId}
+          handleMove={handleMove}
+          handleEnd={handleEnd}
         />
       </aside>
     </div>
@@ -177,110 +291,66 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 });
 
 interface SidebarItemsProps {
-  requests: HttpRequest[];
+  tree: TreeNode;
   focused: boolean;
   selectedIndex?: number;
+  treeParentMap: Record<string, TreeNode>;
+  hoveredId: string | null;
+  handleMove: (id: string, side: 'above' | 'below') => void;
+  handleEnd: (id: string) => void;
   onSelect: (requestId: string) => void;
-  onClearSelected: () => void;
 }
 
 function SidebarItems({
-  requests,
+  tree,
   focused,
   selectedIndex,
   onSelect,
-  onClearSelected,
+  treeParentMap,
+  hoveredId,
+  handleEnd,
+  handleMove,
 }: SidebarItemsProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const updateRequest = useUpdateAnyRequest();
-
-  const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
-    (id, side) => {
-      const dragIndex = requests.findIndex((r) => r.id === id);
-      setHoveredIndex(side === 'above' ? dragIndex : dragIndex + 1);
-    },
-    [requests],
-  );
-
-  const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
-    (requestId) => {
-      if (hoveredIndex === null) return;
-      setHoveredIndex(null);
-      onClearSelected();
-
-      const index = requests.findIndex((r) => r.id === requestId);
-      const request = requests[index];
-      if (request === undefined) return;
-
-      const newRequests = requests.filter((r) => r.id !== requestId);
-      if (hoveredIndex > index) newRequests.splice(hoveredIndex - 1, 0, request);
-      else newRequests.splice(hoveredIndex, 0, request);
-
-      // Do a simple find because the math is too hard
-      const newIndex = newRequests.findIndex((r) => r.id === requestId) ?? 0;
-      const beforePriority = newRequests[newIndex - 1]?.sortPriority ?? 0;
-      const afterPriority = newRequests[newIndex + 1]?.sortPriority ?? 0;
-
-      const shouldUpdateAll = afterPriority - beforePriority < 1;
-      if (shouldUpdateAll) {
-        newRequests.forEach(({ id }, i) => {
-          const sortPriority = i * 1000;
-          const update = (r: HttpRequest) => ({ ...r, sortPriority });
-          updateRequest.mutate({ id, update });
-        });
-      } else {
-        const sortPriority = afterPriority - (afterPriority - beforePriority) / 2;
-        const update = (r: HttpRequest) => ({ ...r, sortPriority });
-        updateRequest.mutate({ id: requestId, update });
-      }
-    },
-    [hoveredIndex, requests, updateRequest, onClearSelected],
-  );
-
   return (
     <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr">
-      {requests.map((r, i) => (
-        <Fragment key={r.id}>
-          {hoveredIndex === i && <DropMarker />}
+      {tree.children.map((child, i) => (
+        <Fragment key={child.item.id}>
+          {hoveredId === child.item.id && <DropMarker />}
           <DraggableSidebarItem
-            key={r.id}
             selected={selectedIndex === i}
-            requestId={r.id}
-            requestName={r.name}
+            itemId={child.item.id}
+            itemName={child.item.name}
+            itemModel={child.item.model}
             onMove={handleMove}
             onEnd={handleEnd}
             useProminentStyles={focused}
             onSelect={onSelect}
+            className={classNames(tree.depth > 0 && 'border-l border-highlight ml-5')}
           />
+          {child.item.model === 'folder' && (
+            <SidebarItems
+              treeParentMap={treeParentMap}
+              tree={child}
+              focused={focused}
+              selectedIndex={selectedIndex}
+              onSelect={onSelect}
+              handleMove={handleMove}
+              handleEnd={handleEnd}
+              hoveredId={hoveredId}
+            />
+          )}
         </Fragment>
       ))}
-      {hoveredIndex === requests.length && <DropMarker />}
-      <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr" className="pl-3">
-        {requests.slice(0, 1).map((r, i) => (
-          <Fragment key={r.id}>
-            {hoveredIndex === i && <DropMarker />}
-            <DraggableSidebarItem
-              key={r.id}
-              selected={selectedIndex === i}
-              requestId={r.id}
-              requestName={r.name}
-              onMove={handleMove}
-              onEnd={handleEnd}
-              useProminentStyles={focused}
-              onSelect={onSelect}
-            />
-          </Fragment>
-        ))}
-        {hoveredIndex === requests.length && <DropMarker />}
-      </VStack>
+      {hoveredId === tree.children[tree.children.length - 1]?.item.id && <DropMarker />}
     </VStack>
   );
 }
 
 type SidebarItemProps = {
   className?: string;
-  requestId: string;
-  requestName: string;
+  itemId: string;
+  itemName: string;
+  itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
   onSelect: (requestId: string) => void;
@@ -288,14 +358,14 @@ type SidebarItemProps = {
 };
 
 const _SidebarItem = forwardRef(function SidebarItem(
-  { className, requestName, requestId, useProminentStyles, selected, onSelect }: SidebarItemProps,
+  { className, itemName, itemId, useProminentStyles, selected, onSelect }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
-  const latestResponse = useLatestResponse(requestId);
-  const updateRequest = useUpdateRequest(requestId);
+  const latestResponse = useLatestResponse(itemId);
+  const updateRequest = useUpdateRequest(itemId);
   const [editing, setEditing] = useState<boolean>(false);
   const activeRequestId = useActiveRequestId();
-  const isActive = activeRequestId === requestId;
+  const isActive = activeRequestId === itemId;
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
@@ -337,8 +407,8 @@ const _SidebarItem = forwardRef(function SidebarItem(
   );
 
   const handleSelect = useCallback(() => {
-    onSelect(requestId);
-  }, [onSelect, requestId]);
+    onSelect(itemId);
+  }, [onSelect, itemId]);
 
   return (
     <li ref={ref} className={classNames(className, 'block group/item px-2 pb-0.5')}>
@@ -360,14 +430,14 @@ const _SidebarItem = forwardRef(function SidebarItem(
         {editing ? (
           <input
             ref={handleFocus}
-            defaultValue={requestName}
+            defaultValue={itemName}
             className="bg-transparent outline-none w-full"
             onBlur={handleBlur}
             onKeyDown={handleInputKeyDown}
           />
         ) : (
-          <span className={classNames('truncate', !requestName && 'text-gray-400 italic')}>
-            {requestName || 'New Request'}
+          <span className={classNames('truncate', !itemName && 'text-gray-400 italic')}>
+            {itemName || 'New Request'}
           </span>
         )}
         {latestResponse && (
@@ -393,12 +463,13 @@ type DraggableSidebarItemProps = SidebarItemProps & {
 
 type DragItem = {
   id: string;
-  requestName: string;
+  itemName: string;
 };
 
 const DraggableSidebarItem = memo(function DraggableSidebarItem({
-  requestName,
-  requestId,
+  itemName,
+  itemId,
+  itemModel,
   onMove,
   onEnd,
   ...props
@@ -414,7 +485,8 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
         const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
         const clientOffset = monitor.getClientOffset();
         const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-        onMove(requestId, hoverClientY < hoverMiddleY ? 'above' : 'below');
+        if (!monitor.isOver()) return;
+        onMove(itemId, hoverClientY < hoverMiddleY ? 'above' : 'below');
       },
     },
     [onMove],
@@ -423,24 +495,24 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
   const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(
     () => ({
       type: ItemTypes.REQUEST,
-      item: () => ({ id: requestId, requestName }),
+      item: () => ({ id: itemId, itemName }),
       collect: (m) => ({ isDragging: m.isDragging() }),
       options: { dropEffect: 'move' },
-      end: () => onEnd(requestId),
+      end: () => onEnd(itemId),
     }),
     [onEnd],
   );
 
-  connectDrag(ref);
-  connectDrop(ref);
+  connectDrag(connectDrop(ref));
 
   return (
     <SidebarItem
       ref={ref}
       draggable
       className={classNames(isDragging && 'opacity-20')}
-      requestName={requestName}
-      requestId={requestId}
+      itemName={itemName}
+      itemId={itemId}
+      itemModel={itemModel}
       {...props}
     />
   );
