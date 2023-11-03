@@ -3,14 +3,16 @@ import React, { memo } from 'react';
 
 interface Props {
   className?: string;
+  depth: number;
 }
 
 export const DropMarker = memo(
-  function DropMarker({ className }: Props) {
+  function DropMarker({ className, depth }: Props) {
     return (
       <div
         className={classNames(
           className,
+          depth > 0 ? 'ml-5' : 'ml-0',
           'relative w-full h-0 overflow-visible pointer-events-none',
         )}
       >
