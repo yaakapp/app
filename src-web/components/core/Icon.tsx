@@ -4,6 +4,7 @@ import {
   CheckboxIcon,
   CheckIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   ClockIcon,
   CodeIcon,
   ColorWheelIcon,
@@ -12,6 +13,7 @@ import {
   DividerHorizontalIcon,
   DotsHorizontalIcon,
   DotsVerticalIcon,
+  DownloadIcon,
   DragHandleDots2Icon,
   EyeClosedIcon,
   EyeOpenIcon,
@@ -34,7 +36,6 @@ import {
   TriangleDownIcon,
   TriangleLeftIcon,
   TriangleRightIcon,
-  DownloadIcon,
   UpdateIcon,
 } from '@radix-ui/react-icons';
 import classNames from 'classnames';
@@ -50,6 +51,7 @@ const icons = {
   checkbox: CheckboxIcon,
   clock: ClockIcon,
   chevronDown: ChevronDownIcon,
+  chevronRight: ChevronRightIcon,
   code: CodeIcon,
   colorWheel: ColorWheelIcon,
   copy: CopyIcon,
