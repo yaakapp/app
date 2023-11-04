@@ -8,8 +8,10 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
+import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useFolders } from '../hooks/useFolders';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
@@ -20,7 +22,9 @@ import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
+import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
@@ -386,7 +390,17 @@ function SidebarItems({
   handleDragStart,
 }: SidebarItemsProps) {
   return (
-    <VStack as="ul" role="menu" aria-orientation="vertical" dir="ltr">
+    <VStack
+      as="ul"
+      role="menu"
+      aria-orientation="vertical"
+      dir="ltr"
+      className={classNames(
+        tree.depth > 0 && 'border-l border-highlight',
+        tree.depth === 0 && 'ml-0',
+        tree.depth >= 1 && 'ml-[1.3em]',
+      )}
+    >
       {tree.children.map((child, i) => (
         <Fragment key={child.item.id}>
           {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && (
@@ -403,7 +417,6 @@ function SidebarItems({
             onDragStart={handleDragStart}
             useProminentStyles={focused}
             collapsed={collapsed}
-            className={classNames(tree.depth > 0 && 'border-l border-highlight ml-5')}
           >
             {child.item.model === 'folder' &&
               !collapsed[child.item.id] &&
@@ -461,6 +474,9 @@ const SidebarItem = forwardRef(function SidebarItem(
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
+  const createRequest = useCreateRequest();
+  const createFolder = useCreateFolder();
+  const deleteRequest = useDeleteFolder(itemId);
   const latestResponse = useLatestResponse(itemId);
   const updateRequest = useUpdateRequest(itemId);
   const [editing, setEditing] = useState<boolean>(false);
@@ -515,7 +531,37 @@ const SidebarItem = forwardRef(function SidebarItem(
 
   return (
     <li ref={ref}>
-      <div className={classNames(className, 'block group/item px-2 pb-0.5')}>
+      <div className={classNames(className, 'block relative group/item px-2 pb-0.5')}>
+        {itemModel === 'folder' && (
+          <Dropdown
+            items={[
+              {
+                key: 'createRequest',
+                label: 'New Request',
+                onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
+              },
+              {
+                key: 'createFolder',
+                label: 'New Folder',
+                onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
+              },
+              { type: 'separator' },
+              {
+                key: 'deleteFolder',
+                label: 'Delete',
+                variant: 'danger',
+                onSelect: () => deleteRequest.mutate(),
+              },
+            ]}
+          >
+            <IconButton
+              title="Folder options"
+              size="xs"
+              icon="dotsV"
+              className="ml-auto !bg-transparent absolute right-2 opacity-20 group-hover/item:opacity-70 transition-opacity"
+            />
+          </Dropdown>
+        )}
         <button
           // tabIndex={-1} // Will prevent drag-n-drop
           onClick={handleSelect}
@@ -535,8 +581,11 @@ const SidebarItem = forwardRef(function SidebarItem(
           {itemModel === 'folder' && (
             <Icon
               size="sm"
-              icon={collapsed[itemId] ? 'chevronRight' : 'chevronDown'}
-              className="-ml-0.5 mr-2"
+              icon="chevronRight"
+              className={classNames(
+                '-ml-0.5 mr-2 transition-transform',
+                !collapsed[itemId] && 'transform rotate-90',
+              )}
             />
           )}
           {editing ? (

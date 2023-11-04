@@ -405,6 +405,7 @@ async fn create_request(
     workspace_id: &str,
     name: &str,
     sort_priority: f64,
+    folder_id: Option<&str>,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpRequest, String> {
@@ -415,6 +416,7 @@ async fn create_request(
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
             method: "GET".to_string(),
+            folder_id: folder_id.map(|s| s.to_string()),
             sort_priority,
             ..Default::default()
         },
