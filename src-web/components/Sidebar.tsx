@@ -51,17 +51,21 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const activeWorkspace = useActiveWorkspace();
   const routes = useAppRoutes();
   const [hasFocus, setHasFocus] = useState<boolean>(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTree, setSelectedTree] = useState<TreeNode | null>(null);
 
-  const { tree, treeParentMap } = useMemo<{
+  const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: TreeNode | null;
     treeParentMap: Record<string, TreeNode>;
+    selectableRequests: { id: string; index: number; tree: TreeNode }[];
   }>(() => {
     const treeParentMap: Record<string, TreeNode> = {};
+    const selectableRequests: { id: string; index: number; tree: TreeNode }[] = [];
     if (activeWorkspace == null) {
-      return { tree: null, treeParentMap };
+      return { tree: null, treeParentMap, selectableRequests };
     }
+
+    let selectableRequestIndex = 0;
 
     // Put requests and folders into a tree structure
     const next = (node: TreeNode): TreeNode => {
@@ -74,27 +78,31 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       for (const item of childItems) {
         treeParentMap[item.id] = node;
         node.children.push(next({ item, children: [], depth }));
+        if (item.model === 'http_request') {
+          selectableRequests.push({ id: item.id, index: selectableRequestIndex++, tree: node });
+        }
       }
       return node;
     };
 
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
-    return { tree, treeParentMap };
+
+    return { tree, treeParentMap, selectableRequests };
   }, [activeWorkspace, requests, folders]);
 
   // TODO: Move these listeners to a central place
   useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
-    (forced?: { index: number; tree: TreeNode }) => {
+    (forced?: { id: string; tree: TreeNode }) => {
       const tree = forced?.tree ?? treeParentMap[activeRequestId ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
-      const index = forced?.index ?? children.findIndex((m) => m.item.id === activeRequestId);
-      if (index < 0) {
+      const id = forced?.id ?? children.find((m) => m.item.id === activeRequestId)?.item.id ?? null;
+      if (id == null) {
         return;
       }
 
-      setSelectedIndex(index >= 0 ? index : null);
+      setSelectedId(id);
       setSelectedTree(tree);
       setHasFocus(true);
       sidebarRef.current?.focus();
@@ -106,8 +114,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     (id: string) => {
       const tree = treeParentMap[id ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
-      const index = children.findIndex((m) => m.item.id === id) ?? -99;
-      const node = children[index] ?? null;
+      const node = children.find((m) => m.item.id === id) ?? null;
       if (node == null || tree == null || node.item.model === 'workspace') {
         return;
       }
@@ -122,18 +129,18 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           workspaceId: item.workspaceId,
           environmentId: activeEnvironmentId ?? undefined,
         });
-        setSelectedIndex(index);
+        setSelectedId(id);
         setSelectedTree(tree);
-        focusActiveRequest({ index, tree });
+        focusActiveRequest({ id, tree });
       }
     },
     [treeParentMap, routes, activeEnvironmentId, focusActiveRequest],
   );
 
   const handleClearSelected = useCallback(() => {
-    setSelectedIndex(null);
+    setSelectedId(null);
     setSelectedTree(null);
-  }, [setSelectedIndex]);
+  }, []);
 
   const handleFocus = useCallback(() => {
     if (hasFocus) return;
@@ -147,11 +154,11 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       if (!hasFocus) return;
       e.preventDefault();
 
-      const selectedRequest = requests[selectedIndex ?? -1];
-      if (selectedRequest === undefined) return;
-      deleteAnyRequest.mutate(selectedRequest.id);
+      const selected = selectableRequests.find((r) => r.id === selectedId);
+      if (selected == null) return;
+      deleteAnyRequest.mutate(selected.id);
     },
-    [deleteAnyRequest, hasFocus, requests, selectedIndex],
+    [deleteAnyRequest, hasFocus, selectableRequests, selectedId],
   );
 
   useKeyPressEvent('Backspace', handleDeleteKey);
@@ -163,8 +170,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       if (hidden || hasFocus) return;
       // Select 0 index on focus if none selected
       focusActiveRequest(
-        selectedTree != null && selectedIndex != null
-          ? { index: selectedIndex ?? 0, tree: selectedTree }
+        selectedTree != null && selectedId != null
+          ? { id: selectedId, tree: selectedTree }
           : undefined,
       );
     },
@@ -173,12 +180,15 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   useKeyPressEvent('Enter', (e) => {
     if (!hasFocus) return;
-    const request = requests[selectedIndex ?? -1];
-    if (!request || request.id === activeRequestId) return;
+    const selected = selectableRequests.find((r) => r.id === selectedId);
+    if (!selected || selected.id === activeRequestId || activeWorkspace == null) {
+      return;
+    }
+
     e.preventDefault();
     routes.navigate('request', {
-      requestId: request.id,
-      workspaceId: request.workspaceId,
+      requestId: selected.id,
+      workspaceId: activeWorkspace?.id,
       environmentId: activeEnvironmentId ?? undefined,
     });
   });
@@ -187,28 +197,34 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     'ArrowUp',
     () => {
       if (!hasFocus) return;
-      let newIndex = (selectedIndex ?? requests.length) - 1;
-      if (newIndex < 0) {
-        newIndex = requests.length - 1;
+      const i = selectableRequests.findIndex((r) => r.id === selectedId);
+      const newSelectable = selectableRequests[i - 1];
+      if (newSelectable == null) {
+        return;
       }
-      setSelectedIndex(newIndex);
+
+      setSelectedId(newSelectable.id);
+      setSelectedTree(newSelectable.tree);
     },
     undefined,
-    [hasFocus, requests, selectedIndex],
+    [hasFocus, selectableRequests, selectedId, setSelectedId, setSelectedTree],
   );
 
   useKey(
     'ArrowDown',
     () => {
       if (!hasFocus) return;
-      let newIndex = (selectedIndex ?? -1) + 1;
-      if (newIndex > requests.length - 1) {
-        newIndex = 0;
+      const i = selectableRequests.findIndex((r) => r.id === selectedId);
+      const newSelectable = selectableRequests[i + 1];
+      if (newSelectable == null) {
+        return;
       }
-      setSelectedIndex(newIndex);
+
+      setSelectedId(newSelectable.id);
+      setSelectedTree(newSelectable.tree);
     },
     undefined,
-    [hasFocus, requests, selectedIndex],
+    [hasFocus, selectableRequests, selectedId, setSelectedId, setSelectedTree],
   );
   const updateAnyRequest = useUpdateAnyRequest();
   const updateAnyFolder = useUpdateAnyFolder();
@@ -320,7 +336,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       >
         <SidebarItems
           treeParentMap={treeParentMap}
-          selectedIndex={selectedIndex}
+          selectedId={selectedId}
           selectedTree={selectedTree}
           collapsed={collapsed}
           tree={tree}
@@ -342,7 +358,7 @@ interface SidebarItemsProps {
   tree: TreeNode;
   focused: boolean;
   draggingId: string | null;
-  selectedIndex: number | null;
+  selectedId: string | null;
   selectedTree: TreeNode | null;
   treeParentMap: Record<string, TreeNode>;
   hoveredTree: TreeNode | null;
@@ -357,7 +373,7 @@ interface SidebarItemsProps {
 function SidebarItems({
   tree,
   focused,
-  selectedIndex,
+  selectedId,
   selectedTree,
   draggingId,
   onSelect,
@@ -377,7 +393,7 @@ function SidebarItems({
             <DropMarker depth={tree.depth} />
           )}
           <DraggableSidebarItem
-            selected={selectedIndex === i && selectedTree?.item.id === tree.item.id}
+            selected={selectedId === child.item.id}
             itemId={child.item.id}
             itemName={child.item.name}
             itemModel={child.item.model}
@@ -399,7 +415,7 @@ function SidebarItems({
                   hoveredTree={hoveredTree}
                   hoveredIndex={hoveredIndex}
                   focused={focused}
-                  selectedIndex={selectedIndex}
+                  selectedId={selectedId}
                   selectedTree={selectedTree}
                   onSelect={onSelect}
                   handleMove={handleMove}
