@@ -4,26 +4,26 @@ import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useSta
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
+import { useFolders } from '../hooks/useFolders';
 import { useLatestResponse } from '../hooks/useLatestResponse';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequests } from '../hooks/useRequests';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Icon } from './core/Icon';
+import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
-import { useCreateRequest } from '../hooks/useCreateRequest';
-import { VStack } from './core/Stacks';
-import { useFolders } from '../hooks/useFolders';
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 
 interface Props {
   className?: string;
@@ -402,6 +402,7 @@ function SidebarItems({
             onSelect={onSelect}
             onDragStart={handleDragStart}
             useProminentStyles={focused}
+            collapsed={collapsed}
             className={classNames(tree.depth > 0 && 'border-l border-highlight ml-5')}
           >
             {child.item.model === 'folder' &&
@@ -443,17 +444,20 @@ type SidebarItemProps = {
   onSelect: (id: string) => void;
   draggable?: boolean;
   children?: ReactNode;
+  collapsed: Record<string, boolean>;
 };
 
-const _SidebarItem = forwardRef(function SidebarItem(
+const SidebarItem = forwardRef(function SidebarItem(
   {
     children,
     className,
     itemName,
     itemId,
+    itemModel,
     useProminentStyles,
     selected,
     onSelect,
+    collapsed,
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
@@ -493,7 +497,10 @@ const _SidebarItem = forwardRef(function SidebarItem(
     [handleSubmitNameEdit],
   );
 
-  const handleStartEditing = useCallback(() => setEditing(true), [setEditing]);
+  const handleStartEditing = useCallback(() => {
+    if (itemModel !== 'http_request') return;
+    setEditing(true);
+  }, [setEditing, itemModel]);
 
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
@@ -525,6 +532,13 @@ const _SidebarItem = forwardRef(function SidebarItem(
             selected && useProminentStyles && '!bg-violet-500/20 text-gray-900',
           )}
         >
+          {itemModel === 'folder' && (
+            <Icon
+              size="sm"
+              icon={collapsed[itemId] ? 'chevronRight' : 'chevronDown'}
+              className="-ml-0.5 mr-2"
+            />
+          )}
           {editing ? (
             <input
               ref={handleFocus}
@@ -553,8 +567,6 @@ const _SidebarItem = forwardRef(function SidebarItem(
     </li>
   );
 });
-
-const SidebarItem = memo(_SidebarItem);
 
 type DraggableSidebarItemProps = SidebarItemProps & {
   onMove: (id: string, side: 'above' | 'below') => void;

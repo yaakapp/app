@@ -7,6 +7,12 @@
 #[macro_use]
 extern crate objc;
 
+use std::collections::HashMap;
+use std::env::current_dir;
+use std::fs::{create_dir_all, File};
+use std::io::Write;
+use std::process::exit;
+
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
@@ -17,17 +23,13 @@ use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqlitePoolOptions;
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
-use std::collections::HashMap;
-use std::env::current_dir;
-use std::fs::{create_dir_all, File};
-use std::io::Write;
-use std::process::exit;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
+
 use window_ext::TrafficLightWindowExt;
 
 mod menu;
@@ -881,7 +883,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     let win2 = win.clone();
     let handle2 = handle.clone();
     win.on_menu_event(move |event| match event.menu_item_id() {
-        "quit" => std::process::exit(0),
+        "quit" => exit(0),
         "close" => win2.close().unwrap(),
         "zoom_reset" => win2.emit("zoom", 0).unwrap(),
         "zoom_in" => win2.emit("zoom", 1).unwrap(),
