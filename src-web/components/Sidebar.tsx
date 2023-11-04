@@ -571,10 +571,10 @@ const SidebarItem = forwardRef(function SidebarItem(
           className={classNames(
             'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-highlight text-gray-800',
+            isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
               'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-500/20 text-gray-900',
+            selected && useProminentStyles && '!bg-violet-400/20 text-gray-950',
           )}
         >
           {itemModel === 'folder' && (
