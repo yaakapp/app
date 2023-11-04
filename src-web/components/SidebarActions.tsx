@@ -1,11 +1,14 @@
 import { memo } from 'react';
-import { useSidebarHidden } from '../hooks/useSidebarHidden';
-import { IconButton } from './core/IconButton';
+import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useSidebarHidden } from '../hooks/useSidebarHidden';
+import { Dropdown } from './core/Dropdown';
+import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 
 export const SidebarActions = memo(function SidebarActions() {
   const createRequest = useCreateRequest();
+  const createFolder = useCreateFolder();
   const { hidden, toggle } = useSidebarHidden();
 
   return (
@@ -19,12 +22,22 @@ export const SidebarActions = memo(function SidebarActions() {
           icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
         />
       )}
-      <IconButton
-        size="sm"
-        icon="plusCircle"
-        title="Create Request"
-        onClick={() => createRequest.mutate({})}
-      />
+      <Dropdown
+        items={[
+          {
+            key: 'create-request',
+            label: 'Create Request',
+            onSelect: () => createRequest.mutate({}),
+          },
+          {
+            key: 'create-folder',
+            label: 'Create Folder',
+            onSelect: () => createFolder.mutate({}),
+          },
+        ]}
+      >
+        <IconButton size="sm" icon="plusCircle" title="Add Resource" />
+      </Dropdown>
     </HStack>
   );
 });
