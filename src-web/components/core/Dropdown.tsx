@@ -1,6 +1,13 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
-import type { CSSProperties, HTMLAttributes, MouseEvent, ReactElement, ReactNode } from 'react';
+import type {
+  CSSProperties,
+  FocusEvent as ReactFocusEvent,
+  HTMLAttributes,
+  MouseEvent,
+  ReactElement,
+  ReactNode,
+} from 'react';
 import React, {
   Children,
   cloneElement,
@@ -13,10 +20,10 @@ import React, {
   useState,
 } from 'react';
 import { useKey, useKeyPressEvent, useWindowSize } from 'react-use';
+import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
-import { Overlay } from '../Overlay';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -334,7 +341,13 @@ interface MenuItemProps {
 
 function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: MenuItemProps) {
   const handleClick = useCallback(() => onSelect?.(item), [item, onSelect]);
-  const handleFocus = useCallback(() => onFocus?.(item), [item, onFocus]);
+  const handleFocus = useCallback(
+    (e: ReactFocusEvent<HTMLButtonElement>) => {
+      e.stopPropagation(); // Don't trigger focus on any parents
+      return onFocus?.(item);
+    },
+    [item, onFocus],
+  );
 
   const initRef = useCallback(
     (el: HTMLButtonElement | null) => {

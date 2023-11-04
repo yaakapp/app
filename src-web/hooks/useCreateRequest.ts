@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey, useRequests } from './useRequests';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
 export function useCreateRequest() {
   const workspaceId = useActiveWorkspaceId();
@@ -13,7 +13,11 @@ export function useCreateRequest() {
   const requests = useRequests();
   const queryClient = useQueryClient();
 
-  return useMutation<HttpRequest, unknown, Partial<Pick<HttpRequest, 'name' | 'sortPriority'>>>({
+  return useMutation<
+    HttpRequest,
+    unknown,
+    Partial<Pick<HttpRequest, 'name' | 'sortPriority' | 'folderId'>>
+  >({
     mutationFn: (patch) => {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
