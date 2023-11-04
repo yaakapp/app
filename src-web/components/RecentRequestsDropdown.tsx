@@ -1,16 +1,15 @@
+import classNames from 'classnames';
 import { useMemo, useRef } from 'react';
 import { useKey, useKeyPressEvent } from 'react-use';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
 import { Button } from './core/Button';
-import { CountBadge } from './core/CountBadge';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
-import classNames from 'classnames';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 export function RecentRequestsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
@@ -63,7 +62,7 @@ export function RecentRequestsDropdown() {
       recentRequestItems.push({
         key: request.id,
         label: request.name,
-        leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
+        // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
