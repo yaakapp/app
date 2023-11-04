@@ -403,9 +403,8 @@ function SidebarItems({
     >
       {tree.children.map((child, i) => (
         <Fragment key={child.item.id}>
-          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && (
-            <DropMarker depth={tree.depth} />
-          )}
+          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
+          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
           <DraggableSidebarItem
             selected={selectedId === child.item.id}
             itemId={child.item.id}
@@ -441,7 +440,7 @@ function SidebarItems({
         </Fragment>
       ))}
       {hoveredIndex === tree.children.length && hoveredTree?.item.id === tree.item.id && (
-        <DropMarker depth={tree.depth} />
+        <DropMarker />
       )}
     </VStack>
   );
