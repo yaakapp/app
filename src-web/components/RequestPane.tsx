@@ -4,9 +4,10 @@ import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest } from '../lib/models';
@@ -30,7 +31,6 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeaderEditor } from './HeaderEditor';
 import { ParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 
 interface Props {
   style?: CSSProperties;
@@ -88,7 +88,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   // Force update header editor so any changed headers are reflected
                   setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
 
-                  await updateRequest.mutate(patch);
+                  updateRequest.mutate(patch);
                 },
               },
             },
@@ -125,7 +125,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                       token: authentication.token ?? '',
                     };
                   }
-                  await updateRequest.mutate({ authenticationType, authentication });
+                  updateRequest.mutate({ authenticationType, authentication });
                 },
               },
             },
@@ -146,7 +146,10 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     'send_request',
     async ({ windowLabel }) => {
       if (windowLabel !== appWindow.label) return;
-      await invoke('send_request', { requestId: activeRequestId, environmentId: activeEnvironmentId });
+      await invoke('send_request', {
+        requestId: activeRequestId,
+        environmentId: activeEnvironmentId,
+      });
     },
     [activeRequestId, activeEnvironmentId],
   );

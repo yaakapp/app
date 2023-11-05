@@ -1,4 +1,3 @@
-
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
 export const BODY_TYPE_JSON = 'application/json';
@@ -61,8 +60,6 @@ export interface HttpRequest extends BaseModel {
   bodyType: string | null;
   authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
-  auth: Record<string, string | number | null>;
-  authType: string | null;
   method: string;
   headers: HttpHeader[];
 }
