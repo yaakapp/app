@@ -1,18 +1,18 @@
 import { invoke } from '@tauri-apps/api';
-import { useCallback, useRef } from 'react';
 import { open } from '@tauri-apps/api/dialog';
+import { useCallback, useRef } from 'react';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useTheme } from '../hooks/useTheme';
+import type { Environment, Folder, HttpRequest, Workspace } from '../lib/models';
+import { pluralize } from '../lib/pluralize';
 import type { DropdownItem, DropdownProps, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
-import { useAppRoutes } from '../hooks/useAppRoutes';
-import type { Environment, HttpRequest, Workspace } from '../lib/models';
 import { useDialog } from './DialogContext';
-import { pluralize } from '../lib/pluralize';
 
 interface Props {
   requestId: string | null;
@@ -50,10 +50,10 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
     const imported: {
       workspaces: Workspace[];
       environments: Environment[];
+      folders: Folder[];
       requests: HttpRequest[];
     } = await invoke('import_data', {
       filePaths: selected,
-      workspaceId: null,
     });
     const importedWorkspace = imported.workspaces[0];
 
@@ -62,7 +62,7 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
       description: 'Imported the following:',
       size: 'dynamic',
       render: () => {
-        const { workspaces, environments, requests } = imported;
+        const { workspaces, environments, folders, requests } = imported;
         return (
           <div>
             <ul className="list-disc pl-6">
@@ -71,6 +71,9 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
               </li>
               <li>
                 {environments.length} {pluralize('Environment', environments.length)}
+              </li>
+              <li>
+                {folders.length} {pluralize('Folder', folders.length)}
               </li>
               <li>
                 {requests.length} {pluralize('Request', requests.length)}

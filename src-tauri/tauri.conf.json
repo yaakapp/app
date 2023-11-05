@@ -13,11 +13,11 @@
   "tauri": {
     "windows": [],
     "cli": {
-      "description": "Yaak CLI", 
-      "longDescription": "This is the Yaak CLI, yo", 
+      "description": "Yaak CLI",
+      "longDescription": "This is the Yaak CLI, yo",
       "beforeHelp": "u can use it to build, develop and manage your Yaak application.",
       "afterHelp": "Have fun!",
-      "args": [], 
+      "args": [],
       "subcommands": {
         "import": {
           "args": [{
@@ -75,7 +75,7 @@
       "longDescription": "The best cross-platform visual API client",
       "resources": [
         "migrations/*",
-        "../plugins/*"
+        "plugins/*"
       ],
       "shortDescription": "The best API client",
       "targets": [
