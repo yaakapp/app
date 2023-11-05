@@ -6,6 +6,20 @@
  */
 export function importRequest(r, workspaceId, sortPriority = 0) {
   console.log('IMPORTING REQUEST', r._id, r.name, JSON.stringify(r, null, 2));
+  let bodyType = null;
+  let body = null;
+  if (r.body?.mimeType === 'application/graphql') {
+    bodyType = 'graphql';
+    body = r.body.text;
+  }
+  let authenticationType = null;
+  let authentication = {};
+  if (r.authentication.type === 'bearer') {
+    authenticationType = 'bearer';
+    authentication = {
+      token: r.authentication.token,
+    };
+  }
   return {
     id: r._id,
     createdAt: new Date(r.created ?? Date.now()).toISOString().replace('Z', ''),
@@ -16,10 +30,10 @@ export function importRequest(r, workspaceId, sortPriority = 0) {
     sortPriority,
     name: r.name,
     url: r.url,
-    body: null, // TODO: Import body
-    bodyType: null,
-    authentication: {}, // TODO: Import authentication
-    authenticationType: null,
+    body,
+    bodyType,
+    authentication,
+    authenticationType,
     method: r.method,
     headers: (r.headers ?? []).map(({ name, value, disabled }) => ({
       enabled: !disabled,
