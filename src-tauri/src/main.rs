@@ -32,11 +32,11 @@ use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-mod menu;
 mod models;
 mod plugin;
 mod render;
 mod window_ext;
+mod window_menu;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -266,16 +266,13 @@ async fn import_data(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     file_paths: Vec<&str>,
-    workspace_id: Option<&str>,
 ) -> Result<plugin::ImportedResources, String> {
     let pool = &*db_instance.lock().await;
-    let workspace_id2 = workspace_id.unwrap_or_default();
     let imported = plugin::run_plugin_import(
         &window.app_handle(),
         pool,
         "insomnia-importer",
         file_paths.first().unwrap(),
-        workspace_id2,
     )
     .await;
     Ok(imported)
@@ -764,7 +761,6 @@ fn main() {
                                 &pool,
                                 "insomnia-importer",
                                 arg_file,
-                                "wk_WN8Nrm2Awm",
                             )
                             .await;
                             exit(0);
@@ -834,7 +830,7 @@ fn is_dev() -> bool {
 }
 
 fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
-    let mut app_menu = menu::os_default("Yaak".to_string().as_str());
+    let mut app_menu = window_menu::os_default("Yaak".to_string().as_str());
     if is_dev() {
         let submenu = Submenu::new(
             "Developer",
