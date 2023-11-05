@@ -39,7 +39,7 @@ tauri = { version = "1.3", features = [
     "shell-open",
     "system-tray",
     "updater",
-    "window-start-dragging", 
+    "window-start-dragging",
     "dialog-open",
 ] }
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }

@@ -1,5 +1,6 @@
 use std::fs;
 
+use boa_engine::builtins::promise::PromiseState;
 use boa_engine::{
     js_string,
     module::{ModuleLoader, SimpleModuleLoader},
@@ -12,7 +13,7 @@ use serde_json::json;
 use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
 
-use crate::models::{self, Environment, HttpRequest, Workspace};
+use crate::models::{self, Environment, Folder, HttpRequest, Workspace};
 
 pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
     run_plugin(app_handle, plugin_name, "hello", &[]);
@@ -20,9 +21,10 @@ pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ImportedResources {
-    requests: Vec<HttpRequest>,
-    environments: Vec<Environment>,
     workspaces: Vec<Workspace>,
+    environments: Vec<Environment>,
+    folders: Vec<Folder>,
+    requests: Vec<HttpRequest>,
 }
 
 pub async fn run_plugin_import(
@@ -30,9 +32,9 @@ pub async fn run_plugin_import(
     pool: &Pool<Sqlite>,
     plugin_name: &str,
     file_path: &str,
-    workspace_id: &str,
 ) -> ImportedResources {
-    let file = fs::read_to_string(file_path).expect("Unable to read file");
+    let file = fs::read_to_string(file_path)
+        .expect(format!("Unable to read file {}", file_path.to_string()).as_str());
     let file_contents = file.as_str();
     let result_json = run_plugin(
         app_handle,
@@ -44,34 +46,35 @@ pub async fn run_plugin_import(
         serde_json::from_value(result_json).expect("failed to parse result json");
     let mut imported_resources = ImportedResources::default();
 
-    println!("Importing resources: {}", workspace_id.is_empty());
-    if workspace_id.is_empty() {
-        for w in resources.workspaces {
-            println!("Importing workspace: {:?}", w);
-            let x = models::upsert_workspace(&pool, w)
-                .await
-                .expect("Failed to create workspace");
-            imported_resources.workspaces.push(x.clone());
-            println!("Imported workspace: {}", x.name);
-        }
+    println!("Importing resources");
+    for w in resources.workspaces {
+        println!("Importing workspace: {:?}", w);
+        let x = models::upsert_workspace(&pool, w)
+            .await
+            .expect("Failed to create workspace");
+        imported_resources.workspaces.push(x.clone());
+        println!("Imported workspace: {}", x.name);
     }
 
-    for mut e in resources.environments {
-        if !workspace_id.is_empty() {
-            e.workspace_id = workspace_id.to_string();
-        }
+    for e in resources.environments {
         println!("Importing environment: {:?}", e);
         let x = models::upsert_environment(&pool, e)
             .await
             .expect("Failed to create environment");
-            imported_resources.environments.push(x.clone());
+        imported_resources.environments.push(x.clone());
         println!("Imported environment: {}", x.name);
     }
 
-    for mut r in resources.requests {
-        if !workspace_id.is_empty() {
-            r.workspace_id = workspace_id.to_string();
-        }
+    for f in resources.folders {
+        println!("Importing folder: {:?}", f);
+        let x = models::upsert_folder(&pool, f)
+            .await
+            .expect("Failed to create folder");
+        imported_resources.folders.push(x.clone());
+        println!("Imported folder: {}", x.name);
+    }
+
+    for r in resources.requests {
         println!("Importing request: {:?}", r);
         let x = models::upsert_request(&pool, r)
             .await
@@ -91,12 +94,12 @@ fn run_plugin(
 ) -> serde_json::Value {
     let plugin_dir = app_handle
         .path_resolver()
-        .resolve_resource("../plugins")
+        .resolve_resource("plugins")
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("index.js");
 
-    println!("Plugin dir: {:?}", plugin_dir);
+    println!("Plugin dir={:?} file={:?}", plugin_dir, plugin_index_file);
 
     // Module loader for the specific plugin
     let loader = &SimpleModuleLoader::new(plugin_dir).expect("failed to create module loader");
@@ -119,23 +122,25 @@ fn run_plugin(
     // TODO: Is this needed if loaded from file already?
     loader.insert(plugin_index_file, module.clone());
 
-    let _promise_result = module
+    let promise_result = module
         .load_link_evaluate(context)
         .expect("failed to evaluate module");
 
     // Very important to push forward the job queue after queueing promises.
     context.run_jobs();
 
-    // // Checking if the final promise didn't return an error.
-    // match promise_result.state() {
-    //     PromiseState::Pending => return Err("module didn't execute!".into()),
-    //     PromiseState::Fulfilled(v) => {
-    //         assert_eq!(v, JsValue::undefined())
-    //     }
-    //     PromiseState::Rejected(err) => {
-    //         return Err(JsError::from_opaque(err).try_native(context)?.into())
-    //     }
-    // }
+    // Checking if the final promise didn't return an error.
+    match promise_result.state().expect("failed to get promise state") {
+        PromiseState::Pending => {
+            panic!("Promise was pending");
+        }
+        PromiseState::Fulfilled(v) => {
+            assert_eq!(v, JsValue::undefined())
+        }
+        PromiseState::Rejected(err) => {
+            panic!("Failed to link: {}", err.display());
+        }
+    }
 
     let namespace = module.namespace(context);
 
