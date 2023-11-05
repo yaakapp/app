@@ -1,28 +1,34 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2023-11-05T22:20:12.831Z",
+  "__export_date": "2023-11-05T22:45:17.994Z",
   "__export_source": "insomnia.desktop.app:v8.3.0",
   "resources": [
     {
-      "_id": "req_cb5fb72d0afd4e479b70a824cedc325a",
-      "parentId": "wrk_cd2351f82a134dec87cb74c0bc9e3e7c",
-      "modified": 1699222790515,
-      "created": 1699222790515,
-      "url": "",
-      "name": "New Request",
+      "_id": "req_df86bf5272724c5696c45e4e36e0b87c",
+      "parentId": "fld_e1bea35e8d964ac59f996b358fbf502c",
+      "modified": 1699224307810,
+      "created": 1679927297821,
+      "url": "https://spacex-production.up.railway.app",
+      "name": "Capsules",
       "description": "",
-      "method": "GET",
-      "body": {},
+      "method": "POST",
+      "body": {
+        "mimeType": "application/graphql",
+        "text": "{\"query\":\"query Q($limit: Int!) {\\n  capsules(limit: $limit) {\\n    id\\n  }\\n}\\n\",\"operationName\":\"Q\",\"variables\":{\"limit\":2}}"
+      },
       "parameters": [],
       "headers": [
         {
-          "name": "User-Agent",
-          "value": "insomnia/8.3.0"
+          "name": "Content-Type",
+          "value": "application/json"
         }
       ],
-      "authentication": {},
-      "metaSortKey": -1699222790515,
+      "authentication": {
+        "type": "bearer",
+        "token": "4c1736b6-d63f-4e07-860e-3da77c83dcde"
+      },
+      "metaSortKey": -1699224297493,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
@@ -31,6 +37,18 @@
       "settingRebuildPath": true,
       "settingFollowRedirects": "global",
       "_type": "request"
+    },
+    {
+      "_id": "fld_e1bea35e8d964ac59f996b358fbf502c",
+      "parentId": "wrk_cd2351f82a134dec87cb74c0bc9e3e7c",
+      "modified": 1699224291103,
+      "created": 1699224291103,
+      "name": "SpaceX",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1699224291103,
+      "_type": "request_group"
     },
     {
       "_id": "wrk_cd2351f82a134dec87cb74c0bc9e3e7c",
@@ -173,40 +191,6 @@
       ],
       "authentication": {},
       "metaSortKey": -1699222709349.25,
-      "isPrivate": false,
-      "settingStoreCookies": true,
-      "settingSendCookies": true,
-      "settingDisableRenderRequestBody": false,
-      "settingEncodeUrl": true,
-      "settingRebuildPath": true,
-      "settingFollowRedirects": "global",
-      "_type": "request"
-    },
-    {
-      "_id": "req_df86bf5272724c5696c45e4e36e0b87c",
-      "parentId": "fld_6030301042004f1d937834031923f864",
-      "modified": 1699222722899,
-      "created": 1679927297821,
-      "url": "https://spacex-production.up.railway.app",
-      "name": "New Request",
-      "description": "",
-      "method": "POST",
-      "body": {
-        "mimeType": "application/graphql",
-        "text": "{\"query\":\"query Q($limit: Int!) {\\n  capsules(limit: $limit) {\\n    id\\n  }\\n}\\n\",\"operationName\":\"Operations\",\"variables\":{\"limits\":2}}"
-      },
-      "parameters": [],
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json"
-        }
-      ],
-      "authentication": {
-        "type": "bearer",
-        "token": "4c1736b6-d63f-4e07-860e-3da77c83dcde"
-      },
-      "metaSortKey": -1699222709343,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,

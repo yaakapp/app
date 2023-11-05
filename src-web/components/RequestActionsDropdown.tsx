@@ -8,10 +8,12 @@ import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useTheme } from '../hooks/useTheme';
 import type { Environment, Folder, HttpRequest, Workspace } from '../lib/models';
 import { pluralize } from '../lib/pluralize';
+import { Button } from './core/Button';
 import type { DropdownItem, DropdownProps, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { HotKey } from './core/HotKey';
 import { Icon } from './core/Icon';
+import { VStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
 
 interface Props {
@@ -59,12 +61,12 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
 
     dialog.show({
       title: 'Import Complete',
-      description: 'Imported the following:',
       size: 'dynamic',
-      render: () => {
+      hideX: true,
+      render: ({ hide }) => {
         const { workspaces, environments, folders, requests } = imported;
         return (
-          <div>
+          <VStack space={3}>
             <ul className="list-disc pl-6">
               <li>
                 {workspaces.length} {pluralize('Workspace', workspaces.length)}
@@ -79,7 +81,12 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
                 {requests.length} {pluralize('Request', requests.length)}
               </li>
             </ul>
-          </div>
+            <div>
+              <Button className="ml-auto" onClick={hide} color="primary">
+                Done
+              </Button>
+            </div>
+          </VStack>
         );
       },
     });
