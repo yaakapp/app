@@ -13,6 +13,7 @@ import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useFolders } from '../hooks/useFolders';
+import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequests } from '../hooks/useRequests';
@@ -20,6 +21,7 @@ import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Dropdown } from './core/Dropdown';
@@ -57,6 +59,16 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTree, setSelectedTree] = useState<TreeNode | null>(null);
+  const updateAnyRequest = useUpdateAnyRequest();
+  const updateAnyFolder = useUpdateAnyFolder();
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [hoveredTree, setHoveredTree] = useState<TreeNode | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const collapsed = useKeyValue<Record<string, boolean>>({
+    key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
+    defaultValue: {},
+    namespace: NAMESPACE_NO_SYNC,
+  });
 
   const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: TreeNode | null;
@@ -126,7 +138,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       const { item } = node;
 
       if (item.model === 'folder') {
-        setCollapsed((c) => ({ ...c, [item.id]: !c[item.id] }));
+        collapsed.set((c) => ({ ...c, [item.id]: !c[item.id] }));
       } else {
         routes.navigate('request', {
           requestId: id,
@@ -138,7 +150,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         focusActiveRequest({ id, tree });
       }
     },
-    [treeParentMap, routes, activeEnvironmentId, focusActiveRequest],
+    [treeParentMap, collapsed, routes, activeEnvironmentId, focusActiveRequest],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -230,13 +242,6 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     undefined,
     [hasFocus, selectableRequests, selectedId, setSelectedId, setSelectedTree],
   );
-  const updateAnyRequest = useUpdateAnyRequest();
-  const updateAnyFolder = useUpdateAnyFolder();
-
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [hoveredTree, setHoveredTree] = useState<TreeNode | null>(null);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
     (id, side) => {
@@ -326,6 +331,10 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
     return null;
   }
 
+  if (collapsed.value == null) {
+    return null;
+  }
+
   return (
     <div aria-hidden={hidden} className="h-full">
       <aside
@@ -342,7 +351,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
           treeParentMap={treeParentMap}
           selectedId={selectedId}
           selectedTree={selectedTree}
-          collapsed={collapsed}
+          collapsed={collapsed.value}
           tree={tree}
           focused={hasFocus}
           draggingId={draggingId}
