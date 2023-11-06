@@ -6,14 +6,14 @@ import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
+import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
 import { baseExtensions, getLanguageExtension, multiLineExtensions } from './extensions';
 import type { GenericCompletionConfig } from './genericCompletion';
 import { singleLineExt } from './singleLine';
-import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
-import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 
 // Export some things so all the code-split parts are in this file
 export { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
@@ -231,10 +231,14 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             onClick={() => {
               if (cm.current === null) return;
               const { doc } = cm.current.view.state;
-              const insert = format(doc.toString());
+              const formatted = format(doc.toString());
               // Update editor and blur because the cursor will reset anyway
-              cm.current.view.dispatch({ changes: { from: 0, to: doc.length, insert } });
+              cm.current.view.dispatch({
+                changes: { from: 0, to: doc.length, insert: formatted },
+              });
               cm.current.view.contentDOM.blur();
+              // Fire change event
+              onChange?.(formatted);
             }}
           />
         </HStack>
