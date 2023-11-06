@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ForwardedRef, ReactNode } from 'react';
-import React, { forwardRef, Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
@@ -17,6 +17,7 @@ import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequests } from '../hooks/useRequests';
+import { useSendAnyRequest } from '../hooks/useSendAnyRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
@@ -45,7 +46,7 @@ interface TreeNode {
   depth: number;
 }
 
-export const Sidebar = memo(function Sidebar({ className }: Props) {
+export function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const createRequest = useCreateRequest();
   const sidebarRef = useRef<HTMLLIElement>(null);
@@ -367,7 +368,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       />
     </aside>
   );
-});
+}
 
 interface SidebarItemsProps {
   tree: TreeNode;
@@ -426,6 +427,7 @@ function SidebarItems({
             onDragStart={handleDragStart}
             useProminentStyles={focused}
             collapsed={collapsed}
+            child={child}
           >
             {child.item.model === 'folder' &&
               !collapsed[child.item.id] &&
@@ -467,6 +469,7 @@ type SidebarItemProps = {
   draggable?: boolean;
   children?: ReactNode;
   collapsed: Record<string, boolean>;
+  child: TreeNode;
 };
 
 const SidebarItem = forwardRef(function SidebarItem(
@@ -480,9 +483,11 @@ const SidebarItem = forwardRef(function SidebarItem(
     selected,
     onSelect,
     collapsed,
+    child,
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
+  const sendAnyRequest = useSendAnyRequest();
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
   const deleteRequest = useDeleteFolder(itemId);
@@ -553,6 +558,17 @@ const SidebarItem = forwardRef(function SidebarItem(
                 key: 'createFolder',
                 label: 'New Folder',
                 onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
+              },
+              {
+                key: 'sendAll',
+                label: 'Send All',
+                onSelect: () => {
+                  for (const { item } of child.children) {
+                    if (item.model === 'http_request') {
+                      sendAnyRequest.mutate(item.id);
+                    }
+                  }
+                },
               },
               { type: 'separator' },
               {
@@ -631,6 +647,7 @@ type DraggableSidebarItemProps = SidebarItemProps & {
   onEnd: (id: string) => void;
   onDragStart: (id: string) => void;
   children?: ReactNode;
+  child?: TreeNode;
 };
 
 type DragItem = {
@@ -638,10 +655,11 @@ type DragItem = {
   itemName: string;
 };
 
-const DraggableSidebarItem = memo(function DraggableSidebarItem({
+function DraggableSidebarItem({
   itemName,
   itemId,
   itemModel,
+  child,
   onMove,
   onEnd,
   onDragStart,
@@ -688,7 +706,8 @@ const DraggableSidebarItem = memo(function DraggableSidebarItem({
       itemName={itemName}
       itemId={itemId}
       itemModel={itemModel}
+      child={child}
       {...props}
     />
   );
-});
+}

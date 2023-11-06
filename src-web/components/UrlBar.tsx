@@ -3,9 +3,9 @@ import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import type { HttpRequest } from '../lib/models';
 import { IconButton } from './core/IconButton';
@@ -35,7 +35,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-      sendRequest();
+      sendRequest.mutate();
     },
     [sendRequest],
   );
