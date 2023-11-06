@@ -1,24 +1,28 @@
 import { invoke } from '@tauri-apps/api';
+import { open } from '@tauri-apps/api/dialog';
 import classNames from 'classnames';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
+import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { useTheme } from '../hooks/useTheme';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { Button } from './core/Button';
+import type { Environment, Folder, HttpRequest, Workspace } from '../lib/models';
+import { pluralize } from '../lib/pluralize';
 import type { ButtonProps } from './core/Button';
+import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
-import { HStack } from './core/Stacks';
+import { HStack, VStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
-import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
 
-type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown'>;
+type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown' | 'leftSlot'>;
 
 export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   className,
@@ -30,9 +34,71 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
+  const { appearance, toggleAppearance } = useTheme();
   const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();
+
+  const importData = useCallback(async () => {
+    const selected = await open({
+      multiple: true,
+      filters: [
+        {
+          name: 'Export File',
+          extensions: ['json'],
+        },
+      ],
+    });
+    if (selected == null || selected.length === 0) return;
+    const imported: {
+      workspaces: Workspace[];
+      environments: Environment[];
+      folders: Folder[];
+      requests: HttpRequest[];
+    } = await invoke('import_data', {
+      filePaths: selected,
+    });
+    const importedWorkspace = imported.workspaces[0];
+
+    dialog.show({
+      title: 'Import Complete',
+      size: 'dynamic',
+      hideX: true,
+      render: ({ hide }) => {
+        const { workspaces, environments, folders, requests } = imported;
+        return (
+          <VStack space={3}>
+            <ul className="list-disc pl-6">
+              <li>
+                {workspaces.length} {pluralize('Workspace', workspaces.length)}
+              </li>
+              <li>
+                {environments.length} {pluralize('Environment', environments.length)}
+              </li>
+              <li>
+                {folders.length} {pluralize('Folder', folders.length)}
+              </li>
+              <li>
+                {requests.length} {pluralize('Request', requests.length)}
+              </li>
+            </ul>
+            <div>
+              <Button className="ml-auto" onClick={hide} color="primary">
+                Done
+              </Button>
+            </div>
+          </VStack>
+        );
+      },
+    });
+
+    if (importedWorkspace != null) {
+      routes.navigate('workspace', {
+        workspaceId: importedWorkspace.id,
+        environmentId: imported.environments[0]?.id,
+      });
+    }
+  }, [routes, dialog]);
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
@@ -51,7 +117,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           ),
           render: ({ hide }) => {
             return (
-              <HStack space={2} justifyContent="end" className="mt-6">
+              <HStack space={2} justifyContent="end" alignItems="center" className="mt-6">
                 <Button
                   className="focus"
                   color="gray"
@@ -139,15 +205,30 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           createWorkspace.mutate({ name });
         },
       },
+      {
+        key: 'import',
+        label: 'Import Data',
+        onSelect: importData,
+        leftSlot: <Icon icon="download" />,
+      },
+      {
+        key: 'appearance',
+        label: 'Toggle Theme',
+        onSelect: toggleAppearance,
+        leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
+      },
     ];
   }, [
     activeWorkspace?.name,
     activeWorkspaceId,
+    appearance,
     createWorkspace,
     deleteWorkspace.mutate,
     dialog,
+    importData,
     prompt,
     routes,
+    toggleAppearance,
     updateWorkspace,
     workspaces,
   ]);
@@ -155,7 +236,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   return (
     <Dropdown items={items}>
       <Button
-        forDropdown
         size="sm"
         className={classNames(className, 'text-gray-800 !px-2 truncate')}
         {...buttonProps}

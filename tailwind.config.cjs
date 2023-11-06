@@ -58,7 +58,7 @@ module.exports = {
       '5xl': '3.052rem',
     },
     colors: {
-      selection: 'hsl(var(--color-violet-500) / 0.4)',
+      selection: 'hsl(var(--color-violet-500) / 0.3)',
       focus: 'hsl(var(--color-blue-500) / 0.6)',
       invalid: 'hsl(var(--color-red-500))',
       highlight: 'hsl(var(--color-gray-300) / 0.35)',

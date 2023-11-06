@@ -51,6 +51,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     () =>
       classNames(
         className,
+        'max-w-full min-w-0', // Help with truncation
         'whitespace-nowrap outline-none',
         'flex-shrink-0 flex items-center',
         'focus-visible-or-class:ring rounded-md',

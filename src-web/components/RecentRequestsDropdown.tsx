@@ -7,11 +7,12 @@ import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
+import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 
-export function RecentRequestsDropdown() {
+export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'className'>) {
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
@@ -75,7 +76,12 @@ export function RecentRequestsDropdown() {
 
     // No recent requests to show
     if (recentRequestItems.length === 0) {
-      return [];
+      return [
+        {
+          label: 'No recent requests',
+          disabled: true,
+        },
+      ] as DropdownItem[];
     }
 
     return recentRequestItems.slice(0, 20);
@@ -87,7 +93,8 @@ export function RecentRequestsDropdown() {
         data-tauri-drag-region
         size="sm"
         className={classNames(
-          'flex-[2] text-center text-gray-800 text-sm truncate pointer-events-auto',
+          className,
+          'text-gray-800 text-sm truncate pointer-events-auto',
           activeRequest === null && 'text-opacity-disabled italic',
         )}
       >
