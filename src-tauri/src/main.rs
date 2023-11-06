@@ -77,17 +77,10 @@ async fn send_ephemeral_request(
     let response = models::HttpResponse::default();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
-    return actually_send_ephemeral_request(
-        request,
-        &response,
-        &environment_id2,
-        &app_handle,
-        pool,
-    )
-    .await;
+    return actually_send_request(request, &response, &environment_id2, &app_handle, pool).await;
 }
 
-async fn actually_send_ephemeral_request(
+async fn actually_send_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment_id: &str,
@@ -302,7 +295,7 @@ async fn send_request(
     let pool2 = pool.clone();
 
     tokio::spawn(async move {
-        actually_send_ephemeral_request(req, &response2, &environment_id2, &app_handle2, &pool2)
+        actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2)
             .await
             .expect("Failed to send request");
     });
@@ -317,6 +310,7 @@ async fn response_err(
     pool: &Pool<Sqlite>,
 ) -> Result<models::HttpResponse, String> {
     let mut response = response.clone();
+    response.elapsed = -1;
     response.error = Some(error.clone());
     response = models::update_response_if_id(&response, pool)
         .await
@@ -743,6 +737,8 @@ fn main() {
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
+
+                let _ = models::cancel_pending_responses(&pool).await;
 
                 // TODO: Move this somewhere better
                 match app.get_cli_matches() {

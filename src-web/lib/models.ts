@@ -87,7 +87,7 @@ export interface HttpResponse extends BaseModel {
 }
 
 export function isResponseLoading(response: HttpResponse): boolean {
-  return !(response.body || response.status || response.error);
+  return response.elapsed === 0;
 }
 
 export function modelsEq(a: Model, b: Model) {

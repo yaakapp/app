@@ -764,6 +764,16 @@
     },
     "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        "
   },
+  "ac1b4ffbd98b67f0a1a74e3525387d679dd6f44c561d55c7bbea747053e53671": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "\n            UPDATE http_responses\n            SET (elapsed, status_reason) = (-1, 'Cancelled')\n            WHERE elapsed = 0;\n        "
+  },
   "aeb0712785a9964d516dc8939bc54aa8206ad852e608b362d014b67a0f21b0ed": {
     "describe": {
       "columns": [],

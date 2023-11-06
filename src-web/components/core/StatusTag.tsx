@@ -8,8 +8,8 @@ interface Props {
 }
 
 export function StatusTag({ response, className, showReason }: Props) {
-  const { status, error } = response;
-  const label = error ? 'ERR' : status;
+  const { status } = response;
+  const label = status < 100 ? 'ERR' : status;
   return (
     <span
       className={classNames(
