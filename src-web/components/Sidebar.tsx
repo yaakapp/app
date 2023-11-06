@@ -110,7 +110,8 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
-    (forced?: { id: string; tree: TreeNode }) => {
+    (args: { forced?: { id: string; tree: TreeNode }; noFocusSidebar?: boolean } = {}) => {
+      const { forced, noFocusSidebar } = args;
       const tree = forced?.tree ?? treeParentMap[activeRequestId ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
       const id = forced?.id ?? children.find((m) => m.item.id === activeRequestId)?.item.id ?? null;
@@ -121,7 +122,9 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       setSelectedId(id);
       setSelectedTree(tree);
       setHasFocus(true);
-      sidebarRef.current?.focus();
+      if (!noFocusSidebar) {
+        sidebarRef.current?.focus();
+      }
     },
     [activeRequestId, treeParentMap],
   );
@@ -147,7 +150,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
         });
         setSelectedId(id);
         setSelectedTree(tree);
-        focusActiveRequest({ id, tree });
+        focusActiveRequest({ forced: { id, tree } });
       }
     },
     [treeParentMap, collapsed, routes, activeEnvironmentId, focusActiveRequest],
@@ -160,7 +163,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
 
   const handleFocus = useCallback(() => {
     if (hasFocus) return;
-    focusActiveRequest();
+    focusActiveRequest({ noFocusSidebar: true });
   }, [focusActiveRequest, hasFocus]);
 
   const handleBlur = useCallback(() => setHasFocus(false), []);
@@ -187,7 +190,7 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
       // Select 0 index on focus if none selected
       focusActiveRequest(
         selectedTree != null && selectedId != null
-          ? { id: selectedId, tree: selectedTree }
+          ? { forced: { id: selectedId, tree: selectedTree } }
           : undefined,
       );
     },
@@ -336,34 +339,33 @@ export const Sidebar = memo(function Sidebar({ className }: Props) {
   }
 
   return (
-    <div aria-hidden={hidden} className="h-full">
-      <aside
-        ref={sidebarRef}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        tabIndex={hidden ? -1 : 0}
-        className={classNames(
-          className,
-          'h-full pb-3 overflow-y-scroll overflow-x-visible hide-scrollbars pt-2',
-        )}
-      >
-        <SidebarItems
-          treeParentMap={treeParentMap}
-          selectedId={selectedId}
-          selectedTree={selectedTree}
-          collapsed={collapsed.value}
-          tree={tree}
-          focused={hasFocus}
-          draggingId={draggingId}
-          onSelect={handleSelect}
-          hoveredIndex={hoveredIndex}
-          hoveredTree={hoveredTree}
-          handleMove={handleMove}
-          handleEnd={handleEnd}
-          handleDragStart={handleDragStart}
-        />
-      </aside>
-    </div>
+    <aside
+      aria-hidden={hidden}
+      ref={sidebarRef}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      tabIndex={hidden ? -1 : 0}
+      className={classNames(
+        className,
+        'h-full pb-3 overflow-y-scroll overflow-x-visible hide-scrollbars pt-2',
+      )}
+    >
+      <SidebarItems
+        treeParentMap={treeParentMap}
+        selectedId={selectedId}
+        selectedTree={selectedTree}
+        collapsed={collapsed.value}
+        tree={tree}
+        focused={hasFocus}
+        draggingId={draggingId}
+        onSelect={handleSelect}
+        hoveredIndex={hoveredIndex}
+        hoveredTree={hoveredTree}
+        handleMove={handleMove}
+        handleEnd={handleEnd}
+        handleDragStart={handleDragStart}
+      />
+    </aside>
   );
 });
 
@@ -565,7 +567,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               title="Folder options"
               size="xs"
               icon="dotsV"
-              className="ml-auto !bg-transparent absolute right-2 opacity-20 group-hover/item:opacity-70 transition-opacity"
+              className="ml-auto !bg-transparent absolute right-2 opacity-0 group-hover/item:opacity-70 transition-opacity"
             />
           </Dropdown>
         )}
