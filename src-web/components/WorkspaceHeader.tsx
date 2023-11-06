@@ -1,12 +1,14 @@
 import classNames from 'classnames';
-import { memo } from 'react';
+import React, { memo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
+import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { RequestActionsDropdown } from './RequestActionsDropdown';
 import { SidebarActions } from './SidebarActions';
-import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const activeRequest = useActiveRequest();
+  const activeWorkspace = useActiveWorkspace();
 
   return (
     <HStack
@@ -24,8 +27,17 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     >
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
-        <WorkspaceActionsDropdown />
-        <EnvironmentActionsDropdown className="pointer-events-auto" />
+        <HStack alignItems="center">
+          <WorkspaceActionsDropdown
+            leftSlot={
+              <div className="w-5 h-5 leading-5 rounded-sm text-[0.8em] bg-[#1B88DE] bg-opacity-80 text-white mr-1">
+                {activeWorkspace?.name[0]?.toUpperCase()}
+              </div>
+            }
+          />
+          <Icon icon="chevronRight" className="text-gray-900 text-opacity-disabled" />
+          <EnvironmentActionsDropdown className="w-auto pointer-events-auto" />
+        </HStack>
       </HStack>
       <div className="pointer-events-none">
         <RecentRequestsDropdown />
