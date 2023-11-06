@@ -550,18 +550,9 @@ const SidebarItem = forwardRef(function SidebarItem(
           <Dropdown
             items={[
               {
-                key: 'createRequest',
-                label: 'New Request',
-                onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
-              },
-              {
-                key: 'createFolder',
-                label: 'New Folder',
-                onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
-              },
-              {
                 key: 'sendAll',
                 label: 'Send All',
+                leftSlot: <Icon icon="paperPlane" />,
                 onSelect: () => {
                   for (const { item } of child.children) {
                     if (item.model === 'http_request') {
@@ -570,12 +561,26 @@ const SidebarItem = forwardRef(function SidebarItem(
                   }
                 },
               },
-              { type: 'separator' },
+              { type: 'separator', label: itemName },
               {
                 key: 'deleteFolder',
                 label: 'Delete',
                 variant: 'danger',
+                leftSlot: <Icon icon="trash" />,
                 onSelect: () => deleteRequest.mutate(),
+              },
+              { type: 'separator' },
+              {
+                key: 'createRequest',
+                label: 'New Request',
+                leftSlot: <Icon icon="plus" />,
+                onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
+              },
+              {
+                key: 'createFolder',
+                label: 'New Folder',
+                leftSlot: <Icon icon="plus" />,
+                onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
               },
             ]}
           >
