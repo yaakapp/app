@@ -6,6 +6,11 @@
 
     * {
       @apply cursor-text;
+      @apply caret-transparent !important;
+    }
+
+    .cm-cursor {
+      @apply border-gray-800 !important;
     }
 
     &.cm-focused {
@@ -17,7 +22,7 @@
     }
 
     .cm-line {
-      @apply text-gray-800 caret-gray-800 pl-1 pr-1.5;
+      @apply text-gray-800 pl-1 pr-1.5;
     }
 
     .cm-placeholder {
@@ -159,7 +164,7 @@
     @apply h-full flex items-center;
 
     /* Break characters on line wrapping mode, useful for URL field.
-     * We can make this dynamic if we need it to be configurable later 
+     * We can make this dynamic if we need it to be configurable later
      */
     &.cm-lineWrapping {
       @apply break-all;

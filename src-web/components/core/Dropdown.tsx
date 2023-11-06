@@ -115,7 +115,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
 
   const windowSize = useWindowSize();
   const triggerRect = useMemo(() => {
-    windowSize; // Make TS happy with this dep
+    if (!windowSize) return null; // No-op to TS happy with this dep
     if (!open) return null;
     return buttonRef.current?.getBoundingClientRect();
   }, [open, windowSize]);
@@ -368,6 +368,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       tabIndex={-1}
       onMouseEnter={(e) => e.currentTarget.focus()}
       onMouseLeave={(e) => e.currentTarget.blur()}
+      disabled={item.disabled}
       onFocus={handleFocus}
       onClick={handleClick}
       justify="start"

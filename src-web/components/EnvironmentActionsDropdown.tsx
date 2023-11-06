@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useEnvironments } from '../hooks/useEnvironments';
+import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
@@ -12,10 +13,11 @@ import { EnvironmentEditDialog } from './EnvironmentEditDialog';
 
 type Props = {
   className?: string;
-};
+} & Pick<ButtonProps, 'forDropdown' | 'leftSlot'>;
 
 export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdown({
   className,
+  ...buttonProps
 }: Props) {
   const environments = useEnvironments();
   const activeEnvironment = useActiveEnvironment();
@@ -62,13 +64,13 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   return (
     <Dropdown items={items}>
       <Button
-        forDropdown
         size="sm"
         className={classNames(
           className,
           'text-gray-800 !px-2 truncate',
           activeEnvironment == null && 'text-opacity-disabled italic',
         )}
+        {...buttonProps}
       >
         {activeEnvironment?.name ?? 'No Environment'}
       </Button>

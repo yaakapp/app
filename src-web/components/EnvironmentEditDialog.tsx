@@ -1,27 +1,27 @@
+import classNames from 'classnames';
+import { useCallback, useMemo, useState } from 'react';
+import { useWindowSize } from 'react-use';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
+import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
+import { usePrompt } from '../hooks/usePrompt';
+import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
+import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import type { Environment, Workspace } from '../lib/models';
 import { Button } from './core/Button';
-import classNames from 'classnames';
-import { PairEditor } from './core/PairEditor';
-import type { PairEditorProps } from './core/PairEditor';
-import { useCallback, useMemo, useState } from 'react';
-import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
-import { HStack, VStack } from './core/Stacks';
-import { IconButton } from './core/IconButton';
-import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
 import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
-import { Icon } from './core/Icon';
-import { usePrompt } from '../hooks/usePrompt';
-import { InlineCode } from './core/InlineCode';
-import { useWindowSize } from 'react-use';
 import type {
   GenericCompletionConfig,
   GenericCompletionOption,
 } from './core/Editor/genericCompletion';
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
+import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
+import { InlineCode } from './core/InlineCode';
+import type { PairEditorProps } from './core/PairEditor';
+import { PairEditor } from './core/PairEditor';
+import { HStack, VStack } from './core/Stacks';
 
 interface Props {
   initialEnvironment: Environment | null;
@@ -54,7 +54,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
         <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
             <SidebarButton
-              active={selectedEnvironmentId == null}
+              active={selectedEnvironment == null}
               onClick={() => setSelectedEnvironmentId(null)}
             >
               Base Environment
@@ -63,7 +63,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
               {environments.map((e) => (
                 <SidebarButton
                   key={e.id}
-                  active={selectedEnvironmentId === e.id}
+                  active={selectedEnvironment?.id === e.id}
                   onClick={() => setSelectedEnvironmentId(e.id)}
                 >
                   {e.name}
