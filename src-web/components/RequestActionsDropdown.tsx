@@ -48,7 +48,6 @@ export function RequestActionsDropdown({ requestId, children }: Props) {
           variant: 'danger',
           leftSlot: <Icon icon="trash" />,
         },
-        { type: 'separator', label: 'Yaak Settings' },
       ]}
     >
       {children}

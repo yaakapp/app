@@ -600,6 +600,19 @@ pub async fn create_response(
     get_response(&id, pool).await
 }
 
+pub async fn cancel_pending_responses(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE http_responses
+            SET (elapsed, status_reason) = (-1, 'Cancelled')
+            WHERE elapsed = 0;
+        "#,
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 pub async fn update_response_if_id(
     response: &HttpResponse,
     pool: &Pool<Sqlite>,
