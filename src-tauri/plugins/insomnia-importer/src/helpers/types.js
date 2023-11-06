@@ -17,3 +17,7 @@ export function isEnvironment(obj) {
 export function isJSObject(obj) {
   return Object.prototype.toString.call(obj) === '[object Object]';
 }
+
+export function isJSString(obj) {
+  return Object.prototype.toString.call(obj) === '[object String]';
+}
