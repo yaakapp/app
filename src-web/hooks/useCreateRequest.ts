@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
@@ -26,6 +27,7 @@ export function useCreateRequest() {
       patch.sortPriority = patch.sortPriority || maxSortPriority(requests) + 1000;
       return invoke('create_request', { workspaceId, ...patch });
     },
+    onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
         requestsQueryKey({ workspaceId: request.workspaceId }),

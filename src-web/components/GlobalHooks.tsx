@@ -1,20 +1,22 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useEffectOnce } from 'react-use';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
+import { trackPage } from '../lib/analytics';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
-import { useRecentRequests } from '../hooks/useRecentRequests';
-import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
-import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
-import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
 import { setPathname } from '../lib/persistPathname';
 
 export function GlobalHooks() {
@@ -30,8 +32,12 @@ export function GlobalHooks() {
   // Listen for location changes and update the pathname
   const location = useLocation();
   useEffect(() => {
-    setPathname(location.pathname);
+    setPathname(location.pathname).catch(console.error);
   }, [location.pathname]);
+
+  useEffectOnce(() => {
+    trackPage('/');
+  });
 
   useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
@@ -82,9 +88,8 @@ export function GlobalHooks() {
     }
 
     if (!shouldIgnoreModel(payload)) {
-      queryClient.setQueryData<Model[]>(
-        queryKey,
-        (values) => values?.map((v) => (modelsEq(v, payload) ? payload : v)),
+      queryClient.setQueryData<Model[]>(queryKey, (values) =>
+        values?.map((v) => (modelsEq(v, payload) ? payload : v)),
       );
     }
   });

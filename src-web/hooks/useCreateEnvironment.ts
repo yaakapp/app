@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { trackEvent } from '../lib/analytics';
 import type { Environment } from '../lib/models';
-import { environmentsQueryKey, useEnvironments } from './useEnvironments';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
+import { environmentsQueryKey, useEnvironments } from './useEnvironments';
 import { usePrompt } from './usePrompt';
 import { useWorkspaces } from './useWorkspaces';
 
@@ -29,6 +30,7 @@ export function useCreateEnvironment() {
           : [];
       return invoke('create_environment', { name, variables, workspaceId });
     },
+    onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (workspaceId == null) return;
       routes.setEnvironment(environment);

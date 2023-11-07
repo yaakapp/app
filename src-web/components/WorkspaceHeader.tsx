@@ -30,7 +30,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <HStack alignItems="center">
           <WorkspaceActionsDropdown
             leftSlot={
-              <div className="w-5 h-5 leading-5 rounded-sm text-[0.8em] bg-[#1B88DE] bg-opacity-80 text-white mr-1">
+              <div className="w-4 h-4 leading-4 rounded text-[0.8em] bg-[#1B88DE] bg-opacity-80 text-white mr-1">
                 {activeWorkspace?.name[0]?.toUpperCase()}
               </div>
             }
