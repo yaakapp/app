@@ -74,7 +74,7 @@ async fn send_ephemeral_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
-    let response = models::HttpResponse::default();
+    let response = models::HttpResponse::new();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
     return actually_send_request(request, &response, &environment_id2, &app_handle, pool).await;

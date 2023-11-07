@@ -6,8 +6,8 @@ import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { HttpRequest } from '../lib/models';
 import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
-import { useDebouncedValue } from './useDebouncedValue';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useDebouncedValue } from './useDebouncedValue';
 
 const introspectionRequestBody = JSON.stringify({
   query: getIntrospectionQuery(),
@@ -66,7 +66,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     runIntrospection(); // Run immediately
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request.id, request.url, request.method, refetchKey]);
+  }, [request.id, request.url, request.method, refetchKey, activeEnvironmentId]);
 
   const refetch = useCallback(() => {
     setRefetchKey((k) => k + 1);

@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { requestsQueryKey } from './useRequests';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 
 export function useDuplicateRequest({
   id,
@@ -22,6 +23,7 @@ export function useDuplicateRequest({
       if (id === null) throw new Error("Can't duplicate a null request");
       return invoke('duplicate_request', { id });
     },
+    onSettled: () => trackEvent('http_request', 'duplicate'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
         requestsQueryKey({ workspaceId: request.workspaceId }),
