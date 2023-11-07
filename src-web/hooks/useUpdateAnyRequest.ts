@@ -7,20 +7,28 @@ import { requestsQueryKey } from './useRequests';
 export function useUpdateAnyRequest() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, unknown, { id: string; update: (r: HttpRequest) => HttpRequest }>({
+  return useMutation<
+    void,
+    unknown,
+    { id: string; update: Partial<HttpRequest> | ((r: HttpRequest) => HttpRequest) }
+  >({
     mutationFn: async ({ id, update }) => {
       const request = await getRequest(id);
       if (request === null) {
         throw new Error("Can't update a null request");
       }
 
-      await invoke('update_request', { request: update(request) });
+      const patchedRequest =
+        typeof update === 'function' ? update(request) : { ...request, ...update };
+      await invoke('update_request', { request: patchedRequest });
     },
     onMutate: async ({ id, update }) => {
       const request = await getRequest(id);
       if (request === null) return;
+      const patchedRequest =
+        typeof update === 'function' ? update(request) : { ...request, ...update };
       queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(request), (requests) =>
-        (requests ?? []).map((r) => (r.id === request.id ? update(r) : r)),
+        (requests ?? []).map((r) => (r.id === patchedRequest.id ? patchedRequest : r)),
       );
     },
   });

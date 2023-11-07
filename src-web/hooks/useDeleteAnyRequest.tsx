@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { InlineCode } from '../components/core/InlineCode';
+import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
 import { useConfirm } from './useConfirm';
@@ -26,6 +27,7 @@ export function useDeleteAnyRequest() {
       if (!confirmed) return null;
       return invoke('delete_request', { requestId: id });
     },
+    onSettled: () => trackEvent('http_request', 'delete'),
     onSuccess: async (request) => {
       // Was it cancelled?
       if (request === null) return;

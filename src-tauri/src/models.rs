@@ -118,6 +118,15 @@ pub struct HttpResponse {
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
 
+impl HttpResponse {
+    pub(crate) fn new() -> Self {
+        Self {
+            model: "http_response".to_string(),
+            ..Default::default()
+        }
+    }
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct KeyValue {
