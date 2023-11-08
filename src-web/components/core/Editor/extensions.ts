@@ -32,11 +32,11 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
+import type { Environment, Workspace } from '../../../lib/models';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
-import type { Environment, Workspace } from '../../../lib/models';
 
 export const myHighlightStyle = HighlightStyle.define([
   {
@@ -125,7 +125,6 @@ export const baseExtensions = [
   // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
   autocompletion({
     // closeOnBlur: false,
-    interactionDelay: 200,
     compareCompletions: (a, b) => {
       // Don't sort completions at all, only on boost
       return (a.boost ?? 0) - (b.boost ?? 0);

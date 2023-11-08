@@ -659,7 +659,7 @@ pub async fn upsert_workspace(
     .execute(pool)
     .await?;
 
-    get_workspace(&workspace.id, pool).await
+    get_workspace(&id, pool).await
 }
 
 pub async fn update_response(

@@ -32,6 +32,9 @@ use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
+use crate::analytics::{AnalyticsAction, AnalyticsResource};
+
+mod analytics;
 mod models;
 mod plugin;
 mod render;
@@ -92,7 +95,7 @@ async fn actually_send_request(
     let environment_ref = environment.as_ref();
     let workspace = models::get_workspace(&request.workspace_id, pool)
         .await
-        .expect("Failed to get workspace");
+        .expect("Failed to get Workspace");
 
     let mut url_string = render::render(&request.url, &workspace, environment.as_ref());
 
@@ -363,7 +366,7 @@ async fn create_workspace(
         },
     )
     .await
-    .expect("Failed to create workspace");
+    .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -684,7 +687,7 @@ async fn list_workspaces(
             },
         )
         .await
-        .expect("Failed to create workspace");
+        .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -706,7 +709,7 @@ async fn delete_workspace(
     let pool = &*db_instance.lock().await;
     let workspace = models::delete_workspace(workspace_id, pool)
         .await
-        .expect("Failed to delete workspace");
+        .expect("Failed to delete Workspace");
     emit_and_return(&window, "deleted_model", workspace)
 }
 
@@ -813,6 +816,11 @@ fn main() {
                 let w = create_window(app_handle, None);
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
+
+                tauri::async_runtime::block_on(async move {
+                    analytics::track_event(AnalyticsResource::App, AnalyticsAction::Launch, None)
+                        .await;
+                })
             }
 
             // ExitRequested { api, .. } => {
