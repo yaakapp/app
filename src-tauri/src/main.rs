@@ -32,7 +32,7 @@ use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-use crate::analytics::{AnalyticsAction, AnalyticsResource};
+use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
 
 mod analytics;
 mod models;
@@ -817,10 +817,12 @@ fn main() {
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
 
-                tauri::async_runtime::block_on(async move {
-                    analytics::track_event(AnalyticsResource::App, AnalyticsAction::Launch, None)
-                        .await;
-                })
+                track_event(
+                    app_handle,
+                    AnalyticsResource::App,
+                    AnalyticsAction::Launch,
+                    None,
+                );
             }
 
             // ExitRequested { api, .. } => {
