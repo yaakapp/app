@@ -10,14 +10,14 @@ enum Theme {
 
 const themes: Record<Theme, AppThemeColors> = {
   yaak: {
-    gray: '#6b5b98',
-    red: '#ff417b',
-    orange: '#fd9014',
-    yellow: '#e8d13f',
-    green: '#3fd265',
-    blue: '#219dff',
-    pink: '#ff6dff',
-    violet: '#b176ff',
+    gray: 'hsl(250, 25%, 45%)',
+    red: 'hsl(342,100%, 63%)',
+    orange: 'hsl(32, 98%, 54%)',
+    yellow: 'hsl(52, 79%, 58%)',
+    green: 'hsl(136, 62%, 54%)',
+    blue: 'hsl(206, 100%, 56%)',
+    pink: 'hsl(300, 100%, 71%)',
+    violet: 'hsl(266, 100%, 73%)',
   },
   catppuccin: {
     gray: 'hsl(240, 23%, 47%)',
@@ -37,7 +37,7 @@ const darkTheme: AppTheme = {
   layers: {
     root: {
       blackPoint: 0.2,
-      colors: themes.catppuccin,
+      colors: themes.yaak,
     },
   },
 };
