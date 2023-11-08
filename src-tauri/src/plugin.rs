@@ -97,7 +97,7 @@ fn run_plugin(
         .resolve_resource("plugins")
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
-    let plugin_index_file = plugin_dir.join("dist/index.js");
+    let plugin_index_file = plugin_dir.join("out/index.js");
 
     println!("Plugin dir={:?} file={:?}", plugin_dir, plugin_index_file);
 
