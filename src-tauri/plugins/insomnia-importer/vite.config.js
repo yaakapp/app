@@ -8,5 +8,6 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
+    outDir: resolve(__dirname, 'out'),
   },
 });
