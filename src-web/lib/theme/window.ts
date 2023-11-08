@@ -10,7 +10,7 @@ enum Theme {
 
 const themes: Record<Theme, AppThemeColors> = {
   yaak: {
-    gray: 'hsl(250, 25%, 45%)',
+    gray: 'hsl(245, 23%, 45%)',
     red: 'hsl(342,100%, 63%)',
     orange: 'hsl(32, 98%, 54%)',
     yellow: 'hsl(52, 79%, 58%)',
