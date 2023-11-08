@@ -3,6 +3,8 @@ on:
   push:
     tags: [ v* ]
 
+permissions: write-all
+
 jobs:
   build-artifacts:
     strategy:
