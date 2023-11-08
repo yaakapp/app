@@ -16,6 +16,7 @@ import { useFolders } from '../hooks/useFolders';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
 import { useSendAnyRequest } from '../hooks/useSendAnyRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -28,6 +29,7 @@ import { isResponseLoading } from '../lib/models';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
@@ -493,6 +495,8 @@ const SidebarItem = forwardRef(function SidebarItem(
   const deleteRequest = useDeleteFolder(itemId);
   const latestResponse = useLatestResponse(itemId);
   const updateRequest = useUpdateRequest(itemId);
+  const updateAnyFolder = useUpdateAnyFolder();
+  const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
   const activeRequestId = useActiveRequestId();
   const isActive = activeRequestId === itemId;
@@ -562,6 +566,25 @@ const SidebarItem = forwardRef(function SidebarItem(
                 },
               },
               { type: 'separator', label: itemName },
+              {
+                key: 'rename',
+                label: 'Rename',
+                leftSlot: <Icon icon="pencil" />,
+                onSelect: async () => {
+                  const name = await prompt({
+                    title: 'Rename Folder',
+                    description: (
+                      <>
+                        Enter a new name for <InlineCode>{itemName}</InlineCode>
+                      </>
+                    ),
+                    name: 'name',
+                    label: 'Name',
+                    defaultValue: itemName,
+                  });
+                  updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
+                },
+              },
               {
                 key: 'deleteFolder',
                 label: 'Delete',
