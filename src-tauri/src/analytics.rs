@@ -55,29 +55,32 @@ pub fn track_event(
         let event = format!("{}.{}", resource_name(resource), action_name(action));
         let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
         let info = app_handle.package_info();
+        let tz = datetime::sys_timezone().unwrap_or("unknown".to_string());
         let params = vec![
             ("e", event.clone()),
             ("a", attributes_json.clone()),
             ("id", "site_zOK0d7jeBy2TLxFCnZ".to_string()),
             ("v", info.version.clone().to_string()),
             ("os", get_os().to_string()),
+            ("tz", tz),
             ("xy", get_window_size(app_handle)),
         ];
-        let url = format!("https://t.yaak.app/t/e");
+        let url = "https://t.yaak.app/t/e".to_string();
         let req = reqwest::Client::builder()
             .build()
             .unwrap()
             .get(&url)
             .query(&params);
 
-        if is_dev() {
+        if !is_dev() {
             println!("Ignore dev analytics event: {} {:?}", event, params);
+        } else if let Err(e) = req.send().await {
+            println!(
+                "Error sending analytics event: {} {} {:?}",
+                e, event, params
+            );
         } else {
-            if let Err(e) = req.send().await {
-                println!("Error sending analytics event: {}", e);
-            } else {
-                println!("Sent analytics event: {}", event);
-            }
+            println!("Sent analytics event: {}: {:?}", event, params);
         }
     });
 }
