@@ -17,18 +17,18 @@ function O(e, t) {
   );
 }
 function g(e) {
-  return d(e) && e._type === 'workspace';
+  return m(e) && e._type === 'workspace';
 }
 function y(e) {
-  return d(e) && e._type === 'request_group';
+  return m(e) && e._type === 'request_group';
 }
 function _(e) {
-  return d(e) && e._type === 'request';
+  return m(e) && e._type === 'request';
 }
 function I(e) {
-  return d(e) && e._type === 'environment';
+  return m(e) && e._type === 'environment';
 }
-function d(e) {
+function m(e) {
   return Object.prototype.toString.call(e) === '[object Object]';
 }
 function h(e) {
@@ -41,31 +41,31 @@ function N(e) {
     value: `${i}`,
   }));
 }
-function c(e) {
+function p(e) {
   return h(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') : e;
 }
 function D(e, t, i = 0) {
-  var a, u;
+  var a, d;
   console.log('IMPORTING REQUEST', e._id, e.name, JSON.stringify(e, null, 2));
   let s = null,
     n = null;
   ((a = e.body) == null ? void 0 : a.mimeType) === 'application/graphql'
-    ? ((s = 'graphql'), (n = c(e.body.text)))
-    : ((u = e.body) == null ? void 0 : u.mimeType) === 'application/json' &&
-      ((s = 'application/json'), (n = c(e.body.text)));
-  let p = null,
-    o = {};
+    ? ((s = 'graphql'), (n = p(e.body.text)))
+    : ((d = e.body) == null ? void 0 : d.mimeType) === 'application/json' &&
+      ((s = 'application/json'), (n = p(e.body.text)));
+  let u = null,
+    r = {};
   return (
     e.authentication.type === 'bearer'
-      ? ((p = 'bearer'),
-        (o = {
-          token: c(e.authentication.token),
+      ? ((u = 'bearer'),
+        (r = {
+          token: p(e.authentication.token),
         }))
       : e.authentication.type === 'basic' &&
-        ((p = 'basic'),
-        (o = {
-          username: c(e.authentication.username),
-          password: c(e.authentication.password),
+        ((u = 'basic'),
+        (r = {
+          username: p(e.authentication.username),
+          password: p(e.authentication.password),
         })),
     {
       id: e._id,
@@ -76,17 +76,19 @@ function D(e, t, i = 0) {
       model: 'http_request',
       sortPriority: i,
       name: e.name,
-      url: c(e.url),
+      url: p(e.url),
       body: n,
       bodyType: s,
-      authentication: o,
-      authenticationType: p,
+      authentication: r,
+      authenticationType: u,
       method: e.method,
-      headers: (e.headers ?? []).map(({ name: m, value: r, disabled: f }) => ({
-        enabled: !f,
-        name: m,
-        value: r,
-      })),
+      headers: (e.headers ?? [])
+        .map(({ name: c, value: o, disabled: f }) => ({
+          enabled: !f,
+          name: c,
+          value: o,
+        }))
+        .filter(({ name: c, value: o }) => c !== '' || o !== ''),
     }
   );
 }
@@ -119,7 +121,7 @@ function b(e, t) {
 }
 function T(e) {
   const t = JSON.parse(e);
-  if (!d(t)) return;
+  if (!m(t)) return;
   const { _type: i, __export_format: s } = t;
   if (i !== 'export' || s !== 4 || !Array.isArray(t.resources)) return;
   const n = {
@@ -128,23 +130,23 @@ function T(e) {
       environments: [],
       folders: [],
     },
-    p = t.resources.filter(g);
-  for (const o of p) {
-    console.log('IMPORTING WORKSPACE', o.name);
-    const a = t.resources.find((r) => I(r) && r.parentId === o._id);
+    u = t.resources.filter(g);
+  for (const r of u) {
+    console.log('IMPORTING WORKSPACE', r.name);
+    const a = t.resources.find((o) => I(o) && o.parentId === r._id);
     console.log('FOUND BASE ENV', a.name),
-      n.workspaces.push(w(o, a ? N(a.data) : [])),
+      n.workspaces.push(w(r, a ? N(a.data) : [])),
       console.log('IMPORTING ENVIRONMENTS', a.name);
-    const u = t.resources.filter((r) => I(r) && r.parentId === (a == null ? void 0 : a._id));
-    console.log('FOUND', u.length, 'ENVIRONMENTS'),
-      n.environments.push(...u.map((r) => O(r, o._id)));
-    const m = (r) => {
-      const f = t.resources.filter((l) => l.parentId === r);
+    const d = t.resources.filter((o) => I(o) && o.parentId === (a == null ? void 0 : a._id));
+    console.log('FOUND', d.length, 'ENVIRONMENTS'),
+      n.environments.push(...d.map((o) => O(o, r._id)));
+    const c = (o) => {
+      const f = t.resources.filter((l) => l.parentId === o);
       let S = 0;
       for (const l of f)
-        y(l) ? (n.folders.push(b(l, o._id)), m(l._id)) : _(l) && n.requests.push(D(l, o._id, S++));
+        y(l) ? (n.folders.push(b(l, r._id)), c(l._id)) : _(l) && n.requests.push(D(l, r._id, S++));
     };
-    m(o._id);
+    c(r._id);
   }
   return (
     (n.requests = n.requests.filter(Boolean)),

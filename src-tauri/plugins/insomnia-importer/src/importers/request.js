@@ -49,10 +49,12 @@ export function importRequest(r, workspaceId, sortPriority = 0) {
     authentication,
     authenticationType,
     method: r.method,
-    headers: (r.headers ?? []).map(({ name, value, disabled }) => ({
-      enabled: !disabled,
-      name,
-      value,
-    })),
+    headers: (r.headers ?? [])
+      .map(({ name, value, disabled }) => ({
+        enabled: !disabled,
+        name,
+        value,
+      }))
+      .filter(({ name, value }) => name !== '' || value !== ''),
   };
 }

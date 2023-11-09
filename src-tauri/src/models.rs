@@ -794,3 +794,32 @@ pub fn generate_id(prefix: Option<&str>) -> String {
         Some(p) => format!("{p}_{id}"),
     };
 }
+
+#[derive(Default, Debug, Deserialize, Serialize)]
+pub struct WorkspaceExportResources {
+    workspaces: Vec<Workspace>,
+    environments: Vec<Environment>,
+    folders: Vec<Folder>,
+    requests: Vec<HttpRequest>,
+}
+
+pub(crate) async fn get_workspace_export_resources(
+    pool: &Pool<Sqlite>,
+    workspace_id: &str,
+) -> WorkspaceExportResources {
+    let workspace = get_workspace(workspace_id, pool)
+        .await
+        .expect("Failed to get workspace");
+    return WorkspaceExportResources {
+        workspaces: vec![workspace],
+        environments: find_environments(workspace_id, pool)
+            .await
+            .expect("Failed to get environments"),
+        folders: find_folders(workspace_id, pool)
+            .await
+            .expect("Failed to get folders"),
+        requests: find_requests(workspace_id, pool)
+            .await
+            .expect("Failed to get requests"),
+    };
+}

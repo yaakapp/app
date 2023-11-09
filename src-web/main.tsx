@@ -1,12 +1,19 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { attachConsole } from 'tauri-plugin-log-api';
 import { App } from './components/App';
 import { getKeyValue } from './lib/keyValueStore';
+import { maybeRestorePathname } from './lib/persistPathname';
 import { getPreferredAppearance, setAppearance } from './lib/theme/window';
 import './main.css';
-import { maybeRestorePathname } from './lib/persistPathname';
 
+await attachConsole();
 await maybeRestorePathname();
+
+document.addEventListener('keydown', (e) => {
+  // Don't go back in history on backspace
+  if (e.key === 'Backspace') e.preventDefault();
+});
 
 setAppearance(
   await getKeyValue({
