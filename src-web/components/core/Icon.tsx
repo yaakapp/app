@@ -37,6 +37,7 @@ import {
   TriangleLeftIcon,
   TriangleRightIcon,
   UpdateIcon,
+  UploadIcon,
 } from '@radix-ui/react-icons';
 import classNames from 'classnames';
 import type { HTMLAttributes } from 'react';
@@ -84,6 +85,7 @@ const icons = {
   triangleLeft: TriangleLeftIcon,
   triangleRight: TriangleRightIcon,
   update: UpdateIcon,
+  upload: UploadIcon,
   x: Cross2Icon,
   empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,
 };

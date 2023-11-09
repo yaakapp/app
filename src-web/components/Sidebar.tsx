@@ -4,6 +4,8 @@ import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } f
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
+
+import { showMenu } from 'tauri-plugin-context-menu';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
@@ -12,13 +14,15 @@ import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
-import { useSendAnyRequest } from '../hooks/useSendAnyRequest';
+import { useSendManyRequests } from '../hooks/useSendFolder';
+import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
@@ -489,10 +493,12 @@ const SidebarItem = forwardRef(function SidebarItem(
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
-  const sendAnyRequest = useSendAnyRequest();
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
-  const deleteRequest = useDeleteFolder(itemId);
+  const deleteFolder = useDeleteFolder(itemId);
+  const sendRequest = useSendRequest(itemId);
+  const sendManyRequests = useSendManyRequests();
+  const deleteRequest = useDeleteRequest(itemId);
   const latestResponse = useLatestResponse(itemId);
   const updateRequest = useUpdateRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
@@ -543,9 +549,42 @@ const SidebarItem = forwardRef(function SidebarItem(
     [handleSubmitNameEdit],
   );
 
-  const handleSelect = useCallback(() => {
-    onSelect(itemId);
-  }, [onSelect, itemId]);
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showMenu({
+        pos: { x: e.clientX, y: e.clientY },
+        items:
+          itemModel === 'http_request'
+            ? [
+                {
+                  label: 'Send Request',
+                  event: () => sendRequest.mutate(),
+                },
+                {
+                  label: 'Delete Request',
+                  event: () => deleteRequest.mutate(),
+                },
+              ]
+            : [
+                {
+                  label: 'Send All',
+                  event: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
+                },
+                {
+                  label: 'Delete Folder',
+                  event: () => deleteFolder.mutate(),
+                },
+              ],
+      })
+        .then((r) => console.log(r))
+        .catch((e) => console.log(e));
+    },
+    [itemModel, sendRequest, deleteRequest, sendManyRequests, child.children],
+  );
+
+  const handleSelect = useCallback(() => onSelect(itemId), [onSelect, itemId]);
 
   return (
     <li ref={ref}>
@@ -557,13 +596,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                 key: 'sendAll',
                 label: 'Send All',
                 leftSlot: <Icon icon="paperPlane" />,
-                onSelect: () => {
-                  for (const { item } of child.children) {
-                    if (item.model === 'http_request') {
-                      sendAnyRequest.mutate(item.id);
-                    }
-                  }
-                },
+                onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
               },
               { type: 'separator', label: itemName },
               {
@@ -590,7 +623,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                 label: 'Delete',
                 variant: 'danger',
                 leftSlot: <Icon icon="trash" />,
-                onSelect: () => deleteRequest.mutate(),
+                onSelect: () => deleteFolder.mutate(),
               },
               { type: 'separator' },
               {
@@ -617,9 +650,10 @@ const SidebarItem = forwardRef(function SidebarItem(
         )}
         <button
           // tabIndex={-1} // Will prevent drag-n-drop
-          onClick={handleSelect}
           disabled={editing}
+          onClick={handleSelect}
           onDoubleClick={handleStartEditing}
+          onContextMenu={handleContextMenu}
           data-active={isActive}
           data-selected={selected}
           className={classNames(

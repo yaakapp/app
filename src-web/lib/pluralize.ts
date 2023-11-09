@@ -4,3 +4,7 @@ export function pluralize(word: string, count: number): string {
   }
   return `${word}s`;
 }
+
+export function count(word: string, count: number): string {
+  return `${count} ${pluralize(word, count)}`;
+}

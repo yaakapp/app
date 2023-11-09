@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::path::Path;
 use std::process::exit;
 
 use base64::Engine;
@@ -20,13 +21,14 @@ use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite};
+use sqlx::{ConnectOptions, Pool, Sqlite};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
+use tauri_plugin_log::LogTarget;
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 
@@ -258,6 +260,7 @@ async fn actually_send_request(
         Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
 }
+
 #[tauri::command]
 async fn import_data(
     window: Window<Wry>,
@@ -273,6 +276,23 @@ async fn import_data(
     )
     .await;
     Ok(imported)
+}
+
+#[tauri::command]
+async fn export_data(
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    root_dir: &str,
+    workspace_id: &str,
+) -> Result<(), String> {
+    let path = Path::new(root_dir).join("yaak-export.json");
+    let pool = &*db_instance.lock().await;
+    let imported = models::get_workspace_export_resources(pool, workspace_id).await;
+    println!("Exporting {:?}", path);
+    let f = File::create(path).expect("Unable to create file");
+    serde_json::to_writer_pretty(f, &imported)
+        .map_err(|e| e.to_string())
+        .expect("Failed to write");
+    Ok(())
 }
 
 #[tauri::command]
@@ -715,7 +735,13 @@ async fn delete_workspace(
 
 fn main() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .build(),
+        )
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_context_menu::init())
         .setup(|app| {
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
@@ -730,7 +756,13 @@ fn main() {
 
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePoolOptions::new()
-                    .connect(url.as_str())
+                    .connect_with(
+                        SqliteConnectOptions::new()
+                            .filename(p)
+                            .create_if_missing(true)
+                            .disable_statement_logging()
+                            .clone(),
+                    )
                     .await
                     .expect("Failed to connect to database");
 
@@ -789,6 +821,7 @@ fn main() {
             delete_response,
             delete_workspace,
             duplicate_request,
+            export_data,
             get_key_value,
             get_environment,
             get_folder,
