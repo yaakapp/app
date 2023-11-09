@@ -72,7 +72,7 @@ pub fn track_event(
             .get(&url)
             .query(&params);
 
-        if !is_dev() {
+        if is_dev() {
             println!("Ignore dev analytics event: {} {:?}", event, params);
         } else if let Err(e) = req.send().await {
             println!(
