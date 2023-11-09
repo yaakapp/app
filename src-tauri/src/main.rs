@@ -702,7 +702,7 @@ async fn list_workspaces(
         let workspace = models::upsert_workspace(
             pool,
             models::Workspace {
-                name: "My Project".to_string(),
+                name: "Yaak".to_string(),
                 ..Default::default()
             },
         )
