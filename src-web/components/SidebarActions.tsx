@@ -3,6 +3,7 @@ import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { Dropdown } from './core/Dropdown';
+import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 
@@ -26,12 +27,14 @@ export const SidebarActions = memo(function SidebarActions() {
         items={[
           {
             key: 'create-request',
-            label: 'Create Request',
+            label: 'New Request',
+            leftSlot: <Icon icon="plus" />,
             onSelect: () => createRequest.mutate({}),
           },
           {
             key: 'create-folder',
-            label: 'Create Folder',
+            label: 'New Folder',
+            leftSlot: <Icon icon="plus" />,
             onSelect: () => createFolder.mutate({}),
           },
         ]}

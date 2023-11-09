@@ -25,3 +25,4 @@ dist-ssr
 .eslintcache
 
 *.sqlite
+*.sqlite-*

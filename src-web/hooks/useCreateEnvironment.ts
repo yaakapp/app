@@ -20,7 +20,7 @@ export function useCreateEnvironment() {
     mutationFn: async () => {
       const name = await prompt({
         name: 'name',
-        title: 'Create Environment',
+        title: 'New Environment',
         label: 'Name',
         defaultValue: 'My Environment',
       });

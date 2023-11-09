@@ -8,6 +8,7 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
+use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::{Pool, Sqlite};
@@ -34,7 +35,7 @@ pub async fn run_plugin_import(
     file_path: &str,
 ) -> ImportedResources {
     let file = fs::read_to_string(file_path)
-        .expect(format!("Unable to read file {}", file_path.to_string()).as_str());
+        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     let result_json = run_plugin(
         app_handle,
@@ -46,41 +47,37 @@ pub async fn run_plugin_import(
         serde_json::from_value(result_json).expect("failed to parse result json");
     let mut imported_resources = ImportedResources::default();
 
-    println!("Importing resources");
+    info!("Importing resources");
     for w in resources.workspaces {
-        println!("Importing workspace: {:?}", w);
-        let x = models::upsert_workspace(&pool, w)
+        let x = models::upsert_workspace(pool, w)
             .await
             .expect("Failed to create workspace");
         imported_resources.workspaces.push(x.clone());
-        println!("Imported workspace: {}", x.name);
+        info!("Imported workspace: {}", x.name);
     }
 
     for e in resources.environments {
-        println!("Importing environment: {:?}", e);
-        let x = models::upsert_environment(&pool, e)
+        let x = models::upsert_environment(pool, e)
             .await
             .expect("Failed to create environment");
         imported_resources.environments.push(x.clone());
-        println!("Imported environment: {}", x.name);
+        info!("Imported environment: {}", x.name);
     }
 
     for f in resources.folders {
-        println!("Importing folder: {:?}", f);
-        let x = models::upsert_folder(&pool, f)
+        let x = models::upsert_folder(pool, f)
             .await
             .expect("Failed to create folder");
         imported_resources.folders.push(x.clone());
-        println!("Imported folder: {}", x.name);
+        info!("Imported folder: {}", x.name);
     }
 
     for r in resources.requests {
-        println!("Importing request: {:?}", r);
-        let x = models::upsert_request(&pool, r)
+        let x = models::upsert_request(pool, r)
             .await
             .expect("Failed to create request");
         imported_resources.requests.push(x.clone());
-        println!("Imported request: {}", x.name);
+        info!("Imported request: {}", x.name);
     }
 
     imported_resources
