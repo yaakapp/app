@@ -11,12 +11,12 @@ use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
-use std::path::Path;
 use std::process::exit;
 
 use base64::Engine;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
+use log::info;
 use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
@@ -35,6 +35,7 @@ use tokio::sync::Mutex;
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
+use crate::plugin::ImportResources;
 
 mod analytics;
 mod models;
@@ -266,32 +267,89 @@ async fn import_data(
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     file_paths: Vec<&str>,
-) -> Result<plugin::ImportedResources, String> {
+) -> Result<ImportResources, String> {
     let pool = &*db_instance.lock().await;
-    let imported = plugin::run_plugin_import(
+    let mut resources = plugin::run_plugin_import(
         &window.app_handle(),
-        pool,
         "insomnia-importer",
         file_paths.first().unwrap(),
     )
     .await;
-    Ok(imported)
+    println!("Resources: {:?}", resources);
+
+    if resources.is_none() {
+        resources = plugin::run_plugin_import(
+            &window.app_handle(),
+            "yaak-importer",
+            file_paths.first().unwrap(),
+        )
+        .await;
+    }
+    println!("Resources: {:?}", resources);
+
+    match resources {
+        None => Err("Failed to import data".to_string()),
+        Some(r) => {
+            let mut imported_resources = ImportResources::default();
+
+            info!("Importing resources");
+            for w in r.workspaces {
+                let x = models::upsert_workspace(pool, w)
+                    .await
+                    .expect("Failed to create workspace");
+                imported_resources.workspaces.push(x.clone());
+                info!("Imported workspace: {}", x.name);
+            }
+
+            for e in r.environments {
+                let x = models::upsert_environment(pool, e)
+                    .await
+                    .expect("Failed to create environment");
+                imported_resources.environments.push(x.clone());
+                info!("Imported environment: {}", x.name);
+            }
+
+            for f in r.folders {
+                let x = models::upsert_folder(pool, f)
+                    .await
+                    .expect("Failed to create folder");
+                imported_resources.folders.push(x.clone());
+                info!("Imported folder: {}", x.name);
+            }
+
+            for r in r.requests {
+                let x = models::upsert_request(pool, r)
+                    .await
+                    .expect("Failed to create request");
+                imported_resources.requests.push(x.clone());
+                info!("Imported request: {}", x.name);
+            }
+
+            Ok(imported_resources)
+        }
+    }
 }
 
 #[tauri::command]
 async fn export_data(
+    app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-    root_dir: &str,
+    export_path: &str,
     workspace_id: &str,
 ) -> Result<(), String> {
-    let path = Path::new(root_dir).join("yaak-export.json");
     let pool = &*db_instance.lock().await;
-    let imported = models::get_workspace_export_resources(pool, workspace_id).await;
-    println!("Exporting {:?}", path);
-    let f = File::create(path).expect("Unable to create file");
-    serde_json::to_writer_pretty(f, &imported)
+    let export_data = models::get_workspace_export_resources(&app_handle, pool, workspace_id).await;
+    let f = File::options()
+        .create(true)
+        .truncate(true)
+        .write(true)
+        .open(export_path)
+        .expect("Unable to create file");
+    serde_json::to_writer_pretty(&f, &export_data)
         .map_err(|e| e.to_string())
         .expect("Failed to write");
+    f.sync_all().expect("Failed to sync");
+    info!("Exported Yaak workspace to {:?}", export_path);
     Ok(())
 }
 
@@ -774,37 +832,6 @@ fn main() {
                 app.manage(m);
 
                 let _ = models::cancel_pending_responses(&pool).await;
-
-                // TODO: Move this somewhere better
-                match app.get_cli_matches() {
-                    Ok(matches) => {
-                        let cmd = matches.subcommand.unwrap_or_default();
-                        if cmd.name == "import" {
-                            let arg_file = cmd
-                                .matches
-                                .args
-                                .get("file")
-                                .unwrap()
-                                .value
-                                .as_str()
-                                .unwrap();
-                            plugin::run_plugin_import(
-                                &app.handle(),
-                                &pool,
-                                "insomnia-importer",
-                                arg_file,
-                            )
-                            .await;
-                            exit(0);
-                        } else if cmd.name == "hello" {
-                            plugin::run_plugin_hello(&app.handle(), "hello-world");
-                            exit(0);
-                        }
-                    }
-                    Err(e) => {
-                        println!("Nothing found: {}", e);
-                    }
-                }
 
                 Ok(())
             })

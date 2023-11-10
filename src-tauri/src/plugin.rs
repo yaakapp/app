@@ -8,32 +8,25 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
-use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
 
-use crate::models::{self, Environment, Folder, HttpRequest, Workspace};
-
-pub fn run_plugin_hello(app_handle: &AppHandle, plugin_name: &str) {
-    run_plugin(app_handle, plugin_name, "hello", &[]);
-}
+use crate::models::{Environment, Folder, HttpRequest, Workspace};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
-pub struct ImportedResources {
-    workspaces: Vec<Workspace>,
-    environments: Vec<Environment>,
-    folders: Vec<Folder>,
-    requests: Vec<HttpRequest>,
+pub struct ImportResources {
+    pub workspaces: Vec<Workspace>,
+    pub environments: Vec<Environment>,
+    pub folders: Vec<Folder>,
+    pub requests: Vec<HttpRequest>,
 }
 
 pub async fn run_plugin_import(
     app_handle: &AppHandle,
-    pool: &Pool<Sqlite>,
     plugin_name: &str,
     file_path: &str,
-) -> ImportedResources {
+) -> Option<ImportResources> {
     let file = fs::read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
@@ -43,44 +36,14 @@ pub async fn run_plugin_import(
         "pluginHookImport",
         &[js_string!(file_contents).into()],
     );
-    let resources: ImportedResources =
+
+    if result_json.is_null() {
+        return None;
+    }
+
+    let resources: ImportResources =
         serde_json::from_value(result_json).expect("failed to parse result json");
-    let mut imported_resources = ImportedResources::default();
-
-    info!("Importing resources");
-    for w in resources.workspaces {
-        let x = models::upsert_workspace(pool, w)
-            .await
-            .expect("Failed to create workspace");
-        imported_resources.workspaces.push(x.clone());
-        info!("Imported workspace: {}", x.name);
-    }
-
-    for e in resources.environments {
-        let x = models::upsert_environment(pool, e)
-            .await
-            .expect("Failed to create environment");
-        imported_resources.environments.push(x.clone());
-        info!("Imported environment: {}", x.name);
-    }
-
-    for f in resources.folders {
-        let x = models::upsert_folder(pool, f)
-            .await
-            .expect("Failed to create folder");
-        imported_resources.folders.push(x.clone());
-        info!("Imported folder: {}", x.name);
-    }
-
-    for r in resources.requests {
-        let x = models::upsert_request(pool, r)
-            .await
-            .expect("Failed to create request");
-        imported_resources.requests.push(x.clone());
-        info!("Imported request: {}", x.name);
-    }
-
-    imported_resources
+    Some(resources)
 }
 
 fn run_plugin(
