@@ -41,6 +41,7 @@ tauri = { version = "1.3", features = [
     "window-start-dragging",
     "dialog-open",
     "dialog-save",
+    "window-set-title",
 ] }
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["colored"] }
