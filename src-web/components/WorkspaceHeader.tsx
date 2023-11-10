@@ -21,6 +21,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
 
   return (
     <HStack
+      space={2}
       justifyContent="center"
       alignItems="center"
       className={classNames(className, 'w-full h-full')}

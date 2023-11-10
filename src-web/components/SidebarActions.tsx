@@ -14,15 +14,13 @@ export const SidebarActions = memo(function SidebarActions() {
 
   return (
     <HStack>
-      {hidden && (
-        <IconButton
-          onClick={toggle}
-          className="pointer-events-auto"
-          size="sm"
-          title="Show sidebar"
-          icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
-        />
-      )}
+      <IconButton
+        onClick={toggle}
+        className="pointer-events-auto"
+        size="sm"
+        title="Show sidebar"
+        icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
+      />
       <Dropdown
         items={[
           {

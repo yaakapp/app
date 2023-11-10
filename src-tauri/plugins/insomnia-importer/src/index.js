@@ -12,14 +12,19 @@ import { parseVariables } from './helpers/variables.js';
 import { importFolder } from './importers/folder.js';
 
 export function pluginHookImport(contents) {
-  const parsed = JSON.parse(contents);
-  if (!isJSObject(parsed)) {
-    return;
+  let parsed;
+  try {
+    parsed = JSON.parse(contents);
+  } catch (e) {
+    return undefined;
   }
 
-  const { _type, __export_format } = parsed;
-  if (_type !== 'export' || __export_format !== 4 || !Array.isArray(parsed.resources)) {
-    return;
+  if (!isJSObject(parsed)) {
+    return undefined;
+  }
+
+  if (!Array.isArray(parsed.requests)) {
+    return undefined;
   }
 
   const resources = {

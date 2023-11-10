@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use tauri::AppHandle;
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -796,6 +797,16 @@ pub fn generate_id(prefix: Option<&str>) -> String {
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct WorkspaceExport {
+    yaak_version: String,
+    yaak_schema: i64,
+    timestamp: NaiveDateTime,
+    resources: WorkspaceExportResources,
+}
+
+#[derive(Default, Debug, Deserialize, Serialize)]
+#[serde(default, rename_all = "camelCase")]
 pub struct WorkspaceExportResources {
     workspaces: Vec<Workspace>,
     environments: Vec<Environment>,
@@ -803,23 +814,29 @@ pub struct WorkspaceExportResources {
     requests: Vec<HttpRequest>,
 }
 
-pub(crate) async fn get_workspace_export_resources(
+pub async fn get_workspace_export_resources(
+    app_handle: &AppHandle,
     pool: &Pool<Sqlite>,
     workspace_id: &str,
-) -> WorkspaceExportResources {
+) -> WorkspaceExport {
     let workspace = get_workspace(workspace_id, pool)
         .await
         .expect("Failed to get workspace");
-    return WorkspaceExportResources {
-        workspaces: vec![workspace],
-        environments: find_environments(workspace_id, pool)
-            .await
-            .expect("Failed to get environments"),
-        folders: find_folders(workspace_id, pool)
-            .await
-            .expect("Failed to get folders"),
-        requests: find_requests(workspace_id, pool)
-            .await
-            .expect("Failed to get requests"),
+    return WorkspaceExport {
+        yaak_version: app_handle.package_info().version.clone().to_string(),
+        yaak_schema: 1,
+        timestamp: chrono::Utc::now().naive_utc(),
+        resources: WorkspaceExportResources {
+            workspaces: vec![workspace],
+            environments: find_environments(workspace_id, pool)
+                .await
+                .expect("Failed to get environments"),
+            folders: find_folders(workspace_id, pool)
+                .await
+                .expect("Failed to get folders"),
+            requests: find_requests(workspace_id, pool)
+                .await
+                .expect("Failed to get requests"),
+        },
     };
 }
