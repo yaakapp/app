@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useAlert } from '../hooks/useAlert';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
@@ -38,6 +39,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const { appearance, toggleAppearance } = useTheme();
   const dialog = useDialog();
   const prompt = usePrompt();
+  const alert = useAlert();
   const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {
@@ -155,7 +157,13 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         key: 'import-data',
         label: 'Import Data',
         leftSlot: <Icon icon="download" />,
-        onSelect: () => importData.mutate(),
+        onSelect: () =>
+          importData.mutateAsync().catch((err) => {
+            alert({
+              title: 'Import Failed',
+              body: err,
+            });
+          }),
       },
       {
         key: 'export-data',
