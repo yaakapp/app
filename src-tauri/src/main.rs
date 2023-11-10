@@ -21,9 +21,8 @@ use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
 use sqlx::migrate::Migrator;
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::types::Json;
-use sqlx::{ConnectOptions, Pool, Sqlite};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
@@ -65,10 +64,10 @@ async fn migrate_db(
         .path_resolver()
         .resolve_resource("migrations")
         .expect("failed to resolve resource");
-    println!("Running migrations at {}", p.to_string_lossy());
+    info!("Running migrations at {}", p.to_string_lossy());
     let m = Migrator::new(p).await.expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
-    println!("Migrations complete");
+    info!("Migrations complete");
     Ok(())
 }
 
@@ -83,7 +82,7 @@ async fn send_ephemeral_request(
     let response = models::HttpResponse::new();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
-    return actually_send_request(request, &response, &environment_id2, &app_handle, pool).await;
+    actually_send_request(request, &response, &environment_id2, &app_handle, pool).await
 }
 
 async fn actually_send_request(
@@ -195,7 +194,7 @@ async fn actually_send_request(
     let sendable_req = match sendable_req_result {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), &app_handle, pool).await;
+            return response_err(response, e.to_string(), app_handle, pool).await;
         }
     };
 
@@ -224,7 +223,7 @@ async fn actually_send_request(
                 let dir = app_handle.path_resolver().app_data_dir().unwrap();
                 let base_dir = dir.join("responses");
                 create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
-                let body_path = match response.id == "" {
+                let body_path = match response.id.is_empty() {
                     false => base_dir.join(response.id.clone()),
                     true => base_dir.join(uuid::Uuid::new_v4().to_string()),
                 };
@@ -253,7 +252,7 @@ async fn actually_send_request(
             response = models::update_response_if_id(&response, pool)
                 .await
                 .expect("Failed to update response");
-            if request.id != "" {
+            if request.id.is_empty() {
                 emit_side_effect(app_handle, "updated_model", &response);
             }
             Ok(response)
@@ -793,6 +792,8 @@ fn main() {
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .level_for("tao", log::LevelFilter::Info)
+                .level_for("sqlx", log::LevelFilter::Warn)
                 .build(),
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())
@@ -810,14 +811,7 @@ fn main() {
             println!("Connecting to database at {}", url);
 
             tauri::async_runtime::block_on(async move {
-                let pool = SqlitePoolOptions::new()
-                    .connect_with(
-                        SqliteConnectOptions::new()
-                            .filename(p)
-                            .create_if_missing(true)
-                            .disable_statement_logging()
-                            .clone(),
-                    )
+                let pool = SqlitePool::connect(p.to_str().unwrap())
                     .await
                     .expect("Failed to connect to database");
 
@@ -868,8 +862,8 @@ fn main() {
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|app_handle, event| match event {
-            RunEvent::Ready => {
+        .run(|app_handle, event| {
+            if let RunEvent::Ready = event {
                 let w = create_window(app_handle, None);
                 w.restore_state(StateFlags::all())
                     .expect("Failed to restore window state");
@@ -881,10 +875,6 @@ fn main() {
                     None,
                 );
             }
-
-            // ExitRequested { api, .. } => {
-            // }
-            _ => {}
         });
 }
 
@@ -954,9 +944,9 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         "focus_url" => win2.emit("focus_url", true).unwrap(),
         "focus_sidebar" => win2.emit("focus_sidebar", true).unwrap(),
         "send_request" => win2.emit("send_request", true).unwrap(),
-        "new_request" => _ = win2.emit("new_request", true).unwrap(),
-        "toggle_settings" => _ = win2.emit("toggle_settings", true).unwrap(),
-        "duplicate_request" => _ = win2.emit("duplicate_request", true).unwrap(),
+        "new_request" => win2.emit("new_request", true).unwrap(),
+        "toggle_settings" => win2.emit("toggle_settings", true).unwrap(),
+        "duplicate_request" => win2.emit("duplicate_request", true).unwrap(),
         "refresh" => win2.eval("location.reload()").unwrap(),
         "new_window" => _ = create_window(&handle2, None),
         "toggle_devtools" => {
