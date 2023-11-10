@@ -37,7 +37,6 @@ tauri = { version = "1.3", features = [
     "os-all",
     "protocol-asset",
     "shell-open",
-    "system-tray",
     "updater",
     "window-start-dragging",
     "dialog-open",
