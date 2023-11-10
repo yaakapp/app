@@ -7,6 +7,7 @@ import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
 import type { Environment, Folder, HttpRequest, Workspace } from '../lib/models';
 import { count } from '../lib/pluralize';
+import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
 
 const openArgs: OpenDialogOptions = {
@@ -17,8 +18,12 @@ const openArgs: OpenDialogOptions = {
 export function useImportData() {
   const routes = useAppRoutes();
   const dialog = useDialog();
+  const alert = useAlert();
 
   return useMutation({
+    onError: (err: string) => {
+      alert({ title: 'Import Failed', body: err });
+    },
     mutationFn: async () => {
       const selected = await open(openArgs);
       if (selected == null || selected.length === 0) {

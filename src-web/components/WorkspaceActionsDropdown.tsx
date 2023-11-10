@@ -157,13 +157,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         key: 'import-data',
         label: 'Import Data',
         leftSlot: <Icon icon="download" />,
-        onSelect: () =>
-          importData.mutateAsync().catch((err) => {
-            alert({
-              title: 'Import Failed',
-              body: err,
-            });
-          }),
+        onSelect: () => importData.mutate(),
       },
       {
         key: 'export-data',
