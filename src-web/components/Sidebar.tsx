@@ -426,6 +426,9 @@ function SidebarItems({
             selected={selectedId === child.item.id}
             itemId={child.item.id}
             itemName={child.item.name}
+            itemFallbackName={
+              child.item.model === 'http_request' ? defaultRequestName(child.item) : 'New Folder'
+            }
             itemModel={child.item.model}
             onMove={handleMove}
             onEnd={handleEnd}
@@ -468,6 +471,7 @@ type SidebarItemProps = {
   className?: string;
   itemId: string;
   itemName: string;
+  itemFallbackName: string;
   itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
@@ -483,6 +487,7 @@ const SidebarItem = forwardRef(function SidebarItem(
     children,
     className,
     itemName,
+    itemFallbackName,
     itemId,
     itemModel,
     useProminentStyles,
@@ -581,7 +586,7 @@ const SidebarItem = forwardRef(function SidebarItem(
         .then((r) => console.log(r))
         .catch((e) => console.log(e));
     },
-    [itemModel, sendRequest, deleteRequest, sendManyRequests, child.children],
+    [itemModel, sendRequest, deleteRequest, sendManyRequests, child.children, deleteFolder],
   );
 
   const handleSelect = useCallback(() => onSelect(itemId), [onSelect, itemId]);
@@ -662,7 +667,7 @@ const SidebarItem = forwardRef(function SidebarItem(
             isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
               'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-400/20 text-gray-950',
+            selected && useProminentStyles && '!bg-violet-400/20 text-gray-800',
           )}
         >
           {itemModel === 'folder' && (
@@ -685,7 +690,7 @@ const SidebarItem = forwardRef(function SidebarItem(
             />
           ) : (
             <span className={classNames('truncate', !itemName && 'text-gray-400 italic')}>
-              {itemName || 'New Request'}
+              {itemName || itemFallbackName || 'New Request'}
             </span>
           )}
           {latestResponse && (
@@ -772,4 +777,17 @@ function DraggableSidebarItem({
       {...props}
     />
   );
+}
+
+function defaultRequestName(r: HttpRequest) {
+  if (!r.url) {
+    return 'New Request';
+  }
+
+  try {
+    const url = new URL(r.url);
+    return url.pathname != '/' ? url.host + url.pathname : url.host;
+  } catch (_) {
+    return '';
+  }
 }

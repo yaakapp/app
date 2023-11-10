@@ -23,9 +23,8 @@ export function useCreateRequest() {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
-      patch.name = patch.name || 'New Request';
       patch.sortPriority = patch.sortPriority || maxSortPriority(requests) + 1000;
-      return invoke('create_request', { workspaceId, ...patch });
+      return invoke('create_request', { workspaceId, name: '', ...patch });
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {
