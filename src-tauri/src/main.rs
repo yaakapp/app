@@ -253,7 +253,7 @@ async fn actually_send_request(
             response = models::update_response_if_id(&response, pool)
                 .await
                 .expect("Failed to update response");
-            if request.id.is_empty() {
+            if !request.id.is_empty() {
                 emit_side_effect(app_handle, "updated_model", &response);
             }
             Ok(response)
