@@ -8,6 +8,7 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
+use log::debug;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::AppHandle;
@@ -59,7 +60,10 @@ fn run_plugin(
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("out/index.js");
 
-    println!("Plugin dir={:?} file={:?}", plugin_dir, plugin_index_file);
+    debug!(
+        "Running plugin dir={:?} file={:?}",
+        plugin_dir, plugin_index_file
+    );
 
     // Module loader for the specific plugin
     let loader = &SimpleModuleLoader::new(plugin_dir).expect("failed to create module loader");

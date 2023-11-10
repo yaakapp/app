@@ -1,3 +1,4 @@
+use log::{debug, warn};
 use sqlx::types::JsonValue;
 use tauri::{async_runtime, AppHandle, Manager};
 
@@ -73,14 +74,14 @@ pub fn track_event(
             .query(&params);
 
         if is_dev() {
-            println!("Ignore dev analytics event: {} {:?}", event, params);
+            debug!("Ignore dev analytics event: {} {:?}", event, params);
         } else if let Err(e) = req.send().await {
-            println!(
+            warn!(
                 "Error sending analytics event: {} {} {:?}",
                 e, event, params
             );
         } else {
-            println!("Sent analytics event: {}: {:?}", event, params);
+            debug!("Sent analytics event: {}: {:?}", event, params);
         }
     });
 }

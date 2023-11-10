@@ -164,7 +164,7 @@ pub async fn set_key_value(
     let kv = get_key_value(namespace, key, pool)
         .await
         .expect("Failed to get key value");
-    return (kv, existing.is_none());
+    (kv, existing.is_none())
 }
 
 pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {
@@ -627,10 +627,11 @@ pub async fn update_response_if_id(
     response: &HttpResponse,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
-    if response.id == "" {
-        return Ok(response.clone());
+    if response.id.is_empty() {
+        Ok(response.clone())
+    } else {
+        update_response(response, pool).await
     }
-    return update_response(response, pool).await;
 }
 
 pub async fn upsert_workspace(
@@ -790,10 +791,10 @@ pub async fn delete_all_responses(
 
 pub fn generate_id(prefix: Option<&str>) -> String {
     let id = Alphanumeric.sample_string(&mut rand::thread_rng(), 10);
-    return match prefix {
+    match prefix {
         None => id,
         Some(p) => format!("{p}_{id}"),
-    };
+    }
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
