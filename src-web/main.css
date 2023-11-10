@@ -3,67 +3,69 @@
 @tailwind utilities;
 
 @layer base {
-    html, body, #root {
-        @apply w-full h-full overflow-hidden bg-gray-50 text-gray-900;
+  html,
+  body,
+  #root {
+    @apply w-full h-full overflow-hidden bg-gray-50 text-gray-900;
+  }
+
+  /* Setup default transitions for elements */
+  * {
+    transition: background-color var(--transition-duration), border-color var(--transition-duration),
+      box-shadow var(--transition-duration);
+    font-variant-ligatures: none;
+  }
+
+  ::selection {
+    @apply bg-selection;
+  }
+
+  /* Disable user selection to make it more "app-like" */
+  :not(input):not(textarea),
+  :not(input):not(textarea)::after,
+  :not(input):not(textarea)::before {
+    @apply select-none cursor-default;
+  }
+
+  .hide-scrollbars {
+    &::-webkit-scrollbar-corner,
+    &::-webkit-scrollbar {
+      display: none !important;
+    }
+  }
+
+  /* Style the scrollbars */
+  * {
+    ::-webkit-scrollbar-corner,
+    ::-webkit-scrollbar {
+      @apply w-1.5 h-1.5;
     }
 
-    /* Setup default transitions for elements */
-    * {
-        transition: background-color var(--transition-duration),
-        border-color var(--transition-duration),
-        box-shadow var(--transition-duration);
+    .scrollbar-track,
+    ::-webkit-scrollbar-corner,
+    ::-webkit-scrollbar {
+      @apply bg-transparent;
     }
 
-    ::selection {
-        @apply bg-selection;
+    &:hover {
+      &.scrollbar-thumb,
+      &::-webkit-scrollbar-thumb {
+        @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
+      }
     }
+  }
 
-    /* Disable user selection to make it more "app-like" */
-    :not(input):not(textarea),
-    :not(input):not(textarea)::after,
-    :not(input):not(textarea)::before {
-        @apply select-none cursor-default;
+  iframe {
+    &::-webkit-scrollbar-corner,
+    &::-webkit-scrollbar {
+      @apply bg-gray-100;
     }
+  }
 
-    .hide-scrollbars {
-        &::-webkit-scrollbar-corner,
-        &::-webkit-scrollbar {
-            display: none !important;
-        }
-    }
-
-    /* Style the scrollbars */
-    * {
-        ::-webkit-scrollbar-corner,
-        ::-webkit-scrollbar {
-            @apply w-1.5 h-1.5;
-        }
-
-        .scrollbar-track,
-        ::-webkit-scrollbar-corner,
-        ::-webkit-scrollbar {
-            @apply bg-transparent;
-        }
-
-        &:hover {
-            &.scrollbar-thumb,
-            &::-webkit-scrollbar-thumb {
-                @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
-            }
-        }
-    }
-
-    iframe {
-        &::-webkit-scrollbar-corner,
-        &::-webkit-scrollbar {
-            @apply bg-gray-100;
-        }
-    }
-
-    :root {
-        color-scheme: light dark;
-        --transition-duration: 100ms ease-in-out;
-        --color-white: 255 100% 100%;
-        --color-black: 255 0% 0%;
-    }
+  :root {
+    color-scheme: light dark;
+    --transition-duration: 100ms ease-in-out;
+    --color-white: 255 100% 100%;
+    --color-black: 255 0% 0%;
+  }
 }
