@@ -1,13 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { OpenDialogOptions } from '@tauri-apps/api/dialog';
-import { open } from '@tauri-apps/api/dialog';
+import type { SaveDialogOptions } from '@tauri-apps/api/dialog';
+import { save } from '@tauri-apps/api/dialog';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
-const openArgs: OpenDialogOptions = {
-  directory: true,
-  multiple: false,
-  title: 'Select Export Folder',
+const saveArgs: SaveDialogOptions = {
+  title: 'Export Data',
+  defaultPath: 'yaak-export.json',
 };
 
 export function useExportData() {
@@ -15,12 +14,7 @@ export function useExportData() {
 
   return useMutation({
     mutationFn: async () => {
-      const selected = await open(openArgs);
-      if (selected == null) {
-        return;
-      }
-
-      const rootDir = Array.isArray(selected) ? selected[0] : selected;
+      const rootDir = await save(saveArgs);
       if (rootDir == null) {
         return;
       }
