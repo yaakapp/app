@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
+import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
 import { useConfirm } from './useConfirm';
@@ -20,7 +21,7 @@ export function useDeleteAnyRequest() {
         variant: 'delete',
         description: (
           <>
-            Permanently delete <InlineCode>{request?.name}</InlineCode>?
+            Permanently delete <InlineCode>{fallbackRequestName(request)}</InlineCode>?
           </>
         ),
       });
