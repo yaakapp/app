@@ -14,12 +14,12 @@ export function useExportData() {
 
   return useMutation({
     mutationFn: async () => {
-      const rootDir = await save(saveArgs);
-      if (rootDir == null) {
+      const exportPath = await save(saveArgs);
+      if (exportPath == null) {
         return;
       }
 
-      await invoke('export_data', { workspaceId, rootDir });
+      await invoke('export_data', { workspaceId, exportPath });
     },
   });
 }
