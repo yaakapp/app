@@ -269,26 +269,23 @@ async fn import_data(
     file_paths: Vec<&str>,
 ) -> Result<ImportResources, String> {
     let pool = &*db_instance.lock().await;
-    let mut resources = plugin::run_plugin_import(
-        &window.app_handle(),
-        "insomnia-importer",
-        file_paths.first().unwrap(),
-    )
-    .await;
-    println!("Resources: {:?}", resources);
-
-    if resources.is_none() {
-        resources = plugin::run_plugin_import(
+    let mut resources: Option<ImportResources> = None;
+    let plugins = vec!["yaak-importer", "insomnia-importer"];
+    for plugin_name in plugins {
+        if let Some(r) = plugin::run_plugin_import(
             &window.app_handle(),
-            "yaak-importer",
+            plugin_name,
             file_paths.first().unwrap(),
         )
-        .await;
+        .await
+        {
+            resources = Some(r);
+            break;
+        }
     }
-    println!("Resources: {:?}", resources);
 
     match resources {
-        None => Err("Failed to import data".to_string()),
+        None => Err("No importers found for the chosen file".to_string()),
         Some(r) => {
             let mut imported_resources = ImportResources::default();
 
