@@ -10,6 +10,7 @@ import { useRequests } from '../hooks/useRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
+import { CountBadge } from './core/CountBadge';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 
@@ -63,8 +64,8 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
 
       recentRequestItems.push({
         key: request.id,
-        label: request.name,
-        // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
+        label: fallbackRequestName(request),
+        leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
