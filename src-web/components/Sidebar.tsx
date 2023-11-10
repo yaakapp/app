@@ -667,7 +667,9 @@ const SidebarItem = forwardRef(function SidebarItem(
             isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
               'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-400/20 text-gray-800',
+            selected && useProminentStyles && '!bg-violet-400/20',
+            !itemName && selected && '!text-gray-600 italic',
+            !itemName && !selected && '!text-gray-400 italic',
           )}
         >
           {itemModel === 'folder' && (
@@ -689,9 +691,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               onKeyDown={handleInputKeyDown}
             />
           ) : (
-            <span className={classNames('truncate', !itemName && 'text-gray-400 italic')}>
-              {itemName || itemFallbackName || 'New Request'}
-            </span>
+            <span className="truncate">{itemName || itemFallbackName || 'New Request'}</span>
           )}
           {latestResponse && (
             <div className="ml-auto">
