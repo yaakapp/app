@@ -782,10 +782,15 @@ function defaultRequestName(r: HttpRequest): string | null {
     return '';
   }
 
+  const fixedUrl = r.url.match(/^https?:\/\//) ? r.url : 'http://' + r.url;
+
   try {
-    const url = new URL(r.url);
-    return url.pathname != '/' ? url.host + url.pathname : url.host;
+    const url = new URL(fixedUrl);
+    const pathname = url.pathname === '/' ? '' : url.pathname;
+    return `${url.host}${pathname}`;
   } catch (_) {
-    return r.url;
+    // Nothing
   }
+
+  return null;
 }
