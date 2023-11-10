@@ -11,6 +11,7 @@ import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
+import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { trackPage } from '../lib/analytics';
 import { DEFAULT_FONT_SIZE } from '../lib/constants';
@@ -25,6 +26,8 @@ export function GlobalHooks() {
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
+
+  useSyncWindowTitle();
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);

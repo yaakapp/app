@@ -51,7 +51,8 @@
         "open": true
       },
       "window": {
-        "startDragging": true
+        "startDragging": true,
+        "setTitle": true
       },
       "dialog": {
         "all": false,
