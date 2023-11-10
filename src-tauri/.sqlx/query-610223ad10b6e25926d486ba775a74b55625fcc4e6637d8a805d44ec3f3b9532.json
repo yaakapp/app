@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO workspaces (id, name, description, variables)\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               description = excluded.description,\n               variables = excluded.variables\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "610223ad10b6e25926d486ba775a74b55625fcc4e6637d8a805d44ec3f3b9532"
+}
