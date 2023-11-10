@@ -152,16 +152,16 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
       },
       {
-        key: 'export-data',
-        label: 'Export Data',
-        leftSlot: <Icon icon="upload" />,
-        onSelect: () => exportData.mutate(),
-      },
-      {
         key: 'import-data',
         label: 'Import Data',
         leftSlot: <Icon icon="download" />,
         onSelect: () => importData.mutate(),
+      },
+      {
+        key: 'export-data',
+        label: 'Export Data',
+        leftSlot: <Icon icon="upload" />,
+        onSelect: () => exportData.mutate(),
       },
     ];
   }, [
