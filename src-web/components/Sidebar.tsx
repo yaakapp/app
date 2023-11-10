@@ -471,7 +471,7 @@ type SidebarItemProps = {
   className?: string;
   itemId: string;
   itemName: string;
-  itemFallbackName: string;
+  itemFallbackName: string | null;
   itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
@@ -668,8 +668,6 @@ const SidebarItem = forwardRef(function SidebarItem(
             !isActive &&
               'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
             selected && useProminentStyles && '!bg-violet-400/20',
-            !itemName && selected && '!text-gray-600 italic',
-            !itemName && !selected && '!text-gray-400 italic',
           )}
         >
           {itemModel === 'folder' && (
@@ -779,15 +777,15 @@ function DraggableSidebarItem({
   );
 }
 
-function defaultRequestName(r: HttpRequest) {
+function defaultRequestName(r: HttpRequest): string | null {
   if (!r.url) {
-    return 'New Request';
+    return '';
   }
 
   try {
     const url = new URL(r.url);
     return url.pathname != '/' ? url.host + url.pathname : url.host;
   } catch (_) {
-    return '';
+    return r.url;
   }
 }
