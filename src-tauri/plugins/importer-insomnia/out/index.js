@@ -1,4 +1,4 @@
-function I(e, t) {
+function S(e, t) {
   return (
     console.log('IMPORTING Environment', e._id, e.name, JSON.stringify(e, null, 2)),
     {
@@ -16,13 +16,13 @@ function I(e, t) {
     }
   );
 }
-function S(e) {
+function I(e) {
   return m(e) && e._type === 'workspace';
 }
-function O(e) {
+function g(e) {
   return m(e) && e._type === 'request_group';
 }
-function g(e) {
+function y(e) {
   return m(e) && e._type === 'request';
 }
 function f(e) {
@@ -31,10 +31,10 @@ function f(e) {
 function m(e) {
   return Object.prototype.toString.call(e) === '[object Object]';
 }
-function y(e) {
+function O(e) {
   return Object.prototype.toString.call(e) === '[object String]';
 }
-function h(e) {
+function _(e) {
   return Object.entries(e).map(([t, n]) => ({
     enabled: !0,
     name: t,
@@ -42,9 +42,9 @@ function h(e) {
   }));
 }
 function d(e) {
-  return y(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') : e;
+  return O(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') : e;
 }
-function _(e, t, n = 0) {
+function h(e, t, n = 0) {
   var u, r;
   console.log('IMPORTING REQUEST', e._id, e.name, JSON.stringify(e, null, 2));
   let s = null,
@@ -92,7 +92,7 @@ function _(e, t, n = 0) {
     }
   );
 }
-function N(e, t) {
+function w(e, t) {
   return (
     console.log('IMPORTING Workspace', e._id, e.name, JSON.stringify(e, null, 2)),
     {
@@ -119,35 +119,31 @@ function D(e, t) {
     }
   );
 }
-function w(e) {
+function b(e) {
   let t;
   try {
     t = JSON.parse(e);
   } catch {
     return;
   }
-  if (!m(t) || !Array.isArray(t.requests)) return;
+  if (!m(t)) return;
   const n = {
       workspaces: [],
       requests: [],
       environments: [],
       folders: [],
     },
-    s = t.resources.filter(S);
+    s = t.resources.filter(I);
   for (const o of s) {
-    console.log('IMPORTING WORKSPACE', o.name);
     const a = t.resources.find((r) => f(r) && r.parentId === o._id);
-    console.log('FOUND BASE ENV', a.name),
-      n.workspaces.push(N(o, a ? h(a.data) : [])),
-      console.log('IMPORTING ENVIRONMENTS', a.name);
+    n.workspaces.push(w(o, a ? _(a.data) : []));
     const l = t.resources.filter((r) => f(r) && r.parentId === (a == null ? void 0 : a._id));
-    console.log('FOUND', l.length, 'ENVIRONMENTS'),
-      n.environments.push(...l.map((r) => I(r, o._id)));
+    n.environments.push(...l.map((r) => S(r, o._id)));
     const u = (r) => {
       const c = t.resources.filter((i) => i.parentId === r);
       let p = 0;
       for (const i of c)
-        O(i) ? (n.folders.push(D(i, o._id)), u(i._id)) : g(i) && n.requests.push(_(i, o._id, p++));
+        g(i) ? (n.folders.push(D(i, o._id)), u(i._id)) : y(i) && n.requests.push(h(i, o._id, p++));
     };
     u(o._id);
   }
@@ -155,7 +151,7 @@ function w(e) {
     (n.requests = n.requests.filter(Boolean)),
     (n.environments = n.environments.filter(Boolean)),
     (n.workspaces = n.workspaces.filter(Boolean)),
-    n
+    { resources: n }
   );
 }
-export { w as pluginHookImport };
+export { b as pluginHookImport };

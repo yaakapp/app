@@ -23,10 +23,6 @@ export function pluginHookImport(contents) {
     return undefined;
   }
 
-  if (!Array.isArray(parsed.requests)) {
-    return undefined;
-  }
-
   const resources = {
     workspaces: [],
     requests: [],
@@ -37,22 +33,18 @@ export function pluginHookImport(contents) {
   // Import workspaces
   const workspacesToImport = parsed.resources.filter(isWorkspace);
   for (const workspaceToImport of workspacesToImport) {
-    console.log('IMPORTING WORKSPACE', workspaceToImport.name);
     const baseEnvironment = parsed.resources.find(
       (r) => isEnvironment(r) && r.parentId === workspaceToImport._id,
     );
-    console.log('FOUND BASE ENV', baseEnvironment.name);
     resources.workspaces.push(
       importWorkspace(
         workspaceToImport,
         baseEnvironment ? parseVariables(baseEnvironment.data) : [],
       ),
     );
-    console.log('IMPORTING ENVIRONMENTS', baseEnvironment.name);
     const environmentsToImport = parsed.resources.filter(
       (r) => isEnvironment(r) && r.parentId === baseEnvironment?._id,
     );
-    console.log('FOUND', environmentsToImport.length, 'ENVIRONMENTS');
     resources.environments.push(
       ...environmentsToImport.map((r) => importEnvironment(r, workspaceToImport._id)),
     );
@@ -79,5 +71,5 @@ export function pluginHookImport(contents) {
   resources.environments = resources.environments.filter(Boolean);
   resources.workspaces = resources.workspaces.filter(Boolean);
 
-  return resources;
+  return { resources };
 }
