@@ -74,14 +74,14 @@ pub fn track_event(
             .query(&params);
 
         if is_dev() {
-            debug!("Ignore dev analytics event: {} {:?}", event, params);
+            debug!("Send event (dev): {}", event);
         } else if let Err(e) = req.send().await {
             warn!(
                 "Error sending analytics event: {} {} {:?}",
                 e, event, params
             );
         } else {
-            debug!("Sent analytics event: {}: {:?}", event, params);
+            debug!("Send event: {}: {:?}", event, params);
         }
     });
 }

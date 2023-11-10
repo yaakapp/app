@@ -65,11 +65,11 @@
       "copyright": "",
       "externalBin": [],
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+        "icons/release/32x32.png",
+        "icons/release/128x128.png",
+        "icons/release/128x128@2x.png",
+        "icons/release/icon.icns",
+        "icons/release/icon.ico"
       ],
       "identifier": "co.schier.yaak",
       "longDescription": "The best cross-platform visual API client",
@@ -100,10 +100,6 @@
       }
     },
     "security": {},
-    "systemTray": {
-      "iconAsTemplate": true,
-      "iconPath": "icons/icon.png"
-    },
     "updater": {
       "active": true,
       "dialog": true,

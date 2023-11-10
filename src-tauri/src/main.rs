@@ -795,6 +795,9 @@ fn main() {
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .level_for("tao", log::LevelFilter::Info)
                 .level_for("sqlx", log::LevelFilter::Warn)
+                .level_for("hyper", log::LevelFilter::Info)
+                .level_for("tracing", log::LevelFilter::Info)
+                .level_for("reqwest", log::LevelFilter::Debug)
                 .with_colors(ColoredLevelConfig::default())
                 .level(log::LevelFilter::Trace)
                 .build(),
@@ -920,10 +923,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         100.0 + random::<f64>() * 30.0,
         100.0 + random::<f64>() * 30.0,
     )
-    .title(match is_dev() {
-        true => "Yaak Dev",
-        false => "Yaak",
-    });
+    .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
