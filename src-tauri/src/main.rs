@@ -14,6 +14,7 @@ use std::io::Write;
 use std::process::exit;
 
 use base64::Engine;
+use fern::colors::ColoredLevelConfig;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
 use log::info;
@@ -27,14 +28,14 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
-use tauri_plugin_log::LogTarget;
+use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
-use crate::plugin::ImportResources;
+use crate::plugin::{ImportResources, ImportResult};
 
 mod analytics;
 mod models;
@@ -268,8 +269,8 @@ async fn import_data(
     file_paths: Vec<&str>,
 ) -> Result<ImportResources, String> {
     let pool = &*db_instance.lock().await;
-    let mut resources: Option<ImportResources> = None;
-    let plugins = vec!["yaak-importer", "insomnia-importer"];
+    let mut result: Option<ImportResult> = None;
+    let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
         if let Some(r) = plugin::run_plugin_import(
             &window.app_handle(),
@@ -278,18 +279,18 @@ async fn import_data(
         )
         .await
         {
-            resources = Some(r);
+            result = Some(r);
             break;
         }
     }
 
-    match resources {
+    match result {
         None => Err("No importers found for the chosen file".to_string()),
         Some(r) => {
             let mut imported_resources = ImportResources::default();
 
             info!("Importing resources");
-            for w in r.workspaces {
+            for w in r.resources.workspaces {
                 let x = models::upsert_workspace(pool, w)
                     .await
                     .expect("Failed to create workspace");
@@ -297,7 +298,7 @@ async fn import_data(
                 info!("Imported workspace: {}", x.name);
             }
 
-            for e in r.environments {
+            for e in r.resources.environments {
                 let x = models::upsert_environment(pool, e)
                     .await
                     .expect("Failed to create environment");
@@ -305,7 +306,7 @@ async fn import_data(
                 info!("Imported environment: {}", x.name);
             }
 
-            for f in r.folders {
+            for f in r.resources.folders {
                 let x = models::upsert_folder(pool, f)
                     .await
                     .expect("Failed to create folder");
@@ -313,7 +314,7 @@ async fn import_data(
                 info!("Imported folder: {}", x.name);
             }
 
-            for r in r.requests {
+            for r in r.resources.requests {
                 let x = models::upsert_request(pool, r)
                     .await
                     .expect("Failed to create request");
@@ -794,6 +795,8 @@ fn main() {
                 .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
                 .level_for("tao", log::LevelFilter::Info)
                 .level_for("sqlx", log::LevelFilter::Warn)
+                .with_colors(ColoredLevelConfig::default())
+                .level(log::LevelFilter::Trace)
                 .build(),
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())

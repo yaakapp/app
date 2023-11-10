@@ -16,6 +16,11 @@ use tauri::AppHandle;
 use crate::models::{Environment, Folder, HttpRequest, Workspace};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
+pub struct ImportResult {
+    pub resources: ImportResources,
+}
+
+#[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ImportResources {
     pub workspaces: Vec<Workspace>,
     pub environments: Vec<Environment>,
@@ -27,7 +32,7 @@ pub async fn run_plugin_import(
     app_handle: &AppHandle,
     plugin_name: &str,
     file_path: &str,
-) -> Option<ImportResources> {
+) -> Option<ImportResult> {
     let file = fs::read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
@@ -42,7 +47,7 @@ pub async fn run_plugin_import(
         return None;
     }
 
-    let resources: ImportResources =
+    let resources: ImportResult =
         serde_json::from_value(result_json).expect("failed to parse result json");
     Some(resources)
 }
