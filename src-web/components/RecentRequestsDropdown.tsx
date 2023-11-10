@@ -7,6 +7,7 @@ import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
+import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
@@ -98,7 +99,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
           activeRequest === null && 'text-opacity-disabled italic',
         )}
       >
-        {activeRequest?.name ?? 'No Request'}
+        {fallbackRequestName(activeRequest)}
       </Button>
     </Dropdown>
   );

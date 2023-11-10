@@ -27,6 +27,7 @@ import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -427,7 +428,7 @@ function SidebarItems({
             itemId={child.item.id}
             itemName={child.item.name}
             itemFallbackName={
-              child.item.model === 'http_request' ? defaultRequestName(child.item) : 'New Folder'
+              child.item.model === 'http_request' ? fallbackRequestName(child.item) : 'New Folder'
             }
             itemModel={child.item.model}
             onMove={handleMove}
@@ -471,7 +472,7 @@ type SidebarItemProps = {
   className?: string;
   itemId: string;
   itemName: string;
-  itemFallbackName: string | null;
+  itemFallbackName: string;
   itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
@@ -689,7 +690,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               onKeyDown={handleInputKeyDown}
             />
           ) : (
-            <span className="truncate">{itemName || itemFallbackName || 'New Request'}</span>
+            <span className="truncate">{itemName || itemFallbackName}</span>
           )}
           {latestResponse && (
             <div className="ml-auto">
@@ -775,22 +776,4 @@ function DraggableSidebarItem({
       {...props}
     />
   );
-}
-
-function defaultRequestName(r: HttpRequest): string | null {
-  if (!r.url) {
-    return '';
-  }
-
-  const fixedUrl = r.url.match(/^https?:\/\//) ? r.url : 'http://' + r.url;
-
-  try {
-    const url = new URL(fixedUrl);
-    const pathname = url.pathname === '/' ? '' : url.pathname;
-    return `${url.host}${pathname}`;
-  } catch (_) {
-    // Nothing
-  }
-
-  return null;
 }
