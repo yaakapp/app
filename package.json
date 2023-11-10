@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "tauri-dev": "YAAK_ENV=development tauri dev",
+    "tauri-dev": "RUST_LOG=warn YAAK_ENV=development tauri dev",
     "tauri-build": "tauri build",
     "tauri": "tauri",
     "build": "npm run build:frontend",
