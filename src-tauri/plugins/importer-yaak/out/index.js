@@ -5,7 +5,7 @@ function u(r) {
   } catch {
     return;
   }
-  if (t(e) && e.yaakSchema === 1) return e.resources;
+  if (t(e) && e.yaakSchema === 1) return { resources: e.resources };
 }
 function t(r) {
   return Object.prototype.toString.call(r) === '[object Object]';

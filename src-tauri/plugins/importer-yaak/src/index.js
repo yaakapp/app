@@ -12,7 +12,7 @@ export function pluginHookImport(contents) {
 
   if (parsed.yaakSchema !== 1) return undefined;
 
-  return parsed.resources; // Should already be in the correct format
+  return { resources: parsed.resources }; // Should already be in the correct format
 }
 
 export function isJSObject(obj) {
