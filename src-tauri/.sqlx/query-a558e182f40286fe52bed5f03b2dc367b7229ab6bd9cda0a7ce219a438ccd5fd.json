@@ -1,0 +1,104 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE workspace_id = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "model",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "workspace_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "folder_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 4,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 5,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "name",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "url",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "method",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "body",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "body_type",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "authentication!: Json<HashMap<String, JsonValue>>",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "authentication_type",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "sort_priority",
+        "ordinal": 13,
+        "type_info": "Float"
+      },
+      {
+        "name": "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>",
+        "ordinal": 14,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "a558e182f40286fe52bed5f03b2dc367b7229ab6bd9cda0a7ce219a438ccd5fd"
+}
