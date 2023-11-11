@@ -1,6 +1,5 @@
 import { importEnvironment } from './importers/environment.js';
 import { importRequest } from './importers/request.js';
-import { importWorkspace } from './importers/workspace.js';
 import {
   isEnvironment,
   isJSObject,
@@ -12,16 +11,16 @@ import { parseVariables } from './helpers/variables.js';
 import { importFolder } from './importers/folder.js';
 
 export function pluginHookImport(contents) {
+  console.log('RUNNING INSOMNIA');
   let parsed;
   try {
     parsed = JSON.parse(contents);
   } catch (e) {
-    return undefined;
+    return;
   }
 
-  if (!isJSObject(parsed)) {
-    return undefined;
-  }
+  if (!isJSObject(parsed)) return;
+  if (!Array.isArray(parsed.resources)) return;
 
   const resources = {
     workspaces: [],
@@ -36,12 +35,14 @@ export function pluginHookImport(contents) {
     const baseEnvironment = parsed.resources.find(
       (r) => isEnvironment(r) && r.parentId === workspaceToImport._id,
     );
-    resources.workspaces.push(
-      importWorkspace(
-        workspaceToImport,
-        baseEnvironment ? parseVariables(baseEnvironment.data) : [],
-      ),
-    );
+    resources.workspaces.push({
+      id: workspaceToImport._id,
+      createdAt: new Date(workspacesToImport.created ?? Date.now()).toISOString().replace('Z', ''),
+      updatedAt: new Date(workspacesToImport.updated ?? Date.now()).toISOString().replace('Z', ''),
+      model: 'workspace',
+      name: workspaceToImport.name,
+      variables: baseEnvironment ? parseVariables(baseEnvironment.data) : [],
+    });
     const environmentsToImport = parsed.resources.filter(
       (r) => isEnvironment(r) && r.parentId === baseEnvironment?._id,
     );
