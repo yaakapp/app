@@ -1,5 +1,4 @@
 import type { CompletionContext } from '@codemirror/autocomplete';
-import { w } from '@tauri-apps/api/clipboard-79413165';
 
 const openTag = '${[ ';
 const closeTag = ' ]}';
@@ -12,8 +11,8 @@ export interface TwigCompletionConfig {
   options: TwigCompletionOption[];
 }
 
-const MIN_MATCH_VAR = 2;
-const MIN_MATCH_NAME = 1;
+const MIN_MATCH_VAR = 1;
+const MIN_MATCH_NAME = 2;
 
 export function twigCompletion({ options }: TwigCompletionConfig) {
   return function completions(context: CompletionContext) {
