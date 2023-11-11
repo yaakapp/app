@@ -1,6 +1,8 @@
 import { Environment, Folder, HttpRequest, Workspace } from '../../../../src-web/lib/models';
 
 const POSTMAN_2_1_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json';
+const POSTMAN_2_0_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json';
+const VALID_SCHEMAS = [POSTMAN_2_0_0_SCHEMA, POSTMAN_2_1_0_SCHEMA];
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -16,7 +18,8 @@ export function pluginHookImport(contents: string): { resources: ExportResources
   if (root == null) return;
 
   const info = toRecord(root.info);
-  if (info.schema !== POSTMAN_2_1_0_SCHEMA || !Array.isArray(root.item)) {
+  const isValidSchema = VALID_SCHEMAS.includes(info.schema);
+  if (!isValidSchema || !Array.isArray(root.item)) {
     return;
   }
 
@@ -51,6 +54,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     } else if (typeof v.name === 'string' && 'request' in v) {
       const r = toRecord(v.request);
       const bodyPatch = importBody(r.body);
+      const authPatch = importAuth(r.auth);
       const request: ExportResources['requests'][0] = {
         model: 'http_request',
         id: `req_${exportResources.requests.length}`,
@@ -58,13 +62,22 @@ export function pluginHookImport(contents: string): { resources: ExportResources
         folderId,
         name: v.name,
         method: r.method || 'GET',
-        url: toRecord(r.url).raw,
-        headers: [...bodyPatch.headers, ...toArray(r.header).map(importHeader)],
+        url: typeof r.url === 'string' ? r.url : toRecord(r.url).raw,
         body: bodyPatch.body,
         bodyType: bodyPatch.bodyType,
-
-        // TODO: support auth
-        // ...importAuth(r.auth),
+        authentication: authPatch.authentication,
+        authenticationType: authPatch.authenticationType,
+        headers: [
+          ...bodyPatch.headers,
+          ...authPatch.headers,
+          ...toArray(r.header).map((h) => {
+            return {
+              name: h.key,
+              value: h.value,
+              enabled: !h.disabled,
+            };
+          }),
+        ],
       };
       exportResources.requests.push(request);
     } else {
@@ -79,10 +92,23 @@ export function pluginHookImport(contents: string): { resources: ExportResources
   return { resources: exportResources };
 }
 
-function importHeader(h: any): HttpRequest['headers'][0] {
-  const header = toRecord(h);
-  // TODO: support header
-  return { name: header.key, value: header.value, enabled: true };
+function importAuth(
+  rawAuth: any,
+): Pick<HttpRequest, 'authentication' | 'authenticationType' | 'headers'> {
+  const auth = toRecord(rawAuth);
+  if ('basic' in auth) {
+    return {
+      headers: [],
+      authenticationType: 'basic',
+      authentication: {
+        username: auth.basic.username || '',
+        password: auth.basic.password || '',
+      },
+    };
+  } else {
+    // TODO: support other auth types
+    return { headers: [], authenticationType: null, authentication: {} };
+  }
 }
 
 function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'headers'> {

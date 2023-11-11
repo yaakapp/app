@@ -8,10 +8,10 @@ function S(e, t) {
       workspaceId: t,
       model: 'environment',
       name: e.name,
-      variables: Object.entries(e.data).map(([n, s]) => ({
+      variables: Object.entries(e.data).map(([n, a]) => ({
         enabled: !0,
         name: n,
-        value: `${s}`,
+        value: `${a}`,
       })),
     }
   );
@@ -19,10 +19,10 @@ function S(e, t) {
 function I(e) {
   return m(e) && e._type === 'workspace';
 }
-function g(e) {
+function y(e) {
   return m(e) && e._type === 'request_group';
 }
-function y(e) {
+function g(e) {
   return m(e) && e._type === 'request';
 }
 function f(e) {
@@ -31,41 +31,41 @@ function f(e) {
 function m(e) {
   return Object.prototype.toString.call(e) === '[object Object]';
 }
-function O(e) {
+function w(e) {
   return Object.prototype.toString.call(e) === '[object String]';
 }
-function _(e) {
+function O(e) {
   return Object.entries(e).map(([t, n]) => ({
     enabled: !0,
     name: t,
     value: `${n}`,
   }));
 }
-function d(e) {
-  return O(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') : e;
+function l(e) {
+  return w(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') : e;
 }
 function h(e, t, n = 0) {
-  var u, r;
+  var c, o;
   console.log('IMPORTING REQUEST', e._id, e.name, JSON.stringify(e, null, 2));
-  let s = null,
-    o = null;
-  ((u = e.body) == null ? void 0 : u.mimeType) === 'application/graphql'
-    ? ((s = 'graphql'), (o = d(e.body.text)))
-    : ((r = e.body) == null ? void 0 : r.mimeType) === 'application/json' &&
-      ((s = 'application/json'), (o = d(e.body.text)));
   let a = null,
-    l = {};
+    r = null;
+  ((c = e.body) == null ? void 0 : c.mimeType) === 'application/graphql'
+    ? ((a = 'graphql'), (r = l(e.body.text)))
+    : ((o = e.body) == null ? void 0 : o.mimeType) === 'application/json' &&
+      ((a = 'application/json'), (r = l(e.body.text)));
+  let i = null,
+    u = {};
   return (
     e.authentication.type === 'bearer'
-      ? ((a = 'bearer'),
-        (l = {
-          token: d(e.authentication.token),
+      ? ((i = 'bearer'),
+        (u = {
+          token: l(e.authentication.token),
         }))
       : e.authentication.type === 'basic' &&
-        ((a = 'basic'),
-        (l = {
-          username: d(e.authentication.username),
-          password: d(e.authentication.password),
+        ((i = 'basic'),
+        (u = {
+          username: l(e.authentication.username),
+          password: l(e.authentication.password),
         })),
     {
       id: e._id,
@@ -76,36 +76,23 @@ function h(e, t, n = 0) {
       model: 'http_request',
       sortPriority: n,
       name: e.name,
-      url: d(e.url),
-      body: o,
-      bodyType: s,
-      authentication: l,
-      authenticationType: a,
+      url: l(e.url),
+      body: r,
+      bodyType: a,
+      authentication: u,
+      authenticationType: i,
       method: e.method,
       headers: (e.headers ?? [])
-        .map(({ name: c, value: p, disabled: i }) => ({
-          enabled: !i,
-          name: c,
+        .map(({ name: d, value: p, disabled: s }) => ({
+          enabled: !s,
+          name: d,
           value: p,
         }))
-        .filter(({ name: c, value: p }) => c !== '' || p !== ''),
+        .filter(({ name: d, value: p }) => d !== '' || p !== ''),
     }
   );
 }
-function w(e, t) {
-  return (
-    console.log('IMPORTING Workspace', e._id, e.name, JSON.stringify(e, null, 2)),
-    {
-      id: e._id,
-      createdAt: new Date(e.created ?? Date.now()).toISOString().replace('Z', ''),
-      updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace('Z', ''),
-      model: 'workspace',
-      name: e.name,
-      variables: t,
-    }
-  );
-}
-function D(e, t) {
+function _(e, t) {
   return (
     console.log('IMPORTING FOLDER', e._id, e.name, JSON.stringify(e, null, 2)),
     {
@@ -120,32 +107,40 @@ function D(e, t) {
   );
 }
 function b(e) {
+  console.log('RUNNING INSOMNIA');
   let t;
   try {
     t = JSON.parse(e);
   } catch {
     return;
   }
-  if (!m(t)) return;
+  if (!m(t) || !Array.isArray(t.resources)) return;
   const n = {
       workspaces: [],
       requests: [],
       environments: [],
       folders: [],
     },
-    s = t.resources.filter(I);
-  for (const o of s) {
-    const a = t.resources.find((r) => f(r) && r.parentId === o._id);
-    n.workspaces.push(w(o, a ? _(a.data) : []));
-    const l = t.resources.filter((r) => f(r) && r.parentId === (a == null ? void 0 : a._id));
-    n.environments.push(...l.map((r) => S(r, o._id)));
-    const u = (r) => {
-      const c = t.resources.filter((i) => i.parentId === r);
+    a = t.resources.filter(I);
+  for (const r of a) {
+    const i = t.resources.find((o) => f(o) && o.parentId === r._id);
+    n.workspaces.push({
+      id: r._id,
+      createdAt: new Date(a.created ?? Date.now()).toISOString().replace('Z', ''),
+      updatedAt: new Date(a.updated ?? Date.now()).toISOString().replace('Z', ''),
+      model: 'workspace',
+      name: r.name,
+      variables: i ? O(i.data) : [],
+    });
+    const u = t.resources.filter((o) => f(o) && o.parentId === (i == null ? void 0 : i._id));
+    n.environments.push(...u.map((o) => S(o, r._id)));
+    const c = (o) => {
+      const d = t.resources.filter((s) => s.parentId === o);
       let p = 0;
-      for (const i of c)
-        g(i) ? (n.folders.push(D(i, o._id)), u(i._id)) : y(i) && n.requests.push(h(i, o._id, p++));
+      for (const s of d)
+        y(s) ? (n.folders.push(_(s, r._id)), c(s._id)) : g(s) && n.requests.push(h(s, r._id, p++));
     };
-    u(o._id);
+    c(r._id);
   }
   return (
     (n.requests = n.requests.filter(Boolean)),
