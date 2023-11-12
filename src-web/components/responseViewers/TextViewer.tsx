@@ -1,4 +1,3 @@
-import { w } from '@tauri-apps/api/clipboard-79413165';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useResponseContentType } from '../../hooks/useResponseContentType';
 import { tryFormatJson } from '../../lib/formatters';

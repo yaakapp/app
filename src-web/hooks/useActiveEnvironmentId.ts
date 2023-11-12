@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import type { RouteParamsRequest } from './useAppRoutes';
 
 export function useActiveEnvironmentId(): string | null {

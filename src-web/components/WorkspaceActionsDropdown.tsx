@@ -2,7 +2,6 @@ import { invoke } from '@tauri-apps/api';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useAlert } from '../hooks/useAlert';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
@@ -39,7 +38,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const { appearance, toggleAppearance } = useTheme();
   const dialog = useDialog();
   const prompt = usePrompt();
-  const alert = useAlert();
   const routes = useAppRoutes();
 
   const items: DropdownItem[] = useMemo(() => {

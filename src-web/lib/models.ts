@@ -56,7 +56,7 @@ export interface HttpRequest extends BaseModel {
   sortPriority: number;
   name: string;
   url: string;
-  body: string | null;
+  body: Record<string, string | number | boolean | null | undefined>;
   bodyType: string | null;
   authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
