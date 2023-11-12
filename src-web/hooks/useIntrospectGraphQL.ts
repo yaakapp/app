@@ -32,7 +32,11 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     const fetchIntrospection = async () => {
       setIsLoading(true);
       setError(undefined);
-      const args = { ...baseRequest, body: introspectionRequestBody };
+      const args = {
+        ...baseRequest,
+        bodyType: 'graphql',
+        body: { text: introspectionRequestBody },
+      };
       const response = await minPromiseMillis(sendEphemeralRequest(args, activeEnvironmentId), 700);
 
       if (response.error) {

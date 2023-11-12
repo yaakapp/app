@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body,\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                method,\n                body AS \"body!: Json<HashMap<String, JsonValue>>\",\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -49,7 +49,7 @@
         "type_info": "Text"
       },
       {
-        "name": "body",
+        "name": "body!: Json<HashMap<String, JsonValue>>",
         "ordinal": 9,
         "type_info": "Text"
       },
@@ -92,7 +92,7 @@
       false,
       false,
       false,
-      true,
+      false,
       true,
       false,
       true,
@@ -100,5 +100,5 @@
       false
     ]
   },
-  "hash": "854536c80af3f86bb9a63b8ce059ad724374b545cb23481bb3b2ce07d7414220"
+  "hash": "ae31827b9576ffba83a9de05e30688df3c83e145860f8dd608410a9a9254659d"
 }

@@ -133,8 +133,8 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [activeRequest, updateRequest],
   );
 
-  const handleBodyChange = useCallback(
-    (body: string) => updateRequest.mutate({ body }),
+  const handleBodyTextChange = useCallback(
+    (text: string) => updateRequest.mutate({ body: { text } }),
     [updateRequest],
   );
   const handleHeadersChange = useCallback(
@@ -211,9 +211,9 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={activeRequest.body ?? ''}
+                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
                   contentType="application/json"
-                  onChange={handleBodyChange}
+                  onChange={handleBodyTextChange}
                   format={(v) => tryFormatJson(v)}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_XML ? (
@@ -224,17 +224,17 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={activeRequest.body ?? ''}
+                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
                   contentType="text/xml"
-                  onChange={handleBodyChange}
+                  onChange={handleBodyTextChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
                 <GraphQLEditor
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
                   className="!bg-gray-50"
-                  defaultValue={activeRequest?.body ?? ''}
-                  onChange={handleBodyChange}
+                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
+                  onChange={handleBodyTextChange}
                 />
               ) : (
                 <EmptyStateText>No Body</EmptyStateText>
