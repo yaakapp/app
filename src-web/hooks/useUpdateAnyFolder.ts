@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { Folder, HttpRequest } from '../lib/models';
-import { getFolder, getRequest } from '../lib/store';
-import { requestsQueryKey } from './useRequests';
+import type { Folder } from '../lib/models';
+import { getFolder } from '../lib/store';
 import { foldersQueryKey } from './useFolders';
 
 export function useUpdateAnyFolder() {

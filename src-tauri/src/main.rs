@@ -17,7 +17,7 @@ use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
-use log::info;
+use log::{info, warn};
 use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
@@ -182,17 +182,23 @@ async fn actually_send_request(
 
     let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
-    let builder = client.request(m, url_string.to_string()).headers(headers);
 
-    let sendable_req_result = match (request.body, request.body_type) {
-        (Some(raw_body), Some(_)) => {
-            let body = render::render(&raw_body, &workspace, environment_ref);
-            builder.body(body).build()
+    let mut request_builder = client.request(m, url_string.to_string()).headers(headers);
+
+    if let Some(t) = &request.body_type {
+        let empty_value = &serde_json::to_value("").unwrap();
+        let b = request.body.0;
+
+        if t == "basic" {
+            let raw_text = b.get("text").unwrap_or(empty_value).as_str().unwrap_or("");
+            let body = render::render(raw_text, &workspace, environment_ref);
+            request_builder = request_builder.body(body);
+        } else {
+            warn!("Unsupported body type: {}", t);
         }
-        _ => builder.build(),
-    };
+    }
 
-    let sendable_req = match sendable_req_result {
+    let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
             return response_err(response, e.to_string(), app_handle, pool).await;
@@ -648,9 +654,11 @@ async fn list_requests(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::HttpRequest>, String> {
     let pool = &*db_instance.lock().await;
-    models::find_requests(workspace_id, pool)
+    let requests = models::find_requests(workspace_id, pool)
         .await
-        .map_err(|e| e.to_string())
+        .expect("Failed to find requests");
+    // .map_err(|e| e.to_string())
+    Ok(requests)
 }
 
 #[tauri::command]

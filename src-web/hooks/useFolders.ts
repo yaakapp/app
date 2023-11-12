@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { Folder, HttpRequest } from '../lib/models';
+import type { Folder } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function foldersQueryKey({ workspaceId }: { workspaceId: string }) {
