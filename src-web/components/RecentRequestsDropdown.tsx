@@ -10,7 +10,6 @@ import { useRequests } from '../hooks/useRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
-import { CountBadge } from './core/CountBadge';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 
@@ -43,7 +42,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
       if (!e.ctrlKey || recentRequestIds.length === 0) return;
 
       if (!dropdownRef.current?.isOpen) {
-        dropdownRef.current?.open(e.shiftKey ? -1 : 0);
+        dropdownRef.current?.open(e.shiftKey ? -1 : 1);
         return;
       }
 
@@ -57,7 +56,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
 
-    const recentRequestItems: DropdownItem[] = [];
+    const recentRequestItems: DropdownItem[] = [{ type: 'separator', label: 'Recent Requests' }];
     for (const id of recentRequestIds) {
       const request = requests.find((r) => r.id === id);
       if (request === undefined) continue;
@@ -65,7 +64,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
       recentRequestItems.push({
         key: request.id,
         label: fallbackRequestName(request),
-        leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length + 1} />,
+        // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
