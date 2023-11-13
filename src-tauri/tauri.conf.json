@@ -103,7 +103,7 @@
     "security": {},
     "updater": {
       "active": true,
-      "dialog": true,
+      "dialog": false,
       "endpoints": [
         "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
       ],
