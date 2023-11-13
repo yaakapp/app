@@ -123,15 +123,35 @@ function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'head
         },
       ],
       bodyType: 'graphql',
-      body: JSON.stringify(
-        { query: body.graphql.query, variables: parseJSONToRecord(body.graphql.variables) },
-        null,
-        2,
-      ),
+      body: {
+        text: JSON.stringify(
+          { query: body.graphql.query, variables: parseJSONToRecord(body.graphql.variables) },
+          null,
+          2,
+        ),
+      },
+    };
+  } else if ('formdata' in body) {
+    return {
+      headers: [
+        {
+          name: 'Content-Type',
+          value: 'application/x-www-form-urlencoded',
+          enabled: true,
+        },
+      ],
+      bodyType: 'application/x-www-form-urlencoded',
+      body: {
+        form: toArray(body.formdata).map((f) => ({
+          enabled: !f.disabled,
+          name: f.key ?? '',
+          value: f.value ?? '',
+        })),
+      },
     };
   } else {
     // TODO: support other body types
-    return { headers: [], bodyType: null, body: null };
+    return { headers: [], bodyType: null, body: {} };
   }
 }
 
