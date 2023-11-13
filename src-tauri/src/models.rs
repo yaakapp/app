@@ -3,9 +3,9 @@ use std::fs;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDateTime;
-use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use sqlx::types::{Json, JsonValue};
+use sqlx::types::chrono::NaiveDateTime;
 use tauri::AppHandle;
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -54,6 +54,15 @@ pub struct HttpRequestHeader {
     pub value: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct HttpUrlParameter {
+    #[serde(default = "default_enabled")]
+    pub enabled: bool,
+    pub name: String,
+    pub value: String,
+}
+
 fn default_http_request_method() -> String {
     "GET".to_string()
 }
@@ -70,6 +79,7 @@ pub struct HttpRequest {
     pub sort_priority: f64,
     pub name: String,
     pub url: String,
+    pub url_parameters: Json<Vec<HttpUrlParameter>>,
     #[serde(default = "default_http_request_method")]
     pub method: String,
     pub body: Json<HashMap<String, JsonValue>>,
@@ -439,6 +449,7 @@ pub async fn upsert_request(
                 folder_id,
                 name,
                 url,
+                url_parameters,
                 method,
                 body,
                 body_type,
@@ -447,7 +458,7 @@ pub async fn upsert_request(
                 headers,
                 sort_priority
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
@@ -459,6 +470,7 @@ pub async fn upsert_request(
                authentication = excluded.authentication,
                authentication_type = excluded.authentication_type,
                url = excluded.url,
+               url_parameters = excluded.url_parameters,
                sort_priority = excluded.sort_priority
         "#,
         id,
@@ -466,6 +478,7 @@ pub async fn upsert_request(
         r.folder_id,
         trimmed_name,
         r.url,
+        r.url_parameters,
         r.method,
         r.body,
         r.body_type,
@@ -496,6 +509,7 @@ pub async fn find_requests(
                 updated_at,
                 name,
                 url,
+                url_parameters AS "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
                 method,
                 body AS "body!: Json<HashMap<String, JsonValue>>",
                 body_type,
@@ -525,6 +539,7 @@ pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, s
                 updated_at,
                 name,
                 url,
+                url_parameters AS "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
                 method,
                 body AS "body!: Json<HashMap<String, JsonValue>>",
                 body_type,
