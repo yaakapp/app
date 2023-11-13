@@ -121,14 +121,32 @@ pub async fn actually_send_request(
     }
     request_builder = request_builder.query(&query_params);
 
+
     if let Some(t) = &request.body_type {
-        let empty_value = &serde_json::to_value("").unwrap();
+        let empty_string = &serde_json::to_value("").unwrap();
+        let empty_bool = &serde_json::to_value(false).unwrap();
         let b = request.body.0;
 
         if b.contains_key("text") {
-            let raw_text = b.get("text").unwrap_or(empty_value).as_str().unwrap_or("");
+            let raw_text = b.get("text").unwrap_or(empty_string).as_str().unwrap_or("");
             let body = render::render(raw_text, &workspace, environment_ref);
             request_builder = request_builder.body(body);
+        } else if b.contains_key("form") {
+            let mut form_params = Vec::new();
+            let form = b.get("form");
+            if let Some(f) = form {
+                for p in f.as_array().unwrap_or(&Vec::new()) {
+                    let enabled = p.get("enabled").unwrap_or(empty_bool).as_bool().unwrap_or(false);
+                    let name = p.get("name").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    if !enabled || name.is_empty() { continue; }
+                    form_params.push((
+                        render::render(name, &workspace, environment_ref),
+                        render::render(value, &workspace, environment_ref),
+                    ));
+                }
+            }
+            request_builder = request_builder.form(&form_params);
         } else {
             warn!("Unsupported body type: {}", t);
         }
