@@ -4,7 +4,7 @@ use tauri::{AppHandle, updater, Window, Wry};
 use tauri::api::dialog;
 
 // Check for updates every 3 hours
-const MAX_UPDATE_CHECK_SECONDS: u64 = 3600 * 3;
+const MAX_UPDATE_CHECK_SECONDS: u64 = 60 * 60 * 3;
 
 // Create updater struct
 pub struct YaakUpdater {

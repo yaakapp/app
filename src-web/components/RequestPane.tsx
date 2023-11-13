@@ -10,7 +10,7 @@ import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpHeader, HttpRequest } from '../lib/models';
+import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
@@ -28,8 +28,8 @@ import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { GraphQLEditor } from './GraphQLEditor';
-import { HeaderEditor } from './HeaderEditor';
-import { ParametersEditor } from './ParameterEditor';
+import { HeadersEditor } from './HeadersEditor';
+import { UrlParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -92,7 +92,15 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 },
               },
             },
-            // { value: 'params', label: 'URL Params' },
+            {
+              value: 'params',
+              label: (
+                <div className="flex items-center">
+                  Params
+                  <CountBadge count={activeRequest.urlParameters.filter((p) => p.name).length} />
+                </div>
+              ),
+            },
             {
               value: 'headers',
               label: (
@@ -139,6 +147,10 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
   );
   const handleHeadersChange = useCallback(
     (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
+    [updateRequest],
+  );
+  const handleUrlParametersChange = useCallback(
+    (urlParameters: HttpUrlParameter[]) => updateRequest.mutate({ urlParameters }),
     [updateRequest],
   );
 
@@ -189,17 +201,17 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               )}
             </TabContent>
             <TabContent value="headers">
-              <HeaderEditor
+              <HeadersEditor
                 forceUpdateKey={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
             </TabContent>
             <TabContent value="params">
-              <ParametersEditor
+              <UrlParametersEditor
                 forceUpdateKey={forceUpdateKey}
-                parameters={[]}
-                onChange={() => null}
+                urlParameters={activeRequest.urlParameters}
+                onChange={handleUrlParametersChange}
               />
             </TabContent>
             <TabContent value="body">
