@@ -37,7 +37,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         (e) => ({
           key: e.id,
           label: e.name,
-          rightSlot: e.id === activeEnvironment?.id ? <Icon icon="check" /> : undefined,
+          leftSlot: e.id === activeEnvironment?.id ? <Icon icon="check" /> : <Icon icon="empty" />,
           onSelect: async () => {
             if (e.id !== activeEnvironment?.id) {
               routes.setEnvironment(e);

@@ -44,7 +44,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
       key: w.id,
       label: w.name,
-      rightSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : undefined,
+      leftSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : <Icon icon="empty" />,
       onSelect: async () => {
         dialog.show({
           id: 'open-workspace',
