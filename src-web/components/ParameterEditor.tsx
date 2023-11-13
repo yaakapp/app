@@ -3,17 +3,18 @@ import { PairEditor } from './core/PairEditor';
 
 type Props = {
   forceUpdateKey: string;
-  parameters: { name: string; value: string }[];
-  onChange: (headers: HttpRequest['headers']) => void;
+  urlParameters: HttpRequest['headers'];
+  onChange: (headers: HttpRequest['urlParameters']) => void;
 };
 
-export function ParametersEditor({ parameters, forceUpdateKey, onChange }: Props) {
+export function UrlParametersEditor({ urlParameters, forceUpdateKey, onChange }: Props) {
   return (
     <PairEditor
-      forceUpdateKey={forceUpdateKey}
-      pairs={parameters}
+      valueAutocompleteVariables
+      nameAutocompleteVariables
+      pairs={urlParameters}
       onChange={onChange}
-      namePlaceholder="name"
+      forceUpdateKey={forceUpdateKey}
     />
   );
 }

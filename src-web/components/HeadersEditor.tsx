@@ -14,7 +14,7 @@ type Props = {
   onChange: (headers: HttpRequest['headers']) => void;
 };
 
-export function HeaderEditor({ headers, onChange, forceUpdateKey }: Props) {
+export function HeadersEditor({ headers, onChange, forceUpdateKey }: Props) {
   return (
     <PairEditor
       valueAutocompleteVariables

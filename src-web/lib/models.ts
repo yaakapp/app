@@ -49,6 +49,12 @@ export interface HttpHeader {
   enabled?: boolean;
 }
 
+export interface HttpUrlParameter {
+  name: string;
+  value: string;
+  enabled?: boolean;
+}
+
 export interface HttpRequest extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'http_request';
@@ -56,6 +62,7 @@ export interface HttpRequest extends BaseModel {
   sortPriority: number;
   name: string;
   url: string;
+  urlParameters: HttpUrlParameter[];
   body: Record<string, string | number | boolean | null | undefined>;
   bodyType: string | null;
   authentication: Record<string, string | number | boolean | null | undefined>;
