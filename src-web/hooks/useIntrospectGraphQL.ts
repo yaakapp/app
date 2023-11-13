@@ -34,7 +34,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       setError(undefined);
       const args = {
         ...baseRequest,
-        bodyType: 'graphql',
+        bodyType: 'application/json',
         body: { text: introspectionRequestBody },
       };
       const response = await minPromiseMillis(sendEphemeralRequest(args, activeEnvironmentId), 700);
