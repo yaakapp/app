@@ -1,12 +1,12 @@
-const y = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-  f = 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json',
-  b = [f, y];
-function T(e) {
-  const t = h(e);
-  if (t == null) return;
-  const i = s(t.info);
-  if (!b.includes(i.schema) || !Array.isArray(t.item)) return;
-  const r = {
+const f = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+  b = 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json',
+  w = [b, f];
+function A(t) {
+  const e = m(t);
+  if (e == null) return;
+  const r = s(e.info);
+  if (!w.includes(r.schema) || !Array.isArray(e.item)) return;
+  const a = {
       workspaces: [],
       environments: [],
       requests: [],
@@ -15,69 +15,69 @@ function T(e) {
     c = {
       model: 'workspace',
       id: 'wrk_0',
-      name: i.name || 'Postman Import',
-      description: i.description || '',
+      name: r.name || 'Postman Import',
+      description: r.description || '',
     };
-  r.workspaces.push(c);
-  const d = (o, l = null) => {
+  a.workspaces.push(c);
+  const p = (o, l = null) => {
     if (typeof o.name == 'string' && Array.isArray(o.item)) {
       const n = {
         model: 'folder',
         workspaceId: c.id,
-        id: `fld_${r.folders.length}`,
+        id: `fld_${a.folders.length}`,
         name: o.name,
         folderId: l,
       };
-      r.folders.push(n);
-      for (const a of o.item) d(a, n.id);
+      a.folders.push(n);
+      for (const i of o.item) p(i, n.id);
     } else if (typeof o.name == 'string' && 'request' in o) {
       const n = s(o.request),
-        a = q(n.body),
+        i = T(n.body),
         u = g(n.auth),
-        m = {
+        y = {
           model: 'http_request',
-          id: `req_${r.requests.length}`,
+          id: `req_${a.requests.length}`,
           workspaceId: c.id,
           folderId: l,
           name: o.name,
           method: n.method || 'GET',
           url: typeof n.url == 'string' ? n.url : s(n.url).raw,
-          body: a.body,
-          bodyType: a.bodyType,
+          body: i.body,
+          bodyType: i.bodyType,
           authentication: u.authentication,
           authenticationType: u.authenticationType,
           headers: [
-            ...a.headers,
+            ...i.headers,
             ...u.headers,
-            ...A(n.header).map((p) => ({
-              name: p.key,
-              value: p.value,
-              enabled: !p.disabled,
+            ...h(n.header).map((d) => ({
+              name: d.key,
+              value: d.value,
+              enabled: !d.disabled,
             })),
           ],
         };
-      r.requests.push(m);
+      a.requests.push(y);
     } else console.log('Unknown item', o, l);
   };
-  for (const o of t.item) d(o);
-  return { resources: r };
+  for (const o of e.item) p(o);
+  return { resources: a };
 }
-function g(e) {
-  const t = s(e);
-  return 'basic' in t
+function g(t) {
+  const e = s(t);
+  return 'basic' in e
     ? {
         headers: [],
         authenticationType: 'basic',
         authentication: {
-          username: t.basic.username || '',
-          password: t.basic.password || '',
+          username: e.basic.username || '',
+          password: e.basic.password || '',
         },
       }
     : { headers: [], authenticationType: null, authentication: {} };
 }
-function q(e) {
-  const t = s(e);
-  return 'graphql' in t
+function T(t) {
+  const e = s(t);
+  return 'graphql' in e
     ? {
         headers: [
           {
@@ -87,24 +87,44 @@ function q(e) {
           },
         ],
         bodyType: 'graphql',
-        body: JSON.stringify(
-          { query: t.graphql.query, variables: h(t.graphql.variables) },
-          null,
-          2,
-        ),
+        body: {
+          text: JSON.stringify(
+            { query: e.graphql.query, variables: m(e.graphql.variables) },
+            null,
+            2,
+          ),
+        },
       }
-    : { headers: [], bodyType: null, body: null };
+    : 'formdata' in e
+    ? {
+        headers: [
+          {
+            name: 'Content-Type',
+            value: 'application/x-www-form-urlencoded',
+            enabled: !0,
+          },
+        ],
+        bodyType: 'application/x-www-form-urlencoded',
+        body: {
+          form: h(e.formdata).map((r) => ({
+            enabled: !r.disabled,
+            name: r.key ?? '',
+            value: r.value ?? '',
+          })),
+        },
+      }
+    : { headers: [], bodyType: null, body: {} };
 }
-function h(e) {
+function m(t) {
   try {
-    return s(JSON.parse(e));
+    return s(JSON.parse(t));
   } catch {}
   return null;
 }
-function s(e) {
-  return Object.prototype.toString.call(e) === '[object Object]' ? e : {};
+function s(t) {
+  return Object.prototype.toString.call(t) === '[object Object]' ? t : {};
 }
-function A(e) {
-  return Object.prototype.toString.call(e) === '[object Array]' ? e : [];
+function h(t) {
+  return Object.prototype.toString.call(t) === '[object Array]' ? t : [];
 }
-export { T as pluginHookImport };
+export { A as pluginHookImport };
