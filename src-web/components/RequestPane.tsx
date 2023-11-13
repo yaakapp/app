@@ -15,6 +15,8 @@ import {
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
   AUTH_TYPE_NONE,
+  BODY_TYPE_FORM_MULTIPART,
+  BODY_TYPE_FORM_URLENCODED,
   BODY_TYPE_GRAPHQL,
   BODY_TYPE_JSON,
   BODY_TYPE_NONE,
@@ -27,10 +29,11 @@ import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
+import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
-import { UrlParametersEditor } from './ParameterEditor';
 import { UrlBar } from './UrlBar';
+import { UrlParametersEditor } from './UrlParameterEditor';
 
 interface Props {
   style?: CSSProperties;
@@ -59,10 +62,14 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
               options: {
                 value: activeRequest.bodyType,
                 items: [
+                  { type: 'separator', label: 'Form Data' },
+                  { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
+                  // { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
+                  { type: 'separator', label: 'Text Content' },
                   { label: 'JSON', value: BODY_TYPE_JSON },
                   { label: 'XML', value: BODY_TYPE_XML },
                   { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
-                  { type: 'separator' },
+                  { type: 'separator', label: 'Other' },
                   { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
                 ],
                 onChange: async (bodyType) => {
@@ -71,7 +78,24 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                     patch.headers = activeRequest?.headers.filter(
                       (h) => h.name.toLowerCase() !== 'content-type',
                     );
-                  } else if (bodyType == BODY_TYPE_GRAPHQL || bodyType === BODY_TYPE_JSON) {
+                  } else if (
+                    bodyType === BODY_TYPE_FORM_URLENCODED ||
+                    bodyType === BODY_TYPE_FORM_MULTIPART ||
+                    bodyType === BODY_TYPE_JSON ||
+                    bodyType === BODY_TYPE_XML
+                  ) {
+                    patch.method = 'POST';
+                    patch.headers = [
+                      ...(activeRequest?.headers.filter(
+                        (h) => h.name.toLowerCase() !== 'content-type',
+                      ) ?? []),
+                      {
+                        name: 'Content-Type',
+                        value: bodyType,
+                        enabled: true,
+                      },
+                    ];
+                  } else if (bodyType == BODY_TYPE_GRAPHQL) {
                     patch.method = 'POST';
                     patch.headers = [
                       ...(activeRequest?.headers.filter(
@@ -141,6 +165,10 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [activeRequest, updateRequest],
   );
 
+  const handleBodyChange = useCallback(
+    (body: HttpRequest['body']) => updateRequest.mutate({ body }),
+    [updateRequest],
+  );
   const handleBodyTextChange = useCallback(
     (text: string) => updateRequest.mutate({ body: { text } }),
     [updateRequest],
@@ -223,7 +251,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
+                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
                   contentType="application/json"
                   onChange={handleBodyTextChange}
                   format={(v) => tryFormatJson(v)}
@@ -236,7 +264,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
+                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
                   contentType="text/xml"
                   onChange={handleBodyTextChange}
                 />
@@ -245,8 +273,14 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
                   className="!bg-gray-50"
-                  defaultValue={`${activeRequest?.body?.text}` ?? ''}
+                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
                   onChange={handleBodyTextChange}
+                />
+              ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
+                <FormUrlencodedEditor
+                  forceUpdateKey={forceUpdateKey}
+                  body={activeRequest.body}
+                  onChange={handleBodyChange}
                 />
               ) : (
                 <EmptyStateText>No Body</EmptyStateText>
