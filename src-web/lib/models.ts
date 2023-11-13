@@ -1,6 +1,8 @@
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
 export const BODY_TYPE_JSON = 'application/json';
+export const BODY_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded';
+export const BODY_TYPE_FORM_MULTIPART = 'multipart/form-data';
 export const BODY_TYPE_XML = 'text/xml';
 
 export const AUTH_TYPE_NONE = null;
@@ -63,7 +65,7 @@ export interface HttpRequest extends BaseModel {
   name: string;
   url: string;
   urlParameters: HttpUrlParameter[];
-  body: Record<string, string | number | boolean | null | undefined>;
+  body: Record<string, unknown>;
   bodyType: string | null;
   authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
