@@ -1,6 +1,6 @@
 #![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
+all(not(debug_assertions), target_os = "windows"),
+windows_subsystem = "windows"
 )]
 
 #[cfg(target_os = "macos")]
@@ -15,27 +15,28 @@ use std::process::exit;
 
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
-use http::header::{HeaderName, ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderValue, Method};
-use log::{info, warn};
+use http::header::{ACCEPT, HeaderName, USER_AGENT};
+use log::{debug, error, info, warn};
 use rand::random;
 use reqwest::redirect::Policy;
 use serde::Serialize;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
 use tauri::{CustomMenuItem, Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
+use crate::analytics::{AnalyticsAction, AnalyticsResource, track_event};
 use crate::plugin::{ImportResources, ImportResult};
+use crate::updates::YaakUpdater;
 
 mod analytics;
 mod models;
@@ -43,6 +44,7 @@ mod plugin;
 mod render;
 mod window_ext;
 mod window_menu;
+mod updates;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -189,7 +191,7 @@ async fn actually_send_request(
         let empty_value = &serde_json::to_value("").unwrap();
         let b = request.body.0;
 
-        if t == "basic" {
+        if b.contains_key("text") {
             let raw_text = b.get("text").unwrap_or(empty_value).as_str().unwrap_or("");
             let body = render::render(raw_text, &workspace, environment_ref);
             request_builder = request_builder.body(body);
@@ -283,7 +285,7 @@ async fn import_data(
             plugin_name,
             file_paths.first().unwrap(),
         )
-        .await
+            .await
         {
             result = Some(r);
             break;
@@ -446,8 +448,8 @@ async fn create_workspace(
             ..Default::default()
         },
     )
-    .await
-    .expect("Failed to create Workspace");
+        .await
+        .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -470,8 +472,8 @@ async fn create_environment(
             ..Default::default()
         },
     )
-    .await
-    .expect("Failed to create environment");
+        .await
+        .expect("Failed to create environment");
 
     emit_and_return(&window, "created_model", created_environment)
 }
@@ -497,8 +499,8 @@ async fn create_request(
             ..Default::default()
         },
     )
-    .await
-    .expect("Failed to create request");
+        .await
+        .expect("Failed to create request");
 
     emit_and_return(&window, "created_model", created_request)
 }
@@ -603,8 +605,8 @@ async fn create_folder(
             ..Default::default()
         },
     )
-    .await
-    .expect("Failed to create folder");
+        .await
+        .expect("Failed to create folder");
 
     emit_and_return(&window, "created_model", created_request)
 }
@@ -769,8 +771,8 @@ async fn list_workspaces(
                 ..Default::default()
             },
         )
-        .await
-        .expect("Failed to create Workspace");
+            .await
+            .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -794,6 +796,12 @@ async fn delete_workspace(
         .await
         .expect("Failed to delete Workspace");
     emit_and_return(&window, "deleted_model", workspace)
+}
+
+#[tauri::command]
+async fn check_for_updates(app_handle: AppHandle<Wry>, yaak_updater: State<'_, Mutex<YaakUpdater>>,
+) -> Result<(), String> {
+    yaak_updater.lock().await.check(&app_handle).await.map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -836,12 +844,17 @@ fn main() {
                     .expect("Failed to migrate database");
                 app.manage(m);
 
+
+                let yaak_updater = YaakUpdater::new();
+                app.manage(Mutex::new(yaak_updater));
+
                 let _ = models::cancel_pending_responses(&pool).await;
 
                 Ok(())
             })
         })
         .invoke_handler(tauri::generate_handler![
+            check_for_updates,
             create_environment,
             create_folder,
             create_request,
@@ -877,18 +890,50 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| {
-            if let RunEvent::Ready = event {
-                let w = create_window(app_handle, None);
-                w.restore_state(StateFlags::all())
-                    .expect("Failed to restore window state");
+            match event {
+                RunEvent::Updater(updater_event) => match updater_event {
+                    tauri::UpdaterEvent::Pending => {
+                        debug!("Updater pending");
+                    }
+                    tauri::UpdaterEvent::Updated => {
+                        debug!("Updater updated");
+                    }
+                    tauri::UpdaterEvent::UpdateAvailable {
+                        body,
+                        version,
+                        date: _,
+                    } => {
+                        debug!("Updater update available body={} version={}", body, version);
+                    }
+                    tauri::UpdaterEvent::Downloaded => {
+                        debug!("Updater downloaded");
+                    }
+                    tauri::UpdaterEvent::Error(e) => {
+                        error!("Updater error: {:?}", e);
+                    }
+                    _ => {}
+                },
+                RunEvent::Ready => {
+                    let w = create_window(app_handle, None);
+                    w.restore_state(StateFlags::all())
+                        .expect("Failed to restore window state");
 
-                track_event(
-                    app_handle,
-                    AnalyticsResource::App,
-                    AnalyticsAction::Launch,
-                    None,
-                );
-            }
+                    track_event(
+                        app_handle,
+                        AnalyticsResource::App,
+                        AnalyticsAction::Launch,
+                        None,
+                    );
+                }
+                RunEvent::WindowEvent { label, event: WindowEvent::Focused(true), .. } => {
+                    let h = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let val: State<'_, Mutex<YaakUpdater>> = h.state();
+                        _ = val.lock().await.check(&h).await;
+                    });
+                }
+                _ => {}
+            };
         });
 }
 
@@ -922,16 +967,16 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         window_id,
         WindowUrl::App(url.unwrap_or_default().into()),
     )
-    .menu(app_menu)
-    .fullscreen(false)
-    .resizable(true)
-    .inner_size(1100.0, 600.0)
-    .position(
-        // Randomly offset so windows don't stack exactly
-        100.0 + random::<f64>() * 30.0,
-        100.0 + random::<f64>() * 30.0,
-    )
-    .title(handle.package_info().name.to_string());
+        .menu(app_menu)
+        .fullscreen(false)
+        .resizable(true)
+        .inner_size(1100.0, 600.0)
+        .position(
+            // Randomly offset so windows don't stack exactly
+            100.0 + random::<f64>() * 30.0,
+            100.0 + random::<f64>() * 30.0,
+        )
+        .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
