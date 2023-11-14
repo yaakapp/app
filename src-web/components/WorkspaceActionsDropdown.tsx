@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useAppVersion } from '../hooks/useAppVersion';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { useExportData } from '../hooks/useExportData';
@@ -40,6 +41,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();
+  const appVersion = useAppVersion();
   const [updateMode, setUpdateMode] = useUpdateMode();
 
   const items: DropdownItem[] = useMemo(() => {
@@ -159,7 +161,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="upload" />,
         onSelect: () => exportData.mutate(),
       },
-      { type: 'separator' },
+      { type: 'separator', label: `v${appVersion.data}` },
       {
         key: 'appearance',
         label: 'Toggle Theme',
