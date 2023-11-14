@@ -196,9 +196,9 @@ async fn send_request(
     let pool2 = pool.clone();
 
     tokio::spawn(async move {
-        actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2)
-            .await
-            .expect("Failed to send request");
+        if let Err(e) = actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2).await {
+            response_err(&response2, e, &app_handle2, &pool2).await.expect("Failed to update response");
+        }
     });
 
     emit_and_return(&window, "created_model", response)

@@ -160,7 +160,7 @@ pub async fn actually_send_request(
                     multipart_form = multipart_form.part(
                         render::render(name, &workspace, environment_ref),
                         match !file.is_empty() {
-                            true => multipart::Part::bytes(fs::read(file).expect("Failed to read file")),
+                            true => multipart::Part::bytes(fs::read(file).map_err(|e| e.to_string())?),
                             false => multipart::Part::text(render::render(value, &workspace, environment_ref)),
                         },
                     );

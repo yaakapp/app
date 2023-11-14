@@ -222,8 +222,9 @@ export function Sidebar({ className }: Props) {
 
   useKey(
     'ArrowUp',
-    () => {
+    (e) => {
       if (!hasFocus) return;
+      e.preventDefault();
       const i = selectableRequests.findIndex((r) => r.id === selectedId);
       const newSelectable = selectableRequests[i - 1];
       if (newSelectable == null) {
@@ -239,8 +240,9 @@ export function Sidebar({ className }: Props) {
 
   useKey(
     'ArrowDown',
-    () => {
+    (e) => {
       if (!hasFocus) return;
+      e.preventDefault();
       const i = selectableRequests.findIndex((r) => r.id === selectedId);
       const newSelectable = selectableRequests[i + 1];
       if (newSelectable == null) {
