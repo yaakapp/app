@@ -1,6 +1,6 @@
 #![cfg_attr(
-all(not(debug_assertions), target_os = "windows"),
-windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
 #[cfg(target_os = "macos")]
@@ -32,16 +32,16 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource, track_event};
 use crate::plugin::{ImportResources, ImportResult};
 use crate::send::actually_send_request;
-use crate::updates::YaakUpdater;
+use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
 mod models;
 mod plugin;
 mod render;
+mod send;
+mod updates;
 mod window_ext;
 mod window_menu;
-mod updates;
-mod send;
 
 #[derive(serde::Serialize)]
 pub struct CustomResponse {
@@ -100,7 +100,7 @@ async fn import_data(
             plugin_name,
             file_paths.first().unwrap(),
         )
-            .await
+        .await
         {
             result = Some(r);
             break;
@@ -196,8 +196,12 @@ async fn send_request(
     let pool2 = pool.clone();
 
     tokio::spawn(async move {
-        if let Err(e) = actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2).await {
-            response_err(&response2, e, &app_handle2, &pool2).await.expect("Failed to update response");
+        if let Err(e) =
+            actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2).await
+        {
+            response_err(&response2, e, &app_handle2, &pool2)
+                .await
+                .expect("Failed to update response");
         }
     });
 
@@ -218,6 +222,15 @@ async fn response_err(
         .expect("Failed to update response");
     emit_side_effect(app_handle, "updated_model", &response);
     Ok(response)
+}
+
+#[tauri::command]
+async fn set_update_mode(
+    update_mode: &str,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::KeyValue, String> {
+    set_key_value("app", "update_mode", update_mode, window, db_instance).await
 }
 
 #[tauri::command]
@@ -263,8 +276,8 @@ async fn create_workspace(
             ..Default::default()
         },
     )
-        .await
-        .expect("Failed to create Workspace");
+    .await
+    .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -287,8 +300,8 @@ async fn create_environment(
             ..Default::default()
         },
     )
-        .await
-        .expect("Failed to create environment");
+    .await
+    .expect("Failed to create environment");
 
     emit_and_return(&window, "created_model", created_environment)
 }
@@ -314,8 +327,8 @@ async fn create_request(
             ..Default::default()
         },
     )
-        .await
-        .expect("Failed to create request");
+    .await
+    .expect("Failed to create request");
 
     emit_and_return(&window, "created_model", created_request)
 }
@@ -420,8 +433,8 @@ async fn create_folder(
             ..Default::default()
         },
     )
-        .await
-        .expect("Failed to create folder");
+    .await
+    .expect("Failed to create folder");
 
     emit_and_return(&window, "created_model", created_request)
 }
@@ -586,8 +599,8 @@ async fn list_workspaces(
                 ..Default::default()
             },
         )
-            .await
-            .expect("Failed to create Workspace");
+        .await
+        .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -614,9 +627,19 @@ async fn delete_workspace(
 }
 
 #[tauri::command]
-async fn check_for_updates(app_handle: AppHandle<Wry>, yaak_updater: State<'_, Mutex<YaakUpdater>>,
+async fn check_for_updates(
+    app_handle: AppHandle<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    yaak_updater: State<'_, Mutex<YaakUpdater>>,
 ) -> Result<(), String> {
-    yaak_updater.lock().await.check(&app_handle).await.map_err(|e| e.to_string())
+    let pool = &*db_instance.lock().await;
+    let update_mode = get_update_mode(pool).await;
+    yaak_updater
+        .lock()
+        .await
+        .force_check(&app_handle, update_mode)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 fn main() {
@@ -659,7 +682,6 @@ fn main() {
                     .expect("Failed to migrate database");
                 app.manage(m);
 
-
                 let yaak_updater = YaakUpdater::new();
                 app.manage(Mutex::new(yaak_updater));
 
@@ -697,6 +719,7 @@ fn main() {
             send_ephemeral_request,
             send_request,
             set_key_value,
+            set_update_mode,
             update_environment,
             update_folder,
             update_request,
@@ -740,12 +763,19 @@ fn main() {
                         None,
                     );
                 }
-                RunEvent::WindowEvent { label: _label, event: WindowEvent::Focused(true), .. } => {
+                RunEvent::WindowEvent {
+                    label: _label,
+                    event: WindowEvent::Focused(true),
+                    ..
+                } => {
                     let h = app_handle.clone();
                     // Run update check whenever window is focused
                     tauri::async_runtime::spawn(async move {
                         let val: State<'_, Mutex<YaakUpdater>> = h.state();
-                        _ = val.lock().await.check(&h).await;
+                        let db_instance: State<'_, Mutex<Pool<Sqlite>>> = h.state();
+                        let pool = &*db_instance.lock().await;
+                        let update_mode = get_update_mode(pool).await;
+                        _ = val.lock().await.check(&h, update_mode).await;
                     });
                 }
                 _ => {}
@@ -783,16 +813,16 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         window_id,
         WindowUrl::App(url.unwrap_or_default().into()),
     )
-        .menu(app_menu)
-        .fullscreen(false)
-        .resizable(true)
-        .inner_size(1100.0, 600.0)
-        .position(
-            // Randomly offset so windows don't stack exactly
-            100.0 + random::<f64>() * 30.0,
-            100.0 + random::<f64>() * 30.0,
-        )
-        .title(handle.package_info().name.to_string());
+    .menu(app_menu)
+    .fullscreen(false)
+    .resizable(true)
+    .inner_size(1100.0, 600.0)
+    .position(
+        // Randomly offset so windows don't stack exactly
+        100.0 + random::<f64>() * 30.0,
+        100.0 + random::<f64>() * 30.0,
+    )
+    .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -867,4 +897,13 @@ fn emit_and_return<S: Serialize + Clone, E>(
 /// Emit an event to all windows, used for side-effects where there is no source window to attribute. This
 fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle<Wry>, event: &str, payload: S) {
     app_handle.emit_all(event, &payload).unwrap();
+}
+
+async fn get_update_mode(pool: &Pool<Sqlite>) -> UpdateMode {
+     let mode = models::get_key_value_string("app", "update_mode", pool)
+        .await;
+    match mode {
+        Some(mode) => update_mode_from_str(&mode),
+        None => UpdateMode::Stable,
+    }
 }

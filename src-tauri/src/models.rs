@@ -193,6 +193,18 @@ pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> O
     .ok()
 }
 
+pub async fn get_key_value_string(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<String> {
+    let kv = get_key_value(namespace, key, pool).await?;
+    let result = serde_json::from_str(&kv.value);
+    match result {
+        Ok(v) => Some(v),
+        Err(e) => {
+            println!("Failed to parse key value: {}", e);
+            None
+        }
+    }
+}
+
 pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
     sqlx::query_as!(
         Workspace,
