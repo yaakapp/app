@@ -38,13 +38,40 @@ impl YaakUpdater {
             .await
         {
             Ok(update) => {
-                if dialog::blocking::ask(
+                let h = app_handle.clone();
+                dialog::ask(
                     None::<&Window>,
-                    "Update available",
-                    format!("{} is available. Would you like to download and install it now?", update.latest_version()),
-                ) {
-                    _ = update.download_and_install().await;
-                }
+                    "Update Available",
+                    format!(
+                        "{} is available. Would you like to download and install it now?",
+                        update.latest_version()
+                    ),
+                    |confirmed| {
+                        if !confirmed {
+                            return;
+                        }
+                        tauri::async_runtime::spawn(async move {
+                            match update.download_and_install().await {
+                                Ok(_) => {
+                                    if dialog::blocking::ask(
+                                        None::<&Window>,
+                                        "Update Installed",
+                                        format!("Would you like to restart the app?",),
+                                    ) {
+                                        h.restart();
+                                    }
+                                }
+                                Err(e) => {
+                                    dialog::message(
+                                        None::<&Window>,
+                                        "Update Failed",
+                                        format!("The update failed to install: {}", e),
+                                    );
+                                }
+                            }
+                        });
+                    },
+                );
                 Ok(())
             }
             Err(updater::Error::UpToDate) => Ok(()),
