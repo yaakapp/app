@@ -10,6 +10,7 @@ import { useImportData } from '../hooks/useImportData';
 import { usePrompt } from '../hooks/usePrompt';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useTheme } from '../hooks/useTheme';
+import { useUpdateMode } from '../hooks/useUpdateMode';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import type { ButtonProps } from './core/Button';
@@ -39,6 +40,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();
+  const [updateMode, setUpdateMode] = useUpdateMode();
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
@@ -146,12 +148,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         },
       },
       {
-        key: 'appearance',
-        label: 'Toggle Theme',
-        onSelect: toggleAppearance,
-        leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
-      },
-      {
         key: 'import-data',
         label: 'Import Data',
         leftSlot: <Icon icon="download" />,
@@ -162,6 +158,25 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         label: 'Export Data',
         leftSlot: <Icon icon="upload" />,
         onSelect: () => exportData.mutate(),
+      },
+      { type: 'separator' },
+      {
+        key: 'appearance',
+        label: 'Toggle Theme',
+        onSelect: toggleAppearance,
+        leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
+      },
+      {
+        key: 'update-mode',
+        label: updateMode === 'stable' ? 'Enable Beta' : 'Disable Beta',
+        onSelect: () => setUpdateMode(updateMode === 'stable' ? 'beta' : 'stable'),
+        leftSlot: <Icon icon="camera" />,
+      },
+      {
+        key: 'update-check',
+        label: 'Check for Updates',
+        onSelect: () => invoke('check_for_updates'),
+        leftSlot: <Icon icon="update" />,
       },
     ];
   }, [
@@ -175,7 +190,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     importData,
     prompt,
     routes,
+    setUpdateMode,
     toggleAppearance,
+    updateMode,
     updateWorkspace,
     workspaces,
   ]);
