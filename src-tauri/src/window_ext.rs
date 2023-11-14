@@ -10,7 +10,7 @@ pub trait TrafficLightWindowExt {
 impl<R: Runtime> TrafficLightWindowExt for Window<R> {
     #[cfg(not(target_os = "macos"))]
     fn position_traffic_lights(&self) {
-        // No-op
+        // No-op on other platforms
     }
 
     #[cfg(target_os = "macos")]
