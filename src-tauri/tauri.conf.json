@@ -8,26 +8,10 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2023.3.0-beta.2"
+    "version": "2023.2.0-beta.0"
   },
   "tauri": {
     "windows": [],
-    "cli": {
-      "description": "Yaak CLI",
-      "longDescription": "This is the Yaak CLI, yo",
-      "beforeHelp": "u can use it to build, develop and manage your Yaak application.",
-      "afterHelp": "Have fun!",
-      "args": [],
-      "subcommands": {
-        "import": {
-          "args": [{
-            "name": "file",
-            "short": "f",
-            "takesValue": true
-          }]
-        }
-      }
-    },
     "allowlist": {
       "all": false,
       "os": {
