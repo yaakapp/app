@@ -840,6 +840,8 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         match e {
             WindowEvent::Resized(..) => apply_offset(),
             WindowEvent::ThemeChanged(..) => apply_offset(),
+            WindowEvent::Focused(..) => apply_offset(),
+            WindowEvent::ScaleFactorChanged { .. } => apply_offset(),
             WindowEvent::CloseRequested { .. } => {
                 println!("CLOSE REQUESTED");
                 // api.prevent_close();

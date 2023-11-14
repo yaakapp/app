@@ -1,4 +1,3 @@
-import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { useActiveEnvironment } from './useActiveEnvironment';
@@ -17,6 +16,9 @@ export function useSyncWindowTitle() {
     if (activeRequest) {
       newTitle += ` – ${fallbackRequestName(activeRequest)}`;
     }
-    appWindow.setTitle(newTitle).catch(console.error);
+
+    console.log('Skipping setting window title to ', newTitle);
+    // TODO: This resets the stoplight position so we can't use it yet
+    // appWindow.setTitle(newTitle).catch(console.error);
   }, [activeEnvironment, activeRequest, activeWorkspace]);
 }
