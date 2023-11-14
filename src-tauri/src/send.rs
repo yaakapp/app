@@ -1,3 +1,4 @@
+use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
 
@@ -5,6 +6,7 @@ use base64::Engine;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
 use log::warn;
+use reqwest::multipart;
 use reqwest::redirect::Policy;
 use sqlx::{Pool, Sqlite};
 use sqlx::types::Json;
@@ -37,6 +39,10 @@ pub async fn actually_send_request(
         // .danger_accept_invalid_certs(true)
         .build()
         .expect("Failed to build client");
+
+    let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
+        .expect("Failed to create method");
+    let mut request_builder = client.request(m, url_string.to_string());
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
@@ -106,11 +112,6 @@ pub async fn actually_send_request(
         }
     }
 
-    let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
-        .expect("Failed to create method");
-
-    let mut request_builder = client.request(m, url_string.to_string()).headers(headers);
-
     let mut query_params = Vec::new();
     for p in request.url_parameters.0 {
         if !p.enabled || p.name.is_empty() { continue; }
@@ -121,25 +122,24 @@ pub async fn actually_send_request(
     }
     request_builder = request_builder.query(&query_params);
 
-
-    if let Some(t) = &request.body_type {
+    if let Some(body_type) = &request.body_type {
         let empty_string = &serde_json::to_value("").unwrap();
         let empty_bool = &serde_json::to_value(false).unwrap();
-        let b = request.body.0;
+        let request_body = request.body.0;
 
-        if b.contains_key("text") {
-            let raw_text = b.get("text").unwrap_or(empty_string).as_str().unwrap_or("");
+        if request_body.contains_key("text") {
+            let raw_text = request_body.get("text").unwrap_or(empty_string).as_str().unwrap_or("");
             let body = render::render(raw_text, &workspace, environment_ref);
             request_builder = request_builder.body(body);
-        } else if b.contains_key("form") {
+        } else if body_type == "application/x-www-form-urlencoded" && request_body.contains_key("form") {
             let mut form_params = Vec::new();
-            let form = b.get("form");
+            let form = request_body.get("form");
             if let Some(f) = form {
                 for p in f.as_array().unwrap_or(&Vec::new()) {
                     let enabled = p.get("enabled").unwrap_or(empty_bool).as_bool().unwrap_or(false);
                     let name = p.get("name").unwrap_or(empty_string).as_str().unwrap_or_default();
-                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
                     if !enabled || name.is_empty() { continue; }
+                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
                     form_params.push((
                         render::render(name, &workspace, environment_ref),
                         render::render(value, &workspace, environment_ref),
@@ -147,10 +147,34 @@ pub async fn actually_send_request(
                 }
             }
             request_builder = request_builder.form(&form_params);
+        } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
+            let mut multipart_form = multipart::Form::new();
+            if let Some(form_definition) = request_body.get("form") {
+                for p in form_definition.as_array().unwrap_or(&Vec::new()) {
+                    let enabled = p.get("enabled").unwrap_or(empty_bool).as_bool().unwrap_or(false);
+                    let name = p.get("name").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    if !enabled || name.is_empty() { continue; }
+
+                    let file = p.get("file").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    multipart_form = multipart_form.part(
+                        render::render(name, &workspace, environment_ref),
+                        match !file.is_empty() {
+                            true => multipart::Part::bytes(fs::read(file).expect("Failed to read file")),
+                            false => multipart::Part::text(render::render(value, &workspace, environment_ref)),
+                        },
+                    );
+                }
+            }
+            headers.remove("Content-Type"); // reqwest will add this automatically
+            request_builder = request_builder.multipart(multipart_form);
         } else {
-            warn!("Unsupported body type: {}", t);
+            warn!("Unsupported body type: {}", body_type);
         }
     }
+
+    // Add headers last, because previous steps may modify them
+    request_builder = request_builder.headers(headers);
 
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
