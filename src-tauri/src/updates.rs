@@ -41,7 +41,7 @@ impl YaakUpdater {
                 if dialog::blocking::ask(
                     None::<&Window>,
                     "Update available",
-                    "An update is available. Would you like to download and install it now?",
+                    format!("{} is available. Would you like to download and install it now?", update.latest_version()),
                 ) {
                     _ = update.download_and_install().await;
                 }
