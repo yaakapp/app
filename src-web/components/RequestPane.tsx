@@ -29,6 +29,7 @@ import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
+import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
@@ -64,7 +65,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 items: [
                   { type: 'separator', label: 'Form Data' },
                   { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
-                  // { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
+                  { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
                   { type: 'separator', label: 'Text Content' },
                   { label: 'JSON', value: BODY_TYPE_JSON },
                   { label: 'XML', value: BODY_TYPE_XML },
@@ -278,6 +279,12 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                 />
               ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
                 <FormUrlencodedEditor
+                  forceUpdateKey={forceUpdateKey}
+                  body={activeRequest.body}
+                  onChange={handleBodyChange}
+                />
+              ) : activeRequest.bodyType === BODY_TYPE_FORM_MULTIPART ? (
+                <FormMultipartEditor
                   forceUpdateKey={forceUpdateKey}
                   body={activeRequest.body}
                   onChange={handleBodyChange}
