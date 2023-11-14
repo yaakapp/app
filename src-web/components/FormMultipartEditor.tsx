@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { HttpRequest } from '../lib/models';
-import type { PairEditorProps } from './core/PairEditor';
+import type { Pair, PairEditorProps } from './core/PairEditor';
 import { PairEditor } from './core/PairEditor';
 
 type Props = {
@@ -10,18 +10,27 @@ type Props = {
 };
 
 export function FormMultipartEditor({ body, forceUpdateKey, onChange }: Props) {
-  const pairs = useMemo(
+  const pairs = useMemo<Pair[]>(
     () =>
       (Array.isArray(body.form) ? body.form : []).map((p) => ({
         enabled: p.enabled,
         name: p.name,
-        value: p.value,
+        value: p.file ?? p.value,
+        isFile: !!p.file,
       })),
     [body.form],
   );
 
   const handleChange = useCallback<PairEditorProps['onChange']>(
-    (pairs) => onChange({ form: pairs }),
+    (pairs) =>
+      onChange({
+        form: pairs.map((p) => ({
+          enabled: p.enabled,
+          name: p.name,
+          file: p.isFile ? p.value : undefined,
+          value: p.isFile ? undefined : p.value,
+        })),
+      }),
     [onChange],
   );
 
@@ -29,6 +38,7 @@ export function FormMultipartEditor({ body, forceUpdateKey, onChange }: Props) {
     <PairEditor
       valueAutocompleteVariables
       nameAutocompleteVariables
+      allowFileValues
       pairs={pairs}
       onChange={handleChange}
       forceUpdateKey={forceUpdateKey}

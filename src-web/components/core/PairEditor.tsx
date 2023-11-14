@@ -1,16 +1,19 @@
+import { open } from '@tauri-apps/api/dialog';
 import classNames from 'classnames';
+import type { EditorView } from 'codemirror';
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
 import { DropMarker } from '../DropMarker';
+import { Button } from './Button';
 import { Checkbox } from './Checkbox';
+import { Dropdown } from './Dropdown';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
 import { Input } from './Input';
-import type { EditorView } from 'codemirror';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -23,6 +26,7 @@ export type PairEditorProps = {
   valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
   nameAutocompleteVariables?: boolean;
   valueAutocompleteVariables?: boolean;
+  allowFileValues?: boolean;
   nameValidate?: InputProps['validate'];
   valueValidate?: InputProps['validate'];
 };
@@ -32,6 +36,7 @@ export type Pair = {
   enabled?: boolean;
   name: string;
   value: string;
+  isFile?: boolean;
 };
 
 type PairContainer = {
@@ -52,6 +57,7 @@ export const PairEditor = memo(function PairEditor({
   valueAutocompleteVariables,
   valuePlaceholder,
   valueValidate,
+  allowFileValues,
 }: PairEditorProps) {
   const [forceFocusPairId, setForceFocusPairId] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -167,6 +173,7 @@ export const PairEditor = memo(function PairEditor({
               pairContainer={p}
               className="py-1"
               isLast={isLast}
+              allowFileValues={allowFileValues}
               nameAutocompleteVariables={nameAutocompleteVariables}
               valueAutocompleteVariables={valueAutocompleteVariables}
               forceFocusPairId={forceFocusPairId}
@@ -177,7 +184,6 @@ export const PairEditor = memo(function PairEditor({
               valuePlaceholder={isLast ? valuePlaceholder : ''}
               nameValidate={nameValidate}
               valueValidate={valueValidate}
-              showDelete={!isLast}
               onChange={handleChange}
               onFocus={handleFocus}
               onDelete={handleDelete}
@@ -199,7 +205,6 @@ type FormRowProps = {
   className?: string;
   pairContainer: PairContainer;
   forceFocusPairId?: string | null;
-  showDelete?: boolean;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
@@ -218,17 +223,18 @@ type FormRowProps = {
   | 'nameValidate'
   | 'valueValidate'
   | 'forceUpdateKey'
+  | 'allowFileValues'
 >;
 
 const FormRow = memo(function FormRow({
+  allowFileValues,
   className,
   forceFocusPairId,
   forceUpdateKey,
   isLast,
   nameAutocomplete,
-  namePlaceholder,
   nameAutocompleteVariables,
-  valueAutocompleteVariables,
+  namePlaceholder,
   nameValidate,
   onChange,
   onDelete,
@@ -236,8 +242,8 @@ const FormRow = memo(function FormRow({
   onFocus,
   onMove,
   pairContainer,
-  showDelete,
   valueAutocomplete,
+  valueAutocompleteVariables,
   valuePlaceholder,
   valueValidate,
 }: FormRowProps) {
@@ -261,8 +267,14 @@ const FormRow = memo(function FormRow({
     [onChange, id, pairContainer.pair],
   );
 
-  const handleChangeValue = useMemo(
-    () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value } }),
+  const handleChangeValueText = useMemo(
+    () => (value: string) =>
+      onChange({ id, pair: { ...pairContainer.pair, value, isFile: false } }),
+    [onChange, id, pairContainer.pair],
+  );
+
+  const handleChangeValueFile = useMemo(
+    () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value, isFile: true } }),
     [onChange, id, pairContainer.pair],
   );
 
@@ -354,31 +366,66 @@ const FormRow = memo(function FormRow({
           autocomplete={nameAutocomplete}
           autocompleteVariables={nameAutocompleteVariables}
         />
-        <Input
-          hideLabel
-          useTemplating
-          size="sm"
-          containerClassName={classNames(isLast && 'border-dashed')}
-          validate={valueValidate}
-          forceUpdateKey={forceUpdateKey}
-          defaultValue={pairContainer.pair.value}
-          label="Value"
-          name="value"
-          onChange={handleChangeValue}
-          onFocus={handleFocus}
-          placeholder={valuePlaceholder ?? 'value'}
-          autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
-          autocompleteVariables={valueAutocompleteVariables}
-        />
+        <div className="w-full grid grid-cols-[minmax(0,1fr)_auto] gap-1 items-center">
+          {pairContainer.pair.isFile ? (
+            <Button
+              size="xs"
+              color="gray"
+              className="font-mono text-xs"
+              onClick={async (e) => {
+                e.preventDefault();
+                const file = await open({
+                  title: 'Select file',
+                  multiple: false,
+                });
+                handleChangeValueFile((Array.isArray(file) ? file[0] : file) ?? '');
+              }}
+            >
+              {getFileName(pairContainer.pair.value) || 'Select File'}
+            </Button>
+          ) : (
+            <Input
+              hideLabel
+              useTemplating
+              size="sm"
+              containerClassName={classNames(isLast && 'border-dashed')}
+              validate={valueValidate}
+              forceUpdateKey={forceUpdateKey}
+              defaultValue={pairContainer.pair.value}
+              label="Value"
+              name="value"
+              onChange={handleChangeValueText}
+              onFocus={handleFocus}
+              placeholder={valuePlaceholder ?? 'value'}
+              autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
+              autocompleteVariables={valueAutocompleteVariables}
+            />
+          )}
+          {allowFileValues && (
+            <Dropdown
+              items={[
+                { key: 'text', label: 'Text', onSelect: () => handleChangeValueText('') },
+                { key: 'file', label: 'File', onSelect: () => handleChangeValueFile('') },
+              ]}
+            >
+              <IconButton
+                iconSize="sm"
+                size="xs"
+                icon={isLast ? 'empty' : 'chevronDown'}
+                title="Select form data type"
+              />
+            </Dropdown>
+          )}
+        </div>
       </div>
       <IconButton
-        aria-hidden={!showDelete}
-        disabled={!showDelete}
+        aria-hidden={isLast}
+        disabled={isLast}
         color="custom"
-        icon={showDelete ? 'trash' : 'empty'}
+        icon={!isLast ? 'trash' : 'empty'}
         size="sm"
         title="Delete header"
-        onClick={showDelete ? handleDelete : undefined}
+        onClick={!isLast ? handleDelete : undefined}
         className="ml-0.5 group-hover:!opacity-100 focus-visible:!opacity-100"
       />
     </div>
@@ -387,6 +434,11 @@ const FormRow = memo(function FormRow({
 
 const newPairContainer = (initialPair?: Pair): PairContainer => {
   const id = initialPair?.id ?? uuid();
-  const pair = initialPair ?? { name: '', value: '', enabled: true };
+  const pair = initialPair ?? { name: '', value: '', enabled: true, isFile: false };
   return { id, pair };
+};
+
+const getFileName = (path: string): string => {
+  const parts = path.split(/[\\/]/);
+  return parts[parts.length - 1] ?? '';
 };
