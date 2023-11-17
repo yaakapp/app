@@ -20,7 +20,7 @@ const drag = { gridArea: 'drag' };
 const DEFAULT = 0.5;
 const MIN_WIDTH_PX = 10;
 const MIN_HEIGHT_PX = 30;
-const STACK_VERTICAL_WIDTH = 650;
+const STACK_VERTICAL_WIDTH = 600;
 
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
