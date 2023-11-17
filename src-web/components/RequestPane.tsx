@@ -255,7 +255,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   defaultValue={`${activeRequest?.body?.text ?? ''}`}
                   contentType="application/json"
                   onChange={handleBodyTextChange}
-                  format={(v) => tryFormatJson(v)}
+                  format={tryFormatJson}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_XML ? (
                 <Editor
