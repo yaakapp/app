@@ -4,6 +4,8 @@ use log::info;
 use tauri::{AppHandle, updater, Window, Wry};
 use tauri::api::dialog;
 
+use crate::is_dev;
+
 // Check for updates every 3 hours
 const MAX_UPDATE_CHECK_SECONDS: u64 = 60 * 60 * 3;
 
@@ -28,6 +30,10 @@ impl YaakUpdater {
         app_handle: &AppHandle<Wry>,
         mode: UpdateMode,
     ) -> Result<(), updater::Error> {
+        if is_dev() {
+            info!("Skipping update check because we are in dev mode");
+            return Ok(());
+        }
         self.last_update_check = SystemTime::now();
         let update_mode = get_update_mode_str(mode);
         info!("Checking for updates mode={}", update_mode);
