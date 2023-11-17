@@ -72,7 +72,7 @@ export function Dialog({
               <span />
             )}
             {description && <p id={descriptionId}>{description}</p>}
-            <div className="h-full w-full">{children}</div>
+            <div className="h-full w-full grid grid-cols-[minmax(0,1fr)]">{children}</div>
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
               <IconButton
