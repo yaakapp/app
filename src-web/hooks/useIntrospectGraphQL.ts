@@ -44,8 +44,9 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       }
 
       if (response.status < 200 || response.status >= 300) {
+        const text = await getResponseBodyText(response);
         return Promise.reject(
-          new Error(`Request failed with status ${response.status}.\n\n${response.body}`),
+          new Error(`Request failed with status ${response.status}.\n\n${text}`),
         );
       }
 

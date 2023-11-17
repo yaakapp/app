@@ -2,6 +2,7 @@ import { updateSchema } from 'cm6-graphql';
 import type { EditorView } from 'codemirror';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
+import { tryFormatJson } from '../lib/formatters';
 import type { HttpRequest } from '../lib/models';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
@@ -89,10 +90,10 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
               onClick={() => {
                 dialog.show({
                   title: 'Introspection Failed',
-                  size: 'sm',
+                  size: 'dynamic',
                   id: 'introspection-failed',
                   render: () => (
-                    <div className="whitespace-pre-wrap">
+                    <>
                       <FormattedError>{error ?? 'unknown'}</FormattedError>
                       <div className="w-full mt-3">
                         <Button
@@ -107,7 +108,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
                           Try Again
                         </Button>
                       </div>
-                    </div>
+                    </>
                   ),
                 });
               }}
@@ -121,6 +122,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
       <Separator variant="primary" />
       <p className="pt-1 text-gray-500 text-sm">Variables</p>
       <Editor
+        format={tryFormatJson}
         contentType="application/json"
         defaultValue={JSON.stringify(variables, null, 2)}
         heightMode="auto"
