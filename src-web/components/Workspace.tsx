@@ -8,11 +8,10 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
-import { WINDOW_FLOATING_SIDEBAR_WIDTH } from '../lib/constants';
 import { Button } from './core/Button';
 import { HStack } from './core/Stacks';
 import { Overlay } from './Overlay';
@@ -26,6 +25,8 @@ const side = { gridArea: 'side' };
 const head = { gridArea: 'head' };
 const body = { gridArea: 'body' };
 const drag = { gridArea: 'drag' };
+
+const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
 
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
@@ -66,9 +67,9 @@ export default function Workspace() {
           e.preventDefault(); // Prevent text selection and things
           const newWidth = startWidth + (e.clientX - mouseStartX);
           if (newWidth < 100) {
-            hide(); 
+            hide();
             resetWidth();
-          } else  {
+          } else {
             show();
             setWidth(newWidth);
           }
@@ -121,9 +122,9 @@ export default function Workspace() {
       )}
     >
       {floating ? (
-        <Overlay open={!hidden} portalName="sidebar" onClose={hide} zIndex={10}>
+        <Overlay open={!hidden} portalName="sidebar" onClose={hide}>
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
               'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',

@@ -1,2 +1,0 @@
-export const DEFAULT_FONT_SIZE = 16;
-export const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;

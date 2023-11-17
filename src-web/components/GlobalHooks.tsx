@@ -14,11 +14,12 @@ import { responsesQueryKey } from '../hooks/useResponses';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { trackPage } from '../lib/analytics';
-import { DEFAULT_FONT_SIZE } from '../lib/constants';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
+
+const DEFAULT_FONT_SIZE = 16;
 
 export function GlobalHooks() {
   // Include here so they always update, even
