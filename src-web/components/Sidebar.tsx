@@ -78,6 +78,11 @@ export function Sidebar({ className }: Props) {
     namespace: NAMESPACE_NO_SYNC,
   });
 
+  const isCollapsed = useCallback(
+    (id: string) => collapsed.value?.[id] ?? false,
+    [collapsed.value],
+  );
+
   const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: TreeNode | null;
     treeParentMap: Record<string, TreeNode>;
@@ -258,13 +263,21 @@ export function Sidebar({ className }: Props) {
 
   const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
     (id, side) => {
-      const hoveredTree = treeParentMap[id] ?? null;
+      let hoveredTree = treeParentMap[id] ?? null;
       const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
-      const hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
+      const hoveredItem = hoveredTree?.children[dragIndex]?.item ?? null;
+      let hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
+
+      if (hoveredItem?.model === 'folder' && side === 'below' && !isCollapsed(hoveredItem.id)) {
+        // Move into folder if it's open and we're moving below it
+        hoveredTree = hoveredTree?.children.find((n) => n.item.id === id) ?? null;
+        hoveredIndex = 0;
+      }
+
       setHoveredTree(hoveredTree);
       setHoveredIndex(hoveredIndex);
     },
-    [treeParentMap],
+    [isCollapsed, treeParentMap],
   );
 
   const handleDragStart = useCallback<DraggableSidebarItemProps['onDragStart']>((id: string) => {
@@ -340,11 +353,8 @@ export function Sidebar({ className }: Props) {
     ],
   );
 
-  if (tree == null) {
-    return null;
-  }
-
-  if (collapsed.value == null) {
+  // Not ready to render yet
+  if (tree == null || collapsed.value == null) {
     return null;
   }
 
@@ -364,7 +374,7 @@ export function Sidebar({ className }: Props) {
         treeParentMap={treeParentMap}
         selectedId={selectedId}
         selectedTree={selectedTree}
-        collapsed={collapsed.value}
+        isCollapsed={isCollapsed}
         tree={tree}
         focused={hasFocus}
         draggingId={draggingId}
@@ -392,7 +402,7 @@ interface SidebarItemsProps {
   handleEnd: (id: string) => void;
   handleDragStart: (id: string) => void;
   onSelect: (requestId: string) => void;
-  collapsed: Record<string, boolean>;
+  isCollapsed: (id: string) => boolean;
 }
 
 function SidebarItems({
@@ -403,7 +413,7 @@ function SidebarItems({
   draggingId,
   onSelect,
   treeParentMap,
-  collapsed,
+  isCollapsed,
   hoveredTree,
   hoveredIndex,
   handleEnd,
@@ -438,16 +448,16 @@ function SidebarItems({
             onSelect={onSelect}
             onDragStart={handleDragStart}
             useProminentStyles={focused}
-            collapsed={collapsed}
+            isCollapsed={isCollapsed}
             child={child}
           >
             {child.item.model === 'folder' &&
-              !collapsed[child.item.id] &&
+              !isCollapsed(child.item.id) &&
               draggingId !== child.item.id && (
                 <SidebarItems
                   treeParentMap={treeParentMap}
                   tree={child}
-                  collapsed={collapsed}
+                  isCollapsed={isCollapsed}
                   draggingId={draggingId}
                   hoveredTree={hoveredTree}
                   hoveredIndex={hoveredIndex}
@@ -478,12 +488,10 @@ type SidebarItemProps = {
   itemModel: string;
   useProminentStyles?: boolean;
   selected?: boolean;
-  onSelect: (id: string) => void;
   draggable?: boolean;
   children?: ReactNode;
-  collapsed: Record<string, boolean>;
   child: TreeNode;
-};
+} & Pick<SidebarItemsProps, 'isCollapsed' | 'onSelect'>;
 
 const SidebarItem = forwardRef(function SidebarItem(
   {
@@ -496,7 +504,7 @@ const SidebarItem = forwardRef(function SidebarItem(
     useProminentStyles,
     selected,
     onSelect,
-    collapsed,
+    isCollapsed,
     child,
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
@@ -679,7 +687,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               icon="chevronRight"
               className={classNames(
                 '-ml-0.5 mr-2 transition-transform',
-                !collapsed[itemId] && 'transform rotate-90',
+                !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
           )}
