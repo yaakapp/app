@@ -1,44 +1,44 @@
-const f = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", b = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", w = [b, f];
-function A(t) {
-  const e = m(t);
-  if (e == null)
+const b = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", g = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", T = [g, b];
+function S(e) {
+  const t = h(e);
+  if (t == null)
     return;
-  const r = s(e.info);
-  if (!w.includes(r.schema) || !Array.isArray(e.item))
+  const r = s(t.info);
+  if (!T.includes(r.schema) || !Array.isArray(t.item))
     return;
   const a = {
     workspaces: [],
     environments: [],
     requests: [],
     folders: []
-  }, c = {
+  }, l = {
     model: "workspace",
     id: "wrk_0",
     name: r.name || "Postman Import",
     description: r.description || ""
   };
-  a.workspaces.push(c);
-  const p = (o, l = null) => {
-    if (typeof o.name == "string" && Array.isArray(o.item)) {
-      const n = {
+  a.workspaces.push(l);
+  const y = (n, c = null) => {
+    if (typeof n.name == "string" && Array.isArray(n.item)) {
+      const o = {
         model: "folder",
-        workspaceId: c.id,
+        workspaceId: l.id,
         id: `fld_${a.folders.length}`,
-        name: o.name,
-        folderId: l
+        name: n.name,
+        folderId: c
       };
-      a.folders.push(n);
-      for (const i of o.item)
-        p(i, n.id);
-    } else if (typeof o.name == "string" && "request" in o) {
-      const n = s(o.request), i = T(n.body), u = g(n.auth), y = {
+      a.folders.push(o);
+      for (const i of n.item)
+        y(i, o.id);
+    } else if (typeof n.name == "string" && "request" in n) {
+      const o = s(n.request), i = A(o.body), u = w(o.auth), f = {
         model: "http_request",
         id: `req_${a.requests.length}`,
-        workspaceId: c.id,
-        folderId: l,
-        name: o.name,
-        method: n.method || "GET",
-        url: typeof n.url == "string" ? n.url : s(n.url).raw,
+        workspaceId: l.id,
+        folderId: c,
+        name: n.name,
+        method: o.method || "GET",
+        url: typeof o.url == "string" ? o.url : s(o.url).raw,
         body: i.body,
         bodyType: i.bodyType,
         authentication: u.authentication,
@@ -46,35 +46,35 @@ function A(t) {
         headers: [
           ...i.headers,
           ...u.headers,
-          ...h(n.header).map((d) => ({
+          ...p(o.header).map((d) => ({
             name: d.key,
             value: d.value,
             enabled: !d.disabled
           }))
         ]
       };
-      a.requests.push(y);
+      a.requests.push(f);
     } else
-      console.log("Unknown item", o, l);
+      console.log("Unknown item", n, c);
   };
-  for (const o of e.item)
-    p(o);
-  return { resources: a };
+  for (const n of t.item)
+    y(n);
+  return { resources: m(a) };
 }
-function g(t) {
-  const e = s(t);
-  return "basic" in e ? {
+function w(e) {
+  const t = s(e);
+  return "basic" in t ? {
     headers: [],
     authenticationType: "basic",
     authentication: {
-      username: e.basic.username || "",
-      password: e.basic.password || ""
+      username: t.basic.username || "",
+      password: t.basic.password || ""
     }
   } : { headers: [], authenticationType: null, authentication: {} };
 }
-function T(t) {
-  const e = s(t);
-  return "graphql" in e ? {
+function A(e) {
+  const t = s(e);
+  return "graphql" in t ? {
     headers: [
       {
         name: "Content-Type",
@@ -85,12 +85,12 @@ function T(t) {
     bodyType: "graphql",
     body: {
       text: JSON.stringify(
-        { query: e.graphql.query, variables: m(e.graphql.variables) },
+        { query: t.graphql.query, variables: h(t.graphql.variables) },
         null,
         2
       )
     }
-  } : "formdata" in e ? {
+  } : "urlencoded" in t ? {
     headers: [
       {
         name: "Content-Type",
@@ -100,27 +100,54 @@ function T(t) {
     ],
     bodyType: "application/x-www-form-urlencoded",
     body: {
-      form: h(e.formdata).map((r) => ({
+      form: p(t.urlencoded).map((r) => ({
         enabled: !r.disabled,
         name: r.key ?? "",
         value: r.value ?? ""
       }))
     }
+  } : "formdata" in t ? {
+    headers: [
+      {
+        name: "Content-Type",
+        value: "multipart/form-data",
+        enabled: !0
+      }
+    ],
+    bodyType: "multipart/form-data",
+    body: {
+      form: p(t.formdata).map(
+        (r) => r.src != null ? {
+          enabled: !r.disabled,
+          name: r.key ?? "",
+          file: r.src ?? ""
+        } : {
+          enabled: !r.disabled,
+          name: r.key ?? "",
+          value: r.value ?? ""
+        }
+      )
+    }
   } : { headers: [], bodyType: null, body: {} };
 }
-function m(t) {
+function h(e) {
   try {
-    return s(JSON.parse(t));
+    return s(JSON.parse(e));
   } catch {
   }
   return null;
 }
-function s(t) {
-  return Object.prototype.toString.call(t) === "[object Object]" ? t : {};
+function s(e) {
+  return Object.prototype.toString.call(e) === "[object Object]" ? e : {};
 }
-function h(t) {
-  return Object.prototype.toString.call(t) === "[object Array]" ? t : [];
+function p(e) {
+  return Object.prototype.toString.call(e) === "[object Array]" ? e : [];
+}
+function m(e) {
+  return typeof e == "string" ? e.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(e) && e != null ? e.map(m) : typeof e == "object" && e != null ? Object.fromEntries(
+    Object.entries(e).map(([t, r]) => [t, m(r)])
+  ) : e;
 }
 export {
-  A as pluginHookImport
+  S as pluginHookImport
 };

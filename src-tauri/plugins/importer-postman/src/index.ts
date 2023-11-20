@@ -89,7 +89,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     importItem(item);
   }
 
-  return { resources: exportResources };
+  return { resources: convertTemplateSyntax(exportResources) };
 }
 
 function importAuth(
@@ -131,7 +131,7 @@ function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'head
         ),
       },
     };
-  } else if ('formdata' in body) {
+  } else if ('urlencoded' in body) {
     return {
       headers: [
         {
@@ -142,11 +142,37 @@ function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'head
       ],
       bodyType: 'application/x-www-form-urlencoded',
       body: {
-        form: toArray(body.formdata).map((f) => ({
+        form: toArray(body.urlencoded).map((f) => ({
           enabled: !f.disabled,
           name: f.key ?? '',
           value: f.value ?? '',
         })),
+      },
+    };
+  } else if ('formdata' in body) {
+    return {
+      headers: [
+        {
+          name: 'Content-Type',
+          value: 'multipart/form-data',
+          enabled: true,
+        },
+      ],
+      bodyType: 'multipart/form-data',
+      body: {
+        form: toArray(body.formdata).map((f) =>
+          f.src != null
+            ? {
+                enabled: !f.disabled,
+                name: f.key ?? '',
+                file: f.src ?? '',
+              }
+            : {
+                enabled: !f.disabled,
+                name: f.key ?? '',
+                value: f.value ?? '',
+              },
+        ),
       },
     };
   } else {
@@ -170,4 +196,19 @@ function toRecord(value: any): Record<string, any> {
 function toArray(value: any): any[] {
   if (Object.prototype.toString.call(value) === '[object Array]') return value;
   else return [];
+}
+
+/** Recursively render all nested object properties */
+function convertTemplateSyntax<T>(obj: T): T {
+  if (typeof obj === 'string') {
+    return obj.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, '${[$2]}') as T;
+  } else if (Array.isArray(obj) && obj != null) {
+    return obj.map(convertTemplateSyntax) as T;
+  } else if (typeof obj === 'object' && obj != null) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, convertTemplateSyntax(v)]),
+    ) as T;
+  } else {
+    return obj;
+  }
 }
