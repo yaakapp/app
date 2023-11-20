@@ -32,7 +32,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
 
   const workspace: ExportResources['workspaces'][0] = {
     model: 'workspace',
-    id: 'wrk_0',
+    id: generateId('wk'),
     name: info.name || 'Postman Import',
     description: info.description || '',
   };
@@ -43,7 +43,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
       const folder: ExportResources['folders'][0] = {
         model: 'folder',
         workspaceId: workspace.id,
-        id: `fld_${exportResources.folders.length}`,
+        id: generateId('fl'),
         name: v.name,
         folderId,
       };
@@ -57,7 +57,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
       const authPatch = importAuth(r.auth);
       const request: ExportResources['requests'][0] = {
         model: 'http_request',
-        id: `req_${exportResources.requests.length}`,
+        id: generateId('rq'),
         workspaceId: workspace.id,
         folderId,
         name: v.name,
@@ -211,4 +211,13 @@ function convertTemplateSyntax<T>(obj: T): T {
   } else {
     return obj;
   }
+}
+
+function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
+  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let id = `${prefix}_`;
+  for (let i = 0; i < 10; i++) {
+    id += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return id;
 }
