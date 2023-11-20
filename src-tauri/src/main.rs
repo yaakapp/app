@@ -657,7 +657,6 @@ fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .plugin(tauri_plugin_context_menu::init())
         .setup(|app| {
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
