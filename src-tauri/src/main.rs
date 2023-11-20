@@ -13,7 +13,7 @@ use std::fs::{create_dir_all, File};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
-use log::{debug, error, info};
+use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
 use sqlx::{Pool, Sqlite, SqlitePool};
@@ -749,7 +749,7 @@ fn main() {
                         debug!("Updater downloaded");
                     }
                     tauri::UpdaterEvent::Error(e) => {
-                        error!("Updater error: {:?}", e);
+                        warn!("Updater received error: {:?}", e);
                     }
                     _ => {}
                 },
