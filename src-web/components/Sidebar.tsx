@@ -307,8 +307,9 @@ export function Sidebar({ className }: Props) {
         newChildren.splice(hoveredIndex - 1, 0, child);
       }
 
-      const prev = newChildren[hoveredIndex - 1]?.item;
-      const next = newChildren[hoveredIndex + 1]?.item;
+      const insertedIndex = newChildren.findIndex((c) => c.item === child.item);
+      const prev = newChildren[insertedIndex - 1]?.item;
+      const next = newChildren[insertedIndex + 1]?.item;
       const beforePriority = prev == null || prev.model === 'workspace' ? 0 : prev.sortPriority;
       const afterPriority = next == null || next.model === 'workspace' ? 0 : next.sortPriority;
 
