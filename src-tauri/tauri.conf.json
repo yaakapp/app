@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2023.3.0"
+    "version": "2023.4.0-beta.1"
   },
   "tauri": {
     "windows": [],
@@ -56,7 +56,7 @@
         "icons/release/icon.icns",
         "icons/release/icon.ico"
       ],
-      "identifier": "co.schier.yaak",
+      "identifier": "app.yaak.desktop",
       "longDescription": "The best cross-platform visual API client",
       "resources": [
         "migrations/*",

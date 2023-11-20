@@ -666,6 +666,8 @@ fn main() {
 
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
             let p = dir.join("db.sqlite");
+            File::options().write(true).create(true).open(&p).expect("Problem creating database file!");
+
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
             println!("Connecting to database at {}", url);
