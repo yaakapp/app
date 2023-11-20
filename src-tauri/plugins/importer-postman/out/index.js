@@ -1,68 +1,68 @@
-const b = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", g = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", T = [g, b];
-function S(e) {
-  const t = h(e);
+const T = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", w = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", A = [w, T];
+function q(e) {
+  const t = b(e);
   if (t == null)
     return;
-  const r = s(t.info);
-  if (!T.includes(r.schema) || !Array.isArray(t.item))
+  const n = a(t.info);
+  if (!A.includes(n.schema) || !Array.isArray(t.item))
     return;
-  const a = {
+  const i = {
     workspaces: [],
     environments: [],
     requests: [],
     folders: []
-  }, l = {
+  }, c = {
     model: "workspace",
-    id: "wrk_0",
-    name: r.name || "Postman Import",
-    description: r.description || ""
+    id: m("wk"),
+    name: n.name || "Postman Import",
+    description: n.description || ""
   };
-  a.workspaces.push(l);
-  const y = (n, c = null) => {
-    if (typeof n.name == "string" && Array.isArray(n.item)) {
+  i.workspaces.push(c);
+  const f = (r, u = null) => {
+    if (typeof r.name == "string" && Array.isArray(r.item)) {
       const o = {
         model: "folder",
-        workspaceId: l.id,
-        id: `fld_${a.folders.length}`,
-        name: n.name,
-        folderId: c
+        workspaceId: c.id,
+        id: m("fl"),
+        name: r.name,
+        folderId: u
       };
-      a.folders.push(o);
-      for (const i of n.item)
-        y(i, o.id);
-    } else if (typeof n.name == "string" && "request" in n) {
-      const o = s(n.request), i = A(o.body), u = w(o.auth), f = {
+      i.folders.push(o);
+      for (const s of r.item)
+        f(s, o.id);
+    } else if (typeof r.name == "string" && "request" in r) {
+      const o = a(r.request), s = k(o.body), d = S(o.auth), g = {
         model: "http_request",
-        id: `req_${a.requests.length}`,
-        workspaceId: l.id,
-        folderId: c,
-        name: n.name,
+        id: m("rq"),
+        workspaceId: c.id,
+        folderId: u,
+        name: r.name,
         method: o.method || "GET",
-        url: typeof o.url == "string" ? o.url : s(o.url).raw,
-        body: i.body,
-        bodyType: i.bodyType,
-        authentication: u.authentication,
-        authenticationType: u.authenticationType,
+        url: typeof o.url == "string" ? o.url : a(o.url).raw,
+        body: s.body,
+        bodyType: s.bodyType,
+        authentication: d.authentication,
+        authenticationType: d.authenticationType,
         headers: [
-          ...i.headers,
-          ...u.headers,
-          ...p(o.header).map((d) => ({
-            name: d.key,
-            value: d.value,
-            enabled: !d.disabled
+          ...s.headers,
+          ...d.headers,
+          ...y(o.header).map((p) => ({
+            name: p.key,
+            value: p.value,
+            enabled: !p.disabled
           }))
         ]
       };
-      a.requests.push(f);
+      i.requests.push(g);
     } else
-      console.log("Unknown item", n, c);
+      console.log("Unknown item", r, u);
   };
-  for (const n of t.item)
-    y(n);
-  return { resources: m(a) };
+  for (const r of t.item)
+    f(r);
+  return { resources: h(i) };
 }
-function w(e) {
-  const t = s(e);
+function S(e) {
+  const t = a(e);
   return "basic" in t ? {
     headers: [],
     authenticationType: "basic",
@@ -72,8 +72,8 @@ function w(e) {
     }
   } : { headers: [], authenticationType: null, authentication: {} };
 }
-function A(e) {
-  const t = s(e);
+function k(e) {
+  const t = a(e);
   return "graphql" in t ? {
     headers: [
       {
@@ -85,7 +85,7 @@ function A(e) {
     bodyType: "graphql",
     body: {
       text: JSON.stringify(
-        { query: t.graphql.query, variables: h(t.graphql.variables) },
+        { query: t.graphql.query, variables: b(t.graphql.variables) },
         null,
         2
       )
@@ -100,10 +100,10 @@ function A(e) {
     ],
     bodyType: "application/x-www-form-urlencoded",
     body: {
-      form: p(t.urlencoded).map((r) => ({
-        enabled: !r.disabled,
-        name: r.key ?? "",
-        value: r.value ?? ""
+      form: y(t.urlencoded).map((n) => ({
+        enabled: !n.disabled,
+        name: n.key ?? "",
+        value: n.value ?? ""
       }))
     }
   } : "formdata" in t ? {
@@ -116,38 +116,45 @@ function A(e) {
     ],
     bodyType: "multipart/form-data",
     body: {
-      form: p(t.formdata).map(
-        (r) => r.src != null ? {
-          enabled: !r.disabled,
-          name: r.key ?? "",
-          file: r.src ?? ""
+      form: y(t.formdata).map(
+        (n) => n.src != null ? {
+          enabled: !n.disabled,
+          name: n.key ?? "",
+          file: n.src ?? ""
         } : {
-          enabled: !r.disabled,
-          name: r.key ?? "",
-          value: r.value ?? ""
+          enabled: !n.disabled,
+          name: n.key ?? "",
+          value: n.value ?? ""
         }
       )
     }
   } : { headers: [], bodyType: null, body: {} };
 }
-function h(e) {
+function b(e) {
   try {
-    return s(JSON.parse(e));
+    return a(JSON.parse(e));
   } catch {
   }
   return null;
 }
-function s(e) {
+function a(e) {
   return Object.prototype.toString.call(e) === "[object Object]" ? e : {};
 }
-function p(e) {
+function y(e) {
   return Object.prototype.toString.call(e) === "[object Array]" ? e : [];
 }
-function m(e) {
-  return typeof e == "string" ? e.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(e) && e != null ? e.map(m) : typeof e == "object" && e != null ? Object.fromEntries(
-    Object.entries(e).map(([t, r]) => [t, m(r)])
+function h(e) {
+  return typeof e == "string" ? e.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(e) && e != null ? e.map(h) : typeof e == "object" && e != null ? Object.fromEntries(
+    Object.entries(e).map(([t, n]) => [t, h(n)])
   ) : e;
 }
+function m(e) {
+  const t = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let n = `${e}_`;
+  for (let l = 0; l < 10; l++)
+    n += t[Math.floor(Math.random() * t.length)];
+  return n;
+}
 export {
-  S as pluginHookImport
+  q as pluginHookImport
 };
