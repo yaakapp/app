@@ -833,7 +833,6 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     {
         win_builder = win_builder
             .menu(app_menu)
-            .decorations(false)
             .hidden_title(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }

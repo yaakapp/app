@@ -21,5 +21,5 @@ export function fallbackRequestName(r: HttpRequest | null): string {
     // Nothing
   }
 
-  return '';
+  return r.url;
 }
