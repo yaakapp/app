@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "npm run build:plugins && npm run tauri-dev",
-    "tauri-dev": "YAAK_ENV=development tauri dev --no-watch --config src-tauri/tauri-dev.conf.json",
+    "tauri-dev": "tauri dev --no-watch --config src-tauri/tauri-dev.conf.json",
     "tauri-build": "tauri build",
     "tauri": "tauri",
     "build": "npm run build:frontend",
