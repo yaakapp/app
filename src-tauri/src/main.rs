@@ -16,20 +16,20 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
-use tauri::{CustomMenuItem, Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
+use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-use crate::analytics::{AnalyticsAction, AnalyticsResource, track_event};
+use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
 use crate::plugin::{ImportResources, ImportResult};
 use crate::send::actually_send_request;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -665,7 +665,11 @@ fn main() {
 
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
             let p = dir.join("db.sqlite");
-            File::options().write(true).create(true).open(&p).expect("Problem creating database file!");
+            File::options()
+                .write(true)
+                .create(true)
+                .open(&p)
+                .expect("Problem creating database file!");
 
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
@@ -814,7 +818,6 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         window_id,
         WindowUrl::App(url.unwrap_or_default().into()),
     )
-    .menu(app_menu)
     .fullscreen(false)
     .resizable(true)
     .inner_size(1100.0, 600.0)
@@ -829,6 +832,8 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
     #[cfg(target_os = "macos")]
     {
         win_builder = win_builder
+            .menu(app_menu)
+            .decorations(false)
             .hidden_title(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }
@@ -901,8 +906,7 @@ fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle<Wry>, event: &s
 }
 
 async fn get_update_mode(pool: &Pool<Sqlite>) -> UpdateMode {
-     let mode = models::get_key_value_string("app", "update_mode", pool)
-        .await;
+    let mode = models::get_key_value_string("app", "update_mode", pool).await;
     match mode {
         Some(mode) => update_mode_from_str(&mode),
         None => UpdateMode::Stable,

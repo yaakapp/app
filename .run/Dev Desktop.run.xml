@@ -6,7 +6,9 @@
       <script value="start" />
     </scripts>
     <node-interpreter value="project" />
-    <envs />
+    <envs>
+      <env name="YAAK_ENV" value="development" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>
