@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
+import { useHotkey } from '../hooks/useHotkey';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
@@ -40,9 +40,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     [sendRequest],
   );
 
-  useListenToTauriEvent('focus_url', () => {
-    inputRef.current?.focus();
-  });
+  useHotkey('url.focus', () => inputRef.current?.focus());
 
   return (
     <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
@@ -79,6 +77,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
             className="!h-auto w-8 mr-0.5 my-0.5"
             icon={loading ? 'update' : 'paperPlane'}
             spin={loading}
+            hotkeyAction="request.send"
           />
         }
       />

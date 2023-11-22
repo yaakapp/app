@@ -124,7 +124,6 @@ pub struct HttpResponse {
     pub elapsed: i64,
     pub status: i64,
     pub status_reason: Option<String>,
-    pub body: Option<Vec<u8>>,
     pub body_path: Option<String>,
     pub headers: Json<Vec<HttpResponseHeader>>,
 }
@@ -594,7 +593,6 @@ pub async fn create_response(
     status: i64,
     status_reason: Option<&str>,
     content_length: Option<i64>,
-    body: Option<Vec<u8>>,
     body_path: Option<&str>,
     headers: Vec<HttpResponseHeader>,
     pool: &Pool<Sqlite>,
@@ -613,11 +611,10 @@ pub async fn create_response(
                 status,
                 status_reason,
                 content_length,
-                body,
                 body_path,
                 headers
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         "#,
         id,
         request_id,
@@ -627,7 +624,6 @@ pub async fn create_response(
         status,
         status_reason,
         content_length,
-        body,
         body_path,
         headers_json,
     )
@@ -704,19 +700,17 @@ pub async fn update_response(
                 status,
                 status_reason,
                 content_length,
-                body,
                 body_path,
                 error,
                 headers,
                 updated_at
-            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
+            ) = (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
         "#,
         response.elapsed,
         response.url,
         response.status,
         response.status_reason,
         response.content_length,
-        response.body,
         response.body_path,
         response.error,
         headers_json,
@@ -732,7 +726,7 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
         HttpResponse,
         r#"
             SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body, body_path, elapsed, error,
+                status, status_reason, content_length, body_path, elapsed, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE id = ?
@@ -745,19 +739,26 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
 
 pub async fn find_responses(
     request_id: &str,
+    limit: Option<i64>,
     pool: &Pool<Sqlite>,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
+    let limit_unwrapped = match limit {
+        Some(l) => l,
+        None => i64::MAX,
+    };
     sqlx::query_as!(
         HttpResponse,
         r#"
             SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body, body_path, elapsed, error,
+                status, status_reason, content_length, body_path, elapsed, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE request_id = ?
             ORDER BY created_at DESC
+            LIMIT ?
         "#,
         request_id,
+        limit_unwrapped,
     )
     .fetch_all(pool)
     .await
@@ -771,7 +772,7 @@ pub async fn find_responses_by_workspace_id(
         HttpResponse,
         r#"
             SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body, body_path, elapsed, error,
+                status, status_reason, content_length, body_path, elapsed, error,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE workspace_id = ?
@@ -810,7 +811,7 @@ pub async fn delete_all_responses(
     request_id: &str,
     pool: &Pool<Sqlite>,
 ) -> Result<(), sqlx::Error> {
-    for r in find_responses(request_id, pool).await? {
+    for r in find_responses(request_id, None, pool).await? {
         delete_response(&r.id, pool).await?;
     }
     Ok(())

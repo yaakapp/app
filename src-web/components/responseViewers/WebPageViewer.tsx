@@ -20,6 +20,7 @@ export function WebPageViewer({ response }: Props) {
   return (
     <div className="h-full pb-3">
       <iframe
+        key={body ? 'has-body' : 'no-body'}
         title="Response preview"
         srcDoc={contentForIframe}
         sandbox="allow-scripts allow-same-origin"

@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": [
-      "ESNext"
+      "ESNext",
     ],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -18,6 +18,6 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src"
+    "./src"
   ]
 }

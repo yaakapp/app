@@ -8,6 +8,7 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+import { useHotkey } from '../hooks/useHotkey';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -39,7 +40,7 @@ export default function Workspace() {
     null,
   );
 
-  useListenToTauriEvent('toggle_sidebar', toggle);
+  useHotkey('sidebar.toggle', toggle);
 
   // float/un-float sidebar on window resize
   useEffect(() => {

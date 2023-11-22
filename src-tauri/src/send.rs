@@ -228,11 +228,6 @@ pub async fn actually_send_request(
                 );
             }
 
-            // Also store body directly on the model, if small enough
-            if body_bytes.len() < 100_000 {
-                response.body = Some(body_bytes);
-            }
-
             response.elapsed = start.elapsed().as_millis() as i64;
             response = models::update_response_if_id(&response, pool)
                 .await
