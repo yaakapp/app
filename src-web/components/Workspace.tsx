@@ -8,8 +8,6 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
-import { useHotkey } from '../hooks/useHotkey';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
@@ -31,7 +29,7 @@ const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
 
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
-  const { hide, show, hidden, toggle } = useSidebarHidden();
+  const { hide, show, hidden } = useSidebarHidden();
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -39,8 +37,6 @@ export default function Workspace() {
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
-
-  useHotkey('sidebar.toggle', toggle);
 
   // float/un-float sidebar on window resize
   useEffect(() => {

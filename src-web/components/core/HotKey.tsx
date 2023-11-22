@@ -1,21 +1,20 @@
 import classNames from 'classnames';
+import type { HotkeyAction } from '../../hooks/useHotkey';
+import { useFormattedHotkey } from '../../hooks/useHotkey';
+import { useOsInfo } from '../../hooks/useOsInfo';
 
 interface Props {
-  modifier: 'Meta' | 'Control' | 'Shift';
-  keyName: string;
+  action: HotkeyAction | null;
 }
 
-const keys: Record<Props['modifier'], string> = {
-  Control: '⌃',
-  Meta: '⌘',
-  Shift: '⇧',
-};
+export function HotKey({ action }: Props) {
+  const osinfo = useOsInfo();
+  const label = useFormattedHotkey(action);
+  if (label === null || osinfo == null) {
+    return null;
+  }
 
-export function HotKey({ modifier, keyName }: Props) {
   return (
-    <span className={classNames('text-sm text-gray-600')}>
-      {keys[modifier]}
-      {keyName}
-    </span>
+    <span className={classNames('text-sm text-gray-1000 text-opacity-disabled')}>{label}</span>
   );
 }

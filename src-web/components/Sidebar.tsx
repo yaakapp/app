@@ -13,6 +13,8 @@ import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
+import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHotkey } from '../hooks/useHotkey';
 import { useKeyValue } from '../hooks/useKeyValue';
@@ -28,9 +30,8 @@ import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Folder, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
-import { Dropdown } from './core/Dropdown';
+import { ContextMenu } from './core/Dropdown';
 import { Icon } from './core/Icon';
-import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -82,10 +83,18 @@ export function Sidebar({ className }: Props) {
   const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: TreeNode | null;
     treeParentMap: Record<string, TreeNode>;
-    selectableRequests: { id: string; index: number; tree: TreeNode }[];
+    selectableRequests: {
+      id: string;
+      index: number;
+      tree: TreeNode;
+    }[];
   }>(() => {
     const treeParentMap: Record<string, TreeNode> = {};
-    const selectableRequests: { id: string; index: number; tree: TreeNode }[] = [];
+    const selectableRequests: {
+      id: string;
+      index: number;
+      tree: TreeNode;
+    }[] = [];
     if (activeWorkspace == null) {
       return { tree: null, treeParentMap, selectableRequests };
     }
@@ -116,7 +125,15 @@ export function Sidebar({ className }: Props) {
   }, [activeWorkspace, requests, folders]);
 
   const focusActiveRequest = useCallback(
-    (args: { forced?: { id: string; tree: TreeNode }; noFocusSidebar?: boolean } = {}) => {
+    (
+      args: {
+        forced?: {
+          id: string;
+          tree: TreeNode;
+        };
+        noFocusSidebar?: boolean;
+      } = {},
+    ) => {
       const { forced, noFocusSidebar } = args;
       const tree = forced?.tree ?? treeParentMap[activeRequestId ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
@@ -502,6 +519,8 @@ const SidebarItem = forwardRef(function SidebarItem(
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
+  const deleteRequest = useDeleteRequest(itemId);
+  const duplicateRequest = useDuplicateRequest({ id: itemId, navigateAfter: true });
   const sendManyRequests = useSendManyRequests();
   const latestResponse = useLatestResponse(itemId);
   const updateRequest = useUpdateRequest(itemId);
@@ -554,74 +573,99 @@ const SidebarItem = forwardRef(function SidebarItem(
   );
 
   const handleSelect = useCallback(() => onSelect(itemId), [onSelect, itemId]);
+  const [showContextMenu, setShowContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('CONTEXT MENU');
+    setShowContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
 
   return (
     <li ref={ref}>
       <div className={classNames(className, 'block relative group/item px-2 pb-0.5')}>
-        {itemModel === 'folder' && (
-          <Dropdown
-            items={[
-              {
-                key: 'sendAll',
-                label: 'Send All',
-                leftSlot: <Icon icon="paperPlane" />,
-                onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
-              },
-              { type: 'separator', label: itemName },
-              {
-                key: 'rename',
-                label: 'Rename',
-                leftSlot: <Icon icon="pencil" />,
-                onSelect: async () => {
-                  const name = await prompt({
-                    title: 'Rename Folder',
-                    description: (
-                      <>
-                        Enter a new name for <InlineCode>{itemName}</InlineCode>
-                      </>
-                    ),
-                    name: 'name',
-                    label: 'Name',
-                    defaultValue: itemName,
-                  });
-                  updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
-                },
-              },
-              {
-                key: 'deleteFolder',
-                label: 'Delete',
-                variant: 'danger',
-                leftSlot: <Icon icon="trash" />,
-                onSelect: () => deleteFolder.mutate(),
-              },
-              { type: 'separator' },
-              {
-                key: 'createRequest',
-                label: 'New Request',
-                leftSlot: <Icon icon="plus" />,
-                onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
-              },
-              {
-                key: 'createFolder',
-                label: 'New Folder',
-                leftSlot: <Icon icon="plus" />,
-                onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
-              },
-            ]}
-          >
-            <IconButton
-              title="Folder options"
-              size="xs"
-              icon="dotsV"
-              className="ml-auto !bg-transparent absolute right-2 opacity-0 group-hover/item:opacity-70 transition-opacity"
-            />
-          </Dropdown>
-        )}
+        <ContextMenu
+          show={showContextMenu}
+          items={
+            itemModel === 'folder'
+              ? [
+                  {
+                    key: 'sendAll',
+                    label: 'Send All',
+                    leftSlot: <Icon icon="paperPlane" />,
+                    onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
+                  },
+                  { type: 'separator', label: itemName },
+                  {
+                    key: 'rename',
+                    label: 'Rename',
+                    leftSlot: <Icon icon="pencil" />,
+                    onSelect: async () => {
+                      const name = await prompt({
+                        title: 'Rename Folder',
+                        description: (
+                          <>
+                            Enter a new name for <InlineCode>{itemName}</InlineCode>
+                          </>
+                        ),
+                        name: 'name',
+                        label: 'Name',
+                        defaultValue: itemName,
+                      });
+                      updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
+                    },
+                  },
+                  {
+                    key: 'deleteFolder',
+                    label: 'Delete',
+                    variant: 'danger',
+                    leftSlot: <Icon icon="trash" />,
+                    onSelect: () => deleteFolder.mutate(),
+                  },
+                  { type: 'separator' },
+                  {
+                    key: 'createRequest',
+                    label: 'New Request',
+                    hotkeyAction: 'request.create',
+                    leftSlot: <Icon icon="plus" />,
+                    onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
+                  },
+                  {
+                    key: 'createFolder',
+                    label: 'New Folder',
+                    leftSlot: <Icon icon="plus" />,
+                    onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
+                  },
+                ]
+              : [
+                  {
+                    key: 'duplicateRequest',
+                    label: 'Duplicate',
+                    hotkeyAction: 'request.duplicate',
+                    leftSlot: <Icon icon="copy" />,
+                    onSelect: () => duplicateRequest.mutate(),
+                  },
+                  {
+                    key: 'deleteRequest',
+                    variant: 'danger',
+                    label: 'Delete',
+                    leftSlot: <Icon icon="trash" />,
+                    onSelect: () => deleteRequest.mutate(),
+                  },
+                ]
+          }
+          onClose={() => setShowContextMenu(null)}
+        />
         <button
           // tabIndex={-1} // Will prevent drag-n-drop
           disabled={editing}
           onClick={handleSelect}
           onDoubleClick={handleStartEditing}
+          onContextMenu={handleContextMenu}
           data-active={isActive}
           data-selected={selected}
           className={classNames(
@@ -710,7 +754,13 @@ function DraggableSidebarItem({
     [onMove],
   );
 
-  const [{ isDragging }, connectDrag] = useDrag<DragItem, unknown, { isDragging: boolean }>(
+  const [{ isDragging }, connectDrag] = useDrag<
+    DragItem,
+    unknown,
+    {
+      isDragging: boolean;
+    }
+  >(
     () => ({
       type: ItemTypes.REQUEST,
       item: () => {
