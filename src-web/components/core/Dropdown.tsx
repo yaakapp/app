@@ -335,7 +335,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
           dir="ltr"
           ref={containerRef}
           style={containerStyles}
-          className={classNames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
+          className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
         >
           {triangleStyles && showTriangle && (
             <span
