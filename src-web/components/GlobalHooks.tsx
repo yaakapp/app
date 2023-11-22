@@ -92,9 +92,11 @@ export function GlobalHooks() {
     }
 
     if (!shouldIgnoreModel(payload)) {
+      console.time('set query date');
       queryClient.setQueryData<Model[]>(queryKey, (values) =>
         values?.map((v) => (modelsEq(v, payload) ? payload : v)),
       );
+      console.timeEnd('set query date');
     }
   });
 

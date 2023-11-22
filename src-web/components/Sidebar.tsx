@@ -14,9 +14,9 @@ import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useFolders } from '../hooks/useFolders';
+import { useHotkey } from '../hooks/useHotkey';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
@@ -52,7 +52,6 @@ interface TreeNode {
 
 export function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
-  const createRequest = useCreateRequest();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequestId = useActiveRequestId();
   const activeEnvironmentId = useActiveEnvironmentId();
@@ -115,9 +114,6 @@ export function Sidebar({ className }: Props) {
 
     return { tree, treeParentMap, selectableRequests };
   }, [activeWorkspace, requests, folders]);
-
-  // TODO: Move these listeners to a central place
-  useListenToTauriEvent('new_request', async () => createRequest.mutate({}));
 
   const focusActiveRequest = useCallback(
     (args: { forced?: { id: string; tree: TreeNode }; noFocusSidebar?: boolean } = {}) => {
@@ -193,19 +189,15 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useListenToTauriEvent(
-    'focus_sidebar',
-    () => {
-      if (hidden || hasFocus) return;
-      // Select 0 index on focus if none selected
-      focusActiveRequest(
-        selectedTree != null && selectedId != null
-          ? { forced: { id: selectedId, tree: selectedTree } }
-          : undefined,
-      );
-    },
-    [focusActiveRequest, hidden, activeRequestId],
-  );
+  useHotkey('sidebar.focus', () => {
+    if (hidden || hasFocus) return;
+    // Select 0 index on focus if none selected
+    focusActiveRequest(
+      selectedTree != null && selectedId != null
+        ? { forced: { id: selectedId, tree: selectedTree } }
+        : undefined,
+    );
+  });
 
   useKeyPressEvent('Enter', (e) => {
     if (!hasFocus) return;

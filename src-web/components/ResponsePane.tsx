@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
-import { useCallback, memo, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useLatestResponse } from '../hooks/useLatestResponse';
@@ -18,12 +18,12 @@ import { StatusTag } from './core/StatusTag';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
+import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { TextViewer } from './responseViewers/TextViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
-import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 
 interface Props {
   style?: CSSProperties;
@@ -48,11 +48,14 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
 
   const contentType = useResponseContentType(activeResponse);
 
-  const handlePinnedResponse = useCallback((r: HttpResponse) => {
-    setPinnedResponseId(r.id);
-  }, [setPinnedResponseId])
+  const handlePinnedResponse = useCallback(
+    (r: HttpResponse) => {
+      setPinnedResponseId(r.id);
+    },
+    [setPinnedResponseId],
+  );
 
-  const tabs: TabItem[] = useMemo(
+  const tabs = useMemo<TabItem[]>(
     () => [
       {
         value: 'body',
@@ -62,7 +65,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
           onChange: setViewMode,
           items: [
             { label: 'Pretty', value: 'pretty' },
-            { label: 'Raw', value: 'raw' },
+            ...(contentType?.startsWith('image') ? [] : [{ label: 'Raw', value: 'raw' }]),
           ],
         },
       },
@@ -78,7 +81,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         value: 'headers',
       },
     ],
-    [activeResponse?.headers, setViewMode, viewMode],
+    [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
   return (
@@ -145,10 +148,14 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             <TabContent value="body">
               {!activeResponse.contentLength ? (
                 <EmptyStateText>Empty Body</EmptyStateText>
-              ) : viewMode === 'pretty' && contentType?.includes('html') ? (
-                <WebPageViewer response={activeResponse} />
               ) : contentType?.startsWith('image') ? (
                 <ImageViewer className="pb-2" response={activeResponse} />
+              ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
+                <div className="text-sm italic text-gray-500">
+                  Cannot preview text responses larger than 2MB
+                </div>
+              ) : viewMode === 'pretty' && contentType?.includes('html') ? (
+                <WebPageViewer response={activeResponse} />
               ) : contentType?.match(/csv|tab-separated/) ? (
                 <CsvViewer className="pb-2" response={activeResponse} />
               ) : (

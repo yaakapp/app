@@ -16,20 +16,20 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
-use tauri::{AppHandle, Menu, RunEvent, State, Submenu, Window, WindowUrl, Wry};
-use tauri::{CustomMenuItem, Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-use crate::analytics::{track_event, AnalyticsAction, AnalyticsResource};
+use crate::analytics::{AnalyticsAction, AnalyticsResource, track_event};
 use crate::plugin::{ImportResources, ImportResult};
 use crate::send::actually_send_request;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -186,7 +186,7 @@ async fn send_request(
         .await
         .expect("Failed to get request");
 
-    let response = models::create_response(&req.id, 0, "", 0, None, None, None, None, vec![], pool)
+    let response = models::create_response(&req.id, 0, "", 0, None, None, None, vec![], pool)
         .await
         .expect("Failed to create response");
 
@@ -551,10 +551,11 @@ async fn get_workspace(
 #[tauri::command]
 async fn list_responses(
     request_id: &str,
+    limit: Option<i64>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::HttpResponse>, String> {
     let pool = &*db_instance.lock().await;
-    models::find_responses(request_id, pool)
+    models::find_responses(request_id, limit, pool)
         .await
         .map_err(|e| e.to_string())
 }
