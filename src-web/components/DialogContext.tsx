@@ -16,6 +16,7 @@ interface State {
 
 interface Actions {
   show: (d: DialogEntryOptionalId) => void;
+  toggle: (d: DialogEntry) => void;
   hide: (id: string) => void;
 }
 
@@ -26,15 +27,20 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   const [dialogs, setDialogs] = useState<State['dialogs']>([]);
   const actions = useMemo<Actions>(
     () => ({
-      show: ({ id: oid, ...props }: DialogEntryOptionalId) => {
+      show({ id: oid, ...props }: DialogEntryOptionalId) {
         const id = oid ?? Math.random().toString(36).slice(2);
         setDialogs((a) => [...a.filter((d) => d.id !== id), { id, ...props }]);
+      },
+      toggle({ id: oid, ...props }: DialogEntryOptionalId) {
+        const id = oid ?? Math.random().toString(36).slice(2);
+        if (dialogs.some((d) => d.id === id)) this.hide(id);
+        else this.show({ id, ...props });
       },
       hide: (id: string) => {
         setDialogs((a) => a.filter((d) => d.id !== id));
       },
     }),
-    [],
+    [dialogs],
   );
 
   const state: State = {
