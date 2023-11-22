@@ -6,7 +6,7 @@ import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
-import { RequestActionsDropdown } from './RequestActionsDropdown';
+import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 
@@ -36,14 +36,14 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
-        <RequestActionsDropdown requestId={activeRequest?.id ?? null}>
+        <SettingsDropdown requestId={activeRequest?.id ?? null}>
           <IconButton
             size="sm"
             title="Request Options"
             icon="gear"
             className="pointer-events-auto"
           />
-        </RequestActionsDropdown>
+        </SettingsDropdown>
       </div>
     </HStack>
   );

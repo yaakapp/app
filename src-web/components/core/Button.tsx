@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
 import type { HotkeyAction } from '../../hooks/useHotkey';
-import { useHotkey } from '../../hooks/useHotkey';
+import { useFormattedHotkey, useHotkey } from '../../hooks/useHotkey';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -47,11 +47,15 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     rightSlot,
     disabled,
     hotkeyAction,
+    title,
     onClick,
     ...props
   }: ButtonProps,
   ref,
 ) {
+  const hotkeyTrigger = useFormattedHotkey(hotkeyAction ?? null);
+  const fullTitle = hotkeyTrigger ? `${title}  ${hotkeyTrigger}` : title;
+
   const classes = useMemo(
     () =>
       classNames(
@@ -88,6 +92,7 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       className={classes}
       disabled={disabled}
       onClick={onClick}
+      title={fullTitle}
       {...props}
     >
       {isLoading ? (

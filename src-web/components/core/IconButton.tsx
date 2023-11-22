@@ -38,6 +38,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
     },
     [onClick, setConfirmed, showConfirm],
   );
+
   return (
     <Button
       ref={ref}

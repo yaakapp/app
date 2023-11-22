@@ -20,8 +20,10 @@ import React, {
   useState,
 } from 'react';
 import { useKey, useKeyPressEvent, useWindowSize } from 'react-use';
+import type { HotkeyAction } from '../../hooks/useHotkey';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
+import { HotKey } from './HotKey';
 import { Separator } from './Separator';
 import { VStack } from './Stacks';
 
@@ -30,19 +32,20 @@ export type DropdownItemSeparator = {
   label?: string;
 };
 
-export type DropdownItem =
-  | {
-      key: string;
-      type?: 'default';
-      label: ReactNode;
-      variant?: 'danger';
-      disabled?: boolean;
-      hidden?: boolean;
-      leftSlot?: ReactNode;
-      rightSlot?: ReactNode;
-      onSelect?: () => void;
-    }
-  | DropdownItemSeparator;
+export type DropdownItemDefault = {
+  key: string;
+  type?: 'default';
+  label: ReactNode;
+  hotkeyAction?: HotkeyAction;
+  variant?: 'danger';
+  disabled?: boolean;
+  hidden?: boolean;
+  leftSlot?: ReactNode;
+  rightSlot?: ReactNode;
+  onSelect?: () => void;
+};
+
+export type DropdownItem = DropdownItemDefault | DropdownItemSeparator;
 
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
@@ -126,9 +129,10 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       {open && triggerRect && (
         <Menu
           ref={menuRef}
+          showTriangle
           defaultSelectedIndex={defaultSelectedIndex}
           items={items}
-          triggerRect={triggerRect}
+          triggerShape={triggerRect}
           onClose={handleClose}
         />
       )}
@@ -136,16 +140,53 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
   );
 });
 
+interface ContextMenuProps {
+  show: { x: number; y: number } | null;
+  className?: string;
+  items: DropdownProps['items'];
+  onClose: () => void;
+}
+
+export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function ContextMenu(
+  { show, className, items, onClose },
+  ref,
+) {
+  const triggerShape = useMemo(
+    () => ({
+      top: show?.y ?? 0,
+      bottom: show?.y ?? 0,
+      left: show?.x ?? 0,
+      right: show?.x ?? 0,
+    }),
+    [show],
+  );
+
+  if (show === null) {
+    return null;
+  }
+
+  return (
+    <Menu
+      className={className}
+      ref={ref}
+      items={items}
+      onClose={onClose}
+      triggerShape={triggerShape}
+    />
+  );
+});
+
 interface MenuProps {
   className?: string;
   defaultSelectedIndex?: number;
   items: DropdownProps['items'];
-  triggerRect: DOMRect;
+  triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
   onClose: () => void;
+  showTriangle?: boolean;
 }
 
 const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuProps>(function Menu(
-  { className, items, onClose, triggerRect, defaultSelectedIndex }: MenuProps,
+  { className, items, onClose, triggerShape, defaultSelectedIndex, showTriangle }: MenuProps,
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -248,21 +289,27 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
 
   const { containerStyles, triangleStyles } = useMemo<{
     containerStyles: CSSProperties;
-    triangleStyles: CSSProperties;
+    triangleStyles: CSSProperties | null;
   }>(() => {
-    const docWidth = document.documentElement.getBoundingClientRect().width;
-    const spaceRemaining = docWidth - triggerRect.left;
-    const top = triggerRect?.bottom + 5;
-    const onRight = spaceRemaining < 200;
-    const containerStyles = onRight
-      ? { top, right: docWidth - triggerRect?.right }
-      : { top, left: triggerRect?.left };
+    const docRect = document.documentElement.getBoundingClientRect();
+    const width = triggerShape.right - triggerShape.left;
+    const hSpaceRemaining = docRect.width - triggerShape.left;
+    const vSpaceRemaining = docRect.height - triggerShape.bottom;
+    const top = triggerShape?.bottom + 5;
+    const onRight = hSpaceRemaining < 200;
+    const upsideDown = vSpaceRemaining < 200;
+    const containerStyles = {
+      top: !upsideDown ? top : undefined,
+      bottom: upsideDown ? top : undefined,
+      right: onRight ? docRect.width - triggerShape?.right : undefined,
+      left: !onRight ? triggerShape?.left : undefined,
+    };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
-      ? { right: triggerRect.width / 2, marginRight: '-0.2rem', ...size }
-      : { left: triggerRect.width / 2, marginLeft: '-0.2rem', ...size };
+      ? { right: width / 2, marginRight: '-0.2rem', ...size }
+      : { left: width / 2, marginLeft: '-0.2rem', ...size };
     return { containerStyles, triangleStyles };
-  }, [triggerRect]);
+  }, [triggerShape]);
 
   const handleFocus = useCallback(
     (i: DropdownItem) => {
@@ -290,11 +337,13 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
           style={containerStyles}
           className={classNames(className, 'outline-none mt-1 pointer-events-auto fixed z-50')}
         >
-          <span
-            aria-hidden
-            style={triangleStyles}
-            className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
-          />
+          {triangleStyles && showTriangle && (
+            <span
+              aria-hidden
+              style={triangleStyles}
+              className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+            />
+          )}
           {containerStyles && (
             <VStack
               space={0.5}
@@ -333,9 +382,9 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
 
 interface MenuItemProps {
   className?: string;
-  item: DropdownItem;
-  onSelect: (item: DropdownItem) => void;
-  onFocus: (item: DropdownItem) => void;
+  item: DropdownItemDefault;
+  onSelect: (item: DropdownItemDefault) => void;
+  onFocus: (item: DropdownItemDefault) => void;
   focused: boolean;
 }
 
@@ -359,7 +408,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
     [focused],
   );
 
-  if (item.type === 'separator') return <Separator className="my-1.5" />;
+  const rightSlot = item.rightSlot ?? <HotKey action={item.hotkeyAction ?? null} />;
 
   return (
     <Button
@@ -373,7 +422,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onClick={handleClick}
       justify="start"
       leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
-      rightSlot={item.rightSlot && <div className="ml-auto pl-3">{item.rightSlot}</div>}
+      rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
       className={classNames(
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
