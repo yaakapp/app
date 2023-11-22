@@ -300,7 +300,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const upsideDown = vSpaceRemaining < 200;
     const containerStyles = {
       top: !upsideDown ? top : undefined,
-      bottom: upsideDown ? top : undefined,
+      bottom: upsideDown ? docRect.height - top : undefined,
       right: onRight ? docRect.width - triggerShape?.right : undefined,
       left: !onRight ? triggerShape?.left : undefined,
     };
