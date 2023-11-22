@@ -8,23 +8,15 @@ import { useUpdateMode } from '../hooks/useUpdateMode';
 import type { DropdownProps, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
 
-interface Props {
-  requestId: string | null;
-  children: DropdownProps['children'];
-}
-
-export function SettingsDropdown({ requestId, children }: Props) {
+export function SettingsDropdown() {
   const importData = useImportData();
   const exportData = useExportData();
   const { appearance, toggleAppearance } = useTheme();
   const appVersion = useAppVersion();
   const [updateMode, setUpdateMode] = useUpdateMode();
   const dropdownRef = useRef<DropdownRef>(null);
-
-  if (requestId == null) {
-    return null;
-  }
 
   return (
     <Dropdown
@@ -63,7 +55,7 @@ export function SettingsDropdown({ requestId, children }: Props) {
         },
       ]}
     >
-      {children}
+      <IconButton size="sm" title="Request Options" icon="gear" className="pointer-events-auto" />
     </Dropdown>
   );
 }
