@@ -1,8 +1,6 @@
 import classNames from 'classnames';
 import React, { memo } from 'react';
-import { useActiveRequest } from '../hooks/useActiveRequest';
 import { Icon } from './core/Icon';
-import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
@@ -15,8 +13,6 @@ interface Props {
 }
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
-  const activeRequest = useActiveRequest();
-
   return (
     <HStack
       space={2}
@@ -36,14 +32,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
-        <SettingsDropdown requestId={activeRequest?.id ?? null}>
-          <IconButton
-            size="sm"
-            title="Request Options"
-            icon="gear"
-            className="pointer-events-auto"
-          />
-        </SettingsDropdown>
+        <SettingsDropdown />
       </div>
     </HStack>
   );
