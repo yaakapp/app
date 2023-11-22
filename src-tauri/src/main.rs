@@ -789,28 +789,16 @@ fn main() {
 }
 
 fn is_dev() -> bool {
-    let env = option_env!("YAAK_ENV");
-    env.unwrap_or("production") != "production"
+    #[cfg(dev)] {
+        return true;
+    }
+    #[cfg(not(dev))] {
+        return false;
+    }
 }
 
 fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
-    let mut app_menu = window_menu::os_default("Yaak".to_string().as_str());
-    if is_dev() {
-        let submenu = Submenu::new(
-            "Developer",
-            Menu::new()
-                .add_item(
-                    CustomMenuItem::new("refresh".to_string(), "Refresh")
-                        .accelerator("CmdOrCtrl + Shift + r"),
-                )
-                .add_item(
-                    CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
-                        .accelerator("CmdOrCtrl + Option + i"),
-                ),
-        );
-        app_menu = app_menu.add_submenu(submenu);
-    }
-
+    let app_menu = window_menu::os_default("Yaak".to_string().as_str());
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}", window_num);
     let mut win_builder = tauri::WindowBuilder::new(

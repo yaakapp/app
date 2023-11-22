@@ -7,7 +7,8 @@ export function fallbackRequestName(r: HttpRequest | null): string {
     return r.name;
   }
 
-  if (r.url.trim() === '') {
+  const withoutVariables = r.url.replace(/\$\{\[[^\]]+]}/g, '');
+  if (withoutVariables.trim() === '') {
     return 'New Request';
   }
 

@@ -1,4 +1,5 @@
 use tauri::{AboutMetadata, CustomMenuItem, Menu, MenuItem, Submenu};
+use crate::is_dev;
 
 pub fn os_default(#[allow(unused)] app_name: &str) -> Menu {
     let mut menu = Menu::new();
@@ -11,6 +12,11 @@ pub fn os_default(#[allow(unused)] app_name: &str) -> Menu {
                     app_name.to_string(),
                     AboutMetadata::default(),
                 ))
+                .add_native_item(MenuItem::Separator)
+                .add_item(
+                    CustomMenuItem::new("toggle_settings".to_string(), "Settings")
+                        .accelerator("CmdOrCtrl+,"),
+                )
                 .add_native_item(MenuItem::Separator)
                 .add_native_item(MenuItem::Services)
                 .add_native_item(MenuItem::Separator)
@@ -69,23 +75,23 @@ pub fn os_default(#[allow(unused)] app_name: &str) -> Menu {
         )
         .add_item(
             CustomMenuItem::new("zoom_out".to_string(), "Zoom Out").accelerator("CmdOrCtrl+-"),
-        )
-        .add_native_item(MenuItem::Separator)
-        .add_item(
-            CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
-                .accelerator("CmdOrCtrl+b"),
-        )
-        .add_item(
-            CustomMenuItem::new("focus_sidebar".to_string(), "Focus Sidebar")
-                .accelerator("CmdOrCtrl+1"),
-        )
-        .add_item(
-            CustomMenuItem::new("toggle_settings".to_string(), "Toggle Settings")
-                .accelerator("CmdOrCtrl+,"),
-        )
-        .add_item(
-            CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
         );
+        // .add_native_item(MenuItem::Separator)
+        // .add_item(
+        //     CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
+        //         .accelerator("CmdOrCtrl+b"),
+        // )
+        // .add_item(
+        //     CustomMenuItem::new("focus_sidebar".to_string(), "Focus Sidebar")
+        //         .accelerator("CmdOrCtrl+1"),
+        // )
+        // .add_item(
+        //     CustomMenuItem::new("toggle_settings".to_string(), "Toggle Settings")
+        //         .accelerator("CmdOrCtrl+,"),
+        // )
+        // .add_item(
+        //     CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
+        // );
     menu = menu.add_submenu(Submenu::new("View", view_menu));
 
     let mut window_menu = Menu::new();
@@ -98,22 +104,37 @@ pub fn os_default(#[allow(unused)] app_name: &str) -> Menu {
     window_menu = window_menu.add_native_item(MenuItem::CloseWindow);
     menu = menu.add_submenu(Submenu::new("Window", window_menu));
 
-    menu = menu.add_submenu(Submenu::new(
-        "Workspace",
-        Menu::new()
-            .add_item(
-                CustomMenuItem::new("send_request".to_string(), "Send Request")
-                    .accelerator("CmdOrCtrl+r"),
-            )
-            .add_item(
-                CustomMenuItem::new("new_request".to_string(), "New Request")
-                    .accelerator("CmdOrCtrl+n"),
-            )
-            .add_item(
-                CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
-                    .accelerator("CmdOrCtrl+d"),
-            ),
-    ));
+    // menu = menu.add_submenu(Submenu::new(
+    //     "Workspace",
+    //     Menu::new()
+    //         .add_item(
+    //             CustomMenuItem::new("send_request".to_string(), "Send Request")
+    //                 .accelerator("CmdOrCtrl+r"),
+    //         )
+    //         .add_item(
+    //             CustomMenuItem::new("new_request".to_string(), "New Request")
+    //                 .accelerator("CmdOrCtrl+n"),
+    //         )
+    //         .add_item(
+    //             CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
+    //                 .accelerator("CmdOrCtrl+d"),
+    //         ),
+    // ));
+
+    if is_dev() {
+        menu = menu.add_submenu(Submenu::new(
+            "Developer",
+            Menu::new()
+                .add_item(
+                    CustomMenuItem::new("refresh".to_string(), "Refresh")
+                        .accelerator("CmdOrCtrl + Shift + r"),
+                )
+                .add_item(
+                    CustomMenuItem::new("toggle_devtools".to_string(), "Open Devtools")
+                        .accelerator("CmdOrCtrl + Option + i"),
+                ),
+        ));
+    }
 
     menu
 }
