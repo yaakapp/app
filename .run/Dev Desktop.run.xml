@@ -7,7 +7,6 @@
     </scripts>
     <node-interpreter value="project" />
     <envs>
-      <env name="YAAK_ENV" value="development" />
     </envs>
     <method v="2" />
   </configuration>
