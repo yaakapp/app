@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
-    "@tauri-apps/cli": "^1.5.4",
+    "@tauri-apps/cli": "^1.5.6",
     "@types/node": "^18.7.10",
     "@types/papaparse": "^5.3.7",
     "@types/parse-color": "^1.0.1",
