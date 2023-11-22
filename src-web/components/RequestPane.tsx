@@ -1,12 +1,8 @@
-import { invoke } from '@tauri-apps/api';
-import { appWindow } from '@tauri-apps/api/window';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
@@ -47,7 +43,6 @@ const useActiveTab = createGlobalState<string>('body');
 export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
   const activeRequest = useActiveRequest();
   const activeRequestId = activeRequest?.id ?? null;
-  const activeEnvironmentId = useActiveEnvironmentId();
   const updateRequest = useUpdateRequest(activeRequestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
@@ -181,18 +176,6 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
   const handleUrlParametersChange = useCallback(
     (urlParameters: HttpUrlParameter[]) => updateRequest.mutate({ urlParameters }),
     [updateRequest],
-  );
-
-  useListenToTauriEvent(
-    'send_request',
-    async ({ windowLabel }) => {
-      if (windowLabel !== appWindow.label) return;
-      await invoke('send_request', {
-        requestId: activeRequestId,
-        environmentId: activeEnvironmentId,
-      });
-    },
-    [activeRequestId, activeEnvironmentId],
   );
 
   return (

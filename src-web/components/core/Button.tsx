@@ -1,6 +1,8 @@
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { forwardRef, memo, useMemo } from 'react';
+import { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
+import type { HotkeyAction } from '../../hooks/useHotkey';
+import { useHotkey } from '../../hooks/useHotkey';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -26,6 +28,7 @@ export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
   title?: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
+  hotkeyAction?: HotkeyAction;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +46,8 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     leftSlot,
     rightSlot,
     disabled,
+    hotkeyAction,
+    onClick,
     ...props
   }: ButtonProps,
   ref,
@@ -66,8 +71,25 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     [className, disabled, color, justify, size],
   );
 
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  useImperativeHandle<HTMLButtonElement | null, HTMLButtonElement | null>(
+    ref,
+    () => buttonRef.current,
+  );
+
+  useHotkey(hotkeyAction ?? null, () => {
+    buttonRef.current?.click();
+  });
+
   return (
-    <button ref={ref} type={type} className={classes} disabled={disabled} {...props}>
+    <button
+      ref={buttonRef}
+      type={type}
+      className={classes}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
       {isLoading ? (
         <Icon icon="update" size={size} className="animate-spin mr-1" />
       ) : leftSlot ? (

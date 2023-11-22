@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE workspace_id = ?\n            ORDER BY created_at DESC\n        ",
+  "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -54,28 +54,23 @@
         "type_info": "Int64"
       },
       {
-        "name": "body",
-        "ordinal": 10,
-        "type_info": "Blob"
-      },
-      {
         "name": "body_path",
-        "ordinal": 11,
+        "ordinal": 10,
         "type_info": "Text"
       },
       {
         "name": "elapsed",
-        "ordinal": 12,
+        "ordinal": 11,
         "type_info": "Int64"
       },
       {
         "name": "error",
-        "ordinal": 13,
+        "ordinal": 12,
         "type_info": "Text"
       },
       {
         "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
-        "ordinal": 14,
+        "ordinal": 13,
         "type_info": "Text"
       }
     ],
@@ -94,11 +89,10 @@
       true,
       true,
       true,
-      true,
       false,
       true,
       false
     ]
   },
-  "hash": "26072725d536c3cfdffd9a681d17c0ee2f246ca98e0459630a2430236d3bbdd2"
+  "hash": "679a519475adeb50abf046114d3c0d1e48e103f2bb11ef47637d7f0b00ed241f"
 }

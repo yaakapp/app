@@ -5,12 +5,6 @@ export type { EditorProps } from './Editor';
 //   showing any content
 // const editor = await import('./Editor');
 
-document.addEventListener('keydown', (e) => {
-  console.log('E', e.key);
-  e.preventDefault();
-  e.stopPropagation();
-});
-
 export const Editor = editor.Editor;
 export const graphql = editor.graphql;
 export const getIntrospectionQuery = editor.getIntrospectionQuery;

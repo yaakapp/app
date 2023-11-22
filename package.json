@@ -86,6 +86,7 @@
     "postcss": "^8.4.21",
     "postcss-nesting": "^11.2.1",
     "prettier": "^2.8.4",
+    "react-devtools": "^4.28.5",
     "tailwindcss": "^3.2.7",
     "typescript": "^5.0.2",
     "vite": "^4.0.0",
