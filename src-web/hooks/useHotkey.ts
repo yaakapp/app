@@ -6,7 +6,8 @@ export type HotkeyAction =
   | 'request.duplicate'
   | 'sidebar.toggle'
   | 'sidebar.focus'
-  | 'url.focus';
+  | 'urlBar.focus'
+  | 'environmentEditor.show';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
   'request.send': ['Meta+Enter', 'Meta+r'],
@@ -14,7 +15,8 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'request.duplicate': ['Meta+d'],
   'sidebar.toggle': ['Meta+b'],
   'sidebar.focus': ['Meta+1'],
-  'url.focus': ['Meta+l'],
+  'urlBar.focus': ['Meta+l'],
+  'environmentEditor.show': ['Meta+e'],
 };
 
 export function useHotkey(action: HotkeyAction | null, callback: (e: KeyboardEvent) => void) {
@@ -27,7 +29,6 @@ export function useHotkey(action: HotkeyAction | null, callback: (e: KeyboardEve
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      console.log('KEY DOWN', e.key);
       currentKeys.current.add(e.key);
       for (const [hkAction, hkKeys] of Object.entries(hotkeys)) {
         for (const hkKey of hkKeys) {

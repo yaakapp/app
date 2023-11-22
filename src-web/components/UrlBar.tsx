@@ -40,7 +40,13 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     [sendRequest],
   );
 
-  useHotkey('url.focus', () => inputRef.current?.focus());
+  useHotkey('urlBar.focus', () => {
+    const head = inputRef.current?.state.doc.length ?? 0;
+    inputRef.current?.dispatch({
+      selection: { anchor: 0, head },
+    });
+    inputRef.current?.focus();
+  });
 
   return (
     <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
