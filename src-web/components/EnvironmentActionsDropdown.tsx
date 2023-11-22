@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useEnvironments } from '../hooks/useEnvironments';
+import { useHotkey } from '../hooks/useHotkey';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
@@ -25,11 +26,14 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   const routes = useAppRoutes();
 
   const showEnvironmentDialog = useCallback(() => {
-    dialog.show({
+    dialog.toggle({
+      id: 'environment-editor',
       title: 'Manage Environments',
       render: () => <EnvironmentEditDialog initialEnvironment={activeEnvironment} />,
     });
   }, [dialog, activeEnvironment]);
+
+  useHotkey('environmentEditor.show', showEnvironmentDialog);
 
   const items: DropdownItem[] = useMemo(
     () => [
