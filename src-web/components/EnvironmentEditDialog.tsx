@@ -43,6 +43,11 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
     [environments, selectedEnvironmentId],
   );
 
+  const handleCreateEnvironment = async () => {
+    const e = await createEnvironment.mutateAsync();
+    setSelectedEnvironmentId(e.id);
+  };
+
   return (
     <div
       className={classNames(
@@ -76,7 +81,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
             className="w-full text-center"
             color="gray"
             justify="center"
-            onClick={() => createEnvironment.mutate()}
+            onClick={handleCreateEnvironment}
           >
             New Environment
           </Button>
@@ -191,15 +196,24 @@ const EnvironmentEditor = function ({
         <h1 className="text-xl">{environment?.name ?? 'Base Environment'}</h1>
         {items != null && (
           <Dropdown items={items}>
-            <IconButton icon="gear" title="Environment Actions" size="sm" className="!h-auto w-8" />
+            <IconButton
+              icon="dotsV"
+              title="Environment Actions"
+              size="sm"
+              className="!h-auto w-8"
+            />
           </Dropdown>
+        )}
+        {environment == null && (
+          <span className="text-sm italic text-gray-500">
+            Base variables available at all times
+          </span>
         )}
       </HStack>
       <PairEditor
         nameAutocomplete={nameAutocomplete}
         nameAutocompleteVariables={false}
         namePlaceholder="VAR_NAME"
-        valuePlaceholder="variable value"
         nameValidate={validateName}
         valueAutocompleteVariables={false}
         forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}

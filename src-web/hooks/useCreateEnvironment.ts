@@ -24,11 +24,7 @@ export function useCreateEnvironment() {
         label: 'Name',
         defaultValue: 'My Environment',
       });
-      const variables =
-        environments.length === 0 && workspaces.length === 1
-          ? [{ name: 'first_variable', value: 'some reusable value' }]
-          : [];
-      return invoke('create_environment', { name, variables, workspaceId });
+      return invoke('create_environment', { name, variables: [], workspaceId });
     },
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
