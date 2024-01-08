@@ -104,12 +104,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         <>
           <span />
           <HotKeyList
-            hotkeys={[
-              { action: 'request.send', label: 'Send Request' },
-              { action: 'request.create', label: 'New Request' },
-              { action: 'sidebar.toggle', label: 'Toggle Sidebar' },
-              { action: 'urlBar.focus', label: 'Focus URL' },
-            ]}
+            hotkeys={['request.send', 'request.create', 'sidebar.toggle', 'urlBar.focus']}
           />
         </>
       )}
