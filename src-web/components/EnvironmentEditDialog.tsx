@@ -58,23 +58,15 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       {showSidebar && (
         <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
-            <SidebarButton
-              active={selectedEnvironment == null}
-              onClick={() => setSelectedEnvironmentId(null)}
-            >
-              Base Environment
-            </SidebarButton>
-            <div className="ml-3 pl-2 border-l border-highlight">
-              {environments.map((e) => (
-                <SidebarButton
-                  key={e.id}
-                  active={selectedEnvironment?.id === e.id}
-                  onClick={() => setSelectedEnvironmentId(e.id)}
-                >
-                  {e.name}
-                </SidebarButton>
-              ))}
-            </div>
+            {environments.map((e) => (
+              <SidebarButton
+                key={e.id}
+                active={selectedEnvironment?.id === e.id}
+                onClick={() => setSelectedEnvironmentId(e.id)}
+              >
+                {e.name}
+              </SidebarButton>
+            ))}
           </div>
           <Button
             size="sm"
@@ -203,11 +195,6 @@ const EnvironmentEditor = function ({
               className="!h-auto w-8"
             />
           </Dropdown>
-        )}
-        {environment == null && (
-          <span className="text-sm italic text-gray-500">
-            Base variables available at all times
-          </span>
         )}
       </HStack>
       <PairEditor

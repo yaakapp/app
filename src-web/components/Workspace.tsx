@@ -41,9 +41,13 @@ export default function Workspace() {
   // float/un-float sidebar on window resize
   useEffect(() => {
     const shouldHide = windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH;
-    if (shouldHide) setFloating(true);
-    else if (!shouldHide) setFloating(false);
-  }, [windowSize.width]);
+    if (shouldHide && !floating) {
+      setFloating(true);
+      hide();
+    } else if (!shouldHide && floating) {
+      setFloating(false);
+    }
+  }, [floating, hide, windowSize.width]);
 
   const unsub = () => {
     if (moveState.current !== null) {

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import type { HotkeyAction } from '../../hooks/useHotkey';
 import { useFormattedHotkey, useHotkey } from '../../hooks/useHotkey';
 import { Icon } from './Icon';
@@ -31,8 +31,7 @@ export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
   hotkeyAction?: HotkeyAction;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     isLoading,
     className,
@@ -114,5 +113,3 @@ const _Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     </button>
   );
 });
-
-export const Button = memo(_Button);

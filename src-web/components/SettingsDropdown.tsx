@@ -5,10 +5,13 @@ import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateMode } from '../hooks/useUpdateMode';
-import type { DropdownProps, DropdownRef } from './core/Dropdown';
+import { Button } from './core/Button';
+import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { VStack } from './core/Stacks';
+import { useDialog } from './DialogContext';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -17,6 +20,7 @@ export function SettingsDropdown() {
   const appVersion = useAppVersion();
   const [updateMode, setUpdateMode] = useUpdateMode();
   const dropdownRef = useRef<DropdownRef>(null);
+  const dialog = useDialog();
 
   return (
     <Dropdown
@@ -26,7 +30,29 @@ export function SettingsDropdown() {
           key: 'import-data',
           label: 'Import',
           leftSlot: <Icon icon="download" />,
-          onSelect: () => importData.mutate(),
+          onSelect: () => {
+            dialog.show({
+              title: 'Import Data',
+              size: 'sm',
+              render: ({ hide }) => {
+                return (
+                  <VStack space={3}>
+                    <p>Insomnia or Postman Collection v2/v2.1 formats are supported</p>
+                    <Button
+                      size="sm"
+                      color="primary"
+                      onClick={async () => {
+                        await importData.mutateAsync();
+                        hide();
+                      }}
+                    >
+                      Select File
+                    </Button>
+                  </VStack>
+                );
+              },
+            });
+          },
         },
         {
           key: 'export-data',

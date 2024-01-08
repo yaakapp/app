@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
@@ -28,6 +29,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
+  const createWorkspace = useCreateWorkspace({ navigateAfter: true });
   const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();
@@ -121,6 +123,21 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="trash" />,
         onSelect: deleteWorkspace.mutate,
         variant: 'danger',
+      },
+      { type: 'separator' },
+      {
+        key: 'create-workspace',
+        label: 'New Workspace',
+        leftSlot: <Icon icon="plus" />,
+        onSelect: async () => {
+          const name = await prompt({
+            name: 'name',
+            label: 'Name',
+            defaultValue: 'My Workspace',
+            title: 'New Workspace',
+          });
+          createWorkspace.mutate({ name });
+        },
       },
     ];
   }, [
