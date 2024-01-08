@@ -55,6 +55,7 @@ export function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequestId = useActiveRequestId();
+  const duplicateRequest = useDuplicateRequest({ id: activeRequestId ?? '', navigateAfter: true });
   const activeEnvironmentId = useActiveEnvironmentId();
   const requests = useRequests();
   const folders = useFolders();
@@ -74,6 +75,8 @@ export function Sidebar({ className }: Props) {
     defaultValue: {},
     namespace: NAMESPACE_NO_SYNC,
   });
+
+  useHotkey('request.duplicate', () => duplicateRequest.mutate());
 
   const isCollapsed = useCallback(
     (id: string) => collapsed.value?.[id] ?? false,
@@ -581,7 +584,6 @@ const SidebarItem = forwardRef(function SidebarItem(
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('CONTEXT MENU');
     setShowContextMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
@@ -647,7 +649,10 @@ const SidebarItem = forwardRef(function SidebarItem(
                     label: 'Duplicate',
                     hotkeyAction: 'request.duplicate',
                     leftSlot: <Icon icon="copy" />,
-                    onSelect: () => duplicateRequest.mutate(),
+                    onSelect: () => {
+                      console.log('DUPLICATE');
+                      duplicateRequest.mutate();
+                    },
                   },
                   {
                     key: 'deleteRequest',
