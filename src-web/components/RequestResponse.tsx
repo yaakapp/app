@@ -3,8 +3,12 @@ import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
+import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useRequests } from '../hooks/useRequests';
 import { clamp } from '../lib/clamp';
+import { HotKeyList } from './core/HotKeyList';
 import { RequestPane } from './RequestPane';
 import { ResizeHandle } from './ResizeHandle';
 import { ResponsePane } from './ResponsePane';
@@ -24,6 +28,9 @@ const STACK_VERTICAL_WIDTH = 600;
 
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeRequest = useActiveRequest();
+  const createRequest = useCreateRequest();
+  const requests = useRequests();
   const [vertical, setVertical] = useState<boolean>(false);
   const [widthRaw, setWidth] = useLocalStorage<number>(`body_width::${useActiveWorkspaceId()}`);
   const [heightRaw, setHeight] = useLocalStorage<number>(`body_height::${useActiveWorkspaceId()}`);
@@ -113,6 +120,24 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
     },
     [width, height, vertical, setHeight, setWidth],
   );
+
+  if (activeRequest === null && requests.length > 0) {
+    return (
+      <div className="h-full flex items-center justify-center opacity-disabled">
+        <p>No Selected Request</p>
+      </div>
+    );
+  } else if (requests.length === 0) {
+    return (
+      <HotKeyList
+        hotkeys={[
+          { action: 'request.create', label: 'New Request' },
+          { action: 'sidebar.toggle', label: 'Toggle Sidebar' },
+          { action: 'urlBar.focus', label: 'Focus URL' },
+        ]}
+      />
+    );
+  }
 
   return (
     <div ref={containerRef} className="grid gap-1.5 w-full h-full p-3" style={styles}>
