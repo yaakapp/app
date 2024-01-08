@@ -121,22 +121,8 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
     [width, height, vertical, setHeight, setWidth],
   );
 
-  if (activeRequest === null && requests.length > 0) {
-    return (
-      <div className="h-full flex items-center justify-center opacity-disabled">
-        <p>No Selected Request</p>
-      </div>
-    );
-  } else if (requests.length === 0) {
-    return (
-      <HotKeyList
-        hotkeys={[
-          { action: 'request.create', label: 'New Request' },
-          { action: 'sidebar.toggle', label: 'Toggle Sidebar' },
-          { action: 'urlBar.focus', label: 'Focus URL' },
-        ]}
-      />
-    );
+  if (activeRequest === null) {
+    return <HotKeyList hotkeys={['request.create', 'sidebar.toggle']} />;
   }
 
   return (

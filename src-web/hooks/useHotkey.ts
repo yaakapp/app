@@ -90,7 +90,28 @@ export function useAnyHotkey(
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
     };
-  }, [os]);
+  }, [options.enable, os]);
+}
+
+export function useHotKeyLabel(action: HotkeyAction | null): string {
+  switch (action) {
+    case 'request.send':
+      return 'Send Request';
+    case 'request.create':
+      return 'New Request';
+    case 'request.duplicate':
+      return 'Duplicate Request';
+    case 'sidebar.toggle':
+      return 'Toggle Sidebar';
+    case 'sidebar.focus':
+      return 'Focus Sidebar';
+    case 'urlBar.focus':
+      return 'Focus URL';
+    case 'environmentEditor.toggle':
+      return 'Edit Environments';
+    default:
+      return 'Unknown';
+  }
 }
 
 export function useFormattedHotkey(action: HotkeyAction | null): string | null {
