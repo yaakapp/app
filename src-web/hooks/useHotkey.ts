@@ -1,5 +1,6 @@
 import type { OsType } from '@tauri-apps/api/os';
 import { useEffect, useRef } from 'react';
+import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
@@ -40,8 +41,12 @@ export function useAnyHotkey(callback: (action: HotkeyAction, e: KeyboardEvent) 
   }, [callback]);
 
   useEffect(() => {
+    // Sometimes the keyup event doesn't fire, so we clear the keys after a timeout
+    const clearCurrentKeys = debounce(() => currentKeys.current.clear(), 1000);
+
     const down = (e: KeyboardEvent) => {
       currentKeys.current.add(normalizeKey(e.key, os));
+
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {
           const keys = hkKey.split('+');
@@ -56,6 +61,7 @@ export function useAnyHotkey(callback: (action: HotkeyAction, e: KeyboardEvent) 
           }
         }
       }
+      clearCurrentKeys();
     };
     const up = (e: KeyboardEvent) => {
       currentKeys.current.delete(normalizeKey(e.key, os));

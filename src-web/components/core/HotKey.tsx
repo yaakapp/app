@@ -8,9 +8,9 @@ interface Props {
 }
 
 export function HotKey({ action }: Props) {
-  const osinfo = useOsInfo();
+  const osInfo = useOsInfo();
   const label = useFormattedHotkey(action);
-  if (label === null || osinfo == null) {
+  if (label === null || osInfo == null) {
     return null;
   }
 
