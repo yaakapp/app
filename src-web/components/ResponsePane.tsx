@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
 import { useResponses } from '../hooks/useResponses';
@@ -12,6 +12,7 @@ import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
+import { HotKeyList } from './core/HotKeyList';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -34,9 +35,9 @@ const useActiveTab = createGlobalState<string>('body');
 
 export const ResponsePane = memo(function ResponsePane({ style, className }: Props) {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
-  const activeRequestId = useActiveRequestId();
-  const latestResponse = useLatestResponse(activeRequestId);
-  const responses = useResponses(activeRequestId);
+  const activeRequest = useActiveRequest();
+  const latestResponse = useLatestResponse(activeRequest?.id ?? null);
+  const responses = useResponses(activeRequest?.id ?? null);
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : latestResponse ?? null;
@@ -84,6 +85,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
+  if (activeRequest === null) {
+    return null;
+  }
+
   return (
     <div
       style={style}
@@ -95,6 +100,19 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
       )}
     >
       {activeResponse?.error && <Banner className="m-2">{activeResponse.error}</Banner>}
+      {!activeResponse && (
+        <>
+          <span />
+          <HotKeyList
+            hotkeys={[
+              { action: 'request.send', label: 'Send Request' },
+              { action: 'request.create', label: 'New Request' },
+              { action: 'sidebar.toggle', label: 'Toggle Sidebar' },
+              { action: 'urlBar.focus', label: 'Focus URL' },
+            ]}
+          />
+        </>
+      )}
       {activeResponse && !activeResponse.error && !isResponseLoading(activeResponse) && (
         <>
           <HStack

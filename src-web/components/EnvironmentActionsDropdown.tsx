@@ -35,7 +35,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
     });
   }, [dialog, activeEnvironment]);
 
-  useHotkey('environmentEditor.toggle', showEnvironmentDialog);
+  useHotkey('environmentEditor.toggle', showEnvironmentDialog, { enable: environments.length > 0 });
 
   const items: DropdownItem[] = useMemo(
     () => [
