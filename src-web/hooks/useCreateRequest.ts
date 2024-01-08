@@ -3,15 +3,16 @@ import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { requestsQueryKey, useRequests } from './useRequests';
+import { requestsQueryKey } from './useRequests';
 
 export function useCreateRequest() {
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
+  const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
-  const requests = useRequests();
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -23,7 +24,8 @@ export function useCreateRequest() {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
-      patch.sortPriority = patch.sortPriority || maxSortPriority(requests) + 1000;
+      patch.sortPriority = patch.sortPriority || -Date.now();
+      patch.folderId = patch.folderId || activeRequest?.folderId;
       return invoke('create_request', { workspaceId, name: '', ...patch });
     },
     onSettled: () => trackEvent('http_request', 'create'),
@@ -39,9 +41,4 @@ export function useCreateRequest() {
       });
     },
   });
-}
-
-function maxSortPriority(requests: HttpRequest[]) {
-  if (requests.length === 0) return 1000;
-  return Math.max(...requests.map((r) => r.sortPriority));
 }

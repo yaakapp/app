@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import { useHotkey } from '../hooks/useHotkey';
 import type { ButtonProps } from './core/Button';
@@ -22,6 +23,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
 }: Props) {
   const environments = useEnvironments();
   const activeEnvironment = useActiveEnvironment();
+  const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
   const routes = useAppRoutes();
 
@@ -55,15 +57,25 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       ...((environments.length > 0
         ? [{ type: 'separator', label: 'Environments' }]
         : []) as DropdownItem[]),
-      {
-        key: 'edit',
-        label: 'Manage Environments',
-        hotkeyAction: 'environmentEditor.toggle',
-        leftSlot: <Icon icon="gear" />,
-        onSelect: showEnvironmentDialog,
-      },
+      environments.length
+        ? {
+            key: 'edit',
+            label: 'Manage Environments',
+            hotkeyAction: 'environmentEditor.toggle',
+            leftSlot: <Icon icon="gear" />,
+            onSelect: showEnvironmentDialog,
+          }
+        : {
+            key: 'new',
+            label: 'New Environment',
+            leftSlot: <Icon icon="plus" />,
+            onSelect: async () => {
+              await createEnvironment.mutateAsync();
+              showEnvironmentDialog();
+            },
+          },
     ],
-    [activeEnvironment, environments, routes, showEnvironmentDialog],
+    [activeEnvironment?.id, createEnvironment, environments, routes, showEnvironmentDialog],
   );
 
   return (

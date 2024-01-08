@@ -15,7 +15,7 @@ export function useCreateFolder() {
         throw new Error("Cannot create folder when there's no active workspace");
       }
       patch.name = patch.name || 'New Folder';
-      patch.sortPriority = patch.sortPriority || Date.now();
+      patch.sortPriority = patch.sortPriority || -Date.now();
       return invoke('create_folder', { workspaceId, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),
