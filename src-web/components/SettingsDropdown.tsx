@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api';
+import { invoke, shell } from '@tauri-apps/api';
 import { useRef } from 'react';
 import { useAppVersion } from '../hooks/useAppVersion';
 import { useExportData } from '../hooks/useExportData';
@@ -78,6 +78,12 @@ export function SettingsDropdown() {
           label: 'Check for Updates',
           onSelect: () => invoke('check_for_updates'),
           leftSlot: <Icon icon="update" />,
+        },
+        {
+          key: 'feedback',
+          label: 'Feedback',
+          onSelect: () => shell.open('https://yaak.canny.io'),
+          leftSlot: <Icon icon="chat" />,
         },
       ]}
     >

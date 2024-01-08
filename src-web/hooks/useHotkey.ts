@@ -22,15 +22,26 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+e'],
 };
 
-export function useHotkey(action: HotkeyAction | null, callback: (e: KeyboardEvent) => void) {
+interface Options {
+  enable?: boolean;
+}
+
+export function useHotkey(
+  action: HotkeyAction | null,
+  callback: (e: KeyboardEvent) => void,
+  options: Options = {},
+) {
   useAnyHotkey((hkAction, e) => {
     if (hkAction === action) {
       callback(e);
     }
-  });
+  }, options);
 }
 
-export function useAnyHotkey(callback: (action: HotkeyAction, e: KeyboardEvent) => void) {
+export function useAnyHotkey(
+  callback: (action: HotkeyAction, e: KeyboardEvent) => void,
+  options: Options,
+) {
   const currentKeys = useRef<Set<string>>(new Set());
   const callbackRef = useRef(callback);
   const osInfo = useOsInfo();
@@ -45,6 +56,10 @@ export function useAnyHotkey(callback: (action: HotkeyAction, e: KeyboardEvent) 
     const clearCurrentKeys = debounce(() => currentKeys.current.clear(), 1000);
 
     const down = (e: KeyboardEvent) => {
+      if (options.enable === false) {
+        return;
+      }
+
       currentKeys.current.add(normalizeKey(e.key, os));
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
@@ -64,6 +79,9 @@ export function useAnyHotkey(callback: (action: HotkeyAction, e: KeyboardEvent) 
       clearCurrentKeys();
     };
     const up = (e: KeyboardEvent) => {
+      if (options.enable === false) {
+        return;
+      }
       currentKeys.current.delete(normalizeKey(e.key, os));
     };
     window.addEventListener('keydown', down);

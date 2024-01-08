@@ -8,6 +8,7 @@ import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftP
 const icons = {
   archive: ReactIcons.ArchiveIcon,
   camera: ReactIcons.CameraIcon,
+  chat: ReactIcons.ChatBubbleIcon,
   check: ReactIcons.CheckIcon,
   checkbox: ReactIcons.CheckboxIcon,
   clock: ReactIcons.ClockIcon,
