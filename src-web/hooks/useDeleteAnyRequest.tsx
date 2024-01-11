@@ -28,7 +28,7 @@ export function useDeleteAnyRequest() {
       if (!confirmed) return null;
       return invoke('delete_request', { requestId: id });
     },
-    onSettled: () => trackEvent('http_request', 'delete'),
+    onSettled: () => trackEvent('HttpRequest', 'Delete'),
     onSuccess: async (request) => {
       // Was it cancelled?
       if (request === null) return;

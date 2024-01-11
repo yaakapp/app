@@ -10,7 +10,7 @@ export function useSendAnyRequest() {
   const alert = useAlert();
   return useMutation<HttpResponse, string, string | null>({
     mutationFn: (id) => invoke('send_request', { requestId: id, environmentId }),
-    onSettled: () => trackEvent('http_request', 'send'),
+    onSettled: () => trackEvent('HttpRequest', 'Send'),
     onError: (err) => alert({ title: 'Export Failed', body: err }),
   });
 }

@@ -10,7 +10,7 @@ export function useDeleteResponse(id: string | null) {
     mutationFn: async () => {
       return await invoke('delete_response', { id: id });
     },
-    onSettled: () => trackEvent('http_response', 'delete'),
+    onSettled: () => trackEvent('HttpResponse', 'Delete'),
     onSuccess: ({ requestId, id: responseId }) => {
       queryClient.setQueryData<HttpResponse[]>(responsesQueryKey({ requestId }), (responses) =>
         (responses ?? []).filter((response) => response.id !== responseId),

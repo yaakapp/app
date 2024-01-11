@@ -18,7 +18,7 @@ export function useCreateFolder() {
       patch.sortPriority = patch.sortPriority || -Date.now();
       return invoke('create_folder', { workspaceId, ...patch });
     },
-    onSettled: () => trackEvent('folder', 'create'),
+    onSettled: () => trackEvent('Folder', 'Create'),
     onSuccess: async (request) => {
       await queryClient.invalidateQueries(foldersQueryKey({ workspaceId: request.workspaceId }));
     },

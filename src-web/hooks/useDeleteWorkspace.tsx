@@ -29,7 +29,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
       if (!confirmed) return null;
       return invoke('delete_workspace', { workspaceId: workspace?.id });
     },
-    onSettled: () => trackEvent('workspace', 'delete'),
+    onSettled: () => trackEvent('Workspace', 'Delete'),
     onSuccess: async (workspace) => {
       if (workspace === null) return;
 

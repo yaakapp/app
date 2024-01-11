@@ -13,8 +13,6 @@ export function useCreateEnvironment() {
   const prompt = usePrompt();
   const workspaceId = useActiveWorkspaceId();
   const queryClient = useQueryClient();
-  const environments = useEnvironments();
-  const workspaces = useWorkspaces();
 
   return useMutation<Environment, unknown, void>({
     mutationFn: async () => {
@@ -26,7 +24,7 @@ export function useCreateEnvironment() {
       });
       return invoke('create_environment', { name, variables: [], workspaceId });
     },
-    onSettled: () => trackEvent('environment', 'create'),
+    onSettled: () => trackEvent('Environment', 'Create'),
     onSuccess: async (environment) => {
       if (workspaceId == null) return;
       routes.setEnvironment(environment);

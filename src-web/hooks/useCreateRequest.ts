@@ -28,7 +28,7 @@ export function useCreateRequest() {
       patch.folderId = patch.folderId || activeRequest?.folderId;
       return invoke('create_request', { workspaceId, name: '', ...patch });
     },
-    onSettled: () => trackEvent('http_request', 'create'),
+    onSettled: () => trackEvent('HttpRequest', 'Create'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
         requestsQueryKey({ workspaceId: request.workspaceId }),

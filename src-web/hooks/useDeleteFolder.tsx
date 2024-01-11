@@ -27,7 +27,7 @@ export function useDeleteFolder(id: string | null) {
       if (!confirmed) return null;
       return invoke('delete_folder', { folderId: id });
     },
-    onSettled: () => trackEvent('folder', 'delete'),
+    onSettled: () => trackEvent('Folder', 'Delete'),
     onSuccess: async (folder) => {
       // Was it cancelled?
       if (folder === null) return;

@@ -12,7 +12,7 @@ export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }
     mutationFn: (patch) => {
       return invoke('create_workspace', patch);
     },
-    onSettled: () => trackEvent('workspace', 'create'),
+    onSettled: () => trackEvent('Workspace', 'Create'),
     onSuccess: async (workspace) => {
       queryClient.setQueryData<Workspace[]>(workspacesQueryKey({}), (workspaces) => [
         ...(workspaces ?? []),
