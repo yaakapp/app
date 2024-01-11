@@ -35,8 +35,11 @@ pub async fn actually_send_request(
     }
 
     let client = reqwest::Client::builder()
-        .redirect(Policy::none())
-        // .danger_accept_invalid_certs(true)
+        .redirect(Policy::none()) // TODO: Handle redirect manually
+        .danger_accept_invalid_certs(false) // TODO: Make this configurable
+        .connection_verbose(true) // TODO: Capture this log somehow
+        .tls_info(true) // TODO: Capture this log somehow
+        // .use_rustls_tls() // TODO: Make this configurable
         .build()
         .expect("Failed to build client");
 
@@ -237,6 +240,9 @@ pub async fn actually_send_request(
             }
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
+        Err(e) => {
+            println!("Yo: {}", e);
+            response_err(response, e.to_string(), app_handle, pool).await
+        },
     }
 }

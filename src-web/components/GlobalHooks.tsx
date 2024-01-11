@@ -2,7 +2,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useEffectOnce } from 'react-use';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
@@ -13,7 +12,6 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
-import { trackPage } from '../lib/analytics';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
 import { modelsEq } from '../lib/models';
@@ -38,10 +36,6 @@ export function GlobalHooks() {
   useEffect(() => {
     setPathname(location.pathname).catch(console.error);
   }, [location.pathname]);
-
-  useEffectOnce(() => {
-    trackPage('/');
-  });
 
   useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;

@@ -1,89 +1,109 @@
 use log::{debug, warn};
+use serde::{Deserialize, Serialize};
 use sqlx::types::JsonValue;
 use tauri::{async_runtime, AppHandle, Manager};
 
 use crate::is_dev;
 
+// serializable
+#[derive(Serialize, Deserialize)]
 pub enum AnalyticsResource {
     App,
-    // Workspace,
-    // Environment,
-    // Folder,
-    // HttpRequest,
-    // HttpResponse,
+    Workspace,
+    Environment,
+    Folder,
+    HttpRequest,
+    HttpResponse,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum AnalyticsAction {
     Launch,
-    // Create,
-    // Update,
-    // Upsert,
-    // Delete,
-    // Send,
-    // Duplicate,
+    Create,
+    Update,
+    Upsert,
+    Delete,
+    DeleteMany,
+    Send,
+    Duplicate,
 }
 
 fn resource_name(resource: AnalyticsResource) -> &'static str {
     match resource {
         AnalyticsResource::App => "app",
-        // AnalyticsResource::Workspace => "workspace",
-        // AnalyticsResource::Environment => "environment",
-        // AnalyticsResource::Folder => "folder",
-        // AnalyticsResource::HttpRequest => "http_request",
-        // AnalyticsResource::HttpResponse => "http_response",
+        AnalyticsResource::Workspace => "workspace",
+        AnalyticsResource::Environment => "environment",
+        AnalyticsResource::Folder => "folder",
+        AnalyticsResource::HttpRequest => "http_request",
+        AnalyticsResource::HttpResponse => "http_response",
     }
 }
 
 fn action_name(action: AnalyticsAction) -> &'static str {
     match action {
         AnalyticsAction::Launch => "launch",
-        // AnalyticsAction::Create => "create",
-        // AnalyticsAction::Update => "update",
-        // AnalyticsAction::Upsert => "upsert",
-        // AnalyticsAction::Delete => "delete",
-        // AnalyticsAction::Send => "send",
-        // AnalyticsAction::Duplicate => "duplicate",
+        AnalyticsAction::Create => "create",
+        AnalyticsAction::Update => "update",
+        AnalyticsAction::Upsert => "upsert",
+        AnalyticsAction::Delete => "delete",
+        AnalyticsAction::DeleteMany => "delete_many",
+        AnalyticsAction::Send => "send",
+        AnalyticsAction::Duplicate => "duplicate",
     }
 }
 
-pub fn track_event(
+pub fn track_event_blocking(
     app_handle: &AppHandle,
     resource: AnalyticsResource,
     action: AnalyticsAction,
     attributes: Option<JsonValue>,
 ) {
     async_runtime::block_on(async move {
-        let event = format!("{}.{}", resource_name(resource), action_name(action));
-        let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
-        let info = app_handle.package_info();
-        let tz = datetime::sys_timezone().unwrap_or("unknown".to_string());
-        let params = vec![
-            ("e", event.clone()),
-            ("a", attributes_json.clone()),
-            ("id", "site_zOK0d7jeBy2TLxFCnZ".to_string()),
-            ("v", info.version.clone().to_string()),
-            ("os", get_os().to_string()),
-            ("tz", tz),
-            ("xy", get_window_size(app_handle)),
-        ];
-        let url = "https://t.yaak.app/t/e".to_string();
-        let req = reqwest::Client::builder()
-            .build()
-            .unwrap()
-            .get(&url)
-            .query(&params);
+        track_event(app_handle, resource, action, attributes).await;
+    });
+}
 
-        if is_dev() {
-            debug!("Send event (dev): {}", event);
-        } else if let Err(e) = req.send().await {
-            warn!(
+pub async fn track_event(
+    app_handle: &AppHandle,
+    resource: AnalyticsResource,
+    action: AnalyticsAction,
+    attributes: Option<JsonValue>,
+) {
+    let event = format!("{}.{}", resource_name(resource), action_name(action));
+    let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
+    let info = app_handle.package_info();
+    let tz = datetime::sys_timezone().unwrap_or("unknown".to_string());
+    let site = match is_dev() {
+        true => "site_TkHWjoXwZPq3HfhERb",
+        false => "site_zOK0d7jeBy2TLxFCnZ",
+    };
+    let base_url = match is_dev() {
+        true => "http://localhost:7194",
+        false => "https://t.yaak.app"
+    };
+    let params = vec![
+        ("e", event.clone()),
+        ("a", attributes_json.clone()),
+        ("id", site.to_string()),
+        ("v", info.version.clone().to_string()),
+        ("os", get_os().to_string()),
+        ("tz", tz),
+        ("xy", get_window_size(app_handle)),
+    ];
+    let req = reqwest::Client::builder()
+        .build()
+        .unwrap()
+        .get(format!("{base_url}/t/e"))
+        .query(&params);
+
+    if let Err(e) = req.send().await {
+        warn!(
                 "Error sending analytics event: {} {} {:?}",
                 e, event, params
             );
-        } else {
-            debug!("Send event: {}: {:?}", event, params);
-        }
-    });
+    } else {
+        debug!("Send event: {}: {:?}", event, params);
+    }
 }
 
 fn get_os() -> &'static str {

@@ -10,7 +10,7 @@ export function useDeleteResponses(requestId?: string) {
       if (requestId === undefined) return;
       await invoke('delete_all_responses', { requestId });
     },
-    onSettled: () => trackEvent('http_response', 'delete_many'),
+    onSettled: () => trackEvent('HttpResponse', 'DeleteMany'),
     onSuccess: async () => {
       if (requestId === undefined) return;
       queryClient.setQueryData(responsesQueryKey({ requestId }), []);
