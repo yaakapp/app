@@ -24,13 +24,24 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'hotkeys.showHelp': ['CmdCtrl+/'],
 };
 
+const hotkeyLabels: Record<HotkeyAction, string> = {
+  'request.send': 'Send Request',
+  'request.create': 'New Request',
+  'request.duplicate': 'Duplicate Request',
+  'sidebar.toggle': 'Toggle Sidebar',
+  'sidebar.focus': 'Focus Sidebar',
+  'urlBar.focus': 'Focus URL',
+  'environmentEditor.toggle': 'Edit Environments',
+  'hotkeys.showHelp': 'Show Hotkeys',
+};
+
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
 
 interface Options {
   enable?: boolean;
 }
 
-export function useHotkey(
+export function useHotKey(
   action: HotkeyAction | null,
   callback: (e: KeyboardEvent) => void,
   options: Options = {},
@@ -97,25 +108,8 @@ export function useAnyHotkey(
   }, [options.enable, os]);
 }
 
-export function useHotKeyLabel(action: HotkeyAction | null): string {
-  switch (action) {
-    case 'request.send':
-      return 'Send Request';
-    case 'request.create':
-      return 'New Request';
-    case 'request.duplicate':
-      return 'Duplicate Request';
-    case 'sidebar.toggle':
-      return 'Toggle Sidebar';
-    case 'sidebar.focus':
-      return 'Focus Sidebar';
-    case 'urlBar.focus':
-      return 'Focus URL';
-    case 'environmentEditor.toggle':
-      return 'Edit Environments';
-    default:
-      return 'Unknown';
-  }
+export function useHotKeyLabel(action: HotkeyAction): string {
+  return hotkeyLabels[action];
 }
 
 export function useFormattedHotkey(action: HotkeyAction | null): string | null {

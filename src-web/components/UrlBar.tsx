@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';
-import { useHotkey } from '../hooks/useHotkey';
+import { useHotKey } from '../hooks/useHotKey';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
@@ -40,7 +40,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
     [sendRequest],
   );
 
-  useHotkey('urlBar.focus', () => {
+  useHotKey('urlBar.focus', () => {
     const head = inputRef.current?.state.doc.length ?? 0;
     inputRef.current?.dispatch({
       selection: { anchor: 0, head },

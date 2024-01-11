@@ -4,7 +4,6 @@ import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
-import { useHotkey } from '../hooks/useHotkey';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
@@ -34,8 +33,6 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       render: () => <EnvironmentEditDialog initialEnvironment={activeEnvironment} />,
     });
   }, [dialog, activeEnvironment]);
-
-  useHotkey('environmentEditor.toggle', showEnvironmentDialog, { enable: environments.length > 0 });
 
   const items: DropdownItem[] = useMemo(
     () => [

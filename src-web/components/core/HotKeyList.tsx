@@ -1,7 +1,8 @@
 import React from 'react';
-import type { HotkeyAction } from '../../hooks/useHotkey';
+import type { HotkeyAction } from '../../hooks/useHotKey';
 import { HotKey } from './HotKey';
 import { HotKeyLabel } from './HotKeyLabel';
+import { HStack, VStack } from './Stacks';
 
 interface Props {
   hotkeys: HotkeyAction[];
@@ -10,14 +11,14 @@ interface Props {
 export const HotKeyList = ({ hotkeys }: Props) => {
   return (
     <div className="mx-auto h-full flex items-center text-gray-700 text-sm">
-      <div className="flex flex-col gap-1">
+      <VStack space={2}>
         {hotkeys.map((hotkey) => (
-          <div key={hotkey} className="grid grid-cols-2">
+          <HStack key={hotkey} className="grid grid-cols-2">
             <HotKeyLabel action={hotkey} />
             <HotKey className="ml-auto" action={hotkey} />
-          </div>
+          </HStack>
         ))}
-      </div>
+      </VStack>
     </div>
   );
 };
