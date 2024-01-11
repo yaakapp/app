@@ -16,7 +16,7 @@ import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useFolders } from '../hooks/useFolders';
-import { useHotkey } from '../hooks/useHotkey';
+import { useHotKey } from '../hooks/useHotKey';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { usePrompt } from '../hooks/usePrompt';
@@ -55,7 +55,6 @@ export function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequestId = useActiveRequestId();
-  const duplicateRequest = useDuplicateRequest({ id: activeRequestId ?? '', navigateAfter: true });
   const activeEnvironmentId = useActiveEnvironmentId();
   const requests = useRequests();
   const folders = useFolders();
@@ -75,8 +74,6 @@ export function Sidebar({ className }: Props) {
     defaultValue: {},
     namespace: NAMESPACE_NO_SYNC,
   });
-
-  useHotkey('request.duplicate', () => duplicateRequest.mutate());
 
   const isCollapsed = useCallback(
     (id: string) => collapsed.value?.[id] ?? false,
@@ -209,7 +206,7 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useHotkey('sidebar.focus', () => {
+  useHotKey('sidebar.focus', () => {
     if (hidden || hasFocus) return;
     // Select 0 index on focus if none selected
     focusActiveRequest(
@@ -649,10 +646,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                     label: 'Duplicate',
                     hotkeyAction: 'request.duplicate',
                     leftSlot: <Icon icon="copy" />,
-                    onSelect: () => {
-                      console.log('DUPLICATE');
-                      duplicateRequest.mutate();
-                    },
+                    onSelect: () => duplicateRequest.mutate(),
                   },
                   {
                     key: 'deleteRequest',

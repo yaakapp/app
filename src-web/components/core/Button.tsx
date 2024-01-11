@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
-import type { HotkeyAction } from '../../hooks/useHotkey';
-import { useFormattedHotkey, useHotkey } from '../../hooks/useHotkey';
+import type { HotkeyAction } from '../../hooks/useHotKey';
+import { useFormattedHotkey, useHotKey } from '../../hooks/useHotKey';
 import { Icon } from './Icon';
 
 const colorStyles = {
@@ -80,7 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     () => buttonRef.current,
   );
 
-  useHotkey(hotkeyAction ?? null, () => {
+  useHotKey(hotkeyAction ?? null, () => {
     buttonRef.current?.click();
   });
 
