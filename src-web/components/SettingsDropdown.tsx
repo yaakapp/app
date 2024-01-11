@@ -2,6 +2,7 @@ import { invoke, shell } from '@tauri-apps/api';
 import { useRef } from 'react';
 import { useAppVersion } from '../hooks/useAppVersion';
 import { useExportData } from '../hooks/useExportData';
+import { useHotkey } from '../hooks/useHotkey';
 import { useImportData } from '../hooks/useImportData';
 import { useTheme } from '../hooks/useTheme';
 import { useUpdateMode } from '../hooks/useUpdateMode';
@@ -22,6 +23,17 @@ export function SettingsDropdown() {
   const [updateMode, setUpdateMode] = useUpdateMode();
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
+
+  const showHotkeyHelp = () => {
+    dialog.show({
+      id: 'hotkey-help',
+      title: 'Keyboard Shortcuts',
+      size: 'sm',
+      render: () => <KeyboardShortcutsDialog />,
+    });
+  };
+
+  useHotkey('hotkeys.showHelp', showHotkeyHelp);
 
   return (
     <Dropdown
@@ -70,12 +82,8 @@ export function SettingsDropdown() {
         {
           key: 'hotkeys',
           label: 'Keyboard shortcuts',
-          onSelect: () =>
-            dialog.show({
-              title: 'Keyboard Shortcuts',
-              size: 'dynamic',
-              render: () => <KeyboardShortcutsDialog />,
-            }),
+          hotkeyAction: 'hotkeys.showHelp',
+          onSelect: showHotkeyHelp,
           leftSlot: <Icon icon="keyboard" />,
         },
         { type: 'separator', label: `Yaak v${appVersion.data}` },
