@@ -12,6 +12,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { VStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -66,7 +67,18 @@ export function SettingsDropdown() {
           onSelect: toggleAppearance,
           leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
         },
-        { type: 'separator', label: `v${appVersion.data}` },
+        {
+          key: 'hotkeys',
+          label: 'Keyboard shortcuts',
+          onSelect: () =>
+            dialog.show({
+              title: 'Keyboard Shortcuts',
+              size: 'dynamic',
+              render: () => <KeyboardShortcutsDialog />,
+            }),
+          leftSlot: <Icon icon="keyboard" />,
+        },
+        { type: 'separator', label: `Yaak v${appVersion.data}` },
         {
           key: 'update-mode',
           label: updateMode === 'stable' ? 'Enable Beta' : 'Disable Beta',

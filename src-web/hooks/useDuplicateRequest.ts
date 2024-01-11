@@ -23,7 +23,7 @@ export function useDuplicateRequest({
       if (id === null) throw new Error("Can't duplicate a null request");
       return invoke('duplicate_request', { id });
     },
-    onSettled: () => trackEvent('http_request', 'duplicate'),
+    onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
         requestsQueryKey({ workspaceId: request.workspaceId }),

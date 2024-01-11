@@ -16,6 +16,7 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
+use serde_json::Value;
 use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
@@ -29,7 +30,7 @@ use tokio::sync::Mutex;
 
 use window_ext::TrafficLightWindowExt;
 
-use crate::analytics::{AnalyticsAction, AnalyticsResource, track_event};
+use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::plugin::{ImportResources, ImportResult};
 use crate::send::actually_send_request;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -222,6 +223,22 @@ async fn response_err(
         .expect("Failed to update response");
     emit_side_effect(app_handle, "updated_model", &response);
     Ok(response)
+}
+
+#[tauri::command]
+async fn track_event(
+    window: Window<Wry>,
+    resource: AnalyticsResource,
+    action: AnalyticsAction,
+    attributes: Option<Value>,
+) -> Result<(), String> {
+    analytics::track_event(
+        &window.app_handle(),
+        resource,
+        action,
+        attributes,
+    ).await;
+    Ok(())
 }
 
 #[tauri::command]
@@ -726,6 +743,7 @@ fn main() {
             send_request,
             set_key_value,
             set_update_mode,
+            track_event,
             update_environment,
             update_folder,
             update_request,
@@ -762,7 +780,7 @@ fn main() {
                     w.restore_state(StateFlags::all())
                         .expect("Failed to restore window state");
 
-                    track_event(
+                    analytics::track_event_blocking(
                         app_handle,
                         AnalyticsResource::App,
                         AnalyticsAction::Launch,

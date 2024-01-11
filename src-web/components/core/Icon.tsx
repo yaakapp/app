@@ -26,6 +26,7 @@ const icons = {
   gear: I.GearIcon,
   hamburger: I.HamburgerMenuIcon,
   home: I.HomeIcon,
+  keyboard: I.KeyboardIcon,
   listBullet: I.ListBulletIcon,
   magicWand: I.MagicWandIcon,
   magnifyingGlass: I.MagnifyingGlassIcon,

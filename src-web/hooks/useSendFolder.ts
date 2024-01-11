@@ -10,6 +10,5 @@ export function useSendManyRequests() {
         sendAnyRequest.mutate(id);
       }
     },
-    onSettled: () => trackEvent('http_request', 'send'),
   });
 }

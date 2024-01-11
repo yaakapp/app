@@ -22,6 +22,8 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+e'],
 };
 
+export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
+
 interface Options {
   enable?: boolean;
 }
