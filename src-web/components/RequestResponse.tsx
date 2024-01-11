@@ -5,8 +5,6 @@ import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
-import { useCreateRequest } from '../hooks/useCreateRequest';
-import { useRequests } from '../hooks/useRequests';
 import { clamp } from '../lib/clamp';
 import { HotKeyList } from './core/HotKeyList';
 import { RequestPane } from './RequestPane';
@@ -29,8 +27,6 @@ const STACK_VERTICAL_WIDTH = 600;
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRequest = useActiveRequest();
-  const createRequest = useCreateRequest();
-  const requests = useRequests();
   const [vertical, setVertical] = useState<boolean>(false);
   const [widthRaw, setWidth] = useLocalStorage<number>(`body_width::${useActiveWorkspaceId()}`);
   const [heightRaw, setHeight] = useLocalStorage<number>(`body_height::${useActiveWorkspaceId()}`);
@@ -42,7 +38,8 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   );
 
   useResizeObserver(containerRef, ({ contentRect }) => {
-    setVertical(contentRect.width < STACK_VERTICAL_WIDTH);
+    const doIt = contentRect.width < STACK_VERTICAL_WIDTH;
+    setVertical(doIt);
   });
 
   const styles = useMemo<CSSProperties>(
