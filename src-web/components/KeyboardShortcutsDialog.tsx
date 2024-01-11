@@ -1,4 +1,4 @@
-import { hotkeyActions } from '../hooks/useHotkey';
+import { hotkeyActions } from '../hooks/useHotKey';
 import { HotKeyList } from './core/HotKeyList';
 
 export const KeyboardShortcutsDialog = () => {

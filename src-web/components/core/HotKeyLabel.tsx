@@ -1,8 +1,8 @@
-import type { HotkeyAction } from '../../hooks/useHotkey';
-import { useHotKeyLabel } from '../../hooks/useHotkey';
+import type { HotkeyAction } from '../../hooks/useHotKey';
+import { useHotKeyLabel } from '../../hooks/useHotKey';
 
 interface Props {
-  action: HotkeyAction | null;
+  action: HotkeyAction;
 }
 
 export function HotKeyLabel({ action }: Props) {

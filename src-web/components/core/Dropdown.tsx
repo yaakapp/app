@@ -20,7 +20,8 @@ import React, {
   useState,
 } from 'react';
 import { useKey, useKeyPressEvent, useWindowSize } from 'react-use';
-import type { HotkeyAction } from '../../hooks/useHotkey';
+import type { HotkeyAction } from '../../hooks/useHotKey';
+import { useHotKey } from '../../hooks/useHotKey';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
@@ -50,6 +51,7 @@ export type DropdownItem = DropdownItemDefault | DropdownItemSeparator;
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
   items: DropdownItem[];
+  openOnHotKeyAction?: HotkeyAction;
 }
 
 export interface DropdownRef {
@@ -63,20 +65,24 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items }: DropdownProps,
+  { children, items, openOnHotKeyAction }: DropdownProps,
   ref,
 ) {
-  const [open, setOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
 
+  useHotKey(openOnHotKeyAction ?? null, () => {
+    setIsOpen(true);
+  });
+
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
-    isOpen: open,
+    isOpen: isOpen,
     toggle(activeIndex?: number) {
-      if (!open) this.open(activeIndex);
-      else setOpen(false);
+      if (!isOpen) this.open(activeIndex);
+      else setIsOpen(false);
     },
     open(activeIndex?: number) {
       if (activeIndex === undefined) {
@@ -84,7 +90,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       } else {
         setDefaultSelectedIndex(activeIndex >= 0 ? activeIndex : items.length + activeIndex);
       }
-      setOpen(true);
+      setIsOpen(true);
     },
   }));
 
@@ -101,41 +107,40 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
           e.preventDefault();
           e.stopPropagation();
           setDefaultSelectedIndex(undefined);
-          setOpen((o) => !o);
+          setIsOpen((o) => !o);
         }),
     };
     return cloneElement(existingChild, props);
   }, [children]);
 
   const handleClose = useCallback(() => {
-    setOpen(false);
+    setIsOpen(false);
     buttonRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    buttonRef.current?.setAttribute('aria-expanded', open.toString());
-  }, [open]);
+    buttonRef.current?.setAttribute('aria-expanded', isOpen.toString());
+  }, [isOpen]);
 
   const windowSize = useWindowSize();
   const triggerRect = useMemo(() => {
     if (!windowSize) return null; // No-op to TS happy with this dep
-    if (!open) return null;
+    if (!isOpen) return null;
     return buttonRef.current?.getBoundingClientRect();
-  }, [open, windowSize]);
+  }, [isOpen, windowSize]);
 
   return (
     <>
       {child}
-      {open && triggerRect && (
-        <Menu
-          ref={menuRef}
-          showTriangle
-          defaultSelectedIndex={defaultSelectedIndex}
-          items={items}
-          triggerShape={triggerRect}
-          onClose={handleClose}
-        />
-      )}
+      <Menu
+        ref={menuRef}
+        showTriangle
+        defaultSelectedIndex={defaultSelectedIndex}
+        items={items}
+        triggerShape={triggerRect ?? null}
+        onClose={handleClose}
+        isOpen={isOpen}
+      />
     </>
   );
 });
@@ -161,15 +166,12 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
     [show],
   );
 
-  if (show === null) {
-    return null;
-  }
-
   return (
     <Menu
       className={className}
       ref={ref}
       items={items}
+      isOpen={show != null}
       onClose={onClose}
       triggerShape={triggerShape}
     />
@@ -180,13 +182,22 @@ interface MenuProps {
   className?: string;
   defaultSelectedIndex?: number;
   items: DropdownProps['items'];
-  triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
+  triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'> | null;
   onClose: () => void;
   showTriangle?: boolean;
+  isOpen: boolean;
 }
 
 const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuProps>(function Menu(
-  { className, items, onClose, triggerShape, defaultSelectedIndex, showTriangle }: MenuProps,
+  {
+    className,
+    isOpen,
+    items,
+    onClose,
+    triggerShape,
+    defaultSelectedIndex,
+    showTriangle,
+  }: MenuProps,
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -291,6 +302,8 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     containerStyles: CSSProperties;
     triangleStyles: CSSProperties | null;
   }>(() => {
+    if (triggerShape == null) return { containerStyles: {}, triangleStyles: null };
+
     const docRect = document.documentElement.getBoundingClientRect();
     const width = triggerShape.right - triggerShape.left;
     const hSpaceRemaining = docRect.width - triggerShape.left;
@@ -322,61 +335,76 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   if (items.length === 0) return null;
 
   return (
-    <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
-      <div>
-        <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={onClose} />
-        <motion.div
-          tabIndex={0}
-          onKeyDown={handleMenuKeyDown}
-          initial={{ opacity: 0, y: -5, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          role="menu"
-          aria-orientation="vertical"
-          dir="ltr"
-          ref={containerRef}
-          style={containerStyles}
-          className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
-        >
-          {triangleStyles && showTriangle && (
-            <span
-              aria-hidden
-              style={triangleStyles}
-              className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+    <>
+      {items.map(
+        (item) =>
+          item.type !== 'separator' && (
+            <MenuItemHotKey
+              key={item.key}
+              onSelect={handleSelect}
+              item={item}
+              action={item.hotkeyAction}
             />
-          )}
-          {containerStyles && (
-            <VStack
-              space={0.5}
-              ref={initMenu}
-              style={menuStyles}
-              className={classNames(
-                className,
-                'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-                'border-gray-200 overflow-auto mb-1 mx-0.5',
-              )}
+          ),
+      )}
+      {isOpen && (
+        <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
+          <div>
+            <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={onClose} />
+            <motion.div
+              tabIndex={0}
+              onKeyDown={handleMenuKeyDown}
+              initial={{ opacity: 0, y: -5, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              role="menu"
+              aria-orientation="vertical"
+              dir="ltr"
+              ref={containerRef}
+              style={containerStyles}
+              className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
             >
-              {items.map((item, i) => {
-                if (item.type === 'separator') {
-                  return <Separator key={i} className="my-1.5" label={item.label} />;
-                }
-                if (item.hidden) {
-                  return null;
-                }
-                return (
-                  <MenuItem
-                    focused={i === selectedIndex}
-                    onFocus={handleFocus}
-                    onSelect={handleSelect}
-                    key={item.key}
-                    item={item}
-                  />
-                );
-              })}
-            </VStack>
-          )}
-        </motion.div>
-      </div>
-    </Overlay>
+              {triangleStyles && showTriangle && (
+                <span
+                  aria-hidden
+                  style={triangleStyles}
+                  className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+                />
+              )}
+              {containerStyles && (
+                <VStack
+                  space={0.5}
+                  ref={initMenu}
+                  style={menuStyles}
+                  className={classNames(
+                    className,
+                    'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
+                    'border-gray-200 overflow-auto mb-1 mx-0.5',
+                  )}
+                >
+                  {items.map((item, i) => {
+                    if (item.type === 'separator') {
+                      return <Separator key={i} className="my-1.5" label={item.label} />;
+                    }
+                    if (item.hidden) {
+                      return null;
+                    }
+                    return (
+                      <MenuItem
+                        focused={i === selectedIndex}
+                        onFocus={handleFocus}
+                        onSelect={handleSelect}
+                        key={item.key}
+                        item={item}
+                      />
+                    );
+                  })}
+                </VStack>
+              )}
+            </motion.div>
+          </div>
+        </Overlay>
+      )}
+    </>
   );
 });
 
@@ -442,4 +470,20 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       </div>
     </Button>
   );
+}
+
+interface MenuItemHotKeyProps {
+  action: HotkeyAction | undefined;
+  onSelect: MenuItemProps['onSelect'];
+  item: MenuItemProps['item'];
+}
+
+function MenuItemHotKey({ action, onSelect, item }: MenuItemHotKeyProps) {
+  if (action) {
+    console.log('MENU ITEM HOTKEY', action, item);
+  }
+  useHotKey(action ?? null, () => {
+    onSelect(item);
+  });
+  return null;
 }

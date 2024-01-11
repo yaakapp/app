@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
-import { useHotkey } from '../hooks/useHotkey';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { Dropdown } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
@@ -11,8 +10,6 @@ export const SidebarActions = memo(function SidebarActions() {
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
   const { hidden, toggle } = useSidebarHidden();
-
-  useHotkey('request.create', () => createRequest.mutate({}));
 
   return (
     <HStack>

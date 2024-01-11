@@ -1,7 +1,8 @@
 import classNames from 'classnames';
-import type { HotkeyAction } from '../../hooks/useHotkey';
-import { useFormattedHotkey } from '../../hooks/useHotkey';
+import type { HotkeyAction } from '../../hooks/useHotKey';
+import { useFormattedHotkey } from '../../hooks/useHotKey';
 import { useOsInfo } from '../../hooks/useOsInfo';
+import { HStack } from './Stacks';
 
 interface Props {
   action: HotkeyAction | null;
@@ -17,14 +18,18 @@ export function HotKey({ action, className, variant }: Props) {
   }
 
   return (
-    <span
+    <HStack
       className={classNames(
         className,
         variant === 'with-bg' && 'rounded border',
-        'text-sm text-gray-1000 text-opacity-disabled',
+        'text-gray-1000 text-opacity-disabled',
       )}
     >
-      {label}
-    </span>
+      {label.split('').map((char, index) => (
+        <div key={index} className="w-[1.1em] text-center">
+          {char}
+        </div>
+      ))}
+    </HStack>
   );
 }
