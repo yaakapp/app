@@ -10,7 +10,8 @@ export type HotkeyAction =
   | 'sidebar.toggle'
   | 'sidebar.focus'
   | 'urlBar.focus'
-  | 'environmentEditor.toggle';
+  | 'environmentEditor.toggle'
+  | 'hotkeys.showHelp';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
   'request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
@@ -20,6 +21,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'sidebar.focus': ['CmdCtrl+1'],
   'urlBar.focus': ['CmdCtrl+l'],
   'environmentEditor.toggle': ['CmdCtrl+e'],
+  'hotkeys.showHelp': ['CmdCtrl+/'],
 };
 
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];

@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { MotionConfig } from 'framer-motion';
 import { Suspense } from 'react';
 import { DndProvider } from 'react-dnd';
@@ -26,7 +25,7 @@ export function App() {
           <DndProvider backend={HTML5Backend}>
             <Suspense>
               <AppRouter />
-              <ReactQueryDevtools initialIsOpen={false} />
+              {/*<ReactQueryDevtools initialIsOpen={false} />*/}
             </Suspense>
           </DndProvider>
         </HelmetProvider>
