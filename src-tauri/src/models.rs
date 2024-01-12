@@ -20,6 +20,8 @@ pub struct Settings {
     pub validate_certificates: bool,
     pub follow_redirects: bool,
     pub theme: String,
+    pub appearance: String,
+    pub request_timeout: i64,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -312,7 +314,9 @@ async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
                 updated_at,
                 follow_redirects,
                 validate_certificates,
-                theme
+                request_timeout,
+                theme,
+                appearance
             FROM settings
             WHERE id = 'default'
         "#,
@@ -347,12 +351,14 @@ pub async fn update_settings(
             UPDATE settings SET (
                 follow_redirects,
                 validate_certificates,
-                theme
-            ) = (?, ?, ?) WHERE id = 'default';
+                theme,
+                appearance
+            ) = (?, ?, ?, ?) WHERE id = 'default';
         "#,
         settings.follow_redirects,
         settings.validate_certificates,
         settings.theme,
+        settings.appearance,
     )
     .execute(pool)
     .await?;

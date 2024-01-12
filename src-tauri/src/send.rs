@@ -1,15 +1,16 @@
 use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::time::Duration;
 
 use base64::Engine;
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use log::warn;
 use reqwest::multipart;
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
 use sqlx::types::Json;
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -38,17 +39,26 @@ pub async fn actually_send_request(
         .await
         .expect("Failed to get settings");
 
-    let client = reqwest::Client::builder()
+    let mut client_builder = reqwest::Client::builder()
         .redirect(match settings.follow_redirects {
             true => Policy::limited(10), // TODO: Handle redirects natively
             false => Policy::none(),
         })
+        .gzip(true)
+        .brotli(true)
+        .deflate(true)
+        .referer(false)
         .danger_accept_invalid_certs(!settings.validate_certificates)
         .connection_verbose(true) // TODO: Capture this log somehow
-        .tls_info(true)
-        // .use_rustls_tls() // TODO: Make this configurable (maybe)
-        .build()
-        .expect("Failed to build client");
+        .tls_info(true);
+
+    if settings.request_timeout > 0 {
+        client_builder =
+            client_builder.timeout(Duration::from_millis(settings.request_timeout.unsigned_abs()));
+    }
+
+    // .use_rustls_tls() // TODO: Make this configurable (maybe)
+    let client = client_builder.build().expect("Failed to build client");
 
     let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
@@ -258,6 +268,7 @@ pub async fn actually_send_request(
             response.url = v.url().to_string();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.content_length = Some(body_bytes.len() as i64);
+            println!("Response: {:?}", body_bytes.len());
 
             {
                 // Write body to FS

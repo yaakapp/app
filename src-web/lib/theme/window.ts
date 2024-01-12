@@ -1,7 +1,9 @@
 import type { AppTheme, AppThemeColors } from './theme';
 import { generateCSS, toTailwindVariable } from './theme';
 
-export type Appearance = 'dark' | 'light';
+export type Appearance = 'dark' | 'light' | 'system';
+
+const DEFAULT_APPEARANCE: Appearance = 'system';
 
 enum Theme {
   yaak = 'yaak',
@@ -61,19 +63,11 @@ const lightTheme: AppTheme = {
   },
 };
 
-export function getAppearance(): Appearance {
-  const docAppearance = document.documentElement.getAttribute('data-appearance');
-  if (docAppearance === 'dark' || docAppearance === 'light') {
-    return docAppearance;
-  }
-  return getPreferredAppearance();
-}
+export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
+  const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;
+  const theme = resolvedAppearance === 'dark' ? darkTheme : lightTheme;
 
-export function setAppearance(a?: Appearance) {
-  const appearance = a ?? getPreferredAppearance();
-  const theme = appearance === 'dark' ? darkTheme : lightTheme;
-
-  document.documentElement.setAttribute('data-appearance', appearance);
+  document.documentElement.setAttribute('data-resolved-appearance', resolvedAppearance);
   document.documentElement.setAttribute('data-theme', theme.name);
 
   let existingStyleEl = document.head.querySelector(`style[data-theme-definition]`);
@@ -85,11 +79,11 @@ export function setAppearance(a?: Appearance) {
 
   existingStyleEl.textContent = [
     `/* ${darkTheme.name} */`,
-    `[data-appearance="dark"] {`,
+    `[data-resolved-appearance="dark"] {`,
     ...generateCSS(darkTheme).map(toTailwindVariable),
     '}',
     `/* ${lightTheme.name} */`,
-    `[data-appearance="light"] {`,
+    `[data-resolved-appearance="light"] {`,
     ...generateCSS(lightTheme).map(toTailwindVariable),
     '}',
   ].join('\n');

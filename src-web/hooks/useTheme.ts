@@ -1,30 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { Appearance } from '../lib/theme/window';
 import {
-  getAppearance,
-  setAppearance,
+  setAppearanceOnDocument,
+  getPreferredAppearance,
   subscribeToPreferredAppearanceChange,
 } from '../lib/theme/window';
-import { useKeyValue } from './useKeyValue';
+import { useSettings } from './useSettings';
 
 export function useTheme() {
-  const appearanceKv = useKeyValue<Appearance>({
-    key: 'appearance',
-    defaultValue: getAppearance(),
-  });
+  const [preferredAppearance, setPreferredAppearance] = useState<Appearance>(
+    getPreferredAppearance(),
+  );
 
-  const handleToggleAppearance = async () => {
-    appearanceKv.set(appearanceKv.value === 'dark' ? 'light' : 'dark');
-  };
+  const settings = useSettings();
 
   // Set appearance when preferred theme changes
-  useEffect(() => subscribeToPreferredAppearanceChange(appearanceKv.set), [appearanceKv.set]);
+  useEffect(() => {
+    return subscribeToPreferredAppearanceChange(setPreferredAppearance);
+  }, []);
 
-  // Sync appearance when k/v changes
-  useEffect(() => setAppearance(appearanceKv.value), [appearanceKv.value]);
+  const appearance =
+    settings == null || settings?.appearance === 'system'
+      ? preferredAppearance
+      : settings.appearance;
 
-  return {
-    appearance: appearanceKv.value,
-    toggleAppearance: handleToggleAppearance,
-  };
+  useEffect(() => {
+    if (settings == null) {
+      return;
+    }
+    setAppearanceOnDocument(settings.appearance as Appearance);
+  }, [appearance, settings]);
+
+  return { appearance };
 }
