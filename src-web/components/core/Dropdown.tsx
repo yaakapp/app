@@ -479,11 +479,6 @@ interface MenuItemHotKeyProps {
 }
 
 function MenuItemHotKey({ action, onSelect, item }: MenuItemHotKeyProps) {
-  if (action) {
-    console.log('MENU ITEM HOTKEY', action, item);
-  }
-  useHotKey(action ?? null, () => {
-    onSelect(item);
-  });
+  useHotKey(action ?? null, () => onSelect(item));
   return null;
 }

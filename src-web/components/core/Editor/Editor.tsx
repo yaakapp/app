@@ -290,11 +290,27 @@ function getExtensions({
 
     // Handle onChange
     EditorView.updateListener.of((update) => {
-      if (onChange && update.docChanged) {
+      // Only fire onChange if the document changed and the update was from user input. This prevents firing onChange when the document is updated when
+      // changing pages (one request to another in header editor)
+      if (onChange && update.docChanged && isViewUpdateFromUserInput(update)) {
         onChange.current?.(update.state.doc.toString());
       }
     }),
   ];
+}
+
+function isViewUpdateFromUserInput(viewUpdate: ViewUpdate) {
+  // Make sure document has changed, ensuring user events like selections don't count.
+  if (viewUpdate.docChanged) {
+    // Check transactions for any that are direct user input, not changes from Y.js or another extension.
+    for (const transaction of viewUpdate.transactions) {
+      // Not using Transaction.isUserEvent because that only checks for a specific User event type ( "input", "delete", etc.). Checking the annotation directly allows for any type of user event.
+      const userEventType = transaction.annotation(Transaction.userEvent);
+      if (userEventType) return userEventType;
+    }
+  }
+
+  return false;
 }
 
 const syncGutterBg = ({

@@ -34,12 +34,19 @@ pub async fn actually_send_request(
         url_string = format!("http://{}", url_string);
     }
 
+    let settings = models::get_or_create_settings(pool)
+        .await
+        .expect("Failed to get settings");
+
     let client = reqwest::Client::builder()
-        .redirect(Policy::none()) // TODO: Handle redirect manually
-        .danger_accept_invalid_certs(false) // TODO: Make this configurable
+        .redirect(match settings.follow_redirects {
+            true => Policy::limited(10), // TODO: Handle redirects natively
+            false => Policy::none(),
+        })
+        .danger_accept_invalid_certs(!settings.validate_certificates)
         .connection_verbose(true) // TODO: Capture this log somehow
-        .tls_info(true) // TODO: Capture this log somehow
-        // .use_rustls_tls() // TODO: Make this configurable
+        .tls_info(true)
+        // .use_rustls_tls() // TODO: Make this configurable (maybe)
         .build()
         .expect("Failed to build client");
 
@@ -117,7 +124,9 @@ pub async fn actually_send_request(
 
     let mut query_params = Vec::new();
     for p in request.url_parameters.0 {
-        if !p.enabled || p.name.is_empty() { continue; }
+        if !p.enabled || p.name.is_empty() {
+            continue;
+        }
         query_params.push((
             render::render(&p.name, &workspace, environment_ref),
             render::render(&p.value, &workspace, environment_ref),
@@ -131,18 +140,38 @@ pub async fn actually_send_request(
         let request_body = request.body.0;
 
         if request_body.contains_key("text") {
-            let raw_text = request_body.get("text").unwrap_or(empty_string).as_str().unwrap_or("");
+            let raw_text = request_body
+                .get("text")
+                .unwrap_or(empty_string)
+                .as_str()
+                .unwrap_or("");
             let body = render::render(raw_text, &workspace, environment_ref);
             request_builder = request_builder.body(body);
-        } else if body_type == "application/x-www-form-urlencoded" && request_body.contains_key("form") {
+        } else if body_type == "application/x-www-form-urlencoded"
+            && request_body.contains_key("form")
+        {
             let mut form_params = Vec::new();
             let form = request_body.get("form");
             if let Some(f) = form {
                 for p in f.as_array().unwrap_or(&Vec::new()) {
-                    let enabled = p.get("enabled").unwrap_or(empty_bool).as_bool().unwrap_or(false);
-                    let name = p.get("name").unwrap_or(empty_string).as_str().unwrap_or_default();
-                    if !enabled || name.is_empty() { continue; }
-                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    let enabled = p
+                        .get("enabled")
+                        .unwrap_or(empty_bool)
+                        .as_bool()
+                        .unwrap_or(false);
+                    let name = p
+                        .get("name")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
+                    if !enabled || name.is_empty() {
+                        continue;
+                    }
+                    let value = p
+                        .get("value")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
                     form_params.push((
                         render::render(name, &workspace, environment_ref),
                         render::render(value, &workspace, environment_ref),
@@ -154,17 +183,41 @@ pub async fn actually_send_request(
             let mut multipart_form = multipart::Form::new();
             if let Some(form_definition) = request_body.get("form") {
                 for p in form_definition.as_array().unwrap_or(&Vec::new()) {
-                    let enabled = p.get("enabled").unwrap_or(empty_bool).as_bool().unwrap_or(false);
-                    let name = p.get("name").unwrap_or(empty_string).as_str().unwrap_or_default();
-                    if !enabled || name.is_empty() { continue; }
+                    let enabled = p
+                        .get("enabled")
+                        .unwrap_or(empty_bool)
+                        .as_bool()
+                        .unwrap_or(false);
+                    let name = p
+                        .get("name")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
+                    if !enabled || name.is_empty() {
+                        continue;
+                    }
 
-                    let file = p.get("file").unwrap_or(empty_string).as_str().unwrap_or_default();
-                    let value = p.get("value").unwrap_or(empty_string).as_str().unwrap_or_default();
+                    let file = p
+                        .get("file")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
+                    let value = p
+                        .get("value")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
                     multipart_form = multipart_form.part(
                         render::render(name, &workspace, environment_ref),
                         match !file.is_empty() {
-                            true => multipart::Part::bytes(fs::read(file).map_err(|e| e.to_string())?),
-                            false => multipart::Part::text(render::render(value, &workspace, environment_ref)),
+                            true => {
+                                multipart::Part::bytes(fs::read(file).map_err(|e| e.to_string())?)
+                            }
+                            false => multipart::Part::text(render::render(
+                                value,
+                                &workspace,
+                                environment_ref,
+                            )),
                         },
                     );
                 }
@@ -243,6 +296,6 @@ pub async fn actually_send_request(
         Err(e) => {
             println!("Yo: {}", e);
             response_err(response, e.to_string(), app_handle, pool).await
-        },
+        }
     }
 }
