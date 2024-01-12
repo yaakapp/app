@@ -13,6 +13,7 @@ import { IconButton } from './core/IconButton';
 import { VStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
+import { SettingsDialog } from './SettingsDialog';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -62,15 +63,10 @@ export function SettingsDropdown() {
           onSelect: () => exportData.mutate(),
         },
         {
-          key: 'appearance',
-          label: 'Toggle Theme',
-          onSelect: toggleAppearance,
-          leftSlot: <Icon icon={appearance === 'dark' ? 'sun' : 'moon'} />,
-        },
-        {
           key: 'hotkeys',
           label: 'Keyboard shortcuts',
           hotkeyAction: 'hotkeys.showHelp',
+          leftSlot: <Icon icon="keyboard" />,
           onSelect: () => {
             dialog.show({
               id: 'hotkey-help',
@@ -79,7 +75,20 @@ export function SettingsDropdown() {
               render: () => <KeyboardShortcutsDialog />,
             });
           },
-          leftSlot: <Icon icon="keyboard" />,
+        },
+        {
+          key: 'settings',
+          label: 'Settings',
+          hotkeyAction: 'settings.show',
+          leftSlot: <Icon icon="gear" />,
+          onSelect: () => {
+            dialog.show({
+              id: 'settings',
+              size: 'md',
+              title: 'Settings',
+              render: () => <SettingsDialog />,
+            });
+          },
         },
         { type: 'separator', label: `Yaak v${appVersion.data}` },
         {

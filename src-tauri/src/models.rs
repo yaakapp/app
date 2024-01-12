@@ -3,10 +3,24 @@ use std::fs;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::{Pool, Sqlite};
-use sqlx::types::{Json, JsonValue};
 use sqlx::types::chrono::NaiveDateTime;
+use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Settings {
+    pub id: String,
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+
+    // Settings
+    pub validate_certificates: bool,
+    pub follow_redirects: bool,
+    pub theme: String,
+}
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -192,7 +206,11 @@ pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> O
     .ok()
 }
 
-pub async fn get_key_value_string(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<String> {
+pub async fn get_key_value_string(
+    namespace: &str,
+    key: &str,
+    pool: &Pool<Sqlite>,
+) -> Option<String> {
     let kv = get_key_value(namespace, key, pool).await?;
     let result = serde_json::from_str(&kv.value);
     match result {
@@ -281,6 +299,64 @@ pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environ
     .await;
 
     Ok(env)
+}
+
+async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
+    sqlx::query_as!(
+        Settings,
+        r#"
+            SELECT
+                id,
+                model,
+                created_at,
+                updated_at,
+                follow_redirects,
+                validate_certificates,
+                theme
+            FROM settings
+            WHERE id = 'default'
+        "#,
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn get_or_create_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
+    let existing = get_settings(pool).await;
+    if let Ok(s) = existing {
+        Ok(s)
+    } else {
+        sqlx::query!(
+            r#"
+                INSERT INTO settings (id)
+                VALUES ('default')
+            "#,
+        )
+        .execute(pool)
+        .await?;
+        get_settings(pool).await
+    }
+}
+
+pub async fn update_settings(
+    pool: &Pool<Sqlite>,
+    settings: Settings,
+) -> Result<Settings, sqlx::Error> {
+    sqlx::query!(
+        r#"
+            UPDATE settings SET (
+                follow_redirects,
+                validate_certificates,
+                theme
+            ) = (?, ?, ?) WHERE id = 'default';
+        "#,
+        settings.follow_redirects,
+        settings.validate_certificates,
+        settings.theme,
+    )
+    .execute(pool)
+    .await?;
+    get_settings(pool).await
 }
 
 pub async fn upsert_environment(

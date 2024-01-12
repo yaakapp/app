@@ -9,12 +9,19 @@ export const AUTH_TYPE_NONE = null;
 export const AUTH_TYPE_BASIC = 'basic';
 export const AUTH_TYPE_BEARER = 'bearer';
 
-export type Model = Workspace | HttpRequest | HttpResponse | KeyValue | Environment;
+export type Model = Settings | Workspace | HttpRequest | HttpResponse | KeyValue | Environment;
 
 export interface BaseModel {
   readonly id: string;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+export interface Settings extends BaseModel {
+  readonly model: 'settings';
+  validateCertificates: boolean;
+  followRedirects: boolean;
+  theme: string;
 }
 
 export interface Workspace extends BaseModel {
