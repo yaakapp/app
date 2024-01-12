@@ -10,6 +10,7 @@ import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
+import { settingsQueryKey } from '../hooks/useSettings';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
@@ -49,6 +50,8 @@ export function GlobalHooks() {
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
         ? keyValueQueryKey(payload)
+        : payload.model === 'settings'
+        ? settingsQueryKey()
         : null;
 
     if (queryKey === null) {
@@ -74,6 +77,8 @@ export function GlobalHooks() {
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
         ? keyValueQueryKey(payload)
+        : payload.model === 'settings'
+        ? settingsQueryKey()
         : null;
 
     if (queryKey === null) {
@@ -107,6 +112,8 @@ export function GlobalHooks() {
       queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
+    } else if (payload.model === 'settings') {
+      queryClient.setQueryData(settingsQueryKey(), undefined);
     }
   });
   useListenToTauriEvent<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {

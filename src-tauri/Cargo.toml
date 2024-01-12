@@ -25,7 +25,7 @@ chrono = { version = "0.4.23", features = ["serde"] }
 futures = "0.3.26"
 http = "0.2.8"
 rand = "0.8.5"
-reqwest = { version = "0.11.14", features = ["json", "multipart"] }
+reqwest = { version = "0.11.14", features = ["json", "multipart", "gzip", "brotli", "deflate"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 sqlx = { version = "0.7.2", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
