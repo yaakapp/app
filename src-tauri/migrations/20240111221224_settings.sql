@@ -7,5 +7,7 @@ CREATE TABLE settings
     updated_at            DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     follow_redirects      BOOLEAN  DEFAULT TRUE              NOT NULL,
     validate_certificates BOOLEAN  DEFAULT TRUE              NOT NULL,
-    theme                 TEXT     DEFAULT 'system'          NOT NULL
+    request_timeout       INTEGER  DEFAULT 0                 NOT NULL,
+    theme                 TEXT     DEFAULT 'default'         NOT NULL,
+    appearance            TEXT     DEFAULT 'system'          NOT NULL
 );

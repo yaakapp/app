@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE settings SET (\n                follow_redirects,\n                validate_certificates,\n                theme,\n                appearance\n            ) = (?, ?, ?, ?) WHERE id = 'default';\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "09a8074f7ef8d734607f95391819e38f822488933905dcc7a7788bd184bc7796"
+}

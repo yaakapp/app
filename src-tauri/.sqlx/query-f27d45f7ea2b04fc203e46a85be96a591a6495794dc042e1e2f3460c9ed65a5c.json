@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                follow_redirects,\n                validate_certificates,\n                theme\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                follow_redirects,\n                validate_certificates,\n                request_timeout,\n                theme,\n                appearance\n            FROM settings\n            WHERE id = 'default'\n        ",
   "describe": {
     "columns": [
       {
@@ -34,8 +34,18 @@
         "type_info": "Bool"
       },
       {
-        "name": "theme",
+        "name": "request_timeout",
         "ordinal": 6,
+        "type_info": "Int64"
+      },
+      {
+        "name": "theme",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "appearance",
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
@@ -49,8 +59,10 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ]
   },
-  "hash": "a25253024aec650aff34b38684de49b94514f676863acf02e0411da1161af067"
+  "hash": "f27d45f7ea2b04fc203e46a85be96a591a6495794dc042e1e2f3460c9ed65a5c"
 }
