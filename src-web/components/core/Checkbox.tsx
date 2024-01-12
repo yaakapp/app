@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { useCallback } from 'react';
 import { Icon } from './Icon';
+import { HStack } from './Stacks';
 
 interface Props {
   checked: boolean;
@@ -8,33 +8,47 @@ interface Props {
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
+  hideLabel?: boolean;
 }
 
-export function Checkbox({ checked, onChange, className, disabled, title }: Props) {
-  const handleClick = useCallback(() => {
-    onChange(!checked);
-  }, [onChange, checked]);
-
+export function Checkbox({ checked, onChange, className, disabled, title, hideLabel }: Props) {
   return (
-    <button
-      role="checkbox"
-      aria-checked={checked ? 'true' : 'false'}
-      disabled={disabled}
-      onClick={handleClick}
-      title={title}
-      className={classNames(
-        className,
-        'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',
-        'focus:border-focus',
-        'disabled:opacity-disabled',
-        checked && 'bg-gray-200/10',
-        // Remove focus style
-        'outline-none',
-      )}
+    <HStack
+      as="label"
+      space={2}
+      alignItems="center"
+      className={classNames(className, disabled && 'opacity-disabled')}
     >
-      <div className="flex items-center justify-center">
-        <Icon size="sm" icon={checked ? 'check' : 'empty'} />
+      <div className="relative flex">
+        <input
+          aria-hidden
+          className="appearance-none w-4 h-4 flex-shrink-0 border border-gray-200 rounded focus:border-focus outline-none ring-0"
+          type="checkbox"
+          disabled={disabled}
+          onChange={() => onChange(!checked)}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Icon size="sm" icon={checked ? 'check' : 'empty'} />
+        </div>
       </div>
-    </button>
+      {/*<button*/}
+      {/*  role="checkbox"*/}
+      {/*  aria-checked={checked ? 'true' : 'false'}*/}
+      {/*  disabled={disabled}*/}
+      {/*  onClick={handleClick}*/}
+      {/*  title={title}*/}
+      {/*  className={classNames(*/}
+      {/*    className,*/}
+      {/*    'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',*/}
+      {/*    'focus:border-focus',*/}
+      {/*    'disabled:opacity-disabled',*/}
+      {/*    checked && 'bg-gray-200/10',*/}
+      {/*    // Remove focus style*/}
+      {/*    'outline-none',*/}
+      {/*  )}*/}
+      {/*>*/}
+      {/*</button>*/}
+      {!hideLabel && title}
+    </HStack>
   );
 }

@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                follow_redirects,\n                validate_certificates,\n                theme\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "model",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 2,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 3,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "follow_redirects",
+        "ordinal": 4,
+        "type_info": "Bool"
+      },
+      {
+        "name": "validate_certificates",
+        "ordinal": 5,
+        "type_info": "Bool"
+      },
+      {
+        "name": "theme",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a25253024aec650aff34b38684de49b94514f676863acf02e0411da1161af067"
+}

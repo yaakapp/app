@@ -522,6 +522,31 @@ async fn list_environments(
 }
 
 #[tauri::command]
+async fn get_settings(
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Settings, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_or_create_settings(pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn update_settings(
+    settings: models::Settings,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::Settings, String> {
+    let pool = &*db_instance.lock().await;
+
+    let updated_settings = models::update_settings(pool, settings)
+        .await
+        .expect("Failed to update settings");
+
+    emit_and_return(&window, "updated_model", updated_settings)
+}
+
+#[tauri::command]
 async fn get_folder(
     id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -731,6 +756,7 @@ fn main() {
             get_environment,
             get_folder,
             get_request,
+            get_settings,
             get_workspace,
             import_data,
             list_environments,
@@ -747,6 +773,7 @@ fn main() {
             update_environment,
             update_folder,
             update_request,
+            update_settings,
             update_workspace,
         ])
         .build(tauri::generate_context!())
