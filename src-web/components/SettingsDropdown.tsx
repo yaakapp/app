@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import { useAppVersion } from '../hooks/useAppVersion';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
-import { useTheme } from '../hooks/useTheme';
 import { useUpdateMode } from '../hooks/useUpdateMode';
 import { Button } from './core/Button';
 import type { DropdownRef } from './core/Dropdown';
@@ -18,7 +17,6 @@ import { SettingsDialog } from './SettingsDialog';
 export function SettingsDropdown() {
   const importData = useImportData();
   const exportData = useExportData();
-  const { appearance, toggleAppearance } = useTheme();
   const appVersion = useAppVersion();
   const [updateMode, setUpdateMode] = useUpdateMode();
   const dropdownRef = useRef<DropdownRef>(null);

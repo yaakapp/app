@@ -12,6 +12,8 @@ export type HotkeyAction =
   | 'urlBar.focus'
   | 'environmentEditor.toggle'
   | 'hotkeys.showHelp'
+  | 'requestSwitcher.prev'
+  | 'requestSwitcher.next'
   | 'settings.show';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
@@ -24,6 +26,8 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+e'],
   'hotkeys.showHelp': ['CmdCtrl+/'],
   'settings.show': ['CmdCtrl+,'],
+  'requestSwitcher.prev': ['Control+Tab'],
+  'requestSwitcher.next': ['Control+Shift+Tab'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
@@ -35,6 +39,8 @@ const hotkeyLabels: Record<HotkeyAction, string> = {
   'urlBar.focus': 'Focus URL',
   'environmentEditor.toggle': 'Edit Environments',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
+  'requestSwitcher.prev': 'Go To Next Request',
+  'requestSwitcher.next': 'Go To Previous Request',
   'settings.show': 'Open Settings',
 };
 
@@ -136,6 +142,8 @@ export function useFormattedHotkey(action: HotkeyAction | null): string | null {
         labelParts.push('⌃');
       } else if (p === 'Enter') {
         labelParts.push('↩');
+      } else if (p === 'Tab') {
+        labelParts.push('⇥');
       } else {
         labelParts.push(p.toUpperCase());
       }
