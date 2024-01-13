@@ -12,8 +12,8 @@ interface Props {
 
 export function HotKey({ action, className, variant }: Props) {
   const osInfo = useOsInfo();
-  const label = useFormattedHotkey(action);
-  if (label === null || osInfo == null) {
+  const labelParts = useFormattedHotkey(action);
+  if (labelParts === null || osInfo == null) {
     return null;
   }
 
@@ -25,8 +25,8 @@ export function HotKey({ action, className, variant }: Props) {
         'text-gray-1000 text-opacity-disabled',
       )}
     >
-      {label.split('').map((char, index) => (
-        <div key={index} className="w-[1.1em] text-center">
+      {labelParts.map((char, index) => (
+        <div key={index} className="min-w-[1.1em] text-center">
           {char}
         </div>
       ))}
