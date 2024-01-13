@@ -1,5 +1,9 @@
 import { invoke } from '@tauri-apps/api';
-import type { Environment, Folder, HttpRequest, Workspace } from './models';
+import type { Environment, Folder, HttpRequest, Settings, Workspace } from './models';
+
+export async function getSettings(): Promise<Settings> {
+  return invoke('get_settings', {});
+}
 
 export async function getRequest(id: string | null): Promise<HttpRequest | null> {
   if (id === null) return null;
