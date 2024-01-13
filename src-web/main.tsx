@@ -4,9 +4,15 @@ import { attachConsole } from 'tauri-plugin-log-api';
 import { App } from './components/App';
 import { maybeRestorePathname } from './lib/persistPathname';
 import './main.css';
+import { getSettings } from './lib/store';
+import type { Appearance } from './lib/theme/window';
+import { setAppearanceOnDocument } from './lib/theme/window';
 
 await attachConsole();
 await maybeRestorePathname();
+
+const settings = await getSettings();
+setAppearanceOnDocument(settings.appearance as Appearance);
 
 document.addEventListener('keydown', (e) => {
   // Don't go back in history on backspace
