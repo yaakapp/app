@@ -1,5 +1,6 @@
 import type { OsType } from '@tauri-apps/api/os';
 import { useEffect, useRef } from 'react';
+import { capitalize } from '../lib/capitalize';
 import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
@@ -121,7 +122,7 @@ export function useHotKeyLabel(action: HotkeyAction): string {
   return hotkeyLabels[action];
 }
 
-export function useFormattedHotkey(action: HotkeyAction | null): string | null {
+export function useFormattedHotkey(action: HotkeyAction | null): string[] | null {
   const osInfo = useOsInfo();
   const trigger = action != null ? hotkeys[action]?.[0] ?? null : null;
   if (trigger == null || osInfo == null) {
@@ -145,21 +146,21 @@ export function useFormattedHotkey(action: HotkeyAction | null): string | null {
       } else if (p === 'Tab') {
         labelParts.push('⇥');
       } else {
-        labelParts.push(p.toUpperCase());
+        labelParts.push(capitalize(p));
       }
     } else {
       if (p === 'CmdCtrl') {
         labelParts.push('Ctrl');
       } else {
-        labelParts.push(p);
+        labelParts.push(capitalize(p));
       }
     }
   }
 
   if (os === 'Darwin') {
-    return labelParts.join('');
+    return labelParts;
   } else {
-    return labelParts.join('+');
+    return [labelParts.join('+')];
   }
 }
 
