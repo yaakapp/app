@@ -52,7 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   }: ButtonProps,
   ref,
 ) {
-  const hotkeyTrigger = useFormattedHotkey(hotkeyAction ?? null);
+  const hotkeyTrigger = useFormattedHotkey(hotkeyAction ?? null)?.join('');
   const fullTitle = hotkeyTrigger ? `${title}  ${hotkeyTrigger}` : title;
 
   const classes = useMemo(
