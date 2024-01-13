@@ -5,6 +5,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useHotKey } from '../hooks/useHotKey';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRequests } from '../hooks/useRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
@@ -33,25 +34,19 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
 
   // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
+    if (!dropdownRef.current?.isOpen) return;
     dropdownRef.current?.select?.();
   });
 
-  useKey(
-    'Tab',
-    (e) => {
-      if (!e.ctrlKey || recentRequestIds.length === 0) return;
+  useHotKey('requestSwitcher.prev', () => {
+    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open(1);
+    dropdownRef.current?.next?.();
+  });
 
-      if (!dropdownRef.current?.isOpen) {
-        dropdownRef.current?.open(e.shiftKey ? -1 : 1);
-        return;
-      }
-
-      if (e.shiftKey) dropdownRef.current?.prev?.();
-      else dropdownRef.current?.next?.();
-    },
-    undefined,
-    [recentRequestIds.length],
-  );
+  useHotKey('requestSwitcher.next', () => {
+    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open(-1);
+    dropdownRef.current?.prev?.();
+  });
 
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
