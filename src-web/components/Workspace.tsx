@@ -177,8 +177,8 @@ function HeaderSize({ className, ...props }: HeaderSizeProps) {
     <div
       className={classNames(
         className,
-        'h-md pt-[1px] flex items-center w-full pr-3 border-b',
-        platform?.osType === 'Darwin' ? 'pl-20' : 'pl-1'
+        'h-md pt-[1px] flex items-center w-full border-b',
+        platform?.osType === 'Darwin' ? 'pl-20 pr-3' : 'pl-1',
       )}
       {...props}
     />
