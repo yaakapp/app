@@ -10,7 +10,7 @@
   }
 
   #root {
-    @apply bg-gray-50 text-gray-900 overflow-hidden rounded-lg;
+    @apply bg-gray-50 text-gray-900 overflow-hidden;
   }
 
   /* Setup default transitions for elements */
