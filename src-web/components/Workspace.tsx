@@ -178,7 +178,7 @@ function HeaderSize({ className, ...props }: HeaderSizeProps) {
       className={classNames(
         className,
         'h-md pt-[1px] flex items-center w-full border-b',
-        platform?.osType === 'Darwin' ? 'pl-20 pr-3' : 'pl-1',
+        platform?.osType === 'Darwin' ? 'pl-20 pr-1' : 'pl-1',
       )}
       {...props}
     />
