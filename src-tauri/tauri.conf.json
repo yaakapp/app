@@ -36,7 +36,11 @@
       },
       "window": {
         "startDragging": true,
-        "setTitle": true
+        "setTitle": true,
+        "minimize": true,
+        "maximize": true,
+        "unmaximize": true,
+        "close": true
       },
       "dialog": {
         "all": false,
