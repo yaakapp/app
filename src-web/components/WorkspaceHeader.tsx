@@ -7,12 +7,16 @@ import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
+import { useOsInfo } from '../hooks/useOsInfo';
+import { Button } from './core/Button';
+import { appWindow } from '@tauri-apps/api/window';
 
 interface Props {
   className?: string;
 }
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
+  const osInfo = useOsInfo();
   return (
     <HStack
       space={2}
@@ -34,6 +38,19 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       <div className="flex-1 flex justify-end -mr-2 pointer-events-none">
         <SettingsDropdown />
       </div>
+      {osInfo?.osType !== 'Darwin' && (
+        <HStack className="ml-3" space={1} alignItems="center">
+          <Button size="sm" onClick={() => appWindow.minimize()}>
+            -
+          </Button>
+          <Button size="sm" onClick={() => appWindow.toggleMaximize()}>
+            o
+          </Button>
+          <Button size="sm" onClick={() => appWindow.close()}>
+            x
+          </Button>
+        </HStack>
+      )}
     </HStack>
   );
 });

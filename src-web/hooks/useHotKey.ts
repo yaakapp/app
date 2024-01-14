@@ -1,8 +1,8 @@
-import type { OsType } from '@tauri-apps/api/os';
-import { useEffect, useRef } from 'react';
-import { capitalize } from '../lib/capitalize';
-import { debounce } from '../lib/debounce';
-import { useOsInfo } from './useOsInfo';
+import type {OsType} from '@tauri-apps/api/os';
+import {useEffect, useRef} from 'react';
+import {capitalize} from '../lib/capitalize';
+import {debounce} from '../lib/debounce';
+import {useOsInfo} from './useOsInfo';
 
 export type HotkeyAction =
   | 'request.send'
@@ -86,6 +86,8 @@ export function useAnyHotkey(
       }
 
       currentKeys.current.add(normalizeKey(e.key, os));
+
+      console.log("HOTKEY", e.key);
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {

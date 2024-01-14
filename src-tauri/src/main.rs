@@ -860,6 +860,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         100.0 + random::<f64>() * 30.0,
         100.0 + random::<f64>() * 30.0,
     )
+        .decorations(false)
     .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
@@ -868,6 +869,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         win_builder = win_builder
             .menu(app_menu)
             .hidden_title(true)
+            .decoratons(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }
 
