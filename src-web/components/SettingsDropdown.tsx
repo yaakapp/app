@@ -109,7 +109,7 @@ export function SettingsDropdown() {
         },
       ]}
     >
-      <IconButton size="sm" title="Request Options" icon="gear" className="pointer-events-auto" />
+      <IconButton size="sm" title="Main Menu" icon="hamburger" className="pointer-events-auto" />
     </Dropdown>
   );
 }

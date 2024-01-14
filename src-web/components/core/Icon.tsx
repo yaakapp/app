@@ -6,6 +6,9 @@ import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPa
 import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftPanelVisibleIcon.svg';
 
 const icons = {
+  square: I.SquareIcon,
+  minus: I.MinusIcon,
+  hamburger: I.HamburgerMenuIcon,
   archive: I.ArchiveIcon,
   chat: I.ChatBubbleIcon,
   check: I.CheckIcon,
