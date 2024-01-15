@@ -9,7 +9,7 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
@@ -17,13 +17,13 @@ use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::Value;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
 use tauri::{Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -32,8 +32,8 @@ use window_shadows::set_shadow;
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
-use crate::plugin::{ImportResources, ImportResult};
 use crate::http::send_http_request;
+use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
@@ -85,6 +85,34 @@ async fn send_ephemeral_request(
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
     send_http_request(request, &response, &environment_id2, &app_handle, pool).await
+}
+
+#[tauri::command]
+async fn filter_response(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    response_id: &str,
+    filter: &str,
+) -> Result<String, String> {
+    let pool = &*db_instance.lock().await;
+    let response = models::get_response(response_id, pool)
+        .await
+        .expect("Failed to get response");
+
+    if let None = response.body_path {
+        return Err("Response body not found".to_string());
+    }
+
+    let body = read_to_string(response.body_path.unwrap()).unwrap();
+    let filter_result = plugin::run_plugin_filter(
+        &window.app_handle(),
+        "filter-jsonpath",
+        filter,
+        &body,
+    )
+    .await
+    .expect("Failed to run filter");
+    Ok(filter_result.filtered)
 }
 
 #[tauri::command]
@@ -752,6 +780,7 @@ fn main() {
             delete_workspace,
             duplicate_request,
             export_data,
+            filter_response,
             get_key_value,
             get_environment,
             get_folder,
