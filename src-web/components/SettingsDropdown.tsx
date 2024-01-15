@@ -93,7 +93,7 @@ export function SettingsDropdown() {
           key: 'update-mode',
           label: updateMode === 'stable' ? 'Enable Beta' : 'Disable Beta',
           onSelect: () => setUpdateMode(updateMode === 'stable' ? 'beta' : 'stable'),
-          leftSlot: <Icon icon="rocket" />,
+          leftSlot: <Icon icon="flask" />,
         },
         {
           key: 'update-check',
