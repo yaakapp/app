@@ -284,10 +284,7 @@ async fn create_workspace(
     let pool = &*db_instance.lock().await;
     let created_workspace = models::upsert_workspace(
         pool,
-        models::Workspace {
-            name: name.to_string(),
-            ..Default::default()
-        },
+        models::Workspace::new(name.to_string()),
     )
     .await
     .expect("Failed to create Workspace");
