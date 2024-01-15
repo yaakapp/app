@@ -4,7 +4,9 @@ import { useSettings } from '../hooks/useSettings';
 import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { Checkbox } from './core/Checkbox';
+import { Heading } from './core/Heading';
 import { Input } from './core/Input';
+import { Separator } from './core/Separator';
 import { HStack, VStack } from './core/Stacks';
 
 export const SettingsDialog = () => {
@@ -19,7 +21,39 @@ export const SettingsDialog = () => {
 
   return (
     <VStack space={2}>
+      <HStack alignItems="center" space={2}>
+        <div className="w-1/3">Appearance</div>
+        <select
+          value={settings.appearance}
+          style={selectBackgroundStyles}
+          onChange={(e) => updateSettings.mutateAsync({ ...settings, appearance: e.target.value })}
+          className={classNames(
+            'font-mono text-xs border w-full px-2 outline-none bg-transparent',
+            'border-highlight focus:border-focus',
+            'h-xs',
+          )}
+        >
+          <option value="system">Match System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </HStack>
+      <Separator className="my-4" />
+
+      <Heading size={2}>Workspace ({workspace.name})</Heading>
       <VStack className="w-full" space={3}>
+        <Input
+          size="xs"
+          name="requestTimeout"
+          label="Request Timeout (ms)"
+          labelPosition="left"
+          labelClassName="w-1/3"
+          containerClassName="col-span-2"
+          defaultValue={`${workspace.settingRequestTimeout}`}
+          validate={(value) => parseInt(value) >= 0}
+          onChange={(v) => updateWorkspace.mutateAsync({ settingRequestTimeout: parseInt(v) || 0 })}
+        />
+
         <Checkbox
           checked={workspace.settingValidateCertificates}
           title="Validate TLS Certificates"
@@ -35,38 +69,6 @@ export const SettingsDialog = () => {
             updateWorkspace.mutateAsync({ settingFollowRedirects })
           }
         />
-
-        <Input
-          size="xs"
-          name="requestTimeout"
-          label="Request Timeout (ms)"
-          labelPosition="left"
-          labelClassName="w-1/3"
-          containerClassName="col-span-2"
-          defaultValue={`${workspace.settingRequestTimeout}`}
-          validate={(value) => parseInt(value) >= 0}
-          onChange={(v) => updateWorkspace.mutateAsync({ settingRequestTimeout: parseInt(v) || 0 })}
-        />
-
-        <HStack alignItems="center" space={2}>
-          <div className="w-1/3">Appearance</div>
-          <select
-            value={settings.appearance}
-            style={selectBackgroundStyles}
-            onChange={(e) =>
-              updateSettings.mutateAsync({ ...settings, appearance: e.target.value })
-            }
-            className={classNames(
-              'font-mono text-xs border w-full px-2 outline-none bg-transparent',
-              'border-highlight focus:border-focus',
-              'h-xs',
-            )}
-          >
-            <option value="system">Match System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </HStack>
       </VStack>
       {/*<Checkbox checked={appearance === 'dark'} title="Dark Mode" onChange={toggleAppearance} />*/}
     </VStack>

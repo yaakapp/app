@@ -65,8 +65,9 @@ export function Dialog({
             )}
           >
             {title ? (
-              <Heading className="text-xl font-semibold w-full" id={titleId}>
-                {title}
+              <Heading size={1} id={titleId}>
+                {' '}
+                {title}{' '}
               </Heading>
             ) : (
               <span />
