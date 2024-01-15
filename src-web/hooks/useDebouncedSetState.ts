@@ -5,8 +5,8 @@ import { debounce } from '../lib/debounce';
 export function useDebouncedSetState<T>(
   defaultValue: T,
   delay?: number,
-): [T, Dispatch<SetStateAction<T>>] {
+): [T, Dispatch<SetStateAction<T>>, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(defaultValue);
   const debouncedSetState = useMemo(() => debounce(setState, delay), [delay]);
-  return [state, debouncedSetState];
+  return [state, debouncedSetState, setState];
 }
