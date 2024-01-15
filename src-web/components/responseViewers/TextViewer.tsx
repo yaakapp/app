@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { useDebouncedSetState } from '../../hooks/useDebouncedSetState';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
@@ -18,7 +18,7 @@ interface Props {
 
 export function TextViewer({ response, pretty }: Props) {
   const [isSearching, toggleIsSearching] = useToggle();
-  const [filterText, setFilterText] = useDebouncedSetState<string>('', 500);
+  const [filterText, setDebouncedFilterText, setFilterText] = useDebouncedSetState<string>('', 400);
 
   const contentType = useResponseContentType(response);
   const rawBody = useResponseBodyText(response) ?? '';
@@ -26,6 +26,10 @@ export function TextViewer({ response, pretty }: Props) {
   const filteredResponse = useFilterResponse({ filter: filterText, responseId: response.id });
 
   const body = filteredResponse ?? formattedBody;
+  const clearSearch = useCallback(() => {
+    toggleIsSearching();
+    setFilterText('');
+  }, [setFilterText, toggleIsSearching]);
 
   const actions = contentType?.startsWith('application/json') && (
     <HStack className="w-full" justifyContent="end" space={1}>
@@ -39,14 +43,15 @@ export function TextViewer({ response, pretty }: Props) {
           label="Filter with JSONPath"
           name="filter"
           defaultValue={filterText}
-          onChange={setFilterText}
+          onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
+          onChange={setDebouncedFilterText}
         />
       )}
       <IconButton
         size="sm"
         icon={isSearching ? 'x' : 'magnifyingGlass'}
-        title="Filter response"
-        onClick={toggleIsSearching}
+        title={isSearching ? 'Close filter' : 'Filter response'}
+        onClick={clearSearch}
       />
     </HStack>
   );
