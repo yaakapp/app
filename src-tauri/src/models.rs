@@ -8,6 +8,10 @@ use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
 use tauri::AppHandle;
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
@@ -31,9 +35,24 @@ pub struct Workspace {
     pub variables: Json<Vec<EnvironmentVariable>>,
 
     // Settings
+    #[serde(default = "default_true")]
     pub setting_validate_certificates: bool,
+    #[serde(default = "default_true")]
     pub setting_follow_redirects: bool,
     pub setting_request_timeout: i64,
+}
+
+// Implement default for Workspace
+impl Workspace {
+    pub(crate) fn new(name: String) -> Self {
+        Self {
+            name,
+            model: "workspace".to_string(),
+            setting_validate_certificates: true,
+            setting_follow_redirects: true,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -48,14 +67,10 @@ pub struct Environment {
     pub variables: Json<Vec<EnvironmentVariable>>,
 }
 
-fn default_enabled() -> bool {
-    true
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct EnvironmentVariable {
-    #[serde(default = "default_enabled")]
+    #[serde(default = "default_true")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
@@ -64,7 +79,7 @@ pub struct EnvironmentVariable {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpRequestHeader {
-    #[serde(default = "default_enabled")]
+    #[serde(default = "default_true")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
@@ -73,7 +88,7 @@ pub struct HttpRequestHeader {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpUrlParameter {
-    #[serde(default = "default_enabled")]
+    #[serde(default = "default_true")]
     pub enabled: bool,
     pub name: String,
     pub value: String,
