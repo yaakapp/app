@@ -53,8 +53,9 @@ pub async fn actually_send_request(
         .tls_info(true);
 
     if settings.request_timeout > 0 {
-        client_builder =
-            client_builder.timeout(Duration::from_millis(settings.request_timeout.unsigned_abs()));
+        client_builder = client_builder.timeout(Duration::from_millis(
+            settings.request_timeout.unsigned_abs(),
+        ));
     }
 
     // .use_rustls_tls() // TODO: Make this configurable (maybe)
