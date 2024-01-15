@@ -15,7 +15,7 @@ use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
 
-pub async fn actually_send_request(
+pub async fn send_http_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment_id: &str,
@@ -35,12 +35,8 @@ pub async fn actually_send_request(
         url_string = format!("http://{}", url_string);
     }
 
-    let settings = models::get_or_create_settings(pool)
-        .await
-        .expect("Failed to get settings");
-
     let mut client_builder = reqwest::Client::builder()
-        .redirect(match settings.follow_redirects {
+        .redirect(match workspace.setting_follow_redirects {
             true => Policy::limited(10), // TODO: Handle redirects natively
             false => Policy::none(),
         })
@@ -48,13 +44,13 @@ pub async fn actually_send_request(
         .brotli(true)
         .deflate(true)
         .referer(false)
-        .danger_accept_invalid_certs(!settings.validate_certificates)
+        .danger_accept_invalid_certs(!workspace.setting_validate_certificates)
         .connection_verbose(true) // TODO: Capture this log somehow
         .tls_info(true);
 
-    if settings.request_timeout > 0 {
+    if workspace.setting_request_timeout > 0 {
         client_builder = client_builder.timeout(Duration::from_millis(
-            settings.request_timeout.unsigned_abs(),
+            workspace.setting_request_timeout.unsigned_abs(),
         ));
     }
 

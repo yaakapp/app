@@ -15,13 +15,8 @@ pub struct Settings {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-
-    // Settings
-    pub validate_certificates: bool,
-    pub follow_redirects: bool,
     pub theme: String,
     pub appearance: String,
-    pub request_timeout: i64,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -34,6 +29,11 @@ pub struct Workspace {
     pub name: String,
     pub description: String,
     pub variables: Json<Vec<EnvironmentVariable>>,
+
+    // Settings
+    pub setting_validate_certificates: bool,
+    pub setting_follow_redirects: bool,
+    pub setting_request_timeout: i64,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -228,7 +228,16 @@ pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description,
+            SELECT
+                id,
+                model,
+                created_at,
+                updated_at,
+                name,
+                description,
+                setting_request_timeout,
+                setting_follow_redirects,
+                setting_validate_certificates,
                 variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces
         "#,
@@ -241,7 +250,16 @@ pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, s
     sqlx::query_as!(
         Workspace,
         r#"
-            SELECT id, model, created_at, updated_at, name, description,
+            SELECT
+                id,
+                model,
+                created_at,
+                updated_at,
+                name,
+                description,
+                setting_request_timeout,
+                setting_follow_redirects,
+                setting_validate_certificates,
                 variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces WHERE id = ?
         "#,
@@ -312,9 +330,6 @@ async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
                 model,
                 created_at,
                 updated_at,
-                follow_redirects,
-                validate_certificates,
-                request_timeout,
                 theme,
                 appearance
             FROM settings
@@ -349,14 +364,10 @@ pub async fn update_settings(
     sqlx::query!(
         r#"
             UPDATE settings SET (
-                follow_redirects,
-                validate_certificates,
                 theme,
                 appearance
-            ) = (?, ?, ?, ?) WHERE id = 'default';
+            ) = (?, ?) WHERE id = 'default';
         "#,
-        settings.follow_redirects,
-        settings.validate_certificates,
         settings.theme,
         settings.appearance,
     )
@@ -750,18 +761,32 @@ pub async fn upsert_workspace(
     let trimmed_name = workspace.name.trim();
     sqlx::query!(
         r#"
-            INSERT INTO workspaces (id, name, description, variables)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO workspaces (
+                id,
+                name,
+                description,
+                variables,
+                setting_request_timeout,
+                setting_follow_redirects,
+                setting_validate_certificates
+             )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
                name = excluded.name,
                description = excluded.description,
-               variables = excluded.variables
+               variables = excluded.variables,
+               setting_request_timeout = excluded.setting_request_timeout,
+               setting_follow_redirects = excluded.setting_follow_redirects,
+               setting_validate_certificates = excluded.setting_validate_certificates
         "#,
         id,
         trimmed_name,
         workspace.description,
         workspace.variables,
+        workspace.setting_request_timeout,
+        workspace.setting_follow_redirects,
+        workspace.setting_validate_certificates,
     )
     .execute(pool)
     .await?;

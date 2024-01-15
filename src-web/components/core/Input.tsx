@@ -26,6 +26,7 @@ export type InputProps = Omit<
     type?: 'text' | 'password';
     label: string;
     hideLabel?: boolean;
+    labelPosition?: 'top' | 'left';
     labelClassName?: string;
     containerClassName?: string;
     onChange?: (value: string) => void;
@@ -34,7 +35,7 @@ export type InputProps = Omit<
     defaultValue?: string;
     leftSlot?: ReactNode;
     rightSlot?: ReactNode;
-    size?: 'sm' | 'md' | 'auto';
+    size?: 'xs' | 'sm' | 'md' | 'auto';
     className?: string;
     placeholder?: string;
     validate?: (v: string) => boolean;
@@ -50,6 +51,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     hideLabel,
     label,
     labelClassName,
+    labelPosition = 'top',
     leftSlot,
     name,
     onBlur,
@@ -115,12 +117,19 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   );
 
   return (
-    <VStack ref={wrapperRef} className="w-full">
+    <div
+      ref={wrapperRef}
+      className={classNames(
+        'w-full',
+        labelPosition === 'left' && 'flex items-center gap-2',
+        labelPosition === 'top' && 'flex-row gap-0.5',
+      )}
+    >
       <label
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'font-semibold text-xs uppercase text-gray-700',
+          'text-sm text-gray-900 whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
@@ -136,6 +145,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           !isValid && '!border-invalid',
           size === 'md' && 'h-md',
           size === 'sm' && 'h-sm',
+          size === 'xs' && 'h-xs',
           size === 'auto' && 'min-h-sm',
         )}
       >
@@ -177,7 +187,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         )}
         {rightSlot}
       </HStack>
-    </VStack>
+    </div>
   );
 });
 

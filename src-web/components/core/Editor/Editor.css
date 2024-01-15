@@ -74,7 +74,7 @@
     }
 
     .cm-scroller {
-      @apply font-mono text-[0.8rem] overflow-hidden;
+      @apply font-mono text-xs overflow-hidden;
     }
 
     .cm-line {

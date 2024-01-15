@@ -19,9 +19,6 @@ export interface BaseModel {
 
 export interface Settings extends BaseModel {
   readonly model: 'settings';
-  validateCertificates: boolean;
-  followRedirects: boolean;
-  requestTimeout: number;
   theme: string;
   appearance: string;
 }
@@ -31,6 +28,9 @@ export interface Workspace extends BaseModel {
   name: string;
   description: string;
   variables: EnvironmentVariable[];
+  settingValidateCertificates: boolean;
+  settingFollowRedirects: boolean;
+  settingRequestTimeout: number;
 }
 
 export interface EnvironmentVariable {
