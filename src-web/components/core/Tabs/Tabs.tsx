@@ -104,7 +104,7 @@ export function Tabs({
                     className={btnClassName}
                     rightSlot={
                       <Icon
-                        icon="triangleDown"
+                        icon="chevronDown"
                         className={classNames('-mr-1.5', isActive ? 'opacity-100' : 'opacity-20')}
                       />
                     }

@@ -55,7 +55,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                 <Button
                   className="focus"
                   color="gray"
-                  rightSlot={<Icon icon="openNewWindow" />}
+                  rightSlot={<Icon icon="externalLink" />}
                   onClick={async () => {
                     hide();
                     const environmentId = (await getRecentEnvironments(w.id))[0];

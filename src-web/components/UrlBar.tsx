@@ -81,7 +81,7 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
             title="Send Request"
             type="submit"
             className="!h-auto w-8 mr-0.5 my-0.5"
-            icon={loading ? 'update' : 'paperPlane'}
+            icon={loading ? 'update' : 'sendHorizontal'}
             spin={loading}
             hotkeyAction="request.send"
           />

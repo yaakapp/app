@@ -49,7 +49,7 @@ export function TextViewer({ response, pretty }: Props) {
       )}
       <IconButton
         size="sm"
-        icon={isSearching ? 'x' : 'magnifyingGlass'}
+        icon={isSearching ? 'x' : 'filter'}
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={clearSearch}
       />
