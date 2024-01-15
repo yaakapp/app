@@ -35,12 +35,13 @@
         "open": true
       },
       "window": {
-        "startDragging": true,
-        "setTitle": true,
-        "minimize": true,
+        "close": true,
         "maximize": true,
-        "unmaximize": true,
-        "close": true
+        "minimize": true,
+        "setDecorations": true,
+        "setTitle": true,
+        "startDragging": true,
+        "unmaximize": true
       },
       "dialog": {
         "all": false,

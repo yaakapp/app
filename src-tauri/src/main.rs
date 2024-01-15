@@ -17,16 +17,17 @@ use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::Value;
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
+use window_shadows::set_shadow;
 
 use window_ext::TrafficLightWindowExt;
 
@@ -68,7 +69,7 @@ async fn migrate_db(
     info!("Running migrations at {}", p.to_string_lossy());
     let m = Migrator::new(p).await.expect("Failed to load migrations");
     m.run(pool).await.expect("Failed to run migrations");
-    info!("Migrations complete");
+    info!("Migrations complete!");
     Ok(())
 }
 
@@ -232,12 +233,7 @@ async fn track_event(
     action: AnalyticsAction,
     attributes: Option<Value>,
 ) -> Result<(), String> {
-    analytics::track_event(
-        &window.app_handle(),
-        resource,
-        action,
-        attributes,
-    ).await;
+    analytics::track_event(&window.app_handle(), resource, action, attributes).await;
     Ok(())
 }
 
@@ -701,9 +697,16 @@ fn main() {
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
+            let app_data_dir = app.path_resolver().app_data_dir().unwrap();
+            let app_config_dir = app.path_resolver().app_config_dir().unwrap();
+            info!(
+                "App Config Dir: {}",
+                app_config_dir.as_path().to_string_lossy(),
+            );
+            info!("App Data Dir: {}", app_data_dir.as_path().to_string_lossy(),);
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
-                false => app.path_resolver().app_data_dir().unwrap(),
+                false => app_data_dir,
             };
 
             create_dir_all(dir.clone()).expect("Problem creating App directory!");
@@ -835,10 +838,12 @@ fn main() {
 }
 
 fn is_dev() -> bool {
-    #[cfg(dev)] {
+    #[cfg(dev)]
+    {
         return true;
     }
-    #[cfg(not(dev))] {
+    #[cfg(not(dev))]
+    {
         return false;
     }
 }
@@ -860,7 +865,7 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
         100.0 + random::<f64>() * 30.0,
         100.0 + random::<f64>() * 30.0,
     )
-        .decorations(false)
+    .decorations(false) // Doesn't seem to work from Rust, here, so we do it in JS
     .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
@@ -870,10 +875,15 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
             .menu(app_menu)
             .hidden_title(true)
             .decoratons(true)
+            .transparent(false)
             .title_bar_style(TitleBarStyle::Overlay);
     }
 
     let win = win_builder.build().expect("failed to build window");
+
+    // Tauri doesn't support shadows when hiding decorations, so we add our own
+    #[cfg(any(windows, target_os = "macos"))]
+    set_shadow(&win, true).unwrap();
 
     let win2 = win.clone();
     let handle2 = handle.clone();

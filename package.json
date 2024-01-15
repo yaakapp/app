@@ -39,7 +39,7 @@
     "@tanstack/react-query": "^4.28.0",
     "@tanstack/react-query-devtools": "^4.28.0",
     "@tanstack/react-query-persist-client": "^4.28.0",
-    "@tauri-apps/api": "^1.5.1",
+    "@tauri-apps/api": "^1.5.3",
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
     "cm6-graphql": "^0.0.9",

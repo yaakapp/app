@@ -6,16 +6,13 @@ import { ReactComponent as LeftPanelHiddenIcon } from '../../assets/icons/LeftPa
 import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftPanelVisibleIcon.svg';
 
 const icons = {
-  square: I.SquareIcon,
-  minus: I.MinusIcon,
-  hamburger: I.HamburgerMenuIcon,
   archive: I.ArchiveIcon,
   chat: I.ChatBubbleIcon,
   check: I.CheckIcon,
   checkbox: I.CheckboxIcon,
-  clock: I.ClockIcon,
   chevronDown: I.ChevronDownIcon,
   chevronRight: I.ChevronRightIcon,
+  clock: I.ClockIcon,
   code: I.CodeIcon,
   colorWheel: I.ColorWheelIcon,
   copy: I.CopyIcon,
@@ -33,6 +30,7 @@ const icons = {
   listBullet: I.ListBulletIcon,
   magicWand: I.MagicWandIcon,
   magnifyingGlass: I.MagnifyingGlassIcon,
+  minus: I.MinusIcon,
   moon: I.MoonIcon,
   openNewWindow: I.OpenInNewWindowIcon,
   paperPlane: I.PaperPlaneIcon,
@@ -42,6 +40,7 @@ const icons = {
   question: I.QuestionMarkIcon,
   rocket: I.RocketIcon,
   rows: I.RowsIcon,
+  square: I.SquareIcon,
   sun: I.SunIcon,
   trash: I.TrashIcon,
   triangleDown: I.TriangleDownIcon,
