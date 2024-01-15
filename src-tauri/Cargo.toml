@@ -17,6 +17,9 @@ tauri-build = { version = "1.2", features = [] }
 objc = "0.2.7"
 cocoa = "0.25.0"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+openssl-sys = {version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
+
 [dependencies]
 base64 = "0.21.0"
 boa_engine = "0.17.3"
@@ -29,7 +32,7 @@ reqwest = { version = "0.11.14", features = ["json", "multipart", "gzip", "brotl
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["raw_value"] }
 sqlx = { version = "0.7.2", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "1.3", features = [
+tauri = { version = "1.5.2", features = [
     "config-toml",
     "devtools",
     "dialog-open",
@@ -42,6 +45,7 @@ tauri = { version = "1.3", features = [
     "window-close",
     "window-maximize",
     "window-minimize",
+    "window-set-decorations",
     "window-set-title",
     "window-start-dragging",
     "window-unmaximize",
@@ -52,7 +56,7 @@ tokio = { version = "1.25.0", features = ["sync"] }
 uuid = "1.3.0"
 log = "0.4.20"
 datetime = "0.5.2"
-openssl-sys = {version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
+window-shadows = "0.2.2"
 
 [features]
 # by default Tauri runs in production mode
