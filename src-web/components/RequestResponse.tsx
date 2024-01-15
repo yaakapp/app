@@ -22,7 +22,7 @@ const drag = { gridArea: 'drag' };
 const DEFAULT = 0.5;
 const MIN_WIDTH_PX = 10;
 const MIN_HEIGHT_PX = 30;
-const STACK_VERTICAL_WIDTH = 600;
+const STACK_VERTICAL_WIDTH = 700;
 
 export const RequestResponse = memo(function RequestResponse({ style }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,9 +37,8 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
     null,
   );
 
-  useResizeObserver(containerRef, ({ contentRect }) => {
-    const doIt = contentRect.width < STACK_VERTICAL_WIDTH;
-    setVertical(doIt);
+  useResizeObserver(containerRef.current, ({ contentRect }) => {
+    setVertical(contentRect.width < STACK_VERTICAL_WIDTH);
   });
 
   const styles = useMemo<CSSProperties>(
