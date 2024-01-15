@@ -1,10 +1,22 @@
 import classNames from 'classnames';
-import type { HTMLAttributes } from 'react';
+import type { ComponentType, HTMLAttributes } from 'react';
 
-export function Heading({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+interface Props extends HTMLAttributes<HTMLHeadingElement> {
+  size?: 1 | 2 | 3;
+}
+
+export function Heading({ className, size = 1, ...props }: Props) {
+  const Component = size === 1 ? 'h1' : size === 2 ? 'h2' : 'h3';
   return (
-    <h1 className={classNames(className, 'text-2xl font-semibold text-gray-900 mb-3')} {...props}>
-      {children}
-    </h1>
+    <Component
+      className={classNames(
+        className,
+        'font-semibold text-gray-900',
+        size === 1 && 'text-2xl',
+        size === 2 && 'text-xl',
+        size === 3 && 'text-lg',
+      )}
+      {...props}
+    />
   );
 }
