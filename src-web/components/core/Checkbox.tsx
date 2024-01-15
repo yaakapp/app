@@ -17,7 +17,7 @@ export function Checkbox({ checked, onChange, className, disabled, title, hideLa
       as="label"
       space={2}
       alignItems="center"
-      className={classNames(className, disabled && 'opacity-disabled')}
+      className={classNames(className, 'text-gray-900 text-sm', disabled && 'opacity-disabled')}
     >
       <div className="relative flex">
         <input

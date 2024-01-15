@@ -6,11 +6,7 @@
   html,
   body,
   #root {
-    @apply w-full h-full overflow-hidden;
-  }
-
-  #root {
-    @apply bg-gray-50 text-gray-900;
+    @apply w-full h-full overflow-hidden text-gray-900 bg-gray-50;
   }
 
   /* Setup default transitions for elements */

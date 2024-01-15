@@ -4,7 +4,9 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
+import { useSettings } from '../hooks/useSettings';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
@@ -20,10 +22,13 @@ import {
 } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
+import { Checkbox } from './core/Checkbox';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
-import type { TabItem } from './core/Tabs/Tabs';
+import { Input } from './core/Input';
+import { VStack } from './core/Stacks';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
+import type { TabItem } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';

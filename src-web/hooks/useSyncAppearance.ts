@@ -7,7 +7,7 @@ import {
 } from '../lib/theme/window';
 import { useSettings } from './useSettings';
 
-export function useTheme() {
+export function useSyncAppearance() {
   const [preferredAppearance, setPreferredAppearance] = useState<Appearance>(
     getPreferredAppearance(),
   );

@@ -12,6 +12,7 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { settingsQueryKey } from '../hooks/useSettings';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
+import { useSyncAppearance } from '../hooks/useSyncAppearance';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
@@ -26,6 +27,8 @@ export function GlobalHooks() {
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
+
+  useSyncAppearance();
 
   useSyncWindowTitle();
 

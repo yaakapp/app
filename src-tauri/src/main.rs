@@ -33,14 +33,14 @@ use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::plugin::{ImportResources, ImportResult};
-use crate::send::actually_send_request;
+use crate::http::send_http_request;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
 mod models;
 mod plugin;
 mod render;
-mod send;
+mod http;
 mod updates;
 mod window_ext;
 mod window_menu;
@@ -84,7 +84,7 @@ async fn send_ephemeral_request(
     let response = models::HttpResponse::new();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
-    actually_send_request(request, &response, &environment_id2, &app_handle, pool).await
+    send_http_request(request, &response, &environment_id2, &app_handle, pool).await
 }
 
 #[tauri::command]
@@ -199,7 +199,7 @@ async fn send_request(
 
     tokio::spawn(async move {
         if let Err(e) =
-            actually_send_request(req, &response2, &environment_id2, &app_handle2, &pool2).await
+            send_http_request(req, &response2, &environment_id2, &app_handle2, &pool2).await
         {
             response_err(&response2, e, &app_handle2, &pool2)
                 .await
