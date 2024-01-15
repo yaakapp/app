@@ -646,7 +646,11 @@ const SidebarItem = forwardRef(function SidebarItem(
                     label: 'Duplicate',
                     hotkeyAction: 'request.duplicate',
                     leftSlot: <Icon icon="copy" />,
-                    onSelect: () => duplicateRequest.mutate(),
+                    onSelect: () => {
+                      if (activeRequestId === itemId) {
+                        duplicateRequest.mutate();
+                      }
+                    },
                   },
                   {
                     key: 'deleteRequest',
