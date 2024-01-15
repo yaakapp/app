@@ -219,28 +219,35 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   return (
     <div className="group relative h-full w-full">
       {cmContainer}
-      {format && (
-        <HStack space={0.5} alignItems="center" className="absolute bottom-2 right-0 ">
+      {(format || actions) && (
+        <HStack
+          space={1}
+          alignItems="center"
+          justifyContent="end"
+          className="absolute bottom-2 left-0 right-0"
+        >
+          {format && (
+            <IconButton
+              showConfirm
+              size="sm"
+              title="Reformat contents"
+              icon="magicWand"
+              className="transition-all opacity-0 group-hover:opacity-100"
+              onClick={() => {
+                if (cm.current === null) return;
+                const { doc } = cm.current.view.state;
+                const formatted = format(doc.toString());
+                // Update editor and blur because the cursor will reset anyway
+                cm.current.view.dispatch({
+                  changes: { from: 0, to: doc.length, insert: formatted },
+                });
+                cm.current.view.contentDOM.blur();
+                // Fire change event
+                onChange?.(formatted);
+              }}
+            />
+          )}
           {actions}
-          <IconButton
-            showConfirm
-            size="sm"
-            title="Reformat contents"
-            icon="magicWand"
-            className="transition-opacity opacity-0 group-hover:opacity-70"
-            onClick={() => {
-              if (cm.current === null) return;
-              const { doc } = cm.current.view.state;
-              const formatted = format(doc.toString());
-              // Update editor and blur because the cursor will reset anyway
-              cm.current.view.dispatch({
-                changes: { from: 0, to: doc.length, insert: formatted },
-              });
-              cm.current.view.contentDOM.blur();
-              // Fire change event
-              onChange?.(formatted);
-            }}
-          />
         </HStack>
       )}
     </div>
