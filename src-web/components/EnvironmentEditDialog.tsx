@@ -189,7 +189,7 @@ const EnvironmentEditor = function ({
         {items != null && (
           <Dropdown items={items}>
             <IconButton
-              icon="dotsV"
+              icon="moreVertical"
               title="Environment Actions"
               size="sm"
               className="!h-auto w-8"

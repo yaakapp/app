@@ -54,7 +54,7 @@ export const RecentResponsesDropdown = function ResponsePane({
     >
       <IconButton
         title="Show response history"
-        icon="triangleDown"
+        icon="chevronDown"
         className="ml-auto"
         size="sm"
         iconSize="md"

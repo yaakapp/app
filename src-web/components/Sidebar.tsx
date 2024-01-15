@@ -595,7 +595,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                   {
                     key: 'sendAll',
                     label: 'Send All',
-                    leftSlot: <Icon icon="paperPlane" />,
+                    leftSlot: <Icon icon="sendHorizontal" />,
                     onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
                   },
                   { type: 'separator', label: itemName },
