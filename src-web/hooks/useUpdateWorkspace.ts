@@ -21,6 +21,7 @@ export function useUpdateWorkspace(id: string | null) {
       if (workspace === null) return;
 
       const newWorkspace = typeof v === 'function' ? v(workspace) : { ...workspace, ...v };
+      console.log('NEW WORKSPACE', newWorkspace);
       queryClient.setQueryData<Workspace[]>(workspacesQueryKey(workspace), (workspaces) =>
         (workspaces ?? []).map((w) => (w.id === newWorkspace.id ? newWorkspace : w)),
       );

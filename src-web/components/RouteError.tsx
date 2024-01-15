@@ -7,7 +7,7 @@ import { VStack } from './core/Stacks';
 
 export default function RouteError() {
   const error = useRouteError();
-  console.log("Error", error);
+  console.log('Error', error);
   const stringified = JSON.stringify(error);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const message = (error as any).message ?? stringified;

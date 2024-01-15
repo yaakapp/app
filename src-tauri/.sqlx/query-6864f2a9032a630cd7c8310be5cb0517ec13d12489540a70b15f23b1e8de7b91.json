@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, model, created_at, updated_at, name, description,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces\n        ",
+  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                theme,\n                appearance\n            FROM settings\n            WHERE id = 'default'\n        ",
   "describe": {
     "columns": [
       {
@@ -24,18 +24,13 @@
         "type_info": "Datetime"
       },
       {
-        "name": "name",
+        "name": "theme",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "description",
+        "name": "appearance",
         "ordinal": 5,
-        "type_info": "Text"
-      },
-      {
-        "name": "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>",
-        "ordinal": 6,
         "type_info": "Text"
       }
     ],
@@ -48,9 +43,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "5588db23df7f30dc75857e05395ebbcf2384e2ac0d7cb87f76d74c6d50781d7b"
+  "hash": "6864f2a9032a630cd7c8310be5cb0517ec13d12489540a70b15f23b1e8de7b91"
 }
