@@ -1,6 +1,6 @@
 import jp from 'jsonpath';
 
-export function pluginHookResponseFilter({ text, filter }) {
+export function pluginHookResponseFilter(filter, text) {
   let parsed;
   try {
     parsed = JSON.parse(text);
@@ -8,6 +8,5 @@ export function pluginHookResponseFilter({ text, filter }) {
     return;
   }
   const filtered = jp.query(parsed, filter);
-
-  return { filtered };
+  return { filtered: JSON.stringify(filtered, null, 2) };
 }

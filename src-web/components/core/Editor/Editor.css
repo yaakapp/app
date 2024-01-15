@@ -215,6 +215,28 @@
   }
 }
 
+.cm-editor .cm-panels {
+  @apply bg-transparent border-0 text-gray-800 z-50;
+
+  input,
+  button {
+    @apply rounded-sm outline-none;
+  }
+
+  button {
+    @apply appearance-none bg-none bg-gray-800 text-gray-100 focus:bg-gray-900 cursor-default;
+  }
+
+  input {
+    @apply bg-gray-50 border border-highlight focus:border-focus outline-none;
+  }
+
+  /* Hide the "All" button */
+  button[name='select'] {
+    @apply hidden;
+  }
+}
+
 /* Add default icon. Needs low priority so it can be overwritten */
 .cm-completionIcon::after {
   content: '𝑥';

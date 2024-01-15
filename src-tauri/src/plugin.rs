@@ -8,12 +8,17 @@ use boa_engine::{
     Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
 };
 use boa_runtime::Console;
-use log::debug;
+use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::AppHandle;
 
 use crate::models::{Environment, Folder, HttpRequest, Workspace};
+
+#[derive(Default, Debug, Deserialize, Serialize)]
+pub struct FilterResult {
+    pub filtered: String,
+}
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ImportResult {
@@ -26,6 +31,32 @@ pub struct ImportResources {
     pub environments: Vec<Environment>,
     pub folders: Vec<Folder>,
     pub requests: Vec<HttpRequest>,
+}
+
+pub async fn run_plugin_filter(
+    app_handle: &AppHandle,
+    plugin_name: &str,
+    response_body: &str,
+    filter: &str,
+) -> Option<FilterResult> {
+    let result_json = run_plugin(
+        app_handle,
+        plugin_name,
+        "pluginHookResponseFilter",
+        &[
+            js_string!(response_body).into(),
+            js_string!(filter).into(),
+        ],
+    );
+
+    if result_json.is_null() {
+        error!("Plugin {} failed to run", plugin_name);
+        return None;
+    }
+
+    let resources: FilterResult =
+        serde_json::from_value(result_json).expect("failed to parse filter plugin result json");
+    Some(resources)
 }
 
 pub async fn run_plugin_import(
