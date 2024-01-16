@@ -1,12 +1,11 @@
 use std::fs;
 
-use boa_engine::builtins::promise::PromiseState;
 use boa_engine::{
-    js_string,
-    module::{ModuleLoader, SimpleModuleLoader},
-    property::Attribute,
-    Context, JsArgs, JsNativeError, JsValue, Module, NativeFunction, Source,
+    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
+    property::Attribute, Source,
 };
+use boa_engine::builtins::promise::PromiseState;
+use boa_engine::module::ModuleLoader;
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
@@ -43,10 +42,7 @@ pub async fn run_plugin_filter(
         app_handle,
         plugin_name,
         "pluginHookResponseFilter",
-        &[
-            js_string!(response_body).into(),
-            js_string!(filter).into(),
-        ],
+        &[js_string!(response_body).into(), js_string!(filter).into()],
     );
 
     if result_json.is_null() {
@@ -111,7 +107,6 @@ fn run_plugin(
         .expect("failed to create context");
 
     add_runtime(context);
-    add_globals(context);
 
     let source = Source::from_filepath(&plugin_index_file).expect("Error opening file");
 
@@ -119,7 +114,6 @@ fn run_plugin(
     let module = Module::parse(source, None, context).expect("failed to parse module");
 
     // Insert parsed entrypoint into the module loader
-    // TODO: Is this needed if loaded from file already?
     loader.insert(plugin_index_file, module.clone());
 
     let promise_result = module
@@ -162,26 +156,9 @@ fn run_plugin(
     }
 }
 
-fn add_runtime(context: &mut Context<'_>) {
+fn add_runtime(context: &mut Context) {
     let console = Console::init(context);
     context
         .register_global_property(js_string!(Console::NAME), console, Attribute::all())
         .expect("the console builtin shouldn't exist");
-}
-
-fn add_globals(context: &mut Context<'_>) {
-    context
-        .register_global_builtin_callable(
-            "sayHello",
-            1,
-            NativeFunction::from_fn_ptr(|_, args, context| {
-                let value: String = args
-                    .get_or_undefined(0)
-                    .try_js_into(context)
-                    .expect("failed to convert arg");
-                println!("Hello {}!", value);
-                Ok(value.into())
-            }),
-        )
-        .expect("failed to register global");
 }

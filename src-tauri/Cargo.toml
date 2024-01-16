@@ -18,19 +18,19 @@ objc = "0.2.7"
 cocoa = "0.25.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-openssl-sys = {version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
+openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
 
 [dependencies]
 base64 = "0.21.0"
-boa_engine = "0.17.3"
-boa_runtime = "0.17.3"
+boa_engine = { version = "0.17.3", features = ["annex-b"] }
+boa_runtime = { version = "0.17.3" }
 chrono = { version = "0.4.23", features = ["serde"] }
 futures = "0.3.26"
 http = "0.2.8"
 rand = "0.8.5"
 reqwest = { version = "0.11.14", features = ["json", "multipart", "gzip", "brotli", "deflate"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0", features = ["raw_value"] }
+serde = { version = "1.0.195", features = ["derive"] }
+serde_json = { version = "1.0.111", features = ["raw_value"] }
 sqlx = { version = "0.7.2", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
 tauri = { version = "1.5.2", features = [
     "config-toml",
