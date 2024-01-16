@@ -7,6 +7,7 @@ import { ReactComponent as LeftPanelVisibleIcon } from '../../assets/icons/LeftP
 
 const icons = {
   archive: lucide.ArchiveIcon,
+  box: lucide.BoxIcon,
   chat: lucide.MessageSquare,
   check: lucide.CheckIcon,
   chevronDown: lucide.ChevronDownIcon,
@@ -20,7 +21,6 @@ const icons = {
   eyeClosed: lucide.EyeOffIcon,
   filter: lucide.FilterIcon,
   flask: lucide.FlaskConicalIcon,
-  gear: lucide.CogIcon,
   keyboard: lucide.KeyboardIcon,
   magicWand: lucide.Wand2Icon,
   externalLink: lucide.ExternalLinkIcon,
@@ -29,6 +29,8 @@ const icons = {
   question: lucide.ShieldQuestionIcon,
   plus: lucide.PlusIcon,
   plusCircle: lucide.PlusCircleIcon,
+  settings: lucide.SettingsIcon,
+  settings2: lucide.Settings2Icon,
   trash: lucide.TrashIcon,
   update: lucide.RefreshCcwIcon,
   upload: lucide.UploadIcon,
