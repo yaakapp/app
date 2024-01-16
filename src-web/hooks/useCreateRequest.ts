@@ -24,7 +24,15 @@ export function useCreateRequest() {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
-      patch.sortPriority = patch.sortPriority || -Date.now();
+      if (patch.sortPriority === undefined) {
+        if (activeRequest != null) {
+          // Place above currently-active request
+          patch.sortPriority = activeRequest.sortPriority + 0.0001;
+        } else {
+          // Place at the very top
+          patch.sortPriority = -Date.now();
+        }
+      }
       patch.folderId = patch.folderId || activeRequest?.folderId;
       return invoke('create_request', { workspaceId, name: '', ...patch });
     },
