@@ -326,10 +326,10 @@ const FormRow = memo(function FormRow({
         <div
           className={classNames(
             'py-2 h-7 w-3 flex items-center',
-            'justify-center opacity-0 hover:opacity-100',
+            'justify-center opacity-0 group-hover:opacity-70',
           )}
         >
-          <Icon icon="drag" className="pointer-events-none" />
+          <Icon icon="gripVertical" className="pointer-events-none" />
         </div>
       ) : (
         <span className="w-3" />
