@@ -224,7 +224,10 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
           space={1}
           alignItems="center"
           justifyContent="end"
-          className="absolute bottom-2 left-0 right-0"
+          className={classNames(
+            'absolute bottom-2 left-0 right-0',
+            'pointer-events-none', // No pointer events so we don't block the editor
+          )}
         >
           {format && (
             <IconButton
