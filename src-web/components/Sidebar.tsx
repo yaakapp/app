@@ -6,6 +6,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
 
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
@@ -527,8 +528,8 @@ const SidebarItem = forwardRef(function SidebarItem(
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
-  const activeRequestId = useActiveRequestId();
-  const isActive = activeRequestId === itemId;
+  const activeRequest = useActiveRequest();
+  const isActive = activeRequest?.id === itemId;
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
@@ -629,9 +630,8 @@ const SidebarItem = forwardRef(function SidebarItem(
                   {
                     key: 'createRequest',
                     label: 'New Request',
-                    hotkeyAction: 'request.create',
                     leftSlot: <Icon icon="plus" />,
-                    onSelect: () => createRequest.mutate({ folderId: itemId, sortPriority: -1 }),
+                    onSelect: () => createRequest.mutate({ folderId: itemId }),
                   },
                   {
                     key: 'createFolder',
@@ -647,7 +647,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                     hotkeyAction: 'request.duplicate',
                     leftSlot: <Icon icon="copy" />,
                     onSelect: () => {
-                      if (activeRequestId === itemId) {
+                      if (activeRequest?.id === itemId) {
                         duplicateRequest.mutate();
                       }
                     },
