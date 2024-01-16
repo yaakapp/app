@@ -31,7 +31,10 @@ export function TextViewer({ response, pretty }: Props) {
     setFilterText('');
   }, [setFilterText, toggleIsSearching]);
 
-  const actions = contentType?.startsWith('application/json') && (
+  const isJson = contentType?.includes('json');
+  const isXml = contentType?.includes('xml') || contentType?.includes('html');
+  const canFilter = isJson || isXml;
+  const actions = canFilter && (
     <HStack className="w-full" justifyContent="end" space={1}>
       {isSearching && (
         <Input
@@ -39,8 +42,8 @@ export function TextViewer({ response, pretty }: Props) {
           autoFocus
           containerClassName="bg-gray-50"
           size="sm"
-          placeholder="Filter response"
-          label="Filter with JSONPath"
+          placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
+          label="Filter expression"
           name="filter"
           defaultValue={filterText}
           onKeyDown={(e) => e.key === 'Escape' && clearSearch()}

@@ -59,7 +59,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
             key: 'edit',
             label: 'Manage Environments',
             hotkeyAction: 'environmentEditor.toggle',
-            leftSlot: <Icon icon="gear" />,
+            leftSlot: <Icon icon="box" />,
             onSelect: showEnvironmentDialog,
           }
         : {

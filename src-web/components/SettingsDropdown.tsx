@@ -78,7 +78,7 @@ export function SettingsDropdown() {
           key: 'settings',
           label: 'Settings',
           hotkeyAction: 'settings.show',
-          leftSlot: <Icon icon="gear" />,
+          leftSlot: <Icon icon="settings" />,
           onSelect: () => {
             dialog.show({
               id: 'settings',
@@ -109,7 +109,7 @@ export function SettingsDropdown() {
         },
       ]}
     >
-      <IconButton size="sm" title="Main Menu" icon="gear" className="pointer-events-auto" />
+      <IconButton size="sm" title="Main Menu" icon="settings" className="pointer-events-auto" />
     </Dropdown>
   );
 }

@@ -9,7 +9,7 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
@@ -17,13 +17,13 @@ use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::Value;
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -37,10 +37,10 @@ use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
+mod http;
 mod models;
 mod plugin;
 mod render;
-mod http;
 mod updates;
 mod window_ext;
 mod window_menu;
@@ -103,15 +103,26 @@ async fn filter_response(
         return Err("Response body not found".to_string());
     }
 
+    let mut content_type = "".to_string();
+    for header in response.headers.iter() {
+        if header.name.to_lowercase() == "content-type" {
+            content_type = header.value.to_string().to_lowercase();
+            break;
+        }
+    }
+
+    // TODO: Have plugins register their own content type (regex?)
+    let plugin_name = if content_type.contains("json") {
+        "filter-jsonpath"
+    } else {
+        "filter-xpath"
+    };
+
     let body = read_to_string(response.body_path.unwrap()).unwrap();
-    let filter_result = plugin::run_plugin_filter(
-        &window.app_handle(),
-        "filter-jsonpath",
-        filter,
-        &body,
-    )
-    .await
-    .expect("Failed to run filter");
+    let filter_result =
+        plugin::run_plugin_filter(&window.app_handle(), plugin_name, filter, &body)
+            .await
+            .expect("Failed to run filter");
     Ok(filter_result.filtered)
 }
 
@@ -310,12 +321,10 @@ async fn create_workspace(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::Workspace, String> {
     let pool = &*db_instance.lock().await;
-    let created_workspace = models::upsert_workspace(
-        pool,
-        models::Workspace::new(name.to_string()),
-    )
-    .await
-    .expect("Failed to create Workspace");
+    let created_workspace =
+        models::upsert_workspace(pool, models::Workspace::new(name.to_string()))
+            .await
+            .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
