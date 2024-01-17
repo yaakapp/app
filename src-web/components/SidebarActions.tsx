@@ -26,7 +26,7 @@ export const SidebarActions = memo(function SidebarActions() {
           {
             key: 'create-request',
             label: 'New Request',
-            hotkeyAction: 'request.create',
+            hotKeyAction: 'request.create',
             onSelect: () => createRequest.mutate({}),
           },
           {

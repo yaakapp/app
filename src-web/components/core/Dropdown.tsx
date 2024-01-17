@@ -37,7 +37,8 @@ export type DropdownItemDefault = {
   key: string;
   type?: 'default';
   label: ReactNode;
-  hotkeyAction?: HotkeyAction;
+  hotKeyAction?: HotkeyAction;
+  hotKeyLabelOnly?: boolean;
   variant?: 'danger';
   disabled?: boolean;
   hidden?: boolean;
@@ -338,12 +339,13 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     <>
       {items.map(
         (item) =>
-          item.type !== 'separator' && (
+          item.type !== 'separator' &&
+          !item.hotKeyLabelOnly && (
             <MenuItemHotKey
               key={item.key}
               onSelect={handleSelect}
               item={item}
-              action={item.hotkeyAction}
+              action={item.hotKeyAction}
             />
           ),
       )}
@@ -440,7 +442,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
     [focused],
   );
 
-  const rightSlot = item.rightSlot ?? <HotKey action={item.hotkeyAction ?? null} />;
+  const rightSlot = item.rightSlot ?? <HotKey action={item.hotKeyAction ?? null} />;
 
   return (
     <Button
