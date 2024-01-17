@@ -9,7 +9,7 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
@@ -17,13 +17,13 @@ use log::{debug, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::Value;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
 use tauri::{Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -84,7 +84,7 @@ async fn send_ephemeral_request(
     let response = models::HttpResponse::new();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
-    send_http_request(request, &response, &environment_id2, &app_handle, pool).await
+    send_http_request(request, &response, &environment_id2, &app_handle, pool, None).await
 }
 
 #[tauri::command]
@@ -119,10 +119,9 @@ async fn filter_response(
     };
 
     let body = read_to_string(response.body_path.unwrap()).unwrap();
-    let filter_result =
-        plugin::run_plugin_filter(&window.app_handle(), plugin_name, filter, &body)
-            .await
-            .expect("Failed to run filter");
+    let filter_result = plugin::run_plugin_filter(&window.app_handle(), plugin_name, filter, &body)
+        .await
+        .expect("Failed to run filter");
     Ok(filter_result.filtered)
 }
 
@@ -220,6 +219,7 @@ async fn send_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
     environment_id: Option<&str>,
+    download_dir: Option<&str>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
 
@@ -236,9 +236,15 @@ async fn send_request(
     let app_handle2 = window.app_handle().clone();
     let pool2 = pool.clone();
 
+    let download_path = if let Some(p) = download_dir {
+        Some(std::path::Path::new(p).to_path_buf())
+    } else {
+        None
+    };
+
     tokio::spawn(async move {
         if let Err(e) =
-            send_http_request(req, &response2, &environment_id2, &app_handle2, &pool2).await
+            send_http_request(req, &response2, &environment_id2, &app_handle2, &pool2, download_path).await
         {
             response_err(&response2, e, &app_handle2, &pool2)
                 .await

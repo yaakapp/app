@@ -1,146 +1,87 @@
-var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
-function getDefaultExportFromCjs(x) {
-  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+function $t(t) {
+  return t && t.__esModule && Object.prototype.hasOwnProperty.call(t, "default") ? t.default : t;
 }
-function getDefaultExportFromNamespaceIfPresent(n) {
-  return n && Object.prototype.hasOwnProperty.call(n, "default") ? n["default"] : n;
-}
-function getDefaultExportFromNamespaceIfNotNamed(n) {
-  return n && Object.prototype.hasOwnProperty.call(n, "default") && Object.keys(n).length === 1 ? n["default"] : n;
-}
-function getAugmentedNamespace(n) {
-  if (n.__esModule)
-    return n;
-  var f = n.default;
-  if (typeof f == "function") {
-    var a = function a2() {
-      if (this instanceof a2) {
-        return Reflect.construct(f, arguments, this.constructor);
-      }
-      return f.apply(this, arguments);
+var nt = {};
+(function(t) {
+  var u = t;
+  (function(n) {
+    var s = "__namespace", c = function(e) {
+      return e == null;
+    }, f = function(e) {
+      return e === s || Number.isInteger(e) && e >= 1 && e <= 11;
+    }, A = function(e) {
+      return e && f(e.nodeType) && typeof e.nodeName == "string";
     };
-    a.prototype = f.prototype;
-  } else
-    a = {};
-  Object.defineProperty(a, "__esModule", { value: true });
-  Object.keys(n).forEach(function(k) {
-    var d = Object.getOwnPropertyDescriptor(n, k);
-    Object.defineProperty(a, k, d.get ? d : {
-      enumerable: true,
-      get: function() {
-        return n[k];
-      }
-    });
-  });
-  return a;
-}
-var xpath$1 = {};
-(function(exports) {
-  var xpath2 = false ? {} : exports;
-  (function(exports2) {
-    "use strict";
-    var NAMESPACE_NODE_NODETYPE = "__namespace";
-    var isNil = function(x) {
-      return x === null || x === void 0;
-    };
-    var isValidNodeType = function(nodeType) {
-      return nodeType === NAMESPACE_NODE_NODETYPE || Number.isInteger(nodeType) && nodeType >= 1 && nodeType <= 11;
-    };
-    var isNodeLike = function(value) {
-      return value && isValidNodeType(value.nodeType) && typeof value.nodeName === "string";
-    };
-    function curry(func) {
-      var slice = Array.prototype.slice, totalargs = func.length, partial = function(args, fn3) {
+    function y(e) {
+      var r = Array.prototype.slice, o = e.length, a = function(l, g) {
         return function() {
-          return fn3.apply(this, args.concat(slice.call(arguments)));
+          return g.apply(this, l.concat(r.call(arguments)));
         };
-      }, fn2 = function() {
-        var args = slice.call(arguments);
-        return args.length < totalargs ? partial(args, fn2) : func.apply(this, slice.apply(arguments, [0, totalargs]));
+      }, i = function() {
+        var l = r.call(arguments);
+        return l.length < o ? a(l, i) : e.apply(this, r.apply(arguments, [0, o]));
       };
-      return fn2;
+      return i;
     }
-    var forEach = function(f, xs) {
-      for (var i = 0; i < xs.length; i += 1) {
-        f(xs[i], i, xs);
-      }
+    var N = function(e, r) {
+      for (var o = 0; o < r.length; o += 1)
+        e(r[o], o, r);
+    }, w = function(e, r, o) {
+      var a = r;
+      return N(function(i, l) {
+        a = e(a, i, l);
+      }, o), a;
+    }, S = function(e, r) {
+      var o = new Array(r.length);
+      return N(function(a, i) {
+        o[i] = e(a);
+      }, r), o;
+    }, k = function(e, r) {
+      var o = [];
+      return N(function(a, i) {
+        e(a, i) && o.push(a);
+      }, r), o;
+    }, q = function(e, r) {
+      for (var o = 0; o < e.length; o += 1)
+        if (e[o] === r)
+          return !0;
+      return !1;
     };
-    var reduce = function(f, seed, xs) {
-      var acc = seed;
-      forEach(function(x, i) {
-        acc = f(acc, x, i);
-      }, xs);
-      return acc;
-    };
-    var map = function(f, xs) {
-      var mapped = new Array(xs.length);
-      forEach(function(x, i) {
-        mapped[i] = f(x);
-      }, xs);
-      return mapped;
-    };
-    var filter = function(f, xs) {
-      var filtered = [];
-      forEach(function(x, i) {
-        if (f(x, i)) {
-          filtered.push(x);
-        }
-      }, xs);
-      return filtered;
-    };
-    var includes = function(values, value) {
-      for (var i = 0; i < values.length; i += 1) {
-        if (values[i] === value) {
-          return true;
-        }
-      }
-      return false;
-    };
-    function always(value) {
+    function $(e) {
       return function() {
-        return value;
+        return e;
       };
     }
-    function toString(x) {
-      return x.toString();
+    function J(e) {
+      return e.toString();
     }
-    var join = function(s, xs) {
-      return xs.join(s);
-    };
-    var wrap = function(pref, suf, str) {
-      return pref + str + suf;
-    };
-    var prototypeConcat = Array.prototype.concat;
-    var sortNodes = function(nodes, reverse) {
-      var ns = new XNodeSet();
-      ns.addArray(nodes);
-      var sorted = ns.toArray();
-      return reverse ? sorted.reverse() : sorted;
-    };
-    var MAX_ARGUMENT_LENGTH = 32767;
-    function flatten(arr) {
-      var result = [];
-      for (var start = 0; start < arr.length; start += MAX_ARGUMENT_LENGTH) {
-        var chunk = arr.slice(start, start + MAX_ARGUMENT_LENGTH);
-        result = prototypeConcat.apply(result, chunk);
+    var H = function(e, r) {
+      return r.join(e);
+    }, G = function(e, r, o) {
+      return e + o + r;
+    }, Q = Array.prototype.concat, He = function(e, r) {
+      var o = new m();
+      o.addArray(e);
+      var a = o.toArray();
+      return r ? a.reverse() : a;
+    }, Y = 32767;
+    function te(e) {
+      for (var r = [], o = 0; o < e.length; o += Y) {
+        var a = e.slice(o, o + Y);
+        r = Q.apply(r, a);
       }
-      return result;
+      return r;
     }
-    function assign2(target, varArgs) {
-      var to = Object(target);
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-        if (nextSource != null) {
-          for (var nextKey in nextSource) {
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
+    function Se(e, r) {
+      for (var o = Object(e), a = 1; a < arguments.length; a++) {
+        var i = arguments[a];
+        if (i != null)
+          for (var l in i)
+            Object.prototype.hasOwnProperty.call(i, l) && (o[l] = i[l]);
       }
-      return to;
+      return o;
     }
-    var NodeTypes = {
+    var x = {
       ELEMENT_NODE: 1,
       ATTRIBUTE_NODE: 2,
       TEXT_NODE: 3,
@@ -150,223 +91,115 @@ var xpath$1 = {};
       DOCUMENT_NODE: 9,
       DOCUMENT_TYPE_NODE: 10,
       DOCUMENT_FRAGMENT_NODE: 11,
-      NAMESPACE_NODE: NAMESPACE_NODE_NODETYPE
+      NAMESPACE_NODE: s
     };
-    XPathParser.prototype = new Object();
-    XPathParser.prototype.constructor = XPathParser;
-    XPathParser.superclass = Object.prototype;
-    function XPathParser() {
+    p.prototype = new Object(), p.prototype.constructor = p, p.superclass = Object.prototype;
+    function p() {
       this.init();
     }
-    XPathParser.prototype.init = function() {
-      this.reduceActions = [];
-      this.reduceActions[3] = function(rhs) {
-        return new OrOperation(rhs[0], rhs[2]);
+    p.prototype.init = function() {
+      this.reduceActions = [], this.reduceActions[3] = function(e) {
+        return new ue(e[0], e[2]);
+      }, this.reduceActions[5] = function(e) {
+        return new pe(e[0], e[2]);
+      }, this.reduceActions[7] = function(e) {
+        return new M(e[0], e[2]);
+      }, this.reduceActions[8] = function(e) {
+        return new j(e[0], e[2]);
+      }, this.reduceActions[10] = function(e) {
+        return new ce(e[0], e[2]);
+      }, this.reduceActions[11] = function(e) {
+        return new Ae(e[0], e[2]);
+      }, this.reduceActions[12] = function(e) {
+        return new De(e[0], e[2]);
+      }, this.reduceActions[13] = function(e) {
+        return new ge(e[0], e[2]);
+      }, this.reduceActions[15] = function(e) {
+        return new de(e[0], e[2]);
+      }, this.reduceActions[16] = function(e) {
+        return new me(e[0], e[2]);
+      }, this.reduceActions[18] = function(e) {
+        return new Ne(e[0], e[2]);
+      }, this.reduceActions[19] = function(e) {
+        return new ve(e[0], e[2]);
+      }, this.reduceActions[20] = function(e) {
+        return new xe(e[0], e[2]);
+      }, this.reduceActions[22] = function(e) {
+        return new le(e[1]);
+      }, this.reduceActions[24] = function(e) {
+        return new Ce(e[0], e[2]);
+      }, this.reduceActions[25] = function(e) {
+        return new _(void 0, void 0, e[0]);
+      }, this.reduceActions[27] = function(e) {
+        return e[0].locationPath = e[2], e[0];
+      }, this.reduceActions[28] = function(e) {
+        return e[0].locationPath = e[2], e[0].locationPath.steps.unshift(new E(E.DESCENDANTORSELF, d.nodeTest, [])), e[0];
+      }, this.reduceActions[29] = function(e) {
+        return new _(e[0], [], void 0);
+      }, this.reduceActions[30] = function(e) {
+        return v.instance_of(e[0], _) ? (e[0].filterPredicates == null && (e[0].filterPredicates = []), e[0].filterPredicates.push(e[1]), e[0]) : new _(e[0], [e[1]], void 0);
+      }, this.reduceActions[32] = function(e) {
+        return e[1];
+      }, this.reduceActions[33] = function(e) {
+        return new T(e[0]);
+      }, this.reduceActions[34] = function(e) {
+        return new b(e[0]);
+      }, this.reduceActions[36] = function(e) {
+        return new ye(e[0], []);
+      }, this.reduceActions[37] = function(e) {
+        return new ye(e[0], e[2]);
+      }, this.reduceActions[38] = function(e) {
+        return [e[0]];
+      }, this.reduceActions[39] = function(e) {
+        return e[2].unshift(e[0]), e[2];
+      }, this.reduceActions[43] = function(e) {
+        return new Oe(!0, []);
+      }, this.reduceActions[44] = function(e) {
+        return e[1].absolute = !0, e[1];
+      }, this.reduceActions[46] = function(e) {
+        return new Oe(!1, [e[0]]);
+      }, this.reduceActions[47] = function(e) {
+        return e[0].steps.push(e[2]), e[0];
+      }, this.reduceActions[49] = function(e) {
+        return new E(e[0], e[1], []);
+      }, this.reduceActions[50] = function(e) {
+        return new E(E.CHILD, e[0], []);
+      }, this.reduceActions[51] = function(e) {
+        return new E(e[0], e[1], e[2]);
+      }, this.reduceActions[52] = function(e) {
+        return new E(E.CHILD, e[0], e[1]);
+      }, this.reduceActions[54] = function(e) {
+        return [e[0]];
+      }, this.reduceActions[55] = function(e) {
+        return e[1].unshift(e[0]), e[1];
+      }, this.reduceActions[56] = function(e) {
+        return e[0] == "ancestor" ? E.ANCESTOR : e[0] == "ancestor-or-self" ? E.ANCESTORORSELF : e[0] == "attribute" ? E.ATTRIBUTE : e[0] == "child" ? E.CHILD : e[0] == "descendant" ? E.DESCENDANT : e[0] == "descendant-or-self" ? E.DESCENDANTORSELF : e[0] == "following" ? E.FOLLOWING : e[0] == "following-sibling" ? E.FOLLOWINGSIBLING : e[0] == "namespace" ? E.NAMESPACE : e[0] == "parent" ? E.PARENT : e[0] == "preceding" ? E.PRECEDING : e[0] == "preceding-sibling" ? E.PRECEDINGSIBLING : e[0] == "self" ? E.SELF : -1;
+      }, this.reduceActions[57] = function(e) {
+        return E.ATTRIBUTE;
+      }, this.reduceActions[59] = function(e) {
+        return e[0] == "comment" ? d.commentTest : e[0] == "text" ? d.textTest : e[0] == "processing-instruction" ? d.anyPiTest : e[0] == "node" ? d.nodeTest : new d(-1, void 0);
+      }, this.reduceActions[60] = function(e) {
+        return new d.PITest(e[2]);
+      }, this.reduceActions[61] = function(e) {
+        return e[1];
+      }, this.reduceActions[63] = function(e) {
+        return e[1].absolute = !0, e[1].steps.unshift(new E(E.DESCENDANTORSELF, d.nodeTest, [])), e[1];
+      }, this.reduceActions[64] = function(e) {
+        return e[0].steps.push(new E(E.DESCENDANTORSELF, d.nodeTest, [])), e[0].steps.push(e[2]), e[0];
+      }, this.reduceActions[65] = function(e) {
+        return new E(E.SELF, d.nodeTest, []);
+      }, this.reduceActions[66] = function(e) {
+        return new E(E.PARENT, d.nodeTest, []);
+      }, this.reduceActions[67] = function(e) {
+        return new Fe(e[1]);
+      }, this.reduceActions[68] = function(e) {
+        return d.nameTestAny;
+      }, this.reduceActions[69] = function(e) {
+        return new d.NameTestPrefixAny(e[0].split(":")[0]);
+      }, this.reduceActions[70] = function(e) {
+        return new d.NameTestQName(e[0]);
       };
-      this.reduceActions[5] = function(rhs) {
-        return new AndOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[7] = function(rhs) {
-        return new EqualsOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[8] = function(rhs) {
-        return new NotEqualOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[10] = function(rhs) {
-        return new LessThanOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[11] = function(rhs) {
-        return new GreaterThanOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[12] = function(rhs) {
-        return new LessThanOrEqualOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[13] = function(rhs) {
-        return new GreaterThanOrEqualOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[15] = function(rhs) {
-        return new PlusOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[16] = function(rhs) {
-        return new MinusOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[18] = function(rhs) {
-        return new MultiplyOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[19] = function(rhs) {
-        return new DivOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[20] = function(rhs) {
-        return new ModOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[22] = function(rhs) {
-        return new UnaryMinusOperation(rhs[1]);
-      };
-      this.reduceActions[24] = function(rhs) {
-        return new BarOperation(rhs[0], rhs[2]);
-      };
-      this.reduceActions[25] = function(rhs) {
-        return new PathExpr(void 0, void 0, rhs[0]);
-      };
-      this.reduceActions[27] = function(rhs) {
-        rhs[0].locationPath = rhs[2];
-        return rhs[0];
-      };
-      this.reduceActions[28] = function(rhs) {
-        rhs[0].locationPath = rhs[2];
-        rhs[0].locationPath.steps.unshift(new Step(Step.DESCENDANTORSELF, NodeTest.nodeTest, []));
-        return rhs[0];
-      };
-      this.reduceActions[29] = function(rhs) {
-        return new PathExpr(rhs[0], [], void 0);
-      };
-      this.reduceActions[30] = function(rhs) {
-        if (Utilities.instance_of(rhs[0], PathExpr)) {
-          if (rhs[0].filterPredicates == void 0) {
-            rhs[0].filterPredicates = [];
-          }
-          rhs[0].filterPredicates.push(rhs[1]);
-          return rhs[0];
-        } else {
-          return new PathExpr(rhs[0], [rhs[1]], void 0);
-        }
-      };
-      this.reduceActions[32] = function(rhs) {
-        return rhs[1];
-      };
-      this.reduceActions[33] = function(rhs) {
-        return new XString(rhs[0]);
-      };
-      this.reduceActions[34] = function(rhs) {
-        return new XNumber(rhs[0]);
-      };
-      this.reduceActions[36] = function(rhs) {
-        return new FunctionCall(rhs[0], []);
-      };
-      this.reduceActions[37] = function(rhs) {
-        return new FunctionCall(rhs[0], rhs[2]);
-      };
-      this.reduceActions[38] = function(rhs) {
-        return [rhs[0]];
-      };
-      this.reduceActions[39] = function(rhs) {
-        rhs[2].unshift(rhs[0]);
-        return rhs[2];
-      };
-      this.reduceActions[43] = function(rhs) {
-        return new LocationPath(true, []);
-      };
-      this.reduceActions[44] = function(rhs) {
-        rhs[1].absolute = true;
-        return rhs[1];
-      };
-      this.reduceActions[46] = function(rhs) {
-        return new LocationPath(false, [rhs[0]]);
-      };
-      this.reduceActions[47] = function(rhs) {
-        rhs[0].steps.push(rhs[2]);
-        return rhs[0];
-      };
-      this.reduceActions[49] = function(rhs) {
-        return new Step(rhs[0], rhs[1], []);
-      };
-      this.reduceActions[50] = function(rhs) {
-        return new Step(Step.CHILD, rhs[0], []);
-      };
-      this.reduceActions[51] = function(rhs) {
-        return new Step(rhs[0], rhs[1], rhs[2]);
-      };
-      this.reduceActions[52] = function(rhs) {
-        return new Step(Step.CHILD, rhs[0], rhs[1]);
-      };
-      this.reduceActions[54] = function(rhs) {
-        return [rhs[0]];
-      };
-      this.reduceActions[55] = function(rhs) {
-        rhs[1].unshift(rhs[0]);
-        return rhs[1];
-      };
-      this.reduceActions[56] = function(rhs) {
-        if (rhs[0] == "ancestor") {
-          return Step.ANCESTOR;
-        } else if (rhs[0] == "ancestor-or-self") {
-          return Step.ANCESTORORSELF;
-        } else if (rhs[0] == "attribute") {
-          return Step.ATTRIBUTE;
-        } else if (rhs[0] == "child") {
-          return Step.CHILD;
-        } else if (rhs[0] == "descendant") {
-          return Step.DESCENDANT;
-        } else if (rhs[0] == "descendant-or-self") {
-          return Step.DESCENDANTORSELF;
-        } else if (rhs[0] == "following") {
-          return Step.FOLLOWING;
-        } else if (rhs[0] == "following-sibling") {
-          return Step.FOLLOWINGSIBLING;
-        } else if (rhs[0] == "namespace") {
-          return Step.NAMESPACE;
-        } else if (rhs[0] == "parent") {
-          return Step.PARENT;
-        } else if (rhs[0] == "preceding") {
-          return Step.PRECEDING;
-        } else if (rhs[0] == "preceding-sibling") {
-          return Step.PRECEDINGSIBLING;
-        } else if (rhs[0] == "self") {
-          return Step.SELF;
-        }
-        return -1;
-      };
-      this.reduceActions[57] = function(rhs) {
-        return Step.ATTRIBUTE;
-      };
-      this.reduceActions[59] = function(rhs) {
-        if (rhs[0] == "comment") {
-          return NodeTest.commentTest;
-        } else if (rhs[0] == "text") {
-          return NodeTest.textTest;
-        } else if (rhs[0] == "processing-instruction") {
-          return NodeTest.anyPiTest;
-        } else if (rhs[0] == "node") {
-          return NodeTest.nodeTest;
-        }
-        return new NodeTest(-1, void 0);
-      };
-      this.reduceActions[60] = function(rhs) {
-        return new NodeTest.PITest(rhs[2]);
-      };
-      this.reduceActions[61] = function(rhs) {
-        return rhs[1];
-      };
-      this.reduceActions[63] = function(rhs) {
-        rhs[1].absolute = true;
-        rhs[1].steps.unshift(new Step(Step.DESCENDANTORSELF, NodeTest.nodeTest, []));
-        return rhs[1];
-      };
-      this.reduceActions[64] = function(rhs) {
-        rhs[0].steps.push(new Step(Step.DESCENDANTORSELF, NodeTest.nodeTest, []));
-        rhs[0].steps.push(rhs[2]);
-        return rhs[0];
-      };
-      this.reduceActions[65] = function(rhs) {
-        return new Step(Step.SELF, NodeTest.nodeTest, []);
-      };
-      this.reduceActions[66] = function(rhs) {
-        return new Step(Step.PARENT, NodeTest.nodeTest, []);
-      };
-      this.reduceActions[67] = function(rhs) {
-        return new VariableReference(rhs[1]);
-      };
-      this.reduceActions[68] = function(rhs) {
-        return NodeTest.nameTestAny;
-      };
-      this.reduceActions[69] = function(rhs) {
-        return new NodeTest.NameTestPrefixAny(rhs[0].split(":")[0]);
-      };
-      this.reduceActions[70] = function(rhs) {
-        return new NodeTest.NameTestQName(rhs[0]);
-      };
-    };
-    XPathParser.actionTable = [
+    }, p.actionTable = [
       " s s        sssssssss    s ss  s  ss",
       "                 s                  ",
       "r  rrrrrrrrr         rrrrrrr rr  r  ",
@@ -475,8 +308,7 @@ var xpath$1 = {};
       " s s        sssssssss    s ss  s  ss",
       "r  rrrrrrrrr         rrrrrrr rr rr  ",
       "                             r      "
-    ];
-    XPathParser.actionTableNumber = [
+    ], p.actionTableNumber = [
       ` 1 0        /.-,+*)('    & %$  #  "!`,
       "                 J                  ",
       "a  aaaaaaaaa         aaaaaaa aa  a  ",
@@ -585,8 +417,7 @@ var xpath$1 = {};
       ` 1 0        /.-,+*)('    & %$  #  "!`,
       "]  ]]]]]]]]]         ]]]]]]] ]] ]]  ",
       "                             G      "
-    ];
-    XPathParser.gotoTable = [
+    ], p.gotoTable = [
       "3456789:;<=>?@ AB  CDEFGH IJ ",
       "                             ",
       "                             ",
@@ -695,8 +526,7 @@ var xpath$1 = {};
       "o456789:;<=>?@ ABqCDEFGH IJ ",
       "                             ",
       "                             "
-    ];
-    XPathParser.productions = [
+    ], p.productions = [
       [1, 1, 2],
       [2, 1, 3],
       [3, 1, 4],
@@ -768,3128 +598,1809 @@ var xpath$1 = {};
       [29, 1, -17],
       [29, 1, -19],
       [29, 1, -18]
-    ];
-    XPathParser.DOUBLEDOT = 2;
-    XPathParser.DOUBLECOLON = 3;
-    XPathParser.DOUBLESLASH = 4;
-    XPathParser.NOTEQUAL = 5;
-    XPathParser.LESSTHANOREQUAL = 6;
-    XPathParser.GREATERTHANOREQUAL = 7;
-    XPathParser.AND = 8;
-    XPathParser.OR = 9;
-    XPathParser.MOD = 10;
-    XPathParser.DIV = 11;
-    XPathParser.MULTIPLYOPERATOR = 12;
-    XPathParser.FUNCTIONNAME = 13;
-    XPathParser.AXISNAME = 14;
-    XPathParser.LITERAL = 15;
-    XPathParser.NUMBER = 16;
-    XPathParser.ASTERISKNAMETEST = 17;
-    XPathParser.QNAME = 18;
-    XPathParser.NCNAMECOLONASTERISK = 19;
-    XPathParser.NODETYPE = 20;
-    XPathParser.PROCESSINGINSTRUCTIONWITHLITERAL = 21;
-    XPathParser.EQUALS = 22;
-    XPathParser.LESSTHAN = 23;
-    XPathParser.GREATERTHAN = 24;
-    XPathParser.PLUS = 25;
-    XPathParser.MINUS = 26;
-    XPathParser.BAR = 27;
-    XPathParser.SLASH = 28;
-    XPathParser.LEFTPARENTHESIS = 29;
-    XPathParser.RIGHTPARENTHESIS = 30;
-    XPathParser.COMMA = 31;
-    XPathParser.AT = 32;
-    XPathParser.LEFTBRACKET = 33;
-    XPathParser.RIGHTBRACKET = 34;
-    XPathParser.DOT = 35;
-    XPathParser.DOLLAR = 36;
-    XPathParser.prototype.tokenize = function(s1) {
-      var types = [];
-      var values = [];
-      var s = s1 + "\0";
-      var pos = 0;
-      var c = s.charAt(pos++);
-      while (1) {
-        while (c == " " || c == "	" || c == "\r" || c == "\n") {
-          c = s.charAt(pos++);
-        }
-        if (c == "\0" || pos >= s.length) {
+    ], p.DOUBLEDOT = 2, p.DOUBLECOLON = 3, p.DOUBLESLASH = 4, p.NOTEQUAL = 5, p.LESSTHANOREQUAL = 6, p.GREATERTHANOREQUAL = 7, p.AND = 8, p.OR = 9, p.MOD = 10, p.DIV = 11, p.MULTIPLYOPERATOR = 12, p.FUNCTIONNAME = 13, p.AXISNAME = 14, p.LITERAL = 15, p.NUMBER = 16, p.ASTERISKNAMETEST = 17, p.QNAME = 18, p.NCNAMECOLONASTERISK = 19, p.NODETYPE = 20, p.PROCESSINGINSTRUCTIONWITHLITERAL = 21, p.EQUALS = 22, p.LESSTHAN = 23, p.GREATERTHAN = 24, p.PLUS = 25, p.MINUS = 26, p.BAR = 27, p.SLASH = 28, p.LEFTPARENTHESIS = 29, p.RIGHTPARENTHESIS = 30, p.COMMA = 31, p.AT = 32, p.LEFTBRACKET = 33, p.RIGHTBRACKET = 34, p.DOT = 35, p.DOLLAR = 36, p.prototype.tokenize = function(e) {
+      for (var r = [], o = [], a = e + "\0", i = 0, l = a.charAt(i++); ; ) {
+        for (; l == " " || l == "	" || l == "\r" || l == `
+`; )
+          l = a.charAt(i++);
+        if (l == "\0" || i >= a.length)
           break;
-        }
-        if (c == "(") {
-          types.push(XPathParser.LEFTPARENTHESIS);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "(") {
+          r.push(p.LEFTPARENTHESIS), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == ")") {
-          types.push(XPathParser.RIGHTPARENTHESIS);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == ")") {
+          r.push(p.RIGHTPARENTHESIS), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "[") {
-          types.push(XPathParser.LEFTBRACKET);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "[") {
+          r.push(p.LEFTBRACKET), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "]") {
-          types.push(XPathParser.RIGHTBRACKET);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "]") {
+          r.push(p.RIGHTBRACKET), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "@") {
-          types.push(XPathParser.AT);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "@") {
+          r.push(p.AT), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == ",") {
-          types.push(XPathParser.COMMA);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == ",") {
+          r.push(p.COMMA), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "|") {
-          types.push(XPathParser.BAR);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "|") {
+          r.push(p.BAR), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "+") {
-          types.push(XPathParser.PLUS);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "+") {
+          r.push(p.PLUS), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "-") {
-          types.push(XPathParser.MINUS);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "-") {
+          r.push(p.MINUS), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "=") {
-          types.push(XPathParser.EQUALS);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "=") {
+          r.push(p.EQUALS), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == "$") {
-          types.push(XPathParser.DOLLAR);
-          values.push(c);
-          c = s.charAt(pos++);
+        if (l == "$") {
+          r.push(p.DOLLAR), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == ".") {
-          c = s.charAt(pos++);
-          if (c == ".") {
-            types.push(XPathParser.DOUBLEDOT);
-            values.push("..");
-            c = s.charAt(pos++);
+        if (l == ".") {
+          if (l = a.charAt(i++), l == ".") {
+            r.push(p.DOUBLEDOT), o.push(".."), l = a.charAt(i++);
             continue;
           }
-          if (c >= "0" && c <= "9") {
-            var number = "." + c;
-            c = s.charAt(pos++);
-            while (c >= "0" && c <= "9") {
-              number += c;
-              c = s.charAt(pos++);
-            }
-            types.push(XPathParser.NUMBER);
-            values.push(number);
+          if (l >= "0" && l <= "9") {
+            var g = "." + l;
+            for (l = a.charAt(i++); l >= "0" && l <= "9"; )
+              g += l, l = a.charAt(i++);
+            r.push(p.NUMBER), o.push(g);
             continue;
           }
-          types.push(XPathParser.DOT);
-          values.push(".");
+          r.push(p.DOT), o.push(".");
           continue;
         }
-        if (c == "'" || c == '"') {
-          var delimiter = c;
-          var literal = "";
-          while (pos < s.length && (c = s.charAt(pos)) !== delimiter) {
-            literal += c;
-            pos += 1;
-          }
-          if (c !== delimiter) {
-            throw XPathException.fromMessage("Unterminated string literal: " + delimiter + literal);
-          }
-          pos += 1;
-          types.push(XPathParser.LITERAL);
-          values.push(literal);
-          c = s.charAt(pos++);
+        if (l == "'" || l == '"') {
+          for (var I = l, L = ""; i < a.length && (l = a.charAt(i)) !== I; )
+            L += l, i += 1;
+          if (l !== I)
+            throw be.fromMessage("Unterminated string literal: " + I + L);
+          i += 1, r.push(p.LITERAL), o.push(L), l = a.charAt(i++);
           continue;
         }
-        if (c >= "0" && c <= "9") {
-          var number = c;
-          c = s.charAt(pos++);
-          while (c >= "0" && c <= "9") {
-            number += c;
-            c = s.charAt(pos++);
-          }
-          if (c == ".") {
-            if (s.charAt(pos) >= "0" && s.charAt(pos) <= "9") {
-              number += c;
-              number += s.charAt(pos++);
-              c = s.charAt(pos++);
-              while (c >= "0" && c <= "9") {
-                number += c;
-                c = s.charAt(pos++);
-              }
-            }
-          }
-          types.push(XPathParser.NUMBER);
-          values.push(number);
+        if (l >= "0" && l <= "9") {
+          var g = l;
+          for (l = a.charAt(i++); l >= "0" && l <= "9"; )
+            g += l, l = a.charAt(i++);
+          if (l == "." && a.charAt(i) >= "0" && a.charAt(i) <= "9")
+            for (g += l, g += a.charAt(i++), l = a.charAt(i++); l >= "0" && l <= "9"; )
+              g += l, l = a.charAt(i++);
+          r.push(p.NUMBER), o.push(g);
           continue;
         }
-        if (c == "*") {
-          if (types.length > 0) {
-            var last = types[types.length - 1];
-            if (last != XPathParser.AT && last != XPathParser.DOUBLECOLON && last != XPathParser.LEFTPARENTHESIS && last != XPathParser.LEFTBRACKET && last != XPathParser.AND && last != XPathParser.OR && last != XPathParser.MOD && last != XPathParser.DIV && last != XPathParser.MULTIPLYOPERATOR && last != XPathParser.SLASH && last != XPathParser.DOUBLESLASH && last != XPathParser.BAR && last != XPathParser.PLUS && last != XPathParser.MINUS && last != XPathParser.EQUALS && last != XPathParser.NOTEQUAL && last != XPathParser.LESSTHAN && last != XPathParser.LESSTHANOREQUAL && last != XPathParser.GREATERTHAN && last != XPathParser.GREATERTHANOREQUAL) {
-              types.push(XPathParser.MULTIPLYOPERATOR);
-              values.push(c);
-              c = s.charAt(pos++);
+        if (l == "*") {
+          if (r.length > 0) {
+            var D = r[r.length - 1];
+            if (D != p.AT && D != p.DOUBLECOLON && D != p.LEFTPARENTHESIS && D != p.LEFTBRACKET && D != p.AND && D != p.OR && D != p.MOD && D != p.DIV && D != p.MULTIPLYOPERATOR && D != p.SLASH && D != p.DOUBLESLASH && D != p.BAR && D != p.PLUS && D != p.MINUS && D != p.EQUALS && D != p.NOTEQUAL && D != p.LESSTHAN && D != p.LESSTHANOREQUAL && D != p.GREATERTHAN && D != p.GREATERTHANOREQUAL) {
+              r.push(p.MULTIPLYOPERATOR), o.push(l), l = a.charAt(i++);
               continue;
             }
           }
-          types.push(XPathParser.ASTERISKNAMETEST);
-          values.push(c);
-          c = s.charAt(pos++);
+          r.push(p.ASTERISKNAMETEST), o.push(l), l = a.charAt(i++);
           continue;
         }
-        if (c == ":") {
-          if (s.charAt(pos) == ":") {
-            types.push(XPathParser.DOUBLECOLON);
-            values.push("::");
-            pos++;
-            c = s.charAt(pos++);
-            continue;
-          }
-        }
-        if (c == "/") {
-          c = s.charAt(pos++);
-          if (c == "/") {
-            types.push(XPathParser.DOUBLESLASH);
-            values.push("//");
-            c = s.charAt(pos++);
-            continue;
-          }
-          types.push(XPathParser.SLASH);
-          values.push("/");
+        if (l == ":" && a.charAt(i) == ":") {
+          r.push(p.DOUBLECOLON), o.push("::"), i++, l = a.charAt(i++);
           continue;
         }
-        if (c == "!") {
-          if (s.charAt(pos) == "=") {
-            types.push(XPathParser.NOTEQUAL);
-            values.push("!=");
-            pos++;
-            c = s.charAt(pos++);
+        if (l == "/") {
+          if (l = a.charAt(i++), l == "/") {
+            r.push(p.DOUBLESLASH), o.push("//"), l = a.charAt(i++);
             continue;
           }
-        }
-        if (c == "<") {
-          if (s.charAt(pos) == "=") {
-            types.push(XPathParser.LESSTHANOREQUAL);
-            values.push("<=");
-            pos++;
-            c = s.charAt(pos++);
-            continue;
-          }
-          types.push(XPathParser.LESSTHAN);
-          values.push("<");
-          c = s.charAt(pos++);
+          r.push(p.SLASH), o.push("/");
           continue;
         }
-        if (c == ">") {
-          if (s.charAt(pos) == "=") {
-            types.push(XPathParser.GREATERTHANOREQUAL);
-            values.push(">=");
-            pos++;
-            c = s.charAt(pos++);
-            continue;
-          }
-          types.push(XPathParser.GREATERTHAN);
-          values.push(">");
-          c = s.charAt(pos++);
+        if (l == "!" && a.charAt(i) == "=") {
+          r.push(p.NOTEQUAL), o.push("!="), i++, l = a.charAt(i++);
           continue;
         }
-        if (c == "_" || Utilities.isLetter(c.charCodeAt(0))) {
-          var name2 = c;
-          c = s.charAt(pos++);
-          while (Utilities.isNCNameChar(c.charCodeAt(0))) {
-            name2 += c;
-            c = s.charAt(pos++);
+        if (l == "<") {
+          if (a.charAt(i) == "=") {
+            r.push(p.LESSTHANOREQUAL), o.push("<="), i++, l = a.charAt(i++);
+            continue;
           }
-          if (types.length > 0) {
-            var last = types[types.length - 1];
-            if (last != XPathParser.AT && last != XPathParser.DOUBLECOLON && last != XPathParser.LEFTPARENTHESIS && last != XPathParser.LEFTBRACKET && last != XPathParser.AND && last != XPathParser.OR && last != XPathParser.MOD && last != XPathParser.DIV && last != XPathParser.MULTIPLYOPERATOR && last != XPathParser.SLASH && last != XPathParser.DOUBLESLASH && last != XPathParser.BAR && last != XPathParser.PLUS && last != XPathParser.MINUS && last != XPathParser.EQUALS && last != XPathParser.NOTEQUAL && last != XPathParser.LESSTHAN && last != XPathParser.LESSTHANOREQUAL && last != XPathParser.GREATERTHAN && last != XPathParser.GREATERTHANOREQUAL) {
-              if (name2 == "and") {
-                types.push(XPathParser.AND);
-                values.push(name2);
+          r.push(p.LESSTHAN), o.push("<"), l = a.charAt(i++);
+          continue;
+        }
+        if (l == ">") {
+          if (a.charAt(i) == "=") {
+            r.push(p.GREATERTHANOREQUAL), o.push(">="), i++, l = a.charAt(i++);
+            continue;
+          }
+          r.push(p.GREATERTHAN), o.push(">"), l = a.charAt(i++);
+          continue;
+        }
+        if (l == "_" || v.isLetter(l.charCodeAt(0))) {
+          var B = l;
+          for (l = a.charAt(i++); v.isNCNameChar(l.charCodeAt(0)); )
+            B += l, l = a.charAt(i++);
+          if (r.length > 0) {
+            var D = r[r.length - 1];
+            if (D != p.AT && D != p.DOUBLECOLON && D != p.LEFTPARENTHESIS && D != p.LEFTBRACKET && D != p.AND && D != p.OR && D != p.MOD && D != p.DIV && D != p.MULTIPLYOPERATOR && D != p.SLASH && D != p.DOUBLESLASH && D != p.BAR && D != p.PLUS && D != p.MINUS && D != p.EQUALS && D != p.NOTEQUAL && D != p.LESSTHAN && D != p.LESSTHANOREQUAL && D != p.GREATERTHAN && D != p.GREATERTHANOREQUAL) {
+              if (B == "and") {
+                r.push(p.AND), o.push(B);
                 continue;
               }
-              if (name2 == "or") {
-                types.push(XPathParser.OR);
-                values.push(name2);
+              if (B == "or") {
+                r.push(p.OR), o.push(B);
                 continue;
               }
-              if (name2 == "mod") {
-                types.push(XPathParser.MOD);
-                values.push(name2);
+              if (B == "mod") {
+                r.push(p.MOD), o.push(B);
                 continue;
               }
-              if (name2 == "div") {
-                types.push(XPathParser.DIV);
-                values.push(name2);
+              if (B == "div") {
+                r.push(p.DIV), o.push(B);
                 continue;
               }
             }
           }
-          if (c == ":") {
-            if (s.charAt(pos) == "*") {
-              types.push(XPathParser.NCNAMECOLONASTERISK);
-              values.push(name2 + ":*");
-              pos++;
-              c = s.charAt(pos++);
+          if (l == ":") {
+            if (a.charAt(i) == "*") {
+              r.push(p.NCNAMECOLONASTERISK), o.push(B + ":*"), i++, l = a.charAt(i++);
               continue;
             }
-            if (s.charAt(pos) == "_" || Utilities.isLetter(s.charCodeAt(pos))) {
-              name2 += ":";
-              c = s.charAt(pos++);
-              while (Utilities.isNCNameChar(c.charCodeAt(0))) {
-                name2 += c;
-                c = s.charAt(pos++);
-              }
-              if (c == "(") {
-                types.push(XPathParser.FUNCTIONNAME);
-                values.push(name2);
+            if (a.charAt(i) == "_" || v.isLetter(a.charCodeAt(i))) {
+              for (B += ":", l = a.charAt(i++); v.isNCNameChar(l.charCodeAt(0)); )
+                B += l, l = a.charAt(i++);
+              if (l == "(") {
+                r.push(p.FUNCTIONNAME), o.push(B);
                 continue;
               }
-              types.push(XPathParser.QNAME);
-              values.push(name2);
+              r.push(p.QNAME), o.push(B);
               continue;
             }
-            if (s.charAt(pos) == ":") {
-              types.push(XPathParser.AXISNAME);
-              values.push(name2);
+            if (a.charAt(i) == ":") {
+              r.push(p.AXISNAME), o.push(B);
               continue;
             }
           }
-          if (c == "(") {
-            if (name2 == "comment" || name2 == "text" || name2 == "node") {
-              types.push(XPathParser.NODETYPE);
-              values.push(name2);
+          if (l == "(") {
+            if (B == "comment" || B == "text" || B == "node") {
+              r.push(p.NODETYPE), o.push(B);
               continue;
             }
-            if (name2 == "processing-instruction") {
-              if (s.charAt(pos) == ")") {
-                types.push(XPathParser.NODETYPE);
-              } else {
-                types.push(XPathParser.PROCESSINGINSTRUCTIONWITHLITERAL);
-              }
-              values.push(name2);
+            if (B == "processing-instruction") {
+              a.charAt(i) == ")" ? r.push(p.NODETYPE) : r.push(p.PROCESSINGINSTRUCTIONWITHLITERAL), o.push(B);
               continue;
             }
-            types.push(XPathParser.FUNCTIONNAME);
-            values.push(name2);
+            r.push(p.FUNCTIONNAME), o.push(B);
             continue;
           }
-          types.push(XPathParser.QNAME);
-          values.push(name2);
+          r.push(p.QNAME), o.push(B);
           continue;
         }
-        throw new Error("Unexpected character " + c);
+        throw new Error("Unexpected character " + l);
       }
-      types.push(1);
-      values.push("[EOF]");
-      return [types, values];
-    };
-    XPathParser.SHIFT = "s";
-    XPathParser.REDUCE = "r";
-    XPathParser.ACCEPT = "a";
-    XPathParser.prototype.parse = function(s) {
-      if (!s) {
+      return r.push(1), o.push("[EOF]"), [r, o];
+    }, p.SHIFT = "s", p.REDUCE = "r", p.ACCEPT = "a", p.prototype.parse = function(L) {
+      if (!L)
         throw new Error("XPath expression unspecified.");
-      }
-      if (typeof s !== "string") {
+      if (typeof L != "string")
         throw new Error("XPath expression must be a string.");
+      var r, o, a = this.tokenize(L);
+      if (a != null) {
+        r = a[0], o = a[1];
+        var i = 0, l = [], g = [], I = [], L, D, B;
+        for (l.push(0), g.push(1), I.push("_S"), D = r[i], B = o[i++]; ; )
+          switch (L = l[l.length - 1], p.actionTable[L].charAt(D - 1)) {
+            case p.SHIFT:
+              g.push(-D), I.push(B), l.push(p.actionTableNumber[L].charCodeAt(D - 1) - 32), D = r[i], B = o[i++];
+              break;
+            case p.REDUCE:
+              for (var Ie = p.productions[p.actionTableNumber[L].charCodeAt(D - 1) - 32][1], je = [], ze = 0; ze < Ie; ze++)
+                g.pop(), je.unshift(I.pop()), l.pop();
+              var Ye = l[l.length - 1];
+              g.push(p.productions[p.actionTableNumber[L].charCodeAt(D - 1) - 32][0]), this.reduceActions[p.actionTableNumber[L].charCodeAt(D - 1) - 32] == null ? I.push(je[0]) : I.push(this.reduceActions[p.actionTableNumber[L].charCodeAt(D - 1) - 32](je)), l.push(p.gotoTable[Ye].charCodeAt(p.productions[p.actionTableNumber[L].charCodeAt(D - 1) - 32][0] - 2) - 33);
+              break;
+            case p.ACCEPT:
+              return new Z(I.pop());
+            default:
+              throw new Error("XPath parse error");
+          }
       }
-      var types;
-      var values;
-      var res = this.tokenize(s);
-      if (res == void 0) {
-        return void 0;
-      }
-      types = res[0];
-      values = res[1];
-      var tokenPos = 0;
-      var state = [];
-      var tokenType = [];
-      var tokenValue = [];
-      var s;
-      var a;
-      var t;
-      state.push(0);
-      tokenType.push(1);
-      tokenValue.push("_S");
-      a = types[tokenPos];
-      t = values[tokenPos++];
-      while (1) {
-        s = state[state.length - 1];
-        switch (XPathParser.actionTable[s].charAt(a - 1)) {
-          case XPathParser.SHIFT:
-            tokenType.push(-a);
-            tokenValue.push(t);
-            state.push(XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32);
-            a = types[tokenPos];
-            t = values[tokenPos++];
-            break;
-          case XPathParser.REDUCE:
-            var num = XPathParser.productions[XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32][1];
-            var rhs = [];
-            for (var i = 0; i < num; i++) {
-              tokenType.pop();
-              rhs.unshift(tokenValue.pop());
-              state.pop();
-            }
-            var s_ = state[state.length - 1];
-            tokenType.push(XPathParser.productions[XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32][0]);
-            if (this.reduceActions[XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32] == void 0) {
-              tokenValue.push(rhs[0]);
-            } else {
-              tokenValue.push(this.reduceActions[XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32](rhs));
-            }
-            state.push(XPathParser.gotoTable[s_].charCodeAt(XPathParser.productions[XPathParser.actionTableNumber[s].charCodeAt(a - 1) - 32][0] - 2) - 33);
-            break;
-          case XPathParser.ACCEPT:
-            return new XPath(tokenValue.pop());
-          default:
-            throw new Error("XPath parse error");
-        }
-      }
-    };
-    XPath.prototype = new Object();
-    XPath.prototype.constructor = XPath;
-    XPath.superclass = Object.prototype;
-    function XPath(e) {
+    }, Z.prototype = new Object(), Z.prototype.constructor = Z, Z.superclass = Object.prototype;
+    function Z(e) {
       this.expression = e;
     }
-    XPath.prototype.toString = function() {
+    Z.prototype.toString = function() {
       return this.expression.toString();
     };
-    function setIfUnset(obj, prop, value) {
-      if (!(prop in obj)) {
-        obj[prop] = value;
-      }
+    function ee(e, r, o) {
+      r in e || (e[r] = o);
     }
-    XPath.prototype.evaluate = function(c) {
-      var node = c.expressionContextNode;
-      if (!(isNil(node) || isNodeLike(node))) {
+    Z.prototype.evaluate = function(e) {
+      var r = e.expressionContextNode;
+      if (!(c(r) || A(r)))
         throw new Error("Context node does not appear to be a valid DOM node.");
-      }
-      c.contextNode = c.expressionContextNode;
-      c.contextSize = 1;
-      c.contextPosition = 1;
-      if (c.isHtml) {
-        setIfUnset(c, "caseInsensitive", true);
-        setIfUnset(c, "allowAnyNamespaceForNoPrefix", true);
-      }
-      setIfUnset(c, "caseInsensitive", false);
-      return this.expression.evaluate(c);
-    };
-    XPath.XML_NAMESPACE_URI = "http://www.w3.org/XML/1998/namespace";
-    XPath.XMLNS_NAMESPACE_URI = "http://www.w3.org/2000/xmlns/";
-    Expression.prototype = new Object();
-    Expression.prototype.constructor = Expression;
-    Expression.superclass = Object.prototype;
-    function Expression() {
+      return e.contextNode = e.expressionContextNode, e.contextSize = 1, e.contextPosition = 1, e.isHtml && (ee(e, "caseInsensitive", !0), ee(e, "allowAnyNamespaceForNoPrefix", !0)), ee(e, "caseInsensitive", !1), this.expression.evaluate(e);
+    }, Z.XML_NAMESPACE_URI = "http://www.w3.org/XML/1998/namespace", Z.XMLNS_NAMESPACE_URI = "http://www.w3.org/2000/xmlns/", U.prototype = new Object(), U.prototype.constructor = U, U.superclass = Object.prototype;
+    function U() {
     }
-    Expression.prototype.init = function() {
-    };
-    Expression.prototype.toString = function() {
+    U.prototype.init = function() {
+    }, U.prototype.toString = function() {
       return "<Expression>";
-    };
-    Expression.prototype.evaluate = function(c) {
+    }, U.prototype.evaluate = function(e) {
       throw new Error("Could not evaluate expression.");
-    };
-    UnaryOperation.prototype = new Expression();
-    UnaryOperation.prototype.constructor = UnaryOperation;
-    UnaryOperation.superclass = Expression.prototype;
-    function UnaryOperation(rhs) {
-      if (arguments.length > 0) {
-        this.init(rhs);
-      }
+    }, X.prototype = new U(), X.prototype.constructor = X, X.superclass = U.prototype;
+    function X(e) {
+      arguments.length > 0 && this.init(e);
     }
-    UnaryOperation.prototype.init = function(rhs) {
-      this.rhs = rhs;
-    };
-    UnaryMinusOperation.prototype = new UnaryOperation();
-    UnaryMinusOperation.prototype.constructor = UnaryMinusOperation;
-    UnaryMinusOperation.superclass = UnaryOperation.prototype;
-    function UnaryMinusOperation(rhs) {
-      if (arguments.length > 0) {
-        this.init(rhs);
-      }
+    X.prototype.init = function(e) {
+      this.rhs = e;
+    }, le.prototype = new X(), le.prototype.constructor = le, le.superclass = X.prototype;
+    function le(e) {
+      arguments.length > 0 && this.init(e);
     }
-    UnaryMinusOperation.prototype.init = function(rhs) {
-      UnaryMinusOperation.superclass.init.call(this, rhs);
-    };
-    UnaryMinusOperation.prototype.evaluate = function(c) {
-      return this.rhs.evaluate(c).number().negate();
-    };
-    UnaryMinusOperation.prototype.toString = function() {
+    le.prototype.init = function(e) {
+      le.superclass.init.call(this, e);
+    }, le.prototype.evaluate = function(e) {
+      return this.rhs.evaluate(e).number().negate();
+    }, le.prototype.toString = function() {
       return "-" + this.rhs.toString();
-    };
-    BinaryOperation.prototype = new Expression();
-    BinaryOperation.prototype.constructor = BinaryOperation;
-    BinaryOperation.superclass = Expression.prototype;
-    function BinaryOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, R.prototype = new U(), R.prototype.constructor = R, R.superclass = U.prototype;
+    function R(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    BinaryOperation.prototype.init = function(lhs, rhs) {
-      this.lhs = lhs;
-      this.rhs = rhs;
-    };
-    OrOperation.prototype = new BinaryOperation();
-    OrOperation.prototype.constructor = OrOperation;
-    OrOperation.superclass = BinaryOperation.prototype;
-    function OrOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    R.prototype.init = function(e, r) {
+      this.lhs = e, this.rhs = r;
+    }, ue.prototype = new R(), ue.prototype.constructor = ue, ue.superclass = R.prototype;
+    function ue(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    OrOperation.prototype.init = function(lhs, rhs) {
-      OrOperation.superclass.init.call(this, lhs, rhs);
-    };
-    OrOperation.prototype.toString = function() {
+    ue.prototype.init = function(e, r) {
+      ue.superclass.init.call(this, e, r);
+    }, ue.prototype.toString = function() {
       return "(" + this.lhs.toString() + " or " + this.rhs.toString() + ")";
-    };
-    OrOperation.prototype.evaluate = function(c) {
-      var b = this.lhs.evaluate(c).bool();
-      if (b.booleanValue()) {
-        return b;
-      }
-      return this.rhs.evaluate(c).bool();
-    };
-    AndOperation.prototype = new BinaryOperation();
-    AndOperation.prototype.constructor = AndOperation;
-    AndOperation.superclass = BinaryOperation.prototype;
-    function AndOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, ue.prototype.evaluate = function(e) {
+      var r = this.lhs.evaluate(e).bool();
+      return r.booleanValue() ? r : this.rhs.evaluate(e).bool();
+    }, pe.prototype = new R(), pe.prototype.constructor = pe, pe.superclass = R.prototype;
+    function pe(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    AndOperation.prototype.init = function(lhs, rhs) {
-      AndOperation.superclass.init.call(this, lhs, rhs);
-    };
-    AndOperation.prototype.toString = function() {
+    pe.prototype.init = function(e, r) {
+      pe.superclass.init.call(this, e, r);
+    }, pe.prototype.toString = function() {
       return "(" + this.lhs.toString() + " and " + this.rhs.toString() + ")";
-    };
-    AndOperation.prototype.evaluate = function(c) {
-      var b = this.lhs.evaluate(c).bool();
-      if (!b.booleanValue()) {
-        return b;
-      }
-      return this.rhs.evaluate(c).bool();
-    };
-    EqualsOperation.prototype = new BinaryOperation();
-    EqualsOperation.prototype.constructor = EqualsOperation;
-    EqualsOperation.superclass = BinaryOperation.prototype;
-    function EqualsOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, pe.prototype.evaluate = function(e) {
+      var r = this.lhs.evaluate(e).bool();
+      return r.booleanValue() ? this.rhs.evaluate(e).bool() : r;
+    }, M.prototype = new R(), M.prototype.constructor = M, M.superclass = R.prototype;
+    function M(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    EqualsOperation.prototype.init = function(lhs, rhs) {
-      EqualsOperation.superclass.init.call(this, lhs, rhs);
-    };
-    EqualsOperation.prototype.toString = function() {
+    M.prototype.init = function(e, r) {
+      M.superclass.init.call(this, e, r);
+    }, M.prototype.toString = function() {
       return "(" + this.lhs.toString() + " = " + this.rhs.toString() + ")";
-    };
-    EqualsOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).equals(this.rhs.evaluate(c));
-    };
-    NotEqualOperation.prototype = new BinaryOperation();
-    NotEqualOperation.prototype.constructor = NotEqualOperation;
-    NotEqualOperation.superclass = BinaryOperation.prototype;
-    function NotEqualOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, M.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).equals(this.rhs.evaluate(e));
+    }, j.prototype = new R(), j.prototype.constructor = j, j.superclass = R.prototype;
+    function j(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    NotEqualOperation.prototype.init = function(lhs, rhs) {
-      NotEqualOperation.superclass.init.call(this, lhs, rhs);
-    };
-    NotEqualOperation.prototype.toString = function() {
+    j.prototype.init = function(e, r) {
+      j.superclass.init.call(this, e, r);
+    }, j.prototype.toString = function() {
       return "(" + this.lhs.toString() + " != " + this.rhs.toString() + ")";
-    };
-    NotEqualOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).notequal(this.rhs.evaluate(c));
-    };
-    LessThanOperation.prototype = new BinaryOperation();
-    LessThanOperation.prototype.constructor = LessThanOperation;
-    LessThanOperation.superclass = BinaryOperation.prototype;
-    function LessThanOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, j.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).notequal(this.rhs.evaluate(e));
+    }, ce.prototype = new R(), ce.prototype.constructor = ce, ce.superclass = R.prototype;
+    function ce(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    LessThanOperation.prototype.init = function(lhs, rhs) {
-      LessThanOperation.superclass.init.call(this, lhs, rhs);
-    };
-    LessThanOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).lessthan(this.rhs.evaluate(c));
-    };
-    LessThanOperation.prototype.toString = function() {
+    ce.prototype.init = function(e, r) {
+      ce.superclass.init.call(this, e, r);
+    }, ce.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).lessthan(this.rhs.evaluate(e));
+    }, ce.prototype.toString = function() {
       return "(" + this.lhs.toString() + " < " + this.rhs.toString() + ")";
-    };
-    GreaterThanOperation.prototype = new BinaryOperation();
-    GreaterThanOperation.prototype.constructor = GreaterThanOperation;
-    GreaterThanOperation.superclass = BinaryOperation.prototype;
-    function GreaterThanOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, Ae.prototype = new R(), Ae.prototype.constructor = Ae, Ae.superclass = R.prototype;
+    function Ae(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    GreaterThanOperation.prototype.init = function(lhs, rhs) {
-      GreaterThanOperation.superclass.init.call(this, lhs, rhs);
-    };
-    GreaterThanOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).greaterthan(this.rhs.evaluate(c));
-    };
-    GreaterThanOperation.prototype.toString = function() {
+    Ae.prototype.init = function(e, r) {
+      Ae.superclass.init.call(this, e, r);
+    }, Ae.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).greaterthan(this.rhs.evaluate(e));
+    }, Ae.prototype.toString = function() {
       return "(" + this.lhs.toString() + " > " + this.rhs.toString() + ")";
-    };
-    LessThanOrEqualOperation.prototype = new BinaryOperation();
-    LessThanOrEqualOperation.prototype.constructor = LessThanOrEqualOperation;
-    LessThanOrEqualOperation.superclass = BinaryOperation.prototype;
-    function LessThanOrEqualOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, De.prototype = new R(), De.prototype.constructor = De, De.superclass = R.prototype;
+    function De(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    LessThanOrEqualOperation.prototype.init = function(lhs, rhs) {
-      LessThanOrEqualOperation.superclass.init.call(this, lhs, rhs);
-    };
-    LessThanOrEqualOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).lessthanorequal(this.rhs.evaluate(c));
-    };
-    LessThanOrEqualOperation.prototype.toString = function() {
+    De.prototype.init = function(e, r) {
+      De.superclass.init.call(this, e, r);
+    }, De.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).lessthanorequal(this.rhs.evaluate(e));
+    }, De.prototype.toString = function() {
       return "(" + this.lhs.toString() + " <= " + this.rhs.toString() + ")";
-    };
-    GreaterThanOrEqualOperation.prototype = new BinaryOperation();
-    GreaterThanOrEqualOperation.prototype.constructor = GreaterThanOrEqualOperation;
-    GreaterThanOrEqualOperation.superclass = BinaryOperation.prototype;
-    function GreaterThanOrEqualOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, ge.prototype = new R(), ge.prototype.constructor = ge, ge.superclass = R.prototype;
+    function ge(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    GreaterThanOrEqualOperation.prototype.init = function(lhs, rhs) {
-      GreaterThanOrEqualOperation.superclass.init.call(this, lhs, rhs);
-    };
-    GreaterThanOrEqualOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).greaterthanorequal(this.rhs.evaluate(c));
-    };
-    GreaterThanOrEqualOperation.prototype.toString = function() {
+    ge.prototype.init = function(e, r) {
+      ge.superclass.init.call(this, e, r);
+    }, ge.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).greaterthanorequal(this.rhs.evaluate(e));
+    }, ge.prototype.toString = function() {
       return "(" + this.lhs.toString() + " >= " + this.rhs.toString() + ")";
-    };
-    PlusOperation.prototype = new BinaryOperation();
-    PlusOperation.prototype.constructor = PlusOperation;
-    PlusOperation.superclass = BinaryOperation.prototype;
-    function PlusOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, de.prototype = new R(), de.prototype.constructor = de, de.superclass = R.prototype;
+    function de(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    PlusOperation.prototype.init = function(lhs, rhs) {
-      PlusOperation.superclass.init.call(this, lhs, rhs);
-    };
-    PlusOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).number().plus(this.rhs.evaluate(c).number());
-    };
-    PlusOperation.prototype.toString = function() {
+    de.prototype.init = function(e, r) {
+      de.superclass.init.call(this, e, r);
+    }, de.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).number().plus(this.rhs.evaluate(e).number());
+    }, de.prototype.toString = function() {
       return "(" + this.lhs.toString() + " + " + this.rhs.toString() + ")";
-    };
-    MinusOperation.prototype = new BinaryOperation();
-    MinusOperation.prototype.constructor = MinusOperation;
-    MinusOperation.superclass = BinaryOperation.prototype;
-    function MinusOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, me.prototype = new R(), me.prototype.constructor = me, me.superclass = R.prototype;
+    function me(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    MinusOperation.prototype.init = function(lhs, rhs) {
-      MinusOperation.superclass.init.call(this, lhs, rhs);
-    };
-    MinusOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).number().minus(this.rhs.evaluate(c).number());
-    };
-    MinusOperation.prototype.toString = function() {
+    me.prototype.init = function(e, r) {
+      me.superclass.init.call(this, e, r);
+    }, me.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).number().minus(this.rhs.evaluate(e).number());
+    }, me.prototype.toString = function() {
       return "(" + this.lhs.toString() + " - " + this.rhs.toString() + ")";
-    };
-    MultiplyOperation.prototype = new BinaryOperation();
-    MultiplyOperation.prototype.constructor = MultiplyOperation;
-    MultiplyOperation.superclass = BinaryOperation.prototype;
-    function MultiplyOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, Ne.prototype = new R(), Ne.prototype.constructor = Ne, Ne.superclass = R.prototype;
+    function Ne(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    MultiplyOperation.prototype.init = function(lhs, rhs) {
-      MultiplyOperation.superclass.init.call(this, lhs, rhs);
-    };
-    MultiplyOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).number().multiply(this.rhs.evaluate(c).number());
-    };
-    MultiplyOperation.prototype.toString = function() {
+    Ne.prototype.init = function(e, r) {
+      Ne.superclass.init.call(this, e, r);
+    }, Ne.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).number().multiply(this.rhs.evaluate(e).number());
+    }, Ne.prototype.toString = function() {
       return "(" + this.lhs.toString() + " * " + this.rhs.toString() + ")";
-    };
-    DivOperation.prototype = new BinaryOperation();
-    DivOperation.prototype.constructor = DivOperation;
-    DivOperation.superclass = BinaryOperation.prototype;
-    function DivOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, ve.prototype = new R(), ve.prototype.constructor = ve, ve.superclass = R.prototype;
+    function ve(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    DivOperation.prototype.init = function(lhs, rhs) {
-      DivOperation.superclass.init.call(this, lhs, rhs);
-    };
-    DivOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).number().div(this.rhs.evaluate(c).number());
-    };
-    DivOperation.prototype.toString = function() {
+    ve.prototype.init = function(e, r) {
+      ve.superclass.init.call(this, e, r);
+    }, ve.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).number().div(this.rhs.evaluate(e).number());
+    }, ve.prototype.toString = function() {
       return "(" + this.lhs.toString() + " div " + this.rhs.toString() + ")";
-    };
-    ModOperation.prototype = new BinaryOperation();
-    ModOperation.prototype.constructor = ModOperation;
-    ModOperation.superclass = BinaryOperation.prototype;
-    function ModOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, xe.prototype = new R(), xe.prototype.constructor = xe, xe.superclass = R.prototype;
+    function xe(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    ModOperation.prototype.init = function(lhs, rhs) {
-      ModOperation.superclass.init.call(this, lhs, rhs);
-    };
-    ModOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).number().mod(this.rhs.evaluate(c).number());
-    };
-    ModOperation.prototype.toString = function() {
+    xe.prototype.init = function(e, r) {
+      xe.superclass.init.call(this, e, r);
+    }, xe.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).number().mod(this.rhs.evaluate(e).number());
+    }, xe.prototype.toString = function() {
       return "(" + this.lhs.toString() + " mod " + this.rhs.toString() + ")";
-    };
-    BarOperation.prototype = new BinaryOperation();
-    BarOperation.prototype.constructor = BarOperation;
-    BarOperation.superclass = BinaryOperation.prototype;
-    function BarOperation(lhs, rhs) {
-      if (arguments.length > 0) {
-        this.init(lhs, rhs);
-      }
+    }, Ce.prototype = new R(), Ce.prototype.constructor = Ce, Ce.superclass = R.prototype;
+    function Ce(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    BarOperation.prototype.init = function(lhs, rhs) {
-      BarOperation.superclass.init.call(this, lhs, rhs);
-    };
-    BarOperation.prototype.evaluate = function(c) {
-      return this.lhs.evaluate(c).nodeset().union(this.rhs.evaluate(c).nodeset());
-    };
-    BarOperation.prototype.toString = function() {
-      return map(toString, [this.lhs, this.rhs]).join(" | ");
-    };
-    PathExpr.prototype = new Expression();
-    PathExpr.prototype.constructor = PathExpr;
-    PathExpr.superclass = Expression.prototype;
-    function PathExpr(filter2, filterPreds, locpath) {
-      if (arguments.length > 0) {
-        this.init(filter2, filterPreds, locpath);
-      }
+    Ce.prototype.init = function(e, r) {
+      Ce.superclass.init.call(this, e, r);
+    }, Ce.prototype.evaluate = function(e) {
+      return this.lhs.evaluate(e).nodeset().union(this.rhs.evaluate(e).nodeset());
+    }, Ce.prototype.toString = function() {
+      return S(J, [this.lhs, this.rhs]).join(" | ");
+    }, _.prototype = new U(), _.prototype.constructor = _, _.superclass = U.prototype;
+    function _(e, r, o) {
+      arguments.length > 0 && this.init(e, r, o);
     }
-    PathExpr.prototype.init = function(filter2, filterPreds, locpath) {
-      PathExpr.superclass.init.call(this);
-      this.filter = filter2;
-      this.filterPredicates = filterPreds;
-      this.locationPath = locpath;
+    _.prototype.init = function(e, r, o) {
+      _.superclass.init.call(this), this.filter = e, this.filterPredicates = r, this.locationPath = o;
     };
-    function findRoot(node) {
-      while (node && node.parentNode) {
-        node = node.parentNode;
-      }
-      return node;
+    function It(e) {
+      for (; e && e.parentNode; )
+        e = e.parentNode;
+      return e;
     }
-    var applyPredicates = function(predicates, c, nodes, reverse) {
-      if (predicates.length === 0) {
-        return nodes;
-      }
-      var ctx = c.extend({});
-      return reduce(
-        function(inNodes, pred) {
-          ctx.contextSize = inNodes.length;
-          return filter(
-            function(node, i) {
-              ctx.contextNode = node;
-              ctx.contextPosition = i + 1;
-              return PathExpr.predicateMatches(pred, ctx);
+    var Vr = function(e, r, o, a) {
+      if (e.length === 0)
+        return o;
+      var i = r.extend({});
+      return w(
+        function(l, g) {
+          return i.contextSize = l.length, k(
+            function(I, L) {
+              return i.contextNode = I, i.contextPosition = L + 1, _.predicateMatches(g, i);
             },
-            inNodes
+            l
           );
         },
-        sortNodes(nodes, reverse),
-        predicates
+        He(o, a),
+        e
       );
     };
-    PathExpr.getRoot = function(xpc, nodes) {
-      var firstNode = nodes[0];
-      if (firstNode && firstNode.nodeType === NodeTypes.DOCUMENT_NODE) {
-        return firstNode;
-      }
-      if (xpc.virtualRoot) {
-        return xpc.virtualRoot;
-      }
-      if (!firstNode) {
+    _.getRoot = function(e, r) {
+      var o = r[0];
+      if (o && o.nodeType === x.DOCUMENT_NODE)
+        return o;
+      if (e.virtualRoot)
+        return e.virtualRoot;
+      if (!o)
         throw new Error("Context node not found when determining document root.");
-      }
-      var ownerDoc = firstNode.ownerDocument;
-      if (ownerDoc) {
-        return ownerDoc;
-      }
-      var n = firstNode;
-      while (n.parentNode != null) {
-        n = n.parentNode;
-      }
-      return n;
+      var a = o.ownerDocument;
+      if (a)
+        return a;
+      for (var i = o; i.parentNode != null; )
+        i = i.parentNode;
+      return i;
     };
-    var getPrefixForNamespaceNode = function(attrNode) {
-      var nm = String(attrNode.name);
-      if (nm === "xmlns") {
-        return "";
-      }
-      if (nm.substring(0, 6) === "xmlns:") {
-        return nm.substring(6, nm.length);
-      }
-      return null;
+    var Lt = function(e) {
+      var r = String(e.name);
+      return r === "xmlns" ? "" : r.substring(0, 6) === "xmlns:" ? r.substring(6, r.length) : null;
     };
-    PathExpr.applyStep = function(step, xpc, node) {
-      if (!node) {
-        throw new Error("Context node not found when evaluating XPath step: " + step);
+    _.applyStep = function(e, r, o) {
+      if (!o)
+        throw new Error("Context node not found when evaluating XPath step: " + e);
+      var a = [];
+      switch (r.contextNode = o, e.axis) {
+        case E.ANCESTOR:
+          if (r.contextNode === r.virtualRoot)
+            break;
+          var i;
+          for (r.contextNode.nodeType == x.ATTRIBUTE_NODE ? i = _.getOwnerElement(r.contextNode) : i = r.contextNode.parentNode; i != null && (e.nodeTest.matches(i, r) && a.push(i), i !== r.virtualRoot); )
+            i = i.parentNode;
+          break;
+        case E.ANCESTORORSELF:
+          for (var i = r.contextNode; i != null && (e.nodeTest.matches(i, r) && a.push(i), i !== r.virtualRoot); i = i.nodeType == x.ATTRIBUTE_NODE ? _.getOwnerElement(i) : i.parentNode)
+            ;
+          break;
+        case E.ATTRIBUTE:
+          var l = r.contextNode.attributes;
+          if (l != null)
+            for (var g = 0; g < l.length; g++) {
+              var i = l.item(g);
+              e.nodeTest.matches(i, r) && a.push(i);
+            }
+          break;
+        case E.CHILD:
+          for (var i = r.contextNode.firstChild; i != null; i = i.nextSibling)
+            e.nodeTest.matches(i, r) && a.push(i);
+          break;
+        case E.DESCENDANT:
+          for (var B = [r.contextNode.firstChild]; B.length > 0; )
+            for (var i = B.pop(); i != null; )
+              e.nodeTest.matches(i, r) && a.push(i), i.firstChild != null ? (B.push(i.nextSibling), i = i.firstChild) : i = i.nextSibling;
+          break;
+        case E.DESCENDANTORSELF:
+          e.nodeTest.matches(r.contextNode, r) && a.push(r.contextNode);
+          for (var B = [r.contextNode.firstChild]; B.length > 0; )
+            for (var i = B.pop(); i != null; )
+              e.nodeTest.matches(i, r) && a.push(i), i.firstChild != null ? (B.push(i.nextSibling), i = i.firstChild) : i = i.nextSibling;
+          break;
+        case E.FOLLOWING:
+          if (r.contextNode === r.virtualRoot)
+            break;
+          var B = [];
+          r.contextNode.firstChild != null ? B.unshift(r.contextNode.firstChild) : B.unshift(r.contextNode.nextSibling);
+          for (var i = r.contextNode.parentNode; i != null && i.nodeType != x.DOCUMENT_NODE && i !== r.virtualRoot; i = i.parentNode)
+            B.unshift(i.nextSibling);
+          do
+            for (var i = B.pop(); i != null; )
+              e.nodeTest.matches(i, r) && a.push(i), i.firstChild != null ? (B.push(i.nextSibling), i = i.firstChild) : i = i.nextSibling;
+          while (B.length > 0);
+          break;
+        case E.FOLLOWINGSIBLING:
+          if (r.contextNode === r.virtualRoot)
+            break;
+          for (var i = r.contextNode.nextSibling; i != null; i = i.nextSibling)
+            e.nodeTest.matches(i, r) && a.push(i);
+          break;
+        case E.NAMESPACE:
+          var I = {};
+          if (r.contextNode.nodeType == x.ELEMENT_NODE) {
+            I.xml = new Xe("xml", null, Z.XML_NAMESPACE_URI, r.contextNode);
+            for (var i = r.contextNode; i != null && i.nodeType == x.ELEMENT_NODE; i = i.parentNode)
+              for (var g = 0; g < i.attributes.length; g++) {
+                var L = i.attributes.item(g), D = Lt(L);
+                D != null && I[D] == null && (I[D] = new Xe(D, L, L.value, r.contextNode));
+              }
+            for (var D in I) {
+              var o = I[D];
+              e.nodeTest.matches(o, r) && a.push(o);
+            }
+          }
+          break;
+        case E.PARENT:
+          i = null, r.contextNode !== r.virtualRoot && (r.contextNode.nodeType == x.ATTRIBUTE_NODE ? i = _.getOwnerElement(r.contextNode) : i = r.contextNode.parentNode), i != null && e.nodeTest.matches(i, r) && a.push(i);
+          break;
+        case E.PRECEDING:
+          var B;
+          r.virtualRoot != null ? B = [r.virtualRoot] : B = [It(r.contextNode)];
+          e:
+            for (; B.length > 0; )
+              for (var i = B.pop(); i != null; ) {
+                if (i == r.contextNode)
+                  break e;
+                e.nodeTest.matches(i, r) && a.unshift(i), i.firstChild != null ? (B.push(i.nextSibling), i = i.firstChild) : i = i.nextSibling;
+              }
+          break;
+        case E.PRECEDINGSIBLING:
+          if (r.contextNode === r.virtualRoot)
+            break;
+          for (var i = r.contextNode.previousSibling; i != null; i = i.previousSibling)
+            e.nodeTest.matches(i, r) && a.push(i);
+          break;
+        case E.SELF:
+          e.nodeTest.matches(r.contextNode, r) && a.push(r.contextNode);
+          break;
       }
-      var newNodes = [];
-      xpc.contextNode = node;
-      switch (step.axis) {
-        case Step.ANCESTOR:
-          if (xpc.contextNode === xpc.virtualRoot) {
-            break;
-          }
-          var m;
-          if (xpc.contextNode.nodeType == NodeTypes.ATTRIBUTE_NODE) {
-            m = PathExpr.getOwnerElement(xpc.contextNode);
-          } else {
-            m = xpc.contextNode.parentNode;
-          }
-          while (m != null) {
-            if (step.nodeTest.matches(m, xpc)) {
-              newNodes.push(m);
-            }
-            if (m === xpc.virtualRoot) {
-              break;
-            }
-            m = m.parentNode;
-          }
-          break;
-        case Step.ANCESTORORSELF:
-          for (var m = xpc.contextNode; m != null; m = m.nodeType == NodeTypes.ATTRIBUTE_NODE ? PathExpr.getOwnerElement(m) : m.parentNode) {
-            if (step.nodeTest.matches(m, xpc)) {
-              newNodes.push(m);
-            }
-            if (m === xpc.virtualRoot) {
-              break;
-            }
-          }
-          break;
-        case Step.ATTRIBUTE:
-          var nnm = xpc.contextNode.attributes;
-          if (nnm != null) {
-            for (var k = 0; k < nnm.length; k++) {
-              var m = nnm.item(k);
-              if (step.nodeTest.matches(m, xpc)) {
-                newNodes.push(m);
-              }
-            }
-          }
-          break;
-        case Step.CHILD:
-          for (var m = xpc.contextNode.firstChild; m != null; m = m.nextSibling) {
-            if (step.nodeTest.matches(m, xpc)) {
-              newNodes.push(m);
-            }
-          }
-          break;
-        case Step.DESCENDANT:
-          var st = [xpc.contextNode.firstChild];
-          while (st.length > 0) {
-            for (var m = st.pop(); m != null; ) {
-              if (step.nodeTest.matches(m, xpc)) {
-                newNodes.push(m);
-              }
-              if (m.firstChild != null) {
-                st.push(m.nextSibling);
-                m = m.firstChild;
-              } else {
-                m = m.nextSibling;
-              }
-            }
-          }
-          break;
-        case Step.DESCENDANTORSELF:
-          if (step.nodeTest.matches(xpc.contextNode, xpc)) {
-            newNodes.push(xpc.contextNode);
-          }
-          var st = [xpc.contextNode.firstChild];
-          while (st.length > 0) {
-            for (var m = st.pop(); m != null; ) {
-              if (step.nodeTest.matches(m, xpc)) {
-                newNodes.push(m);
-              }
-              if (m.firstChild != null) {
-                st.push(m.nextSibling);
-                m = m.firstChild;
-              } else {
-                m = m.nextSibling;
-              }
-            }
-          }
-          break;
-        case Step.FOLLOWING:
-          if (xpc.contextNode === xpc.virtualRoot) {
-            break;
-          }
-          var st = [];
-          if (xpc.contextNode.firstChild != null) {
-            st.unshift(xpc.contextNode.firstChild);
-          } else {
-            st.unshift(xpc.contextNode.nextSibling);
-          }
-          for (var m = xpc.contextNode.parentNode; m != null && m.nodeType != NodeTypes.DOCUMENT_NODE && m !== xpc.virtualRoot; m = m.parentNode) {
-            st.unshift(m.nextSibling);
-          }
-          do {
-            for (var m = st.pop(); m != null; ) {
-              if (step.nodeTest.matches(m, xpc)) {
-                newNodes.push(m);
-              }
-              if (m.firstChild != null) {
-                st.push(m.nextSibling);
-                m = m.firstChild;
-              } else {
-                m = m.nextSibling;
-              }
-            }
-          } while (st.length > 0);
-          break;
-        case Step.FOLLOWINGSIBLING:
-          if (xpc.contextNode === xpc.virtualRoot) {
-            break;
-          }
-          for (var m = xpc.contextNode.nextSibling; m != null; m = m.nextSibling) {
-            if (step.nodeTest.matches(m, xpc)) {
-              newNodes.push(m);
-            }
-          }
-          break;
-        case Step.NAMESPACE:
-          var nodes = {};
-          if (xpc.contextNode.nodeType == NodeTypes.ELEMENT_NODE) {
-            nodes["xml"] = new XPathNamespace("xml", null, XPath.XML_NAMESPACE_URI, xpc.contextNode);
-            for (var m = xpc.contextNode; m != null && m.nodeType == NodeTypes.ELEMENT_NODE; m = m.parentNode) {
-              for (var k = 0; k < m.attributes.length; k++) {
-                var attr = m.attributes.item(k);
-                var pre = getPrefixForNamespaceNode(attr);
-                if (pre != null && nodes[pre] == void 0) {
-                  nodes[pre] = new XPathNamespace(pre, attr, attr.value, xpc.contextNode);
-                }
-              }
-            }
-            for (var pre in nodes) {
-              var node = nodes[pre];
-              if (step.nodeTest.matches(node, xpc)) {
-                newNodes.push(node);
-              }
-            }
-          }
-          break;
-        case Step.PARENT:
-          m = null;
-          if (xpc.contextNode !== xpc.virtualRoot) {
-            if (xpc.contextNode.nodeType == NodeTypes.ATTRIBUTE_NODE) {
-              m = PathExpr.getOwnerElement(xpc.contextNode);
-            } else {
-              m = xpc.contextNode.parentNode;
-            }
-          }
-          if (m != null && step.nodeTest.matches(m, xpc)) {
-            newNodes.push(m);
-          }
-          break;
-        case Step.PRECEDING:
-          var st;
-          if (xpc.virtualRoot != null) {
-            st = [xpc.virtualRoot];
-          } else {
-            st = [findRoot(xpc.contextNode)];
-          }
-          outer:
-            while (st.length > 0) {
-              for (var m = st.pop(); m != null; ) {
-                if (m == xpc.contextNode) {
-                  break outer;
-                }
-                if (step.nodeTest.matches(m, xpc)) {
-                  newNodes.unshift(m);
-                }
-                if (m.firstChild != null) {
-                  st.push(m.nextSibling);
-                  m = m.firstChild;
-                } else {
-                  m = m.nextSibling;
-                }
-              }
-            }
-          break;
-        case Step.PRECEDINGSIBLING:
-          if (xpc.contextNode === xpc.virtualRoot) {
-            break;
-          }
-          for (var m = xpc.contextNode.previousSibling; m != null; m = m.previousSibling) {
-            if (step.nodeTest.matches(m, xpc)) {
-              newNodes.push(m);
-            }
-          }
-          break;
-        case Step.SELF:
-          if (step.nodeTest.matches(xpc.contextNode, xpc)) {
-            newNodes.push(xpc.contextNode);
-          }
-          break;
-        default:
-      }
-      return newNodes;
+      return a;
     };
-    function applyStepWithPredicates(step, xpc, node) {
-      return applyPredicates(
-        step.predicates,
-        xpc,
-        PathExpr.applyStep(step, xpc, node),
-        includes(REVERSE_AXES, step.axis)
+    function Pt(e, r, o) {
+      return Vr(
+        e.predicates,
+        r,
+        _.applyStep(e, r, o),
+        q(Mt, e.axis)
       );
     }
-    function applyStepToNodes(context, nodes, step) {
-      return flatten(
-        map(
-          applyStepWithPredicates.bind(null, step, context),
-          nodes
+    function qt(e, r, o) {
+      return te(
+        S(
+          Pt.bind(null, o, e),
+          r
         )
       );
     }
-    PathExpr.applySteps = function(steps, xpc, nodes) {
-      return reduce(
-        applyStepToNodes.bind(null, xpc),
-        nodes,
-        steps
+    _.applySteps = function(e, r, o) {
+      return w(
+        qt.bind(null, r),
+        o,
+        e
       );
-    };
-    PathExpr.prototype.applyFilter = function(c, xpc) {
-      if (!this.filter) {
-        return { nodes: [c.contextNode] };
-      }
-      var ns = this.filter.evaluate(c);
-      if (!Utilities.instance_of(ns, XNodeSet)) {
-        if (this.filterPredicates != null && this.filterPredicates.length > 0 || this.locationPath != null) {
+    }, _.prototype.applyFilter = function(e, r) {
+      if (!this.filter)
+        return { nodes: [e.contextNode] };
+      var o = this.filter.evaluate(e);
+      if (!v.instance_of(o, m)) {
+        if (this.filterPredicates != null && this.filterPredicates.length > 0 || this.locationPath != null)
           throw new Error("Path expression filter must evaluate to a nodeset if predicates or location path are used");
-        }
-        return { nonNodes: ns };
+        return { nonNodes: o };
       }
       return {
-        nodes: applyPredicates(
+        nodes: Vr(
           this.filterPredicates || [],
-          xpc,
-          ns.toUnsortedArray(),
-          false
+          r,
+          o.toUnsortedArray(),
+          !1
           // reverse
         )
       };
-    };
-    PathExpr.applyLocationPath = function(locationPath, xpc, nodes) {
-      if (!locationPath) {
-        return nodes;
-      }
-      var startNodes = locationPath.absolute ? [PathExpr.getRoot(xpc, nodes)] : nodes;
-      return PathExpr.applySteps(locationPath.steps, xpc, startNodes);
-    };
-    PathExpr.prototype.evaluate = function(c) {
-      var xpc = assign2(new XPathContext(), c);
-      var filterResult = this.applyFilter(c, xpc);
-      if ("nonNodes" in filterResult) {
-        return filterResult.nonNodes;
-      }
-      var ns = new XNodeSet();
-      ns.addArray(PathExpr.applyLocationPath(this.locationPath, xpc, filterResult.nodes));
-      return ns;
-    };
-    PathExpr.predicateMatches = function(pred, c) {
-      var res = pred.evaluate(c);
-      return Utilities.instance_of(res, XNumber) ? c.contextPosition === res.numberValue() : res.booleanValue();
-    };
-    PathExpr.predicateString = function(predicate) {
-      return wrap("[", "]", predicate.toString());
-    };
-    PathExpr.predicatesString = function(predicates) {
-      return join(
+    }, _.applyLocationPath = function(e, r, o) {
+      if (!e)
+        return o;
+      var a = e.absolute ? [_.getRoot(r, o)] : o;
+      return _.applySteps(e.steps, r, a);
+    }, _.prototype.evaluate = function(e) {
+      var r = Se(new Te(), e), o = this.applyFilter(e, r);
+      if ("nonNodes" in o)
+        return o.nonNodes;
+      var a = new m();
+      return a.addArray(_.applyLocationPath(this.locationPath, r, o.nodes)), a;
+    }, _.predicateMatches = function(e, r) {
+      var o = e.evaluate(r);
+      return v.instance_of(o, b) ? r.contextPosition === o.numberValue() : o.booleanValue();
+    }, _.predicateString = function(e) {
+      return G("[", "]", e.toString());
+    }, _.predicatesString = function(e) {
+      return H(
         "",
-        map(PathExpr.predicateString, predicates)
+        S(_.predicateString, e)
       );
-    };
-    PathExpr.prototype.toString = function() {
-      if (this.filter != void 0) {
-        var filterStr = toString(this.filter);
-        if (Utilities.instance_of(this.filter, XString)) {
-          return wrap("'", "'", filterStr);
-        }
-        if (this.filterPredicates != void 0 && this.filterPredicates.length) {
-          return wrap("(", ")", filterStr) + PathExpr.predicatesString(this.filterPredicates);
-        }
-        if (this.locationPath != void 0) {
-          return filterStr + (this.locationPath.absolute ? "" : "/") + toString(this.locationPath);
-        }
-        return filterStr;
+    }, _.prototype.toString = function() {
+      if (this.filter != null) {
+        var e = J(this.filter);
+        return v.instance_of(this.filter, T) ? G("'", "'", e) : this.filterPredicates != null && this.filterPredicates.length ? G("(", ")", e) + _.predicatesString(this.filterPredicates) : this.locationPath != null ? e + (this.locationPath.absolute ? "" : "/") + J(this.locationPath) : e;
       }
-      return toString(this.locationPath);
-    };
-    PathExpr.getOwnerElement = function(n) {
-      if (n.ownerElement) {
-        return n.ownerElement;
-      }
+      return J(this.locationPath);
+    }, _.getOwnerElement = function(e) {
+      if (e.ownerElement)
+        return e.ownerElement;
       try {
-        if (n.selectSingleNode) {
-          return n.selectSingleNode("..");
-        }
-      } catch (e) {
+        if (e.selectSingleNode)
+          return e.selectSingleNode("..");
+      } catch {
       }
-      var doc = n.nodeType == NodeTypes.DOCUMENT_NODE ? n : n.ownerDocument;
-      var elts = doc.getElementsByTagName("*");
-      for (var i = 0; i < elts.length; i++) {
-        var elt = elts.item(i);
-        var nnm = elt.attributes;
-        for (var j = 0; j < nnm.length; j++) {
-          var an = nnm.item(j);
-          if (an === n) {
-            return elt;
-          }
+      for (var r = e.nodeType == x.DOCUMENT_NODE ? e : e.ownerDocument, o = r.getElementsByTagName("*"), a = 0; a < o.length; a++)
+        for (var i = o.item(a), l = i.attributes, g = 0; g < l.length; g++) {
+          var I = l.item(g);
+          if (I === e)
+            return i;
         }
-      }
       return null;
-    };
-    LocationPath.prototype = new Object();
-    LocationPath.prototype.constructor = LocationPath;
-    LocationPath.superclass = Object.prototype;
-    function LocationPath(abs, steps) {
-      if (arguments.length > 0) {
-        this.init(abs, steps);
-      }
+    }, Oe.prototype = new Object(), Oe.prototype.constructor = Oe, Oe.superclass = Object.prototype;
+    function Oe(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    LocationPath.prototype.init = function(abs, steps) {
-      this.absolute = abs;
-      this.steps = steps;
-    };
-    LocationPath.prototype.toString = function() {
-      return (this.absolute ? "/" : "") + map(toString, this.steps).join("/");
-    };
-    Step.prototype = new Object();
-    Step.prototype.constructor = Step;
-    Step.superclass = Object.prototype;
-    function Step(axis, nodetest, preds) {
-      if (arguments.length > 0) {
-        this.init(axis, nodetest, preds);
-      }
+    Oe.prototype.init = function(e, r) {
+      this.absolute = e, this.steps = r;
+    }, Oe.prototype.toString = function() {
+      return (this.absolute ? "/" : "") + S(J, this.steps).join("/");
+    }, E.prototype = new Object(), E.prototype.constructor = E, E.superclass = Object.prototype;
+    function E(e, r, o) {
+      arguments.length > 0 && this.init(e, r, o);
     }
-    Step.prototype.init = function(axis, nodetest, preds) {
-      this.axis = axis;
-      this.nodeTest = nodetest;
-      this.predicates = preds;
-    };
-    Step.prototype.toString = function() {
-      return Step.STEPNAMES[this.axis] + "::" + this.nodeTest.toString() + PathExpr.predicatesString(this.predicates);
-    };
-    Step.ANCESTOR = 0;
-    Step.ANCESTORORSELF = 1;
-    Step.ATTRIBUTE = 2;
-    Step.CHILD = 3;
-    Step.DESCENDANT = 4;
-    Step.DESCENDANTORSELF = 5;
-    Step.FOLLOWING = 6;
-    Step.FOLLOWINGSIBLING = 7;
-    Step.NAMESPACE = 8;
-    Step.PARENT = 9;
-    Step.PRECEDING = 10;
-    Step.PRECEDINGSIBLING = 11;
-    Step.SELF = 12;
-    Step.STEPNAMES = reduce(function(acc, x) {
-      return acc[x[0]] = x[1], acc;
+    E.prototype.init = function(e, r, o) {
+      this.axis = e, this.nodeTest = r, this.predicates = o;
+    }, E.prototype.toString = function() {
+      return E.STEPNAMES[this.axis] + "::" + this.nodeTest.toString() + _.predicatesString(this.predicates);
+    }, E.ANCESTOR = 0, E.ANCESTORORSELF = 1, E.ATTRIBUTE = 2, E.CHILD = 3, E.DESCENDANT = 4, E.DESCENDANTORSELF = 5, E.FOLLOWING = 6, E.FOLLOWINGSIBLING = 7, E.NAMESPACE = 8, E.PARENT = 9, E.PRECEDING = 10, E.PRECEDINGSIBLING = 11, E.SELF = 12, E.STEPNAMES = w(function(e, r) {
+      return e[r[0]] = r[1], e;
     }, {}, [
-      [Step.ANCESTOR, "ancestor"],
-      [Step.ANCESTORORSELF, "ancestor-or-self"],
-      [Step.ATTRIBUTE, "attribute"],
-      [Step.CHILD, "child"],
-      [Step.DESCENDANT, "descendant"],
-      [Step.DESCENDANTORSELF, "descendant-or-self"],
-      [Step.FOLLOWING, "following"],
-      [Step.FOLLOWINGSIBLING, "following-sibling"],
-      [Step.NAMESPACE, "namespace"],
-      [Step.PARENT, "parent"],
-      [Step.PRECEDING, "preceding"],
-      [Step.PRECEDINGSIBLING, "preceding-sibling"],
-      [Step.SELF, "self"]
+      [E.ANCESTOR, "ancestor"],
+      [E.ANCESTORORSELF, "ancestor-or-self"],
+      [E.ATTRIBUTE, "attribute"],
+      [E.CHILD, "child"],
+      [E.DESCENDANT, "descendant"],
+      [E.DESCENDANTORSELF, "descendant-or-self"],
+      [E.FOLLOWING, "following"],
+      [E.FOLLOWINGSIBLING, "following-sibling"],
+      [E.NAMESPACE, "namespace"],
+      [E.PARENT, "parent"],
+      [E.PRECEDING, "preceding"],
+      [E.PRECEDINGSIBLING, "preceding-sibling"],
+      [E.SELF, "self"]
     ]);
-    var REVERSE_AXES = [
-      Step.ANCESTOR,
-      Step.ANCESTORORSELF,
-      Step.PARENT,
-      Step.PRECEDING,
-      Step.PRECEDINGSIBLING
+    var Mt = [
+      E.ANCESTOR,
+      E.ANCESTORORSELF,
+      E.PARENT,
+      E.PRECEDING,
+      E.PRECEDINGSIBLING
     ];
-    NodeTest.prototype = new Object();
-    NodeTest.prototype.constructor = NodeTest;
-    NodeTest.superclass = Object.prototype;
-    function NodeTest(type, value) {
-      if (arguments.length > 0) {
-        this.init(type, value);
-      }
+    d.prototype = new Object(), d.prototype.constructor = d, d.superclass = Object.prototype;
+    function d(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    NodeTest.prototype.init = function(type, value) {
-      this.type = type;
-      this.value = value;
-    };
-    NodeTest.prototype.toString = function() {
+    d.prototype.init = function(e, r) {
+      this.type = e, this.value = r;
+    }, d.prototype.toString = function() {
       return "<unknown nodetest type>";
-    };
-    NodeTest.prototype.matches = function(n, xpc) {
+    }, d.prototype.matches = function(e, r) {
       console.warn("unknown node test type");
-    };
-    NodeTest.NAMETESTANY = 0;
-    NodeTest.NAMETESTPREFIXANY = 1;
-    NodeTest.NAMETESTQNAME = 2;
-    NodeTest.COMMENT = 3;
-    NodeTest.TEXT = 4;
-    NodeTest.PI = 5;
-    NodeTest.NODE = 6;
-    NodeTest.isNodeType = function(types) {
-      return function(node) {
-        return includes(types, node.nodeType);
+    }, d.NAMETESTANY = 0, d.NAMETESTPREFIXANY = 1, d.NAMETESTQNAME = 2, d.COMMENT = 3, d.TEXT = 4, d.PI = 5, d.NODE = 6, d.isNodeType = function(e) {
+      return function(r) {
+        return q(e, r.nodeType);
       };
-    };
-    NodeTest.makeNodeTestType = function(type, members, ctor) {
-      var newType = ctor || function() {
+    }, d.makeNodeTestType = function(e, r, o) {
+      var a = o || function() {
       };
-      newType.prototype = new NodeTest(type);
-      newType.prototype.constructor = newType;
-      assign2(newType.prototype, members);
-      return newType;
-    };
-    NodeTest.makeNodeTypeTest = function(type, nodeTypes, stringVal) {
-      return new (NodeTest.makeNodeTestType(type, {
-        matches: NodeTest.isNodeType(nodeTypes),
-        toString: always(stringVal)
+      return a.prototype = new d(e), a.prototype.constructor = a, Se(a.prototype, r), a;
+    }, d.makeNodeTypeTest = function(e, r, o) {
+      return new (d.makeNodeTestType(e, {
+        matches: d.isNodeType(r),
+        toString: $(o)
       }))();
-    };
-    NodeTest.hasPrefix = function(node) {
-      return node.prefix || (node.nodeName || node.tagName).indexOf(":") !== -1;
-    };
-    NodeTest.isElementOrAttribute = NodeTest.isNodeType([1, 2]);
-    NodeTest.nameSpaceMatches = function(prefix, xpc, n) {
-      var nNamespace = n.namespaceURI || "";
-      if (!prefix) {
-        return !nNamespace || xpc.allowAnyNamespaceForNoPrefix && !NodeTest.hasPrefix(n);
-      }
-      var ns = xpc.namespaceResolver.getNamespace(prefix, xpc.expressionContextNode);
-      if (ns == null) {
-        throw new Error("Cannot resolve QName " + prefix);
-      }
-      return ns === nNamespace;
-    };
-    NodeTest.localNameMatches = function(localName, xpc, n) {
-      var nLocalName = n.localName || n.nodeName;
-      return xpc.caseInsensitive ? localName.toLowerCase() === nLocalName.toLowerCase() : localName === nLocalName;
-    };
-    NodeTest.NameTestPrefixAny = NodeTest.makeNodeTestType(
-      NodeTest.NAMETESTPREFIXANY,
+    }, d.hasPrefix = function(e) {
+      return e.prefix || (e.nodeName || e.tagName).indexOf(":") !== -1;
+    }, d.isElementOrAttribute = d.isNodeType([1, 2]), d.nameSpaceMatches = function(e, r, o) {
+      var a = o.namespaceURI || "";
+      if (!e)
+        return !a || r.allowAnyNamespaceForNoPrefix && !d.hasPrefix(o);
+      var i = r.namespaceResolver.getNamespace(e, r.expressionContextNode);
+      if (i == null)
+        throw new Error("Cannot resolve QName " + e);
+      return i === a;
+    }, d.localNameMatches = function(e, r, o) {
+      var a = o.localName || o.nodeName;
+      return r.caseInsensitive ? e.toLowerCase() === a.toLowerCase() : e === a;
+    }, d.NameTestPrefixAny = d.makeNodeTestType(
+      d.NAMETESTPREFIXANY,
       {
-        matches: function(n, xpc) {
-          return NodeTest.isElementOrAttribute(n) && NodeTest.nameSpaceMatches(this.prefix, xpc, n);
+        matches: function(e, r) {
+          return d.isElementOrAttribute(e) && d.nameSpaceMatches(this.prefix, r, e);
         },
         toString: function() {
           return this.prefix + ":*";
         }
       },
-      function NameTestPrefixAny(prefix) {
-        this.prefix = prefix;
+      function(r) {
+        this.prefix = r;
       }
-    );
-    NodeTest.NameTestQName = NodeTest.makeNodeTestType(
-      NodeTest.NAMETESTQNAME,
+    ), d.NameTestQName = d.makeNodeTestType(
+      d.NAMETESTQNAME,
       {
-        matches: function(n, xpc) {
-          return NodeTest.isNodeType(
+        matches: function(e, r) {
+          return d.isNodeType(
             [
-              NodeTypes.ELEMENT_NODE,
-              NodeTypes.ATTRIBUTE_NODE,
-              NodeTypes.NAMESPACE_NODE
+              x.ELEMENT_NODE,
+              x.ATTRIBUTE_NODE,
+              x.NAMESPACE_NODE
             ]
-          )(n) && NodeTest.nameSpaceMatches(this.prefix, xpc, n) && NodeTest.localNameMatches(this.localName, xpc, n);
+          )(e) && d.nameSpaceMatches(this.prefix, r, e) && d.localNameMatches(this.localName, r, e);
         },
         toString: function() {
           return this.name;
         }
       },
-      function NameTestQName(name2) {
-        var nameParts = name2.split(":");
-        this.name = name2;
-        this.prefix = nameParts.length > 1 ? nameParts[0] : null;
-        this.localName = nameParts[nameParts.length > 1 ? 1 : 0];
+      function(r) {
+        var o = r.split(":");
+        this.name = r, this.prefix = o.length > 1 ? o[0] : null, this.localName = o[o.length > 1 ? 1 : 0];
       }
-    );
-    NodeTest.PITest = NodeTest.makeNodeTestType(NodeTest.PI, {
-      matches: function(n, xpc) {
-        return NodeTest.isNodeType(
-          [NodeTypes.PROCESSING_INSTRUCTION_NODE]
-        )(n) && (n.target || n.nodeName) === this.name;
+    ), d.PITest = d.makeNodeTestType(d.PI, {
+      matches: function(e, r) {
+        return d.isNodeType(
+          [x.PROCESSING_INSTRUCTION_NODE]
+        )(e) && (e.target || e.nodeName) === this.name;
       },
       toString: function() {
-        return wrap('processing-instruction("', '")', this.name);
+        return G('processing-instruction("', '")', this.name);
       }
-    }, function(name2) {
-      this.name = name2;
-    });
-    NodeTest.nameTestAny = NodeTest.makeNodeTypeTest(
-      NodeTest.NAMETESTANY,
+    }, function(e) {
+      this.name = e;
+    }), d.nameTestAny = d.makeNodeTypeTest(
+      d.NAMETESTANY,
       [
-        NodeTypes.ELEMENT_NODE,
-        NodeTypes.ATTRIBUTE_NODE,
-        NodeTypes.NAMESPACE_NODE
+        x.ELEMENT_NODE,
+        x.ATTRIBUTE_NODE,
+        x.NAMESPACE_NODE
       ],
       "*"
-    );
-    NodeTest.textTest = NodeTest.makeNodeTypeTest(
-      NodeTest.TEXT,
+    ), d.textTest = d.makeNodeTypeTest(
+      d.TEXT,
       [
-        NodeTypes.TEXT_NODE,
-        NodeTypes.CDATA_SECTION_NODE
+        x.TEXT_NODE,
+        x.CDATA_SECTION_NODE
       ],
       "text()"
-    );
-    NodeTest.commentTest = NodeTest.makeNodeTypeTest(
-      NodeTest.COMMENT,
-      [NodeTypes.COMMENT_NODE],
+    ), d.commentTest = d.makeNodeTypeTest(
+      d.COMMENT,
+      [x.COMMENT_NODE],
       "comment()"
-    );
-    NodeTest.nodeTest = NodeTest.makeNodeTypeTest(
-      NodeTest.NODE,
+    ), d.nodeTest = d.makeNodeTypeTest(
+      d.NODE,
       [
-        NodeTypes.ELEMENT_NODE,
-        NodeTypes.ATTRIBUTE_NODE,
-        NodeTypes.TEXT_NODE,
-        NodeTypes.CDATA_SECTION_NODE,
-        NodeTypes.PROCESSING_INSTRUCTION_NODE,
-        NodeTypes.COMMENT_NODE,
-        NodeTypes.DOCUMENT_NODE
+        x.ELEMENT_NODE,
+        x.ATTRIBUTE_NODE,
+        x.TEXT_NODE,
+        x.CDATA_SECTION_NODE,
+        x.PROCESSING_INSTRUCTION_NODE,
+        x.COMMENT_NODE,
+        x.DOCUMENT_NODE
       ],
       "node()"
-    );
-    NodeTest.anyPiTest = NodeTest.makeNodeTypeTest(
-      NodeTest.PI,
-      [NodeTypes.PROCESSING_INSTRUCTION_NODE],
+    ), d.anyPiTest = d.makeNodeTypeTest(
+      d.PI,
+      [x.PROCESSING_INSTRUCTION_NODE],
       "processing-instruction()"
-    );
-    VariableReference.prototype = new Expression();
-    VariableReference.prototype.constructor = VariableReference;
-    VariableReference.superclass = Expression.prototype;
-    function VariableReference(v) {
-      if (arguments.length > 0) {
-        this.init(v);
-      }
+    ), Fe.prototype = new U(), Fe.prototype.constructor = Fe, Fe.superclass = U.prototype;
+    function Fe(e) {
+      arguments.length > 0 && this.init(e);
     }
-    VariableReference.prototype.init = function(v) {
-      this.variable = v;
-    };
-    VariableReference.prototype.toString = function() {
+    Fe.prototype.init = function(e) {
+      this.variable = e;
+    }, Fe.prototype.toString = function() {
       return "$" + this.variable;
-    };
-    VariableReference.prototype.evaluate = function(c) {
-      var parts = Utilities.resolveQName(this.variable, c.namespaceResolver, c.contextNode, false);
-      if (parts[0] == null) {
+    }, Fe.prototype.evaluate = function(e) {
+      var r = v.resolveQName(this.variable, e.namespaceResolver, e.contextNode, !1);
+      if (r[0] == null)
         throw new Error("Cannot resolve QName " + fn);
-      }
-      var result = c.variableResolver.getVariable(parts[1], parts[0]);
-      if (!result) {
-        throw XPathException.fromMessage("Undeclared variable: " + this.toString());
-      }
-      return result;
-    };
-    FunctionCall.prototype = new Expression();
-    FunctionCall.prototype.constructor = FunctionCall;
-    FunctionCall.superclass = Expression.prototype;
-    function FunctionCall(fn2, args) {
-      if (arguments.length > 0) {
-        this.init(fn2, args);
-      }
+      var o = e.variableResolver.getVariable(r[1], r[0]);
+      if (!o)
+        throw be.fromMessage("Undeclared variable: " + this.toString());
+      return o;
+    }, ye.prototype = new U(), ye.prototype.constructor = ye, ye.superclass = U.prototype;
+    function ye(e, r) {
+      arguments.length > 0 && this.init(e, r);
     }
-    FunctionCall.prototype.init = function(fn2, args) {
-      this.functionName = fn2;
-      this.arguments = args;
-    };
-    FunctionCall.prototype.toString = function() {
-      var s = this.functionName + "(";
-      for (var i = 0; i < this.arguments.length; i++) {
-        if (i > 0) {
-          s += ", ";
-        }
-        s += this.arguments[i].toString();
-      }
-      return s + ")";
-    };
-    FunctionCall.prototype.evaluate = function(c) {
-      var f = FunctionResolver.getFunctionFromContext(this.functionName, c);
-      if (!f) {
+    ye.prototype.init = function(e, r) {
+      this.functionName = e, this.arguments = r;
+    }, ye.prototype.toString = function() {
+      for (var e = this.functionName + "(", r = 0; r < this.arguments.length; r++)
+        r > 0 && (e += ", "), e += this.arguments[r].toString();
+      return e + ")";
+    }, ye.prototype.evaluate = function(e) {
+      var r = fe.getFunctionFromContext(this.functionName, e);
+      if (!r)
         throw new Error("Unknown function " + this.functionName);
-      }
-      var a = [c].concat(this.arguments);
-      return f.apply(c.functionResolver.thisArg, a);
+      var o = [e].concat(this.arguments);
+      return r.apply(e.functionResolver.thisArg, o);
     };
-    var Operators = new Object();
-    Operators.equals = function(l, r) {
-      return l.equals(r);
-    };
-    Operators.notequal = function(l, r) {
-      return l.notequal(r);
-    };
-    Operators.lessthan = function(l, r) {
-      return l.lessthan(r);
-    };
-    Operators.greaterthan = function(l, r) {
-      return l.greaterthan(r);
-    };
-    Operators.lessthanorequal = function(l, r) {
-      return l.lessthanorequal(r);
-    };
-    Operators.greaterthanorequal = function(l, r) {
-      return l.greaterthanorequal(r);
-    };
-    XString.prototype = new Expression();
-    XString.prototype.constructor = XString;
-    XString.superclass = Expression.prototype;
-    function XString(s) {
-      if (arguments.length > 0) {
-        this.init(s);
-      }
+    var W = new Object();
+    W.equals = function(e, r) {
+      return e.equals(r);
+    }, W.notequal = function(e, r) {
+      return e.notequal(r);
+    }, W.lessthan = function(e, r) {
+      return e.lessthan(r);
+    }, W.greaterthan = function(e, r) {
+      return e.greaterthan(r);
+    }, W.lessthanorequal = function(e, r) {
+      return e.lessthanorequal(r);
+    }, W.greaterthanorequal = function(e, r) {
+      return e.greaterthanorequal(r);
+    }, T.prototype = new U(), T.prototype.constructor = T, T.superclass = U.prototype;
+    function T(e) {
+      arguments.length > 0 && this.init(e);
     }
-    XString.prototype.init = function(s) {
-      this.str = String(s);
-    };
-    XString.prototype.toString = function() {
+    T.prototype.init = function(e) {
+      this.str = String(e);
+    }, T.prototype.toString = function() {
       return this.str;
-    };
-    XString.prototype.evaluate = function(c) {
+    }, T.prototype.evaluate = function(e) {
       return this;
-    };
-    XString.prototype.string = function() {
+    }, T.prototype.string = function() {
       return this;
-    };
-    XString.prototype.number = function() {
-      return new XNumber(this.str);
-    };
-    XString.prototype.bool = function() {
-      return new XBoolean(this.str);
-    };
-    XString.prototype.nodeset = function() {
+    }, T.prototype.number = function() {
+      return new b(this.str);
+    }, T.prototype.bool = function() {
+      return new C(this.str);
+    }, T.prototype.nodeset = function() {
       throw new Error("Cannot convert string to nodeset");
-    };
-    XString.prototype.stringValue = function() {
+    }, T.prototype.stringValue = function() {
       return this.str;
-    };
-    XString.prototype.numberValue = function() {
+    }, T.prototype.numberValue = function() {
       return this.number().numberValue();
-    };
-    XString.prototype.booleanValue = function() {
+    }, T.prototype.booleanValue = function() {
       return this.bool().booleanValue();
-    };
-    XString.prototype.equals = function(r) {
-      if (Utilities.instance_of(r, XBoolean)) {
-        return this.bool().equals(r);
-      }
-      if (Utilities.instance_of(r, XNumber)) {
-        return this.number().equals(r);
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithString(this, Operators.equals);
-      }
-      return new XBoolean(this.str == r.str);
-    };
-    XString.prototype.notequal = function(r) {
-      if (Utilities.instance_of(r, XBoolean)) {
-        return this.bool().notequal(r);
-      }
-      if (Utilities.instance_of(r, XNumber)) {
-        return this.number().notequal(r);
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithString(this, Operators.notequal);
-      }
-      return new XBoolean(this.str != r.str);
-    };
-    XString.prototype.lessthan = function(r) {
-      return this.number().lessthan(r);
-    };
-    XString.prototype.greaterthan = function(r) {
-      return this.number().greaterthan(r);
-    };
-    XString.prototype.lessthanorequal = function(r) {
-      return this.number().lessthanorequal(r);
-    };
-    XString.prototype.greaterthanorequal = function(r) {
-      return this.number().greaterthanorequal(r);
-    };
-    XNumber.prototype = new Expression();
-    XNumber.prototype.constructor = XNumber;
-    XNumber.superclass = Expression.prototype;
-    function XNumber(n) {
-      if (arguments.length > 0) {
-        this.init(n);
-      }
+    }, T.prototype.equals = function(e) {
+      return v.instance_of(e, C) ? this.bool().equals(e) : v.instance_of(e, b) ? this.number().equals(e) : v.instance_of(e, m) ? e.compareWithString(this, W.equals) : new C(this.str == e.str);
+    }, T.prototype.notequal = function(e) {
+      return v.instance_of(e, C) ? this.bool().notequal(e) : v.instance_of(e, b) ? this.number().notequal(e) : v.instance_of(e, m) ? e.compareWithString(this, W.notequal) : new C(this.str != e.str);
+    }, T.prototype.lessthan = function(e) {
+      return this.number().lessthan(e);
+    }, T.prototype.greaterthan = function(e) {
+      return this.number().greaterthan(e);
+    }, T.prototype.lessthanorequal = function(e) {
+      return this.number().lessthanorequal(e);
+    }, T.prototype.greaterthanorequal = function(e) {
+      return this.number().greaterthanorequal(e);
+    }, b.prototype = new U(), b.prototype.constructor = b, b.superclass = U.prototype;
+    function b(e) {
+      arguments.length > 0 && this.init(e);
     }
-    XNumber.prototype.init = function(n) {
-      this.num = typeof n === "string" ? this.parse(n) : Number(n);
+    b.prototype.init = function(e) {
+      this.num = typeof e == "string" ? this.parse(e) : Number(e);
+    }, b.prototype.numberFormat = /^\s*-?[0-9]*\.?[0-9]+\s*$/, b.prototype.parse = function(e) {
+      return this.numberFormat.test(e) ? parseFloat(e) : Number.NaN;
     };
-    XNumber.prototype.numberFormat = /^\s*-?[0-9]*\.?[0-9]+\s*$/;
-    XNumber.prototype.parse = function(s) {
-      return this.numberFormat.test(s) ? parseFloat(s) : Number.NaN;
-    };
-    function padSmallNumber(numberStr) {
-      var parts = numberStr.split("e-");
-      var base = parts[0].replace(".", "");
-      var exponent = Number(parts[1]);
-      for (var i = 0; i < exponent - 1; i += 1) {
-        base = "0" + base;
-      }
-      return "0." + base;
+    function Ut(e) {
+      for (var r = e.split("e-"), o = r[0].replace(".", ""), a = Number(r[1]), i = 0; i < a - 1; i += 1)
+        o = "0" + o;
+      return "0." + o;
     }
-    function padLargeNumber(numberStr) {
-      var parts = numberStr.split("e");
-      var base = parts[0].replace(".", "");
-      var exponent = Number(parts[1]);
-      var zerosToAppend = exponent + 1 - base.length;
-      for (var i = 0; i < zerosToAppend; i += 1) {
-        base += "0";
-      }
-      return base;
+    function Vt(e) {
+      for (var r = e.split("e"), o = r[0].replace(".", ""), a = Number(r[1]), i = a + 1 - o.length, l = 0; l < i; l += 1)
+        o += "0";
+      return o;
     }
-    XNumber.prototype.toString = function() {
-      var strValue = this.num.toString();
-      if (strValue.indexOf("e-") !== -1) {
-        return padSmallNumber(strValue);
-      }
-      if (strValue.indexOf("e") !== -1) {
-        return padLargeNumber(strValue);
-      }
-      return strValue;
-    };
-    XNumber.prototype.evaluate = function(c) {
+    b.prototype.toString = function() {
+      var e = this.num.toString();
+      return e.indexOf("e-") !== -1 ? Ut(e) : e.indexOf("e") !== -1 ? Vt(e) : e;
+    }, b.prototype.evaluate = function(e) {
       return this;
-    };
-    XNumber.prototype.string = function() {
-      return new XString(this.toString());
-    };
-    XNumber.prototype.number = function() {
+    }, b.prototype.string = function() {
+      return new T(this.toString());
+    }, b.prototype.number = function() {
       return this;
-    };
-    XNumber.prototype.bool = function() {
-      return new XBoolean(this.num);
-    };
-    XNumber.prototype.nodeset = function() {
+    }, b.prototype.bool = function() {
+      return new C(this.num);
+    }, b.prototype.nodeset = function() {
       throw new Error("Cannot convert number to nodeset");
-    };
-    XNumber.prototype.stringValue = function() {
+    }, b.prototype.stringValue = function() {
       return this.string().stringValue();
-    };
-    XNumber.prototype.numberValue = function() {
+    }, b.prototype.numberValue = function() {
       return this.num;
-    };
-    XNumber.prototype.booleanValue = function() {
+    }, b.prototype.booleanValue = function() {
       return this.bool().booleanValue();
-    };
-    XNumber.prototype.negate = function() {
-      return new XNumber(-this.num);
-    };
-    XNumber.prototype.equals = function(r) {
-      if (Utilities.instance_of(r, XBoolean)) {
-        return this.bool().equals(r);
-      }
-      if (Utilities.instance_of(r, XString)) {
-        return this.equals(r.number());
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.equals);
-      }
-      return new XBoolean(this.num == r.num);
-    };
-    XNumber.prototype.notequal = function(r) {
-      if (Utilities.instance_of(r, XBoolean)) {
-        return this.bool().notequal(r);
-      }
-      if (Utilities.instance_of(r, XString)) {
-        return this.notequal(r.number());
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.notequal);
-      }
-      return new XBoolean(this.num != r.num);
-    };
-    XNumber.prototype.lessthan = function(r) {
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.greaterthan);
-      }
-      if (Utilities.instance_of(r, XBoolean) || Utilities.instance_of(r, XString)) {
-        return this.lessthan(r.number());
-      }
-      return new XBoolean(this.num < r.num);
-    };
-    XNumber.prototype.greaterthan = function(r) {
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.lessthan);
-      }
-      if (Utilities.instance_of(r, XBoolean) || Utilities.instance_of(r, XString)) {
-        return this.greaterthan(r.number());
-      }
-      return new XBoolean(this.num > r.num);
-    };
-    XNumber.prototype.lessthanorequal = function(r) {
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.greaterthanorequal);
-      }
-      if (Utilities.instance_of(r, XBoolean) || Utilities.instance_of(r, XString)) {
-        return this.lessthanorequal(r.number());
-      }
-      return new XBoolean(this.num <= r.num);
-    };
-    XNumber.prototype.greaterthanorequal = function(r) {
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithNumber(this, Operators.lessthanorequal);
-      }
-      if (Utilities.instance_of(r, XBoolean) || Utilities.instance_of(r, XString)) {
-        return this.greaterthanorequal(r.number());
-      }
-      return new XBoolean(this.num >= r.num);
-    };
-    XNumber.prototype.plus = function(r) {
-      return new XNumber(this.num + r.num);
-    };
-    XNumber.prototype.minus = function(r) {
-      return new XNumber(this.num - r.num);
-    };
-    XNumber.prototype.multiply = function(r) {
-      return new XNumber(this.num * r.num);
-    };
-    XNumber.prototype.div = function(r) {
-      return new XNumber(this.num / r.num);
-    };
-    XNumber.prototype.mod = function(r) {
-      return new XNumber(this.num % r.num);
-    };
-    XBoolean.prototype = new Expression();
-    XBoolean.prototype.constructor = XBoolean;
-    XBoolean.superclass = Expression.prototype;
-    function XBoolean(b) {
-      if (arguments.length > 0) {
-        this.init(b);
-      }
+    }, b.prototype.negate = function() {
+      return new b(-this.num);
+    }, b.prototype.equals = function(e) {
+      return v.instance_of(e, C) ? this.bool().equals(e) : v.instance_of(e, T) ? this.equals(e.number()) : v.instance_of(e, m) ? e.compareWithNumber(this, W.equals) : new C(this.num == e.num);
+    }, b.prototype.notequal = function(e) {
+      return v.instance_of(e, C) ? this.bool().notequal(e) : v.instance_of(e, T) ? this.notequal(e.number()) : v.instance_of(e, m) ? e.compareWithNumber(this, W.notequal) : new C(this.num != e.num);
+    }, b.prototype.lessthan = function(e) {
+      return v.instance_of(e, m) ? e.compareWithNumber(this, W.greaterthan) : v.instance_of(e, C) || v.instance_of(e, T) ? this.lessthan(e.number()) : new C(this.num < e.num);
+    }, b.prototype.greaterthan = function(e) {
+      return v.instance_of(e, m) ? e.compareWithNumber(this, W.lessthan) : v.instance_of(e, C) || v.instance_of(e, T) ? this.greaterthan(e.number()) : new C(this.num > e.num);
+    }, b.prototype.lessthanorequal = function(e) {
+      return v.instance_of(e, m) ? e.compareWithNumber(this, W.greaterthanorequal) : v.instance_of(e, C) || v.instance_of(e, T) ? this.lessthanorequal(e.number()) : new C(this.num <= e.num);
+    }, b.prototype.greaterthanorequal = function(e) {
+      return v.instance_of(e, m) ? e.compareWithNumber(this, W.lessthanorequal) : v.instance_of(e, C) || v.instance_of(e, T) ? this.greaterthanorequal(e.number()) : new C(this.num >= e.num);
+    }, b.prototype.plus = function(e) {
+      return new b(this.num + e.num);
+    }, b.prototype.minus = function(e) {
+      return new b(this.num - e.num);
+    }, b.prototype.multiply = function(e) {
+      return new b(this.num * e.num);
+    }, b.prototype.div = function(e) {
+      return new b(this.num / e.num);
+    }, b.prototype.mod = function(e) {
+      return new b(this.num % e.num);
+    }, C.prototype = new U(), C.prototype.constructor = C, C.superclass = U.prototype;
+    function C(e) {
+      arguments.length > 0 && this.init(e);
     }
-    XBoolean.prototype.init = function(b) {
-      this.b = Boolean(b);
-    };
-    XBoolean.prototype.toString = function() {
+    C.prototype.init = function(e) {
+      this.b = !!e;
+    }, C.prototype.toString = function() {
       return this.b.toString();
-    };
-    XBoolean.prototype.evaluate = function(c) {
+    }, C.prototype.evaluate = function(e) {
       return this;
-    };
-    XBoolean.prototype.string = function() {
-      return new XString(this.b);
-    };
-    XBoolean.prototype.number = function() {
-      return new XNumber(this.b);
-    };
-    XBoolean.prototype.bool = function() {
+    }, C.prototype.string = function() {
+      return new T(this.b);
+    }, C.prototype.number = function() {
+      return new b(this.b);
+    }, C.prototype.bool = function() {
       return this;
-    };
-    XBoolean.prototype.nodeset = function() {
+    }, C.prototype.nodeset = function() {
       throw new Error("Cannot convert boolean to nodeset");
-    };
-    XBoolean.prototype.stringValue = function() {
+    }, C.prototype.stringValue = function() {
       return this.string().stringValue();
-    };
-    XBoolean.prototype.numberValue = function() {
+    }, C.prototype.numberValue = function() {
       return this.number().numberValue();
-    };
-    XBoolean.prototype.booleanValue = function() {
+    }, C.prototype.booleanValue = function() {
       return this.b;
-    };
-    XBoolean.prototype.not = function() {
-      return new XBoolean(!this.b);
-    };
-    XBoolean.prototype.equals = function(r) {
-      if (Utilities.instance_of(r, XString) || Utilities.instance_of(r, XNumber)) {
-        return this.equals(r.bool());
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithBoolean(this, Operators.equals);
-      }
-      return new XBoolean(this.b == r.b);
-    };
-    XBoolean.prototype.notequal = function(r) {
-      if (Utilities.instance_of(r, XString) || Utilities.instance_of(r, XNumber)) {
-        return this.notequal(r.bool());
-      }
-      if (Utilities.instance_of(r, XNodeSet)) {
-        return r.compareWithBoolean(this, Operators.notequal);
-      }
-      return new XBoolean(this.b != r.b);
-    };
-    XBoolean.prototype.lessthan = function(r) {
-      return this.number().lessthan(r);
-    };
-    XBoolean.prototype.greaterthan = function(r) {
-      return this.number().greaterthan(r);
-    };
-    XBoolean.prototype.lessthanorequal = function(r) {
-      return this.number().lessthanorequal(r);
-    };
-    XBoolean.prototype.greaterthanorequal = function(r) {
-      return this.number().greaterthanorequal(r);
-    };
-    XBoolean.true_ = new XBoolean(true);
-    XBoolean.false_ = new XBoolean(false);
-    AVLTree.prototype = new Object();
-    AVLTree.prototype.constructor = AVLTree;
-    AVLTree.superclass = Object.prototype;
-    function AVLTree(n) {
-      this.init(n);
+    }, C.prototype.not = function() {
+      return new C(!this.b);
+    }, C.prototype.equals = function(e) {
+      return v.instance_of(e, T) || v.instance_of(e, b) ? this.equals(e.bool()) : v.instance_of(e, m) ? e.compareWithBoolean(this, W.equals) : new C(this.b == e.b);
+    }, C.prototype.notequal = function(e) {
+      return v.instance_of(e, T) || v.instance_of(e, b) ? this.notequal(e.bool()) : v.instance_of(e, m) ? e.compareWithBoolean(this, W.notequal) : new C(this.b != e.b);
+    }, C.prototype.lessthan = function(e) {
+      return this.number().lessthan(e);
+    }, C.prototype.greaterthan = function(e) {
+      return this.number().greaterthan(e);
+    }, C.prototype.lessthanorequal = function(e) {
+      return this.number().lessthanorequal(e);
+    }, C.prototype.greaterthanorequal = function(e) {
+      return this.number().greaterthanorequal(e);
+    }, C.true_ = new C(!0), C.false_ = new C(!1), ne.prototype = new Object(), ne.prototype.constructor = ne, ne.superclass = Object.prototype;
+    function ne(e) {
+      this.init(e);
     }
-    AVLTree.prototype.init = function(n) {
-      this.left = null;
-      this.right = null;
-      this.node = n;
-      this.depth = 1;
-    };
-    AVLTree.prototype.balance = function() {
-      var ldepth = this.left == null ? 0 : this.left.depth;
-      var rdepth = this.right == null ? 0 : this.right.depth;
-      if (ldepth > rdepth + 1) {
-        var lldepth = this.left.left == null ? 0 : this.left.left.depth;
-        var lrdepth = this.left.right == null ? 0 : this.left.right.depth;
-        if (lldepth < lrdepth) {
-          this.left.rotateRR();
-        }
-        this.rotateLL();
-      } else if (ldepth + 1 < rdepth) {
-        var rrdepth = this.right.right == null ? 0 : this.right.right.depth;
-        var rldepth = this.right.left == null ? 0 : this.right.left.depth;
-        if (rldepth > rrdepth) {
-          this.right.rotateLL();
-        }
-        this.rotateRR();
+    ne.prototype.init = function(e) {
+      this.left = null, this.right = null, this.node = e, this.depth = 1;
+    }, ne.prototype.balance = function() {
+      var e = this.left == null ? 0 : this.left.depth, r = this.right == null ? 0 : this.right.depth;
+      if (e > r + 1) {
+        var o = this.left.left == null ? 0 : this.left.left.depth, a = this.left.right == null ? 0 : this.left.right.depth;
+        o < a && this.left.rotateRR(), this.rotateLL();
+      } else if (e + 1 < r) {
+        var i = this.right.right == null ? 0 : this.right.right.depth, l = this.right.left == null ? 0 : this.right.left.depth;
+        l > i && this.right.rotateLL(), this.rotateRR();
       }
-    };
-    AVLTree.prototype.rotateLL = function() {
-      var nodeBefore = this.node;
-      var rightBefore = this.right;
-      this.node = this.left.node;
-      this.right = this.left;
-      this.left = this.left.left;
-      this.right.left = this.right.right;
-      this.right.right = rightBefore;
-      this.right.node = nodeBefore;
-      this.right.updateInNewLocation();
-      this.updateInNewLocation();
-    };
-    AVLTree.prototype.rotateRR = function() {
-      var nodeBefore = this.node;
-      var leftBefore = this.left;
-      this.node = this.right.node;
-      this.left = this.right;
-      this.right = this.right.right;
-      this.left.right = this.left.left;
-      this.left.left = leftBefore;
-      this.left.node = nodeBefore;
-      this.left.updateInNewLocation();
-      this.updateInNewLocation();
-    };
-    AVLTree.prototype.updateInNewLocation = function() {
+    }, ne.prototype.rotateLL = function() {
+      var e = this.node, r = this.right;
+      this.node = this.left.node, this.right = this.left, this.left = this.left.left, this.right.left = this.right.right, this.right.right = r, this.right.node = e, this.right.updateInNewLocation(), this.updateInNewLocation();
+    }, ne.prototype.rotateRR = function() {
+      var e = this.node, r = this.left;
+      this.node = this.right.node, this.left = this.right, this.right = this.right.right, this.left.right = this.left.left, this.left.left = r, this.left.node = e, this.left.updateInNewLocation(), this.updateInNewLocation();
+    }, ne.prototype.updateInNewLocation = function() {
       this.getDepthFromChildren();
+    }, ne.prototype.getDepthFromChildren = function() {
+      this.depth = this.node == null ? 0 : 1, this.left != null && (this.depth = this.left.depth + 1), this.right != null && this.depth <= this.right.depth && (this.depth = this.right.depth + 1);
     };
-    AVLTree.prototype.getDepthFromChildren = function() {
-      this.depth = this.node == null ? 0 : 1;
-      if (this.left != null) {
-        this.depth = this.left.depth + 1;
-      }
-      if (this.right != null && this.depth <= this.right.depth) {
-        this.depth = this.right.depth + 1;
-      }
-    };
-    function nodeOrder(n1, n2) {
-      if (n1 === n2) {
+    function kt(e, r) {
+      if (e === r)
         return 0;
+      if (e.compareDocumentPosition) {
+        var o = e.compareDocumentPosition(r);
+        return o & 1 || o & 10 ? 1 : o & 20 ? -1 : 0;
       }
-      if (n1.compareDocumentPosition) {
-        var cpos = n1.compareDocumentPosition(n2);
-        if (cpos & 1) {
+      for (var a = 0, i = 0, l = e; l != null; l = l.parentNode || l.ownerElement)
+        a++;
+      for (var g = r; g != null; g = g.parentNode || g.ownerElement)
+        i++;
+      if (a > i) {
+        for (; a > i; )
+          e = e.parentNode || e.ownerElement, a--;
+        if (e === r)
           return 1;
-        }
-        if (cpos & 10) {
-          return 1;
-        }
-        if (cpos & 20) {
+      } else if (i > a) {
+        for (; i > a; )
+          r = r.parentNode || r.ownerElement, i--;
+        if (e === r)
           return -1;
-        }
-        return 0;
       }
-      var d1 = 0, d2 = 0;
-      for (var m1 = n1; m1 != null; m1 = m1.parentNode || m1.ownerElement) {
-        d1++;
-      }
-      for (var m2 = n2; m2 != null; m2 = m2.parentNode || m2.ownerElement) {
-        d2++;
-      }
-      if (d1 > d2) {
-        while (d1 > d2) {
-          n1 = n1.parentNode || n1.ownerElement;
-          d1--;
-        }
-        if (n1 === n2) {
-          return 1;
-        }
-      } else if (d2 > d1) {
-        while (d2 > d1) {
-          n2 = n2.parentNode || n2.ownerElement;
-          d2--;
-        }
-        if (n1 === n2) {
-          return -1;
-        }
-      }
-      var n1Par = n1.parentNode || n1.ownerElement, n2Par = n2.parentNode || n2.ownerElement;
-      while (n1Par !== n2Par) {
-        n1 = n1Par;
-        n2 = n2Par;
-        n1Par = n1.parentNode || n1.ownerElement;
-        n2Par = n2.parentNode || n2.ownerElement;
-      }
-      var n1isAttr = isAttributeLike(n1);
-      var n2isAttr = isAttributeLike(n2);
-      if (n1isAttr && !n2isAttr) {
+      for (var I = e.parentNode || e.ownerElement, L = r.parentNode || r.ownerElement; I !== L; )
+        e = I, r = L, I = e.parentNode || e.ownerElement, L = r.parentNode || r.ownerElement;
+      var D = kr(e), B = kr(r);
+      if (D && !B)
         return -1;
-      }
-      if (!n1isAttr && n2isAttr) {
+      if (!D && B)
         return 1;
-      }
-      if (n1.isXPathNamespace) {
-        if (n1.nodeValue === XPath.XML_NAMESPACE_URI) {
+      if (e.isXPathNamespace) {
+        if (e.nodeValue === Z.XML_NAMESPACE_URI || !r.isXPathNamespace)
           return -1;
-        }
-        if (!n2.isXPathNamespace) {
-          return -1;
-        }
-        if (n2.nodeValue === XPath.XML_NAMESPACE_URI) {
+        if (r.nodeValue === Z.XML_NAMESPACE_URI)
           return 1;
-        }
-      } else if (n2.isXPathNamespace) {
+      } else if (r.isXPathNamespace)
         return 1;
-      }
-      if (n1Par) {
-        var cn = n1isAttr ? n1Par.attributes : n1Par.childNodes;
-        var len = cn.length;
-        var n1Compare = n1.baseNode || n1;
-        var n2Compare = n2.baseNode || n2;
-        for (var i = 0; i < len; i += 1) {
-          var n = cn[i];
-          if (n === n1Compare) {
+      if (I)
+        for (var Ie = D ? I.attributes : I.childNodes, je = Ie.length, ze = e.baseNode || e, Ye = r.baseNode || r, or = 0; or < je; or += 1) {
+          var ir = Ie[or];
+          if (ir === ze)
             return -1;
-          }
-          if (n === n2Compare) {
+          if (ir === Ye)
             return 1;
-          }
         }
-      }
       throw new Error("Unexpected: could not determine node order");
     }
-    AVLTree.prototype.add = function(n) {
-      if (n === this.node) {
-        return false;
-      }
-      var o = nodeOrder(n, this.node);
-      var ret = false;
-      if (o == -1) {
-        if (this.left == null) {
-          this.left = new AVLTree(n);
-          ret = true;
-        } else {
-          ret = this.left.add(n);
-          if (ret) {
-            this.balance();
-          }
-        }
-      } else if (o == 1) {
-        if (this.right == null) {
-          this.right = new AVLTree(n);
-          ret = true;
-        } else {
-          ret = this.right.add(n);
-          if (ret) {
-            this.balance();
-          }
-        }
-      }
-      if (ret) {
-        this.getDepthFromChildren();
-      }
-      return ret;
-    };
-    XNodeSet.prototype = new Expression();
-    XNodeSet.prototype.constructor = XNodeSet;
-    XNodeSet.superclass = Expression.prototype;
-    function XNodeSet() {
+    ne.prototype.add = function(e) {
+      if (e === this.node)
+        return !1;
+      var r = kt(e, this.node), o = !1;
+      return r == -1 ? this.left == null ? (this.left = new ne(e), o = !0) : (o = this.left.add(e), o && this.balance()) : r == 1 && (this.right == null ? (this.right = new ne(e), o = !0) : (o = this.right.add(e), o && this.balance())), o && this.getDepthFromChildren(), o;
+    }, m.prototype = new U(), m.prototype.constructor = m, m.superclass = U.prototype;
+    function m() {
       this.init();
     }
-    XNodeSet.prototype.init = function() {
-      this.tree = null;
-      this.nodes = [];
-      this.size = 0;
-    };
-    XNodeSet.prototype.toString = function() {
-      var p = this.first();
-      if (p == null) {
-        return "";
-      }
-      return this.stringForNode(p);
-    };
-    XNodeSet.prototype.evaluate = function(c) {
+    m.prototype.init = function() {
+      this.tree = null, this.nodes = [], this.size = 0;
+    }, m.prototype.toString = function() {
+      var e = this.first();
+      return e == null ? "" : this.stringForNode(e);
+    }, m.prototype.evaluate = function(e) {
       return this;
-    };
-    XNodeSet.prototype.string = function() {
-      return new XString(this.toString());
-    };
-    XNodeSet.prototype.stringValue = function() {
+    }, m.prototype.string = function() {
+      return new T(this.toString());
+    }, m.prototype.stringValue = function() {
       return this.toString();
-    };
-    XNodeSet.prototype.number = function() {
-      return new XNumber(this.string());
-    };
-    XNodeSet.prototype.numberValue = function() {
+    }, m.prototype.number = function() {
+      return new b(this.string());
+    }, m.prototype.numberValue = function() {
       return Number(this.string());
-    };
-    XNodeSet.prototype.bool = function() {
-      return new XBoolean(this.booleanValue());
-    };
-    XNodeSet.prototype.booleanValue = function() {
+    }, m.prototype.bool = function() {
+      return new C(this.booleanValue());
+    }, m.prototype.booleanValue = function() {
       return !!this.size;
-    };
-    XNodeSet.prototype.nodeset = function() {
+    }, m.prototype.nodeset = function() {
       return this;
-    };
-    XNodeSet.prototype.stringForNode = function(n) {
-      if (n.nodeType == NodeTypes.DOCUMENT_NODE || n.nodeType == NodeTypes.ELEMENT_NODE || n.nodeType === NodeTypes.DOCUMENT_FRAGMENT_NODE) {
-        return this.stringForContainerNode(n);
+    }, m.prototype.stringForNode = function(e) {
+      return e.nodeType == x.DOCUMENT_NODE || e.nodeType == x.ELEMENT_NODE || e.nodeType === x.DOCUMENT_FRAGMENT_NODE ? this.stringForContainerNode(e) : e.nodeType === x.ATTRIBUTE_NODE ? e.value || e.nodeValue : e.isNamespaceNode ? e.namespace : e.nodeValue;
+    }, m.prototype.stringForContainerNode = function(e) {
+      for (var r = "", o = e.firstChild; o != null; o = o.nextSibling) {
+        var a = o.nodeType;
+        (a === 1 || a === 3 || a === 4 || a === 9 || a === 11) && (r += this.stringForNode(o));
       }
-      if (n.nodeType === NodeTypes.ATTRIBUTE_NODE) {
-        return n.value || n.nodeValue;
-      }
-      if (n.isNamespaceNode) {
-        return n.namespace;
-      }
-      return n.nodeValue;
-    };
-    XNodeSet.prototype.stringForContainerNode = function(n) {
-      var s = "";
-      for (var n2 = n.firstChild; n2 != null; n2 = n2.nextSibling) {
-        var nt = n2.nodeType;
-        if (nt === 1 || nt === 3 || nt === 4 || nt === 9 || nt === 11) {
-          s += this.stringForNode(n2);
-        }
-      }
-      return s;
-    };
-    XNodeSet.prototype.buildTree = function() {
+      return r;
+    }, m.prototype.buildTree = function() {
       if (!this.tree && this.nodes.length) {
-        this.tree = new AVLTree(this.nodes[0]);
-        for (var i = 1; i < this.nodes.length; i += 1) {
-          this.tree.add(this.nodes[i]);
-        }
+        this.tree = new ne(this.nodes[0]);
+        for (var e = 1; e < this.nodes.length; e += 1)
+          this.tree.add(this.nodes[e]);
       }
       return this.tree;
-    };
-    XNodeSet.prototype.first = function() {
-      var p = this.buildTree();
-      if (p == null) {
+    }, m.prototype.first = function() {
+      var e = this.buildTree();
+      if (e == null)
         return null;
-      }
-      while (p.left != null) {
-        p = p.left;
-      }
-      return p.node;
-    };
-    XNodeSet.prototype.add = function(n) {
-      for (var i = 0; i < this.nodes.length; i += 1) {
-        if (n === this.nodes[i]) {
+      for (; e.left != null; )
+        e = e.left;
+      return e.node;
+    }, m.prototype.add = function(e) {
+      for (var r = 0; r < this.nodes.length; r += 1)
+        if (e === this.nodes[r])
           return;
-        }
-      }
-      this.tree = null;
-      this.nodes.push(n);
-      this.size += 1;
-    };
-    XNodeSet.prototype.addArray = function(ns) {
-      var self2 = this;
-      forEach(function(x) {
-        self2.add(x);
-      }, ns);
-    };
-    XNodeSet.prototype.toArray = function() {
-      var a = [];
-      this.toArrayRec(this.buildTree(), a);
-      return a;
-    };
-    XNodeSet.prototype.toArrayRec = function(t, a) {
-      if (t != null) {
-        this.toArrayRec(t.left, a);
-        a.push(t.node);
-        this.toArrayRec(t.right, a);
-      }
-    };
-    XNodeSet.prototype.toUnsortedArray = function() {
+      this.tree = null, this.nodes.push(e), this.size += 1;
+    }, m.prototype.addArray = function(e) {
+      var r = this;
+      N(function(o) {
+        r.add(o);
+      }, e);
+    }, m.prototype.toArray = function() {
+      var e = [];
+      return this.toArrayRec(this.buildTree(), e), e;
+    }, m.prototype.toArrayRec = function(e, r) {
+      e != null && (this.toArrayRec(e.left, r), r.push(e.node), this.toArrayRec(e.right, r));
+    }, m.prototype.toUnsortedArray = function() {
       return this.nodes.slice();
-    };
-    XNodeSet.prototype.compareWithString = function(r, o) {
-      var a = this.toUnsortedArray();
-      for (var i = 0; i < a.length; i++) {
-        var n = a[i];
-        var l = new XString(this.stringForNode(n));
-        var res = o(l, r);
-        if (res.booleanValue()) {
-          return res;
-        }
+    }, m.prototype.compareWithString = function(e, r) {
+      for (var o = this.toUnsortedArray(), a = 0; a < o.length; a++) {
+        var i = o[a], l = new T(this.stringForNode(i)), g = r(l, e);
+        if (g.booleanValue())
+          return g;
       }
-      return new XBoolean(false);
-    };
-    XNodeSet.prototype.compareWithNumber = function(r, o) {
-      var a = this.toUnsortedArray();
-      for (var i = 0; i < a.length; i++) {
-        var n = a[i];
-        var l = new XNumber(this.stringForNode(n));
-        var res = o(l, r);
-        if (res.booleanValue()) {
-          return res;
-        }
+      return new C(!1);
+    }, m.prototype.compareWithNumber = function(e, r) {
+      for (var o = this.toUnsortedArray(), a = 0; a < o.length; a++) {
+        var i = o[a], l = new b(this.stringForNode(i)), g = r(l, e);
+        if (g.booleanValue())
+          return g;
       }
-      return new XBoolean(false);
-    };
-    XNodeSet.prototype.compareWithBoolean = function(r, o) {
-      return o(this.bool(), r);
-    };
-    XNodeSet.prototype.compareWithNodeSet = function(r, o) {
-      var arr = this.toUnsortedArray();
-      var oInvert = function(lop, rop) {
-        return o(rop, lop);
-      };
-      for (var i = 0; i < arr.length; i++) {
-        var l = new XString(this.stringForNode(arr[i]));
-        var res = r.compareWithString(l, oInvert);
-        if (res.booleanValue()) {
-          return res;
-        }
+      return new C(!1);
+    }, m.prototype.compareWithBoolean = function(e, r) {
+      return r(this.bool(), e);
+    }, m.prototype.compareWithNodeSet = function(e, r) {
+      for (var o = this.toUnsortedArray(), a = function(I, L) {
+        return r(L, I);
+      }, i = 0; i < o.length; i++) {
+        var l = new T(this.stringForNode(o[i])), g = e.compareWithString(l, a);
+        if (g.booleanValue())
+          return g;
       }
-      return new XBoolean(false);
-    };
-    XNodeSet.compareWith = curry(function(o, r) {
-      if (Utilities.instance_of(r, XString)) {
-        return this.compareWithString(r, o);
-      }
-      if (Utilities.instance_of(r, XNumber)) {
-        return this.compareWithNumber(r, o);
-      }
-      if (Utilities.instance_of(r, XBoolean)) {
-        return this.compareWithBoolean(r, o);
-      }
-      return this.compareWithNodeSet(r, o);
-    });
-    XNodeSet.prototype.equals = XNodeSet.compareWith(Operators.equals);
-    XNodeSet.prototype.notequal = XNodeSet.compareWith(Operators.notequal);
-    XNodeSet.prototype.lessthan = XNodeSet.compareWith(Operators.lessthan);
-    XNodeSet.prototype.greaterthan = XNodeSet.compareWith(Operators.greaterthan);
-    XNodeSet.prototype.lessthanorequal = XNodeSet.compareWith(Operators.lessthanorequal);
-    XNodeSet.prototype.greaterthanorequal = XNodeSet.compareWith(Operators.greaterthanorequal);
-    XNodeSet.prototype.union = function(r) {
-      var ns = new XNodeSet();
-      ns.addArray(this.toUnsortedArray());
-      ns.addArray(r.toUnsortedArray());
-      return ns;
-    };
-    XPathNamespace.prototype = new Object();
-    XPathNamespace.prototype.constructor = XPathNamespace;
-    XPathNamespace.superclass = Object.prototype;
-    function XPathNamespace(pre, node, uri, p) {
-      this.isXPathNamespace = true;
-      this.baseNode = node;
-      this.ownerDocument = p.ownerDocument;
-      this.nodeName = pre;
-      this.prefix = pre;
-      this.localName = pre;
-      this.namespaceURI = null;
-      this.nodeValue = uri;
-      this.ownerElement = p;
-      this.nodeType = NodeTypes.NAMESPACE_NODE;
+      return new C(!1);
+    }, m.compareWith = y(function(e, r) {
+      return v.instance_of(r, T) ? this.compareWithString(r, e) : v.instance_of(r, b) ? this.compareWithNumber(r, e) : v.instance_of(r, C) ? this.compareWithBoolean(r, e) : this.compareWithNodeSet(r, e);
+    }), m.prototype.equals = m.compareWith(W.equals), m.prototype.notequal = m.compareWith(W.notequal), m.prototype.lessthan = m.compareWith(W.lessthan), m.prototype.greaterthan = m.compareWith(W.greaterthan), m.prototype.lessthanorequal = m.compareWith(W.lessthanorequal), m.prototype.greaterthanorequal = m.compareWith(W.greaterthanorequal), m.prototype.union = function(e) {
+      var r = new m();
+      return r.addArray(this.toUnsortedArray()), r.addArray(e.toUnsortedArray()), r;
+    }, Xe.prototype = new Object(), Xe.prototype.constructor = Xe, Xe.superclass = Object.prototype;
+    function Xe(e, r, o, a) {
+      this.isXPathNamespace = !0, this.baseNode = r, this.ownerDocument = a.ownerDocument, this.nodeName = e, this.prefix = e, this.localName = e, this.namespaceURI = null, this.nodeValue = o, this.ownerElement = a, this.nodeType = x.NAMESPACE_NODE;
     }
-    XPathNamespace.prototype.toString = function() {
+    Xe.prototype.toString = function() {
       return '{ "' + this.prefix + '", "' + this.namespaceURI + '" }';
-    };
-    XPathContext.prototype = new Object();
-    XPathContext.prototype.constructor = XPathContext;
-    XPathContext.superclass = Object.prototype;
-    function XPathContext(vr, nr, fr) {
-      this.variableResolver = vr != null ? vr : new VariableResolver();
-      this.namespaceResolver = nr != null ? nr : new NamespaceResolver();
-      this.functionResolver = fr != null ? fr : new FunctionResolver();
+    }, Te.prototype = new Object(), Te.prototype.constructor = Te, Te.superclass = Object.prototype;
+    function Te(e, r, o) {
+      this.variableResolver = e ?? new Ue(), this.namespaceResolver = r ?? new Re(), this.functionResolver = o ?? new fe();
     }
-    XPathContext.prototype.extend = function(newProps) {
-      return assign2(new XPathContext(), this, newProps);
-    };
-    VariableResolver.prototype = new Object();
-    VariableResolver.prototype.constructor = VariableResolver;
-    VariableResolver.superclass = Object.prototype;
-    function VariableResolver() {
+    Te.prototype.extend = function(e) {
+      return Se(new Te(), this, e);
+    }, Ue.prototype = new Object(), Ue.prototype.constructor = Ue, Ue.superclass = Object.prototype;
+    function Ue() {
     }
-    VariableResolver.prototype.getVariable = function(ln, ns) {
+    Ue.prototype.getVariable = function(e, r) {
       return null;
-    };
-    FunctionResolver.prototype = new Object();
-    FunctionResolver.prototype.constructor = FunctionResolver;
-    FunctionResolver.superclass = Object.prototype;
-    function FunctionResolver(thisArg) {
-      this.thisArg = thisArg != null ? thisArg : Functions;
-      this.functions = new Object();
-      this.addStandardFunctions();
+    }, fe.prototype = new Object(), fe.prototype.constructor = fe, fe.superclass = Object.prototype;
+    function fe(e) {
+      this.thisArg = e ?? O, this.functions = new Object(), this.addStandardFunctions();
     }
-    FunctionResolver.prototype.addStandardFunctions = function() {
-      this.functions["{}last"] = Functions.last;
-      this.functions["{}position"] = Functions.position;
-      this.functions["{}count"] = Functions.count;
-      this.functions["{}id"] = Functions.id;
-      this.functions["{}local-name"] = Functions.localName;
-      this.functions["{}namespace-uri"] = Functions.namespaceURI;
-      this.functions["{}name"] = Functions.name;
-      this.functions["{}string"] = Functions.string;
-      this.functions["{}concat"] = Functions.concat;
-      this.functions["{}starts-with"] = Functions.startsWith;
-      this.functions["{}contains"] = Functions.contains;
-      this.functions["{}substring-before"] = Functions.substringBefore;
-      this.functions["{}substring-after"] = Functions.substringAfter;
-      this.functions["{}substring"] = Functions.substring;
-      this.functions["{}string-length"] = Functions.stringLength;
-      this.functions["{}normalize-space"] = Functions.normalizeSpace;
-      this.functions["{}translate"] = Functions.translate;
-      this.functions["{}boolean"] = Functions.boolean_;
-      this.functions["{}not"] = Functions.not;
-      this.functions["{}true"] = Functions.true_;
-      this.functions["{}false"] = Functions.false_;
-      this.functions["{}lang"] = Functions.lang;
-      this.functions["{}number"] = Functions.number;
-      this.functions["{}sum"] = Functions.sum;
-      this.functions["{}floor"] = Functions.floor;
-      this.functions["{}ceiling"] = Functions.ceiling;
-      this.functions["{}round"] = Functions.round;
-    };
-    FunctionResolver.prototype.addFunction = function(ns, ln, f) {
-      this.functions["{" + ns + "}" + ln] = f;
-    };
-    FunctionResolver.getFunctionFromContext = function(qName, context) {
-      var parts = Utilities.resolveQName(qName, context.namespaceResolver, context.contextNode, false);
-      if (parts[0] === null) {
+    fe.prototype.addStandardFunctions = function() {
+      this.functions["{}last"] = O.last, this.functions["{}position"] = O.position, this.functions["{}count"] = O.count, this.functions["{}id"] = O.id, this.functions["{}local-name"] = O.localName, this.functions["{}namespace-uri"] = O.namespaceURI, this.functions["{}name"] = O.name, this.functions["{}string"] = O.string, this.functions["{}concat"] = O.concat, this.functions["{}starts-with"] = O.startsWith, this.functions["{}contains"] = O.contains, this.functions["{}substring-before"] = O.substringBefore, this.functions["{}substring-after"] = O.substringAfter, this.functions["{}substring"] = O.substring, this.functions["{}string-length"] = O.stringLength, this.functions["{}normalize-space"] = O.normalizeSpace, this.functions["{}translate"] = O.translate, this.functions["{}boolean"] = O.boolean_, this.functions["{}not"] = O.not, this.functions["{}true"] = O.true_, this.functions["{}false"] = O.false_, this.functions["{}lang"] = O.lang, this.functions["{}number"] = O.number, this.functions["{}sum"] = O.sum, this.functions["{}floor"] = O.floor, this.functions["{}ceiling"] = O.ceiling, this.functions["{}round"] = O.round;
+    }, fe.prototype.addFunction = function(e, r, o) {
+      this.functions["{" + e + "}" + r] = o;
+    }, fe.getFunctionFromContext = function(e, r) {
+      var o = v.resolveQName(e, r.namespaceResolver, r.contextNode, !1);
+      if (o[0] === null)
         throw new Error("Cannot resolve QName " + name);
-      }
-      return context.functionResolver.getFunction(parts[1], parts[0]);
-    };
-    FunctionResolver.prototype.getFunction = function(localName, namespace) {
-      return this.functions["{" + namespace + "}" + localName];
-    };
-    NamespaceResolver.prototype = new Object();
-    NamespaceResolver.prototype.constructor = NamespaceResolver;
-    NamespaceResolver.superclass = Object.prototype;
-    function NamespaceResolver() {
+      return r.functionResolver.getFunction(o[1], o[0]);
+    }, fe.prototype.getFunction = function(e, r) {
+      return this.functions["{" + r + "}" + e];
+    }, Re.prototype = new Object(), Re.prototype.constructor = Re, Re.superclass = Object.prototype;
+    function Re() {
     }
-    NamespaceResolver.prototype.getNamespace = function(prefix, n) {
-      if (prefix == "xml") {
-        return XPath.XML_NAMESPACE_URI;
-      } else if (prefix == "xmlns") {
-        return XPath.XMLNS_NAMESPACE_URI;
-      }
-      if (n.nodeType == NodeTypes.DOCUMENT_NODE) {
-        n = n.documentElement;
-      } else if (n.nodeType == NodeTypes.ATTRIBUTE_NODE) {
-        n = PathExpr.getOwnerElement(n);
-      } else if (n.nodeType != NodeTypes.ELEMENT_NODE) {
-        n = n.parentNode;
-      }
-      while (n != null && n.nodeType == NodeTypes.ELEMENT_NODE) {
-        var nnm = n.attributes;
-        for (var i = 0; i < nnm.length; i++) {
-          var a = nnm.item(i);
-          var aname = a.name || a.nodeName;
-          if (aname === "xmlns" && prefix === "" || aname === "xmlns:" + prefix) {
-            return String(a.value || a.nodeValue);
-          }
+    Re.prototype.getNamespace = function(e, r) {
+      if (e == "xml")
+        return Z.XML_NAMESPACE_URI;
+      if (e == "xmlns")
+        return Z.XMLNS_NAMESPACE_URI;
+      for (r.nodeType == x.DOCUMENT_NODE ? r = r.documentElement : r.nodeType == x.ATTRIBUTE_NODE ? r = _.getOwnerElement(r) : r.nodeType != x.ELEMENT_NODE && (r = r.parentNode); r != null && r.nodeType == x.ELEMENT_NODE; ) {
+        for (var o = r.attributes, a = 0; a < o.length; a++) {
+          var i = o.item(a), l = i.name || i.nodeName;
+          if (l === "xmlns" && e === "" || l === "xmlns:" + e)
+            return String(i.value || i.nodeValue);
         }
-        n = n.parentNode;
+        r = r.parentNode;
       }
       return null;
     };
-    var Functions = new Object();
-    Functions.last = function(c) {
-      if (arguments.length != 1) {
+    var O = new Object();
+    O.last = function(e) {
+      if (arguments.length != 1)
         throw new Error("Function last expects ()");
-      }
-      return new XNumber(c.contextSize);
-    };
-    Functions.position = function(c) {
-      if (arguments.length != 1) {
+      return new b(e.contextSize);
+    }, O.position = function(e) {
+      if (arguments.length != 1)
         throw new Error("Function position expects ()");
-      }
-      return new XNumber(c.contextPosition);
-    };
-    Functions.count = function() {
-      var c = arguments[0];
-      var ns;
-      if (arguments.length != 2 || !Utilities.instance_of(ns = arguments[1].evaluate(c), XNodeSet)) {
+      return new b(e.contextPosition);
+    }, O.count = function() {
+      var e = arguments[0], r;
+      if (arguments.length != 2 || !v.instance_of(r = arguments[1].evaluate(e), m))
         throw new Error("Function count expects (node-set)");
-      }
-      return new XNumber(ns.size);
-    };
-    Functions.id = function() {
-      var c = arguments[0];
-      var id;
-      if (arguments.length != 2) {
+      return new b(r.size);
+    }, O.id = function() {
+      var e = arguments[0], r;
+      if (arguments.length != 2)
         throw new Error("Function id expects (object)");
+      r = arguments[1].evaluate(e), v.instance_of(r, m) ? r = r.toArray().join(" ") : r = r.stringValue();
+      for (var o = r.split(/[\x0d\x0a\x09\x20]+/), a = new m(), i = e.contextNode.nodeType == x.DOCUMENT_NODE ? e.contextNode : e.contextNode.ownerDocument, l = 0; l < o.length; l++) {
+        var g;
+        i.getElementById ? g = i.getElementById(o[l]) : g = v.getElementById(i, o[l]), g != null && a.add(g);
       }
-      id = arguments[1].evaluate(c);
-      if (Utilities.instance_of(id, XNodeSet)) {
-        id = id.toArray().join(" ");
-      } else {
-        id = id.stringValue();
-      }
-      var ids = id.split(/[\x0d\x0a\x09\x20]+/);
-      var count = 0;
-      var ns = new XNodeSet();
-      var doc = c.contextNode.nodeType == NodeTypes.DOCUMENT_NODE ? c.contextNode : c.contextNode.ownerDocument;
-      for (var i = 0; i < ids.length; i++) {
-        var n;
-        if (doc.getElementById) {
-          n = doc.getElementById(ids[i]);
-        } else {
-          n = Utilities.getElementById(doc, ids[i]);
-        }
-        if (n != null) {
-          ns.add(n);
-          count++;
-        }
-      }
-      return ns;
-    };
-    Functions.localName = function(c, eNode) {
-      var n;
-      if (arguments.length == 1) {
-        n = c.contextNode;
-      } else if (arguments.length == 2) {
-        n = eNode.evaluate(c).first();
-      } else {
+      return a;
+    }, O.localName = function(e, r) {
+      var o;
+      if (arguments.length == 1)
+        o = e.contextNode;
+      else if (arguments.length == 2)
+        o = r.evaluate(e).first();
+      else
         throw new Error("Function local-name expects (node-set?)");
-      }
-      if (n == null) {
-        return new XString("");
-      }
-      return new XString(
-        n.localName || //  standard elements and attributes
-        n.baseName || //  IE
-        n.target || //  processing instructions
-        n.nodeName || //  DOM1 elements
+      return o == null ? new T("") : new T(
+        o.localName || //  standard elements and attributes
+        o.baseName || //  IE
+        o.target || //  processing instructions
+        o.nodeName || //  DOM1 elements
         ""
         //  fallback
       );
-    };
-    Functions.namespaceURI = function() {
-      var c = arguments[0];
-      var n;
-      if (arguments.length == 1) {
-        n = c.contextNode;
-      } else if (arguments.length == 2) {
-        n = arguments[1].evaluate(c).first();
-      } else {
+    }, O.namespaceURI = function() {
+      var e = arguments[0], r;
+      if (arguments.length == 1)
+        r = e.contextNode;
+      else if (arguments.length == 2)
+        r = arguments[1].evaluate(e).first();
+      else
         throw new Error("Function namespace-uri expects (node-set?)");
-      }
-      if (n == null) {
-        return new XString("");
-      }
-      return new XString(n.namespaceURI || "");
-    };
-    Functions.name = function() {
-      var c = arguments[0];
-      var n;
-      if (arguments.length == 1) {
-        n = c.contextNode;
-      } else if (arguments.length == 2) {
-        n = arguments[1].evaluate(c).first();
-      } else {
+      return r == null ? new T("") : new T(r.namespaceURI || "");
+    }, O.name = function() {
+      var e = arguments[0], r;
+      if (arguments.length == 1)
+        r = e.contextNode;
+      else if (arguments.length == 2)
+        r = arguments[1].evaluate(e).first();
+      else
         throw new Error("Function name expects (node-set?)");
-      }
-      if (n == null) {
-        return new XString("");
-      }
-      if (n.nodeType == NodeTypes.ELEMENT_NODE) {
-        return new XString(n.nodeName);
-      } else if (n.nodeType == NodeTypes.ATTRIBUTE_NODE) {
-        return new XString(n.name || n.nodeName);
-      } else if (n.nodeType === NodeTypes.PROCESSING_INSTRUCTION_NODE) {
-        return new XString(n.target || n.nodeName);
-      } else if (n.localName == null) {
-        return new XString("");
-      } else {
-        return new XString(n.localName);
-      }
-    };
-    Functions.string = function() {
-      var c = arguments[0];
-      if (arguments.length == 1) {
-        return new XString(XNodeSet.prototype.stringForNode(c.contextNode));
-      } else if (arguments.length == 2) {
-        return arguments[1].evaluate(c).string();
-      }
+      return r == null ? new T("") : r.nodeType == x.ELEMENT_NODE ? new T(r.nodeName) : r.nodeType == x.ATTRIBUTE_NODE ? new T(r.name || r.nodeName) : r.nodeType === x.PROCESSING_INSTRUCTION_NODE ? new T(r.target || r.nodeName) : r.localName == null ? new T("") : new T(r.localName);
+    }, O.string = function() {
+      var e = arguments[0];
+      if (arguments.length == 1)
+        return new T(m.prototype.stringForNode(e.contextNode));
+      if (arguments.length == 2)
+        return arguments[1].evaluate(e).string();
       throw new Error("Function string expects (object?)");
-    };
-    Functions.concat = function(c) {
-      if (arguments.length < 3) {
+    }, O.concat = function(e) {
+      if (arguments.length < 3)
         throw new Error("Function concat expects (string, string[, string]*)");
-      }
-      var s = "";
-      for (var i = 1; i < arguments.length; i++) {
-        s += arguments[i].evaluate(c).stringValue();
-      }
-      return new XString(s);
-    };
-    Functions.startsWith = function() {
-      var c = arguments[0];
-      if (arguments.length != 3) {
+      for (var r = "", o = 1; o < arguments.length; o++)
+        r += arguments[o].evaluate(e).stringValue();
+      return new T(r);
+    }, O.startsWith = function() {
+      var e = arguments[0];
+      if (arguments.length != 3)
         throw new Error("Function startsWith expects (string, string)");
-      }
-      var s1 = arguments[1].evaluate(c).stringValue();
-      var s2 = arguments[2].evaluate(c).stringValue();
-      return new XBoolean(s1.substring(0, s2.length) == s2);
-    };
-    Functions.contains = function() {
-      var c = arguments[0];
-      if (arguments.length != 3) {
+      var r = arguments[1].evaluate(e).stringValue(), o = arguments[2].evaluate(e).stringValue();
+      return new C(r.substring(0, o.length) == o);
+    }, O.contains = function() {
+      var e = arguments[0];
+      if (arguments.length != 3)
         throw new Error("Function contains expects (string, string)");
-      }
-      var s1 = arguments[1].evaluate(c).stringValue();
-      var s2 = arguments[2].evaluate(c).stringValue();
-      return new XBoolean(s1.indexOf(s2) !== -1);
-    };
-    Functions.substringBefore = function() {
-      var c = arguments[0];
-      if (arguments.length != 3) {
+      var r = arguments[1].evaluate(e).stringValue(), o = arguments[2].evaluate(e).stringValue();
+      return new C(r.indexOf(o) !== -1);
+    }, O.substringBefore = function() {
+      var e = arguments[0];
+      if (arguments.length != 3)
         throw new Error("Function substring-before expects (string, string)");
-      }
-      var s1 = arguments[1].evaluate(c).stringValue();
-      var s2 = arguments[2].evaluate(c).stringValue();
-      return new XString(s1.substring(0, s1.indexOf(s2)));
-    };
-    Functions.substringAfter = function() {
-      var c = arguments[0];
-      if (arguments.length != 3) {
+      var r = arguments[1].evaluate(e).stringValue(), o = arguments[2].evaluate(e).stringValue();
+      return new T(r.substring(0, r.indexOf(o)));
+    }, O.substringAfter = function() {
+      var e = arguments[0];
+      if (arguments.length != 3)
         throw new Error("Function substring-after expects (string, string)");
-      }
-      var s1 = arguments[1].evaluate(c).stringValue();
-      var s2 = arguments[2].evaluate(c).stringValue();
-      if (s2.length == 0) {
-        return new XString(s1);
-      }
-      var i = s1.indexOf(s2);
-      if (i == -1) {
-        return new XString("");
-      }
-      return new XString(s1.substring(i + s2.length));
-    };
-    Functions.substring = function() {
-      var c = arguments[0];
-      if (!(arguments.length == 3 || arguments.length == 4)) {
+      var r = arguments[1].evaluate(e).stringValue(), o = arguments[2].evaluate(e).stringValue();
+      if (o.length == 0)
+        return new T(r);
+      var a = r.indexOf(o);
+      return a == -1 ? new T("") : new T(r.substring(a + o.length));
+    }, O.substring = function() {
+      var e = arguments[0];
+      if (!(arguments.length == 3 || arguments.length == 4))
         throw new Error("Function substring expects (string, number, number?)");
-      }
-      var s = arguments[1].evaluate(c).stringValue();
-      var n1 = Math.round(arguments[2].evaluate(c).numberValue()) - 1;
-      var n2 = arguments.length == 4 ? n1 + Math.round(arguments[3].evaluate(c).numberValue()) : void 0;
-      return new XString(s.substring(n1, n2));
-    };
-    Functions.stringLength = function() {
-      var c = arguments[0];
-      var s;
-      if (arguments.length == 1) {
-        s = XNodeSet.prototype.stringForNode(c.contextNode);
-      } else if (arguments.length == 2) {
-        s = arguments[1].evaluate(c).stringValue();
-      } else {
+      var r = arguments[1].evaluate(e).stringValue(), o = Math.round(arguments[2].evaluate(e).numberValue()) - 1, a = arguments.length == 4 ? o + Math.round(arguments[3].evaluate(e).numberValue()) : void 0;
+      return new T(r.substring(o, a));
+    }, O.stringLength = function() {
+      var e = arguments[0], r;
+      if (arguments.length == 1)
+        r = m.prototype.stringForNode(e.contextNode);
+      else if (arguments.length == 2)
+        r = arguments[1].evaluate(e).stringValue();
+      else
         throw new Error("Function string-length expects (string?)");
-      }
-      return new XNumber(s.length);
-    };
-    Functions.normalizeSpace = function() {
-      var c = arguments[0];
-      var s;
-      if (arguments.length == 1) {
-        s = XNodeSet.prototype.stringForNode(c.contextNode);
-      } else if (arguments.length == 2) {
-        s = arguments[1].evaluate(c).stringValue();
-      } else {
+      return new b(r.length);
+    }, O.normalizeSpace = function() {
+      var e = arguments[0], r;
+      if (arguments.length == 1)
+        r = m.prototype.stringForNode(e.contextNode);
+      else if (arguments.length == 2)
+        r = arguments[1].evaluate(e).stringValue();
+      else
         throw new Error("Function normalize-space expects (string?)");
-      }
-      var i = 0;
-      var j = s.length - 1;
-      while (Utilities.isSpace(s.charCodeAt(j))) {
-        j--;
-      }
-      var t = "";
-      while (i <= j && Utilities.isSpace(s.charCodeAt(i))) {
-        i++;
-      }
-      while (i <= j) {
-        if (Utilities.isSpace(s.charCodeAt(i))) {
-          t += " ";
-          while (i <= j && Utilities.isSpace(s.charCodeAt(i))) {
-            i++;
-          }
-        } else {
-          t += s.charAt(i);
-          i++;
-        }
-      }
-      return new XString(t);
-    };
-    Functions.translate = function(c, eValue, eFrom, eTo) {
-      if (arguments.length != 4) {
+      for (var o = 0, a = r.length - 1; v.isSpace(r.charCodeAt(a)); )
+        a--;
+      for (var i = ""; o <= a && v.isSpace(r.charCodeAt(o)); )
+        o++;
+      for (; o <= a; )
+        if (v.isSpace(r.charCodeAt(o)))
+          for (i += " "; o <= a && v.isSpace(r.charCodeAt(o)); )
+            o++;
+        else
+          i += r.charAt(o), o++;
+      return new T(i);
+    }, O.translate = function(e, r, o, a) {
+      if (arguments.length != 4)
         throw new Error("Function translate expects (string, string, string)");
-      }
-      var value = eValue.evaluate(c).stringValue();
-      var from = eFrom.evaluate(c).stringValue();
-      var to = eTo.evaluate(c).stringValue();
-      var cMap = reduce(function(acc, ch, i) {
-        if (!(ch in acc)) {
-          acc[ch] = i > to.length ? "" : to[i];
-        }
-        return acc;
-      }, {}, from);
-      var t = join(
+      var i = r.evaluate(e).stringValue(), l = o.evaluate(e).stringValue(), g = a.evaluate(e).stringValue(), I = w(function(D, B, Ie) {
+        return B in D || (D[B] = Ie > g.length ? "" : g[Ie]), D;
+      }, {}, l), L = H(
         "",
-        map(function(ch) {
-          return ch in cMap ? cMap[ch] : ch;
-        }, value)
+        S(function(D) {
+          return D in I ? I[D] : D;
+        }, i)
       );
-      return new XString(t);
-    };
-    Functions.boolean_ = function() {
-      var c = arguments[0];
-      if (arguments.length != 2) {
+      return new T(L);
+    }, O.boolean_ = function() {
+      var e = arguments[0];
+      if (arguments.length != 2)
         throw new Error("Function boolean expects (object)");
-      }
-      return arguments[1].evaluate(c).bool();
-    };
-    Functions.not = function(c, eValue) {
-      if (arguments.length != 2) {
+      return arguments[1].evaluate(e).bool();
+    }, O.not = function(e, r) {
+      if (arguments.length != 2)
         throw new Error("Function not expects (object)");
-      }
-      return eValue.evaluate(c).bool().not();
-    };
-    Functions.true_ = function() {
-      if (arguments.length != 1) {
+      return r.evaluate(e).bool().not();
+    }, O.true_ = function() {
+      if (arguments.length != 1)
         throw new Error("Function true expects ()");
-      }
-      return XBoolean.true_;
-    };
-    Functions.false_ = function() {
-      if (arguments.length != 1) {
+      return C.true_;
+    }, O.false_ = function() {
+      if (arguments.length != 1)
         throw new Error("Function false expects ()");
-      }
-      return XBoolean.false_;
-    };
-    Functions.lang = function() {
-      var c = arguments[0];
-      if (arguments.length != 2) {
+      return C.false_;
+    }, O.lang = function() {
+      var e = arguments[0];
+      if (arguments.length != 2)
         throw new Error("Function lang expects (string)");
-      }
-      var lang;
-      for (var n = c.contextNode; n != null && n.nodeType != NodeTypes.DOCUMENT_NODE; n = n.parentNode) {
-        var a = n.getAttributeNS(XPath.XML_NAMESPACE_URI, "lang");
+      for (var r, o = e.contextNode; o != null && o.nodeType != x.DOCUMENT_NODE; o = o.parentNode) {
+        var a = o.getAttributeNS(Z.XML_NAMESPACE_URI, "lang");
         if (a != null) {
-          lang = String(a);
+          r = String(a);
           break;
         }
       }
-      if (lang == null) {
-        return XBoolean.false_;
-      }
-      var s = arguments[1].evaluate(c).stringValue();
-      return new XBoolean(lang.substring(0, s.length) == s && (lang.length == s.length || lang.charAt(s.length) == "-"));
-    };
-    Functions.number = function() {
-      var c = arguments[0];
-      if (!(arguments.length == 1 || arguments.length == 2)) {
+      if (r == null)
+        return C.false_;
+      var i = arguments[1].evaluate(e).stringValue();
+      return new C(r.substring(0, i.length) == i && (r.length == i.length || r.charAt(i.length) == "-"));
+    }, O.number = function() {
+      var e = arguments[0];
+      if (!(arguments.length == 1 || arguments.length == 2))
         throw new Error("Function number expects (object?)");
-      }
-      if (arguments.length == 1) {
-        return new XNumber(XNodeSet.prototype.stringForNode(c.contextNode));
-      }
-      return arguments[1].evaluate(c).number();
-    };
-    Functions.sum = function() {
-      var c = arguments[0];
-      var ns;
-      if (arguments.length != 2 || !Utilities.instance_of(ns = arguments[1].evaluate(c), XNodeSet)) {
+      return arguments.length == 1 ? new b(m.prototype.stringForNode(e.contextNode)) : arguments[1].evaluate(e).number();
+    }, O.sum = function() {
+      var e = arguments[0], r;
+      if (arguments.length != 2 || !v.instance_of(r = arguments[1].evaluate(e), m))
         throw new Error("Function sum expects (node-set)");
-      }
-      ns = ns.toUnsortedArray();
-      var n = 0;
-      for (var i = 0; i < ns.length; i++) {
-        n += new XNumber(XNodeSet.prototype.stringForNode(ns[i])).numberValue();
-      }
-      return new XNumber(n);
-    };
-    Functions.floor = function() {
-      var c = arguments[0];
-      if (arguments.length != 2) {
+      r = r.toUnsortedArray();
+      for (var o = 0, a = 0; a < r.length; a++)
+        o += new b(m.prototype.stringForNode(r[a])).numberValue();
+      return new b(o);
+    }, O.floor = function() {
+      var e = arguments[0];
+      if (arguments.length != 2)
         throw new Error("Function floor expects (number)");
-      }
-      return new XNumber(Math.floor(arguments[1].evaluate(c).numberValue()));
-    };
-    Functions.ceiling = function() {
-      var c = arguments[0];
-      if (arguments.length != 2) {
+      return new b(Math.floor(arguments[1].evaluate(e).numberValue()));
+    }, O.ceiling = function() {
+      var e = arguments[0];
+      if (arguments.length != 2)
         throw new Error("Function ceiling expects (number)");
-      }
-      return new XNumber(Math.ceil(arguments[1].evaluate(c).numberValue()));
-    };
-    Functions.round = function() {
-      var c = arguments[0];
-      if (arguments.length != 2) {
+      return new b(Math.ceil(arguments[1].evaluate(e).numberValue()));
+    }, O.round = function() {
+      var e = arguments[0];
+      if (arguments.length != 2)
         throw new Error("Function round expects (number)");
-      }
-      return new XNumber(Math.round(arguments[1].evaluate(c).numberValue()));
+      return new b(Math.round(arguments[1].evaluate(e).numberValue()));
     };
-    var Utilities = new Object();
-    var isAttributeLike = function(val) {
-      return val && (val.nodeType === NodeTypes.ATTRIBUTE_NODE || val.ownerElement || val.isXPathNamespace);
+    var v = new Object(), kr = function(e) {
+      return e && (e.nodeType === x.ATTRIBUTE_NODE || e.ownerElement || e.isXPathNamespace);
     };
-    Utilities.splitQName = function(qn) {
-      var i = qn.indexOf(":");
-      if (i == -1) {
-        return [null, qn];
-      }
-      return [qn.substring(0, i), qn.substring(i + 1)];
-    };
-    Utilities.resolveQName = function(qn, nr, n, useDefault) {
-      var parts = Utilities.splitQName(qn);
-      if (parts[0] != null) {
-        parts[0] = nr.getNamespace(parts[0], n);
-      } else {
-        if (useDefault) {
-          parts[0] = nr.getNamespace("", n);
-          if (parts[0] == null) {
-            parts[0] = "";
+    v.splitQName = function(e) {
+      var r = e.indexOf(":");
+      return r == -1 ? [null, e] : [e.substring(0, r), e.substring(r + 1)];
+    }, v.resolveQName = function(e, r, o, a) {
+      var i = v.splitQName(e);
+      return i[0] != null ? i[0] = r.getNamespace(i[0], o) : a ? (i[0] = r.getNamespace("", o), i[0] == null && (i[0] = "")) : i[0] = "", i;
+    }, v.isSpace = function(e) {
+      return e == 9 || e == 13 || e == 10 || e == 32;
+    }, v.isLetter = function(e) {
+      return e >= 65 && e <= 90 || e >= 97 && e <= 122 || e >= 192 && e <= 214 || e >= 216 && e <= 246 || e >= 248 && e <= 255 || e >= 256 && e <= 305 || e >= 308 && e <= 318 || e >= 321 && e <= 328 || e >= 330 && e <= 382 || e >= 384 && e <= 451 || e >= 461 && e <= 496 || e >= 500 && e <= 501 || e >= 506 && e <= 535 || e >= 592 && e <= 680 || e >= 699 && e <= 705 || e == 902 || e >= 904 && e <= 906 || e == 908 || e >= 910 && e <= 929 || e >= 931 && e <= 974 || e >= 976 && e <= 982 || e == 986 || e == 988 || e == 990 || e == 992 || e >= 994 && e <= 1011 || e >= 1025 && e <= 1036 || e >= 1038 && e <= 1103 || e >= 1105 && e <= 1116 || e >= 1118 && e <= 1153 || e >= 1168 && e <= 1220 || e >= 1223 && e <= 1224 || e >= 1227 && e <= 1228 || e >= 1232 && e <= 1259 || e >= 1262 && e <= 1269 || e >= 1272 && e <= 1273 || e >= 1329 && e <= 1366 || e == 1369 || e >= 1377 && e <= 1414 || e >= 1488 && e <= 1514 || e >= 1520 && e <= 1522 || e >= 1569 && e <= 1594 || e >= 1601 && e <= 1610 || e >= 1649 && e <= 1719 || e >= 1722 && e <= 1726 || e >= 1728 && e <= 1742 || e >= 1744 && e <= 1747 || e == 1749 || e >= 1765 && e <= 1766 || e >= 2309 && e <= 2361 || e == 2365 || e >= 2392 && e <= 2401 || e >= 2437 && e <= 2444 || e >= 2447 && e <= 2448 || e >= 2451 && e <= 2472 || e >= 2474 && e <= 2480 || e == 2482 || e >= 2486 && e <= 2489 || e >= 2524 && e <= 2525 || e >= 2527 && e <= 2529 || e >= 2544 && e <= 2545 || e >= 2565 && e <= 2570 || e >= 2575 && e <= 2576 || e >= 2579 && e <= 2600 || e >= 2602 && e <= 2608 || e >= 2610 && e <= 2611 || e >= 2613 && e <= 2614 || e >= 2616 && e <= 2617 || e >= 2649 && e <= 2652 || e == 2654 || e >= 2674 && e <= 2676 || e >= 2693 && e <= 2699 || e == 2701 || e >= 2703 && e <= 2705 || e >= 2707 && e <= 2728 || e >= 2730 && e <= 2736 || e >= 2738 && e <= 2739 || e >= 2741 && e <= 2745 || e == 2749 || e == 2784 || e >= 2821 && e <= 2828 || e >= 2831 && e <= 2832 || e >= 2835 && e <= 2856 || e >= 2858 && e <= 2864 || e >= 2866 && e <= 2867 || e >= 2870 && e <= 2873 || e == 2877 || e >= 2908 && e <= 2909 || e >= 2911 && e <= 2913 || e >= 2949 && e <= 2954 || e >= 2958 && e <= 2960 || e >= 2962 && e <= 2965 || e >= 2969 && e <= 2970 || e == 2972 || e >= 2974 && e <= 2975 || e >= 2979 && e <= 2980 || e >= 2984 && e <= 2986 || e >= 2990 && e <= 2997 || e >= 2999 && e <= 3001 || e >= 3077 && e <= 3084 || e >= 3086 && e <= 3088 || e >= 3090 && e <= 3112 || e >= 3114 && e <= 3123 || e >= 3125 && e <= 3129 || e >= 3168 && e <= 3169 || e >= 3205 && e <= 3212 || e >= 3214 && e <= 3216 || e >= 3218 && e <= 3240 || e >= 3242 && e <= 3251 || e >= 3253 && e <= 3257 || e == 3294 || e >= 3296 && e <= 3297 || e >= 3333 && e <= 3340 || e >= 3342 && e <= 3344 || e >= 3346 && e <= 3368 || e >= 3370 && e <= 3385 || e >= 3424 && e <= 3425 || e >= 3585 && e <= 3630 || e == 3632 || e >= 3634 && e <= 3635 || e >= 3648 && e <= 3653 || e >= 3713 && e <= 3714 || e == 3716 || e >= 3719 && e <= 3720 || e == 3722 || e == 3725 || e >= 3732 && e <= 3735 || e >= 3737 && e <= 3743 || e >= 3745 && e <= 3747 || e == 3749 || e == 3751 || e >= 3754 && e <= 3755 || e >= 3757 && e <= 3758 || e == 3760 || e >= 3762 && e <= 3763 || e == 3773 || e >= 3776 && e <= 3780 || e >= 3904 && e <= 3911 || e >= 3913 && e <= 3945 || e >= 4256 && e <= 4293 || e >= 4304 && e <= 4342 || e == 4352 || e >= 4354 && e <= 4355 || e >= 4357 && e <= 4359 || e == 4361 || e >= 4363 && e <= 4364 || e >= 4366 && e <= 4370 || e == 4412 || e == 4414 || e == 4416 || e == 4428 || e == 4430 || e == 4432 || e >= 4436 && e <= 4437 || e == 4441 || e >= 4447 && e <= 4449 || e == 4451 || e == 4453 || e == 4455 || e == 4457 || e >= 4461 && e <= 4462 || e >= 4466 && e <= 4467 || e == 4469 || e == 4510 || e == 4520 || e == 4523 || e >= 4526 && e <= 4527 || e >= 4535 && e <= 4536 || e == 4538 || e >= 4540 && e <= 4546 || e == 4587 || e == 4592 || e == 4601 || e >= 7680 && e <= 7835 || e >= 7840 && e <= 7929 || e >= 7936 && e <= 7957 || e >= 7960 && e <= 7965 || e >= 7968 && e <= 8005 || e >= 8008 && e <= 8013 || e >= 8016 && e <= 8023 || e == 8025 || e == 8027 || e == 8029 || e >= 8031 && e <= 8061 || e >= 8064 && e <= 8116 || e >= 8118 && e <= 8124 || e == 8126 || e >= 8130 && e <= 8132 || e >= 8134 && e <= 8140 || e >= 8144 && e <= 8147 || e >= 8150 && e <= 8155 || e >= 8160 && e <= 8172 || e >= 8178 && e <= 8180 || e >= 8182 && e <= 8188 || e == 8486 || e >= 8490 && e <= 8491 || e == 8494 || e >= 8576 && e <= 8578 || e >= 12353 && e <= 12436 || e >= 12449 && e <= 12538 || e >= 12549 && e <= 12588 || e >= 44032 && e <= 55203 || e >= 19968 && e <= 40869 || e == 12295 || e >= 12321 && e <= 12329;
+    }, v.isNCNameChar = function(e) {
+      return e >= 48 && e <= 57 || e >= 1632 && e <= 1641 || e >= 1776 && e <= 1785 || e >= 2406 && e <= 2415 || e >= 2534 && e <= 2543 || e >= 2662 && e <= 2671 || e >= 2790 && e <= 2799 || e >= 2918 && e <= 2927 || e >= 3047 && e <= 3055 || e >= 3174 && e <= 3183 || e >= 3302 && e <= 3311 || e >= 3430 && e <= 3439 || e >= 3664 && e <= 3673 || e >= 3792 && e <= 3801 || e >= 3872 && e <= 3881 || e == 46 || e == 45 || e == 95 || v.isLetter(e) || e >= 768 && e <= 837 || e >= 864 && e <= 865 || e >= 1155 && e <= 1158 || e >= 1425 && e <= 1441 || e >= 1443 && e <= 1465 || e >= 1467 && e <= 1469 || e == 1471 || e >= 1473 && e <= 1474 || e == 1476 || e >= 1611 && e <= 1618 || e == 1648 || e >= 1750 && e <= 1756 || e >= 1757 && e <= 1759 || e >= 1760 && e <= 1764 || e >= 1767 && e <= 1768 || e >= 1770 && e <= 1773 || e >= 2305 && e <= 2307 || e == 2364 || e >= 2366 && e <= 2380 || e == 2381 || e >= 2385 && e <= 2388 || e >= 2402 && e <= 2403 || e >= 2433 && e <= 2435 || e == 2492 || e == 2494 || e == 2495 || e >= 2496 && e <= 2500 || e >= 2503 && e <= 2504 || e >= 2507 && e <= 2509 || e == 2519 || e >= 2530 && e <= 2531 || e == 2562 || e == 2620 || e == 2622 || e == 2623 || e >= 2624 && e <= 2626 || e >= 2631 && e <= 2632 || e >= 2635 && e <= 2637 || e >= 2672 && e <= 2673 || e >= 2689 && e <= 2691 || e == 2748 || e >= 2750 && e <= 2757 || e >= 2759 && e <= 2761 || e >= 2763 && e <= 2765 || e >= 2817 && e <= 2819 || e == 2876 || e >= 2878 && e <= 2883 || e >= 2887 && e <= 2888 || e >= 2891 && e <= 2893 || e >= 2902 && e <= 2903 || e >= 2946 && e <= 2947 || e >= 3006 && e <= 3010 || e >= 3014 && e <= 3016 || e >= 3018 && e <= 3021 || e == 3031 || e >= 3073 && e <= 3075 || e >= 3134 && e <= 3140 || e >= 3142 && e <= 3144 || e >= 3146 && e <= 3149 || e >= 3157 && e <= 3158 || e >= 3202 && e <= 3203 || e >= 3262 && e <= 3268 || e >= 3270 && e <= 3272 || e >= 3274 && e <= 3277 || e >= 3285 && e <= 3286 || e >= 3330 && e <= 3331 || e >= 3390 && e <= 3395 || e >= 3398 && e <= 3400 || e >= 3402 && e <= 3405 || e == 3415 || e == 3633 || e >= 3636 && e <= 3642 || e >= 3655 && e <= 3662 || e == 3761 || e >= 3764 && e <= 3769 || e >= 3771 && e <= 3772 || e >= 3784 && e <= 3789 || e >= 3864 && e <= 3865 || e == 3893 || e == 3895 || e == 3897 || e == 3902 || e == 3903 || e >= 3953 && e <= 3972 || e >= 3974 && e <= 3979 || e >= 3984 && e <= 3989 || e == 3991 || e >= 3993 && e <= 4013 || e >= 4017 && e <= 4023 || e == 4025 || e >= 8400 && e <= 8412 || e == 8417 || e >= 12330 && e <= 12335 || e == 12441 || e == 12442 || e == 183 || e == 720 || e == 721 || e == 903 || e == 1600 || e == 3654 || e == 3782 || e == 12293 || e >= 12337 && e <= 12341 || e >= 12445 && e <= 12446 || e >= 12540 && e <= 12542;
+    }, v.coalesceText = function(e) {
+      for (var r = e.firstChild; r != null; r = r.nextSibling)
+        if (r.nodeType == x.TEXT_NODE || r.nodeType == x.CDATA_SECTION_NODE) {
+          var o = r.nodeValue, a = r;
+          for (r = r.nextSibling; r != null && (r.nodeType == x.TEXT_NODE || r.nodeType == x.CDATA_SECTION_NODE); ) {
+            o += r.nodeValue;
+            var i = r;
+            r = r.nextSibling, i.parentNode.removeChild(i);
           }
-        } else {
-          parts[0] = "";
-        }
-      }
-      return parts;
-    };
-    Utilities.isSpace = function(c) {
-      return c == 9 || c == 13 || c == 10 || c == 32;
-    };
-    Utilities.isLetter = function(c) {
-      return c >= 65 && c <= 90 || c >= 97 && c <= 122 || c >= 192 && c <= 214 || c >= 216 && c <= 246 || c >= 248 && c <= 255 || c >= 256 && c <= 305 || c >= 308 && c <= 318 || c >= 321 && c <= 328 || c >= 330 && c <= 382 || c >= 384 && c <= 451 || c >= 461 && c <= 496 || c >= 500 && c <= 501 || c >= 506 && c <= 535 || c >= 592 && c <= 680 || c >= 699 && c <= 705 || c == 902 || c >= 904 && c <= 906 || c == 908 || c >= 910 && c <= 929 || c >= 931 && c <= 974 || c >= 976 && c <= 982 || c == 986 || c == 988 || c == 990 || c == 992 || c >= 994 && c <= 1011 || c >= 1025 && c <= 1036 || c >= 1038 && c <= 1103 || c >= 1105 && c <= 1116 || c >= 1118 && c <= 1153 || c >= 1168 && c <= 1220 || c >= 1223 && c <= 1224 || c >= 1227 && c <= 1228 || c >= 1232 && c <= 1259 || c >= 1262 && c <= 1269 || c >= 1272 && c <= 1273 || c >= 1329 && c <= 1366 || c == 1369 || c >= 1377 && c <= 1414 || c >= 1488 && c <= 1514 || c >= 1520 && c <= 1522 || c >= 1569 && c <= 1594 || c >= 1601 && c <= 1610 || c >= 1649 && c <= 1719 || c >= 1722 && c <= 1726 || c >= 1728 && c <= 1742 || c >= 1744 && c <= 1747 || c == 1749 || c >= 1765 && c <= 1766 || c >= 2309 && c <= 2361 || c == 2365 || c >= 2392 && c <= 2401 || c >= 2437 && c <= 2444 || c >= 2447 && c <= 2448 || c >= 2451 && c <= 2472 || c >= 2474 && c <= 2480 || c == 2482 || c >= 2486 && c <= 2489 || c >= 2524 && c <= 2525 || c >= 2527 && c <= 2529 || c >= 2544 && c <= 2545 || c >= 2565 && c <= 2570 || c >= 2575 && c <= 2576 || c >= 2579 && c <= 2600 || c >= 2602 && c <= 2608 || c >= 2610 && c <= 2611 || c >= 2613 && c <= 2614 || c >= 2616 && c <= 2617 || c >= 2649 && c <= 2652 || c == 2654 || c >= 2674 && c <= 2676 || c >= 2693 && c <= 2699 || c == 2701 || c >= 2703 && c <= 2705 || c >= 2707 && c <= 2728 || c >= 2730 && c <= 2736 || c >= 2738 && c <= 2739 || c >= 2741 && c <= 2745 || c == 2749 || c == 2784 || c >= 2821 && c <= 2828 || c >= 2831 && c <= 2832 || c >= 2835 && c <= 2856 || c >= 2858 && c <= 2864 || c >= 2866 && c <= 2867 || c >= 2870 && c <= 2873 || c == 2877 || c >= 2908 && c <= 2909 || c >= 2911 && c <= 2913 || c >= 2949 && c <= 2954 || c >= 2958 && c <= 2960 || c >= 2962 && c <= 2965 || c >= 2969 && c <= 2970 || c == 2972 || c >= 2974 && c <= 2975 || c >= 2979 && c <= 2980 || c >= 2984 && c <= 2986 || c >= 2990 && c <= 2997 || c >= 2999 && c <= 3001 || c >= 3077 && c <= 3084 || c >= 3086 && c <= 3088 || c >= 3090 && c <= 3112 || c >= 3114 && c <= 3123 || c >= 3125 && c <= 3129 || c >= 3168 && c <= 3169 || c >= 3205 && c <= 3212 || c >= 3214 && c <= 3216 || c >= 3218 && c <= 3240 || c >= 3242 && c <= 3251 || c >= 3253 && c <= 3257 || c == 3294 || c >= 3296 && c <= 3297 || c >= 3333 && c <= 3340 || c >= 3342 && c <= 3344 || c >= 3346 && c <= 3368 || c >= 3370 && c <= 3385 || c >= 3424 && c <= 3425 || c >= 3585 && c <= 3630 || c == 3632 || c >= 3634 && c <= 3635 || c >= 3648 && c <= 3653 || c >= 3713 && c <= 3714 || c == 3716 || c >= 3719 && c <= 3720 || c == 3722 || c == 3725 || c >= 3732 && c <= 3735 || c >= 3737 && c <= 3743 || c >= 3745 && c <= 3747 || c == 3749 || c == 3751 || c >= 3754 && c <= 3755 || c >= 3757 && c <= 3758 || c == 3760 || c >= 3762 && c <= 3763 || c == 3773 || c >= 3776 && c <= 3780 || c >= 3904 && c <= 3911 || c >= 3913 && c <= 3945 || c >= 4256 && c <= 4293 || c >= 4304 && c <= 4342 || c == 4352 || c >= 4354 && c <= 4355 || c >= 4357 && c <= 4359 || c == 4361 || c >= 4363 && c <= 4364 || c >= 4366 && c <= 4370 || c == 4412 || c == 4414 || c == 4416 || c == 4428 || c == 4430 || c == 4432 || c >= 4436 && c <= 4437 || c == 4441 || c >= 4447 && c <= 4449 || c == 4451 || c == 4453 || c == 4455 || c == 4457 || c >= 4461 && c <= 4462 || c >= 4466 && c <= 4467 || c == 4469 || c == 4510 || c == 4520 || c == 4523 || c >= 4526 && c <= 4527 || c >= 4535 && c <= 4536 || c == 4538 || c >= 4540 && c <= 4546 || c == 4587 || c == 4592 || c == 4601 || c >= 7680 && c <= 7835 || c >= 7840 && c <= 7929 || c >= 7936 && c <= 7957 || c >= 7960 && c <= 7965 || c >= 7968 && c <= 8005 || c >= 8008 && c <= 8013 || c >= 8016 && c <= 8023 || c == 8025 || c == 8027 || c == 8029 || c >= 8031 && c <= 8061 || c >= 8064 && c <= 8116 || c >= 8118 && c <= 8124 || c == 8126 || c >= 8130 && c <= 8132 || c >= 8134 && c <= 8140 || c >= 8144 && c <= 8147 || c >= 8150 && c <= 8155 || c >= 8160 && c <= 8172 || c >= 8178 && c <= 8180 || c >= 8182 && c <= 8188 || c == 8486 || c >= 8490 && c <= 8491 || c == 8494 || c >= 8576 && c <= 8578 || c >= 12353 && c <= 12436 || c >= 12449 && c <= 12538 || c >= 12549 && c <= 12588 || c >= 44032 && c <= 55203 || c >= 19968 && c <= 40869 || c == 12295 || c >= 12321 && c <= 12329;
-    };
-    Utilities.isNCNameChar = function(c) {
-      return c >= 48 && c <= 57 || c >= 1632 && c <= 1641 || c >= 1776 && c <= 1785 || c >= 2406 && c <= 2415 || c >= 2534 && c <= 2543 || c >= 2662 && c <= 2671 || c >= 2790 && c <= 2799 || c >= 2918 && c <= 2927 || c >= 3047 && c <= 3055 || c >= 3174 && c <= 3183 || c >= 3302 && c <= 3311 || c >= 3430 && c <= 3439 || c >= 3664 && c <= 3673 || c >= 3792 && c <= 3801 || c >= 3872 && c <= 3881 || c == 46 || c == 45 || c == 95 || Utilities.isLetter(c) || c >= 768 && c <= 837 || c >= 864 && c <= 865 || c >= 1155 && c <= 1158 || c >= 1425 && c <= 1441 || c >= 1443 && c <= 1465 || c >= 1467 && c <= 1469 || c == 1471 || c >= 1473 && c <= 1474 || c == 1476 || c >= 1611 && c <= 1618 || c == 1648 || c >= 1750 && c <= 1756 || c >= 1757 && c <= 1759 || c >= 1760 && c <= 1764 || c >= 1767 && c <= 1768 || c >= 1770 && c <= 1773 || c >= 2305 && c <= 2307 || c == 2364 || c >= 2366 && c <= 2380 || c == 2381 || c >= 2385 && c <= 2388 || c >= 2402 && c <= 2403 || c >= 2433 && c <= 2435 || c == 2492 || c == 2494 || c == 2495 || c >= 2496 && c <= 2500 || c >= 2503 && c <= 2504 || c >= 2507 && c <= 2509 || c == 2519 || c >= 2530 && c <= 2531 || c == 2562 || c == 2620 || c == 2622 || c == 2623 || c >= 2624 && c <= 2626 || c >= 2631 && c <= 2632 || c >= 2635 && c <= 2637 || c >= 2672 && c <= 2673 || c >= 2689 && c <= 2691 || c == 2748 || c >= 2750 && c <= 2757 || c >= 2759 && c <= 2761 || c >= 2763 && c <= 2765 || c >= 2817 && c <= 2819 || c == 2876 || c >= 2878 && c <= 2883 || c >= 2887 && c <= 2888 || c >= 2891 && c <= 2893 || c >= 2902 && c <= 2903 || c >= 2946 && c <= 2947 || c >= 3006 && c <= 3010 || c >= 3014 && c <= 3016 || c >= 3018 && c <= 3021 || c == 3031 || c >= 3073 && c <= 3075 || c >= 3134 && c <= 3140 || c >= 3142 && c <= 3144 || c >= 3146 && c <= 3149 || c >= 3157 && c <= 3158 || c >= 3202 && c <= 3203 || c >= 3262 && c <= 3268 || c >= 3270 && c <= 3272 || c >= 3274 && c <= 3277 || c >= 3285 && c <= 3286 || c >= 3330 && c <= 3331 || c >= 3390 && c <= 3395 || c >= 3398 && c <= 3400 || c >= 3402 && c <= 3405 || c == 3415 || c == 3633 || c >= 3636 && c <= 3642 || c >= 3655 && c <= 3662 || c == 3761 || c >= 3764 && c <= 3769 || c >= 3771 && c <= 3772 || c >= 3784 && c <= 3789 || c >= 3864 && c <= 3865 || c == 3893 || c == 3895 || c == 3897 || c == 3902 || c == 3903 || c >= 3953 && c <= 3972 || c >= 3974 && c <= 3979 || c >= 3984 && c <= 3989 || c == 3991 || c >= 3993 && c <= 4013 || c >= 4017 && c <= 4023 || c == 4025 || c >= 8400 && c <= 8412 || c == 8417 || c >= 12330 && c <= 12335 || c == 12441 || c == 12442 || c == 183 || c == 720 || c == 721 || c == 903 || c == 1600 || c == 3654 || c == 3782 || c == 12293 || c >= 12337 && c <= 12341 || c >= 12445 && c <= 12446 || c >= 12540 && c <= 12542;
-    };
-    Utilities.coalesceText = function(n) {
-      for (var m = n.firstChild; m != null; m = m.nextSibling) {
-        if (m.nodeType == NodeTypes.TEXT_NODE || m.nodeType == NodeTypes.CDATA_SECTION_NODE) {
-          var s = m.nodeValue;
-          var first = m;
-          m = m.nextSibling;
-          while (m != null && (m.nodeType == NodeTypes.TEXT_NODE || m.nodeType == NodeTypes.CDATA_SECTION_NODE)) {
-            s += m.nodeValue;
-            var del = m;
-            m = m.nextSibling;
-            del.parentNode.removeChild(del);
-          }
-          if (first.nodeType == NodeTypes.CDATA_SECTION_NODE) {
-            var p = first.parentNode;
-            if (first.nextSibling == null) {
-              p.removeChild(first);
-              p.appendChild(p.ownerDocument.createTextNode(s));
-            } else {
-              var next = first.nextSibling;
-              p.removeChild(first);
-              p.insertBefore(p.ownerDocument.createTextNode(s), next);
+          if (a.nodeType == x.CDATA_SECTION_NODE) {
+            var l = a.parentNode;
+            if (a.nextSibling == null)
+              l.removeChild(a), l.appendChild(l.ownerDocument.createTextNode(o));
+            else {
+              var g = a.nextSibling;
+              l.removeChild(a), l.insertBefore(l.ownerDocument.createTextNode(o), g);
             }
-          } else {
-            first.nodeValue = s;
-          }
-          if (m == null) {
+          } else
+            a.nodeValue = o;
+          if (r == null)
             break;
-          }
-        } else if (m.nodeType == NodeTypes.ELEMENT_NODE) {
-          Utilities.coalesceText(m);
-        }
+        } else
+          r.nodeType == x.ELEMENT_NODE && v.coalesceText(r);
+    }, v.instance_of = function(e, r) {
+      for (; e != null; ) {
+        if (e.constructor === r)
+          return !0;
+        if (e === Object)
+          return !1;
+        e = e.constructor.superclass;
       }
-    };
-    Utilities.instance_of = function(o, c) {
-      while (o != null) {
-        if (o.constructor === c) {
-          return true;
-        }
-        if (o === Object) {
-          return false;
-        }
-        o = o.constructor.superclass;
-      }
-      return false;
-    };
-    Utilities.getElementById = function(n, id) {
-      if (n.nodeType == NodeTypes.ELEMENT_NODE) {
-        if (n.getAttribute("id") == id || n.getAttributeNS(null, "id") == id) {
-          return n;
-        }
-      }
-      for (var m = n.firstChild; m != null; m = m.nextSibling) {
-        var res = Utilities.getElementById(m, id);
-        if (res != null) {
-          return res;
-        }
+      return !1;
+    }, v.getElementById = function(e, r) {
+      if (e.nodeType == x.ELEMENT_NODE && (e.getAttribute("id") == r || e.getAttributeNS(null, "id") == r))
+        return e;
+      for (var o = e.firstChild; o != null; o = o.nextSibling) {
+        var a = v.getElementById(o, r);
+        if (a != null)
+          return a;
       }
       return null;
     };
-    var XPathException = function() {
-      function getMessage(code, exception) {
-        var msg = exception ? ": " + exception.toString() : "";
-        switch (code) {
-          case XPathException2.INVALID_EXPRESSION_ERR:
-            return "Invalid expression" + msg;
-          case XPathException2.TYPE_ERR:
-            return "Type error" + msg;
+    var be = function() {
+      function e(o, a) {
+        var i = a ? ": " + a.toString() : "";
+        switch (o) {
+          case r.INVALID_EXPRESSION_ERR:
+            return "Invalid expression" + i;
+          case r.TYPE_ERR:
+            return "Type error" + i;
         }
         return null;
       }
-      function XPathException2(code, error, message) {
-        var err = Error.call(this, getMessage(code, error) || message);
-        err.code = code;
-        err.exception = error;
-        return err;
+      function r(o, a, i) {
+        var l = Error.call(this, e(o, a) || i);
+        return l.code = o, l.exception = a, l;
       }
-      XPathException2.prototype = Object.create(Error.prototype);
-      XPathException2.prototype.constructor = XPathException2;
-      XPathException2.superclass = Error;
-      XPathException2.prototype.toString = function() {
+      return r.prototype = Object.create(Error.prototype), r.prototype.constructor = r, r.superclass = Error, r.prototype.toString = function() {
         return this.message;
-      };
-      XPathException2.fromMessage = function(message, error) {
-        return new XPathException2(null, error, message);
-      };
-      XPathException2.INVALID_EXPRESSION_ERR = 51;
-      XPathException2.TYPE_ERR = 52;
-      return XPathException2;
+      }, r.fromMessage = function(o, a) {
+        return new r(null, a, o);
+      }, r.INVALID_EXPRESSION_ERR = 51, r.TYPE_ERR = 52, r;
     }();
-    XPathExpression.prototype = {};
-    XPathExpression.prototype.constructor = XPathExpression;
-    XPathExpression.superclass = Object.prototype;
-    function XPathExpression(e, r, p) {
-      this.xpath = p.parse(e);
-      this.context = new XPathContext();
-      this.context.namespaceResolver = new XPathNSResolverWrapper(r);
+    he.prototype = {}, he.prototype.constructor = he, he.superclass = Object.prototype;
+    function he(e, r, o) {
+      this.xpath = o.parse(e), this.context = new Te(), this.context.namespaceResolver = new $e(r);
     }
-    XPathExpression.getOwnerDocument = function(n) {
-      return n.nodeType === NodeTypes.DOCUMENT_NODE ? n : n.ownerDocument;
-    };
-    XPathExpression.detectHtmlDom = function(n) {
-      if (!n) {
-        return false;
-      }
-      var doc = XPathExpression.getOwnerDocument(n);
+    he.getOwnerDocument = function(e) {
+      return e.nodeType === x.DOCUMENT_NODE ? e : e.ownerDocument;
+    }, he.detectHtmlDom = function(e) {
+      if (!e)
+        return !1;
+      var r = he.getOwnerDocument(e);
       try {
-        return doc.implementation.hasFeature("HTML", "2.0");
-      } catch (e) {
-        return true;
+        return r.implementation.hasFeature("HTML", "2.0");
+      } catch {
+        return !0;
       }
-    };
-    XPathExpression.prototype.evaluate = function(n, t, res) {
-      this.context.expressionContextNode = n;
-      this.context.caseInsensitive = XPathExpression.detectHtmlDom(n);
-      var result = this.xpath.evaluate(this.context);
-      return new XPathResult(result, t);
-    };
-    XPathNSResolverWrapper.prototype = {};
-    XPathNSResolverWrapper.prototype.constructor = XPathNSResolverWrapper;
-    XPathNSResolverWrapper.superclass = Object.prototype;
-    function XPathNSResolverWrapper(r) {
-      this.xpathNSResolver = r;
+    }, he.prototype.evaluate = function(e, r, o) {
+      this.context.expressionContextNode = e, this.context.caseInsensitive = he.detectHtmlDom(e);
+      var a = this.xpath.evaluate(this.context);
+      return new F(a, r);
+    }, $e.prototype = {}, $e.prototype.constructor = $e, $e.superclass = Object.prototype;
+    function $e(e) {
+      this.xpathNSResolver = e;
     }
-    XPathNSResolverWrapper.prototype.getNamespace = function(prefix, n) {
-      if (this.xpathNSResolver == null) {
-        return null;
-      }
-      return this.xpathNSResolver.lookupNamespaceURI(prefix);
-    };
-    NodeXPathNSResolver.prototype = {};
-    NodeXPathNSResolver.prototype.constructor = NodeXPathNSResolver;
-    NodeXPathNSResolver.superclass = Object.prototype;
-    function NodeXPathNSResolver(n) {
-      this.node = n;
-      this.namespaceResolver = new NamespaceResolver();
+    $e.prototype.getNamespace = function(e, r) {
+      return this.xpathNSResolver == null ? null : this.xpathNSResolver.lookupNamespaceURI(e);
+    }, Qe.prototype = {}, Qe.prototype.constructor = Qe, Qe.superclass = Object.prototype;
+    function Qe(e) {
+      this.node = e, this.namespaceResolver = new Re();
     }
-    NodeXPathNSResolver.prototype.lookupNamespaceURI = function(prefix) {
-      return this.namespaceResolver.getNamespace(prefix, this.node);
-    };
-    XPathResult.prototype = {};
-    XPathResult.prototype.constructor = XPathResult;
-    XPathResult.superclass = Object.prototype;
-    function XPathResult(v, t) {
-      if (t == XPathResult.ANY_TYPE) {
-        if (v.constructor === XString) {
-          t = XPathResult.STRING_TYPE;
-        } else if (v.constructor === XNumber) {
-          t = XPathResult.NUMBER_TYPE;
-        } else if (v.constructor === XBoolean) {
-          t = XPathResult.BOOLEAN_TYPE;
-        } else if (v.constructor === XNodeSet) {
-          t = XPathResult.UNORDERED_NODE_ITERATOR_TYPE;
-        }
-      }
-      this.resultType = t;
-      switch (t) {
-        case XPathResult.NUMBER_TYPE:
-          this.numberValue = v.numberValue();
+    Qe.prototype.lookupNamespaceURI = function(e) {
+      return this.namespaceResolver.getNamespace(e, this.node);
+    }, F.prototype = {}, F.prototype.constructor = F, F.superclass = Object.prototype;
+    function F(e, r) {
+      switch (r == F.ANY_TYPE && (e.constructor === T ? r = F.STRING_TYPE : e.constructor === b ? r = F.NUMBER_TYPE : e.constructor === C ? r = F.BOOLEAN_TYPE : e.constructor === m && (r = F.UNORDERED_NODE_ITERATOR_TYPE)), this.resultType = r, r) {
+        case F.NUMBER_TYPE:
+          this.numberValue = e.numberValue();
           return;
-        case XPathResult.STRING_TYPE:
-          this.stringValue = v.stringValue();
+        case F.STRING_TYPE:
+          this.stringValue = e.stringValue();
           return;
-        case XPathResult.BOOLEAN_TYPE:
-          this.booleanValue = v.booleanValue();
+        case F.BOOLEAN_TYPE:
+          this.booleanValue = e.booleanValue();
           return;
-        case XPathResult.ANY_UNORDERED_NODE_TYPE:
-        case XPathResult.FIRST_ORDERED_NODE_TYPE:
-          if (v.constructor === XNodeSet) {
-            this.singleNodeValue = v.first();
+        case F.ANY_UNORDERED_NODE_TYPE:
+        case F.FIRST_ORDERED_NODE_TYPE:
+          if (e.constructor === m) {
+            this.singleNodeValue = e.first();
             return;
           }
           break;
-        case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
-        case XPathResult.ORDERED_NODE_ITERATOR_TYPE:
-          if (v.constructor === XNodeSet) {
-            this.invalidIteratorState = false;
-            this.nodes = v.toArray();
-            this.iteratorIndex = 0;
+        case F.UNORDERED_NODE_ITERATOR_TYPE:
+        case F.ORDERED_NODE_ITERATOR_TYPE:
+          if (e.constructor === m) {
+            this.invalidIteratorState = !1, this.nodes = e.toArray(), this.iteratorIndex = 0;
             return;
           }
           break;
-        case XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE:
-        case XPathResult.ORDERED_NODE_SNAPSHOT_TYPE:
-          if (v.constructor === XNodeSet) {
-            this.nodes = v.toArray();
-            this.snapshotLength = this.nodes.length;
+        case F.UNORDERED_NODE_SNAPSHOT_TYPE:
+        case F.ORDERED_NODE_SNAPSHOT_TYPE:
+          if (e.constructor === m) {
+            this.nodes = e.toArray(), this.snapshotLength = this.nodes.length;
             return;
           }
           break;
       }
-      throw new XPathException(XPathException.TYPE_ERR);
+      throw new be(be.TYPE_ERR);
     }
-    ;
-    XPathResult.prototype.iterateNext = function() {
-      if (this.resultType != XPathResult.UNORDERED_NODE_ITERATOR_TYPE && this.resultType != XPathResult.ORDERED_NODE_ITERATOR_TYPE) {
-        throw new XPathException(XPathException.TYPE_ERR);
-      }
+    F.prototype.iterateNext = function() {
+      if (this.resultType != F.UNORDERED_NODE_ITERATOR_TYPE && this.resultType != F.ORDERED_NODE_ITERATOR_TYPE)
+        throw new be(be.TYPE_ERR);
       return this.nodes[this.iteratorIndex++];
-    };
-    XPathResult.prototype.snapshotItem = function(i) {
-      if (this.resultType != XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE && this.resultType != XPathResult.ORDERED_NODE_SNAPSHOT_TYPE) {
-        throw new XPathException(XPathException.TYPE_ERR);
-      }
-      return this.nodes[i];
-    };
-    XPathResult.ANY_TYPE = 0;
-    XPathResult.NUMBER_TYPE = 1;
-    XPathResult.STRING_TYPE = 2;
-    XPathResult.BOOLEAN_TYPE = 3;
-    XPathResult.UNORDERED_NODE_ITERATOR_TYPE = 4;
-    XPathResult.ORDERED_NODE_ITERATOR_TYPE = 5;
-    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE = 6;
-    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE = 7;
-    XPathResult.ANY_UNORDERED_NODE_TYPE = 8;
-    XPathResult.FIRST_ORDERED_NODE_TYPE = 9;
-    function installDOM3XPathSupport(doc, p) {
-      doc.createExpression = function(e, r) {
+    }, F.prototype.snapshotItem = function(e) {
+      if (this.resultType != F.UNORDERED_NODE_SNAPSHOT_TYPE && this.resultType != F.ORDERED_NODE_SNAPSHOT_TYPE)
+        throw new be(be.TYPE_ERR);
+      return this.nodes[e];
+    }, F.ANY_TYPE = 0, F.NUMBER_TYPE = 1, F.STRING_TYPE = 2, F.BOOLEAN_TYPE = 3, F.UNORDERED_NODE_ITERATOR_TYPE = 4, F.ORDERED_NODE_ITERATOR_TYPE = 5, F.UNORDERED_NODE_SNAPSHOT_TYPE = 6, F.ORDERED_NODE_SNAPSHOT_TYPE = 7, F.ANY_UNORDERED_NODE_TYPE = 8, F.FIRST_ORDERED_NODE_TYPE = 9;
+    function Gr(e, r) {
+      e.createExpression = function(o, a) {
         try {
-          return new XPathExpression(e, r, p);
-        } catch (e2) {
-          throw new XPathException(XPathException.INVALID_EXPRESSION_ERR, e2);
+          return new he(o, a, r);
+        } catch (i) {
+          throw new be(be.INVALID_EXPRESSION_ERR, i);
         }
-      };
-      doc.createNSResolver = function(n) {
-        return new NodeXPathNSResolver(n);
-      };
-      doc.evaluate = function(e, cn, r, t, res) {
-        if (t < 0 || t > 9) {
+      }, e.createNSResolver = function(o) {
+        return new Qe(o);
+      }, e.evaluate = function(o, a, i, l, g) {
+        if (l < 0 || l > 9)
           throw { code: 0, toString: function() {
             return "Request type not supported";
           } };
-        }
-        return doc.createExpression(e, r, p).evaluate(cn, t, res);
+        return e.createExpression(o, i, r).evaluate(a, l, g);
       };
     }
-    ;
     try {
-      var shouldInstall = true;
+      var Hr = !0;
       try {
-        if (document.implementation && document.implementation.hasFeature && document.implementation.hasFeature("XPath", null)) {
-          shouldInstall = false;
-        }
-      } catch (e) {
+        document.implementation && document.implementation.hasFeature && document.implementation.hasFeature("XPath", null) && (Hr = !1);
+      } catch {
       }
-      if (shouldInstall) {
-        installDOM3XPathSupport(document, new XPathParser());
-      }
-    } catch (e) {
+      Hr && Gr(document, new p());
+    } catch {
     }
-    installDOM3XPathSupport(exports2, new XPathParser());
-    (function() {
-      var parser = new XPathParser();
-      var defaultNSResolver = new NamespaceResolver();
-      var defaultFunctionResolver = new FunctionResolver();
-      var defaultVariableResolver = new VariableResolver();
-      function makeNSResolverFromFunction(func) {
+    Gr(n, new p()), function() {
+      var e = new p(), r = new Re(), o = new fe(), a = new Ue();
+      function i(h) {
         return {
-          getNamespace: function(prefix, node) {
-            var ns = func(prefix, node);
-            return ns || defaultNSResolver.getNamespace(prefix, node);
+          getNamespace: function(P, oe) {
+            var Ve = h(P, oe);
+            return Ve || r.getNamespace(P, oe);
           }
         };
       }
-      function makeNSResolverFromObject(obj) {
-        return makeNSResolverFromFunction(obj.getNamespace.bind(obj));
+      function l(h) {
+        return i(h.getNamespace.bind(h));
       }
-      function makeNSResolverFromMap(map2) {
-        return makeNSResolverFromFunction(function(prefix) {
-          return map2[prefix];
+      function g(h) {
+        return i(function(P) {
+          return h[P];
         });
       }
-      function makeNSResolver(resolver) {
-        if (resolver && typeof resolver.getNamespace === "function") {
-          return makeNSResolverFromObject(resolver);
-        }
-        if (typeof resolver === "function") {
-          return makeNSResolverFromFunction(resolver);
-        }
-        if (typeof resolver === "object") {
-          return makeNSResolverFromMap(resolver);
-        }
-        return defaultNSResolver;
+      function I(h) {
+        return h && typeof h.getNamespace == "function" ? l(h) : typeof h == "function" ? i(h) : typeof h == "object" ? g(h) : r;
       }
-      function convertValue(value) {
-        if (value === null || typeof value === "undefined" || value instanceof XString || value instanceof XBoolean || value instanceof XNumber || value instanceof XNodeSet) {
-          return value;
-        }
-        switch (typeof value) {
+      function L(h) {
+        if (h === null || typeof h > "u" || h instanceof T || h instanceof C || h instanceof b || h instanceof m)
+          return h;
+        switch (typeof h) {
           case "string":
-            return new XString(value);
+            return new T(h);
           case "boolean":
-            return new XBoolean(value);
+            return new C(h);
           case "number":
-            return new XNumber(value);
+            return new b(h);
         }
-        var ns = new XNodeSet();
-        ns.addArray([].concat(value));
-        return ns;
+        var P = new m();
+        return P.addArray([].concat(h)), P;
       }
-      function makeEvaluator(func) {
-        return function(context) {
-          var args = Array.prototype.slice.call(arguments, 1).map(function(arg) {
-            return arg.evaluate(context);
-          });
-          var result = func.apply(this, [].concat(context, args));
-          return convertValue(result);
+      function D(h) {
+        return function(P) {
+          var oe = Array.prototype.slice.call(arguments, 1).map(function(Wt) {
+            return Wt.evaluate(P);
+          }), Ve = h.apply(this, [].concat(P, oe));
+          return L(Ve);
         };
       }
-      function makeFunctionResolverFromFunction(func) {
+      function B(h) {
         return {
-          getFunction: function(name2, namespace) {
-            var found = func(name2, namespace);
-            if (found) {
-              return makeEvaluator(found);
-            }
-            return defaultFunctionResolver.getFunction(name2, namespace);
+          getFunction: function(P, oe) {
+            var Ve = h(P, oe);
+            return Ve ? D(Ve) : o.getFunction(P, oe);
           }
         };
       }
-      function makeFunctionResolverFromObject(obj) {
-        return makeFunctionResolverFromFunction(obj.getFunction.bind(obj));
+      function Ie(h) {
+        return B(h.getFunction.bind(h));
       }
-      function makeFunctionResolverFromMap(map2) {
-        return makeFunctionResolverFromFunction(function(name2) {
-          return map2[name2];
+      function je(h) {
+        return B(function(P) {
+          return h[P];
         });
       }
-      function makeFunctionResolver(resolver) {
-        if (resolver && typeof resolver.getFunction === "function") {
-          return makeFunctionResolverFromObject(resolver);
-        }
-        if (typeof resolver === "function") {
-          return makeFunctionResolverFromFunction(resolver);
-        }
-        if (typeof resolver === "object") {
-          return makeFunctionResolverFromMap(resolver);
-        }
-        return defaultFunctionResolver;
+      function ze(h) {
+        return h && typeof h.getFunction == "function" ? Ie(h) : typeof h == "function" ? B(h) : typeof h == "object" ? je(h) : o;
       }
-      function makeVariableResolverFromFunction(func) {
+      function Ye(h) {
         return {
-          getVariable: function(name2, namespace) {
-            var value = func(name2, namespace);
-            return convertValue(value);
+          getVariable: function(P, oe) {
+            var Ve = h(P, oe);
+            return L(Ve);
           }
         };
       }
-      function makeVariableResolver(resolver) {
-        if (resolver) {
-          if (typeof resolver.getVariable === "function") {
-            return makeVariableResolverFromFunction(resolver.getVariable.bind(resolver));
-          }
-          if (typeof resolver === "function") {
-            return makeVariableResolverFromFunction(resolver);
-          }
-          if (typeof resolver === "object") {
-            return makeVariableResolverFromFunction(function(name2) {
-              return resolver[name2];
+      function or(h) {
+        if (h) {
+          if (typeof h.getVariable == "function")
+            return Ye(h.getVariable.bind(h));
+          if (typeof h == "function")
+            return Ye(h);
+          if (typeof h == "object")
+            return Ye(function(P) {
+              return h[P];
             });
-          }
         }
-        return defaultVariableResolver;
+        return a;
       }
-      function copyIfPresent(prop, dest, source) {
-        if (prop in source) {
-          dest[prop] = source[prop];
-        }
+      function ir(h, P, oe) {
+        h in oe && (P[h] = oe[h]);
       }
-      function makeContext(options) {
-        var context = new XPathContext();
-        if (options) {
-          context.namespaceResolver = makeNSResolver(options.namespaces);
-          context.functionResolver = makeFunctionResolver(options.functions);
-          context.variableResolver = makeVariableResolver(options.variables);
-          context.expressionContextNode = options.node;
-          copyIfPresent("allowAnyNamespaceForNoPrefix", context, options);
-          copyIfPresent("isHtml", context, options);
-        } else {
-          context.namespaceResolver = defaultNSResolver;
-        }
-        return context;
+      function Ht(h) {
+        var P = new Te();
+        return h ? (P.namespaceResolver = I(h.namespaces), P.functionResolver = ze(h.functions), P.variableResolver = or(h.variables), P.expressionContextNode = h.node, ir("allowAnyNamespaceForNoPrefix", P, h), ir("isHtml", P, h)) : P.namespaceResolver = r, P;
       }
-      function evaluate(parsedExpression, options) {
-        var context = makeContext(options);
-        return parsedExpression.evaluate(context);
+      function Xt(h, P) {
+        var oe = Ht(P);
+        return h.evaluate(oe);
       }
-      var evaluatorPrototype = {
-        evaluate: function(options) {
-          return evaluate(this.expression, options);
+      var jt = {
+        evaluate: function(h) {
+          return Xt(this.expression, h);
         },
-        evaluateNumber: function(options) {
-          return this.evaluate(options).numberValue();
+        evaluateNumber: function(h) {
+          return this.evaluate(h).numberValue();
         },
-        evaluateString: function(options) {
-          return this.evaluate(options).stringValue();
+        evaluateString: function(h) {
+          return this.evaluate(h).stringValue();
         },
-        evaluateBoolean: function(options) {
-          return this.evaluate(options).booleanValue();
+        evaluateBoolean: function(h) {
+          return this.evaluate(h).booleanValue();
         },
-        evaluateNodeSet: function(options) {
-          return this.evaluate(options).nodeset();
+        evaluateNodeSet: function(h) {
+          return this.evaluate(h).nodeset();
         },
-        select: function(options) {
-          return this.evaluateNodeSet(options).toArray();
+        select: function(h) {
+          return this.evaluateNodeSet(h).toArray();
         },
-        select1: function(options) {
-          return this.select(options)[0];
+        select1: function(h) {
+          return this.select(h)[0];
         }
       };
-      function parse2(xpath3) {
-        var parsed = parser.parse(xpath3);
-        return Object.create(evaluatorPrototype, {
+      function Yt(h) {
+        var P = e.parse(h);
+        return Object.create(jt, {
           expression: {
-            value: parsed
+            value: P
           }
         });
       }
-      exports2.parse = parse2;
-    })();
-    assign2(
-      exports2,
+      n.parse = Yt;
+    }(), Se(
+      n,
       {
-        XPath,
-        XPathParser,
-        XPathResult,
-        Step,
-        PathExpr,
-        NodeTest,
-        LocationPath,
-        OrOperation,
-        AndOperation,
-        BarOperation,
-        EqualsOperation,
-        NotEqualOperation,
-        LessThanOperation,
-        GreaterThanOperation,
-        LessThanOrEqualOperation,
-        GreaterThanOrEqualOperation,
-        PlusOperation,
-        MinusOperation,
-        MultiplyOperation,
-        DivOperation,
-        ModOperation,
-        UnaryMinusOperation,
-        FunctionCall,
-        VariableReference,
-        XPathContext,
-        XNodeSet,
-        XBoolean,
-        XString,
-        XNumber,
-        NamespaceResolver,
-        FunctionResolver,
-        VariableResolver,
-        Utilities
+        XPath: Z,
+        XPathParser: p,
+        XPathResult: F,
+        Step: E,
+        PathExpr: _,
+        NodeTest: d,
+        LocationPath: Oe,
+        OrOperation: ue,
+        AndOperation: pe,
+        BarOperation: Ce,
+        EqualsOperation: M,
+        NotEqualOperation: j,
+        LessThanOperation: ce,
+        GreaterThanOperation: Ae,
+        LessThanOrEqualOperation: De,
+        GreaterThanOrEqualOperation: ge,
+        PlusOperation: de,
+        MinusOperation: me,
+        MultiplyOperation: Ne,
+        DivOperation: ve,
+        ModOperation: xe,
+        UnaryMinusOperation: le,
+        FunctionCall: ye,
+        VariableReference: Fe,
+        XPathContext: Te,
+        XNodeSet: m,
+        XBoolean: C,
+        XString: T,
+        XNumber: b,
+        NamespaceResolver: Re,
+        FunctionResolver: fe,
+        VariableResolver: Ue,
+        Utilities: v
       }
-    );
-    exports2.select = function(e, doc, single) {
-      return exports2.selectWithResolver(e, doc, null, single);
-    };
-    exports2.useNamespaces = function(mappings) {
-      var resolver = {
-        mappings: mappings || {},
-        lookupNamespaceURI: function(prefix) {
-          return this.mappings[prefix];
+    ), n.select = function(e, r, o) {
+      return n.selectWithResolver(e, r, null, o);
+    }, n.useNamespaces = function(e) {
+      var r = {
+        mappings: e || {},
+        lookupNamespaceURI: function(o) {
+          return this.mappings[o];
         }
       };
-      return function(e, doc, single) {
-        return exports2.selectWithResolver(e, doc, resolver, single);
+      return function(o, a, i) {
+        return n.selectWithResolver(o, a, r, i);
+      };
+    }, n.selectWithResolver = function(e, r, o, a) {
+      var i = new he(e, o, new p()), l = F.ANY_TYPE, g = i.evaluate(r, l, null);
+      return g.resultType == F.STRING_TYPE ? g = g.stringValue : g.resultType == F.NUMBER_TYPE ? g = g.numberValue : g.resultType == F.BOOLEAN_TYPE ? g = g.booleanValue : (g = g.nodes, a && (g = g[0])), g;
+    }, n.select1 = function(e, r) {
+      return n.select(e, r, !0);
+    };
+    var Gt = function(e) {
+      return Array.isArray(e) && e.every(A);
+    }, _e = function(e) {
+      return function(r) {
+        return A(r) && r.nodeType === e;
       };
     };
-    exports2.selectWithResolver = function(e, doc, resolver, single) {
-      var expression = new XPathExpression(e, resolver, new XPathParser());
-      var type = XPathResult.ANY_TYPE;
-      var result = expression.evaluate(doc, type, null);
-      if (result.resultType == XPathResult.STRING_TYPE) {
-        result = result.stringValue;
-      } else if (result.resultType == XPathResult.NUMBER_TYPE) {
-        result = result.numberValue;
-      } else if (result.resultType == XPathResult.BOOLEAN_TYPE) {
-        result = result.booleanValue;
-      } else {
-        result = result.nodes;
-        if (single) {
-          result = result[0];
-        }
-      }
-      return result;
-    };
-    exports2.select1 = function(e, doc) {
-      return exports2.select(e, doc, true);
-    };
-    var isArrayOfNodes = function(value) {
-      return Array.isArray(value) && value.every(isNodeLike);
-    };
-    var isNodeOfType = function(type) {
-      return function(value) {
-        return isNodeLike(value) && value.nodeType === type;
-      };
-    };
-    assign2(
-      exports2,
+    Se(
+      n,
       {
-        isNodeLike,
-        isArrayOfNodes,
-        isElement: isNodeOfType(NodeTypes.ELEMENT_NODE),
-        isAttribute: isNodeOfType(NodeTypes.ATTRIBUTE_NODE),
-        isTextNode: isNodeOfType(NodeTypes.TEXT_NODE),
-        isCDATASection: isNodeOfType(NodeTypes.CDATA_SECTION_NODE),
-        isProcessingInstruction: isNodeOfType(NodeTypes.PROCESSING_INSTRUCTION_NODE),
-        isComment: isNodeOfType(NodeTypes.COMMENT_NODE),
-        isDocumentNode: isNodeOfType(NodeTypes.DOCUMENT_NODE),
-        isDocumentTypeNode: isNodeOfType(NodeTypes.DOCUMENT_TYPE_NODE),
-        isDocumentFragment: isNodeOfType(NodeTypes.DOCUMENT_FRAGMENT_NODE)
+        isNodeLike: A,
+        isArrayOfNodes: Gt,
+        isElement: _e(x.ELEMENT_NODE),
+        isAttribute: _e(x.ATTRIBUTE_NODE),
+        isTextNode: _e(x.TEXT_NODE),
+        isCDATASection: _e(x.CDATA_SECTION_NODE),
+        isProcessingInstruction: _e(x.PROCESSING_INSTRUCTION_NODE),
+        isComment: _e(x.COMMENT_NODE),
+        isDocumentNode: _e(x.DOCUMENT_NODE),
+        isDocumentTypeNode: _e(x.DOCUMENT_TYPE_NODE),
+        isDocumentFragment: _e(x.DOCUMENT_FRAGMENT_NODE)
       }
     );
-  })(xpath2);
-})(xpath$1);
-const xpath = /* @__PURE__ */ getDefaultExportFromCjs(xpath$1);
-var lib = {};
-var dom$2 = {};
-var conventions$2 = {};
-"use strict";
-function find$1(list, predicate, ac) {
-  if (ac === void 0) {
-    ac = Array.prototype;
-  }
-  if (list && typeof ac.find === "function") {
-    return ac.find.call(list, predicate);
-  }
-  for (var i = 0; i < list.length; i++) {
-    if (Object.prototype.hasOwnProperty.call(list, i)) {
-      var item = list[i];
-      if (predicate.call(void 0, item, i, list)) {
-        return item;
-      }
+  })(u);
+})(nt);
+const Qt = /* @__PURE__ */ $t(nt);
+var Ge = {}, Me = {};
+function zt(t, u, n) {
+  if (n === void 0 && (n = Array.prototype), t && typeof n.find == "function")
+    return n.find.call(t, u);
+  for (var s = 0; s < t.length; s++)
+    if (Object.prototype.hasOwnProperty.call(t, s)) {
+      var c = t[s];
+      if (u.call(void 0, c, s, t))
+        return c;
     }
-  }
 }
-function freeze(object, oc) {
-  if (oc === void 0) {
-    oc = Object;
-  }
-  return oc && typeof oc.freeze === "function" ? oc.freeze(object) : object;
+function Or(t, u) {
+  return u === void 0 && (u = Object), u && typeof u.freeze == "function" ? u.freeze(t) : t;
 }
-function assign(target, source) {
-  if (target === null || typeof target !== "object") {
+function Jt(t, u) {
+  if (t === null || typeof t != "object")
     throw new TypeError("target is not an object");
-  }
-  for (var key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      target[key] = source[key];
-    }
-  }
-  return target;
+  for (var n in u)
+    Object.prototype.hasOwnProperty.call(u, n) && (t[n] = u[n]);
+  return t;
 }
-var MIME_TYPE = freeze({
+var ot = Or({
   /**
    * `text/html`, the only mime type that triggers treating an XML document as HTML.
    *
@@ -3910,8 +2421,8 @@ var MIME_TYPE = freeze({
    * @see https://en.wikipedia.org/wiki/HTML Wikipedia
    * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMParser/parseFromString MDN
    * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring 	 */
-  isHTML: function(value) {
-    return value === MIME_TYPE.HTML;
+  isHTML: function(t) {
+    return t === ot.HTML;
   },
   /**
    * `application/xml`, the standard mime type for XML documents.
@@ -3946,8 +2457,7 @@ var MIME_TYPE = freeze({
    * @see https://en.wikipedia.org/wiki/Scalable_Vector_Graphics Wikipedia
    */
   XML_SVG_IMAGE: "image/svg+xml"
-});
-var NAMESPACE$3 = freeze({
+}), it = Or({
   /**
    * The XHTML namespace.
    *
@@ -3961,8 +2471,8 @@ var NAMESPACE$3 = freeze({
    *
    * @see NAMESPACE.HTML
    */
-  isHTML: function(uri) {
-    return uri === NAMESPACE$3.HTML;
+  isHTML: function(t) {
+    return t === it.HTML;
   },
   /**
    * The SVG namespace.
@@ -3983,114 +2493,73 @@ var NAMESPACE$3 = freeze({
    */
   XMLNS: "http://www.w3.org/2000/xmlns/"
 });
-var assign_1 = conventions$2.assign = assign;
-var find_1 = conventions$2.find = find$1;
-var freeze_1 = conventions$2.freeze = freeze;
-var MIME_TYPE_1 = conventions$2.MIME_TYPE = MIME_TYPE;
-var NAMESPACE_1 = conventions$2.NAMESPACE = NAMESPACE$3;
-var conventions$1 = conventions$2;
-var find = conventions$1.find;
-var NAMESPACE$2 = conventions$1.NAMESPACE;
-function notEmptyString(input) {
-  return input !== "";
+Me.assign = Jt;
+Me.find = zt;
+Me.freeze = Or;
+Me.MIME_TYPE = ot;
+Me.NAMESPACE = it;
+var st = Me, we = st.find, pr = st.NAMESPACE;
+function Zt(t) {
+  return t !== "";
 }
-function splitOnASCIIWhitespace(input) {
-  return input ? input.split(/[\t\n\f\r ]+/).filter(notEmptyString) : [];
+function Kt(t) {
+  return t ? t.split(/[\t\n\f\r ]+/).filter(Zt) : [];
 }
-function orderedSetReducer(current, element) {
-  if (!current.hasOwnProperty(element)) {
-    current[element] = true;
-  }
-  return current;
+function eu(t, u) {
+  return t.hasOwnProperty(u) || (t[u] = !0), t;
 }
-function toOrderedSet(input) {
-  if (!input)
+function Xr(t) {
+  if (!t)
     return [];
-  var list = splitOnASCIIWhitespace(input);
-  return Object.keys(list.reduce(orderedSetReducer, {}));
+  var u = Kt(t);
+  return Object.keys(u.reduce(eu, {}));
 }
-function arrayIncludes(list) {
-  return function(element) {
-    return list && list.indexOf(element) !== -1;
+function ru(t) {
+  return function(u) {
+    return t && t.indexOf(u) !== -1;
   };
 }
-function copy(src, dest) {
-  for (var p in src) {
-    if (Object.prototype.hasOwnProperty.call(src, p)) {
-      dest[p] = src[p];
-    }
-  }
+function hr(t, u) {
+  for (var n in t)
+    Object.prototype.hasOwnProperty.call(t, n) && (u[n] = t[n]);
 }
-function _extends(Class, Super) {
-  var pt = Class.prototype;
-  if (!(pt instanceof Super)) {
-    let t = function() {
+function se(t, u) {
+  var n = t.prototype;
+  if (!(n instanceof u)) {
+    let s = function() {
     };
-    ;
-    t.prototype = Super.prototype;
-    t = new t();
-    copy(pt, t);
-    Class.prototype = pt = t;
+    s.prototype = u.prototype, s = new s(), hr(n, s), t.prototype = n = s;
   }
-  if (pt.constructor != Class) {
-    if (typeof Class != "function") {
-      console.error("unknown Class:" + Class);
-    }
-    pt.constructor = Class;
-  }
+  n.constructor != t && (typeof t != "function" && console.error("unknown Class:" + t), n.constructor = t);
 }
-var NodeType = {};
-var ELEMENT_NODE = NodeType.ELEMENT_NODE = 1;
-var ATTRIBUTE_NODE = NodeType.ATTRIBUTE_NODE = 2;
-var TEXT_NODE = NodeType.TEXT_NODE = 3;
-var CDATA_SECTION_NODE = NodeType.CDATA_SECTION_NODE = 4;
-var ENTITY_REFERENCE_NODE = NodeType.ENTITY_REFERENCE_NODE = 5;
-var ENTITY_NODE = NodeType.ENTITY_NODE = 6;
-var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
-var COMMENT_NODE = NodeType.COMMENT_NODE = 8;
-var DOCUMENT_NODE = NodeType.DOCUMENT_NODE = 9;
-var DOCUMENT_TYPE_NODE = NodeType.DOCUMENT_TYPE_NODE = 10;
-var DOCUMENT_FRAGMENT_NODE = NodeType.DOCUMENT_FRAGMENT_NODE = 11;
-var NOTATION_NODE = NodeType.NOTATION_NODE = 12;
-var ExceptionCode = {};
-var ExceptionMessage = {};
-var INDEX_SIZE_ERR = ExceptionCode.INDEX_SIZE_ERR = (ExceptionMessage[1] = "Index size error", 1);
-var DOMSTRING_SIZE_ERR = ExceptionCode.DOMSTRING_SIZE_ERR = (ExceptionMessage[2] = "DOMString size error", 2);
-var HIERARCHY_REQUEST_ERR = ExceptionCode.HIERARCHY_REQUEST_ERR = (ExceptionMessage[3] = "Hierarchy request error", 3);
-var WRONG_DOCUMENT_ERR = ExceptionCode.WRONG_DOCUMENT_ERR = (ExceptionMessage[4] = "Wrong document", 4);
-var INVALID_CHARACTER_ERR = ExceptionCode.INVALID_CHARACTER_ERR = (ExceptionMessage[5] = "Invalid character", 5);
-var NO_DATA_ALLOWED_ERR = ExceptionCode.NO_DATA_ALLOWED_ERR = (ExceptionMessage[6] = "No data allowed", 6);
-var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = (ExceptionMessage[7] = "No modification allowed", 7);
-var NOT_FOUND_ERR = ExceptionCode.NOT_FOUND_ERR = (ExceptionMessage[8] = "Not found", 8);
-var NOT_SUPPORTED_ERR = ExceptionCode.NOT_SUPPORTED_ERR = (ExceptionMessage[9] = "Not supported", 9);
-var INUSE_ATTRIBUTE_ERR = ExceptionCode.INUSE_ATTRIBUTE_ERR = (ExceptionMessage[10] = "Attribute in use", 10);
-var INVALID_STATE_ERR = ExceptionCode.INVALID_STATE_ERR = (ExceptionMessage[11] = "Invalid state", 11);
-var SYNTAX_ERR = ExceptionCode.SYNTAX_ERR = (ExceptionMessage[12] = "Syntax error", 12);
-var INVALID_MODIFICATION_ERR = ExceptionCode.INVALID_MODIFICATION_ERR = (ExceptionMessage[13] = "Invalid modification", 13);
-var NAMESPACE_ERR = ExceptionCode.NAMESPACE_ERR = (ExceptionMessage[14] = "Invalid namespace", 14);
-var INVALID_ACCESS_ERR = ExceptionCode.INVALID_ACCESS_ERR = (ExceptionMessage[15] = "Invalid access", 15);
-function DOMException(code, message) {
-  if (message instanceof Error) {
-    var error = message;
-  } else {
-    error = this;
-    Error.call(this, ExceptionMessage[code]);
-    this.message = ExceptionMessage[code];
-    if (Error.captureStackTrace)
-      Error.captureStackTrace(this, DOMException);
-  }
-  error.code = code;
-  if (message)
-    this.message = this.message + ": " + message;
-  return error;
+var ae = {}, Ee = ae.ELEMENT_NODE = 1, tr = ae.ATTRIBUTE_NODE = 2, mr = ae.TEXT_NODE = 3, at = ae.CDATA_SECTION_NODE = 4, lt = ae.ENTITY_REFERENCE_NODE = 5, tu = ae.ENTITY_NODE = 6, pt = ae.PROCESSING_INSTRUCTION_NODE = 7, ct = ae.COMMENT_NODE = 8, ft = ae.DOCUMENT_NODE = 9, ht = ae.DOCUMENT_TYPE_NODE = 10, Pe = ae.DOCUMENT_FRAGMENT_NODE = 11, uu = ae.NOTATION_NODE = 12, re = {}, K = {};
+re.INDEX_SIZE_ERR = (K[1] = "Index size error", 1);
+re.DOMSTRING_SIZE_ERR = (K[2] = "DOMString size error", 2);
+var ie = re.HIERARCHY_REQUEST_ERR = (K[3] = "Hierarchy request error", 3);
+re.WRONG_DOCUMENT_ERR = (K[4] = "Wrong document", 4);
+re.INVALID_CHARACTER_ERR = (K[5] = "Invalid character", 5);
+re.NO_DATA_ALLOWED_ERR = (K[6] = "No data allowed", 6);
+re.NO_MODIFICATION_ALLOWED_ERR = (K[7] = "No modification allowed", 7);
+var Et = re.NOT_FOUND_ERR = (K[8] = "Not found", 8);
+re.NOT_SUPPORTED_ERR = (K[9] = "Not supported", 9);
+var jr = re.INUSE_ATTRIBUTE_ERR = (K[10] = "Attribute in use", 10);
+re.INVALID_STATE_ERR = (K[11] = "Invalid state", 11);
+re.SYNTAX_ERR = (K[12] = "Syntax error", 12);
+re.INVALID_MODIFICATION_ERR = (K[13] = "Invalid modification", 13);
+re.NAMESPACE_ERR = (K[14] = "Invalid namespace", 14);
+re.INVALID_ACCESS_ERR = (K[15] = "Invalid access", 15);
+function z(t, u) {
+  if (u instanceof Error)
+    var n = u;
+  else
+    n = this, Error.call(this, K[t]), this.message = K[t], Error.captureStackTrace && Error.captureStackTrace(this, z);
+  return n.code = t, u && (this.message = this.message + ": " + u), n;
 }
-;
-DOMException.prototype = Error.prototype;
-copy(ExceptionCode, DOMException);
-function NodeList() {
+z.prototype = Error.prototype;
+hr(re, z);
+function Le() {
 }
-;
-NodeList.prototype = {
+Le.prototype = {
   /**
    * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
    * @standard level1
@@ -4104,161 +2573,121 @@ NodeList.prototype = {
    * @return Node
    * 	The node at the indexth position in the NodeList, or null if that is not a valid index.
    */
-  item: function(index) {
-    return index >= 0 && index < this.length ? this[index] : null;
+  item: function(t) {
+    return t >= 0 && t < this.length ? this[t] : null;
   },
-  toString: function(isHTML, nodeFilter) {
-    for (var buf = [], i = 0; i < this.length; i++) {
-      serializeToString(this[i], buf, isHTML, nodeFilter);
-    }
-    return buf.join("");
+  toString: function(t, u) {
+    for (var n = [], s = 0; s < this.length; s++)
+      rr(this[s], n, t, u);
+    return n.join("");
   },
   /**
    * @private
    * @param {function (Node):boolean} predicate
    * @returns {Node[]}
    */
-  filter: function(predicate) {
-    return Array.prototype.filter.call(this, predicate);
+  filter: function(t) {
+    return Array.prototype.filter.call(this, t);
   },
   /**
    * @private
    * @param {Node} item
    * @returns {number}
    */
-  indexOf: function(item) {
-    return Array.prototype.indexOf.call(this, item);
+  indexOf: function(t) {
+    return Array.prototype.indexOf.call(this, t);
   }
 };
-function LiveNodeList(node, refresh) {
-  this._node = node;
-  this._refresh = refresh;
-  _updateLiveList(this);
+function ur(t, u) {
+  this._node = t, this._refresh = u, Fr(this);
 }
-function _updateLiveList(list) {
-  var inc = list._node._inc || list._node.ownerDocument._inc;
-  if (list._inc !== inc) {
-    var ls = list._refresh(list._node);
-    __set__(list, "length", ls.length);
-    if (!list.$$length || ls.length < list.$$length) {
-      for (var i = ls.length; i in list; i++) {
-        if (Object.prototype.hasOwnProperty.call(list, i)) {
-          delete list[i];
-        }
-      }
-    }
-    copy(ls, list);
-    list._inc = inc;
+function Fr(t) {
+  var u = t._node._inc || t._node.ownerDocument._inc;
+  if (t._inc !== u) {
+    var n = t._refresh(t._node);
+    if (bt(t, "length", n.length), !t.$$length || n.length < t.$$length)
+      for (var s = n.length; s in t; s++)
+        Object.prototype.hasOwnProperty.call(t, s) && delete t[s];
+    hr(n, t), t._inc = u;
   }
 }
-LiveNodeList.prototype.item = function(i) {
-  _updateLiveList(this);
-  return this[i] || null;
+ur.prototype.item = function(t) {
+  return Fr(this), this[t] || null;
 };
-_extends(LiveNodeList, NodeList);
-function NamedNodeMap() {
+se(ur, Le);
+function Nr() {
 }
-;
-function _findNodeIndex(list, node) {
-  var i = list.length;
-  while (i--) {
-    if (list[i] === node) {
-      return i;
-    }
+function At(t, u) {
+  for (var n = t.length; n--; )
+    if (t[n] === u)
+      return n;
+}
+function Yr(t, u, n, s) {
+  if (s ? u[At(u, s)] = n : u[u.length++] = n, t) {
+    n.ownerElement = t;
+    var c = t.ownerDocument;
+    c && (s && dt(c, t, s), nu(c, t, n));
   }
 }
-function _addNamedNode(el, list, newAttr, oldAttr) {
-  if (oldAttr) {
-    list[_findNodeIndex(list, oldAttr)] = newAttr;
-  } else {
-    list[list.length++] = newAttr;
-  }
-  if (el) {
-    newAttr.ownerElement = el;
-    var doc = el.ownerDocument;
-    if (doc) {
-      oldAttr && _onRemoveAttribute(doc, el, oldAttr);
-      _onAddAttribute(doc, el, newAttr);
+function Wr(t, u, n) {
+  var s = At(u, n);
+  if (s >= 0) {
+    for (var c = u.length - 1; s < c; )
+      u[s] = u[++s];
+    if (u.length = c, t) {
+      var f = t.ownerDocument;
+      f && (dt(f, t, n), n.ownerElement = null);
     }
-  }
+  } else
+    throw new z(Et, new Error(t.tagName + "@" + n));
 }
-function _removeNamedNode(el, list, attr) {
-  var i = _findNodeIndex(list, attr);
-  if (i >= 0) {
-    var lastIndex = list.length - 1;
-    while (i < lastIndex) {
-      list[i] = list[++i];
-    }
-    list.length = lastIndex;
-    if (el) {
-      var doc = el.ownerDocument;
-      if (doc) {
-        _onRemoveAttribute(doc, el, attr);
-        attr.ownerElement = null;
-      }
-    }
-  } else {
-    throw new DOMException(NOT_FOUND_ERR, new Error(el.tagName + "@" + attr));
-  }
-}
-NamedNodeMap.prototype = {
+Nr.prototype = {
   length: 0,
-  item: NodeList.prototype.item,
-  getNamedItem: function(key) {
-    var i = this.length;
-    while (i--) {
-      var attr = this[i];
-      if (attr.nodeName == key) {
-        return attr;
-      }
+  item: Le.prototype.item,
+  getNamedItem: function(t) {
+    for (var u = this.length; u--; ) {
+      var n = this[u];
+      if (n.nodeName == t)
+        return n;
     }
   },
-  setNamedItem: function(attr) {
-    var el = attr.ownerElement;
-    if (el && el != this._ownerElement) {
-      throw new DOMException(INUSE_ATTRIBUTE_ERR);
-    }
-    var oldAttr = this.getNamedItem(attr.nodeName);
-    _addNamedNode(this._ownerElement, this, attr, oldAttr);
-    return oldAttr;
+  setNamedItem: function(t) {
+    var u = t.ownerElement;
+    if (u && u != this._ownerElement)
+      throw new z(jr);
+    var n = this.getNamedItem(t.nodeName);
+    return Yr(this._ownerElement, this, t, n), n;
   },
   /* returns Node */
-  setNamedItemNS: function(attr) {
-    var el = attr.ownerElement, oldAttr;
-    if (el && el != this._ownerElement) {
-      throw new DOMException(INUSE_ATTRIBUTE_ERR);
-    }
-    oldAttr = this.getNamedItemNS(attr.namespaceURI, attr.localName);
-    _addNamedNode(this._ownerElement, this, attr, oldAttr);
-    return oldAttr;
+  setNamedItemNS: function(t) {
+    var u = t.ownerElement, n;
+    if (u && u != this._ownerElement)
+      throw new z(jr);
+    return n = this.getNamedItemNS(t.namespaceURI, t.localName), Yr(this._ownerElement, this, t, n), n;
   },
   /* returns Node */
-  removeNamedItem: function(key) {
-    var attr = this.getNamedItem(key);
-    _removeNamedNode(this._ownerElement, this, attr);
-    return attr;
+  removeNamedItem: function(t) {
+    var u = this.getNamedItem(t);
+    return Wr(this._ownerElement, this, u), u;
   },
   // raises: NOT_FOUND_ERR,NO_MODIFICATION_ALLOWED_ERR
   //for level2
-  removeNamedItemNS: function(namespaceURI, localName) {
-    var attr = this.getNamedItemNS(namespaceURI, localName);
-    _removeNamedNode(this._ownerElement, this, attr);
-    return attr;
+  removeNamedItemNS: function(t, u) {
+    var n = this.getNamedItemNS(t, u);
+    return Wr(this._ownerElement, this, n), n;
   },
-  getNamedItemNS: function(namespaceURI, localName) {
-    var i = this.length;
-    while (i--) {
-      var node = this[i];
-      if (node.localName == localName && node.namespaceURI == namespaceURI) {
-        return node;
-      }
+  getNamedItemNS: function(t, u) {
+    for (var n = this.length; n--; ) {
+      var s = this[n];
+      if (s.localName == u && s.namespaceURI == t)
+        return s;
     }
     return null;
   }
 };
-function DOMImplementation$2() {
+function Dt() {
 }
-DOMImplementation$2.prototype = {
+Dt.prototype = {
   /**
    * The DOMImplementation.hasFeature() method returns a Boolean flag indicating if a given feature is supported.
    * The different implementations fairly diverged in what kind of features were reported.
@@ -4274,8 +2703,8 @@ DOMImplementation$2.prototype = {
    * @see https://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-5CED94D7 DOM Level 1 Core
    * @see https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature DOM Living Standard
    */
-  hasFeature: function(feature, version) {
-    return true;
+  hasFeature: function(t, u) {
+    return !0;
   },
   /**
    * Creates an XML Document object of the specified type with its document element.
@@ -4299,19 +2728,13 @@ DOMImplementation$2.prototype = {
    * @see https://www.w3.org/TR/xml/#NT-NameStartChar XML Spec: Names
    * @see https://www.w3.org/TR/xml-names/#ns-qualnames XML Namespaces: Qualified names
    */
-  createDocument: function(namespaceURI, qualifiedName, doctype) {
-    var doc = new Document();
-    doc.implementation = this;
-    doc.childNodes = new NodeList();
-    doc.doctype = doctype || null;
-    if (doctype) {
-      doc.appendChild(doctype);
+  createDocument: function(t, u, n) {
+    var s = new Er();
+    if (s.implementation = this, s.childNodes = new Le(), s.doctype = n || null, n && s.appendChild(n), u) {
+      var c = s.createElementNS(t, u);
+      s.appendChild(c);
     }
-    if (qualifiedName) {
-      var root = doc.createElementNS(namespaceURI, qualifiedName);
-      doc.appendChild(root);
-    }
-    return doc;
+    return s;
   },
   /**
    * Returns a doctype, with the given `qualifiedName`, `publicId`, and `systemId`.
@@ -4334,19 +2757,14 @@ DOMImplementation$2.prototype = {
    * @see https://www.w3.org/TR/xml/#NT-NameStartChar XML Spec: Names
    * @see https://www.w3.org/TR/xml-names/#ns-qualnames XML Namespaces: Qualified names
    */
-  createDocumentType: function(qualifiedName, publicId, systemId) {
-    var node = new DocumentType();
-    node.name = qualifiedName;
-    node.nodeName = qualifiedName;
-    node.publicId = publicId || "";
-    node.systemId = systemId || "";
-    return node;
+  createDocumentType: function(t, u, n) {
+    var s = new Cr();
+    return s.name = t, s.nodeName = t, s.publicId = u || "", s.systemId = n || "", s;
   }
 };
-function Node() {
+function V() {
 }
-;
-Node.prototype = {
+V.prototype = {
   firstChild: null,
   lastChild: null,
   previousSibling: null,
@@ -4360,44 +2778,34 @@ Node.prototype = {
   prefix: null,
   localName: null,
   // Modified in DOM Level 2:
-  insertBefore: function(newChild, refChild) {
-    return _insertBefore(this, newChild, refChild);
+  insertBefore: function(t, u) {
+    return vr(this, t, u);
   },
-  replaceChild: function(newChild, oldChild) {
-    _insertBefore(this, newChild, oldChild, assertPreReplacementValidityInDocument);
-    if (oldChild) {
-      this.removeChild(oldChild);
-    }
+  replaceChild: function(t, u) {
+    vr(this, t, u, Nt), u && this.removeChild(u);
   },
-  removeChild: function(oldChild) {
-    return _removeChild(this, oldChild);
+  removeChild: function(t) {
+    return mt(this, t);
   },
-  appendChild: function(newChild) {
-    return this.insertBefore(newChild, null);
+  appendChild: function(t) {
+    return this.insertBefore(t, null);
   },
   hasChildNodes: function() {
     return this.firstChild != null;
   },
-  cloneNode: function(deep) {
-    return cloneNode(this.ownerDocument || this, this, deep);
+  cloneNode: function(t) {
+    return wr(this.ownerDocument || this, this, t);
   },
   // Modified in DOM Level 2:
   normalize: function() {
-    var child = this.firstChild;
-    while (child) {
-      var next = child.nextSibling;
-      if (next && next.nodeType == TEXT_NODE && child.nodeType == TEXT_NODE) {
-        this.removeChild(next);
-        child.appendData(next.data);
-      } else {
-        child.normalize();
-        child = next;
-      }
+    for (var t = this.firstChild; t; ) {
+      var u = t.nextSibling;
+      u && u.nodeType == mr && t.nodeType == mr ? (this.removeChild(u), t.appendData(u.data)) : (t.normalize(), t = u);
     }
   },
   // Introduced in DOM Level 2:
-  isSupported: function(feature, version) {
-    return this.ownerDocument.implementation.hasFeature(feature, version);
+  isSupported: function(t, u) {
+    return this.ownerDocument.implementation.hasFeature(t, u);
   },
   // Introduced in DOM Level 2:
   hasAttributes: function() {
@@ -4417,287 +2825,194 @@ Node.prototype = {
    * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
    * @see https://github.com/xmldom/xmldom/issues/322
    */
-  lookupPrefix: function(namespaceURI) {
-    var el = this;
-    while (el) {
-      var map = el._nsMap;
-      if (map) {
-        for (var n in map) {
-          if (Object.prototype.hasOwnProperty.call(map, n) && map[n] === namespaceURI) {
-            return n;
-          }
-        }
+  lookupPrefix: function(t) {
+    for (var u = this; u; ) {
+      var n = u._nsMap;
+      if (n) {
+        for (var s in n)
+          if (Object.prototype.hasOwnProperty.call(n, s) && n[s] === t)
+            return s;
       }
-      el = el.nodeType == ATTRIBUTE_NODE ? el.ownerDocument : el.parentNode;
+      u = u.nodeType == tr ? u.ownerDocument : u.parentNode;
     }
     return null;
   },
   // Introduced in DOM Level 3:
-  lookupNamespaceURI: function(prefix) {
-    var el = this;
-    while (el) {
-      var map = el._nsMap;
-      if (map) {
-        if (Object.prototype.hasOwnProperty.call(map, prefix)) {
-          return map[prefix];
-        }
-      }
-      el = el.nodeType == ATTRIBUTE_NODE ? el.ownerDocument : el.parentNode;
+  lookupNamespaceURI: function(t) {
+    for (var u = this; u; ) {
+      var n = u._nsMap;
+      if (n && Object.prototype.hasOwnProperty.call(n, t))
+        return n[t];
+      u = u.nodeType == tr ? u.ownerDocument : u.parentNode;
     }
     return null;
   },
   // Introduced in DOM Level 3:
-  isDefaultNamespace: function(namespaceURI) {
-    var prefix = this.lookupPrefix(namespaceURI);
-    return prefix == null;
+  isDefaultNamespace: function(t) {
+    var u = this.lookupPrefix(t);
+    return u == null;
   }
 };
-function _xmlEncoder(c) {
-  return c == "<" && "&lt;" || c == ">" && "&gt;" || c == "&" && "&amp;" || c == '"' && "&quot;" || "&#" + c.charCodeAt() + ";";
+function gt(t) {
+  return t == "<" && "&lt;" || t == ">" && "&gt;" || t == "&" && "&amp;" || t == '"' && "&quot;" || "&#" + t.charCodeAt() + ";";
 }
-copy(NodeType, Node);
-copy(NodeType, Node.prototype);
-function _visitNode(node, callback) {
-  if (callback(node)) {
-    return true;
-  }
-  if (node = node.firstChild) {
-    do {
-      if (_visitNode(node, callback)) {
-        return true;
-      }
-    } while (node = node.nextSibling);
-  }
+hr(ae, V);
+hr(ae, V.prototype);
+function cr(t, u) {
+  if (u(t))
+    return !0;
+  if (t = t.firstChild)
+    do
+      if (cr(t, u))
+        return !0;
+    while (t = t.nextSibling);
 }
-function Document() {
+function Er() {
   this.ownerDocument = this;
 }
-function _onAddAttribute(doc, el, newAttr) {
-  doc && doc._inc++;
-  var ns = newAttr.namespaceURI;
-  if (ns === NAMESPACE$2.XMLNS) {
-    el._nsMap[newAttr.prefix ? newAttr.localName : ""] = newAttr.value;
-  }
+function nu(t, u, n) {
+  t && t._inc++;
+  var s = n.namespaceURI;
+  s === pr.XMLNS && (u._nsMap[n.prefix ? n.localName : ""] = n.value);
 }
-function _onRemoveAttribute(doc, el, newAttr, remove) {
-  doc && doc._inc++;
-  var ns = newAttr.namespaceURI;
-  if (ns === NAMESPACE$2.XMLNS) {
-    delete el._nsMap[newAttr.prefix ? newAttr.localName : ""];
-  }
+function dt(t, u, n, s) {
+  t && t._inc++;
+  var c = n.namespaceURI;
+  c === pr.XMLNS && delete u._nsMap[n.prefix ? n.localName : ""];
 }
-function _onUpdateChild(doc, el, newChild) {
-  if (doc && doc._inc) {
-    doc._inc++;
-    var cs = el.childNodes;
-    if (newChild) {
-      cs[cs.length++] = newChild;
-    } else {
-      var child = el.firstChild;
-      var i = 0;
-      while (child) {
-        cs[i++] = child;
-        child = child.nextSibling;
-      }
-      cs.length = i;
-      delete cs[cs.length];
+function Rr(t, u, n) {
+  if (t && t._inc) {
+    t._inc++;
+    var s = u.childNodes;
+    if (n)
+      s[s.length++] = n;
+    else {
+      for (var c = u.firstChild, f = 0; c; )
+        s[f++] = c, c = c.nextSibling;
+      s.length = f, delete s[s.length];
     }
   }
 }
-function _removeChild(parentNode, child) {
-  var previous = child.previousSibling;
-  var next = child.nextSibling;
-  if (previous) {
-    previous.nextSibling = next;
-  } else {
-    parentNode.firstChild = next;
+function mt(t, u) {
+  var n = u.previousSibling, s = u.nextSibling;
+  return n ? n.nextSibling = s : t.firstChild = s, s ? s.previousSibling = n : t.lastChild = n, u.parentNode = null, u.previousSibling = null, u.nextSibling = null, Rr(t.ownerDocument, t), u;
+}
+function ou(t) {
+  return t && (t.nodeType === V.DOCUMENT_NODE || t.nodeType === V.DOCUMENT_FRAGMENT_NODE || t.nodeType === V.ELEMENT_NODE);
+}
+function iu(t) {
+  return t && (Be(t) || _r(t) || qe(t) || t.nodeType === V.DOCUMENT_FRAGMENT_NODE || t.nodeType === V.COMMENT_NODE || t.nodeType === V.PROCESSING_INSTRUCTION_NODE);
+}
+function qe(t) {
+  return t && t.nodeType === V.DOCUMENT_TYPE_NODE;
+}
+function Be(t) {
+  return t && t.nodeType === V.ELEMENT_NODE;
+}
+function _r(t) {
+  return t && t.nodeType === V.TEXT_NODE;
+}
+function $r(t, u) {
+  var n = t.childNodes || [];
+  if (we(n, Be) || qe(u))
+    return !1;
+  var s = we(n, qe);
+  return !(u && s && n.indexOf(s) > n.indexOf(u));
+}
+function Qr(t, u) {
+  var n = t.childNodes || [];
+  function s(f) {
+    return Be(f) && f !== u;
   }
-  if (next) {
-    next.previousSibling = previous;
-  } else {
-    parentNode.lastChild = previous;
-  }
-  child.parentNode = null;
-  child.previousSibling = null;
-  child.nextSibling = null;
-  _onUpdateChild(parentNode.ownerDocument, parentNode);
-  return child;
+  if (we(n, s))
+    return !1;
+  var c = we(n, qe);
+  return !(u && c && n.indexOf(c) > n.indexOf(u));
 }
-function hasValidParentNodeType(node) {
-  return node && (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.ELEMENT_NODE);
-}
-function hasInsertableNodeType(node) {
-  return node && (isElementNode(node) || isTextNode(node) || isDocTypeNode(node) || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE || node.nodeType === Node.COMMENT_NODE || node.nodeType === Node.PROCESSING_INSTRUCTION_NODE);
-}
-function isDocTypeNode(node) {
-  return node && node.nodeType === Node.DOCUMENT_TYPE_NODE;
-}
-function isElementNode(node) {
-  return node && node.nodeType === Node.ELEMENT_NODE;
-}
-function isTextNode(node) {
-  return node && node.nodeType === Node.TEXT_NODE;
-}
-function isElementInsertionPossible(doc, child) {
-  var parentChildNodes = doc.childNodes || [];
-  if (find(parentChildNodes, isElementNode) || isDocTypeNode(child)) {
-    return false;
-  }
-  var docTypeNode = find(parentChildNodes, isDocTypeNode);
-  return !(child && docTypeNode && parentChildNodes.indexOf(docTypeNode) > parentChildNodes.indexOf(child));
-}
-function isElementReplacementPossible(doc, child) {
-  var parentChildNodes = doc.childNodes || [];
-  function hasElementChildThatIsNotChild(node) {
-    return isElementNode(node) && node !== child;
-  }
-  if (find(parentChildNodes, hasElementChildThatIsNotChild)) {
-    return false;
-  }
-  var docTypeNode = find(parentChildNodes, isDocTypeNode);
-  return !(child && docTypeNode && parentChildNodes.indexOf(docTypeNode) > parentChildNodes.indexOf(child));
-}
-function assertPreInsertionValidity1to5(parent, node, child) {
-  if (!hasValidParentNodeType(parent)) {
-    throw new DOMException(HIERARCHY_REQUEST_ERR, "Unexpected parent node type " + parent.nodeType);
-  }
-  if (child && child.parentNode !== parent) {
-    throw new DOMException(NOT_FOUND_ERR, "child not in parent");
-  }
+function su(t, u, n) {
+  if (!ou(t))
+    throw new z(ie, "Unexpected parent node type " + t.nodeType);
+  if (n && n.parentNode !== t)
+    throw new z(Et, "child not in parent");
   if (
     // 4. If `node` is not a DocumentFragment, DocumentType, Element, or CharacterData node, then throw a "HierarchyRequestError" DOMException.
-    !hasInsertableNodeType(node) || // 5. If either `node` is a Text node and `parent` is a document,
+    !iu(u) || // 5. If either `node` is a Text node and `parent` is a document,
     // the sax parser currently adds top level text nodes, this will be fixed in 0.9.0
     // || (node.nodeType === Node.TEXT_NODE && parent.nodeType === Node.DOCUMENT_NODE)
     // or `node` is a doctype and `parent` is not a document, then throw a "HierarchyRequestError" DOMException.
-    isDocTypeNode(node) && parent.nodeType !== Node.DOCUMENT_NODE
-  ) {
-    throw new DOMException(
-      HIERARCHY_REQUEST_ERR,
-      "Unexpected node type " + node.nodeType + " for parent node type " + parent.nodeType
+    qe(u) && t.nodeType !== V.DOCUMENT_NODE
+  )
+    throw new z(
+      ie,
+      "Unexpected node type " + u.nodeType + " for parent node type " + t.nodeType
     );
+}
+function au(t, u, n) {
+  var s = t.childNodes || [], c = u.childNodes || [];
+  if (u.nodeType === V.DOCUMENT_FRAGMENT_NODE) {
+    var f = c.filter(Be);
+    if (f.length > 1 || we(c, _r))
+      throw new z(ie, "More than one element or text in fragment");
+    if (f.length === 1 && !$r(t, n))
+      throw new z(ie, "Element in fragment can not be inserted before doctype");
+  }
+  if (Be(u) && !$r(t, n))
+    throw new z(ie, "Only one element can be added and only after doctype");
+  if (qe(u)) {
+    if (we(s, qe))
+      throw new z(ie, "Only one doctype is allowed");
+    var A = we(s, Be);
+    if (n && s.indexOf(A) < s.indexOf(n))
+      throw new z(ie, "Doctype can only be inserted before an element");
+    if (!n && A)
+      throw new z(ie, "Doctype can not be appended since element is present");
   }
 }
-function assertPreInsertionValidityInDocument(parent, node, child) {
-  var parentChildNodes = parent.childNodes || [];
-  var nodeChildNodes = node.childNodes || [];
-  if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-    var nodeChildElements = nodeChildNodes.filter(isElementNode);
-    if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
-    }
-    if (nodeChildElements.length === 1 && !isElementInsertionPossible(parent, child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
-    }
+function Nt(t, u, n) {
+  var s = t.childNodes || [], c = u.childNodes || [];
+  if (u.nodeType === V.DOCUMENT_FRAGMENT_NODE) {
+    var f = c.filter(Be);
+    if (f.length > 1 || we(c, _r))
+      throw new z(ie, "More than one element or text in fragment");
+    if (f.length === 1 && !Qr(t, n))
+      throw new z(ie, "Element in fragment can not be inserted before doctype");
   }
-  if (isElementNode(node)) {
-    if (!isElementInsertionPossible(parent, child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
-    }
-  }
-  if (isDocTypeNode(node)) {
-    if (find(parentChildNodes, isDocTypeNode)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
-    }
-    var parentElementChild = find(parentChildNodes, isElementNode);
-    if (child && parentChildNodes.indexOf(parentElementChild) < parentChildNodes.indexOf(child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
-    }
-    if (!child && parentElementChild) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Doctype can not be appended since element is present");
-    }
+  if (Be(u) && !Qr(t, n))
+    throw new z(ie, "Only one element can be added and only after doctype");
+  if (qe(u)) {
+    if (we(s, function(N) {
+      return qe(N) && N !== n;
+    }))
+      throw new z(ie, "Only one doctype is allowed");
+    var A = we(s, Be);
+    if (n && s.indexOf(A) < s.indexOf(n))
+      throw new z(ie, "Doctype can only be inserted before an element");
   }
 }
-function assertPreReplacementValidityInDocument(parent, node, child) {
-  var parentChildNodes = parent.childNodes || [];
-  var nodeChildNodes = node.childNodes || [];
-  if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-    var nodeChildElements = nodeChildNodes.filter(isElementNode);
-    if (nodeChildElements.length > 1 || find(nodeChildNodes, isTextNode)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "More than one element or text in fragment");
-    }
-    if (nodeChildElements.length === 1 && !isElementReplacementPossible(parent, child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Element in fragment can not be inserted before doctype");
-    }
-  }
-  if (isElementNode(node)) {
-    if (!isElementReplacementPossible(parent, child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Only one element can be added and only after doctype");
-    }
-  }
-  if (isDocTypeNode(node)) {
-    let hasDoctypeChildThatIsNotChild = function(node2) {
-      return isDocTypeNode(node2) && node2 !== child;
-    };
-    if (find(parentChildNodes, hasDoctypeChildThatIsNotChild)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Only one doctype is allowed");
-    }
-    var parentElementChild = find(parentChildNodes, isElementNode);
-    if (child && parentChildNodes.indexOf(parentElementChild) < parentChildNodes.indexOf(child)) {
-      throw new DOMException(HIERARCHY_REQUEST_ERR, "Doctype can only be inserted before an element");
-    }
-  }
+function vr(t, u, n, s) {
+  su(t, u, n), t.nodeType === V.DOCUMENT_NODE && (s || au)(t, u, n);
+  var c = u.parentNode;
+  if (c && c.removeChild(u), u.nodeType === Pe) {
+    var f = u.firstChild;
+    if (f == null)
+      return u;
+    var A = u.lastChild;
+  } else
+    f = A = u;
+  var y = n ? n.previousSibling : t.lastChild;
+  f.previousSibling = y, A.nextSibling = n, y ? y.nextSibling = f : t.firstChild = f, n == null ? t.lastChild = A : n.previousSibling = A;
+  do
+    f.parentNode = t;
+  while (f !== A && (f = f.nextSibling));
+  return Rr(t.ownerDocument || t, t), u.nodeType == Pe && (u.firstChild = u.lastChild = null), u;
 }
-function _insertBefore(parent, node, child, _inDocumentAssertion) {
-  assertPreInsertionValidity1to5(parent, node, child);
-  if (parent.nodeType === Node.DOCUMENT_NODE) {
-    (_inDocumentAssertion || assertPreInsertionValidityInDocument)(parent, node, child);
-  }
-  var cp = node.parentNode;
-  if (cp) {
-    cp.removeChild(node);
-  }
-  if (node.nodeType === DOCUMENT_FRAGMENT_NODE) {
-    var newFirst = node.firstChild;
-    if (newFirst == null) {
-      return node;
-    }
-    var newLast = node.lastChild;
-  } else {
-    newFirst = newLast = node;
-  }
-  var pre = child ? child.previousSibling : parent.lastChild;
-  newFirst.previousSibling = pre;
-  newLast.nextSibling = child;
-  if (pre) {
-    pre.nextSibling = newFirst;
-  } else {
-    parent.firstChild = newFirst;
-  }
-  if (child == null) {
-    parent.lastChild = newLast;
-  } else {
-    child.previousSibling = newLast;
-  }
-  do {
-    newFirst.parentNode = parent;
-  } while (newFirst !== newLast && (newFirst = newFirst.nextSibling));
-  _onUpdateChild(parent.ownerDocument || parent, parent);
-  if (node.nodeType == DOCUMENT_FRAGMENT_NODE) {
-    node.firstChild = node.lastChild = null;
-  }
-  return node;
+function lu(t, u) {
+  return u.parentNode && u.parentNode.removeChild(u), u.parentNode = t, u.previousSibling = t.lastChild, u.nextSibling = null, u.previousSibling ? u.previousSibling.nextSibling = u : t.firstChild = u, t.lastChild = u, Rr(t.ownerDocument, t, u), u;
 }
-function _appendSingleChild(parentNode, newChild) {
-  if (newChild.parentNode) {
-    newChild.parentNode.removeChild(newChild);
-  }
-  newChild.parentNode = parentNode;
-  newChild.previousSibling = parentNode.lastChild;
-  newChild.nextSibling = null;
-  if (newChild.previousSibling) {
-    newChild.previousSibling.nextSibling = newChild;
-  } else {
-    parentNode.firstChild = newChild;
-  }
-  parentNode.lastChild = newChild;
-  _onUpdateChild(parentNode.ownerDocument, parentNode, newChild);
-  return newChild;
-}
-Document.prototype = {
+Er.prototype = {
   //implementation : null,
   nodeName: "#document",
-  nodeType: DOCUMENT_NODE,
+  nodeType: ft,
   /**
    * The DocumentType node of the document.
    *
@@ -4707,55 +3022,33 @@ Document.prototype = {
   doctype: null,
   documentElement: null,
   _inc: 1,
-  insertBefore: function(newChild, refChild) {
-    if (newChild.nodeType == DOCUMENT_FRAGMENT_NODE) {
-      var child = newChild.firstChild;
-      while (child) {
-        var next = child.nextSibling;
-        this.insertBefore(child, refChild);
-        child = next;
+  insertBefore: function(t, u) {
+    if (t.nodeType == Pe) {
+      for (var n = t.firstChild; n; ) {
+        var s = n.nextSibling;
+        this.insertBefore(n, u), n = s;
       }
-      return newChild;
+      return t;
     }
-    _insertBefore(this, newChild, refChild);
-    newChild.ownerDocument = this;
-    if (this.documentElement === null && newChild.nodeType === ELEMENT_NODE) {
-      this.documentElement = newChild;
-    }
-    return newChild;
+    return vr(this, t, u), t.ownerDocument = this, this.documentElement === null && t.nodeType === Ee && (this.documentElement = t), t;
   },
-  removeChild: function(oldChild) {
-    if (this.documentElement == oldChild) {
-      this.documentElement = null;
-    }
-    return _removeChild(this, oldChild);
+  removeChild: function(t) {
+    return this.documentElement == t && (this.documentElement = null), mt(this, t);
   },
-  replaceChild: function(newChild, oldChild) {
-    _insertBefore(this, newChild, oldChild, assertPreReplacementValidityInDocument);
-    newChild.ownerDocument = this;
-    if (oldChild) {
-      this.removeChild(oldChild);
-    }
-    if (isElementNode(newChild)) {
-      this.documentElement = newChild;
-    }
+  replaceChild: function(t, u) {
+    vr(this, t, u, Nt), t.ownerDocument = this, u && this.removeChild(u), Be(t) && (this.documentElement = t);
   },
   // Introduced in DOM Level 2:
-  importNode: function(importedNode, deep) {
-    return importNode(this, importedNode, deep);
+  importNode: function(t, u) {
+    return Tt(this, t, u);
   },
   // Introduced in DOM Level 2:
-  getElementById: function(id) {
-    var rtv = null;
-    _visitNode(this.documentElement, function(node) {
-      if (node.nodeType == ELEMENT_NODE) {
-        if (node.getAttribute("id") == id) {
-          rtv = node;
-          return true;
-        }
-      }
-    });
-    return rtv;
+  getElementById: function(t) {
+    var u = null;
+    return cr(this.documentElement, function(n) {
+      if (n.nodeType == Ee && n.getAttribute("id") == t)
+        return u = n, !0;
+    }), u;
   },
   /**
    * The `getElementsByClassName` method of `Document` interface returns an array-like object
@@ -4774,646 +3067,457 @@ Document.prototype = {
    * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementsByClassName
    * @see https://dom.spec.whatwg.org/#concept-getelementsbyclassname
    */
-  getElementsByClassName: function(classNames) {
-    var classNamesSet = toOrderedSet(classNames);
-    return new LiveNodeList(this, function(base) {
-      var ls = [];
-      if (classNamesSet.length > 0) {
-        _visitNode(base.documentElement, function(node) {
-          if (node !== base && node.nodeType === ELEMENT_NODE) {
-            var nodeClassNames = node.getAttribute("class");
-            if (nodeClassNames) {
-              var matches = classNames === nodeClassNames;
-              if (!matches) {
-                var nodeClassNamesSet = toOrderedSet(nodeClassNames);
-                matches = classNamesSet.every(arrayIncludes(nodeClassNamesSet));
-              }
-              if (matches) {
-                ls.push(node);
-              }
+  getElementsByClassName: function(t) {
+    var u = Xr(t);
+    return new ur(this, function(n) {
+      var s = [];
+      return u.length > 0 && cr(n.documentElement, function(c) {
+        if (c !== n && c.nodeType === Ee) {
+          var f = c.getAttribute("class");
+          if (f) {
+            var A = t === f;
+            if (!A) {
+              var y = Xr(f);
+              A = u.every(ru(y));
             }
+            A && s.push(c);
           }
-        });
-      }
-      return ls;
+        }
+      }), s;
     });
   },
   //document factory method:
-  createElement: function(tagName) {
-    var node = new Element();
-    node.ownerDocument = this;
-    node.nodeName = tagName;
-    node.tagName = tagName;
-    node.localName = tagName;
-    node.childNodes = new NodeList();
-    var attrs = node.attributes = new NamedNodeMap();
-    attrs._ownerElement = node;
-    return node;
+  createElement: function(t) {
+    var u = new We();
+    u.ownerDocument = this, u.nodeName = t, u.tagName = t, u.localName = t, u.childNodes = new Le();
+    var n = u.attributes = new Nr();
+    return n._ownerElement = u, u;
   },
   createDocumentFragment: function() {
-    var node = new DocumentFragment();
-    node.ownerDocument = this;
-    node.childNodes = new NodeList();
-    return node;
+    var t = new yr();
+    return t.ownerDocument = this, t.childNodes = new Le(), t;
   },
-  createTextNode: function(data) {
-    var node = new Text();
-    node.ownerDocument = this;
-    node.appendData(data);
-    return node;
+  createTextNode: function(t) {
+    var u = new Ir();
+    return u.ownerDocument = this, u.appendData(t), u;
   },
-  createComment: function(data) {
-    var node = new Comment();
-    node.ownerDocument = this;
-    node.appendData(data);
-    return node;
+  createComment: function(t) {
+    var u = new Lr();
+    return u.ownerDocument = this, u.appendData(t), u;
   },
-  createCDATASection: function(data) {
-    var node = new CDATASection();
-    node.ownerDocument = this;
-    node.appendData(data);
-    return node;
+  createCDATASection: function(t) {
+    var u = new Pr();
+    return u.ownerDocument = this, u.appendData(t), u;
   },
-  createProcessingInstruction: function(target, data) {
-    var node = new ProcessingInstruction();
-    node.ownerDocument = this;
-    node.tagName = node.nodeName = node.target = target;
-    node.nodeValue = node.data = data;
-    return node;
+  createProcessingInstruction: function(t, u) {
+    var n = new Mr();
+    return n.ownerDocument = this, n.tagName = n.nodeName = n.target = t, n.nodeValue = n.data = u, n;
   },
-  createAttribute: function(name2) {
-    var node = new Attr();
-    node.ownerDocument = this;
-    node.name = name2;
-    node.nodeName = name2;
-    node.localName = name2;
-    node.specified = true;
-    return node;
+  createAttribute: function(t) {
+    var u = new xr();
+    return u.ownerDocument = this, u.name = t, u.nodeName = t, u.localName = t, u.specified = !0, u;
   },
-  createEntityReference: function(name2) {
-    var node = new EntityReference();
-    node.ownerDocument = this;
-    node.nodeName = name2;
-    return node;
+  createEntityReference: function(t) {
+    var u = new qr();
+    return u.ownerDocument = this, u.nodeName = t, u;
   },
   // Introduced in DOM Level 2:
-  createElementNS: function(namespaceURI, qualifiedName) {
-    var node = new Element();
-    var pl = qualifiedName.split(":");
-    var attrs = node.attributes = new NamedNodeMap();
-    node.childNodes = new NodeList();
-    node.ownerDocument = this;
-    node.nodeName = qualifiedName;
-    node.tagName = qualifiedName;
-    node.namespaceURI = namespaceURI;
-    if (pl.length == 2) {
-      node.prefix = pl[0];
-      node.localName = pl[1];
-    } else {
-      node.localName = qualifiedName;
-    }
-    attrs._ownerElement = node;
-    return node;
+  createElementNS: function(t, u) {
+    var n = new We(), s = u.split(":"), c = n.attributes = new Nr();
+    return n.childNodes = new Le(), n.ownerDocument = this, n.nodeName = u, n.tagName = u, n.namespaceURI = t, s.length == 2 ? (n.prefix = s[0], n.localName = s[1]) : n.localName = u, c._ownerElement = n, n;
   },
   // Introduced in DOM Level 2:
-  createAttributeNS: function(namespaceURI, qualifiedName) {
-    var node = new Attr();
-    var pl = qualifiedName.split(":");
-    node.ownerDocument = this;
-    node.nodeName = qualifiedName;
-    node.name = qualifiedName;
-    node.namespaceURI = namespaceURI;
-    node.specified = true;
-    if (pl.length == 2) {
-      node.prefix = pl[0];
-      node.localName = pl[1];
-    } else {
-      node.localName = qualifiedName;
-    }
-    return node;
+  createAttributeNS: function(t, u) {
+    var n = new xr(), s = u.split(":");
+    return n.ownerDocument = this, n.nodeName = u, n.name = u, n.namespaceURI = t, n.specified = !0, s.length == 2 ? (n.prefix = s[0], n.localName = s[1]) : n.localName = u, n;
   }
 };
-_extends(Document, Node);
-function Element() {
+se(Er, V);
+function We() {
   this._nsMap = {};
 }
-;
-Element.prototype = {
-  nodeType: ELEMENT_NODE,
-  hasAttribute: function(name2) {
-    return this.getAttributeNode(name2) != null;
+We.prototype = {
+  nodeType: Ee,
+  hasAttribute: function(t) {
+    return this.getAttributeNode(t) != null;
   },
-  getAttribute: function(name2) {
-    var attr = this.getAttributeNode(name2);
-    return attr && attr.value || "";
+  getAttribute: function(t) {
+    var u = this.getAttributeNode(t);
+    return u && u.value || "";
   },
-  getAttributeNode: function(name2) {
-    return this.attributes.getNamedItem(name2);
+  getAttributeNode: function(t) {
+    return this.attributes.getNamedItem(t);
   },
-  setAttribute: function(name2, value) {
-    var attr = this.ownerDocument.createAttribute(name2);
-    attr.value = attr.nodeValue = "" + value;
-    this.setAttributeNode(attr);
+  setAttribute: function(t, u) {
+    var n = this.ownerDocument.createAttribute(t);
+    n.value = n.nodeValue = "" + u, this.setAttributeNode(n);
   },
-  removeAttribute: function(name2) {
-    var attr = this.getAttributeNode(name2);
-    attr && this.removeAttributeNode(attr);
+  removeAttribute: function(t) {
+    var u = this.getAttributeNode(t);
+    u && this.removeAttributeNode(u);
   },
   //four real opeartion method
-  appendChild: function(newChild) {
-    if (newChild.nodeType === DOCUMENT_FRAGMENT_NODE) {
-      return this.insertBefore(newChild, null);
-    } else {
-      return _appendSingleChild(this, newChild);
-    }
+  appendChild: function(t) {
+    return t.nodeType === Pe ? this.insertBefore(t, null) : lu(this, t);
   },
-  setAttributeNode: function(newAttr) {
-    return this.attributes.setNamedItem(newAttr);
+  setAttributeNode: function(t) {
+    return this.attributes.setNamedItem(t);
   },
-  setAttributeNodeNS: function(newAttr) {
-    return this.attributes.setNamedItemNS(newAttr);
+  setAttributeNodeNS: function(t) {
+    return this.attributes.setNamedItemNS(t);
   },
-  removeAttributeNode: function(oldAttr) {
-    return this.attributes.removeNamedItem(oldAttr.nodeName);
+  removeAttributeNode: function(t) {
+    return this.attributes.removeNamedItem(t.nodeName);
   },
   //get real attribute name,and remove it by removeAttributeNode
-  removeAttributeNS: function(namespaceURI, localName) {
-    var old = this.getAttributeNodeNS(namespaceURI, localName);
-    old && this.removeAttributeNode(old);
+  removeAttributeNS: function(t, u) {
+    var n = this.getAttributeNodeNS(t, u);
+    n && this.removeAttributeNode(n);
   },
-  hasAttributeNS: function(namespaceURI, localName) {
-    return this.getAttributeNodeNS(namespaceURI, localName) != null;
+  hasAttributeNS: function(t, u) {
+    return this.getAttributeNodeNS(t, u) != null;
   },
-  getAttributeNS: function(namespaceURI, localName) {
-    var attr = this.getAttributeNodeNS(namespaceURI, localName);
-    return attr && attr.value || "";
+  getAttributeNS: function(t, u) {
+    var n = this.getAttributeNodeNS(t, u);
+    return n && n.value || "";
   },
-  setAttributeNS: function(namespaceURI, qualifiedName, value) {
-    var attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
-    attr.value = attr.nodeValue = "" + value;
-    this.setAttributeNode(attr);
+  setAttributeNS: function(t, u, n) {
+    var s = this.ownerDocument.createAttributeNS(t, u);
+    s.value = s.nodeValue = "" + n, this.setAttributeNode(s);
   },
-  getAttributeNodeNS: function(namespaceURI, localName) {
-    return this.attributes.getNamedItemNS(namespaceURI, localName);
+  getAttributeNodeNS: function(t, u) {
+    return this.attributes.getNamedItemNS(t, u);
   },
-  getElementsByTagName: function(tagName) {
-    return new LiveNodeList(this, function(base) {
-      var ls = [];
-      _visitNode(base, function(node) {
-        if (node !== base && node.nodeType == ELEMENT_NODE && (tagName === "*" || node.tagName == tagName)) {
-          ls.push(node);
-        }
-      });
-      return ls;
+  getElementsByTagName: function(t) {
+    return new ur(this, function(u) {
+      var n = [];
+      return cr(u, function(s) {
+        s !== u && s.nodeType == Ee && (t === "*" || s.tagName == t) && n.push(s);
+      }), n;
     });
   },
-  getElementsByTagNameNS: function(namespaceURI, localName) {
-    return new LiveNodeList(this, function(base) {
-      var ls = [];
-      _visitNode(base, function(node) {
-        if (node !== base && node.nodeType === ELEMENT_NODE && (namespaceURI === "*" || node.namespaceURI === namespaceURI) && (localName === "*" || node.localName == localName)) {
-          ls.push(node);
-        }
-      });
-      return ls;
+  getElementsByTagNameNS: function(t, u) {
+    return new ur(this, function(n) {
+      var s = [];
+      return cr(n, function(c) {
+        c !== n && c.nodeType === Ee && (t === "*" || c.namespaceURI === t) && (u === "*" || c.localName == u) && s.push(c);
+      }), s;
     });
   }
 };
-Document.prototype.getElementsByTagName = Element.prototype.getElementsByTagName;
-Document.prototype.getElementsByTagNameNS = Element.prototype.getElementsByTagNameNS;
-_extends(Element, Node);
-function Attr() {
+Er.prototype.getElementsByTagName = We.prototype.getElementsByTagName;
+Er.prototype.getElementsByTagNameNS = We.prototype.getElementsByTagNameNS;
+se(We, V);
+function xr() {
 }
-;
-Attr.prototype.nodeType = ATTRIBUTE_NODE;
-_extends(Attr, Node);
-function CharacterData() {
+xr.prototype.nodeType = tr;
+se(xr, V);
+function Ar() {
 }
-;
-CharacterData.prototype = {
+Ar.prototype = {
   data: "",
-  substringData: function(offset, count) {
-    return this.data.substring(offset, offset + count);
+  substringData: function(t, u) {
+    return this.data.substring(t, t + u);
   },
-  appendData: function(text) {
-    text = this.data + text;
-    this.nodeValue = this.data = text;
-    this.length = text.length;
+  appendData: function(t) {
+    t = this.data + t, this.nodeValue = this.data = t, this.length = t.length;
   },
-  insertData: function(offset, text) {
-    this.replaceData(offset, 0, text);
+  insertData: function(t, u) {
+    this.replaceData(t, 0, u);
   },
-  appendChild: function(newChild) {
-    throw new Error(ExceptionMessage[HIERARCHY_REQUEST_ERR]);
+  appendChild: function(t) {
+    throw new Error(K[ie]);
   },
-  deleteData: function(offset, count) {
-    this.replaceData(offset, count, "");
+  deleteData: function(t, u) {
+    this.replaceData(t, u, "");
   },
-  replaceData: function(offset, count, text) {
-    var start = this.data.substring(0, offset);
-    var end = this.data.substring(offset + count);
-    text = start + text + end;
-    this.nodeValue = this.data = text;
-    this.length = text.length;
+  replaceData: function(t, u, n) {
+    var s = this.data.substring(0, t), c = this.data.substring(t + u);
+    n = s + n + c, this.nodeValue = this.data = n, this.length = n.length;
   }
 };
-_extends(CharacterData, Node);
-function Text() {
+se(Ar, V);
+function Ir() {
 }
-;
-Text.prototype = {
+Ir.prototype = {
   nodeName: "#text",
-  nodeType: TEXT_NODE,
-  splitText: function(offset) {
-    var text = this.data;
-    var newText = text.substring(offset);
-    text = text.substring(0, offset);
-    this.data = this.nodeValue = text;
-    this.length = text.length;
-    var newNode = this.ownerDocument.createTextNode(newText);
-    if (this.parentNode) {
-      this.parentNode.insertBefore(newNode, this.nextSibling);
-    }
-    return newNode;
+  nodeType: mr,
+  splitText: function(t) {
+    var u = this.data, n = u.substring(t);
+    u = u.substring(0, t), this.data = this.nodeValue = u, this.length = u.length;
+    var s = this.ownerDocument.createTextNode(n);
+    return this.parentNode && this.parentNode.insertBefore(s, this.nextSibling), s;
   }
 };
-_extends(Text, CharacterData);
-function Comment() {
+se(Ir, Ar);
+function Lr() {
 }
-;
-Comment.prototype = {
+Lr.prototype = {
   nodeName: "#comment",
-  nodeType: COMMENT_NODE
+  nodeType: ct
 };
-_extends(Comment, CharacterData);
-function CDATASection() {
+se(Lr, Ar);
+function Pr() {
 }
-;
-CDATASection.prototype = {
+Pr.prototype = {
   nodeName: "#cdata-section",
-  nodeType: CDATA_SECTION_NODE
+  nodeType: at
 };
-_extends(CDATASection, CharacterData);
-function DocumentType() {
+se(Pr, Ar);
+function Cr() {
 }
-;
-DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
-_extends(DocumentType, Node);
-function Notation() {
+Cr.prototype.nodeType = ht;
+se(Cr, V);
+function vt() {
 }
-;
-Notation.prototype.nodeType = NOTATION_NODE;
-_extends(Notation, Node);
-function Entity() {
+vt.prototype.nodeType = uu;
+se(vt, V);
+function xt() {
 }
-;
-Entity.prototype.nodeType = ENTITY_NODE;
-_extends(Entity, Node);
-function EntityReference() {
+xt.prototype.nodeType = tu;
+se(xt, V);
+function qr() {
 }
-;
-EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
-_extends(EntityReference, Node);
-function DocumentFragment() {
+qr.prototype.nodeType = lt;
+se(qr, V);
+function yr() {
 }
-;
-DocumentFragment.prototype.nodeName = "#document-fragment";
-DocumentFragment.prototype.nodeType = DOCUMENT_FRAGMENT_NODE;
-_extends(DocumentFragment, Node);
-function ProcessingInstruction() {
+yr.prototype.nodeName = "#document-fragment";
+yr.prototype.nodeType = Pe;
+se(yr, V);
+function Mr() {
 }
-ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
-_extends(ProcessingInstruction, Node);
-function XMLSerializer$1() {
+Mr.prototype.nodeType = pt;
+se(Mr, V);
+function Ct() {
 }
-XMLSerializer$1.prototype.serializeToString = function(node, isHtml, nodeFilter) {
-  return nodeSerializeToString.call(node, isHtml, nodeFilter);
+Ct.prototype.serializeToString = function(t, u, n) {
+  return yt.call(t, u, n);
 };
-Node.prototype.toString = nodeSerializeToString;
-function nodeSerializeToString(isHtml, nodeFilter) {
-  var buf = [];
-  var refNode = this.nodeType == 9 && this.documentElement || this;
-  var prefix = refNode.prefix;
-  var uri = refNode.namespaceURI;
-  if (uri && prefix == null) {
-    var prefix = refNode.lookupPrefix(uri);
-    if (prefix == null) {
-      var visibleNamespaces = [
-        { namespace: uri, prefix: null }
+V.prototype.toString = yt;
+function yt(t, u) {
+  var n = [], s = this.nodeType == 9 && this.documentElement || this, c = s.prefix, f = s.namespaceURI;
+  if (f && c == null) {
+    var c = s.lookupPrefix(f);
+    if (c == null)
+      var A = [
+        { namespace: f, prefix: null }
         //{namespace:uri,prefix:''}
       ];
-    }
   }
-  serializeToString(this, buf, isHtml, nodeFilter, visibleNamespaces);
-  return buf.join("");
+  return rr(this, n, t, u, A), n.join("");
 }
-function needNamespaceDefine(node, isHTML, visibleNamespaces) {
-  var prefix = node.prefix || "";
-  var uri = node.namespaceURI;
-  if (!uri) {
-    return false;
+function zr(t, u, n) {
+  var s = t.prefix || "", c = t.namespaceURI;
+  if (!c || s === "xml" && c === pr.XML || c === pr.XMLNS)
+    return !1;
+  for (var f = n.length; f--; ) {
+    var A = n[f];
+    if (A.prefix === s)
+      return A.namespace !== c;
   }
-  if (prefix === "xml" && uri === NAMESPACE$2.XML || uri === NAMESPACE$2.XMLNS) {
-    return false;
-  }
-  var i = visibleNamespaces.length;
-  while (i--) {
-    var ns = visibleNamespaces[i];
-    if (ns.prefix === prefix) {
-      return ns.namespace !== uri;
-    }
-  }
-  return true;
+  return !0;
 }
-function addSerializedAttribute(buf, qualifiedName, value) {
-  buf.push(" ", qualifiedName, '="', value.replace(/[<>&"\t\n\r]/g, _xmlEncoder), '"');
+function br(t, u, n) {
+  t.push(" ", u, '="', n.replace(/[<>&"\t\n\r]/g, gt), '"');
 }
-function serializeToString(node, buf, isHTML, nodeFilter, visibleNamespaces) {
-  if (!visibleNamespaces) {
-    visibleNamespaces = [];
-  }
-  if (nodeFilter) {
-    node = nodeFilter(node);
-    if (node) {
-      if (typeof node == "string") {
-        buf.push(node);
+function rr(t, u, n, s, c) {
+  if (c || (c = []), s)
+    if (t = s(t), t) {
+      if (typeof t == "string") {
+        u.push(t);
         return;
       }
-    } else {
+    } else
       return;
-    }
-  }
-  switch (node.nodeType) {
-    case ELEMENT_NODE:
-      var attrs = node.attributes;
-      var len = attrs.length;
-      var child = node.firstChild;
-      var nodeName = node.tagName;
-      isHTML = NAMESPACE$2.isHTML(node.namespaceURI) || isHTML;
-      var prefixedNodeName = nodeName;
-      if (!isHTML && !node.prefix && node.namespaceURI) {
-        var defaultNS;
-        for (var ai = 0; ai < attrs.length; ai++) {
-          if (attrs.item(ai).name === "xmlns") {
-            defaultNS = attrs.item(ai).value;
+  switch (t.nodeType) {
+    case Ee:
+      var f = t.attributes, A = f.length, Q = t.firstChild, y = t.tagName;
+      n = pr.isHTML(t.namespaceURI) || n;
+      var N = y;
+      if (!n && !t.prefix && t.namespaceURI) {
+        for (var w, S = 0; S < f.length; S++)
+          if (f.item(S).name === "xmlns") {
+            w = f.item(S).value;
             break;
           }
-        }
-        if (!defaultNS) {
-          for (var nsi = visibleNamespaces.length - 1; nsi >= 0; nsi--) {
-            var namespace = visibleNamespaces[nsi];
-            if (namespace.prefix === "" && namespace.namespace === node.namespaceURI) {
-              defaultNS = namespace.namespace;
+        if (!w)
+          for (var k = c.length - 1; k >= 0; k--) {
+            var q = c[k];
+            if (q.prefix === "" && q.namespace === t.namespaceURI) {
+              w = q.namespace;
               break;
             }
           }
-        }
-        if (defaultNS !== node.namespaceURI) {
-          for (var nsi = visibleNamespaces.length - 1; nsi >= 0; nsi--) {
-            var namespace = visibleNamespaces[nsi];
-            if (namespace.namespace === node.namespaceURI) {
-              if (namespace.prefix) {
-                prefixedNodeName = namespace.prefix + ":" + nodeName;
-              }
+        if (w !== t.namespaceURI)
+          for (var k = c.length - 1; k >= 0; k--) {
+            var q = c[k];
+            if (q.namespace === t.namespaceURI) {
+              q.prefix && (N = q.prefix + ":" + y);
               break;
             }
           }
+      }
+      u.push("<", N);
+      for (var $ = 0; $ < A; $++) {
+        var J = f.item($);
+        J.prefix == "xmlns" ? c.push({ prefix: J.localName, namespace: J.value }) : J.nodeName == "xmlns" && c.push({ prefix: "", namespace: J.value });
+      }
+      for (var $ = 0; $ < A; $++) {
+        var J = f.item($);
+        if (zr(J, n, c)) {
+          var H = J.prefix || "", G = J.namespaceURI;
+          br(u, H ? "xmlns:" + H : "xmlns", G), c.push({ prefix: H, namespace: G });
         }
+        rr(J, u, n, s, c);
       }
-      buf.push("<", prefixedNodeName);
-      for (var i = 0; i < len; i++) {
-        var attr = attrs.item(i);
-        if (attr.prefix == "xmlns") {
-          visibleNamespaces.push({ prefix: attr.localName, namespace: attr.value });
-        } else if (attr.nodeName == "xmlns") {
-          visibleNamespaces.push({ prefix: "", namespace: attr.value });
-        }
+      if (y === N && zr(t, n, c)) {
+        var H = t.prefix || "", G = t.namespaceURI;
+        br(u, H ? "xmlns:" + H : "xmlns", G), c.push({ prefix: H, namespace: G });
       }
-      for (var i = 0; i < len; i++) {
-        var attr = attrs.item(i);
-        if (needNamespaceDefine(attr, isHTML, visibleNamespaces)) {
-          var prefix = attr.prefix || "";
-          var uri = attr.namespaceURI;
-          addSerializedAttribute(buf, prefix ? "xmlns:" + prefix : "xmlns", uri);
-          visibleNamespaces.push({ prefix, namespace: uri });
-        }
-        serializeToString(attr, buf, isHTML, nodeFilter, visibleNamespaces);
-      }
-      if (nodeName === prefixedNodeName && needNamespaceDefine(node, isHTML, visibleNamespaces)) {
-        var prefix = node.prefix || "";
-        var uri = node.namespaceURI;
-        addSerializedAttribute(buf, prefix ? "xmlns:" + prefix : "xmlns", uri);
-        visibleNamespaces.push({ prefix, namespace: uri });
-      }
-      if (child || isHTML && !/^(?:meta|link|img|br|hr|input)$/i.test(nodeName)) {
-        buf.push(">");
-        if (isHTML && /^script$/i.test(nodeName)) {
-          while (child) {
-            if (child.data) {
-              buf.push(child.data);
-            } else {
-              serializeToString(child, buf, isHTML, nodeFilter, visibleNamespaces.slice());
-            }
-            child = child.nextSibling;
-          }
-        } else {
-          while (child) {
-            serializeToString(child, buf, isHTML, nodeFilter, visibleNamespaces.slice());
-            child = child.nextSibling;
-          }
-        }
-        buf.push("</", prefixedNodeName, ">");
-      } else {
-        buf.push("/>");
-      }
+      if (Q || n && !/^(?:meta|link|img|br|hr|input)$/i.test(y)) {
+        if (u.push(">"), n && /^script$/i.test(y))
+          for (; Q; )
+            Q.data ? u.push(Q.data) : rr(Q, u, n, s, c.slice()), Q = Q.nextSibling;
+        else
+          for (; Q; )
+            rr(Q, u, n, s, c.slice()), Q = Q.nextSibling;
+        u.push("</", N, ">");
+      } else
+        u.push("/>");
       return;
-    case DOCUMENT_NODE:
-    case DOCUMENT_FRAGMENT_NODE:
-      var child = node.firstChild;
-      while (child) {
-        serializeToString(child, buf, isHTML, nodeFilter, visibleNamespaces.slice());
-        child = child.nextSibling;
-      }
+    case ft:
+    case Pe:
+      for (var Q = t.firstChild; Q; )
+        rr(Q, u, n, s, c.slice()), Q = Q.nextSibling;
       return;
-    case ATTRIBUTE_NODE:
-      return addSerializedAttribute(buf, node.name, node.value);
-    case TEXT_NODE:
-      return buf.push(
-        node.data.replace(/[<&>]/g, _xmlEncoder)
+    case tr:
+      return br(u, t.name, t.value);
+    case mr:
+      return u.push(
+        t.data.replace(/[<&>]/g, gt)
       );
-    case CDATA_SECTION_NODE:
-      return buf.push("<![CDATA[", node.data, "]]>");
-    case COMMENT_NODE:
-      return buf.push("<!--", node.data, "-->");
-    case DOCUMENT_TYPE_NODE:
-      var pubid = node.publicId;
-      var sysid = node.systemId;
-      buf.push("<!DOCTYPE ", node.name);
-      if (pubid) {
-        buf.push(" PUBLIC ", pubid);
-        if (sysid && sysid != ".") {
-          buf.push(" ", sysid);
-        }
-        buf.push(">");
-      } else if (sysid && sysid != ".") {
-        buf.push(" SYSTEM ", sysid, ">");
-      } else {
-        var sub = node.internalSubset;
-        if (sub) {
-          buf.push(" [", sub, "]");
-        }
-        buf.push(">");
+    case at:
+      return u.push("<![CDATA[", t.data, "]]>");
+    case ct:
+      return u.push("<!--", t.data, "-->");
+    case ht:
+      var He = t.publicId, Y = t.systemId;
+      if (u.push("<!DOCTYPE ", t.name), He)
+        u.push(" PUBLIC ", He), Y && Y != "." && u.push(" ", Y), u.push(">");
+      else if (Y && Y != ".")
+        u.push(" SYSTEM ", Y, ">");
+      else {
+        var te = t.internalSubset;
+        te && u.push(" [", te, "]"), u.push(">");
       }
       return;
-    case PROCESSING_INSTRUCTION_NODE:
-      return buf.push("<?", node.target, " ", node.data, "?>");
-    case ENTITY_REFERENCE_NODE:
-      return buf.push("&", node.nodeName, ";");
+    case pt:
+      return u.push("<?", t.target, " ", t.data, "?>");
+    case lt:
+      return u.push("&", t.nodeName, ";");
     default:
-      buf.push("??", node.nodeName);
+      u.push("??", t.nodeName);
   }
 }
-function importNode(doc, node, deep) {
-  var node2;
-  switch (node.nodeType) {
-    case ELEMENT_NODE:
-      node2 = node.cloneNode(false);
-      node2.ownerDocument = doc;
-    case DOCUMENT_FRAGMENT_NODE:
+function Tt(t, u, n) {
+  var s;
+  switch (u.nodeType) {
+    case Ee:
+      s = u.cloneNode(!1), s.ownerDocument = t;
+    case Pe:
       break;
-    case ATTRIBUTE_NODE:
-      deep = true;
+    case tr:
+      n = !0;
       break;
   }
-  if (!node2) {
-    node2 = node.cloneNode(false);
-  }
-  node2.ownerDocument = doc;
-  node2.parentNode = null;
-  if (deep) {
-    var child = node.firstChild;
-    while (child) {
-      node2.appendChild(importNode(doc, child, deep));
-      child = child.nextSibling;
-    }
-  }
-  return node2;
+  if (s || (s = u.cloneNode(!1)), s.ownerDocument = t, s.parentNode = null, n)
+    for (var c = u.firstChild; c; )
+      s.appendChild(Tt(t, c, n)), c = c.nextSibling;
+  return s;
 }
-function cloneNode(doc, node, deep) {
-  var node2 = new node.constructor();
-  for (var n in node) {
-    if (Object.prototype.hasOwnProperty.call(node, n)) {
-      var v = node[n];
-      if (typeof v != "object") {
-        if (v != node2[n]) {
-          node2[n] = v;
-        }
-      }
+function wr(t, u, n) {
+  var s = new u.constructor();
+  for (var c in u)
+    if (Object.prototype.hasOwnProperty.call(u, c)) {
+      var f = u[c];
+      typeof f != "object" && f != s[c] && (s[c] = f);
     }
-  }
-  if (node.childNodes) {
-    node2.childNodes = new NodeList();
-  }
-  node2.ownerDocument = doc;
-  switch (node2.nodeType) {
-    case ELEMENT_NODE:
-      var attrs = node.attributes;
-      var attrs2 = node2.attributes = new NamedNodeMap();
-      var len = attrs.length;
-      attrs2._ownerElement = node2;
-      for (var i = 0; i < len; i++) {
-        node2.setAttributeNode(cloneNode(doc, attrs.item(i), true));
-      }
+  switch (u.childNodes && (s.childNodes = new Le()), s.ownerDocument = t, s.nodeType) {
+    case Ee:
+      var A = u.attributes, y = s.attributes = new Nr(), N = A.length;
+      y._ownerElement = s;
+      for (var w = 0; w < N; w++)
+        s.setAttributeNode(wr(t, A.item(w), !0));
       break;
-      ;
-    case ATTRIBUTE_NODE:
-      deep = true;
+    case tr:
+      n = !0;
   }
-  if (deep) {
-    var child = node.firstChild;
-    while (child) {
-      node2.appendChild(cloneNode(doc, child, deep));
-      child = child.nextSibling;
-    }
-  }
-  return node2;
+  if (n)
+    for (var S = u.firstChild; S; )
+      s.appendChild(wr(t, S, n)), S = S.nextSibling;
+  return s;
 }
-function __set__(object, key, value) {
-  object[key] = value;
+function bt(t, u, n) {
+  t[u] = n;
 }
 try {
   if (Object.defineProperty) {
-    let getTextContent = function(node) {
-      switch (node.nodeType) {
-        case ELEMENT_NODE:
-        case DOCUMENT_FRAGMENT_NODE:
-          var buf = [];
-          node = node.firstChild;
-          while (node) {
-            if (node.nodeType !== 7 && node.nodeType !== 8) {
-              buf.push(getTextContent(node));
-            }
-            node = node.nextSibling;
-          }
-          return buf.join("");
+    let t = function(u) {
+      switch (u.nodeType) {
+        case Ee:
+        case Pe:
+          var n = [];
+          for (u = u.firstChild; u; )
+            u.nodeType !== 7 && u.nodeType !== 8 && n.push(t(u)), u = u.nextSibling;
+          return n.join("");
         default:
-          return node.nodeValue;
+          return u.nodeValue;
       }
     };
-    Object.defineProperty(LiveNodeList.prototype, "length", {
+    Object.defineProperty(ur.prototype, "length", {
       get: function() {
-        _updateLiveList(this);
-        return this.$$length;
+        return Fr(this), this.$$length;
       }
-    });
-    Object.defineProperty(Node.prototype, "textContent", {
+    }), Object.defineProperty(V.prototype, "textContent", {
       get: function() {
-        return getTextContent(this);
+        return t(this);
       },
-      set: function(data) {
+      set: function(u) {
         switch (this.nodeType) {
-          case ELEMENT_NODE:
-          case DOCUMENT_FRAGMENT_NODE:
-            while (this.firstChild) {
+          case Ee:
+          case Pe:
+            for (; this.firstChild; )
               this.removeChild(this.firstChild);
-            }
-            if (data || String(data)) {
-              this.appendChild(this.ownerDocument.createTextNode(data));
-            }
+            (u || String(u)) && this.appendChild(this.ownerDocument.createTextNode(u));
             break;
           default:
-            this.data = data;
-            this.value = data;
-            this.nodeValue = data;
+            this.data = u, this.value = u, this.nodeValue = u;
         }
       }
-    });
-    __set__ = function(object, key, value) {
-      object["$$" + key] = value;
+    }), bt = function(u, n, s) {
+      u["$$" + n] = s;
     };
   }
-} catch (e) {
+} catch {
 }
-var DocumentType_1 = dom$2.DocumentType = DocumentType;
-var DOMException_1 = dom$2.DOMException = DOMException;
-var DOMImplementation_1 = dom$2.DOMImplementation = DOMImplementation$2;
-var Element_1 = dom$2.Element = Element;
-var Node_1 = dom$2.Node = Node;
-var NodeList_1 = dom$2.NodeList = NodeList;
-var XMLSerializer_1 = dom$2.XMLSerializer = XMLSerializer$1;
-var domParser = {};
-var entities$2 = {};
-(function(exports) {
-  "use strict";
-  var freeze2 = conventions$2.freeze;
-  exports.XML_ENTITIES = freeze2({
+Ge.DocumentType = Cr;
+Ge.DOMException = z;
+Ge.DOMImplementation = Dt;
+Ge.Element = We;
+Ge.Node = V;
+Ge.NodeList = Le;
+Ge.XMLSerializer = Ct;
+var Tr = {}, wt = {};
+(function(t) {
+  var u = Me.freeze;
+  t.XML_ENTITIES = u({
     amp: "&",
     apos: "'",
     gt: ">",
     lt: "<",
     quot: '"'
-  });
-  exports.HTML_ENTITIES = freeze2({
+  }), t.HTML_ENTITIES = u({
     Aacute: "Á",
     aacute: "á",
     Abreve: "Ă",
@@ -6523,7 +4627,8 @@ var entities$2 = {};
     nesim: "≂̸",
     NestedGreaterGreater: "≫",
     NestedLessLess: "≪",
-    NewLine: "\n",
+    NewLine: `
+`,
     nexist: "∄",
     nexists: "∄",
     Nfr: "𝔑",
@@ -7539,562 +5644,318 @@ var entities$2 = {};
     zscr: "𝓏",
     zwj: "‍",
     zwnj: "‌"
-  });
-  exports.entityMap = exports.HTML_ENTITIES;
-})(entities$2);
-const entities$1 = /* @__PURE__ */ getDefaultExportFromCjs(entities$2);
-var sax$1 = {};
-var NAMESPACE$1 = conventions$2.NAMESPACE;
-var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;
-var nameChar = new RegExp("[\\-\\.0-9" + nameStartChar.source.slice(1, -1) + "\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
-var tagNamePattern = new RegExp("^" + nameStartChar.source + nameChar.source + "*(?::" + nameStartChar.source + nameChar.source + "*)?$");
-var S_TAG = 0;
-var S_ATTR = 1;
-var S_ATTR_SPACE = 2;
-var S_EQ = 3;
-var S_ATTR_NOQUOT_VALUE = 4;
-var S_ATTR_END = 5;
-var S_TAG_SPACE = 6;
-var S_TAG_CLOSE = 7;
-function ParseError$1(message, locator) {
-  this.message = message;
-  this.locator = locator;
-  if (Error.captureStackTrace)
-    Error.captureStackTrace(this, ParseError$1);
+  }), t.entityMap = t.HTML_ENTITIES;
+})(wt);
+var Ur = {}, fr = Me.NAMESPACE, Br = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/, Jr = new RegExp("[\\-\\.0-9" + Br.source.slice(1, -1) + "\\u00B7\\u0300-\\u036F\\u203F-\\u2040]"), Zr = new RegExp("^" + Br.source + Jr.source + "*(?::" + Br.source + Jr.source + "*)?$"), sr = 0, ke = 1, Je = 2, ar = 3, Ze = 4, Ke = 5, lr = 6, gr = 7;
+function nr(t, u) {
+  this.message = t, this.locator = u, Error.captureStackTrace && Error.captureStackTrace(this, nr);
 }
-ParseError$1.prototype = new Error();
-ParseError$1.prototype.name = ParseError$1.name;
-function XMLReader$1() {
+nr.prototype = new Error();
+nr.prototype.name = nr.name;
+function Bt() {
 }
-XMLReader$1.prototype = {
-  parse: function(source, defaultNSMap, entityMap) {
-    var domBuilder = this.domBuilder;
-    domBuilder.startDocument();
-    _copy(defaultNSMap, defaultNSMap = {});
-    parse(
-      source,
-      defaultNSMap,
-      entityMap,
-      domBuilder,
+Bt.prototype = {
+  parse: function(t, u, n) {
+    var s = this.domBuilder;
+    s.startDocument(), St(u, u = {}), pu(
+      t,
+      u,
+      n,
+      s,
       this.errorHandler
-    );
-    domBuilder.endDocument();
+    ), s.endDocument();
   }
 };
-function parse(source, defaultNSMapCopy, entityMap, domBuilder, errorHandler) {
-  function fixedFromCharCode(code) {
-    if (code > 65535) {
-      code -= 65536;
-      var surrogate1 = 55296 + (code >> 10), surrogate2 = 56320 + (code & 1023);
-      return String.fromCharCode(surrogate1, surrogate2);
-    } else {
-      return String.fromCharCode(code);
+function pu(t, u, n, s, c) {
+  function f(M) {
+    if (M > 65535) {
+      M -= 65536;
+      var j = 55296 + (M >> 10), ce = 56320 + (M & 1023);
+      return String.fromCharCode(j, ce);
+    } else
+      return String.fromCharCode(M);
+  }
+  function A(M) {
+    var j = M.slice(1, -1);
+    return Object.hasOwnProperty.call(n, j) ? n[j] : j.charAt(0) === "#" ? f(parseInt(j.substr(1).replace("x", "0x"))) : (c.error("entity not found:" + M), M);
+  }
+  function y(M) {
+    if (M > H) {
+      var j = t.substring(H, M).replace(/&#?\w+;/g, A);
+      q && N(H), s.characters(j, 0, M - H), H = M;
     }
   }
-  function entityReplacer(a2) {
-    var k = a2.slice(1, -1);
-    if (Object.hasOwnProperty.call(entityMap, k)) {
-      return entityMap[k];
-    } else if (k.charAt(0) === "#") {
-      return fixedFromCharCode(parseInt(k.substr(1).replace("x", "0x")));
-    } else {
-      errorHandler.error("entity not found:" + a2);
-      return a2;
-    }
+  function N(M, j) {
+    for (; M >= S && (j = k.exec(t)); )
+      w = j.index, S = w + j[0].length, q.lineNumber++;
+    q.columnNumber = M - w + 1;
   }
-  function appendText(end2) {
-    if (end2 > start) {
-      var xt = source.substring(start, end2).replace(/&#?\w+;/g, entityReplacer);
-      locator && position2(start);
-      domBuilder.characters(xt, 0, end2 - start);
-      start = end2;
-    }
-  }
-  function position2(p, m) {
-    while (p >= lineEnd && (m = linePattern.exec(source))) {
-      lineStart = m.index;
-      lineEnd = lineStart + m[0].length;
-      locator.lineNumber++;
-    }
-    locator.columnNumber = p - lineStart + 1;
-  }
-  var lineStart = 0;
-  var lineEnd = 0;
-  var linePattern = /.*(?:\r\n?|\n)|.*$/g;
-  var locator = domBuilder.locator;
-  var parseStack = [{ currentNSMap: defaultNSMapCopy }];
-  var closeMap = {};
-  var start = 0;
-  while (true) {
+  for (var w = 0, S = 0, k = /.*(?:\r\n?|\n)|.*$/g, q = s.locator, $ = [{ currentNSMap: u }], J = {}, H = 0; ; ) {
     try {
-      var tagStart = source.indexOf("<", start);
-      if (tagStart < 0) {
-        if (!source.substr(start).match(/^\s*$/)) {
-          var doc = domBuilder.doc;
-          var text = doc.createTextNode(source.substr(start));
-          doc.appendChild(text);
-          domBuilder.currentElement = text;
+      var G = t.indexOf("<", H);
+      if (G < 0) {
+        if (!t.substr(H).match(/^\s*$/)) {
+          var Q = s.doc, He = Q.createTextNode(t.substr(H));
+          Q.appendChild(He), s.currentElement = He;
         }
         return;
       }
-      if (tagStart > start) {
-        appendText(tagStart);
-      }
-      switch (source.charAt(tagStart + 1)) {
+      switch (G > H && y(G), t.charAt(G + 1)) {
         case "/":
-          var end = source.indexOf(">", tagStart + 3);
-          var tagName = source.substring(tagStart + 2, end).replace(/[ \t\n\r]+$/g, "");
-          var config = parseStack.pop();
-          if (end < 0) {
-            tagName = source.substring(tagStart + 2).replace(/[\s<].*/, "");
-            errorHandler.error("end tag name: " + tagName + " is not complete:" + config.tagName);
-            end = tagStart + 1 + tagName.length;
-          } else if (tagName.match(/\s</)) {
-            tagName = tagName.replace(/[\s<].*/, "");
-            errorHandler.error("end tag name: " + tagName + " maybe not complete");
-            end = tagStart + 1 + tagName.length;
-          }
-          var localNSMap = config.localNSMap;
-          var endMatch = config.tagName == tagName;
-          var endIgnoreCaseMach = endMatch || config.tagName && config.tagName.toLowerCase() == tagName.toLowerCase();
-          if (endIgnoreCaseMach) {
-            domBuilder.endElement(config.uri, config.localName, tagName);
-            if (localNSMap) {
-              for (var prefix in localNSMap) {
-                if (Object.prototype.hasOwnProperty.call(localNSMap, prefix)) {
-                  domBuilder.endPrefixMapping(prefix);
-                }
-              }
-            }
-            if (!endMatch) {
-              errorHandler.fatalError("end tag name: " + tagName + " is not match the current start tagName:" + config.tagName);
-            }
-          } else {
-            parseStack.push(config);
-          }
-          end++;
+          var X = t.indexOf(">", G + 3), Y = t.substring(G + 2, X).replace(/[ \t\n\r]+$/g, ""), te = $.pop();
+          X < 0 ? (Y = t.substring(G + 2).replace(/[\s<].*/, ""), c.error("end tag name: " + Y + " is not complete:" + te.tagName), X = G + 1 + Y.length) : Y.match(/\s</) && (Y = Y.replace(/[\s<].*/, ""), c.error("end tag name: " + Y + " maybe not complete"), X = G + 1 + Y.length);
+          var Se = te.localNSMap, x = te.tagName == Y, p = x || te.tagName && te.tagName.toLowerCase() == Y.toLowerCase();
+          if (p) {
+            if (s.endElement(te.uri, te.localName, Y), Se)
+              for (var Z in Se)
+                Object.prototype.hasOwnProperty.call(Se, Z) && s.endPrefixMapping(Z);
+            x || c.fatalError("end tag name: " + Y + " is not match the current start tagName:" + te.tagName);
+          } else
+            $.push(te);
+          X++;
           break;
         case "?":
-          locator && position2(tagStart);
-          end = parseInstruction(source, tagStart, domBuilder);
+          q && N(G), X = Au(t, G, s);
           break;
         case "!":
-          locator && position2(tagStart);
-          end = parseDCC(source, tagStart, domBuilder, errorHandler);
+          q && N(G), X = Eu(t, G, s, c);
           break;
         default:
-          locator && position2(tagStart);
-          var el = new ElementAttributes();
-          var currentNSMap = parseStack[parseStack.length - 1].currentNSMap;
-          var end = parseElementStartPart(source, tagStart, el, currentNSMap, entityReplacer, errorHandler);
-          var len = el.length;
-          if (!el.closed && fixSelfClosed(source, end, el.tagName, closeMap)) {
-            el.closed = true;
-            if (!entityMap.nbsp) {
-              errorHandler.warning("unclosed xml attribute");
+          q && N(G);
+          var ee = new Ot(), U = $[$.length - 1].currentNSMap, X = cu(t, G, ee, U, A, c), le = ee.length;
+          if (!ee.closed && hu(t, X, ee.tagName, J) && (ee.closed = !0, n.nbsp || c.warning("unclosed xml attribute")), q && le) {
+            for (var R = Kr(q, {}), ue = 0; ue < le; ue++) {
+              var pe = ee[ue];
+              N(pe.offset), pe.locator = Kr(q, {});
             }
-          }
-          if (locator && len) {
-            var locator2 = copyLocator(locator, {});
-            for (var i = 0; i < len; i++) {
-              var a = el[i];
-              position2(a.offset);
-              a.locator = copyLocator(locator, {});
-            }
-            domBuilder.locator = locator2;
-            if (appendElement$1(el, domBuilder, currentNSMap)) {
-              parseStack.push(el);
-            }
-            domBuilder.locator = locator;
-          } else {
-            if (appendElement$1(el, domBuilder, currentNSMap)) {
-              parseStack.push(el);
-            }
-          }
-          if (NAMESPACE$1.isHTML(el.uri) && !el.closed) {
-            end = parseHtmlSpecialContent(source, end, el.tagName, entityReplacer, domBuilder);
-          } else {
-            end++;
-          }
+            s.locator = R, et(ee, s, U) && $.push(ee), s.locator = q;
+          } else
+            et(ee, s, U) && $.push(ee);
+          fr.isHTML(ee.uri) && !ee.closed ? X = fu(t, X, ee.tagName, A, s) : X++;
       }
-    } catch (e) {
-      if (e instanceof ParseError$1) {
-        throw e;
-      }
-      errorHandler.error("element parse error: " + e);
-      end = -1;
+    } catch (M) {
+      if (M instanceof nr)
+        throw M;
+      c.error("element parse error: " + M), X = -1;
     }
-    if (end > start) {
-      start = end;
-    } else {
-      appendText(Math.max(tagStart, start) + 1);
-    }
+    X > H ? H = X : y(Math.max(G, H) + 1);
   }
 }
-function copyLocator(f, t) {
-  t.lineNumber = f.lineNumber;
-  t.columnNumber = f.columnNumber;
-  return t;
+function Kr(t, u) {
+  return u.lineNumber = t.lineNumber, u.columnNumber = t.columnNumber, u;
 }
-function parseElementStartPart(source, start, el, currentNSMap, entityReplacer, errorHandler) {
-  function addAttribute(qname, value2, startIndex) {
-    if (el.attributeNames.hasOwnProperty(qname)) {
-      errorHandler.fatalError("Attribute " + qname + " redefined");
-    }
-    el.addValue(
-      qname,
+function cu(t, u, n, s, c, f) {
+  function A(q, $, J) {
+    n.attributeNames.hasOwnProperty(q) && f.fatalError("Attribute " + q + " redefined"), n.addValue(
+      q,
       // @see https://www.w3.org/TR/xml/#AVNormalize
       // since the xmldom sax parser does not "interpret" DTD the following is not implemented:
       // - recursive replacement of (DTD) entity references
       // - trimming and collapsing multiple spaces into a single one for attributes that are not of type CDATA
-      value2.replace(/[\t\n\r]/g, " ").replace(/&#?\w+;/g, entityReplacer),
-      startIndex
+      $.replace(/[\t\n\r]/g, " ").replace(/&#?\w+;/g, c),
+      J
     );
   }
-  var attrName;
-  var value;
-  var p = ++start;
-  var s = S_TAG;
-  while (true) {
-    var c = source.charAt(p);
-    switch (c) {
+  for (var y, N, w = ++u, S = sr; ; ) {
+    var k = t.charAt(w);
+    switch (k) {
       case "=":
-        if (s === S_ATTR) {
-          attrName = source.slice(start, p);
-          s = S_EQ;
-        } else if (s === S_ATTR_SPACE) {
-          s = S_EQ;
-        } else {
+        if (S === ke)
+          y = t.slice(u, w), S = ar;
+        else if (S === Je)
+          S = ar;
+        else
           throw new Error("attribute equal must after attrName");
-        }
         break;
       case "'":
       case '"':
-        if (s === S_EQ || s === S_ATTR) {
-          if (s === S_ATTR) {
-            errorHandler.warning('attribute value must after "="');
-            attrName = source.slice(start, p);
-          }
-          start = p + 1;
-          p = source.indexOf(c, start);
-          if (p > 0) {
-            value = source.slice(start, p);
-            addAttribute(attrName, value, start - 1);
-            s = S_ATTR_END;
-          } else {
-            throw new Error("attribute value no end '" + c + "' match");
-          }
-        } else if (s == S_ATTR_NOQUOT_VALUE) {
-          value = source.slice(start, p);
-          addAttribute(attrName, value, start);
-          errorHandler.warning('attribute "' + attrName + '" missed start quot(' + c + ")!!");
-          start = p + 1;
-          s = S_ATTR_END;
-        } else {
+        if (S === ar || S === ke)
+          if (S === ke && (f.warning('attribute value must after "="'), y = t.slice(u, w)), u = w + 1, w = t.indexOf(k, u), w > 0)
+            N = t.slice(u, w), A(y, N, u - 1), S = Ke;
+          else
+            throw new Error("attribute value no end '" + k + "' match");
+        else if (S == Ze)
+          N = t.slice(u, w), A(y, N, u), f.warning('attribute "' + y + '" missed start quot(' + k + ")!!"), u = w + 1, S = Ke;
+        else
           throw new Error('attribute value must after "="');
-        }
         break;
       case "/":
-        switch (s) {
-          case S_TAG:
-            el.setTagName(source.slice(start, p));
-          case S_ATTR_END:
-          case S_TAG_SPACE:
-          case S_TAG_CLOSE:
-            s = S_TAG_CLOSE;
-            el.closed = true;
-          case S_ATTR_NOQUOT_VALUE:
-          case S_ATTR:
+        switch (S) {
+          case sr:
+            n.setTagName(t.slice(u, w));
+          case Ke:
+          case lr:
+          case gr:
+            S = gr, n.closed = !0;
+          case Ze:
+          case ke:
             break;
-          case S_ATTR_SPACE:
-            el.closed = true;
+          case Je:
+            n.closed = !0;
             break;
           default:
             throw new Error("attribute invalid close char('/')");
         }
         break;
       case "":
-        errorHandler.error("unexpected end of input");
-        if (s == S_TAG) {
-          el.setTagName(source.slice(start, p));
-        }
-        return p;
+        return f.error("unexpected end of input"), S == sr && n.setTagName(t.slice(u, w)), w;
       case ">":
-        switch (s) {
-          case S_TAG:
-            el.setTagName(source.slice(start, p));
-          case S_ATTR_END:
-          case S_TAG_SPACE:
-          case S_TAG_CLOSE:
+        switch (S) {
+          case sr:
+            n.setTagName(t.slice(u, w));
+          case Ke:
+          case lr:
+          case gr:
             break;
-          case S_ATTR_NOQUOT_VALUE:
-          case S_ATTR:
-            value = source.slice(start, p);
-            if (value.slice(-1) === "/") {
-              el.closed = true;
-              value = value.slice(0, -1);
-            }
-          case S_ATTR_SPACE:
-            if (s === S_ATTR_SPACE) {
-              value = attrName;
-            }
-            if (s == S_ATTR_NOQUOT_VALUE) {
-              errorHandler.warning('attribute "' + value + '" missed quot(")!');
-              addAttribute(attrName, value, start);
-            } else {
-              if (!NAMESPACE$1.isHTML(currentNSMap[""]) || !value.match(/^(?:disabled|checked|selected)$/i)) {
-                errorHandler.warning('attribute "' + value + '" missed value!! "' + value + '" instead!!');
-              }
-              addAttribute(value, value, start);
-            }
+          case Ze:
+          case ke:
+            N = t.slice(u, w), N.slice(-1) === "/" && (n.closed = !0, N = N.slice(0, -1));
+          case Je:
+            S === Je && (N = y), S == Ze ? (f.warning('attribute "' + N + '" missed quot(")!'), A(y, N, u)) : ((!fr.isHTML(s[""]) || !N.match(/^(?:disabled|checked|selected)$/i)) && f.warning('attribute "' + N + '" missed value!! "' + N + '" instead!!'), A(N, N, u));
             break;
-          case S_EQ:
+          case ar:
             throw new Error("attribute value missed!!");
         }
-        return p;
+        return w;
       case "":
-        c = " ";
+        k = " ";
       default:
-        if (c <= " ") {
-          switch (s) {
-            case S_TAG:
-              el.setTagName(source.slice(start, p));
-              s = S_TAG_SPACE;
+        if (k <= " ")
+          switch (S) {
+            case sr:
+              n.setTagName(t.slice(u, w)), S = lr;
               break;
-            case S_ATTR:
-              attrName = source.slice(start, p);
-              s = S_ATTR_SPACE;
+            case ke:
+              y = t.slice(u, w), S = Je;
               break;
-            case S_ATTR_NOQUOT_VALUE:
-              var value = source.slice(start, p);
-              errorHandler.warning('attribute "' + value + '" missed quot(")!!');
-              addAttribute(attrName, value, start);
-            case S_ATTR_END:
-              s = S_TAG_SPACE;
+            case Ze:
+              var N = t.slice(u, w);
+              f.warning('attribute "' + N + '" missed quot(")!!'), A(y, N, u);
+            case Ke:
+              S = lr;
               break;
           }
-        } else {
-          switch (s) {
-            case S_ATTR_SPACE:
-              var tagName = el.tagName;
-              if (!NAMESPACE$1.isHTML(currentNSMap[""]) || !attrName.match(/^(?:disabled|checked|selected)$/i)) {
-                errorHandler.warning('attribute "' + attrName + '" missed value!! "' + attrName + '" instead2!!');
-              }
-              addAttribute(attrName, attrName, start);
-              start = p;
-              s = S_ATTR;
+        else
+          switch (S) {
+            case Je:
+              n.tagName, (!fr.isHTML(s[""]) || !y.match(/^(?:disabled|checked|selected)$/i)) && f.warning('attribute "' + y + '" missed value!! "' + y + '" instead2!!'), A(y, y, u), u = w, S = ke;
               break;
-            case S_ATTR_END:
-              errorHandler.warning('attribute space is required"' + attrName + '"!!');
-            case S_TAG_SPACE:
-              s = S_ATTR;
-              start = p;
+            case Ke:
+              f.warning('attribute space is required"' + y + '"!!');
+            case lr:
+              S = ke, u = w;
               break;
-            case S_EQ:
-              s = S_ATTR_NOQUOT_VALUE;
-              start = p;
+            case ar:
+              S = Ze, u = w;
               break;
-            case S_TAG_CLOSE:
+            case gr:
               throw new Error("elements closed character '/' and '>' must be connected to");
           }
-        }
     }
-    p++;
+    w++;
   }
 }
-function appendElement$1(el, domBuilder, currentNSMap) {
-  var tagName = el.tagName;
-  var localNSMap = null;
-  var i = el.length;
-  while (i--) {
-    var a = el[i];
-    var qName = a.qName;
-    var value = a.value;
-    var nsp = qName.indexOf(":");
-    if (nsp > 0) {
-      var prefix = a.prefix = qName.slice(0, nsp);
-      var localName = qName.slice(nsp + 1);
-      var nsPrefix = prefix === "xmlns" && localName;
-    } else {
-      localName = qName;
-      prefix = null;
-      nsPrefix = qName === "xmlns" && "";
-    }
-    a.localName = localName;
-    if (nsPrefix !== false) {
-      if (localNSMap == null) {
-        localNSMap = {};
-        _copy(currentNSMap, currentNSMap = {});
-      }
-      currentNSMap[nsPrefix] = localNSMap[nsPrefix] = value;
-      a.uri = NAMESPACE$1.XMLNS;
-      domBuilder.startPrefixMapping(nsPrefix, value);
-    }
+function et(t, u, n) {
+  for (var s = t.tagName, c = null, k = t.length; k--; ) {
+    var f = t[k], A = f.qName, y = f.value, q = A.indexOf(":");
+    if (q > 0)
+      var N = f.prefix = A.slice(0, q), w = A.slice(q + 1), S = N === "xmlns" && w;
+    else
+      w = A, N = null, S = A === "xmlns" && "";
+    f.localName = w, S !== !1 && (c == null && (c = {}, St(n, n = {})), n[S] = c[S] = y, f.uri = fr.XMLNS, u.startPrefixMapping(S, y));
   }
-  var i = el.length;
-  while (i--) {
-    a = el[i];
-    var prefix = a.prefix;
-    if (prefix) {
-      if (prefix === "xml") {
-        a.uri = NAMESPACE$1.XML;
-      }
-      if (prefix !== "xmlns") {
-        a.uri = currentNSMap[prefix || ""];
-      }
-    }
+  for (var k = t.length; k--; ) {
+    f = t[k];
+    var N = f.prefix;
+    N && (N === "xml" && (f.uri = fr.XML), N !== "xmlns" && (f.uri = n[N || ""]));
   }
-  var nsp = tagName.indexOf(":");
-  if (nsp > 0) {
-    prefix = el.prefix = tagName.slice(0, nsp);
-    localName = el.localName = tagName.slice(nsp + 1);
-  } else {
-    prefix = null;
-    localName = el.localName = tagName;
-  }
-  var ns = el.uri = currentNSMap[prefix || ""];
-  domBuilder.startElement(ns, localName, tagName, el);
-  if (el.closed) {
-    domBuilder.endElement(ns, localName, tagName);
-    if (localNSMap) {
-      for (prefix in localNSMap) {
-        if (Object.prototype.hasOwnProperty.call(localNSMap, prefix)) {
-          domBuilder.endPrefixMapping(prefix);
-        }
-      }
-    }
-  } else {
-    el.currentNSMap = currentNSMap;
-    el.localNSMap = localNSMap;
-    return true;
-  }
+  var q = s.indexOf(":");
+  q > 0 ? (N = t.prefix = s.slice(0, q), w = t.localName = s.slice(q + 1)) : (N = null, w = t.localName = s);
+  var $ = t.uri = n[N || ""];
+  if (u.startElement($, w, s, t), t.closed) {
+    if (u.endElement($, w, s), c)
+      for (N in c)
+        Object.prototype.hasOwnProperty.call(c, N) && u.endPrefixMapping(N);
+  } else
+    return t.currentNSMap = n, t.localNSMap = c, !0;
 }
-function parseHtmlSpecialContent(source, elStartEnd, tagName, entityReplacer, domBuilder) {
-  if (/^(?:script|textarea)$/i.test(tagName)) {
-    var elEndStart = source.indexOf("</" + tagName + ">", elStartEnd);
-    var text = source.substring(elStartEnd + 1, elEndStart);
-    if (/[&<]/.test(text)) {
-      if (/^script$/i.test(tagName)) {
-        domBuilder.characters(text, 0, text.length);
-        return elEndStart;
-      }
-      text = text.replace(/&#?\w+;/g, entityReplacer);
-      domBuilder.characters(text, 0, text.length);
-      return elEndStart;
-    }
+function fu(t, u, n, s, c) {
+  if (/^(?:script|textarea)$/i.test(n)) {
+    var f = t.indexOf("</" + n + ">", u), A = t.substring(u + 1, f);
+    if (/[&<]/.test(A))
+      return /^script$/i.test(n) ? (c.characters(A, 0, A.length), f) : (A = A.replace(/&#?\w+;/g, s), c.characters(A, 0, A.length), f);
   }
-  return elStartEnd + 1;
+  return u + 1;
 }
-function fixSelfClosed(source, elStartEnd, tagName, closeMap) {
-  var pos = closeMap[tagName];
-  if (pos == null) {
-    pos = source.lastIndexOf("</" + tagName + ">");
-    if (pos < elStartEnd) {
-      pos = source.lastIndexOf("</" + tagName);
-    }
-    closeMap[tagName] = pos;
-  }
-  return pos < elStartEnd;
+function hu(t, u, n, s) {
+  var c = s[n];
+  return c == null && (c = t.lastIndexOf("</" + n + ">"), c < u && (c = t.lastIndexOf("</" + n)), s[n] = c), c < u;
 }
-function _copy(source, target) {
-  for (var n in source) {
-    if (Object.prototype.hasOwnProperty.call(source, n)) {
-      target[n] = source[n];
-    }
-  }
+function St(t, u) {
+  for (var n in t)
+    Object.prototype.hasOwnProperty.call(t, n) && (u[n] = t[n]);
 }
-function parseDCC(source, start, domBuilder, errorHandler) {
-  var next = source.charAt(start + 2);
-  switch (next) {
+function Eu(t, u, n, s) {
+  var c = t.charAt(u + 2);
+  switch (c) {
     case "-":
-      if (source.charAt(start + 3) === "-") {
-        var end = source.indexOf("-->", start + 4);
-        if (end > start) {
-          domBuilder.comment(source, start + 4, end - start - 4);
-          return end + 3;
-        } else {
-          errorHandler.error("Unclosed comment");
-          return -1;
-        }
-      } else {
+      if (t.charAt(u + 3) === "-") {
+        var f = t.indexOf("-->", u + 4);
+        return f > u ? (n.comment(t, u + 4, f - u - 4), f + 3) : (s.error("Unclosed comment"), -1);
+      } else
         return -1;
-      }
     default:
-      if (source.substr(start + 3, 6) == "CDATA[") {
-        var end = source.indexOf("]]>", start + 9);
-        domBuilder.startCDATA();
-        domBuilder.characters(source, start + 9, end - start - 9);
-        domBuilder.endCDATA();
-        return end + 3;
+      if (t.substr(u + 3, 6) == "CDATA[") {
+        var f = t.indexOf("]]>", u + 9);
+        return n.startCDATA(), n.characters(t, u + 9, f - u - 9), n.endCDATA(), f + 3;
       }
-      var matchs = split(source, start);
-      var len = matchs.length;
-      if (len > 1 && /!doctype/i.test(matchs[0][0])) {
-        var name2 = matchs[1][0];
-        var pubid = false;
-        var sysid = false;
-        if (len > 3) {
-          if (/^public$/i.test(matchs[2][0])) {
-            pubid = matchs[3][0];
-            sysid = len > 4 && matchs[4][0];
-          } else if (/^system$/i.test(matchs[2][0])) {
-            sysid = matchs[3][0];
-          }
-        }
-        var lastMatch = matchs[len - 1];
-        domBuilder.startDTD(name2, pubid, sysid);
-        domBuilder.endDTD();
-        return lastMatch.index + lastMatch[0].length;
+      var A = Du(t, u), y = A.length;
+      if (y > 1 && /!doctype/i.test(A[0][0])) {
+        var N = A[1][0], w = !1, S = !1;
+        y > 3 && (/^public$/i.test(A[2][0]) ? (w = A[3][0], S = y > 4 && A[4][0]) : /^system$/i.test(A[2][0]) && (S = A[3][0]));
+        var k = A[y - 1];
+        return n.startDTD(N, w, S), n.endDTD(), k.index + k[0].length;
       }
   }
   return -1;
 }
-function parseInstruction(source, start, domBuilder) {
-  var end = source.indexOf("?>", start);
-  if (end) {
-    var match = source.substring(start, end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
-    if (match) {
-      var len = match[0].length;
-      domBuilder.processingInstruction(match[1], match[2]);
-      return end + 2;
-    } else {
-      return -1;
-    }
+function Au(t, u, n) {
+  var s = t.indexOf("?>", u);
+  if (s) {
+    var c = t.substring(u, s).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
+    return c ? (c[0].length, n.processingInstruction(c[1], c[2]), s + 2) : -1;
   }
   return -1;
 }
-function ElementAttributes() {
+function Ot() {
   this.attributeNames = {};
 }
-ElementAttributes.prototype = {
-  setTagName: function(tagName) {
-    if (!tagNamePattern.test(tagName)) {
-      throw new Error("invalid tagName:" + tagName);
-    }
-    this.tagName = tagName;
+Ot.prototype = {
+  setTagName: function(t) {
+    if (!Zr.test(t))
+      throw new Error("invalid tagName:" + t);
+    this.tagName = t;
   },
-  addValue: function(qName, value, offset) {
-    if (!tagNamePattern.test(qName)) {
-      throw new Error("invalid attribute:" + qName);
-    }
-    this.attributeNames[qName] = this.length;
-    this[this.length++] = { qName, value, offset };
+  addValue: function(t, u, n) {
+    if (!Zr.test(t))
+      throw new Error("invalid attribute:" + t);
+    this.attributeNames[t] = this.length, this[this.length++] = { qName: t, value: u, offset: n };
   },
   length: 0,
-  getLocalName: function(i) {
-    return this[i].localName;
+  getLocalName: function(t) {
+    return this[t].localName;
   },
-  getLocator: function(i) {
-    return this[i].locator;
+  getLocator: function(t) {
+    return this[t].locator;
   },
-  getQName: function(i) {
-    return this[i].qName;
+  getQName: function(t) {
+    return this[t].qName;
   },
-  getURI: function(i) {
-    return this[i].uri;
+  getURI: function(t) {
+    return this[t].uri;
   },
-  getValue: function(i) {
-    return this[i].value;
+  getValue: function(t) {
+    return this[t].value;
   }
   //	,getIndex:function(uri, localName)){
   //		if(localName){
@@ -8107,240 +5968,158 @@ ElementAttributes.prototype = {
   //	getType:function(uri,localName){}
   //	getType:function(i){},
 };
-function split(source, start) {
-  var match;
-  var buf = [];
-  var reg = /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
-  reg.lastIndex = start;
-  reg.exec(source);
-  while (match = reg.exec(source)) {
-    buf.push(match);
-    if (match[1])
-      return buf;
-  }
+function Du(t, u) {
+  var n, s = [], c = /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
+  for (c.lastIndex = u, c.exec(t); n = c.exec(t); )
+    if (s.push(n), n[1])
+      return s;
 }
-var XMLReader_1 = sax$1.XMLReader = XMLReader$1;
-var ParseError_1 = sax$1.ParseError = ParseError$1;
-var conventions = conventions$2;
-var dom$1 = dom$2;
-var entities = entities$2;
-var sax = sax$1;
-var DOMImplementation$1 = dom$1.DOMImplementation;
-var NAMESPACE = conventions.NAMESPACE;
-var ParseError = sax.ParseError;
-var XMLReader = sax.XMLReader;
-function normalizeLineEndings(input) {
-  return input.replace(/\r[\n\u0085]/g, "\n").replace(/[\r\u0085\u2028]/g, "\n");
+Ur.XMLReader = Bt;
+Ur.ParseError = nr;
+var gu = Me, du = Ge, rt = wt, Ft = Ur, mu = du.DOMImplementation, tt = gu.NAMESPACE, Nu = Ft.ParseError, vu = Ft.XMLReader;
+function Rt(t) {
+  return t.replace(/\r[\n\u0085]/g, `
+`).replace(/[\r\u0085\u2028]/g, `
+`);
 }
-function DOMParser$1(options) {
-  this.options = options || { locator: {} };
+function _t(t) {
+  this.options = t || { locator: {} };
 }
-DOMParser$1.prototype.parseFromString = function(source, mimeType) {
-  var options = this.options;
-  var sax2 = new XMLReader();
-  var domBuilder = options.domBuilder || new DOMHandler();
-  var errorHandler = options.errorHandler;
-  var locator = options.locator;
-  var defaultNSMap = options.xmlns || {};
-  var isHTML = /\/x?html?$/.test(mimeType);
-  var entityMap = isHTML ? entities.HTML_ENTITIES : entities.XML_ENTITIES;
-  if (locator) {
-    domBuilder.setDocumentLocator(locator);
-  }
-  sax2.errorHandler = buildErrorHandler(errorHandler, domBuilder, locator);
-  sax2.domBuilder = options.domBuilder || domBuilder;
-  if (isHTML) {
-    defaultNSMap[""] = NAMESPACE.HTML;
-  }
-  defaultNSMap.xml = defaultNSMap.xml || NAMESPACE.XML;
-  var normalize = options.normalizeLineEndings || normalizeLineEndings;
-  if (source && typeof source === "string") {
-    sax2.parse(
-      normalize(source),
-      defaultNSMap,
-      entityMap
-    );
-  } else {
-    sax2.errorHandler.error("invalid doc source");
-  }
-  return domBuilder.doc;
+_t.prototype.parseFromString = function(t, u) {
+  var n = this.options, s = new vu(), c = n.domBuilder || new Dr(), f = n.errorHandler, A = n.locator, y = n.xmlns || {}, N = /\/x?html?$/.test(u), w = N ? rt.HTML_ENTITIES : rt.XML_ENTITIES;
+  A && c.setDocumentLocator(A), s.errorHandler = xu(f, c, A), s.domBuilder = n.domBuilder || c, N && (y[""] = tt.HTML), y.xml = y.xml || tt.XML;
+  var S = n.normalizeLineEndings || Rt;
+  return t && typeof t == "string" ? s.parse(
+    S(t),
+    y,
+    w
+  ) : s.errorHandler.error("invalid doc source"), c.doc;
 };
-function buildErrorHandler(errorImpl, domBuilder, locator) {
-  if (!errorImpl) {
-    if (domBuilder instanceof DOMHandler) {
-      return domBuilder;
-    }
-    errorImpl = domBuilder;
+function xu(t, u, n) {
+  if (!t) {
+    if (u instanceof Dr)
+      return u;
+    t = u;
   }
-  var errorHandler = {};
-  var isCallback = errorImpl instanceof Function;
-  locator = locator || {};
-  function build(key) {
-    var fn2 = errorImpl[key];
-    if (!fn2 && isCallback) {
-      fn2 = errorImpl.length == 2 ? function(msg) {
-        errorImpl(key, msg);
-      } : errorImpl;
-    }
-    errorHandler[key] = fn2 && function(msg) {
-      fn2("[xmldom " + key + "]	" + msg + _locator(locator));
+  var s = {}, c = t instanceof Function;
+  n = n || {};
+  function f(A) {
+    var y = t[A];
+    !y && c && (y = t.length == 2 ? function(N) {
+      t(A, N);
+    } : t), s[A] = y && function(N) {
+      y("[xmldom " + A + "]	" + N + Sr(n));
     } || function() {
     };
   }
-  build("warning");
-  build("error");
-  build("fatalError");
-  return errorHandler;
+  return f("warning"), f("error"), f("fatalError"), s;
 }
-function DOMHandler() {
-  this.cdata = false;
+function Dr() {
+  this.cdata = !1;
 }
-function position(locator, node) {
-  node.lineNumber = locator.lineNumber;
-  node.columnNumber = locator.columnNumber;
+function er(t, u) {
+  u.lineNumber = t.lineNumber, u.columnNumber = t.columnNumber;
 }
-DOMHandler.prototype = {
+Dr.prototype = {
   startDocument: function() {
-    this.doc = new DOMImplementation$1().createDocument(null, null, null);
-    if (this.locator) {
-      this.doc.documentURI = this.locator.systemId;
+    this.doc = new mu().createDocument(null, null, null), this.locator && (this.doc.documentURI = this.locator.systemId);
+  },
+  startElement: function(t, u, n, s) {
+    var c = this.doc, f = c.createElementNS(t, n || u), A = s.length;
+    dr(this, f), this.currentElement = f, this.locator && er(this.locator, f);
+    for (var y = 0; y < A; y++) {
+      var t = s.getURI(y), N = s.getValue(y), n = s.getQName(y), w = c.createAttributeNS(t, n);
+      this.locator && er(s.getLocator(y), w), w.value = w.nodeValue = N, f.setAttributeNode(w);
     }
   },
-  startElement: function(namespaceURI, localName, qName, attrs) {
-    var doc = this.doc;
-    var el = doc.createElementNS(namespaceURI, qName || localName);
-    var len = attrs.length;
-    appendElement(this, el);
-    this.currentElement = el;
-    this.locator && position(this.locator, el);
-    for (var i = 0; i < len; i++) {
-      var namespaceURI = attrs.getURI(i);
-      var value = attrs.getValue(i);
-      var qName = attrs.getQName(i);
-      var attr = doc.createAttributeNS(namespaceURI, qName);
-      this.locator && position(attrs.getLocator(i), attr);
-      attr.value = attr.nodeValue = value;
-      el.setAttributeNode(attr);
+  endElement: function(t, u, n) {
+    var s = this.currentElement;
+    s.tagName, this.currentElement = s.parentNode;
+  },
+  startPrefixMapping: function(t, u) {
+  },
+  endPrefixMapping: function(t) {
+  },
+  processingInstruction: function(t, u) {
+    var n = this.doc.createProcessingInstruction(t, u);
+    this.locator && er(this.locator, n), dr(this, n);
+  },
+  ignorableWhitespace: function(t, u, n) {
+  },
+  characters: function(t, u, n) {
+    if (t = ut.apply(this, arguments), t) {
+      if (this.cdata)
+        var s = this.doc.createCDATASection(t);
+      else
+        var s = this.doc.createTextNode(t);
+      this.currentElement ? this.currentElement.appendChild(s) : /^\s*$/.test(t) && this.doc.appendChild(s), this.locator && er(this.locator, s);
     }
   },
-  endElement: function(namespaceURI, localName, qName) {
-    var current = this.currentElement;
-    var tagName = current.tagName;
-    this.currentElement = current.parentNode;
-  },
-  startPrefixMapping: function(prefix, uri) {
-  },
-  endPrefixMapping: function(prefix) {
-  },
-  processingInstruction: function(target, data) {
-    var ins = this.doc.createProcessingInstruction(target, data);
-    this.locator && position(this.locator, ins);
-    appendElement(this, ins);
-  },
-  ignorableWhitespace: function(ch, start, length) {
-  },
-  characters: function(chars, start, length) {
-    chars = _toString.apply(this, arguments);
-    if (chars) {
-      if (this.cdata) {
-        var charNode = this.doc.createCDATASection(chars);
-      } else {
-        var charNode = this.doc.createTextNode(chars);
-      }
-      if (this.currentElement) {
-        this.currentElement.appendChild(charNode);
-      } else if (/^\s*$/.test(chars)) {
-        this.doc.appendChild(charNode);
-      }
-      this.locator && position(this.locator, charNode);
-    }
-  },
-  skippedEntity: function(name2) {
+  skippedEntity: function(t) {
   },
   endDocument: function() {
     this.doc.normalize();
   },
-  setDocumentLocator: function(locator) {
-    if (this.locator = locator) {
-      locator.lineNumber = 0;
-    }
+  setDocumentLocator: function(t) {
+    (this.locator = t) && (t.lineNumber = 0);
   },
   //LexicalHandler
-  comment: function(chars, start, length) {
-    chars = _toString.apply(this, arguments);
-    var comm = this.doc.createComment(chars);
-    this.locator && position(this.locator, comm);
-    appendElement(this, comm);
+  comment: function(t, u, n) {
+    t = ut.apply(this, arguments);
+    var s = this.doc.createComment(t);
+    this.locator && er(this.locator, s), dr(this, s);
   },
   startCDATA: function() {
-    this.cdata = true;
+    this.cdata = !0;
   },
   endCDATA: function() {
-    this.cdata = false;
+    this.cdata = !1;
   },
-  startDTD: function(name2, publicId, systemId) {
-    var impl = this.doc.implementation;
-    if (impl && impl.createDocumentType) {
-      var dt = impl.createDocumentType(name2, publicId, systemId);
-      this.locator && position(this.locator, dt);
-      appendElement(this, dt);
-      this.doc.doctype = dt;
+  startDTD: function(t, u, n) {
+    var s = this.doc.implementation;
+    if (s && s.createDocumentType) {
+      var c = s.createDocumentType(t, u, n);
+      this.locator && er(this.locator, c), dr(this, c), this.doc.doctype = c;
     }
   },
   /**
    * @see org.xml.sax.ErrorHandler
    * @link http://www.saxproject.org/apidoc/org/xml/sax/ErrorHandler.html
    */
-  warning: function(error) {
-    console.warn("[xmldom warning]	" + error, _locator(this.locator));
+  warning: function(t) {
+    console.warn("[xmldom warning]	" + t, Sr(this.locator));
   },
-  error: function(error) {
-    console.error("[xmldom error]	" + error, _locator(this.locator));
+  error: function(t) {
+    console.error("[xmldom error]	" + t, Sr(this.locator));
   },
-  fatalError: function(error) {
-    throw new ParseError(error, this.locator);
+  fatalError: function(t) {
+    throw new Nu(t, this.locator);
   }
 };
-function _locator(l) {
-  if (l) {
-    return "\n@" + (l.systemId || "") + "#[line:" + l.lineNumber + ",col:" + l.columnNumber + "]";
-  }
+function Sr(t) {
+  if (t)
+    return `
+@` + (t.systemId || "") + "#[line:" + t.lineNumber + ",col:" + t.columnNumber + "]";
 }
-function _toString(chars, start, length) {
-  if (typeof chars == "string") {
-    return chars.substr(start, length);
-  } else {
-    if (chars.length >= start + length || start) {
-      return new java.lang.String(chars, start, length) + "";
-    }
-    return chars;
-  }
+function ut(t, u, n) {
+  return typeof t == "string" ? t.substr(u, n) : t.length >= u + n || u ? new java.lang.String(t, u, n) + "" : t;
 }
-"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g, function(key) {
-  DOMHandler.prototype[key] = function() {
+"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g, function(t) {
+  Dr.prototype[t] = function() {
     return null;
   };
 });
-function appendElement(hander, node) {
-  if (!hander.currentElement) {
-    hander.doc.appendChild(node);
-  } else {
-    hander.currentElement.appendChild(node);
-  }
+function dr(t, u) {
+  t.currentElement ? t.currentElement.appendChild(u) : t.doc.appendChild(u);
 }
-var __DOMHandler = domParser.__DOMHandler = DOMHandler;
-var normalizeLineEndings_1 = domParser.normalizeLineEndings = normalizeLineEndings;
-var DOMParser_1 = domParser.DOMParser = DOMParser$1;
-var dom = dom$2;
-var DOMImplementation = lib.DOMImplementation = dom.DOMImplementation;
-var XMLSerializer = lib.XMLSerializer = dom.XMLSerializer;
-var DOMParser = lib.DOMParser = domParser.DOMParser;
-function pluginHookResponseFilter(filter, text) {
-  const doc = new DOMParser().parseFromString(text, "text/xml");
-  const filtered = `${xpath.select(filter, doc)}`;
-  console.log("FILTERED", filtered);
-  return { filtered };
+Tr.__DOMHandler = Dr;
+Tr.normalizeLineEndings = Rt;
+Tr.DOMParser = _t;
+var Cu = Tr.DOMParser;
+function yu(t, u) {
+  const n = new Cu().parseFromString(u, "text/xml");
+  return { filtered: `${Qt.select(t, n)}` };
 }
 export {
-  pluginHookResponseFilter
+  yu as pluginHookResponseFilter
 };

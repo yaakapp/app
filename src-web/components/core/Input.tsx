@@ -121,6 +121,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
       ref={wrapperRef}
       className={classNames(
         'w-full',
+        'pointer-events-auto', // Just in case we're placing in disabled parent
         labelPosition === 'left' && 'flex items-center gap-2',
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}

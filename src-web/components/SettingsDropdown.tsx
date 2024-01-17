@@ -63,7 +63,7 @@ export function SettingsDropdown() {
         {
           key: 'hotkeys',
           label: 'Keyboard shortcuts',
-          hotkeyAction: 'hotkeys.showHelp',
+          hotKeyAction: 'hotkeys.showHelp',
           leftSlot: <Icon icon="keyboard" />,
           onSelect: () => {
             dialog.show({
@@ -77,7 +77,7 @@ export function SettingsDropdown() {
         {
           key: 'settings',
           label: 'Settings',
-          hotkeyAction: 'settings.show',
+          hotKeyAction: 'settings.show',
           leftSlot: <Icon icon="settings" />,
           onSelect: () => {
             dialog.show({

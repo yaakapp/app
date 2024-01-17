@@ -1,16 +1,17 @@
 use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
-use log::warn;
+use http::header::{ACCEPT, USER_AGENT};
+use log::{info, warn};
 use reqwest::multipart;
 use reqwest::redirect::Policy;
-use sqlx::types::Json;
 use sqlx::{Pool, Sqlite};
+use sqlx::types::Json;
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -21,6 +22,7 @@ pub async fn send_http_request(
     environment_id: &str,
     app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
+    download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
     let environment = models::get_environment(environment_id, pool).await.ok();
@@ -299,6 +301,16 @@ pub async fn send_http_request(
             if !request.id.is_empty() {
                 emit_side_effect(app_handle, "updated_model", &response);
             }
+
+            // Copy response to download path, if specified
+            match (download_path, response.body_path.clone()) {
+                (Some(dl_path), Some(body_path)) => {
+                    info!("Downloading response body to {}", dl_path.display());
+                    fs::copy(body_path, dl_path).expect("Failed to copy file for response download");
+                }
+                _ => {}
+            };
+
             Ok(response)
         }
         Err(e) => {
