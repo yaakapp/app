@@ -16,18 +16,20 @@ export interface RadioDropdownProps<T = string | null> {
   value: T;
   onChange: (value: T) => void;
   items: RadioDropdownItem<T>[];
+  extraItems?: DropdownProps['items'];
   children: DropdownProps['children'];
 }
 
 export function RadioDropdown<T = string | null>({
   value,
   items,
+  extraItems,
   onChange,
   children,
 }: RadioDropdownProps<T>) {
   const dropdownItems = useMemo(
-    () =>
-      items.map((item) => {
+    () => [
+      ...items.map((item) => {
         if (item.type === 'separator') {
           return item;
         } else {
@@ -40,7 +42,9 @@ export function RadioDropdown<T = string | null>({
           };
         }
       }),
-    [items, value, onChange],
+      ...(extraItems ?? []),
+    ],
+    [items, extraItems, value, onChange],
   );
 
   return <Dropdown items={dropdownItems}>{children}</Dropdown>;
