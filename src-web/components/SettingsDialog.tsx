@@ -40,7 +40,12 @@ export const SettingsDialog = () => {
       </HStack>
       <Separator className="my-4" />
 
-      <Heading size={2}>Workspace ({workspace.name})</Heading>
+      <Heading size={2}>
+        Workspace{' '}
+        <div className="inline-block ml-1 bg-gray-500 dark:bg-gray-300 px-2 py-0.5 !text-md rounded text-base text-white dark:text-gray-900">
+          {workspace.name}
+        </div>
+      </Heading>
       <VStack className="w-full" space={3}>
         <Input
           size="xs"
