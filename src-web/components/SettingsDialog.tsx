@@ -21,7 +21,7 @@ export const SettingsDialog = () => {
 
   return (
     <VStack space={2}>
-      <HStack alignItems="center" space={2}>
+      <HStack className="mt-1" alignItems="center" space={2}>
         <div className="w-1/3">Appearance</div>
         <select
           value={settings.appearance}
@@ -42,11 +42,11 @@ export const SettingsDialog = () => {
 
       <Heading size={2}>
         Workspace{' '}
-        <div className="inline-block ml-1 bg-gray-500 dark:bg-gray-300 px-2 py-0.5 !text-md rounded text-base text-white dark:text-gray-900">
+        <div className="inline-block ml-1 bg-gray-500 dark:bg-gray-300 px-2 py-0.5 text-sm rounded text-white dark:text-gray-900">
           {workspace.name}
         </div>
       </Heading>
-      <VStack className="w-full" space={3}>
+      <VStack className="mt-1 w-full" space={3}>
         <Input
           size="xs"
           name="requestTimeout"

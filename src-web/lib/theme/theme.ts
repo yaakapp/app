@@ -101,6 +101,22 @@ export function generateColors(
 }
 
 const lightnessMap: Record<Appearance, Record<AppThemeColorVariant, number>> = {
+  system: {
+    // Not actually used
+    0: 1,
+    50: 1,
+    100: 0.9,
+    200: 0.7,
+    300: 0.4,
+    400: 0.2,
+    500: 0,
+    600: -0.2,
+    700: -0.4,
+    800: -0.6,
+    900: -0.8,
+    950: -0.9,
+    1000: -1,
+  },
   light: {
     0: 1,
     50: 1,
