@@ -1,3 +1,4 @@
+import { appWindow } from '@tauri-apps/api/window';
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type {
@@ -7,7 +8,8 @@ import type {
   ReactNode,
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useWindowSize } from 'react-use';
+import { useFullscreen, useWindowSize } from 'react-use';
+import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
@@ -173,12 +175,14 @@ interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
 
 function HeaderSize({ className, ...props }: HeaderSizeProps) {
   const platform = useOsInfo();
+  const fullscreen = useIsFullscreen();
+  const stoplightsVisible = platform?.osType === 'Darwin' && !fullscreen;
   return (
     <div
       className={classNames(
         className,
         'h-md pt-[1px] flex items-center w-full border-b',
-        platform?.osType === 'Darwin' ? 'pl-20 pr-1' : 'pl-1',
+        stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
       )}
       {...props}
     />
