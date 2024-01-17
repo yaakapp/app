@@ -23,6 +23,7 @@ import { useLatestResponse } from '../hooks/useLatestResponse';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
+import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
@@ -61,6 +62,7 @@ export function Sidebar({ className }: Props) {
   const folders = useFolders();
   const deleteAnyRequest = useDeleteAnyRequest();
   const activeWorkspace = useActiveWorkspace();
+  const duplicateRequest = useDuplicateRequest({ id: activeRequestId, navigateAfter: true });
   const routes = useAppRoutes();
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -74,6 +76,10 @@ export function Sidebar({ className }: Props) {
     key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
     defaultValue: {},
     namespace: NAMESPACE_NO_SYNC,
+  });
+
+  useHotKey('request.duplicate', () => {
+    duplicateRequest.mutate();
   });
 
   const isCollapsed = useCallback(
@@ -517,18 +523,20 @@ const SidebarItem = forwardRef(function SidebarItem(
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
+  const activeRequest = useActiveRequest();
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(itemId);
   const duplicateRequest = useDuplicateRequest({ id: itemId, navigateAfter: true });
+  const sendRequest = useSendRequest(itemId);
+  const sendAndDownloadRequest = useSendRequest(itemId, { download: true });
   const sendManyRequests = useSendManyRequests();
   const latestResponse = useLatestResponse(itemId);
   const updateRequest = useUpdateRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
-  const activeRequest = useActiveRequest();
   const isActive = activeRequest?.id === itemId;
 
   const handleSubmitNameEdit = useCallback(
@@ -599,7 +607,6 @@ const SidebarItem = forwardRef(function SidebarItem(
                     leftSlot: <Icon icon="sendHorizontal" />,
                     onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
                   },
-                  { type: 'separator', label: itemName },
                   {
                     key: 'rename',
                     label: 'Rename',
@@ -642,14 +649,28 @@ const SidebarItem = forwardRef(function SidebarItem(
                 ]
               : [
                   {
+                    key: 'sendRequest',
+                    label: 'Send',
+                    hotKeyAction: 'request.send',
+                    hotKeyLabelOnly: true, // Already bound in URL bar
+                    leftSlot: <Icon icon="sendHorizontal" />,
+                    onSelect: () => sendRequest.mutate(),
+                  },
+                  {
+                    key: 'sendAndDownloadRequest',
+                    label: 'Send and Download',
+                    leftSlot: <Icon icon="download" />,
+                    onSelect: () => sendAndDownloadRequest.mutate(),
+                  },
+                  { type: 'separator' },
+                  {
                     key: 'duplicateRequest',
                     label: 'Duplicate',
-                    hotkeyAction: 'request.duplicate',
+                    hotKeyAction: 'request.duplicate',
+                    hotKeyLabelOnly: true, // Would trigger for every request (bad)
                     leftSlot: <Icon icon="copy" />,
                     onSelect: () => {
-                      if (activeRequest?.id === itemId) {
-                        duplicateRequest.mutate();
-                      }
+                      duplicateRequest.mutate();
                     },
                   },
                   {
