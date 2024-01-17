@@ -10,10 +10,11 @@ export interface PromptProps {
   onResult: (value: string) => void;
   label: InputProps['label'];
   name: InputProps['name'];
-  defaultValue: InputProps['defaultValue'];
+  defaultValue?: InputProps['defaultValue'];
+  placeholder?: InputProps['placeholder'];
 }
 
-export function Prompt({ onHide, label, name, defaultValue, onResult }: PromptProps) {
+export function Prompt({ onHide, label, name, defaultValue, placeholder, onResult }: PromptProps) {
   const [value, setValue] = useState<string>(defaultValue ?? '');
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -33,6 +34,7 @@ export function Prompt({ onHide, label, name, defaultValue, onResult }: PromptPr
         hideLabel
         require
         autoSelect
+        placeholder={placeholder}
         label={label}
         name={name}
         defaultValue={defaultValue}

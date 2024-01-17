@@ -656,12 +656,6 @@ const SidebarItem = forwardRef(function SidebarItem(
                     leftSlot: <Icon icon="sendHorizontal" />,
                     onSelect: () => sendRequest.mutate(),
                   },
-                  {
-                    key: 'sendAndDownloadRequest',
-                    label: 'Send and Download',
-                    leftSlot: <Icon icon="download" />,
-                    onSelect: () => sendAndDownloadRequest.mutate(),
-                  },
                   { type: 'separator' },
                   {
                     key: 'duplicateRequest',
