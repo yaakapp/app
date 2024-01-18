@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
+import { trackEvent } from '../lib/analytics';
 import { Dropdown } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
@@ -14,7 +15,10 @@ export const SidebarActions = memo(function SidebarActions() {
   return (
     <HStack>
       <IconButton
-        onClick={toggle}
+        onClick={() => {
+          trackEvent('Sidebar', 'Toggle');
+          toggle();
+        }}
         className="pointer-events-auto"
         size="sm"
         title="Show sidebar"

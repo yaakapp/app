@@ -94,8 +94,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
       style={style}
       className={classNames(
         className,
-        'bg-gray-50 max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
-        'dark:bg-gray-100 rounded-md border border-highlight',
+        'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
+        'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >

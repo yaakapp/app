@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                theme,\n                appearance\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                theme,\n                appearance,\n                update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
   "describe": {
     "columns": [
       {
@@ -32,6 +32,11 @@
         "name": "appearance",
         "ordinal": 5,
         "type_info": "Text"
+      },
+      {
+        "name": "update_channel",
+        "ordinal": 6,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -43,8 +48,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "6864f2a9032a630cd7c8310be5cb0517ec13d12489540a70b15f23b1e8de7b91"
+  "hash": "3b3fb6271340c6ec21a10b4f1b20502c86c425e0b53ac07692f8a4ed0be09335"
 }
