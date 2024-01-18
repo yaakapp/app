@@ -7,6 +7,7 @@ import type {
   MouseEvent,
   ReactElement,
   ReactNode,
+  SetStateAction,
 } from 'react';
 import React, {
   Children,
@@ -39,7 +40,7 @@ export type DropdownItemDefault = {
   label: ReactNode;
   hotKeyAction?: HotkeyAction;
   hotKeyLabelOnly?: boolean;
-  variant?: 'danger';
+  variant?: 'default' | 'danger' | 'notify';
   disabled?: boolean;
   hidden?: boolean;
   leftSlot?: ReactNode;
@@ -53,6 +54,8 @@ export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
   items: DropdownItem[];
   openOnHotKeyAction?: HotkeyAction;
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 export interface DropdownRef {
@@ -66,13 +69,22 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, openOnHotKeyAction }: DropdownProps,
+  { children, items, openOnHotKeyAction, onOpen, onClose }: DropdownProps,
   ref,
 ) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, _setIsOpen] = useState<boolean>(false);
   const [defaultSelectedIndex, setDefaultSelectedIndex] = useState<number>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<Omit<DropdownRef, 'open'>>(null);
+
+  const setIsOpen = useCallback(
+    (o: SetStateAction<boolean>) => {
+      _setIsOpen(o);
+      if (o) onOpen?.();
+      else onClose?.();
+    },
+    [onClose, onOpen],
+  );
 
   useHotKey(openOnHotKeyAction ?? null, () => {
     setIsOpen(true);
@@ -112,12 +124,12 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
         }),
     };
     return cloneElement(existingChild, props);
-  }, [children]);
+  }, [children, setIsOpen]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
     buttonRef.current?.focus();
-  }, []);
+  }, [setIsOpen]);
 
   useEffect(() => {
     buttonRef.current?.setAttribute('aria-expanded', isOpen.toString());
@@ -307,11 +319,12 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
 
     const docRect = document.documentElement.getBoundingClientRect();
     const width = triggerShape.right - triggerShape.left;
+    const heightAbove = triggerShape.top;
+    const heightBelow = docRect.height - triggerShape.bottom;
     const hSpaceRemaining = docRect.width - triggerShape.left;
-    const vSpaceRemaining = docRect.height - triggerShape.bottom;
     const top = triggerShape?.bottom + 5;
     const onRight = hSpaceRemaining < 200;
-    const upsideDown = vSpaceRemaining < 200;
+    const upsideDown = heightAbove > heightBelow && heightBelow < 200;
     const containerStyles = {
       top: !upsideDown ? top : undefined,
       bottom: upsideDown ? docRect.height - top : undefined,
@@ -462,6 +475,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-900 rounded',
         item.variant === 'danger' && 'text-red-600',
+        item.variant === 'notify' && 'text-pink-600',
       )}
       innerClassName="!text-left"
       {...props}

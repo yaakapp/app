@@ -21,6 +21,7 @@ export interface Settings extends BaseModel {
   readonly model: 'settings';
   theme: string;
   appearance: string;
+  updateChannel: string;
 }
 
 export interface Workspace extends BaseModel {

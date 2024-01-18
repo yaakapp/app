@@ -1,9 +1,12 @@
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+use sqlx::{Pool, Sqlite};
 use sqlx::types::JsonValue;
-use tauri::{async_runtime, AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
+use tokio::sync::Mutex;
 
-use crate::is_dev;
+use crate::{is_dev, models};
 
 // serializable
 #[derive(Serialize, Deserialize)]
@@ -19,6 +22,8 @@ pub enum AnalyticsResource {
 #[derive(Serialize, Deserialize)]
 pub enum AnalyticsAction {
     Launch,
+    LaunchFirst,
+    LaunchUpdate,
     Create,
     Update,
     Upsert,
@@ -26,6 +31,24 @@ pub enum AnalyticsAction {
     DeleteMany,
     Send,
     Duplicate,
+}
+
+impl AnalyticsAction {
+    pub fn from_str(s: &str) -> Option<AnalyticsAction> {
+        match s {
+            "launch" => Some(AnalyticsAction::Launch),
+            "launch_first" => Some(AnalyticsAction::LaunchFirst),
+            "launch_update" => Some(AnalyticsAction::LaunchUpdate),
+            "create" => Some(AnalyticsAction::Create),
+            "update" => Some(AnalyticsAction::Update),
+            "upsert" => Some(AnalyticsAction::Upsert),
+            "delete" => Some(AnalyticsAction::Delete),
+            "delete_many" => Some(AnalyticsAction::DeleteMany),
+            "send" => Some(AnalyticsAction::Send),
+            "duplicate" => Some(AnalyticsAction::Duplicate),
+            _ => None,
+        }
+    }
 }
 
 fn resource_name(resource: AnalyticsResource) -> &'static str {
@@ -42,6 +65,8 @@ fn resource_name(resource: AnalyticsResource) -> &'static str {
 fn action_name(action: AnalyticsAction) -> &'static str {
     match action {
         AnalyticsAction::Launch => "launch",
+        AnalyticsAction::LaunchFirst => "launch_first",
+        AnalyticsAction::LaunchUpdate => "launch_update",
         AnalyticsAction::Create => "create",
         AnalyticsAction::Update => "update",
         AnalyticsAction::Upsert => "upsert",
@@ -52,15 +77,70 @@ fn action_name(action: AnalyticsAction) -> &'static str {
     }
 }
 
-pub fn track_event_blocking(
-    app_handle: &AppHandle,
-    resource: AnalyticsResource,
-    action: AnalyticsAction,
-    attributes: Option<JsonValue>,
-) {
-    async_runtime::block_on(async move {
-        track_event(app_handle, resource, action, attributes).await;
-    });
+#[derive(Default, Debug)]
+pub struct LaunchEventInfo {
+    pub current_version: String,
+    pub previous_version: String,
+    pub launched_after_update: bool,
+    pub num_launches: i32,
+}
+
+pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
+    let namespace = "analytics";
+    let last_tracked_version_key = "last_tracked_version";
+    let db_instance: State<'_, Mutex<Pool<Sqlite>>> = app_handle.state();
+    let pool = &*db_instance.lock().await;
+
+    let mut info = LaunchEventInfo::default();
+
+    info.num_launches = models::get_key_value_int(namespace, "num_launches", 0, pool).await + 1;
+    info.previous_version =
+        models::get_key_value_string(namespace, last_tracked_version_key, "", pool).await;
+    info.current_version = app_handle.package_info().version.to_string();
+
+    if info.previous_version.is_empty() {
+        track_event(
+            app_handle,
+            AnalyticsResource::App,
+            AnalyticsAction::LaunchFirst,
+            None,
+        )
+        .await;
+    } else {
+        info.launched_after_update = info.current_version != info.previous_version;
+        if info.launched_after_update {
+            track_event(
+                app_handle,
+                AnalyticsResource::App,
+                AnalyticsAction::LaunchUpdate,
+                Some(json!({ "num_launches": info.num_launches })),
+            )
+            .await;
+        }
+    };
+
+    // Track a launch event in all cases
+    track_event(
+        app_handle,
+        AnalyticsResource::App,
+        AnalyticsAction::Launch,
+        Some(json!({ "num_launches": info.num_launches })),
+    )
+        .await;
+
+
+    // Update key values
+
+    models::set_key_value_string(
+        namespace,
+        last_tracked_version_key,
+        info.current_version.as_str(),
+        pool,
+    )
+    .await;
+    models::set_key_value_int(namespace, "num_launches", info.num_launches, pool).await;
+
+    info
 }
 
 pub async fn track_event(
@@ -79,7 +159,7 @@ pub async fn track_event(
     };
     let base_url = match is_dev() {
         true => "http://localhost:7194",
-        false => "https://t.yaak.app"
+        false => "https://t.yaak.app",
     };
     let params = vec![
         ("e", event.clone()),
@@ -96,13 +176,17 @@ pub async fn track_event(
         .get(format!("{base_url}/t/e"))
         .query(&params);
 
+    // Disable analytics actual sending in dev
+    if is_dev() {
+        debug!("track: {} {}", event, attributes_json);
+        return;
+    }
+
     if let Err(e) = req.send().await {
         warn!(
-                "Error sending analytics event: {} {} {:?}",
-                e, event, params
-            );
-    } else {
-        debug!("Send event: {}: {:?}", event, params);
+            "Error sending analytics event: {} {} {} {:?}",
+            e, event, attributes_json, params,
+        );
     }
 }
 

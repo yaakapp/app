@@ -3,9 +3,9 @@ use std::fs;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDateTime;
-use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use sqlx::types::{Json, JsonValue};
+use sqlx::types::chrono::NaiveDateTime;
 use tauri::AppHandle;
 
 fn default_true() -> bool {
@@ -21,6 +21,7 @@ pub struct Settings {
     pub updated_at: NaiveDateTime,
     pub theme: String,
     pub appearance: String,
+    pub update_channel: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -179,13 +180,75 @@ pub struct KeyValue {
     pub value: String,
 }
 
-pub async fn set_key_value(
+pub async fn set_key_value_string(
     namespace: &str,
     key: &str,
     value: &str,
     pool: &Pool<Sqlite>,
 ) -> (KeyValue, bool) {
-    let existing = get_key_value(namespace, key, pool).await;
+    let encoded = serde_json::to_string(value);
+    set_key_value_raw(namespace, key, &encoded.unwrap(), pool).await
+}
+
+pub async fn set_key_value_int(
+    namespace: &str,
+    key: &str,
+    value: i32,
+    pool: &Pool<Sqlite>,
+) -> (KeyValue, bool) {
+    let encoded = serde_json::to_string(&value);
+    set_key_value_raw(namespace, key, &encoded.unwrap(), pool).await
+}
+
+pub async fn get_key_value_string(
+    namespace: &str,
+    key: &str,
+    default: &str,
+    pool: &Pool<Sqlite>,
+) -> String {
+    match get_key_value_raw(namespace, key, pool).await {
+        None => default.to_string(),
+        Some(v) => {
+            let result = serde_json::from_str(&v.value);
+            match result {
+                Ok(v) => v,
+                Err(e) => {
+                    println!("Failed to parse string key value: {}", e);
+                    default.to_string()
+                }
+            }
+        },
+    }
+}
+
+pub async fn get_key_value_int(
+    namespace: &str,
+    key: &str,
+    default: i32,
+    pool: &Pool<Sqlite>,
+) -> i32 {
+    match get_key_value_raw(namespace, key, pool).await {
+        None => default.clone(),
+        Some(v) => {
+            let result = serde_json::from_str(&v.value);
+            match result {
+                Ok(v) => v,
+                Err(e) => {
+                    println!("Failed to parse int key value: {}", e);
+                    default.clone()
+                }
+            }
+        },
+    }
+}
+
+pub async fn set_key_value_raw(
+    namespace: &str,
+    key: &str,
+    value: &str,
+    pool: &Pool<Sqlite>,
+) -> (KeyValue, bool) {
+    let existing = get_key_value_raw(namespace, key, pool).await;
     sqlx::query!(
         r#"
             INSERT INTO key_values (namespace, key, value)
@@ -201,13 +264,13 @@ pub async fn set_key_value(
     .await
     .expect("Failed to insert key value");
 
-    let kv = get_key_value(namespace, key, pool)
+    let kv = get_key_value_raw(namespace, key, pool)
         .await
         .expect("Failed to get key value");
     (kv, existing.is_none())
 }
 
-pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {
+pub async fn get_key_value_raw(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {
     sqlx::query_as!(
         KeyValue,
         r#"
@@ -221,22 +284,6 @@ pub async fn get_key_value(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> O
     .fetch_one(pool)
     .await
     .ok()
-}
-
-pub async fn get_key_value_string(
-    namespace: &str,
-    key: &str,
-    pool: &Pool<Sqlite>,
-) -> Option<String> {
-    let kv = get_key_value(namespace, key, pool).await?;
-    let result = serde_json::from_str(&kv.value);
-    match result {
-        Ok(v) => Some(v),
-        Err(e) => {
-            println!("Failed to parse key value: {}", e);
-            None
-        }
-    }
 }
 
 pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
@@ -346,7 +393,8 @@ async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
                 created_at,
                 updated_at,
                 theme,
-                appearance
+                appearance,
+                update_channel
             FROM settings
             WHERE id = 'default'
         "#,
@@ -355,10 +403,9 @@ async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
     .await
 }
 
-pub async fn get_or_create_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
-    let existing = get_settings(pool).await;
-    if let Ok(s) = existing {
-        Ok(s)
+pub async fn get_or_create_settings(pool: &Pool<Sqlite>) -> Settings {
+    if let Ok(settings) = get_settings(pool).await {
+        settings
     } else {
         sqlx::query!(
             r#"
@@ -367,8 +414,8 @@ pub async fn get_or_create_settings(pool: &Pool<Sqlite>) -> Result<Settings, sql
             "#,
         )
         .execute(pool)
-        .await?;
-        get_settings(pool).await
+        .await.expect("Failed to insert settings");
+        get_settings(pool).await.expect("Failed to get settings")
     }
 }
 
@@ -380,11 +427,13 @@ pub async fn update_settings(
         r#"
             UPDATE settings SET (
                 theme,
-                appearance
-            ) = (?, ?) WHERE id = 'default';
+                appearance,
+                update_channel
+            ) = (?, ?, ?) WHERE id = 'default';
         "#,
         settings.theme,
         settings.appearance,
+        settings.update_channel
     )
     .execute(pool)
     .await?;

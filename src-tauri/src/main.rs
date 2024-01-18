@@ -9,24 +9,25 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
-use log::{debug, info, warn};
+use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::Value;
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
+use tokio::time::sleep;
 use window_shadows::set_shadow;
 
 use window_ext::TrafficLightWindowExt;
@@ -84,7 +85,15 @@ async fn send_ephemeral_request(
     let response = models::HttpResponse::new();
     let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
-    send_http_request(request, &response, &environment_id2, &app_handle, pool, None).await
+    send_http_request(
+        request,
+        &response,
+        &environment_id2,
+        &app_handle,
+        pool,
+        None,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -243,8 +252,15 @@ async fn send_request(
     };
 
     tokio::spawn(async move {
-        if let Err(e) =
-            send_http_request(req, &response2, &environment_id2, &app_handle2, &pool2, download_path).await
+        if let Err(e) = send_http_request(
+            req,
+            &response2,
+            &environment_id2,
+            &app_handle2,
+            &pool2,
+            download_path,
+        )
+        .await
         {
             response_err(&response2, e, &app_handle2, &pool2)
                 .await
@@ -274,11 +290,25 @@ async fn response_err(
 #[tauri::command]
 async fn track_event(
     window: Window<Wry>,
-    resource: AnalyticsResource,
-    action: AnalyticsAction,
+    resource: &str,
+    action: &str,
     attributes: Option<Value>,
 ) -> Result<(), String> {
-    analytics::track_event(&window.app_handle(), resource, action, attributes).await;
+    let action_type = AnalyticsAction::from_str(action);
+    match (action_type, action_type) {
+        (Some(t), Some(t)) => {
+            analytics::track_event(
+                &window.app_handle(),
+                resource,
+                action_type,
+                attributes,
+            )
+                .await;
+        },
+        _ => {
+            error!("Invalid action type: {}", action);
+        }
+    }
     Ok(())
 }
 
@@ -298,7 +328,7 @@ async fn get_key_value(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Option<models::KeyValue>, ()> {
     let pool = &*db_instance.lock().await;
-    let result = models::get_key_value(namespace, key, pool).await;
+    let result = models::get_key_value_raw(namespace, key, pool).await;
     Ok(result)
 }
 
@@ -311,7 +341,7 @@ async fn set_key_value(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::KeyValue, String> {
     let pool = &*db_instance.lock().await;
-    let (key_value, created) = models::set_key_value(namespace, key, value, pool).await;
+    let (key_value, created) = models::set_key_value_raw(namespace, key, value, pool).await;
 
     if created {
         emit_and_return(&window, "created_model", key_value)
@@ -558,13 +588,9 @@ async fn list_environments(
 }
 
 #[tauri::command]
-async fn get_settings(
-    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<models::Settings, String> {
+async fn get_settings(db_instance: State<'_, Mutex<Pool<Sqlite>>>) -> Result<models::Settings, ()> {
     let pool = &*db_instance.lock().await;
-    models::get_or_create_settings(pool)
-        .await
-        .map_err(|e| e.to_string())
+    Ok(models::get_or_create_settings(pool).await)
 }
 
 #[tauri::command]
@@ -848,15 +874,21 @@ fn main() {
                 },
                 RunEvent::Ready => {
                     let w = create_window(app_handle, None);
-                    w.restore_state(StateFlags::all())
-                        .expect("Failed to restore window state");
+                    if let Err(e) = w.restore_state(StateFlags::all()) {
+                        error!("Failed to restore window state {}", e);
+                    }
 
-                    analytics::track_event_blocking(
-                        app_handle,
-                        AnalyticsResource::App,
-                        AnalyticsAction::Launch,
-                        None,
-                    );
+                    let h = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let info = analytics::track_launch_event(&h).await;
+                        info!("Launched Yaak {:?}", info);
+
+                        // Wait for window render and give a chance for the user to notice
+                        if info.launched_after_update && info.num_launches > 1 {
+                            sleep(std::time::Duration::from_secs(5)).await;
+                            let _ = w.emit("show_changelog", true);
+                        }
+                    });
                 }
                 RunEvent::WindowEvent {
                     label: _label,
@@ -996,9 +1028,6 @@ fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle<Wry>, event: &s
 }
 
 async fn get_update_mode(pool: &Pool<Sqlite>) -> UpdateMode {
-    let mode = models::get_key_value_string("app", "update_mode", pool).await;
-    match mode {
-        Some(mode) => update_mode_from_str(&mode),
-        None => UpdateMode::Stable,
-    }
+    let settings = models::get_or_create_settings(pool).await;
+    update_mode_from_str(settings.update_channel.as_str())
 }

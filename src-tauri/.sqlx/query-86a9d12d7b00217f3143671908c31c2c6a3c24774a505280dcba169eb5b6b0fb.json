@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE settings SET (\n                theme,\n                appearance,\n                update_channel\n            ) = (?, ?, ?) WHERE id = 'default';\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "86a9d12d7b00217f3143671908c31c2c6a3c24774a505280dcba169eb5b6b0fb"
+}

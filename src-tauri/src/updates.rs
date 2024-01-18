@@ -30,13 +30,16 @@ impl YaakUpdater {
         app_handle: &AppHandle<Wry>,
         mode: UpdateMode,
     ) -> Result<(), updater::Error> {
-        if is_dev() {
-            info!("Skipping update check because we are in dev mode");
+        self.last_update_check = SystemTime::now();
+
+        let update_mode = get_update_mode_str(mode);
+        let enabled = !is_dev();
+        info!("Checking for updates mode={} enabled={}", update_mode, enabled);
+
+        if !enabled {
             return Ok(());
         }
-        self.last_update_check = SystemTime::now();
-        let update_mode = get_update_mode_str(mode);
-        info!("Checking for updates mode={}", update_mode);
+
         match app_handle
             .updater()
             .header("X-Update-Mode", update_mode)?
@@ -62,7 +65,7 @@ impl YaakUpdater {
                                     if dialog::blocking::ask(
                                         None::<&Window>,
                                         "Update Installed",
-                                        format!("Would you like to restart the app?",),
+                                        "Would you like to restart the app?",
                                     ) {
                                         h.restart();
                                     }

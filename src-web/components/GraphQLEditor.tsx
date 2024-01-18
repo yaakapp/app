@@ -82,40 +82,43 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         placeholder="..."
         ref={editorViewRef}
         actions={
-          (error || isLoading) && (
-            <Button
-              size="xs"
-              color={error ? 'danger' : 'gray'}
-              isLoading={isLoading}
-              onClick={() => {
-                dialog.show({
-                  title: 'Introspection Failed',
-                  size: 'dynamic',
-                  id: 'introspection-failed',
-                  render: () => (
-                    <>
-                      <FormattedError>{error ?? 'unknown'}</FormattedError>
-                      <div className="w-full mt-3">
-                        <Button
-                          onClick={() => {
-                            dialog.hide('introspection-failed');
-                            refetch();
-                          }}
-                          className="ml-auto"
-                          color="secondary"
-                          size="sm"
-                        >
-                          Try Again
-                        </Button>
-                      </div>
-                    </>
-                  ),
-                });
-              }}
-            >
-              {error ? 'Introspection Failed' : 'Introspecting'}
-            </Button>
-          )
+          error || isLoading
+            ? [
+                <Button
+                  key="introspection"
+                  size="xs"
+                  color={error ? 'danger' : 'gray'}
+                  isLoading={isLoading}
+                  onClick={() => {
+                    dialog.show({
+                      title: 'Introspection Failed',
+                      size: 'dynamic',
+                      id: 'introspection-failed',
+                      render: () => (
+                        <>
+                          <FormattedError>{error ?? 'unknown'}</FormattedError>
+                          <div className="w-full mt-3">
+                            <Button
+                              onClick={() => {
+                                dialog.hide('introspection-failed');
+                                refetch();
+                              }}
+                              className="ml-auto"
+                              color="secondary"
+                              size="sm"
+                            >
+                              Try Again
+                            </Button>
+                          </div>
+                        </>
+                      ),
+                    });
+                  }}
+                >
+                  {error ? 'Introspection Failed' : 'Introspecting'}
+                </Button>,
+              ]
+            : []
         }
         {...extraEditorProps}
       />
