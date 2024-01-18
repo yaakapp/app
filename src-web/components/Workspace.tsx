@@ -1,4 +1,3 @@
-import { appWindow } from '@tauri-apps/api/window';
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type {
@@ -8,7 +7,7 @@ import type {
   ReactNode,
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFullscreen, useWindowSize } from 'react-use';
+import { useWindowSize } from 'react-use';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';

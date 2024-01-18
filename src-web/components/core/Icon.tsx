@@ -6,6 +6,7 @@ import { memo } from 'react';
 const icons = {
   archive: lucide.ArchiveIcon,
   box: lucide.BoxIcon,
+  cake: lucide.CakeIcon,
   chat: lucide.MessageSquare,
   check: lucide.CheckIcon,
   chevronDown: lucide.ChevronDownIcon,
@@ -13,6 +14,8 @@ const icons = {
   code: lucide.CodeIcon,
   copy: lucide.CopyIcon,
   download: lucide.DownloadIcon,
+  folderInput: lucide.FolderInputIcon,
+  folderOutput: lucide.FolderOutputIcon,
   externalLink: lucide.ExternalLinkIcon,
   eye: lucide.EyeIcon,
   eyeClosed: lucide.EyeOffIcon,

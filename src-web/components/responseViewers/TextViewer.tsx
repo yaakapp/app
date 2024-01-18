@@ -1,4 +1,6 @@
-import { useCallback } from 'react';
+import classNames from 'classnames';
+import type { ReactNode } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useDebouncedSetState } from '../../hooks/useDebouncedSetState';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
@@ -9,7 +11,6 @@ import type { HttpResponse } from '../../lib/models';
 import { Editor } from '../core/Editor';
 import { IconButton } from '../core/IconButton';
 import { Input } from '../core/Input';
-import { HStack } from '../core/Stacks';
 
 interface Props {
   response: HttpResponse;
@@ -34,30 +35,44 @@ export function TextViewer({ response, pretty }: Props) {
   const isJson = contentType?.includes('json');
   const isXml = contentType?.includes('xml') || contentType?.includes('html');
   const canFilter = isJson || isXml;
-  const actions = canFilter && (
-    <HStack className="w-full" justifyContent="end" space={1}>
-      {isSearching && (
-        <Input
-          hideLabel
-          autoFocus
-          containerClassName="bg-gray-50"
-          size="sm"
-          placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
-          label="Filter expression"
-          name="filter"
-          defaultValue={filterText}
-          onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
-          onChange={setDebouncedFilterText}
-        />
-      )}
+
+  const actions = useMemo<ReactNode[]>(() => {
+    const result: ReactNode[] = [];
+
+    if (!canFilter) return result;
+
+    if (isSearching) {
+      result.push(
+        <div key="input" className="w-full !opacity-100">
+          <Input
+            hideLabel
+            autoFocus
+            containerClassName="bg-gray-100 dark:bg-gray-50"
+            size="sm"
+            placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
+            label="Filter expression"
+            name="filter"
+            defaultValue={filterText}
+            onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
+            onChange={setDebouncedFilterText}
+          />
+        </div>,
+      );
+    }
+
+    result.push(
       <IconButton
+        key="icon"
         size="sm"
         icon={isSearching ? 'x' : 'filter'}
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={clearSearch}
-      />
-    </HStack>
-  );
+        className={classNames(isSearching && '!opacity-100')}
+      />,
+    );
+
+    return result;
+  }, [canFilter, clearSearch, filterText, isJson, isSearching, setDebouncedFilterText]);
 
   return (
     <Editor

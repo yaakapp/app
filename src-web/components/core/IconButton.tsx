@@ -13,6 +13,7 @@ type Props = IconProps &
     iconClassName?: string;
     iconSize?: IconProps['size'];
     title: string;
+    showBadge?: boolean;
   };
 
 export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButton(
@@ -26,6 +27,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
     tabIndex,
     size = 'md',
     iconSize,
+    showBadge,
     ...props
   }: Props,
   ref,
@@ -49,7 +51,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       innerClassName="flex items-center justify-center"
       className={classNames(
         className,
-        'flex-shrink-0 text-gray-700 hover:text-gray-1000',
+        'relative flex-shrink-0 text-gray-700 hover:text-gray-1000',
         '!px-0',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-8',
@@ -58,6 +60,11 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       size={size}
       {...props}
     >
+      {showBadge && (
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 flex items-center justify-center">
+          <div className="w-2.5 h-2.5 bg-pink-500 rounded-full" />
+        </div>
+      )}
       <Icon
         size={iconSize}
         icon={confirmed ? 'check' : icon}

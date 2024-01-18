@@ -5,7 +5,18 @@ import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/vie
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
+import {
+  Children,
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from 'react';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 import { IconButton } from '../IconButton';
@@ -145,6 +156,12 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceUpdateKey]);
 
+  const classList = className?.split(/\s+/) ?? [];
+  const bgClassList = classList
+    .filter((c) => c.match(/(^|:)?bg-.+/)) // Find bg-* classes
+    .map((c) => c.replace(/^bg-/, '!bg-')) // !important
+    .map((c) => c.replace(/^dark:bg-/, 'dark:!bg-')); // !important
+
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback((container: HTMLDivElement | null) => {
     if (container === null) {
@@ -184,7 +201,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
 
       view = new EditorView({ state, parent: container });
       cm.current = { view, languageCompartment };
-      syncGutterBg({ parent: container, className });
+      syncGutterBg({ parent: container, bgClassList });
       if (autoFocus) {
         view.focus();
       }
@@ -197,6 +214,50 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Add bg classes to actions, so they appear over the text
+  const decoratedActions = useMemo(() => {
+    const results = [];
+    const actionClassName = classNames(
+      'transition-opacity opacity-0 group-hover:opacity-50 hover:!opacity-100 shadow',
+      bgClassList,
+    );
+
+    if (format) {
+      results.push(
+        <IconButton
+          showConfirm
+          key="format"
+          size="sm"
+          title="Reformat contents"
+          icon="magicWand"
+          className={classNames(actionClassName)}
+          onClick={() => {
+            if (cm.current === null) return;
+            const { doc } = cm.current.view.state;
+            const formatted = format(doc.toString());
+            // Update editor and blur because the cursor will reset anyway
+            cm.current.view.dispatch({
+              changes: { from: 0, to: doc.length, insert: formatted },
+            });
+            cm.current.view.contentDOM.blur();
+            // Fire change event
+            onChange?.(formatted);
+          }}
+        />,
+      );
+    }
+    results.push(
+      Children.map(actions, (existingChild) => {
+        if (!isValidElement(existingChild)) return null;
+        return cloneElement(existingChild, {
+          ...existingChild.props,
+          className: classNames(existingChild.props.className, actionClassName),
+        });
+      }),
+    );
+    return results;
+  }, [actions, bgClassList, format, onChange]);
 
   const cmContainer = (
     <div
@@ -219,7 +280,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   return (
     <div className="group relative h-full w-full">
       {cmContainer}
-      {(format || actions) && (
+      {decoratedActions && (
         <HStack
           space={1}
           alignItems="center"
@@ -229,28 +290,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
             'pointer-events-none', // No pointer events so we don't block the editor
           )}
         >
-          {format && (
-            <IconButton
-              showConfirm
-              size="sm"
-              title="Reformat contents"
-              icon="magicWand"
-              className="transition-all opacity-0 group-hover:opacity-100"
-              onClick={() => {
-                if (cm.current === null) return;
-                const { doc } = cm.current.view.state;
-                const formatted = format(doc.toString());
-                // Update editor and blur because the cursor will reset anyway
-                cm.current.view.dispatch({
-                  changes: { from: 0, to: doc.length, insert: formatted },
-                });
-                cm.current.view.contentDOM.blur();
-                // Fire change event
-                onChange?.(formatted);
-              }}
-            />
-          )}
-          {actions}
+          {decoratedActions}
         </HStack>
       )}
     </div>
@@ -325,19 +365,14 @@ function isViewUpdateFromUserInput(viewUpdate: ViewUpdate) {
 
 const syncGutterBg = ({
   parent,
-  className = '',
+  bgClassList,
 }: {
   parent: HTMLDivElement;
-  className?: string;
+  bgClassList: string[];
 }) => {
   const gutterEl = parent.querySelector<HTMLDivElement>('.cm-gutters');
-  const classList = className?.split(/\s+/) ?? [];
-  const bgClasses = classList
-    .filter((c) => c.match(/(^|:)?bg-.+/)) // Find bg-* classes
-    .map((c) => c.replace(/^bg-/, '!bg-')) // !important
-    .map((c) => c.replace(/^dark:bg-/, 'dark:!bg-')); // !important
   if (gutterEl) {
-    gutterEl?.classList.add(...bgClasses);
+    gutterEl?.classList.add(...bgClassList);
   }
 };
 
