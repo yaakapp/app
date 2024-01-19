@@ -12,11 +12,29 @@ use crate::{is_dev, models};
 #[derive(Serialize, Deserialize)]
 pub enum AnalyticsResource {
     App,
+    Sidebar,
     Workspace,
     Environment,
     Folder,
     HttpRequest,
     HttpResponse,
+    KeyValue,
+}
+
+impl AnalyticsResource {
+    pub fn from_str(s: &str) -> Option<AnalyticsResource> {
+        match s {
+            "App" => Some(AnalyticsResource::App),
+            "Sidebar" => Some(AnalyticsResource::Sidebar),
+            "Workspace" => Some(AnalyticsResource::Workspace),
+            "Environment" => Some(AnalyticsResource::Environment),
+            "Folder" => Some(AnalyticsResource::Folder),
+            "Http_request" => Some(AnalyticsResource::HttpRequest),
+            "Http_response" => Some(AnalyticsResource::HttpResponse),
+            "Key_value" => Some(AnalyticsResource::KeyValue),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -30,22 +48,24 @@ pub enum AnalyticsAction {
     Delete,
     DeleteMany,
     Send,
+    Toggle,
     Duplicate,
 }
 
 impl AnalyticsAction {
     pub fn from_str(s: &str) -> Option<AnalyticsAction> {
         match s {
-            "launch" => Some(AnalyticsAction::Launch),
-            "launch_first" => Some(AnalyticsAction::LaunchFirst),
-            "launch_update" => Some(AnalyticsAction::LaunchUpdate),
-            "create" => Some(AnalyticsAction::Create),
-            "update" => Some(AnalyticsAction::Update),
-            "upsert" => Some(AnalyticsAction::Upsert),
-            "delete" => Some(AnalyticsAction::Delete),
-            "delete_many" => Some(AnalyticsAction::DeleteMany),
-            "send" => Some(AnalyticsAction::Send),
-            "duplicate" => Some(AnalyticsAction::Duplicate),
+            "Launch" => Some(AnalyticsAction::Launch),
+            "LaunchFirst" => Some(AnalyticsAction::LaunchFirst),
+            "LaunchUpdate" => Some(AnalyticsAction::LaunchUpdate),
+            "Create" => Some(AnalyticsAction::Create),
+            "Update" => Some(AnalyticsAction::Update),
+            "Upsert" => Some(AnalyticsAction::Upsert),
+            "Delete" => Some(AnalyticsAction::Delete),
+            "DeleteMany" => Some(AnalyticsAction::DeleteMany),
+            "Send" => Some(AnalyticsAction::Send),
+            "Duplicate" => Some(AnalyticsAction::Duplicate),
+            "Toggle" => Some(AnalyticsAction::Toggle),
             _ => None,
         }
     }
@@ -54,11 +74,13 @@ impl AnalyticsAction {
 fn resource_name(resource: AnalyticsResource) -> &'static str {
     match resource {
         AnalyticsResource::App => "app",
+        AnalyticsResource::Sidebar => "sidebar",
         AnalyticsResource::Workspace => "workspace",
         AnalyticsResource::Environment => "environment",
         AnalyticsResource::Folder => "folder",
         AnalyticsResource::HttpRequest => "http_request",
         AnalyticsResource::HttpResponse => "http_response",
+        AnalyticsResource::KeyValue => "key_value",
     }
 }
 
@@ -74,6 +96,7 @@ fn action_name(action: AnalyticsAction) -> &'static str {
         AnalyticsAction::DeleteMany => "delete_many",
         AnalyticsAction::Send => "send",
         AnalyticsAction::Duplicate => "duplicate",
+        AnalyticsAction::Toggle => "toggle",
     }
 }
 

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs;
+use log::error;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
@@ -213,7 +214,7 @@ pub async fn get_key_value_string(
             match result {
                 Ok(v) => v,
                 Err(e) => {
-                    println!("Failed to parse string key value: {}", e);
+                    error!("Failed to parse string key value: {}", e);
                     default.to_string()
                 }
             }
@@ -234,7 +235,7 @@ pub async fn get_key_value_int(
             match result {
                 Ok(v) => v,
                 Err(e) => {
-                    println!("Failed to parse int key value: {}", e);
+                    error!("Failed to parse int key value: {}", e);
                     default.clone()
                 }
             }
@@ -961,7 +962,7 @@ pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRespon
     // Delete the body file if it exists
     if let Some(p) = resp.body_path.clone() {
         if let Err(e) = fs::remove_file(p) {
-            println!("Failed to delete body file: {}", e);
+            error!("Failed to delete body file: {}", e);
         };
     }
 

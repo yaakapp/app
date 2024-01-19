@@ -7,7 +7,7 @@ use std::time::Duration;
 use base64::Engine;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
-use log::{info, warn};
+use log::{error, info, warn};
 use reqwest::multipart;
 use reqwest::redirect::Policy;
 use sqlx::{Pool, Sqlite};
@@ -82,14 +82,14 @@ pub async fn send_http_request(
         let header_name = match HeaderName::from_bytes(name.as_bytes()) {
             Ok(n) => n,
             Err(e) => {
-                eprintln!("Failed to create header name: {}", e);
+                error!("Failed to create header name: {}", e);
                 continue;
             }
         };
         let header_value = match HeaderValue::from_str(value.as_str()) {
             Ok(n) => n,
             Err(e) => {
-                eprintln!("Failed to create header value: {}", e);
+                error!("Failed to create header value: {}", e);
                 continue;
             }
         };
@@ -267,7 +267,6 @@ pub async fn send_http_request(
             response.url = v.url().to_string();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.content_length = Some(body_bytes.len() as i64);
-            println!("Response: {:?}", body_bytes.len());
 
             {
                 // Write body to FS
@@ -314,7 +313,6 @@ pub async fn send_http_request(
             Ok(response)
         }
         Err(e) => {
-            println!("Yo: {}", e);
             response_err(response, e.to_string(), app_handle, pool).await
         }
     }
