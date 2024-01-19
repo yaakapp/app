@@ -49,6 +49,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       tabIndex={tabIndex ?? icon === 'empty' ? -1 : undefined}
       onClick={handleClick}
       innerClassName="flex items-center justify-center"
+      size={size}
       className={classNames(
         className,
         'relative flex-shrink-0 text-gray-700 hover:text-gray-1000',
@@ -57,7 +58,6 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         size === 'sm' && 'w-8',
         size === 'xs' && 'w-6',
       )}
-      size={size}
       {...props}
     >
       {showBadge && (
