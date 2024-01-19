@@ -294,21 +294,18 @@ async fn track_event(
     action: &str,
     attributes: Option<Value>,
 ) -> Result<(), String> {
-    let action_type = AnalyticsAction::from_str(action);
-    match (action_type, action_type) {
-        (Some(t), Some(t)) => {
-            analytics::track_event(
-                &window.app_handle(),
-                resource,
-                action_type,
-                attributes,
-            )
-                .await;
-        },
-        _ => {
-            error!("Invalid action type: {}", action);
+    match (
+        AnalyticsResource::from_str(resource),
+        AnalyticsAction::from_str(action),
+    ) {
+        (Some(resource), Some(action)) => {
+            analytics::track_event(&window.app_handle(), resource, action, attributes).await;
         }
-    }
+        _ => {
+            error!("Invalid action/resource for track_event: {action} {resource}");
+            return Err("Invalid event".to_string());
+        }
+    };
     Ok(())
 }
 
@@ -785,7 +782,7 @@ fn main() {
 
             let p_string = p.to_string_lossy().replace(' ', "%20");
             let url = format!("sqlite://{}?mode=rwc", p_string);
-            println!("Connecting to database at {}", url);
+            info!("Connecting to database at {}", url);
 
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePool::connect(p.to_str().unwrap())
@@ -1001,7 +998,6 @@ fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
             WindowEvent::Focused(..) => apply_offset(),
             WindowEvent::ScaleFactorChanged { .. } => apply_offset(),
             WindowEvent::CloseRequested { .. } => {
-                println!("CLOSE REQUESTED");
                 // api.prevent_close();
             }
             _ => {}
