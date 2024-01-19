@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
-import { useDebouncedSetState } from '../../hooks/useDebouncedSetState';
+import { useDebouncedState } from '../../hooks/useDebouncedState';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useResponseContentType } from '../../hooks/useResponseContentType';
@@ -19,7 +19,7 @@ interface Props {
 
 export function TextViewer({ response, pretty }: Props) {
   const [isSearching, toggleIsSearching] = useToggle();
-  const [filterText, setDebouncedFilterText, setFilterText] = useDebouncedSetState<string>('', 400);
+  const [filterText, setDebouncedFilterText, setFilterText] = useDebouncedState<string>('', 400);
 
   const contentType = useResponseContentType(response);
   const rawBody = useResponseBodyText(response) ?? '';

@@ -5,7 +5,7 @@ import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
-import { HStack, VStack } from './Stacks';
+import { HStack } from './Stacks';
 
 export type InputProps = Omit<
   HTMLAttributes<HTMLInputElement>,
