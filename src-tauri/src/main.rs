@@ -753,7 +753,8 @@ fn main() {
                 .level_for("sqlx", log::LevelFilter::Warn)
                 .level_for("hyper", log::LevelFilter::Info)
                 .level_for("tracing", log::LevelFilter::Info)
-                .level_for("reqwest", log::LevelFilter::Debug)
+                .level_for("reqwest", log::LevelFilter::Info)
+                .level_for("tokio_util", log::LevelFilter::Info)
                 .with_colors(ColoredLevelConfig::default())
                 .level(log::LevelFilter::Trace)
                 .build(),
