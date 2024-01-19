@@ -74,16 +74,18 @@ export function Dialog({
             )}
             {description && <p id={descriptionId}>{description}</p>}
             <div className="h-full w-full grid grid-cols-[minmax(0,1fr)]">{children}</div>
+
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
-              <IconButton
-                onClick={onClose}
-                title="Close dialog"
-                aria-label="Close"
-                icon="x"
-                size="sm"
-                className="ml-auto absolute right-1 top-1"
-              />
+              <div className="ml-auto absolute right-1 top-1">
+                <IconButton
+                  onClick={onClose}
+                  title="Close dialog"
+                  aria-label="Close"
+                  size="sm"
+                  icon="x"
+                />
+              </div>
             )}
           </motion.div>
         </div>
