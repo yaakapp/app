@@ -47,7 +47,6 @@ pub async fn send_http_request(
         .deflate(true)
         .referer(false)
         .danger_accept_invalid_certs(!workspace.setting_validate_certificates)
-        .connection_verbose(true) // TODO: Capture this log somehow
         .tls_info(true);
 
     if workspace.setting_request_timeout > 0 {

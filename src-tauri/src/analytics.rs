@@ -29,9 +29,9 @@ impl AnalyticsResource {
             "Workspace" => Some(AnalyticsResource::Workspace),
             "Environment" => Some(AnalyticsResource::Environment),
             "Folder" => Some(AnalyticsResource::Folder),
-            "Http_request" => Some(AnalyticsResource::HttpRequest),
-            "Http_response" => Some(AnalyticsResource::HttpResponse),
-            "Key_value" => Some(AnalyticsResource::KeyValue),
+            "HttpRequest" => Some(AnalyticsResource::HttpRequest),
+            "HttpResponse" => Some(AnalyticsResource::HttpResponse),
+            "KeyValue" => Some(AnalyticsResource::KeyValue),
             _ => None,
         }
     }
