@@ -40,6 +40,7 @@ export type InputProps = Omit<
     placeholder?: string;
     validate?: (v: string) => boolean;
     require?: boolean;
+    wrapLines?: boolean;
   };
 
 export const Input = forwardRef<EditorView | undefined, InputProps>(function Input(
@@ -60,6 +61,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     placeholder,
     require,
     rightSlot,
+    wrapLines,
     size = 'md',
     type = 'text',
     validate,
@@ -82,7 +84,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   }, [onBlur]);
 
   const id = `input-${name}`;
-  const inputClassName = classNames(
+  const editorClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
   );
@@ -144,10 +146,9 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           'border',
           focused ? 'border-focus' : 'border-highlight',
           !isValid && '!border-invalid',
-          size === 'md' && 'h-md',
-          size === 'sm' && 'h-sm',
-          size === 'xs' && 'h-xs',
-          size === 'auto' && 'min-h-sm',
+          size === 'md' && 'min-h-md',
+          size === 'sm' && 'min-h-sm',
+          size === 'xs' && 'min-h-xs',
         )}
       >
         {leftSlot}
@@ -163,14 +164,14 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             ref={ref}
             id={id}
             singleLine
-            wrapLines={size === 'auto'}
+            wrapLines={wrapLines}
             onKeyDown={handleKeyDown}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
             forceUpdateKey={forceUpdateKey}
             placeholder={placeholder}
             onChange={handleChange}
-            className={inputClassName}
+            className={editorClassName}
             onFocus={handleFocus}
             onBlur={handleBlur}
             {...props}
