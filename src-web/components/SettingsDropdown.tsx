@@ -1,5 +1,6 @@
 import { invoke, shell } from '@tauri-apps/api';
 import { useRef, useState } from 'react';
+import { useAlert } from '../hooks/useAlert';
 import { useAppVersion } from '../hooks/useAppVersion';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
@@ -20,6 +21,7 @@ export function SettingsDropdown() {
   const appVersion = useAppVersion();
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
+  const alert = useAlert();
   const [showChangelog, setShowChangelog] = useState<boolean>(false);
 
   useListenToTauriEvent('show_changelog', () => {
@@ -98,7 +100,16 @@ export function SettingsDropdown() {
           key: 'update-check',
           label: 'Check for Updates',
           leftSlot: <Icon icon="update" />,
-          onSelect: () => invoke('check_for_updates'),
+          onSelect: async () => {
+            const hasUpdate: boolean = await invoke('check_for_updates');
+            if (!hasUpdate) {
+              alert({
+                title: 'No Updates',
+                body: 'You are currently up to date',
+              });
+            }
+            console.log('HAS UPDATE', hasUpdate);
+          },
         },
         {
           key: 'feedback',
