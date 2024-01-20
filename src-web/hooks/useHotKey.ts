@@ -25,7 +25,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'sidebar.focus': ['CmdCtrl+1'],
   'urlBar.focus': ['CmdCtrl+l'],
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
-  'hotkeys.showHelp': ['CmdCtrl+/'],
+  'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
   'settings.show': ['CmdCtrl+,'],
   'requestSwitcher.prev': ['Control+Tab'],
   'requestSwitcher.next': ['Control+Shift+Tab'],
