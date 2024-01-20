@@ -55,7 +55,7 @@ export function Dialog({
               className,
               'gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',
-              'p-5 rounded-lg overflow-auto',
+              'px-6 py-4 rounded-lg overflow-auto',
               'dark:border border-highlight shadow shadow-black/10',
               'max-w-[90vw] max-h-[calc(100vh-8em)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
@@ -66,8 +66,7 @@ export function Dialog({
           >
             {title ? (
               <Heading size={1} id={titleId}>
-                {' '}
-                {title}{' '}
+                {title}
               </Heading>
             ) : (
               <span />
@@ -80,7 +79,7 @@ export function Dialog({
               <div className="ml-auto absolute right-1 top-1">
                 <IconButton
                   onClick={onClose}
-                  title="Close dialog"
+                  title="Close dialog (Esc)"
                   aria-label="Close"
                   size="sm"
                   icon="x"
