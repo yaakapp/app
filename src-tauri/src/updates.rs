@@ -29,7 +29,7 @@ impl YaakUpdater {
         &mut self,
         app_handle: &AppHandle<Wry>,
         mode: UpdateMode,
-    ) -> Result<(), updater::Error> {
+    ) -> Result<bool, updater::Error> {
         self.last_update_check = SystemTime::now();
 
         let update_mode = get_update_mode_str(mode);
@@ -37,7 +37,7 @@ impl YaakUpdater {
         info!("Checking for updates mode={} enabled={}", update_mode, enabled);
 
         if !enabled {
-            return Ok(());
+            return Ok(false);
         }
 
         match app_handle
@@ -81,9 +81,9 @@ impl YaakUpdater {
                         });
                     },
                 );
-                Ok(())
+                Ok(true)
             }
-            Err(updater::Error::UpToDate) => Ok(()),
+            Err(updater::Error::UpToDate) => Ok(false),
             Err(e) => Err(e),
         }
     }
@@ -91,9 +91,10 @@ impl YaakUpdater {
         &mut self,
         app_handle: &AppHandle<Wry>,
         mode: UpdateMode,
-    ) -> Result<(), updater::Error> {
-        if self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS {
-            return Ok(());
+    ) -> Result<bool, updater::Error> {
+        let ignore_check = self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
+        if ignore_check {
+            return Ok(false);
         }
 
         self.force_check(app_handle, mode).await

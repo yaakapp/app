@@ -733,7 +733,7 @@ async fn check_for_updates(
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     yaak_updater: State<'_, Mutex<YaakUpdater>>,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     let pool = &*db_instance.lock().await;
     let update_mode = get_update_mode(pool).await;
     yaak_updater
