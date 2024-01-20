@@ -49,11 +49,12 @@ export const UrlBar = memo(function UrlBar({ id: requestId, url, method, classNa
   });
 
   return (
-    <form onSubmit={handleSubmit} className={classNames('url-bar', className)}>
+    <form onSubmit={handleSubmit} className={className}>
       <Input
         autocompleteVariables
         ref={inputRef}
-        size={isFocused ? 'auto' : 'sm'}
+        size="sm"
+        wrapLines={isFocused}
         hideLabel
         useTemplating
         contentType="url"
