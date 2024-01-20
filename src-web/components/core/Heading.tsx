@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import type { ComponentType, HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 
 interface Props extends HTMLAttributes<HTMLHeadingElement> {
   size?: 1 | 2 | 3;
