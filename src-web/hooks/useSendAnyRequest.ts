@@ -13,7 +13,6 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
   const environmentId = useActiveEnvironmentId();
   const alert = useAlert();
   const cookieJars = useCookieJars();
-  console.log(cookieJars);
   return useMutation<HttpResponse | null, string, string | null>({
     mutationFn: async (id) => {
       const request = await getRequest(id);

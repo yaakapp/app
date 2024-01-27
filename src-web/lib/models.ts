@@ -37,6 +37,7 @@ export interface Workspace extends BaseModel {
 export interface CookieJar extends BaseModel {
   readonly model: 'cookie_jar';
   workspaceId: string;
+  name: string;
 }
 
 export interface EnvironmentVariable {

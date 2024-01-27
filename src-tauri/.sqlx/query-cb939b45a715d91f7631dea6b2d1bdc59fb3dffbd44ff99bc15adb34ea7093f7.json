@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                workspace_id,\n                cookies AS \"cookies!: sqlx::types::Json<Vec<JsonValue>>\"\n            FROM cookie_jars WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                workspace_id,\n                name,\n                cookies AS \"cookies!: sqlx::types::Json<Vec<JsonValue>>\"\n            FROM cookie_jars WHERE workspace_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -29,8 +29,13 @@
         "type_info": "Text"
       },
       {
-        "name": "cookies!: sqlx::types::Json<Vec<JsonValue>>",
+        "name": "name",
         "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "cookies!: sqlx::types::Json<Vec<JsonValue>>",
+        "ordinal": 6,
         "type_info": "Text"
       }
     ],
@@ -43,8 +48,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "af0b40163e5785f05d4dd2101d2be068df64a99935777fbc8011b8b2334f8bdc"
+  "hash": "cb939b45a715d91f7631dea6b2d1bdc59fb3dffbd44ff99bc15adb34ea7093f7"
 }

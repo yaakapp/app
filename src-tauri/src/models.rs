@@ -70,6 +70,7 @@ pub struct CookieJar {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
+    pub name: String,
     pub cookies: Json<Vec<JsonValue>>,
 }
 
@@ -377,6 +378,7 @@ pub async fn get_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, 
                 created_at,
                 updated_at,
                 workspace_id,
+                name,
                 cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE id = ?
         "#,
@@ -396,6 +398,7 @@ pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result
                 created_at,
                 updated_at,
                 workspace_id,
+                name,
                 cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE workspace_id = ?
         "#,
@@ -413,20 +416,24 @@ pub async fn upsert_cookie_jar(
         "" => generate_id(Some("cj")),
         _ => cookie_jar.id.to_string(),
     };
+    let trimmed_name = cookie_jar.name.trim();
     sqlx::query!(
         r#"
             INSERT INTO cookie_jars (
                 id,
                 workspace_id,
+                name,
                 cookies
              )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
+               name = excluded.name,
                cookies = excluded.cookies
         "#,
         id,
         cookie_jar.workspace_id,
+        trimmed_name,
         cookie_jar.cookies,
     )
         .execute(pool)

@@ -394,12 +394,14 @@ async fn create_workspace(
 #[tauri::command]
 async fn create_cookie_jar(
     workspace_id: &str,
+    name: &str,
     window: Window<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::CookieJar, String> {
     let pool = &*db_instance.lock().await;
     let created_cookie_jar = models::upsert_cookie_jar(
         &models::CookieJar {
+            name: name.to_string(),
             workspace_id: workspace_id.to_string(),
             ..Default::default()
         },
