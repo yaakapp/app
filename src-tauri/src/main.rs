@@ -3,21 +3,19 @@
     windows_subsystem = "windows"
 )]
 
+extern crate core;
 #[cfg(target_os = "macos")]
 #[macro_use]
 extern crate objc;
-extern crate core;
 
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File, read_to_string};
 use std::process::exit;
-use std::str::FromStr;
 
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
-use reqwest::cookie::CookieStore;
 use serde::Serialize;
 use serde_json::Value;
 use sqlx::{Pool, Sqlite, SqlitePool};
@@ -817,6 +815,7 @@ fn main() {
                 .level_for("tracing", log::LevelFilter::Info)
                 .level_for("reqwest", log::LevelFilter::Info)
                 .level_for("tokio_util", log::LevelFilter::Info)
+                .level_for("cookie_store", log::LevelFilter::Info)
                 .with_colors(ColoredLevelConfig::default())
                 .level(log::LevelFilter::Trace)
                 .build(),

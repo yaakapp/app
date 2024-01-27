@@ -58,6 +58,11 @@ impl Workspace {
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CookieX {
+
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct CookieJar {
     pub id: String,
@@ -65,14 +70,7 @@ pub struct CookieJar {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
-    pub cookies: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(default, rename_all = "camelCase")]
-pub struct CookieJarCookie {
-    pub cookie_str: String,
-    pub url: String,
+    pub cookies: Json<Vec<JsonValue>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -379,7 +377,7 @@ pub async fn get_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, 
                 created_at,
                 updated_at,
                 workspace_id,
-                cookies
+                cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE id = ?
         "#,
         id,
@@ -398,7 +396,7 @@ pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result
                 created_at,
                 updated_at,
                 workspace_id,
-                cookies
+                cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE workspace_id = ?
         "#,
         workspace_id,

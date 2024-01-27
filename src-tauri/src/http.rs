@@ -1,21 +1,19 @@
-use core::num::flt2dec::decoder;
 use std::fs;
 use std::fs::{create_dir_all, File};
-use std::io::{BufReader, BufWriter, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, SET_COOKIE, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::cookie::CookieStore;
-use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
-use sqlx::types::Json;
+use reqwest::redirect::Policy;
 use sqlx::{Pool, Sqlite};
+use sqlx::types::{Json, JsonValue};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -24,7 +22,7 @@ pub async fn send_http_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
-    cookie_jar: Option<models::CookieJar>,
+    maybe_cookie_jar: Option<models::CookieJar>,
     app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
     download_path: Option<PathBuf>,
@@ -54,13 +52,24 @@ pub async fn send_http_request(
         .tls_info(true);
 
     // Add cookie store if specified
-    let cookie_store = match cookie_jar.clone() {
+    let maybe_cookie_store = match maybe_cookie_jar.clone() {
         Some(cj) => {
-            let r = BufReader::new(cj.cookies.as_bytes());
-            let cookie_store = reqwest_cookie_store::CookieStore::load_json(r).unwrap();
-            let cookie_store = reqwest_cookie_store::CookieStoreMutex::new(cookie_store);
+            // HACK: Can't construct Cookie without serde, so we have to do this
+            let cookies = cj
+                .cookies
+                .0
+                .iter()
+                .map(|json_cookie| {
+                    serde_json::from_value(json_cookie.clone())
+                        .expect("Failed to deserialize cookie")
+                })
+                .map(|c| Ok(c))
+                .collect::<Vec<Result<cookie_store::Cookie, ()>>>();
+            let store = reqwest_cookie_store::CookieStore::from_cookies(cookies, true)
+                .expect("Failed to create cookie store");
+            let cookie_store = reqwest_cookie_store::CookieStoreMutex::new(store);
             let cookie_store = Arc::new(cookie_store);
-            // client_builder = client_builder.cookie_provider(Arc::clone(&cookie_store));
+            client_builder = client_builder.cookie_provider(Arc::clone(&cookie_store));
             Some(cookie_store)
         }
         None => None,
@@ -90,12 +99,21 @@ pub async fn send_http_request(
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
     headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
 
-    // Add cookie header
-    // TODO: Handle collision if user also passes it
-    let c = cookie_store.clone().unwrap().cookies(&url);
-    if let Some(cookie_header) = c {
-        headers.insert("Cookie", cookie_header);
-    }
+    // TODO: Set cookie header ourselves once we also handle redirects. We need to do this
+    //  because reqwest doesn't give us a way to inspect the headers it sent (we have to do
+    //  everything manually to know that).
+    // if let Some(cookie_store) = maybe_cookie_store.clone() {
+    //     let values1 = cookie_store.get_request_values(&url);
+    //     println!("COOKIE VLUAES: {:?}", values1.collect::<Vec<_>>());
+    //     let raw_value = cookie_store.get_request_values(&url)
+    //         .map(|(name, value)| format!("{}={}", name, value))
+    //         .collect::<Vec<_>>()
+    //         .join("; ");
+    //     headers.insert(
+    //         COOKIE,
+    //         HeaderValue::from_str(&raw_value).expect("Failed to create cookie header"),
+    //     );
+    // }
 
     for h in request.headers.0 {
         if h.name.is_empty() && h.value.is_empty() {
@@ -126,6 +144,10 @@ pub async fn send_http_request(
 
         headers.insert(header_name, header_value);
     }
+
+    headers.iter().for_each(|(k, v)| {
+        println!("ADDED HEADER {}: {}", k, v.to_str().unwrap());
+    });
 
     if let Some(b) = &request.authentication_type {
         let empty_value = &serde_json::to_value("").unwrap();
@@ -343,23 +365,26 @@ pub async fn send_http_request(
             };
 
             // Add cookie store if specified
-            if let Some(store) = cookie_store {
-                let mut cookies = response_headers.get_all(SET_COOKIE).iter();
-                store.set_cookies(&mut cookies, &url);
-                let mut new_jar = cookie_jar.unwrap().clone();
-                let mut w = BufWriter::new(Vec::new());
-                store
-                    .lock()
-                    .unwrap()
-                    .save_incl_expired_and_nonpersistent_json(&mut w)
-                    .expect("Failed to save cookie jar");
-                new_jar.cookies = w
-                    .into_inner()
-                    .unwrap()
-                    .into_iter()
-                    .map(|b| b as char)
-                    .collect();
-                models::upsert_cookie_jar(&new_jar, pool)
+            if let (Some(cookie_store), Some(mut cookie_jar)) =
+                (maybe_cookie_store, maybe_cookie_jar)
+            {
+                // let cookies = response_headers.get_all(SET_COOKIE).iter().map(|h| {
+                //     println!("RESPONSE COOKIE: {}", h.to_str().unwrap());
+                //     cookie_store::RawCookie::from_str(h.to_str().unwrap())
+                //         .expect("Failed to parse cookie")
+                // });
+                // store.store_response_cookies(cookies, &url);
+
+                let json_cookies: Json<Vec<JsonValue>> = Json(
+                    cookie_store
+                        .lock()
+                        .unwrap()
+                        .iter_any()
+                        .map(|c| serde_json::to_value(&c).expect("Failed to serialize cookie"))
+                        .collect::<Vec<_>>(),
+                );
+                cookie_jar.cookies = json_cookies;
+                models::upsert_cookie_jar(&cookie_jar, pool)
                     .await
                     .expect("Failed to upsert cookie jar");
             }
