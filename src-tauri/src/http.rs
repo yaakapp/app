@@ -7,13 +7,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use log::{error, info, warn};
-use reqwest::{multipart, Url};
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
+use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -64,7 +64,8 @@ pub async fn send_http_request(
                         .expect("Failed to deserialize cookie")
                 })
                 .map(|c| Ok(c))
-                .collect::<Vec<Result<cookie_store::Cookie, ()>>>();
+                .collect::<Vec<Result<_, ()>>>();
+
             let store = reqwest_cookie_store::CookieStore::from_cookies(cookies, true)
                 .expect("Failed to create cookie store");
             let cookie_store = reqwest_cookie_store::CookieStoreMutex::new(store);
@@ -144,10 +145,6 @@ pub async fn send_http_request(
 
         headers.insert(header_name, header_value);
     }
-
-    headers.iter().for_each(|(k, v)| {
-        println!("ADDED HEADER {}: {}", k, v.to_str().unwrap());
-    });
 
     if let Some(b) = &request.authentication_type {
         let empty_value = &serde_json::to_value("").unwrap();
