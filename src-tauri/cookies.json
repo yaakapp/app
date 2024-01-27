@@ -1,0 +1,13 @@
+{
+  "raw_cookie": "_gorilla_csrf=MTcwNjMxOTUzMXxJbXhYYjA5RFpqVm5XbFJRYkdwNmNYbzRaMWhqVkRkWmRuVlBSMUp5ZGxSdlpIWlJRbkoxWVc5c1dXYzlJZ289fPWbsRpc-KiWT3KboIqbG75kUwWd37YL8MCDiZG75lZX; HttpOnly; Path=/; Max-Age=604800; Expires=Sat, 03 Feb 2024 01:38:51 GMT",
+  "path": [
+    "/",
+    true
+  ],
+  "domain": {
+    "HostOnly": "schier.co"
+  },
+  "expires": {
+    "AtUtc": "2024-02-03T01:38:51Z"
+  }
+}

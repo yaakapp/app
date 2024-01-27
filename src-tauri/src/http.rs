@@ -1,17 +1,21 @@
+use core::num::flt2dec::decoder;
 use std::fs;
 use std::fs::{create_dir_all, File};
-use std::io::Write;
+use std::io::{BufReader, BufWriter, Write};
 use std::path::PathBuf;
+use std::str::FromStr;
+use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
+use http::header::{ACCEPT, SET_COOKIE, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
-use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::multipart;
+use reqwest::cookie::CookieStore;
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
+use reqwest::{multipart, Url};
 use sqlx::types::Json;
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -19,13 +23,13 @@ use crate::{emit_side_effect, models, render, response_err};
 pub async fn send_http_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
-    environment_id: &str,
+    environment: Option<models::Environment>,
+    cookie_jar: Option<models::CookieJar>,
     app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
     download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
     let start = std::time::Instant::now();
-    let environment = models::get_environment(environment_id, pool).await.ok();
     let environment_ref = environment.as_ref();
     let workspace = models::get_workspace(&request.workspace_id, pool)
         .await
@@ -49,6 +53,19 @@ pub async fn send_http_request(
         .danger_accept_invalid_certs(!workspace.setting_validate_certificates)
         .tls_info(true);
 
+    // Add cookie store if specified
+    let cookie_store = match cookie_jar.clone() {
+        Some(cj) => {
+            let r = BufReader::new(cj.cookies.as_bytes());
+            let cookie_store = reqwest_cookie_store::CookieStore::load_json(r).unwrap();
+            let cookie_store = reqwest_cookie_store::CookieStoreMutex::new(cookie_store);
+            let cookie_store = Arc::new(cookie_store);
+            // client_builder = client_builder.cookie_provider(Arc::clone(&cookie_store));
+            Some(cookie_store)
+        }
+        None => None,
+    };
+
     if workspace.setting_request_timeout > 0 {
         client_builder = client_builder.timeout(Duration::from_millis(
             workspace.setting_request_timeout.unsigned_abs(),
@@ -58,13 +75,27 @@ pub async fn send_http_request(
     // .use_rustls_tls() // TODO: Make this configurable (maybe)
     let client = client_builder.build().expect("Failed to build client");
 
+    let url = match Url::from_str(url_string.as_str()) {
+        Ok(u) => u,
+        Err(e) => {
+            return response_err(response, e.to_string(), app_handle, pool).await;
+        }
+    };
+
     let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
-    let mut request_builder = client.request(m, url_string.to_string());
+    let mut request_builder = client.request(m, url.clone());
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
     headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
+
+    // Add cookie header
+    // TODO: Handle collision if user also passes it
+    let c = cookie_store.clone().unwrap().cookies(&url);
+    if let Some(cookie_header) = c {
+        headers.insert("Cookie", cookie_header);
+    }
 
     for h in request.headers.0 {
         if h.name.is_empty() && h.value.is_empty() {
@@ -252,10 +283,11 @@ pub async fn send_http_request(
     match raw_response {
         Ok(v) => {
             let mut response = response.clone();
+            let response_headers = v.headers().clone();
             response.status = v.status().as_u16() as i64;
             response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
             response.headers = Json(
-                v.headers()
+                response_headers
                     .iter()
                     .map(|(k, v)| models::HttpResponseHeader {
                         name: k.as_str().to_string(),
@@ -304,15 +336,36 @@ pub async fn send_http_request(
             match (download_path, response.body_path.clone()) {
                 (Some(dl_path), Some(body_path)) => {
                     info!("Downloading response body to {}", dl_path.display());
-                    fs::copy(body_path, dl_path).expect("Failed to copy file for response download");
+                    fs::copy(body_path, dl_path)
+                        .expect("Failed to copy file for response download");
                 }
                 _ => {}
             };
 
+            // Add cookie store if specified
+            if let Some(store) = cookie_store {
+                let mut cookies = response_headers.get_all(SET_COOKIE).iter();
+                store.set_cookies(&mut cookies, &url);
+                let mut new_jar = cookie_jar.unwrap().clone();
+                let mut w = BufWriter::new(Vec::new());
+                store
+                    .lock()
+                    .unwrap()
+                    .save_incl_expired_and_nonpersistent_json(&mut w)
+                    .expect("Failed to save cookie jar");
+                new_jar.cookies = w
+                    .into_inner()
+                    .unwrap()
+                    .into_iter()
+                    .map(|b| b as char)
+                    .collect();
+                models::upsert_cookie_jar(&new_jar, pool)
+                    .await
+                    .expect("Failed to upsert cookie jar");
+            }
+
             Ok(response)
         }
-        Err(e) => {
-            response_err(response, e.to_string(), app_handle, pool).await
-        }
+        Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
     }
 }

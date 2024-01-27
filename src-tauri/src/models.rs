@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
-use log::error;
 
+use log::error;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Sqlite};
@@ -55,6 +55,24 @@ impl Workspace {
             ..Default::default()
         }
     }
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct CookieJar {
+    pub id: String,
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub workspace_id: String,
+    pub cookies: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct CookieJarCookie {
+    pub cookie_str: String,
+    pub url: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -349,6 +367,74 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
     }
 
     Ok(workspace)
+}
+
+pub async fn get_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, sqlx::Error> {
+    sqlx::query_as!(
+        CookieJar,
+        r#"
+            SELECT
+                id,
+                model,
+                created_at,
+                updated_at,
+                workspace_id,
+                cookies
+            FROM cookie_jars WHERE id = ?
+        "#,
+        id,
+    )
+        .fetch_one(pool)
+        .await
+}
+
+pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result<Vec<CookieJar>, sqlx::Error> {
+    sqlx::query_as!(
+        CookieJar,
+        r#"
+            SELECT
+                id,
+                model,
+                created_at,
+                updated_at,
+                workspace_id,
+                cookies
+            FROM cookie_jars WHERE workspace_id = ?
+        "#,
+        workspace_id,
+    )
+        .fetch_all(pool)
+        .await
+}
+
+pub async fn upsert_cookie_jar(
+    cookie_jar: &CookieJar,
+    pool: &Pool<Sqlite>,
+) -> Result<CookieJar, sqlx::Error> {
+    let id = match cookie_jar.id.as_str() {
+        "" => generate_id(Some("cj")),
+        _ => cookie_jar.id.to_string(),
+    };
+    sqlx::query!(
+        r#"
+            INSERT INTO cookie_jars (
+                id,
+                workspace_id,
+                cookies
+             )
+            VALUES (?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+               updated_at = CURRENT_TIMESTAMP,
+               cookies = excluded.cookies
+        "#,
+        id,
+        cookie_jar.workspace_id,
+        cookie_jar.cookies,
+    )
+        .execute(pool)
+        .await?;
+
+    get_cookie_jar(&id, pool).await
 }
 
 pub async fn find_environments(

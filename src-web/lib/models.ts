@@ -34,6 +34,11 @@ export interface Workspace extends BaseModel {
   settingRequestTimeout: number;
 }
 
+export interface CookieJar extends BaseModel {
+  readonly model: 'cookie_jar';
+  workspaceId: string;
+}
+
 export interface EnvironmentVariable {
   name: string;
   value: string;

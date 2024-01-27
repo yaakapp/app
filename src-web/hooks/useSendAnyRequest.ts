@@ -7,10 +7,12 @@ import type { HttpResponse } from '../lib/models';
 import { getRequest } from '../lib/store';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useAlert } from './useAlert';
+import { useCookieJars } from './useCookieJars';
 
 export function useSendAnyRequest(options: { download?: boolean } = {}) {
   const environmentId = useActiveEnvironmentId();
   const alert = useAlert();
+  const cookieJars = useCookieJars();
   return useMutation<HttpResponse | null, string, string | null>({
     mutationFn: async (id) => {
       const request = await getRequest(id);
@@ -33,6 +35,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         requestId: id,
         environmentId,
         downloadDir: downloadDir,
+        cookieJarId: cookieJars[0]?.id,
       });
     },
     onSettled: () => trackEvent('HttpRequest', 'Send'),

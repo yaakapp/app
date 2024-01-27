@@ -6,24 +6,27 @@
 #[cfg(target_os = "macos")]
 #[macro_use]
 extern crate objc;
+extern crate core;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::process::exit;
+use std::str::FromStr;
 
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
+use reqwest::cookie::CookieStore;
 use serde::Serialize;
 use serde_json::Value;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
 use tauri::{Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -78,17 +81,36 @@ async fn migrate_db(
 async fn send_ephemeral_request(
     mut request: models::HttpRequest,
     environment_id: Option<&str>,
+    cookie_jar_id: Option<&str>,
     app_handle: AppHandle<Wry>,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
     let response = models::HttpResponse::new();
-    let environment_id2 = environment_id.unwrap_or("n/a").to_string();
     request.id = "".to_string();
+    let environment = match environment_id {
+        Some(id) => Some(
+            models::get_environment(id, pool)
+                .await
+                .expect("Failed to get environment"),
+        ),
+        None => None,
+    };
+    let cookie_jar = match cookie_jar_id {
+        Some(id) => Some(
+            models::get_cookie_jar(id, pool)
+                .await
+                .expect("Failed to get cookie jar"),
+        ),
+        None => None,
+    };
+
+    // let cookie_jar_id2 = cookie_jar_id.unwrap_or("").to_string();
     send_http_request(
         request,
         &response,
-        &environment_id2,
+        environment,
+        cookie_jar,
         &app_handle,
         pool,
         None,
@@ -228,22 +250,37 @@ async fn send_request(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
     environment_id: Option<&str>,
+    cookie_jar_id: Option<&str>,
     download_dir: Option<&str>,
 ) -> Result<models::HttpResponse, String> {
     let pool = &*db_instance.lock().await;
+    let app_handle = window.app_handle();
 
-    let req = models::get_request(request_id, pool)
+    let request = models::get_request(request_id, pool)
         .await
         .expect("Failed to get request");
 
-    let response = models::create_response(&req.id, 0, "", 0, None, None, None, vec![], pool)
+    let environment = match environment_id {
+        Some(id) => Some(
+            models::get_environment(id, pool)
+                .await
+                .expect("Failed to get environment"),
+        ),
+        None => None,
+    };
+
+    let cookie_jar = match cookie_jar_id {
+        Some(id) => Some(
+            models::get_cookie_jar(id, pool)
+                .await
+                .expect("Failed to get cookie jar"),
+        ),
+        None => None,
+    };
+
+    let response = models::create_response(&request.id, 0, "", 0, None, None, None, vec![], pool)
         .await
         .expect("Failed to create response");
-
-    let response2 = response.clone();
-    let environment_id2 = environment_id.unwrap_or("n/a").to_string();
-    let app_handle2 = window.app_handle().clone();
-    let pool2 = pool.clone();
 
     let download_path = if let Some(p) = download_dir {
         Some(std::path::Path::new(p).to_path_buf())
@@ -251,24 +288,18 @@ async fn send_request(
         None
     };
 
-    tokio::spawn(async move {
-        if let Err(e) = send_http_request(
-            req,
-            &response2,
-            &environment_id2,
-            &app_handle2,
-            &pool2,
-            download_path,
-        )
-        .await
-        {
-            response_err(&response2, e, &app_handle2, &pool2)
-                .await
-                .expect("Failed to update response");
-        }
-    });
+    emit_side_effect(&app_handle, "created_model", response.clone());
 
-    emit_and_return(&window, "created_model", response)
+    send_http_request(
+        request.clone(),
+        &response,
+        environment,
+        cookie_jar,
+        &app_handle,
+        &pool,
+        download_path,
+    )
+    .await
 }
 
 async fn response_err(
@@ -360,6 +391,26 @@ async fn create_workspace(
             .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
+}
+
+#[tauri::command]
+async fn create_cookie_jar(
+    workspace_id: &str,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::CookieJar, String> {
+    let pool = &*db_instance.lock().await;
+    let created_cookie_jar = models::upsert_cookie_jar(
+        &models::CookieJar {
+            workspace_id: workspace_id.to_string(),
+            ..Default::default()
+        },
+        pool,
+    )
+    .await
+    .expect("Failed to create cookie jar");
+
+    emit_and_return(&window, "created_model", created_cookie_jar)
 }
 
 #[tauri::command]
@@ -628,6 +679,17 @@ async fn get_request(
 }
 
 #[tauri::command]
+async fn list_cookie_jars(
+    workspace_id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<models::CookieJar>, String> {
+    let pool = &*db_instance.lock().await;
+    models::find_cookie_jars(workspace_id, pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn get_environment(
     id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -807,6 +869,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             check_for_updates,
+            create_cookie_jar,
             create_environment,
             create_folder,
             create_request,
@@ -827,6 +890,7 @@ fn main() {
             get_settings,
             get_workspace,
             import_data,
+            list_cookie_jars,
             list_environments,
             list_folders,
             list_requests,

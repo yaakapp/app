@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useCreateCookieJar } from '../hooks/useCreateCookieJar';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateRequest } from '../hooks/useCreateRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -10,6 +11,7 @@ import { HStack } from './core/Stacks';
 export const SidebarActions = memo(function SidebarActions() {
   const createRequest = useCreateRequest();
   const createFolder = useCreateFolder();
+  const createCookieJar = useCreateCookieJar();
   const { hidden, toggle } = useSidebarHidden();
 
   return (
@@ -37,6 +39,11 @@ export const SidebarActions = memo(function SidebarActions() {
             key: 'create-folder',
             label: 'New Folder',
             onSelect: () => createFolder.mutate({}),
+          },
+          {
+            key: 'create-cookie-jar',
+            label: 'New Cookie Jar',
+            onSelect: () => createCookieJar.mutate(),
           },
         ]}
       >
