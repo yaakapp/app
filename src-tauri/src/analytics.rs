@@ -14,6 +14,7 @@ pub enum AnalyticsResource {
     App,
     Sidebar,
     Workspace,
+    CookieJar,
     Environment,
     Folder,
     HttpRequest,
@@ -28,6 +29,7 @@ impl AnalyticsResource {
             "Sidebar" => Some(AnalyticsResource::Sidebar),
             "Workspace" => Some(AnalyticsResource::Workspace),
             "Environment" => Some(AnalyticsResource::Environment),
+            "CookieJar" => Some(AnalyticsResource::CookieJar),
             "Folder" => Some(AnalyticsResource::Folder),
             "HttpRequest" => Some(AnalyticsResource::HttpRequest),
             "HttpResponse" => Some(AnalyticsResource::HttpResponse),
@@ -50,6 +52,8 @@ pub enum AnalyticsAction {
     Send,
     Toggle,
     Duplicate,
+    Import,
+    Export,
 }
 
 impl AnalyticsAction {
@@ -66,6 +70,8 @@ impl AnalyticsAction {
             "Send" => Some(AnalyticsAction::Send),
             "Duplicate" => Some(AnalyticsAction::Duplicate),
             "Toggle" => Some(AnalyticsAction::Toggle),
+            "Import" => Some(AnalyticsAction::Import),
+            "Export" => Some(AnalyticsAction::Export),
             _ => None,
         }
     }
@@ -77,6 +83,7 @@ fn resource_name(resource: AnalyticsResource) -> &'static str {
         AnalyticsResource::Sidebar => "sidebar",
         AnalyticsResource::Workspace => "workspace",
         AnalyticsResource::Environment => "environment",
+        AnalyticsResource::CookieJar => "cookie_jar",
         AnalyticsResource::Folder => "folder",
         AnalyticsResource::HttpRequest => "http_request",
         AnalyticsResource::HttpResponse => "http_response",
@@ -97,6 +104,8 @@ fn action_name(action: AnalyticsAction) -> &'static str {
         AnalyticsAction::Send => "send",
         AnalyticsAction::Duplicate => "duplicate",
         AnalyticsAction::Toggle => "toggle",
+        AnalyticsAction::Import => "import",
+        AnalyticsAction::Export => "export",
     }
 }
 

@@ -54,23 +54,26 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       ...((environments.length > 0
         ? [{ type: 'separator', label: 'Environments' }]
         : []) as DropdownItem[]),
-      environments.length
-        ? {
-            key: 'edit',
-            label: 'Manage Environments',
-            hotKeyAction: 'environmentEditor.toggle',
-            leftSlot: <Icon icon="box" />,
-            onSelect: showEnvironmentDialog,
-          }
-        : {
-            key: 'new',
-            label: 'New Environment',
-            leftSlot: <Icon icon="plus" />,
-            onSelect: async () => {
-              await createEnvironment.mutateAsync();
-              showEnvironmentDialog();
+      ...((environments.length > 0
+        ? [
+            {
+              key: 'edit',
+              label: 'Manage Environments',
+              hotKeyAction: 'environmentEditor.toggle',
+              leftSlot: <Icon icon="box" />,
+              onSelect: showEnvironmentDialog,
             },
-          },
+          ]
+        : []) as DropdownItem[]),
+      {
+        key: 'new',
+        label: 'New Environment',
+        leftSlot: <Icon icon="plus" />,
+        onSelect: async () => {
+          await createEnvironment.mutateAsync();
+          showEnvironmentDialog();
+        },
+      },
     ],
     [activeEnvironment?.id, createEnvironment, environments, routes, showEnvironmentDialog],
   );

@@ -99,7 +99,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
-      {activeResponse?.error && <Banner className="m-2">{activeResponse.error}</Banner>}
+      {activeResponse?.error && (
+        <Banner color="danger" className="m-2">
+          {activeResponse.error}
+        </Banner>
+      )}
       {!activeResponse && (
         <>
           <span />

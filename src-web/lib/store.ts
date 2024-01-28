@@ -1,5 +1,13 @@
 import { invoke } from '@tauri-apps/api';
-import type { Environment, Folder, HttpRequest, Settings, Workspace } from './models';
+import type {
+  Cookie,
+  CookieJar,
+  Environment,
+  Folder,
+  HttpRequest,
+  Settings,
+  Workspace,
+} from './models';
 
 export async function getSettings(): Promise<Settings> {
   return invoke('get_settings', {});
@@ -39,4 +47,13 @@ export async function getWorkspace(id: string | null): Promise<Workspace | null>
     return null;
   }
   return workspace;
+}
+
+export async function getCookieJar(id: string | null): Promise<CookieJar | null> {
+  if (id === null) return null;
+  const cookieJar: CookieJar = (await invoke('get_cookie_jar', { id })) ?? null;
+  if (cookieJar == null) {
+    return null;
+  }
+  return cookieJar;
 }

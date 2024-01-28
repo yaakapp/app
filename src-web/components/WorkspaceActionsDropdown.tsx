@@ -51,7 +51,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           ),
           render: ({ hide }) => {
             return (
-              <HStack space={2} justifyContent="end" alignItems="center" className="mt-6">
+              <HStack space={2} justifyContent="end" alignItems="center" className="mt-4 mb-6">
                 <Button
                   className="focus"
                   color="gray"
@@ -135,6 +135,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             label: 'Name',
             defaultValue: 'My Workspace',
             title: 'New Workspace',
+            confirmLabel: 'Create',
           });
           createWorkspace.mutate({ name });
         },
@@ -143,6 +144,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   }, [
     activeWorkspace?.name,
     activeWorkspaceId,
+    createWorkspace,
     deleteWorkspace.mutate,
     dialog,
     prompt,
