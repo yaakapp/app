@@ -47,7 +47,7 @@ export function useImportData() {
         render: ({ hide }) => {
           const { workspaces, environments, folders, requests } = imported;
           return (
-            <VStack space={3}>
+            <VStack space={3} className="pb-4">
               <ul className="list-disc pl-6">
                 <li>{count('Workspace', workspaces.length)}</li>
                 <li>{count('Environment', environments.length)}</li>

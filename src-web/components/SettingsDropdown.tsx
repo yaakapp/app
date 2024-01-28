@@ -71,7 +71,7 @@ export function SettingsDropdown() {
               size: 'sm',
               render: ({ hide }) => {
                 return (
-                  <VStack space={3}>
+                  <VStack space={3} className="pb-4">
                     <p>Insomnia or Postman Collection v2/v2.1 formats are supported</p>
                     <Button
                       size="sm"

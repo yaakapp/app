@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
@@ -55,6 +56,8 @@ export function GlobalHooks() {
         ? keyValueQueryKey(payload)
         : payload.model === 'settings'
         ? settingsQueryKey()
+        : payload.model === 'cookie_jar'
+        ? cookieJarsQueryKey(payload)
         : null;
 
     if (queryKey === null) {
@@ -80,6 +83,8 @@ export function GlobalHooks() {
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
         ? keyValueQueryKey(payload)
+        : payload.model === 'cookie_jar'
+        ? cookieJarsQueryKey(payload)
         : payload.model === 'settings'
         ? settingsQueryKey()
         : null;
@@ -115,6 +120,8 @@ export function GlobalHooks() {
       queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
+    } else if (payload.model === 'cookie_jar') {
+      queryClient.setQueryData(cookieJarsQueryKey(payload), undefined);
     } else if (payload.model === 'settings') {
       queryClient.setQueryData(settingsQueryKey(), undefined);
     }

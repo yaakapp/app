@@ -30,7 +30,7 @@ export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps)
   };
 
   return (
-    <HStack space={2} justifyContent="end" className="mt-6">
+    <HStack space={2} justifyContent="end" className="mt-2 mb-4">
       <Button className="focus" color="gray" onClick={handleHide}>
         Cancel
       </Button>
