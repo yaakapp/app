@@ -5923,7 +5923,6 @@ dependencies = [
  "chrono",
  "cocoa 0.25.0",
  "cookie 0.18.0",
- "cookie_store 0.20.0",
  "datetime",
  "futures",
  "http",
