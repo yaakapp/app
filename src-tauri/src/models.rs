@@ -408,6 +408,22 @@ pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result
         .await
 }
 
+pub async fn delete_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, sqlx::Error> {
+    let cookie_jar = get_cookie_jar(id, pool).await?;
+
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM cookie_jars
+            WHERE id = ?
+        "#,
+        id,
+    )
+        .execute(pool)
+        .await;
+
+    Ok(cookie_jar)
+}
+
 pub async fn upsert_cookie_jar(
     pool: &Pool<Sqlite>,
     cookie_jar: &CookieJar,

@@ -408,6 +408,19 @@ async fn update_cookie_jar(
 }
 
 #[tauri::command]
+async fn delete_cookie_jar(
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+    cookie_jar_id: &str,
+) -> Result<models::CookieJar, String> {
+    let pool = &*db_instance.lock().await;
+    let req = models::delete_cookie_jar(cookie_jar_id, pool)
+        .await
+        .expect("Failed to delete cookie jar");
+    emit_and_return(&window, "deleted_model", req)
+}
+
+#[tauri::command]
 async fn create_cookie_jar(
     workspace_id: &str,
     name: &str,
@@ -903,6 +916,7 @@ fn main() {
             create_request,
             create_workspace,
             delete_all_responses,
+            delete_cookie_jar,
             delete_environment,
             delete_folder,
             delete_request,
