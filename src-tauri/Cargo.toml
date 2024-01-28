@@ -59,6 +59,7 @@ log = "0.4.20"
 datetime = "0.5.2"
 window-shadows = "0.2.2"
 reqwest_cookie_store = "0.6.0"
+cookie_store = "0.20.0"
 
 [features]
 # by default Tauri runs in production mode

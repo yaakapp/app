@@ -74,8 +74,6 @@ export function GlobalHooks() {
   useListenToTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
-    console.log('UPDATED MODEL', payload);
-
     const queryKey =
       payload.model === 'http_request'
         ? requestsQueryKey(payload)

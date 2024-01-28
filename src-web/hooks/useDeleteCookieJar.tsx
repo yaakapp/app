@@ -29,7 +29,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
       if (cookieJar === null) return;
 
       const { id: cookieJarId, workspaceId } = cookieJar;
-      queryClient.setQueryData<Workspace[]>(cookieJarsQueryKey({ workspaceId }), (cookieJars) =>
+      queryClient.setQueryData<CookieJar[]>(cookieJarsQueryKey({ workspaceId }), (cookieJars) =>
         cookieJars?.filter((e) => e.id !== cookieJarId),
       );
     },

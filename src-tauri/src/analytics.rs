@@ -52,6 +52,8 @@ pub enum AnalyticsAction {
     Send,
     Toggle,
     Duplicate,
+    Import,
+    Export,
 }
 
 impl AnalyticsAction {
@@ -68,6 +70,8 @@ impl AnalyticsAction {
             "Send" => Some(AnalyticsAction::Send),
             "Duplicate" => Some(AnalyticsAction::Duplicate),
             "Toggle" => Some(AnalyticsAction::Toggle),
+            "Import" => Some(AnalyticsAction::Import),
+            "Export" => Some(AnalyticsAction::Export),
             _ => None,
         }
     }
@@ -100,6 +104,8 @@ fn action_name(action: AnalyticsAction) -> &'static str {
         AnalyticsAction::Send => "send",
         AnalyticsAction::Duplicate => "duplicate",
         AnalyticsAction::Toggle => "toggle",
+        AnalyticsAction::Import => "import",
+        AnalyticsAction::Export => "export",
     }
 }
 

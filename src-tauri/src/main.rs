@@ -17,7 +17,7 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{json, Value};
 use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
@@ -171,6 +171,13 @@ async fn import_data(
         )
         .await
         {
+            analytics::track_event(
+                &window.app_handle(),
+                AnalyticsResource::App,
+                AnalyticsAction::Import,
+                Some(json!({ "plugin": plugin_name })),
+            )
+            .await;
             result = Some(r);
             break;
         }
@@ -237,8 +244,17 @@ async fn export_data(
     serde_json::to_writer_pretty(&f, &export_data)
         .map_err(|e| e.to_string())
         .expect("Failed to write");
+
     f.sync_all().expect("Failed to sync");
-    info!("Exported Yaak workspace to {:?}", export_path);
+
+    analytics::track_event(
+        &app_handle,
+        AnalyticsResource::App,
+        AnalyticsAction::Export,
+        None,
+    )
+    .await;
+
     Ok(())
 }
 
@@ -724,9 +740,25 @@ async fn list_cookie_jars(
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<models::CookieJar>, String> {
     let pool = &*db_instance.lock().await;
-    models::find_cookie_jars(workspace_id, pool)
+    let cookie_jars = models::find_cookie_jars(workspace_id, pool)
         .await
-        .map_err(|e| e.to_string())
+        .expect("Failed to find cookie jars");
+
+    if cookie_jars.is_empty() {
+        let cookie_jar = models::upsert_cookie_jar(
+            pool,
+            &models::CookieJar {
+                name: "Default".to_string(),
+                workspace_id: workspace_id.to_string(),
+                ..Default::default()
+            },
+        )
+        .await
+        .expect("Failed to create CookieJar");
+        Ok(vec![cookie_jar])
+    } else {
+        Ok(cookie_jars)
+    }
 }
 
 #[tauri::command]

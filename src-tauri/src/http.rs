@@ -22,7 +22,7 @@ pub async fn send_http_request(
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
-    maybe_cookie_jar: Option<models::CookieJar>,
+    cookie_jar: Option<models::CookieJar>,
     app_handle: &AppHandle<Wry>,
     pool: &Pool<Sqlite>,
     download_path: Option<PathBuf>,
@@ -52,7 +52,7 @@ pub async fn send_http_request(
         .tls_info(true);
 
     // Add cookie store if specified
-    let maybe_cookie_store = match maybe_cookie_jar.clone() {
+    let maybe_cookie_manager = match cookie_jar.clone() {
         Some(cj) => {
             // HACK: Can't construct Cookie without serde, so we have to do this
             let cookies = cj
@@ -71,7 +71,8 @@ pub async fn send_http_request(
             let cookie_store = reqwest_cookie_store::CookieStoreMutex::new(store);
             let cookie_store = Arc::new(cookie_store);
             client_builder = client_builder.cookie_provider(Arc::clone(&cookie_store));
-            Some(cookie_store)
+
+            Some((cookie_store, cj))
         }
         None => None,
     };
@@ -362,9 +363,7 @@ pub async fn send_http_request(
             };
 
             // Add cookie store if specified
-            if let (Some(cookie_store), Some(mut cookie_jar)) =
-                (maybe_cookie_store, maybe_cookie_jar)
-            {
+            if let Some((cookie_store, mut cookie_jar)) = maybe_cookie_manager {
                 // let cookies = response_headers.get_all(SET_COOKIE).iter().map(|h| {
                 //     println!("RESPONSE COOKIE: {}", h.to_str().unwrap());
                 //     cookie_store::RawCookie::from_str(h.to_str().unwrap())
