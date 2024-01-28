@@ -5,12 +5,14 @@ import slugify from 'slugify';
 import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
 import { getRequest } from '../lib/store';
+import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useAlert } from './useAlert';
 
 export function useSendAnyRequest(options: { download?: boolean } = {}) {
   const environmentId = useActiveEnvironmentId();
   const alert = useAlert();
+  const { activeCookieJar } = useActiveCookieJar();
   return useMutation<HttpResponse | null, string, string | null>({
     mutationFn: async (id) => {
       const request = await getRequest(id);
@@ -33,6 +35,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         requestId: id,
         environmentId,
         downloadDir: downloadDir,
+        cookieJarId: activeCookieJar?.id,
       });
     },
     onSettled: () => trackEvent('HttpRequest', 'Send'),

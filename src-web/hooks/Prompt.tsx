@@ -12,9 +12,18 @@ export interface PromptProps {
   name: InputProps['name'];
   defaultValue?: InputProps['defaultValue'];
   placeholder?: InputProps['placeholder'];
+  confirmLabel?: string;
 }
 
-export function Prompt({ onHide, label, name, defaultValue, placeholder, onResult }: PromptProps) {
+export function Prompt({
+  onHide,
+  label,
+  name,
+  defaultValue,
+  placeholder,
+  onResult,
+  confirmLabel = 'Save',
+}: PromptProps) {
   const [value, setValue] = useState<string>(defaultValue ?? '');
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -27,7 +36,7 @@ export function Prompt({ onHide, label, name, defaultValue, placeholder, onResul
 
   return (
     <form
-      className="grid grid-rows-[auto_auto] grid-cols-[minmax(0,1fr)] gap-6"
+      className="grid grid-rows-[auto_auto] grid-cols-[minmax(0,1fr)] gap-4 mb-4"
       onSubmit={handleSubmit}
     >
       <Input
@@ -45,7 +54,7 @@ export function Prompt({ onHide, label, name, defaultValue, placeholder, onResul
           Cancel
         </Button>
         <Button type="submit" className="focus" color="primary">
-          Save
+          {confirmLabel}
         </Button>
       </HStack>
     </form>

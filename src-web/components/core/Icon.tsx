@@ -11,6 +11,7 @@ const icons = {
   check: lucide.CheckIcon,
   chevronDown: lucide.ChevronDownIcon,
   chevronRight: lucide.ChevronRightIcon,
+  cookie: lucide.CookieIcon,
   code: lucide.CodeIcon,
   copy: lucide.CopyIcon,
   download: lucide.DownloadIcon,

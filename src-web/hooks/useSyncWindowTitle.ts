@@ -17,7 +17,6 @@ export function useSyncWindowTitle() {
       newTitle += ` – ${fallbackRequestName(activeRequest)}`;
     }
 
-    console.log('Skipping setting window title to ', newTitle);
     // TODO: This resets the stoplight position so we can't use it yet
     // appWindow.setTitle(newTitle).catch(console.error);
   }, [activeEnvironment, activeRequest, activeWorkspace]);

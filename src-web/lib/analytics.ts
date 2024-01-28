@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api';
 export function trackEvent(
   resource:
     | 'App'
+    | 'CookieJar'
     | 'Sidebar'
     | 'Workspace'
     | 'Environment'

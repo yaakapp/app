@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React, { memo, useState } from 'react';
+import { CookieDropdown } from './CookieDropdown';
 import { Icon } from './core/Icon';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
@@ -27,6 +28,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
     >
       <HStack space={0.5} className="flex-1 pointer-events-none" alignItems="center">
         <SidebarActions />
+        <CookieDropdown />
         <HStack alignItems="center">
           <WorkspaceActionsDropdown />
           <Icon icon="chevronRight" className="text-gray-900 text-opacity-disabled" />
