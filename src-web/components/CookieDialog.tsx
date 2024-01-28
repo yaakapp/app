@@ -1,7 +1,9 @@
 import { useCookieJars } from '../hooks/useCookieJars';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
 import { cookieDomain } from '../lib/models';
+import { Banner } from './core/Banner';
 import { IconButton } from './core/IconButton';
+import { InlineCode } from './core/InlineCode';
 
 interface Props {
   cookieJarId: string | null;
@@ -11,6 +13,19 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
   const updateCookieJar = useUpdateCookieJar(cookieJarId ?? null);
   const cookieJars = useCookieJars();
   const cookieJar = cookieJars.find((c) => c.id === cookieJarId);
+
+  if (cookieJar == null) {
+    return <div>No cookie jar selected</div>;
+  }
+
+  if (cookieJar.cookies.length === 0) {
+    return (
+      <Banner>
+        Cookies will appear when a response contains the <InlineCode>Set-Cookie</InlineCode> header
+      </Banner>
+    );
+  }
+
   return (
     <div className="pb-2">
       <table className="w-full text-xs mb-auto min-w-full max-w-full divide-y">
