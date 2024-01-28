@@ -381,9 +381,14 @@ pub async fn send_http_request(
                         .collect::<Vec<_>>(),
                 );
                 cookie_jar.cookies = json_cookies;
-                models::upsert_cookie_jar(&cookie_jar, pool)
-                    .await
-                    .expect("Failed to upsert cookie jar");
+                match models::upsert_cookie_jar(pool, &cookie_jar).await {
+                    Ok(updated_jar) => {
+                        emit_side_effect(app_handle, "updated_model", &updated_jar);
+                    }
+                    Err(e) => {
+                        error!("Failed to update cookie jar: {}", e);
+                    }
+                };
             }
 
             Ok(response)

@@ -409,8 +409,8 @@ pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result
 }
 
 pub async fn upsert_cookie_jar(
-    cookie_jar: &CookieJar,
     pool: &Pool<Sqlite>,
+    cookie_jar: &CookieJar,
 ) -> Result<CookieJar, sqlx::Error> {
     let id = match cookie_jar.id.as_str() {
         "" => generate_id(Some("cj")),

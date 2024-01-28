@@ -54,10 +54,10 @@ export function Dialog({
             className={classNames(
               className,
               'gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
-              'relative bg-gray-50 pointer-events-auto',
-              'px-6 py-4 rounded-lg overflow-auto',
+              'pt-4 relative bg-gray-50 pointer-events-auto',
+              'rounded-lg',
               'dark:border border-highlight shadow shadow-black/10',
-              'max-w-[90vw] max-h-[calc(100vh-8em)]',
+              'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
               size === 'full' && 'w-[100vw] h-[100vh]',
@@ -65,19 +65,26 @@ export function Dialog({
             )}
           >
             {title ? (
-              <Heading size={1} id={titleId}>
+              <Heading className="px-6 pt-4" size={1} id={titleId}>
                 {title}
               </Heading>
             ) : (
               <span />
             )}
-            {description && <p id={descriptionId}>{description}</p>}
-            <div className="h-full w-full grid grid-cols-[minmax(0,1fr)]">{children}</div>
+            {description && (
+              <p className="px-6" id={descriptionId}>
+                {description}
+              </p>
+            )}
+            <div className="h-full w-full grid grid-cols-[minmax(0,1fr)] overflow-y-auto px-6 py-2">
+              {children}
+            </div>
 
             {/*Put close at the end so that it's the last thing to be tabbed to*/}
             {!hideX && (
               <div className="ml-auto absolute right-1 top-1">
                 <IconButton
+                  className="opacity-70 hover:opacity-100"
                   onClick={onClose}
                   title="Close dialog (Esc)"
                   aria-label="Close"

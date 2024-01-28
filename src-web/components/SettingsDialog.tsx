@@ -20,7 +20,7 @@ export const SettingsDialog = () => {
   }
 
   return (
-    <VStack space={2} className="mb-2">
+    <VStack space={2} className="mb-4">
       <Select
         name="appearance"
         label="Appearance"

@@ -5,20 +5,9 @@ import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useFormattedHotkey, useHotKey } from '../../hooks/useHotKey';
 import { Icon } from './Icon';
 
-const colorStyles = {
-  custom: 'ring-blue-500/50',
-  default:
-    'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
-  gray: 'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
-  primary: 'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
-  secondary: 'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
-  warning: 'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
-  danger: 'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
-};
-
-export type ButtonProps = HTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
   innerClassName?: string;
-  color?: keyof typeof colorStyles;
+  color?: 'custom' | 'default' | 'gray' | 'primary' | 'secondary' | 'warning' | 'danger';
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'xs';
   justify?: 'start' | 'center';
@@ -64,7 +53,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         'flex-shrink-0 flex items-center',
         'focus-visible-or-class:ring rounded-md',
         disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
-        colorStyles[color || 'default'],
+        color === 'custom' && 'ring-blue-500/50',
+        color === 'default' &&
+          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
+        color === 'gray' &&
+          'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
+        color === 'primary' && 'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
+        color === 'secondary' &&
+          'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
+        color === 'warning' &&
+          'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
+        color === 'danger' && 'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
         size === 'md' && 'h-md px-3',

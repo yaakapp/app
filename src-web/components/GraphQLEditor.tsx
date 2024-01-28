@@ -84,39 +84,41 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         actions={
           error || isLoading
             ? [
-                <Button
-                  key="introspection"
-                  size="xs"
-                  color={error ? 'danger' : 'gray'}
-                  isLoading={isLoading}
-                  onClick={() => {
-                    dialog.show({
-                      title: 'Introspection Failed',
-                      size: 'dynamic',
-                      id: 'introspection-failed',
-                      render: () => (
-                        <>
-                          <FormattedError>{error ?? 'unknown'}</FormattedError>
-                          <div className="w-full mt-3">
-                            <Button
-                              onClick={() => {
-                                dialog.hide('introspection-failed');
-                                refetch();
-                              }}
-                              className="ml-auto"
-                              color="secondary"
-                              size="sm"
-                            >
-                              Try Again
-                            </Button>
-                          </div>
-                        </>
-                      ),
-                    });
-                  }}
-                >
-                  {error ? 'Introspection Failed' : 'Introspecting'}
-                </Button>,
+                <div key="introspection" className="!opacity-100">
+                  <Button
+                    key="introspection"
+                    size="xs"
+                    color={error ? 'danger' : 'gray'}
+                    isLoading={isLoading}
+                    onClick={() => {
+                      dialog.show({
+                        title: 'Introspection Failed',
+                        size: 'dynamic',
+                        id: 'introspection-failed',
+                        render: () => (
+                          <>
+                            <FormattedError>{error ?? 'unknown'}</FormattedError>
+                            <div className="w-full my-4">
+                              <Button
+                                onClick={() => {
+                                  dialog.hide('introspection-failed');
+                                  refetch();
+                                }}
+                                className="ml-auto"
+                                color="secondary"
+                                size="sm"
+                              >
+                                Try Again
+                              </Button>
+                            </div>
+                          </>
+                        ),
+                      });
+                    }}
+                  >
+                    {error ? 'Introspection Failed' : 'Introspecting'}
+                  </Button>
+                </div>,
               ]
             : []
         }

@@ -392,6 +392,22 @@ async fn create_workspace(
 }
 
 #[tauri::command]
+async fn update_cookie_jar(
+    cookie_jar: models::CookieJar,
+    window: Window<Wry>,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::CookieJar, String> {
+    let pool = &*db_instance.lock().await;
+    println!("Updating cookie jar {}", cookie_jar.cookies.len());
+
+    let updated = models::upsert_cookie_jar(pool, &cookie_jar)
+        .await
+        .expect("Failed to update cookie jar");
+
+    emit_and_return(&window, "updated_model", updated)
+}
+
+#[tauri::command]
 async fn create_cookie_jar(
     workspace_id: &str,
     name: &str,
@@ -400,12 +416,12 @@ async fn create_cookie_jar(
 ) -> Result<models::CookieJar, String> {
     let pool = &*db_instance.lock().await;
     let created_cookie_jar = models::upsert_cookie_jar(
+        pool,
         &models::CookieJar {
             name: name.to_string(),
             workspace_id: workspace_id.to_string(),
             ..Default::default()
         },
-        pool,
     )
     .await
     .expect("Failed to create cookie jar");
@@ -679,6 +695,17 @@ async fn get_request(
 }
 
 #[tauri::command]
+async fn get_cookie_jar(
+    id: &str,
+    db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<models::CookieJar, String> {
+    let pool = &*db_instance.lock().await;
+    models::get_cookie_jar(id, pool)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn list_cookie_jars(
     workspace_id: &str,
     db_instance: State<'_, Mutex<Pool<Sqlite>>>,
@@ -884,9 +911,10 @@ fn main() {
             duplicate_request,
             export_data,
             filter_response,
-            get_key_value,
+            get_cookie_jar,
             get_environment,
             get_folder,
+            get_key_value,
             get_request,
             get_settings,
             get_workspace,
@@ -903,6 +931,7 @@ fn main() {
             set_key_value,
             set_update_mode,
             track_event,
+            update_cookie_jar,
             update_environment,
             update_folder,
             update_request,

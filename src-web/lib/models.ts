@@ -9,7 +9,14 @@ export const AUTH_TYPE_NONE = null;
 export const AUTH_TYPE_BASIC = 'basic';
 export const AUTH_TYPE_BEARER = 'bearer';
 
-export type Model = Settings | Workspace | HttpRequest | HttpResponse | KeyValue | Environment;
+export type Model =
+  | Settings
+  | Workspace
+  | HttpRequest
+  | HttpResponse
+  | KeyValue
+  | Environment
+  | CookieJar;
 
 export interface BaseModel {
   readonly id: string;
@@ -38,6 +45,27 @@ export interface CookieJar extends BaseModel {
   readonly model: 'cookie_jar';
   workspaceId: string;
   name: string;
+  cookies: Cookie[];
+}
+
+export interface Cookie {
+  raw_cookie: string;
+  domain: { HostOnly: string } | { Suffix: string } | 'NotPresent' | 'Empty';
+  expires: { AtUtc: string } | 'SessionEnd';
+  path: [string, boolean];
+}
+
+export function cookieDomain(cookie: Cookie): string {
+  if (cookie.domain === 'NotPresent' || cookie.domain === 'Empty') {
+    return 'n/a';
+  }
+  if ('HostOnly' in cookie.domain) {
+    return cookie.domain.HostOnly;
+  }
+  if ('Suffix' in cookie.domain) {
+    return cookie.domain.Suffix;
+  }
+  return 'unknown';
 }
 
 export interface EnvironmentVariable {

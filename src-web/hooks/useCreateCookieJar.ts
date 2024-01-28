@@ -18,9 +18,9 @@ export function useCreateCookieJar() {
       }
       const name = await prompt({
         name: 'name',
-        title: 'New Environment',
+        title: 'New CookieJar',
         label: 'Name',
-        defaultValue: 'My Environment',
+        defaultValue: 'My Jar',
       });
       return invoke('create_cookie_jar', { workspaceId, name });
     },

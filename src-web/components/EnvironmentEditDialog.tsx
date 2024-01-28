@@ -51,12 +51,12 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
   return (
     <div
       className={classNames(
-        'h-full grid gap-x-8 grid-rows-[minmax(0,1fr)]',
+        'h-full pt-1 grid gap-x-8 grid-rows-[minmax(0,1fr)]',
         showSidebar ? 'grid-cols-[auto_minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
       )}
     >
       {showSidebar && (
-        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2">
+        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2 pb-4">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
             {environments.map((e) => (
               <SidebarButton
