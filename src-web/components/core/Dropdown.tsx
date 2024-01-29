@@ -399,7 +399,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   {items.map((item, i) => {
                     if (item.type === 'separator') {
                       return (
-                        <Separator key={i} className="my-1.5">
+                        <Separator key={i} className="ml-2 my-1.5">
                           {item.label}
                         </Separator>
                       );
