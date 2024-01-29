@@ -21,6 +21,7 @@
   }
 
   /* Disable user selection to make it more "app-like" */
+  :not(a),
   :not(input):not(textarea),
   :not(input):not(textarea)::after,
   :not(input):not(textarea)::before {

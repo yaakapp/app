@@ -1,5 +1,8 @@
+import { invoke, shell } from '@tauri-apps/api';
 import classNames from 'classnames';
+import type { ReactNode } from 'react';
 import type { HttpResponse } from '../lib/models';
+import { IconButton } from './core/IconButton';
 import { Separator } from './core/Separator';
 import { HStack } from './core/Stacks';
 
@@ -19,9 +22,25 @@ export function ResponseHeaders({ response }: Props) {
       <dl className="text-xs w-full font-mono divide-highlightSecondary">
         <Row label="Version" value={response.version} />
         <Row label="Remote Address" value={response.remoteAddr} />
-        <Row label="Status" value={response.status} />
-        <Row label="Reason" value={response.statusReason} />
-        <Row label="URL" value={response.url} />
+        <Row
+          label={
+            <div className="flex items-center">
+              URL
+              <IconButton
+                iconSize="sm"
+                className="inline-block w-auto ml-1 !h-auto opacity-50 hover:opacity-100"
+                icon="externalLink"
+                onClick={() => shell.open(response.url)}
+                title="Open in browser"
+              />
+            </div>
+          }
+          value={
+            <div className="flex">
+              <span className="select-text cursor-text">{response.url}</span>
+            </div>
+          }
+        />
       </dl>
     </div>
   );
@@ -32,8 +51,8 @@ function Row({
   value,
   labelClassName,
 }: {
-  label: string;
-  value: string | number;
+  label: ReactNode;
+  value: ReactNode;
   labelClassName?: string;
 }) {
   return (
