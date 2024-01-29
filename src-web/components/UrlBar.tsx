@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent } from 'react';
 import { memo, useCallback, useRef, useState } from 'react';

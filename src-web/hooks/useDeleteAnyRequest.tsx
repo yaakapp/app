@@ -17,6 +17,7 @@ export function useDeleteAnyRequest() {
     mutationFn: async (id) => {
       const request = await getRequest(id);
       const confirmed = await confirm({
+        id: 'delete-request',
         title: 'Delete Request',
         variant: 'delete',
         description: (

@@ -5,8 +5,17 @@ import { Alert } from './Alert';
 
 export function useAlert() {
   const dialog = useDialog();
-  return ({ title, body }: { title: DialogProps['title']; body: AlertProps['body'] }) =>
+  return ({
+    id,
+    title,
+    body,
+  }: {
+    id: string;
+    title: DialogProps['title'];
+    body: AlertProps['body'];
+  }) =>
     dialog.show({
+      id,
       title,
       hideX: true,
       size: 'sm',

@@ -39,6 +39,6 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
       });
     },
     onSettled: () => trackEvent('HttpRequest', 'Send'),
-    onError: (err) => alert({ title: 'Export Failed', body: err }),
+    onError: (err) => alert({ id: 'send-failed', title: 'Send Failed', body: err }),
   });
 }

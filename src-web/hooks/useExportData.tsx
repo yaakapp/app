@@ -11,7 +11,7 @@ export function useExportData() {
 
   return useMutation({
     onError: (err: string) => {
-      alert({ title: 'Export Failed', body: err });
+      alert({ id: 'export-failed', title: 'Export Failed', body: err });
     },
     mutationFn: async () => {
       if (workspace == null) return;

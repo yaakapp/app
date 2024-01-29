@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
-import type { CookieJar, Workspace } from '../lib/models';
+import type { CookieJar } from '../lib/models';
 import { useConfirm } from './useConfirm';
 import { cookieJarsQueryKey } from './useCookieJars';
 
@@ -13,6 +13,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
   return useMutation<CookieJar | null, string>({
     mutationFn: async () => {
       const confirmed = await confirm({
+        id: 'delete-cookie-jar',
         title: 'Delete CookieJar',
         variant: 'delete',
         description: (

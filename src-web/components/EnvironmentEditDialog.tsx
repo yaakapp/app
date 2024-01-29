@@ -152,6 +152,7 @@ const EnvironmentEditor = function ({
               leftSlot: <Icon icon="pencil" size="sm" />,
               onSelect: async () => {
                 const name = await prompt({
+                  id: 'rename-environment',
                   title: 'Rename Environment',
                   description: (
                     <>
