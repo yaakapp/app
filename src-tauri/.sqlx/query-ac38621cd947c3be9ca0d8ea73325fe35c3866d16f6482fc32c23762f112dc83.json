@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,\n                status, status_reason, content_length, body_path, elapsed, error,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n            LIMIT ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, request_id, updated_at, created_at, url, status,\n                status_reason, content_length, body_path, elapsed, elapsed_headers, error,\n                version, remote_addr,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpResponseHeader>>\"\n            FROM http_responses\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n            LIMIT ?\n        ",
   "describe": {
     "columns": [
       {
@@ -64,13 +64,28 @@
         "type_info": "Int64"
       },
       {
-        "name": "error",
+        "name": "elapsed_headers",
         "ordinal": 12,
+        "type_info": "Int64"
+      },
+      {
+        "name": "error",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "version",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "remote_addr",
+        "ordinal": 15,
         "type_info": "Text"
       },
       {
         "name": "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>",
-        "ordinal": 13,
+        "ordinal": 16,
         "type_info": "Text"
       }
     ],
@@ -90,9 +105,12 @@
       true,
       true,
       false,
+      false,
+      true,
+      true,
       true,
       false
     ]
   },
-  "hash": "07b0c398efd1d5f8f479652de658716a9e7faef6aba6583dd209a4f290c5edd1"
+  "hash": "ac38621cd947c3be9ca0d8ea73325fe35c3866d16f6482fc32c23762f112dc83"
 }

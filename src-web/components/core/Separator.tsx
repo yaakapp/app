@@ -15,7 +15,7 @@ export function Separator({
 }: Props) {
   return (
     <div role="separator" className={classNames(className, 'flex items-center')}>
-      {children && <div className="text-xs text-gray-500 mx-2 whitespace-nowrap">{children}</div>}
+      {children && <div className="text-xs text-gray-500 mr-2 whitespace-nowrap">{children}</div>}
       <div
         className={classNames(
           variant === 'primary' && 'bg-highlight',

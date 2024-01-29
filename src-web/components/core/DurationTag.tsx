@@ -1,8 +1,17 @@
 interface Props {
-  millis: number;
+  total: number;
+  headers: number;
 }
 
-export function DurationTag({ millis }: Props) {
+export function DurationTag({ total, headers }: Props) {
+  return (
+    <span title={`HEADER: ${formatMillis(headers)}\nTOTAL: ${formatMillis(total)}`}>
+      {formatMillis(total)}
+    </span>
+  );
+}
+
+function formatMillis(millis: number) {
   let num;
   let unit;
 
@@ -17,9 +26,5 @@ export function DurationTag({ millis }: Props) {
     unit = 'ms';
   }
 
-  return (
-    <span title={`${millis} milliseconds`}>
-      {Math.round(num * 10) / 10} {unit}
-    </span>
-  );
+  return `${Math.round(num * 10) / 10} ${unit}`;
 }

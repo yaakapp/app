@@ -130,7 +130,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                     {activeResponse.elapsed > 0 && (
                       <>
                         <span>&bull;</span>
-                        <DurationTag millis={activeResponse.elapsed} />
+                        <DurationTag
+                          headers={activeResponse.elapsedHeaders}
+                          total={activeResponse.elapsed}
+                        />
                       </>
                     )}
                     {!!activeResponse.contentLength && (
@@ -160,7 +163,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
             tabListClassName="mt-1.5"
           >
             <TabContent value="headers">
-              <ResponseHeaders headers={activeResponse?.headers ?? []} />
+              <ResponseHeaders response={activeResponse} />
             </TabContent>
             <TabContent value="body">
               {!activeResponse.contentLength ? (

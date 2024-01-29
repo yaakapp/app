@@ -171,7 +171,10 @@ pub struct HttpResponse {
     pub error: Option<String>,
     pub url: String,
     pub content_length: Option<i64>,
+    pub version: Option<String>,
     pub elapsed: i64,
+    pub elapsed_headers: i64,
+    pub remote_addr: Option<String>,
     pub status: i64,
     pub status_reason: Option<String>,
     pub body_path: Option<String>,
@@ -851,15 +854,19 @@ pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest
     Ok(req)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn create_response(
     request_id: &str,
     elapsed: i64,
+    elapsed_headers: i64,
     url: &str,
     status: i64,
     status_reason: Option<&str>,
     content_length: Option<i64>,
     body_path: Option<&str>,
     headers: Vec<HttpResponseHeader>,
+    version: Option<&str>,
+    remote_addr: Option<&str>,
     pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
     let req = get_request(request_id, pool).await?;
@@ -872,25 +879,31 @@ pub async fn create_response(
                 request_id,
                 workspace_id,
                 elapsed,
+                elapsed_headers,
                 url,
                 status,
                 status_reason,
                 content_length,
                 body_path,
-                headers
+                headers,
+                version,
+                remote_addr
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         "#,
         id,
         request_id,
         req.workspace_id,
         elapsed,
+        elapsed_headers,
         url,
         status,
         status_reason,
         content_length,
         body_path,
         headers_json,
+        version,
+        remote_addr,
     )
     .execute(pool)
     .await?;
@@ -975,6 +988,7 @@ pub async fn update_response(
         r#"
             UPDATE http_responses SET (
                 elapsed,
+                elapsed_headers,
                 url,
                 status,
                 status_reason,
@@ -982,10 +996,13 @@ pub async fn update_response(
                 body_path,
                 error,
                 headers,
+                version,
+                remote_addr,
                 updated_at
-            ) = (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
+            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
         "#,
         response.elapsed,
+        response.elapsed_headers,
         response.url,
         response.status,
         response.status_reason,
@@ -993,6 +1010,8 @@ pub async fn update_response(
         response.body_path,
         response.error,
         headers_json,
+        response.version,
+        response.remote_addr,
         response.id,
     )
     .execute(pool)
@@ -1004,8 +1023,10 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body_path, elapsed, error,
+            SELECT
+                id, model, workspace_id, request_id, updated_at, created_at, url, status,
+                status_reason, content_length, body_path, elapsed, elapsed_headers, error,
+                version, remote_addr,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE id = ?
@@ -1021,15 +1042,14 @@ pub async fn find_responses(
     limit: Option<i64>,
     pool: &Pool<Sqlite>,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
-    let limit_unwrapped = match limit {
-        Some(l) => l,
-        None => i64::MAX,
-    };
+    let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body_path, elapsed, error,
+            SELECT
+                id, model, workspace_id, request_id, updated_at, created_at, url, status,
+                status_reason, content_length, body_path, elapsed, elapsed_headers, error,
+                version, remote_addr,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE request_id = ?
@@ -1050,8 +1070,10 @@ pub async fn find_responses_by_workspace_id(
     sqlx::query_as!(
         HttpResponse,
         r#"
-            SELECT id, model, workspace_id, request_id, updated_at, created_at, url,
-                status, status_reason, content_length, body_path, elapsed, error,
+            SELECT
+                id, model, workspace_id, request_id, updated_at, created_at, url, status,
+                status_reason, content_length, body_path, elapsed, elapsed_headers, error,
+                version, remote_addr,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpResponseHeader>>"
             FROM http_responses
             WHERE workspace_id = ?
