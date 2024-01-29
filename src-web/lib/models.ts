@@ -133,7 +133,10 @@ export interface HttpResponse extends BaseModel {
   readonly error: string;
   readonly status: number;
   readonly elapsed: number;
+  readonly elapsedHeaders: number;
   readonly statusReason: string;
+  readonly version: string;
+  readonly remoteAddr: string;
   readonly url: string;
   readonly headers: HttpHeader[];
 }

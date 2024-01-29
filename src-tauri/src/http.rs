@@ -1,5 +1,5 @@
-use std::fs;
 use std::fs::{create_dir_all, File};
+use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -7,13 +7,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
-use sqlx::types::{Json, JsonValue};
+use reqwest::redirect::Policy;
 use sqlx::{Pool, Sqlite};
+use sqlx::types::{Json, JsonValue};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
@@ -27,7 +27,6 @@ pub async fn send_http_request(
     pool: &Pool<Sqlite>,
     download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
-    let start = std::time::Instant::now();
     let environment_ref = environment.as_ref();
     let workspace = models::get_workspace(&request.workspace_id, pool)
         .await
@@ -298,11 +297,13 @@ pub async fn send_http_request(
         }
     };
 
+    let start = std::time::Instant::now();
     let raw_response = client.execute(sendable_req).await;
 
     match raw_response {
         Ok(v) => {
             let mut response = response.clone();
+            response.elapsed_headers = start.elapsed().as_millis() as i64;
             let response_headers = v.headers().clone();
             response.status = v.status().as_u16() as i64;
             response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
@@ -316,8 +317,25 @@ pub async fn send_http_request(
                     .collect(),
             );
             response.url = v.url().to_string();
+            response.remote_addr = v.remote_addr().map(|a| a.to_string());
+            response.version = match v.version() {
+                http::Version::HTTP_09 => Some("HTTP/0.9".to_string()),
+                http::Version::HTTP_10 => Some("HTTP/1.0".to_string()),
+                http::Version::HTTP_11 => Some("HTTP/1.1".to_string()),
+                http::Version::HTTP_2 => Some("HTTP/2".to_string()),
+                http::Version::HTTP_3 => Some("HTTP/3".to_string()),
+                _ => None,
+            };
+
+            let content_length = v.content_length();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
-            response.content_length = Some(body_bytes.len() as i64);
+            response.elapsed = start.elapsed().as_millis() as i64;
+
+            // Use content length if available, otherwise use body length
+            response.content_length = match content_length {
+                Some(l) => Some(l as i64),
+                None => Some(body_bytes.len() as i64),
+            };
 
             {
                 // Write body to FS
@@ -344,7 +362,6 @@ pub async fn send_http_request(
                 );
             }
 
-            response.elapsed = start.elapsed().as_millis() as i64;
             response = models::update_response_if_id(&response, pool)
                 .await
                 .expect("Failed to update response");

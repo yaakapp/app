@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE http_responses SET (\n                elapsed,\n                elapsed_headers,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body_path,\n                error,\n                headers,\n                version,\n                remote_addr,\n                updated_at\n            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 12
+    },
+    "nullable": []
+  },
+  "hash": "587aedf827b00bb706c35457a75b811317e66fc84ac0906bf5513d938121a078"
+}

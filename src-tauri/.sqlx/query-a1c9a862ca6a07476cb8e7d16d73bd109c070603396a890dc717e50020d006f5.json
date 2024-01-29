@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO http_responses (\n                id,\n                request_id,\n                workspace_id,\n                elapsed,\n                elapsed_headers,\n                url,\n                status,\n                status_reason,\n                content_length,\n                body_path,\n                headers,\n                version,\n                remote_addr\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 13
+    },
+    "nullable": []
+  },
+  "hash": "a1c9a862ca6a07476cb8e7d16d73bd109c070603396a890dc717e50020d006f5"
+}
