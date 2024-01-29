@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
-import type { CookieJar, HttpRequest } from '../lib/models';
+import type { HttpRequest } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { usePrompt } from './usePrompt';
 import { requestsQueryKey } from './useRequests';
@@ -17,6 +17,7 @@ export function useCreateCookieJar() {
         throw new Error("Cannot create cookie jar when there's no active workspace");
       }
       const name = await prompt({
+        id: 'new-cookie-jar',
         name: 'name',
         title: 'New CookieJar',
         label: 'Name',

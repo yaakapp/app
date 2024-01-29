@@ -613,6 +613,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                     leftSlot: <Icon icon="pencil" />,
                     onSelect: async () => {
                       const name = await prompt({
+                        id: 'rename-folder',
                         title: 'Rename Folder',
                         description: (
                           <>

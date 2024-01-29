@@ -1,13 +1,5 @@
 import { invoke } from '@tauri-apps/api';
-import type {
-  Cookie,
-  CookieJar,
-  Environment,
-  Folder,
-  HttpRequest,
-  Settings,
-  Workspace,
-} from './models';
+import type { CookieJar, Environment, Folder, HttpRequest, Settings, Workspace } from './models';
 
 export async function getSettings(): Promise<Settings> {
   return invoke('get_settings', {});

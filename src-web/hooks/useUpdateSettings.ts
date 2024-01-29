@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { HttpRequest, Settings } from '../lib/models';
-import { requestsQueryKey } from './useRequests';
+import type { Settings } from '../lib/models';
 import { settingsQueryKey } from './useSettings';
 
 export function useUpdateSettings() {

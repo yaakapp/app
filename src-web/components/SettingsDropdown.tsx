@@ -54,7 +54,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="keyboard" />,
           onSelect: () => {
             dialog.show({
-              id: 'hotkey-help',
+              id: 'hotkey',
               title: 'Keyboard Shortcuts',
               size: 'sm',
               render: () => <KeyboardShortcutsDialog />,
@@ -67,6 +67,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="folderInput" />,
           onSelect: () => {
             dialog.show({
+              id: 'import',
               title: 'Import Data',
               size: 'sm',
               render: ({ hide }) => {
@@ -104,6 +105,7 @@ export function SettingsDropdown() {
             const hasUpdate: boolean = await invoke('check_for_updates');
             if (!hasUpdate) {
               alert({
+                id: 'no-updates',
                 title: 'No Updates',
                 body: 'You are currently up to date',
               });

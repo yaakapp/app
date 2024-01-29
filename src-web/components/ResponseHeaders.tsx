@@ -1,4 +1,4 @@
-import { invoke, shell } from '@tauri-apps/api';
+import { shell } from '@tauri-apps/api';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import type { HttpResponse } from '../lib/models';

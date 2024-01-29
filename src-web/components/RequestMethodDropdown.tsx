@@ -40,6 +40,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
         leftSlot: <Icon icon="sparkles" />,
         onSelect: async () => {
           const newMethod = await prompt({
+            id: 'custom-method',
             label: 'Http Method',
             name: 'httpMethod',
             defaultValue: '',

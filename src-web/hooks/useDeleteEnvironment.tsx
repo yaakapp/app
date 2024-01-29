@@ -13,6 +13,7 @@ export function useDeleteEnvironment(environment: Environment | null) {
   return useMutation<Environment | null, string>({
     mutationFn: async () => {
       const confirmed = await confirm({
+        id: 'delete-environment',
         title: 'Delete Environment',
         variant: 'delete',
         description: (

@@ -52,6 +52,7 @@ export function CookieDropdown() {
                 leftSlot: <Icon icon="pencil" />,
                 onSelect: async () => {
                   const name = await prompt({
+                    id: 'rename-cookie-jar',
                     title: 'Rename Cookie Jar',
                     description: (
                       <>

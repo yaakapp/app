@@ -18,6 +18,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
   return useMutation<Workspace | null, string>({
     mutationFn: async () => {
       const confirmed = await confirm({
+        id: 'delete-workspace',
         title: 'Delete Workspace',
         variant: 'delete',
         description: (

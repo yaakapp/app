@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import type { DialogProps } from './core/Dialog';
 import { Dialog } from './core/Dialog';
 
@@ -7,15 +8,13 @@ type DialogEntry = {
   render: ({ hide }: { hide: () => void }) => React.ReactNode;
 } & Pick<DialogProps, 'title' | 'description' | 'hideX' | 'className' | 'size'>;
 
-type DialogEntryOptionalId = Omit<DialogEntry, 'id'> & { id?: string };
-
 interface State {
   dialogs: DialogEntry[];
   actions: Actions;
 }
 
 interface Actions {
-  show: (d: DialogEntryOptionalId) => void;
+  show: (d: DialogEntry) => void;
   toggle: (d: DialogEntry) => void;
   hide: (id: string) => void;
 }
@@ -27,12 +26,11 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   const [dialogs, setDialogs] = useState<State['dialogs']>([]);
   const actions = useMemo<Actions>(
     () => ({
-      show({ id: oid, ...props }: DialogEntryOptionalId) {
-        const id = oid ?? Math.random().toString(36).slice(2);
+      show({ id, ...props }: DialogEntry) {
+        trackEvent('Dialog', 'Show', { id });
         setDialogs((a) => [...a.filter((d) => d.id !== id), { id, ...props }]);
       },
-      toggle({ id: oid, ...props }: DialogEntryOptionalId) {
-        const id = oid ?? Math.random().toString(36).slice(2);
+      toggle({ id, ...props }: DialogEntry) {
         if (dialogs.some((d) => d.id === id)) this.hide(id);
         else this.show({ id, ...props });
       },
