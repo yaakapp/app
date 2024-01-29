@@ -104,6 +104,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="pencil" />,
         onSelect: async () => {
           const name = await prompt({
+            id: 'rename-workspace',
             title: 'Rename Workspace',
             description: (
               <>
@@ -131,6 +132,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         leftSlot: <Icon icon="plus" />,
         onSelect: async () => {
           const name = await prompt({
+            id: 'new-workspace',
             name: 'name',
             label: 'Name',
             defaultValue: 'My Workspace',

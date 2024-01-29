@@ -4,9 +4,8 @@ import { trackEvent } from '../lib/analytics';
 import type { Environment } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { environmentsQueryKey, useEnvironments } from './useEnvironments';
+import { environmentsQueryKey } from './useEnvironments';
 import { usePrompt } from './usePrompt';
-import { useWorkspaces } from './useWorkspaces';
 
 export function useCreateEnvironment() {
   const routes = useAppRoutes();
@@ -17,6 +16,7 @@ export function useCreateEnvironment() {
   return useMutation<Environment, unknown, void>({
     mutationFn: async () => {
       const name = await prompt({
+        id: 'new-environment',
         name: 'name',
         title: 'New Environment',
         label: 'Name',

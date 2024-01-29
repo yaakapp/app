@@ -22,7 +22,7 @@ export function useImportData() {
 
   return useMutation({
     onError: (err: string) => {
-      alert({ title: 'Import Failed', body: err });
+      alert({ id: 'import-failed', title: 'Import Failed', body: err });
     },
     mutationFn: async () => {
       const selected = await open(openArgs);
@@ -41,6 +41,7 @@ export function useImportData() {
       const importedWorkspace = imported.workspaces[0];
 
       dialog.show({
+        id: 'import-complete',
         title: 'Import Complete',
         size: 'sm',
         hideX: true,

@@ -6,6 +6,7 @@ import { Prompt } from './Prompt';
 export function usePrompt() {
   const dialog = useDialog();
   return ({
+    id,
     title,
     description,
     name,
@@ -13,9 +14,11 @@ export function usePrompt() {
     defaultValue,
     placeholder,
     confirmLabel,
-  }: Pick<DialogProps, 'title' | 'description'> & Omit<PromptProps, 'onResult' | 'onHide'>) =>
+  }: Pick<DialogProps, 'title' | 'description'> &
+    Omit<PromptProps, 'onResult' | 'onHide'> & { id: string }) =>
     new Promise((onResult: PromptProps['onResult']) => {
       dialog.show({
+        id,
         title,
         description,
         hideX: true,

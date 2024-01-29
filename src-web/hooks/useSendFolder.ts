@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import { trackEvent } from '../lib/analytics';
 import { useSendAnyRequest } from './useSendAnyRequest';
 
 export function useSendManyRequests() {

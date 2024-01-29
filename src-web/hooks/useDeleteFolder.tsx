@@ -16,6 +16,7 @@ export function useDeleteFolder(id: string | null) {
     mutationFn: async () => {
       const folder = await getFolder(id);
       const confirmed = await confirm({
+        id: 'delete-folder',
         title: 'Delete Folder',
         variant: 'delete',
         description: (

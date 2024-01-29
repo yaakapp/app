@@ -12,28 +12,30 @@ use crate::{is_dev, models};
 #[derive(Serialize, Deserialize)]
 pub enum AnalyticsResource {
     App,
-    Sidebar,
-    Workspace,
     CookieJar,
+    Dialog,
     Environment,
     Folder,
     HttpRequest,
     HttpResponse,
     KeyValue,
+    Sidebar,
+    Workspace,
 }
 
 impl AnalyticsResource {
     pub fn from_str(s: &str) -> Option<AnalyticsResource> {
         match s {
             "App" => Some(AnalyticsResource::App),
-            "Sidebar" => Some(AnalyticsResource::Sidebar),
-            "Workspace" => Some(AnalyticsResource::Workspace),
-            "Environment" => Some(AnalyticsResource::Environment),
+            "Dialog" => Some(AnalyticsResource::Dialog),
             "CookieJar" => Some(AnalyticsResource::CookieJar),
+            "Environment" => Some(AnalyticsResource::Environment),
             "Folder" => Some(AnalyticsResource::Folder),
             "HttpRequest" => Some(AnalyticsResource::HttpRequest),
             "HttpResponse" => Some(AnalyticsResource::HttpResponse),
             "KeyValue" => Some(AnalyticsResource::KeyValue),
+            "Sidebar" => Some(AnalyticsResource::Sidebar),
+            "Workspace" => Some(AnalyticsResource::Workspace),
             _ => None,
         }
     }
@@ -41,37 +43,41 @@ impl AnalyticsResource {
 
 #[derive(Serialize, Deserialize)]
 pub enum AnalyticsAction {
+    Create,
+    Delete,
+    DeleteMany,
+    Duplicate,
+    Export,
+    Hide,
+    Import,
     Launch,
     LaunchFirst,
     LaunchUpdate,
-    Create,
+    Send,
+    Show,
+    Toggle,
     Update,
     Upsert,
-    Delete,
-    DeleteMany,
-    Send,
-    Toggle,
-    Duplicate,
-    Import,
-    Export,
 }
 
 impl AnalyticsAction {
     pub fn from_str(s: &str) -> Option<AnalyticsAction> {
         match s {
+            "Create" => Some(AnalyticsAction::Create),
+            "Delete" => Some(AnalyticsAction::Delete),
+            "DeleteMany" => Some(AnalyticsAction::DeleteMany),
+            "Duplicate" => Some(AnalyticsAction::Duplicate),
+            "Export" => Some(AnalyticsAction::Export),
+            "Hide" => Some(AnalyticsAction::Hide),
+            "Import" => Some(AnalyticsAction::Import),
             "Launch" => Some(AnalyticsAction::Launch),
             "LaunchFirst" => Some(AnalyticsAction::LaunchFirst),
             "LaunchUpdate" => Some(AnalyticsAction::LaunchUpdate),
-            "Create" => Some(AnalyticsAction::Create),
+            "Send" => Some(AnalyticsAction::Send),
+            "Show" => Some(AnalyticsAction::Show),
+            "Toggle" => Some(AnalyticsAction::Toggle),
             "Update" => Some(AnalyticsAction::Update),
             "Upsert" => Some(AnalyticsAction::Upsert),
-            "Delete" => Some(AnalyticsAction::Delete),
-            "DeleteMany" => Some(AnalyticsAction::DeleteMany),
-            "Send" => Some(AnalyticsAction::Send),
-            "Duplicate" => Some(AnalyticsAction::Duplicate),
-            "Toggle" => Some(AnalyticsAction::Toggle),
-            "Import" => Some(AnalyticsAction::Import),
-            "Export" => Some(AnalyticsAction::Export),
             _ => None,
         }
     }
@@ -80,32 +86,35 @@ impl AnalyticsAction {
 fn resource_name(resource: AnalyticsResource) -> &'static str {
     match resource {
         AnalyticsResource::App => "app",
-        AnalyticsResource::Sidebar => "sidebar",
-        AnalyticsResource::Workspace => "workspace",
-        AnalyticsResource::Environment => "environment",
         AnalyticsResource::CookieJar => "cookie_jar",
+        AnalyticsResource::Dialog => "dialog",
+        AnalyticsResource::Environment => "environment",
         AnalyticsResource::Folder => "folder",
         AnalyticsResource::HttpRequest => "http_request",
         AnalyticsResource::HttpResponse => "http_response",
         AnalyticsResource::KeyValue => "key_value",
+        AnalyticsResource::Sidebar => "sidebar",
+        AnalyticsResource::Workspace => "workspace",
     }
 }
 
 fn action_name(action: AnalyticsAction) -> &'static str {
     match action {
+        AnalyticsAction::Create => "create",
+        AnalyticsAction::Delete => "delete",
+        AnalyticsAction::DeleteMany => "delete_many",
+        AnalyticsAction::Duplicate => "duplicate",
+        AnalyticsAction::Export => "export",
+        AnalyticsAction::Hide => "hide",
+        AnalyticsAction::Import => "import",
         AnalyticsAction::Launch => "launch",
         AnalyticsAction::LaunchFirst => "launch_first",
         AnalyticsAction::LaunchUpdate => "launch_update",
-        AnalyticsAction::Create => "create",
+        AnalyticsAction::Send => "send",
+        AnalyticsAction::Show => "show",
+        AnalyticsAction::Toggle => "toggle",
         AnalyticsAction::Update => "update",
         AnalyticsAction::Upsert => "upsert",
-        AnalyticsAction::Delete => "delete",
-        AnalyticsAction::DeleteMany => "delete_many",
-        AnalyticsAction::Send => "send",
-        AnalyticsAction::Duplicate => "duplicate",
-        AnalyticsAction::Toggle => "toggle",
-        AnalyticsAction::Import => "import",
-        AnalyticsAction::Export => "export",
     }
 }
 
