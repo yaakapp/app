@@ -10,7 +10,7 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::process::exit;
 
 use fern::colors::ColoredLevelConfig;
@@ -18,13 +18,13 @@ use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -292,9 +292,22 @@ async fn send_request(
         None => None,
     };
 
-    let response = models::create_response(&request.id, 0, "", 0, None, None, None, vec![], pool)
-        .await
-        .expect("Failed to create response");
+    let response = models::create_response(
+        &request.id,
+        0,
+        0,
+        "",
+        0,
+        None,
+        None,
+        None,
+        vec![],
+        None,
+        None,
+        pool,
+    )
+    .await
+    .expect("Failed to create response");
 
     let download_path = if let Some(p) = download_dir {
         Some(std::path::Path::new(p).to_path_buf())
