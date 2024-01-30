@@ -8,12 +8,15 @@ extern crate core;
 #[macro_use]
 extern crate objc;
 
+use ::http::Uri;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::process::exit;
+use std::str::FromStr;
 
 use fern::colors::ColoredLevelConfig;
+use grpc::ServiceDefinition;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
@@ -73,6 +76,29 @@ async fn migrate_db(
     m.run(pool).await.expect("Failed to run migrations");
     info!("Migrations complete!");
     Ok(())
+}
+
+#[tauri::command]
+async fn grpc_reflect(
+    endpoint: &str,
+    // app_handle: AppHandle<Wry>,
+    // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<ServiceDefinition>, String> {
+    let uri = Uri::from_str(endpoint).map_err(|e| e.to_string())?;
+    Ok(grpc::callable(&uri).await)
+}
+
+#[tauri::command]
+async fn grpc_call_unary(
+    endpoint: &str,
+    service: &str,
+    method: &str,
+    message: &str,
+    // app_handle: AppHandle<Wry>,
+    // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<String, String> {
+    let uri = Uri::from_str(endpoint).map_err(|e| e.to_string())?;
+    Ok(grpc::call(&uri, service, method, message).await)
 }
 
 #[tauri::command]
@@ -977,6 +1003,8 @@ fn main() {
             get_request,
             get_settings,
             get_workspace,
+            grpc_call_unary,
+            grpc_reflect,
             import_data,
             list_cookie_jars,
             list_environments,
