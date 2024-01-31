@@ -1,32 +1,36 @@
 import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
-import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
-import { clamp } from '../lib/clamp';
-import { HotKeyList } from './core/HotKeyList';
-import { RequestPane } from './RequestPane';
-import { ResizeHandle } from './ResizeHandle';
-import { ResponsePane } from './ResponsePane';
+import { useActiveRequestId } from '../../hooks/useActiveRequestId';
+import { useActiveWorkspaceId } from '../../hooks/useActiveWorkspaceId';
+import { clamp } from '../../lib/clamp';
+import { ResizeHandle } from '../ResizeHandle';
+import { HotKeyList } from './HotKeyList';
 
-interface Props {
+interface SlotProps {
+  orientation: 'horizontal' | 'vertical';
   style: CSSProperties;
 }
 
-const rqst = { gridArea: 'rqst' };
-const resp = { gridArea: 'resp' };
-const drag = { gridArea: 'drag' };
+interface Props {
+  style: CSSProperties;
+  leftSlot: (props: SlotProps) => ReactNode;
+  rightSlot: (props: SlotProps) => ReactNode;
+}
+
+const areaL = { gridArea: 'left' };
+const areaR = { gridArea: 'right' };
+const areaD = { gridArea: 'drag' };
 
 const DEFAULT = 0.5;
 const MIN_WIDTH_PX = 10;
 const MIN_HEIGHT_PX = 30;
 const STACK_VERTICAL_WIDTH = 700;
 
-export const RequestResponse = memo(function RequestResponse({ style }: Props) {
+export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const activeRequest = useActiveRequest();
   const [vertical, setVertical] = useState<boolean>(false);
   const [widthRaw, setWidth] = useLocalStorage<number>(`body_width::${useActiveWorkspaceId()}`);
   const [heightRaw, setHeight] = useLocalStorage<number>(`body_height::${useActiveWorkspaceId()}`);
@@ -46,13 +50,13 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
       ...style,
       gridTemplate: vertical
         ? `
-          ' ${rqst.gridArea}' minmax(0,${1 - height}fr)
-          ' ${drag.gridArea}' 0
-          ' ${resp.gridArea}' minmax(0,${height}fr)
+          ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
+          ' ${areaD.gridArea}' 0
+          ' ${areaR.gridArea}' minmax(0,${height}fr)
           / 1fr            
         `
         : `
-          ' ${rqst.gridArea} ${drag.gridArea} ${resp.gridArea}' minmax(0,1fr)
+          ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
           / ${1 - width}fr   0                ${width}fr           
         `,
     }),
@@ -117,15 +121,16 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
     [width, height, vertical, setHeight, setWidth],
   );
 
-  if (activeRequest === null) {
+  const activeRequestId = useActiveRequestId();
+  if (activeRequestId === null) {
     return <HotKeyList hotkeys={['request.create', 'sidebar.toggle']} />;
   }
 
   return (
     <div ref={containerRef} className="grid gap-1.5 w-full h-full p-3" style={styles}>
-      <RequestPane style={rqst} fullHeight={!vertical} />
+      {leftSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
       <ResizeHandle
-        style={drag}
+        style={areaD}
         isResizing={isResizing}
         className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
         onResizeStart={handleResizeStart}
@@ -133,7 +138,7 @@ export const RequestResponse = memo(function RequestResponse({ style }: Props) {
         side={vertical ? 'top' : 'left'}
         justify="center"
       />
-      <ResponsePane style={resp} />
+      {rightSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
     </div>
   );
-});
+}

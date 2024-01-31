@@ -84,7 +84,11 @@ async fn grpc_reflect(
     // app_handle: AppHandle<Wry>,
     // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
-    let uri = Uri::from_str(endpoint).map_err(|e| e.to_string())?;
+    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        Uri::from_str(endpoint).map_err(|e| e.to_string())?
+    } else {
+        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
+    };
     Ok(grpc::callable(&uri).await)
 }
 
@@ -97,7 +101,11 @@ async fn grpc_call_unary(
     // app_handle: AppHandle<Wry>,
     // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
-    let uri = Uri::from_str(endpoint).map_err(|e| e.to_string())?;
+    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        Uri::from_str(endpoint).map_err(|e| e.to_string())?
+    } else {
+        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
+    };
     Ok(grpc::call(&uri, service, method, message).await)
 }
 
