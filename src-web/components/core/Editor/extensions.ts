@@ -10,7 +10,6 @@ import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
 import type { LanguageSupport } from '@codemirror/language';
 import {
-  bracketMatching,
   foldGutter,
   foldKeymap,
   HighlightStyle,
@@ -32,6 +31,7 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
+import { jsonSchema } from 'codemirror-json-schema';
 import type { Environment, Workspace } from '../../../lib/models';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
@@ -83,6 +83,7 @@ export const myHighlightStyle = HighlightStyle.define([
 // ]);
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
+  'application/grpc': jsonSchema() as any, // TODO: Fix this
   'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
@@ -119,7 +120,6 @@ export const baseExtensions = [
   history(),
   dropCursor(),
   drawSelection(),
-  bracketMatching(),
   // TODO: Figure out how to debounce showing of autocomplete in a good way
   // debouncedAutocompletionDisplay({ millis: 1000 }),
   // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
