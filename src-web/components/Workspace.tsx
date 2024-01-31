@@ -8,14 +8,16 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { Button } from './core/Button';
 import { HStack } from './core/Stacks';
+import { GrpcConnectionLayout } from './GrpcConnectionLayout';
+import { HttpRequestLayout } from './HttpRequestLayout';
 import { Overlay } from './Overlay';
-import { RequestResponse } from './RequestResponse';
 import { ResizeHandle } from './ResizeHandle';
 import { Sidebar } from './Sidebar';
 import { SidebarActions } from './SidebarActions';
@@ -31,6 +33,7 @@ const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
+  const activeRequest = useActiveRequest();
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -163,7 +166,11 @@ export default function Workspace() {
       >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
-      <RequestResponse style={body} />
+      {activeRequest?.name.includes('gRPC') ? (
+        <GrpcConnectionLayout style={body} />
+      ) : (
+        <HttpRequestLayout style={body} />
+      )}
     </div>
   );
 }

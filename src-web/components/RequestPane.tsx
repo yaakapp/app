@@ -1,9 +1,11 @@
 import classNames from 'classnames';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, FormEvent } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
+import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateRequest } from '../hooks/useUpdateRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
@@ -33,7 +35,7 @@ import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 
 interface Props {
-  style?: CSSProperties;
+  style: CSSProperties;
   fullHeight: boolean;
   className?: string;
 }
@@ -178,6 +180,27 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [updateRequest],
   );
 
+  const sendRequest = useSendRequest(activeRequest?.id ?? null);
+  const handleSend = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      await sendRequest.mutateAsync();
+    },
+    [sendRequest],
+  );
+
+  const handleMethodChange = useCallback(
+    (method: string) => updateRequest.mutate({ method }),
+    [updateRequest],
+  );
+  const handleUrlChange = useCallback(
+    (url: string) => updateRequest.mutate({ url }),
+    [updateRequest],
+  );
+
+  const isLoading = useIsResponseLoading(activeRequestId ?? null);
+  const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
+
   return (
     <div
       style={style}
@@ -190,6 +213,12 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
             id={activeRequest.id}
             url={activeRequest.url}
             method={activeRequest.method}
+            placeholder="https://example.com"
+            onSubmit={handleSend}
+            onMethodChange={handleMethodChange}
+            onUrlChange={handleUrlChange}
+            forceUpdateKey={updateKey}
+            isLoading={isLoading}
           />
           <Tabs
             value={activeTab}

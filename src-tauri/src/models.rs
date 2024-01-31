@@ -95,6 +95,19 @@ pub struct EnvironmentVariable {
     pub value: String,
 }
 
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Folder {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub id: String,
+    pub workspace_id: String,
+    pub folder_id: Option<String>,
+    pub model: String,
+    pub name: String,
+    pub sort_priority: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpRequestHeader {
@@ -139,19 +152,6 @@ pub struct HttpRequest {
     pub headers: Json<Vec<HttpRequestHeader>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(default, rename_all = "camelCase")]
-pub struct Folder {
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub id: String,
-    pub workspace_id: String,
-    pub folder_id: Option<String>,
-    pub model: String,
-    pub name: String,
-    pub sort_priority: f64,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpResponseHeader {
@@ -188,6 +188,64 @@ impl HttpResponse {
             ..Default::default()
         }
     }
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcEndpoint {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub endpoint: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcMessage {
+    pub created_at: NaiveDateTime,
+    pub content: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcConnection {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub grpc_endpoint_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub messages: Json<Vec<GrpcMessage>>,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcRequest {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub grpc_endpoint_id: String,
+    pub grpc_connection_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcResponse {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub grpc_endpoint_id: String,
+    pub grpc_connection_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
