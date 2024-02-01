@@ -16,7 +16,7 @@ export function useFilterResponse({
           return null;
         }
 
-        return (await invoke('filter_response', { responseId, filter })) as string | null;
+        return (await invoke('cmd_filter_response', { responseId, filter })) as string | null;
       },
     }).data ?? null
   );

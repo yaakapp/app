@@ -30,7 +30,7 @@ export function useGrpc(url: string | null) {
     mutationKey: ['grpc_unary', url],
     mutationFn: async ({ service, method, message }) => {
       if (url === null) throw new Error('No URL provided');
-      return (await invoke('grpc_call_unary', {
+      return (await invoke('cmd_grpc_call_unary', {
         endpoint: url,
         service,
         method,
@@ -50,7 +50,7 @@ export function useGrpc(url: string | null) {
       setMessages([
         { isServer: false, message: JSON.stringify(JSON.parse(message)), time: new Date() },
       ]);
-      return (await invoke('grpc_server_streaming', {
+      return (await invoke('cmd_grpc_server_streaming', {
         endpoint: url,
         service,
         method,
@@ -64,7 +64,7 @@ export function useGrpc(url: string | null) {
     queryFn: async () => {
       if (url === null) return [];
       console.log('GETTING SCHEMA', url);
-      return (await invoke('grpc_reflect', { endpoint: url })) as ReflectResponseService[];
+      return (await invoke('cmd_grpc_reflect', { endpoint: url })) as ReflectResponseService[];
     },
   });
 

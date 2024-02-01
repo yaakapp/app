@@ -1,8 +1,7 @@
-use prost::Message;
 use prost_reflect::{DynamicMessage, SerializeOptions};
 use serde::{Deserialize, Serialize};
 use serde_json::Deserializer;
-use tokio_stream::{Stream, StreamExt};
+use tokio_stream::Stream;
 use tonic::transport::Uri;
 use tonic::{IntoRequest, Response, Streaming};
 
@@ -77,7 +76,7 @@ impl Stream for ClientStream {
 
     fn poll_next(
         self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
+        _cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
         println!("poll_next");
         todo!()

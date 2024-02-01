@@ -19,16 +19,16 @@ use tauri::{AppHandle, Wry};
 use crate::{emit_side_effect, models, render, response_err};
 
 pub async fn send_http_request(
+    app_handle: &AppHandle<Wry>,
+    db: &Pool<Sqlite>,
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
     cookie_jar: Option<models::CookieJar>,
-    app_handle: &AppHandle<Wry>,
-    pool: &Pool<Sqlite>,
     download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
     let environment_ref = environment.as_ref();
-    let workspace = models::get_workspace(&request.workspace_id, pool)
+    let workspace = models::get_workspace(db, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
 
@@ -88,7 +88,7 @@ pub async fn send_http_request(
     let url = match Url::from_str(url_string.as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle, pool).await;
+            return response_err(response, e.to_string(), app_handle, db).await;
         }
     };
 
@@ -293,7 +293,7 @@ pub async fn send_http_request(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle, pool).await;
+            return response_err(response, e.to_string(), app_handle, db).await;
         }
     };
 
@@ -362,7 +362,7 @@ pub async fn send_http_request(
                 );
             }
 
-            response = models::update_response_if_id(&response, pool)
+            response = models::update_response_if_id(db, &response)
                 .await
                 .expect("Failed to update response");
             if !request.id.is_empty() {
@@ -397,7 +397,7 @@ pub async fn send_http_request(
                         .collect::<Vec<_>>(),
                 );
                 cookie_jar.cookies = json_cookies;
-                match models::upsert_cookie_jar(pool, &cookie_jar).await {
+                match models::upsert_cookie_jar(db, &cookie_jar).await {
                     Ok(updated_jar) => {
                         emit_side_effect(app_handle, "updated_model", &updated_jar);
                     }
@@ -409,6 +409,6 @@ pub async fn send_http_request(
 
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), app_handle, pool).await,
+        Err(e) => response_err(response, e.to_string(), app_handle, db).await,
     }
 }

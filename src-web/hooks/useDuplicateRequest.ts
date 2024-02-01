@@ -21,7 +21,7 @@ export function useDuplicateRequest({
   return useMutation<HttpRequest, string>({
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null request");
-      return invoke('duplicate_request', { id });
+      return invoke('cmd_duplicate_request', { id });
     },
     onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
     onSuccess: async (request) => {

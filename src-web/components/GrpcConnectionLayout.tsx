@@ -1,7 +1,8 @@
+import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties, FormEvent } from 'react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
@@ -129,6 +130,12 @@ export function GrpcConnectionLayout({ style }: Props) {
     return { value, options };
   }, [grpc.schema, method.value, service.value]);
 
+  const [paneSize, setPaneSize] = useState(99999);
+  const urlContainerEl = useRef<HTMLDivElement>(null);
+  useResizeObserver<HTMLDivElement>(urlContainerEl.current, (entry) => {
+    setPaneSize(entry.contentRect.width);
+  });
+
   if (url.isLoading || url.value == null) {
     return null;
   }
@@ -138,7 +145,13 @@ export function GrpcConnectionLayout({ style }: Props) {
       style={style}
       leftSlot={() => (
         <VStack space={2}>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1.5">
+          <div
+            ref={urlContainerEl}
+            className={classNames(
+              'grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1.5',
+              paneSize < 350 && '!grid-cols-1',
+            )}
+          >
             <UrlBar
               id="foo"
               url={url.value ?? ''}
@@ -150,32 +163,34 @@ export function GrpcConnectionLayout({ style }: Props) {
               isLoading={grpc.unary.isLoading}
               onUrlChange={url.set}
             />
-            <Select
-              hideLabel
-              name="service"
-              label="Service"
-              className="text-gray-800"
-              size="sm"
-              value={select.value}
-              onChange={handleChangeService}
-              options={select.options}
-            />
-            <IconButton
-              className="border border-highlight"
-              size="sm"
-              title="ofo"
-              hotkeyAction="request.send"
-              onClick={handleConnect}
-              icon={
-                !activeMethod?.clientStreaming && activeMethod?.serverStreaming
-                  ? 'arrowDownToDot'
-                  : activeMethod?.clientStreaming && !activeMethod?.serverStreaming
-                  ? 'arrowUpFromDot'
-                  : activeMethod?.clientStreaming && activeMethod?.serverStreaming
-                  ? 'arrowUpDown'
-                  : 'sendHorizontal'
-              }
-            />
+            <HStack space={1.5}>
+              <Select
+                hideLabel
+                name="service"
+                label="Service"
+                className="text-gray-800"
+                size="sm"
+                value={select.value}
+                onChange={handleChangeService}
+                options={select.options}
+              />
+              <IconButton
+                className="border border-highlight"
+                size="sm"
+                title="ofo"
+                hotkeyAction="request.send"
+                onClick={handleConnect}
+                icon={
+                  !activeMethod?.clientStreaming && activeMethod?.serverStreaming
+                    ? 'arrowDownToDot'
+                    : activeMethod?.clientStreaming && !activeMethod?.serverStreaming
+                    ? 'arrowUpFromDot'
+                    : activeMethod?.clientStreaming && activeMethod?.serverStreaming
+                    ? 'arrowUpDown'
+                    : 'sendHorizontal'
+                }
+              />
+            </HStack>
           </div>
           <GrpcEditor
             forceUpdateKey={[service, method].join('::')}

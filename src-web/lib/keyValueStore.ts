@@ -14,7 +14,7 @@ export async function setKeyValue<T>({
   key: string | string[];
   value: T;
 }): Promise<void> {
-  await invoke('set_key_value', {
+  await invoke('cmd_set_key_value', {
     namespace,
     key: buildKeyValueKey(key),
     value: JSON.stringify(value),
@@ -30,7 +30,7 @@ export async function getKeyValue<T>({
   key: string | string[];
   fallback: T;
 }) {
-  const kv = (await invoke('get_key_value', {
+  const kv = (await invoke('cmd_get_key_value', {
     namespace,
     key: buildKeyValueKey(key),
   })) as KeyValue | null;

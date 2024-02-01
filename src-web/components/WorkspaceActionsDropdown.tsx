@@ -59,7 +59,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     const environmentId = (await getRecentEnvironments(w.id))[0];
-                    await invoke('new_window', {
+                    await invoke('cmd_new_window', {
                       url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
                     });
                   }}

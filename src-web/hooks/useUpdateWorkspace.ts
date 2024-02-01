@@ -14,7 +14,7 @@ export function useUpdateWorkspace(id: string | null) {
       }
 
       const newWorkspace = typeof v === 'function' ? v(workspace) : { ...workspace, ...v };
-      await invoke('update_workspace', { workspace: newWorkspace });
+      await invoke('cmd_update_workspace', { workspace: newWorkspace });
     },
     onMutate: async (v) => {
       const workspace = await getWorkspace(id);
