@@ -10,10 +10,11 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::process::exit;
 use std::str::FromStr;
 
+use ::http::uri::InvalidUri;
 use ::http::Uri;
 use fern::colors::ColoredLevelConfig;
 use futures::StreamExt;
@@ -21,13 +22,13 @@ use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
@@ -39,7 +40,17 @@ use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::http::send_http_request;
-use crate::models::{cancel_pending_responses, CookieJar, create_response, delete_all_responses, delete_cookie_jar, delete_environment, delete_folder, delete_request, delete_response, delete_workspace, duplicate_request, Environment, EnvironmentVariable, find_cookie_jars, find_environments, find_folders, find_requests, find_responses, find_workspaces, Folder, get_cookie_jar, get_environment, get_folder, get_key_value_raw, get_or_create_settings, get_request, get_response, get_workspace, get_workspace_export_resources, HttpRequest, HttpResponse, KeyValue, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_request, upsert_workspace, Workspace};
+use crate::models::{
+    cancel_pending_responses, create_response, delete_all_responses, delete_cookie_jar,
+    delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
+    duplicate_request, find_cookie_jars, find_environments, find_folders, find_requests,
+    find_responses, find_workspaces, get_cookie_jar, get_environment, get_folder,
+    get_key_value_raw, get_or_create_settings, get_request, get_response, get_workspace,
+    get_workspace_export_resources, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_request, upsert_workspace,
+    CookieJar, Environment, EnvironmentVariable, Folder, HttpRequest, HttpResponse, KeyValue,
+    Settings, Workspace,
+};
 use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
@@ -83,11 +94,7 @@ async fn cmd_grpc_reflect(
     // app_handle: AppHandle<Wry>,
     // db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
-    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
-        Uri::from_str(endpoint).map_err(|e| e.to_string())?
-    } else {
-        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
-    };
+    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
     Ok(grpc::callable(&uri).await)
 }
 
@@ -100,11 +107,7 @@ async fn cmd_grpc_call_unary(
     // app_handle: AppHandle<Wry>,
     // db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<String, String> {
-    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
-        Uri::from_str(endpoint).map_err(|e| e.to_string())?
-    } else {
-        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
-    };
+    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
     grpc::unary(&uri, service, method, message).await
 }
 
@@ -116,13 +119,13 @@ async fn cmd_grpc_client_streaming(
     message: &str,
     // app_handle: AppHandle<Wry>,
     // db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<String, String> {
-    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
-        Uri::from_str(endpoint).map_err(|e| e.to_string())?
-    } else {
-        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
-    };
-    grpc::client_streaming(&uri, service, method, message).await
+) -> Result<(), String> {
+    let service = service.to_string();
+    let method = method.to_string();
+    let message = message.to_string();
+    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
+    tokio::spawn(async move { grpc::client_streaming(&uri, &service, &method, &message).await });
+    Ok(())
 }
 
 #[tauri::command]
@@ -133,12 +136,7 @@ async fn cmd_grpc_server_streaming(
     message: &str,
     app_handle: AppHandle<Wry>,
 ) -> Result<String, String> {
-    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
-        Uri::from_str(endpoint).map_err(|e| e.to_string())?
-    } else {
-        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
-    };
-
+    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
     let mut stream = grpc::server_streaming(&uri, service, method, message)
         .await
         .unwrap()
@@ -290,9 +288,7 @@ async fn cmd_import_data(
             }
 
             for f in r.resources.folders {
-                let x = upsert_folder(db, f)
-                    .await
-                    .expect("Failed to create folder");
+                let x = upsert_folder(db, f).await.expect("Failed to create folder");
                 imported_resources.folders.push(x.clone());
                 info!("Imported folder: {}", x.name);
             }
@@ -318,8 +314,7 @@ async fn cmd_export_data(
     workspace_id: &str,
 ) -> Result<(), String> {
     let db = &*db_state.lock().await;
-    let export_data =
-        get_workspace_export_resources(&app_handle, db, workspace_id).await;
+    let export_data = get_workspace_export_resources(&app_handle, db, workspace_id).await;
     let f = File::options()
         .create(true)
         .truncate(true)
@@ -497,10 +492,9 @@ async fn cmd_create_workspace(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Workspace, String> {
     let db = &*db_state.lock().await;
-    let created_workspace =
-        upsert_workspace(db, Workspace::new(name.to_string()))
-            .await
-            .expect("Failed to create Workspace");
+    let created_workspace = upsert_workspace(db, Workspace::new(name.to_string()))
+        .await
+        .expect("Failed to create Workspace");
 
     emit_and_return(&window, "created_model", created_workspace)
 }
@@ -797,11 +791,12 @@ async fn cmd_update_settings(
 }
 
 #[tauri::command]
-async fn cmd_get_folder(id: &str, db_state: State<'_, Mutex<Pool<Sqlite>>>) -> Result<Folder, String> {
+async fn cmd_get_folder(
+    id: &str,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Folder, String> {
     let db = &*db_state.lock().await;
-    get_folder(db, id)
-        .await
-        .map_err(|e| e.to_string())
+    get_folder(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -810,9 +805,7 @@ async fn cmd_get_request(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
     let db = &*db_state.lock().await;
-    get_request(db, id)
-        .await
-        .map_err(|e| e.to_string())
+    get_request(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -821,9 +814,7 @@ async fn cmd_get_cookie_jar(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<CookieJar, String> {
     let db = &*db_state.lock().await;
-    get_cookie_jar(db, id)
-        .await
-        .map_err(|e| e.to_string())
+    get_cookie_jar(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -859,9 +850,7 @@ async fn cmd_get_environment(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Environment, String> {
     let db = &*db_state.lock().await;
-    get_environment(db, id)
-        .await
-        .map_err(|e| e.to_string())
+    get_environment(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -870,9 +859,7 @@ async fn cmd_get_workspace(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Workspace, String> {
     let db = &*db_state.lock().await;
-    get_workspace(db, id)
-        .await
-        .map_err(|e| e.to_string())
+    get_workspace(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1036,52 +1023,52 @@ fn main() {
             })
         })
         .invoke_handler(tauri::generate_handler![
-           cmd_check_for_updates,
-           cmd_create_cookie_jar,
-           cmd_create_environment,
-           cmd_create_folder,
-           cmd_create_request,
-           cmd_create_workspace,
-           cmd_delete_all_responses,
-           cmd_delete_cookie_jar,
-           cmd_delete_environment,
-           cmd_delete_folder,
-           cmd_delete_request,
-           cmd_delete_response,
-           cmd_delete_workspace,
-           cmd_duplicate_request,
-           cmd_export_data,
-           cmd_filter_response,
-           cmd_get_cookie_jar,
-           cmd_get_environment,
-           cmd_get_folder,
-           cmd_get_key_value,
-           cmd_get_request,
-           cmd_get_settings,
-           cmd_get_workspace,
-           cmd_grpc_call_unary,
-           cmd_grpc_client_streaming,
-           cmd_grpc_server_streaming,
-           cmd_grpc_reflect,
-           cmd_import_data,
-           cmd_list_cookie_jars,
-           cmd_list_environments,
-           cmd_list_folders,
-           cmd_list_requests,
-           cmd_list_responses,
-           cmd_list_workspaces,
-           cmd_new_window,
-           cmd_send_ephemeral_request,
-           cmd_send_request,
-           cmd_set_key_value,
-           cmd_set_update_mode,
-           cmd_track_event,
-           cmd_update_cookie_jar,
-           cmd_update_environment,
-           cmd_update_folder,
-           cmd_update_request,
-           cmd_update_settings,
-           cmd_update_workspace,
+            cmd_check_for_updates,
+            cmd_create_cookie_jar,
+            cmd_create_environment,
+            cmd_create_folder,
+            cmd_create_request,
+            cmd_create_workspace,
+            cmd_delete_all_responses,
+            cmd_delete_cookie_jar,
+            cmd_delete_environment,
+            cmd_delete_folder,
+            cmd_delete_request,
+            cmd_delete_response,
+            cmd_delete_workspace,
+            cmd_duplicate_request,
+            cmd_export_data,
+            cmd_filter_response,
+            cmd_get_cookie_jar,
+            cmd_get_environment,
+            cmd_get_folder,
+            cmd_get_key_value,
+            cmd_get_request,
+            cmd_get_settings,
+            cmd_get_workspace,
+            cmd_grpc_call_unary,
+            cmd_grpc_client_streaming,
+            cmd_grpc_server_streaming,
+            cmd_grpc_reflect,
+            cmd_import_data,
+            cmd_list_cookie_jars,
+            cmd_list_environments,
+            cmd_list_folders,
+            cmd_list_requests,
+            cmd_list_responses,
+            cmd_list_workspaces,
+            cmd_new_window,
+            cmd_send_ephemeral_request,
+            cmd_send_request,
+            cmd_set_key_value,
+            cmd_set_update_mode,
+            cmd_track_event,
+            cmd_update_cookie_jar,
+            cmd_update_environment,
+            cmd_update_folder,
+            cmd_update_request,
+            cmd_update_settings,
+            cmd_update_workspace,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
@@ -1268,4 +1255,13 @@ fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle<Wry>, event: &s
 async fn get_update_mode(db: &Pool<Sqlite>) -> UpdateMode {
     let settings = get_or_create_settings(db).await;
     update_mode_from_str(settings.update_channel.as_str())
+}
+
+fn safe_uri(endpoint: &str) -> Result<Uri, InvalidUri> {
+    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        Uri::from_str(endpoint)?
+    } else {
+        Uri::from_str(&format!("http://{}", endpoint))?
+    };
+    Ok(uri)
 }
