@@ -180,9 +180,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
                 <WebPageViewer response={activeResponse} />
               ) : contentType?.match(/csv|tab-separated/) ? (
                 <CsvViewer className="pb-2" response={activeResponse} />
-              ) : contentType?.startsWith('application/json') ? (
-                <JsonViewer response={activeResponse} />
               ) : (
+                // ) : contentType?.startsWith('application/json') ? (
+                //   <JsonViewer response={activeResponse} />
                 <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
               )}
             </TabContent>
