@@ -8,18 +8,33 @@ interface ReflectResponseService {
   methods: { name: string; schema: string; serverStreaming: boolean; clientStreaming: boolean }[];
 }
 
-interface Message {
+export interface GrpcMessage {
   message: string;
   time: Date;
+  isServer: boolean;
 }
 
 export function useGrpc(url: string | null) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<GrpcMessage[]>([]);
   useListenToTauriEvent<string>(
     'grpc_message',
     (event) => {
       console.log('GOT MESSAGE', event);
-      setMessages((prev) => [...prev, { message: event.payload, time: new Date() }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          message: JSON.stringify({
+            dummy: 'Yo, this is a dummy message',
+            another: 'property',
+            list: [1, 2, 3, 4, 5],
+            null: null,
+            bool: true,
+          }),
+          time: new Date(),
+          isServer: false,
+        },
+        { message: event.payload, time: new Date(), isServer: true },
+      ]);
     },
     [],
   );

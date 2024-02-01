@@ -43,6 +43,10 @@ const icons = {
   arrowUpFromDot: lucide.ArrowUpFromDotIcon,
   arrowDownToDot: lucide.ArrowDownToDotIcon,
   arrowUpDown: lucide.ArrowUpDownIcon,
+  arrowDown: lucide.ArrowDownIcon,
+  arrowUp: lucide.ArrowUpIcon,
+  arrowBigDownDash: lucide.ArrowBigDownDashIcon,
+  arrowBigUpDash: lucide.ArrowBigUpDashIcon,
   x: lucide.XIcon,
 
   empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,
@@ -51,7 +55,7 @@ const icons = {
 export interface IconProps {
   icon: keyof typeof icons;
   className?: string;
-  size?: 'xs' | 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   spin?: boolean;
 }
 
@@ -61,7 +65,8 @@ export const Icon = memo(function Icon({ icon, spin, size = 'md', className }: I
     <Component
       className={classNames(
         className,
-        'text-inherit',
+        'text-inherit flex-shrink-0',
+        size === 'lg' && 'h-5 w-5',
         size === 'md' && 'h-4 w-4',
         size === 'sm' && 'h-3.5 w-3.5',
         size === 'xs' && 'h-3 w-3',
