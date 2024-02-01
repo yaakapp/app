@@ -29,6 +29,7 @@ const icons = {
   magicWand: lucide.Wand2Icon,
   moreVertical: lucide.MoreVerticalIcon,
   pencil: lucide.PencilIcon,
+  plug: lucide.Plug,
   plus: lucide.PlusIcon,
   plusCircle: lucide.PlusCircleIcon,
   question: lucide.ShieldQuestionIcon,
@@ -39,6 +40,9 @@ const icons = {
   trash: lucide.TrashIcon,
   update: lucide.RefreshCcwIcon,
   upload: lucide.UploadIcon,
+  arrowUpFromDot: lucide.ArrowUpFromDotIcon,
+  arrowDownToDot: lucide.ArrowDownToDotIcon,
+  arrowUpDown: lucide.ArrowUpDownIcon,
   x: lucide.XIcon,
 
   empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,

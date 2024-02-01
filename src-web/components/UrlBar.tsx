@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { memo, useRef, useState } from 'react';
 import { useHotKey } from '../hooks/useHotKey';
 import type { HttpRequest } from '../lib/models';
+import type { IconProps } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
 import { RequestMethodDropdown } from './RequestMethodDropdown';
@@ -13,6 +14,7 @@ type Props = Pick<HttpRequest, 'id' | 'url'> & {
   placeholder: string;
   onSubmit: (e: FormEvent) => void;
   onUrlChange: (url: string) => void;
+  submitIcon?: IconProps['icon'];
   onMethodChange?: (method: string) => void;
   isLoading: boolean;
   forceUpdateKey: string;
@@ -27,6 +29,7 @@ export const UrlBar = memo(function UrlBar({
   className,
   onSubmit,
   onMethodChange,
+  submitIcon = 'sendHorizontal',
   isLoading,
 }: Props) {
   const inputRef = useRef<EditorView>(null);
@@ -77,7 +80,7 @@ export const UrlBar = memo(function UrlBar({
             title="Send Request"
             type="submit"
             className="w-8 mr-0.5 my-0.5"
-            icon={isLoading ? 'update' : 'sendHorizontal'}
+            icon={isLoading ? 'update' : submitIcon}
             spin={isLoading}
             hotkeyAction="request.send"
           />
