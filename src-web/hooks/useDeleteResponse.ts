@@ -8,7 +8,7 @@ export function useDeleteResponse(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<HttpResponse>({
     mutationFn: async () => {
-      return await invoke('delete_response', { id: id });
+      return await invoke('cmd_delete_response', { id: id });
     },
     onSettled: () => trackEvent('HttpResponse', 'Delete'),
     onSuccess: ({ requestId, id: responseId }) => {

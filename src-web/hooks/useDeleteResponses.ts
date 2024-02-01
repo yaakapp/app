@@ -8,7 +8,7 @@ export function useDeleteResponses(requestId?: string) {
   return useMutation({
     mutationFn: async () => {
       if (requestId === undefined) return;
-      await invoke('delete_all_responses', { requestId });
+      await invoke('cmd_delete_all_responses', { requestId });
     },
     onSettled: () => trackEvent('HttpResponse', 'DeleteMany'),
     onSuccess: async () => {

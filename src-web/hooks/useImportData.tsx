@@ -35,7 +35,7 @@ export function useImportData() {
         environments: Environment[];
         folders: Folder[];
         requests: HttpRequest[];
-      } = await invoke('import_data', {
+      } = await invoke('cmd_import_data', {
         filePaths: Array.isArray(selected) ? selected : [selected],
       });
       const importedWorkspace = imported.workspaces[0];

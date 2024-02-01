@@ -25,7 +25,7 @@ export function useExportData() {
         return;
       }
 
-      await invoke('export_data', { workspaceId: workspace.id, exportPath });
+      await invoke('cmd_export_data', { workspaceId: workspace.id, exportPath });
     },
   });
 }

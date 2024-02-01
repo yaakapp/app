@@ -15,7 +15,7 @@ export function useUpdateCookieJar(id: string | null) {
 
       const newCookieJar = typeof v === 'function' ? v(cookieJar) : { ...cookieJar, ...v };
       console.log('NEW COOKIE JAR', newCookieJar.cookies.length);
-      await invoke('update_cookie_jar', { cookieJar: newCookieJar });
+      await invoke('cmd_update_cookie_jar', { cookieJar: newCookieJar });
     },
     onMutate: async (v) => {
       const cookieJar = await getCookieJar(id);

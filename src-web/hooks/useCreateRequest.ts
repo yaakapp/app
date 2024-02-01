@@ -34,7 +34,7 @@ export function useCreateRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invoke('create_request', { workspaceId, name: '', ...patch });
+      return invoke('cmd_create_request', { workspaceId, name: '', ...patch });
     },
     onSettled: () => trackEvent('HttpRequest', 'Create'),
     onSuccess: async (request) => {

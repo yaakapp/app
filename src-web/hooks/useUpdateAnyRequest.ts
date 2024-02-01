@@ -20,7 +20,7 @@ export function useUpdateAnyRequest() {
 
       const patchedRequest =
         typeof update === 'function' ? update(request) : { ...request, ...update };
-      await invoke('update_request', { request: patchedRequest });
+      await invoke('cmd_update_request', { request: patchedRequest });
     },
     onMutate: async ({ id, update }) => {
       const request = await getRequest(id);

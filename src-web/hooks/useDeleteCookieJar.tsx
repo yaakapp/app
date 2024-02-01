@@ -23,7 +23,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_cookie_jar', { cookieJarId: cookieJar?.id });
+      return invoke('cmd_delete_cookie_jar', { cookieJarId: cookieJar?.id });
     },
     onSettled: () => trackEvent('CookieJar', 'Delete'),
     onSuccess: async (cookieJar) => {

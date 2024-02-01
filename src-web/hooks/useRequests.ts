@@ -15,7 +15,7 @@ export function useRequests() {
       queryKey: requestsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('list_requests', { workspaceId })) as HttpRequest[];
+        return (await invoke('cmd_list_requests', { workspaceId })) as HttpRequest[];
       },
     }).data ?? []
   );
