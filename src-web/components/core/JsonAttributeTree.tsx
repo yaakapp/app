@@ -38,8 +38,8 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               ))
           : null,
         isExpandable: true,
-        label: isExpanded ? undefined : `{⋯}`,
-        labelClassName: 'text-gray-500',
+        label: isExpanded ? '{ }' : `{⋯}`,
+        labelClassName: 'text-gray-600',
       };
     } else if (jsonType === '[object Array]') {
       return {
@@ -54,8 +54,8 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
             ))
           : null,
         isExpandable: true,
-        label: isExpanded ? undefined : `[⋯]`,
-        labelClassName: 'text-gray-500',
+        label: isExpanded ? '[ ]' : `[⋯]`,
+        labelClassName: 'text-gray-600',
       };
     } else {
       return {
@@ -72,25 +72,38 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
     }
   }, [attrValue, attrKeyJsonPath, isExpanded, depth]);
 
+  const labelEl = (
+    <span className={classNames(labelClassName, 'select-text group-hover:text-gray-800')}>
+      {label}
+    </span>
+  );
   return (
-    <div className={classNames(depth === 0 && '-ml-4', 'font-mono text-xs')}>
+    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-xs')}>
       <div className="flex items-center">
-        {depth === 0 ? null : isExpandable ? (
-          <button className="relative flex items-center pl-4" onClick={toggleExpanded}>
+        {isExpandable ? (
+          <button className="group relative flex items-center pl-4" onClick={toggleExpanded}>
             <Icon
-              className={classNames(
-                'left-0 absolute transition-transform text-gray-500 flex gap-1 items-center',
-                isExpanded ? 'rotate-90' : '',
-              )}
               size="xs"
               icon="chevronRight"
+              className={classNames(
+                'left-0 absolute transition-transform text-gray-600 flex items-center',
+                'group-hover:text-gray-900',
+                isExpanded ? 'rotate-90' : '',
+              )}
             />
-            <span className="text-violet-600 mr-1.5 whitespace-nowrap">{attrKey}:</span>
+            <span className="text-violet-600 mr-1.5 whitespace-nowrap">
+              {attrKey === undefined ? '$' : attrKey}:
+            </span>
+            {labelEl}
           </button>
         ) : (
-          <span className="text-violet-600 mr-1.5 pl-4 whitespace-nowrap">{attrKey}:</span>
+          <>
+            <span className="text-violet-600 mr-1.5 pl-4 whitespace-nowrap select-text">
+              {attrKey}:
+            </span>
+            {labelEl}
+          </>
         )}
-        <span className={classNames(labelClassName, 'select-text')}>{label}</span>
       </div>
       {children && <div className="ml-4 whitespace-nowrap">{children}</div>}
     </div>
