@@ -11,6 +11,7 @@ use crate::proto::{fill_pool, method_desc_to_path};
 mod codec;
 mod json_schema;
 mod proto;
+pub mod manager;
 
 pub fn serialize_options() -> SerializeOptions {
     SerializeOptions::new().skip_default_fields(false)
@@ -30,43 +31,6 @@ pub struct MethodDefinition {
     pub schema: String,
     pub client_streaming: bool,
     pub server_streaming: bool,
-}
-
-pub async fn unary(
-    uri: &Uri,
-    service: &str,
-    method: &str,
-    message_json: &str,
-) -> Result<String, String> {
-    let (pool, conn) = fill_pool(uri).await;
-
-    let service = pool.get_service_by_name(service).unwrap();
-    let method = &service.methods().find(|m| m.name() == method).unwrap();
-    let input_message = method.input();
-
-    let mut deserializer = Deserializer::from_str(message_json);
-    let req_message =
-        DynamicMessage::deserialize(input_message, &mut deserializer).map_err(|e| e.to_string())?;
-    deserializer.end().unwrap();
-
-    let mut client = tonic::client::Grpc::new(conn);
-
-    println!(
-        "\n---------- SENDING -----------------\n{}",
-        serde_json::to_string_pretty(&req_message).expect("json")
-    );
-
-    let req = req_message.into_request();
-    let path = method_desc_to_path(method);
-    let codec = DynamicCodec::new(method.clone());
-    client.ready().await.unwrap();
-
-    let resp = client.unary(req, path, codec).await.unwrap();
-    let msg = resp.into_inner();
-    let response_json = serde_json::to_string_pretty(&msg).expect("json to string");
-    println!("\n---------- RECEIVING ---------------\n{}", response_json,);
-
-    Ok(response_json)
 }
 
 struct ClientStream {}

@@ -473,7 +473,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       className={classNames(
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
-        'focus:bg-highlight focus:text-gray-900 rounded',
+        'focus:bg-highlight focus:text-gray-800 rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}
