@@ -1,19 +1,24 @@
 import classNames from 'classnames';
+import { format } from 'date-fns';
+import { m } from 'framer-motion';
 import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAlert } from '../hooks/useAlert';
+import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
 import { useKeyValue } from '../hooks/useKeyValue';
+import { tryFormatJson } from '../lib/formatters';
 import { Banner } from './core/Banner';
 import { Editor } from './core/Editor';
 import { HotKeyList } from './core/HotKeyList';
 import { Icon } from './core/Icon';
+import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { Select } from './core/Select';
+import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
 import { GrpcEditor } from './GrpcEditor';
 import { UrlBar } from './UrlBar';
-import { format } from 'date-fns';
 
 interface Props {
   style: CSSProperties;
@@ -37,6 +42,7 @@ export function GrpcConnectionLayout({ style }: Props) {
     key: 'grpc_message',
     defaultValue: '',
   });
+  const [activeMessage, setActiveMessage] = useState<GrpcMessage | null>(null);
   const [resp, setResp] = useState<string>('');
   const grpc = useGrpc(url.value ?? null);
 
@@ -180,7 +186,7 @@ export function GrpcConnectionLayout({ style }: Props) {
             className={classNames(
               'max-h-full h-full grid grid-rows-[minmax(0,1fr)] grid-cols-1',
               'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
-              'shadow shadow-gray-100 dark:shadow-gray-0 relative py-1',
+              'shadow shadow-gray-100 dark:shadow-gray-0 relative pt-1',
             )}
           >
             {grpc.unary.error ? (
@@ -188,15 +194,57 @@ export function GrpcConnectionLayout({ style }: Props) {
                 {grpc.unary.error}
               </Banner>
             ) : grpc.messages.length > 0 ? (
-              <VStack className="h-full overflow-y-auto">
-                {[...grpc.messages].reverse().map((m, i) => (
-                  <HStack key={m.time.getTime()} space={3} className="px-2 py-1 font-mono text-xs">
-                    <Icon icon="arrowDownToDot" />
-                    <div>{format(m.time, 'HH:mm:ss')}</div>
-                    <div>{m.message}</div>
-                  </HStack>
-                ))}
-              </VStack>
+              <div className="grid grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
+                <div className="overflow-y-auto">
+                  {...grpc.messages.map((m) => (
+                    <HStack
+                      key={m.time.getTime()}
+                      space={2}
+                      onClick={() => {
+                        if (m === activeMessage) setActiveMessage(null);
+                        else setActiveMessage(m);
+                      }}
+                      alignItems="center"
+                      className={classNames(
+                        'px-2 py-1 font-mono text-xs opacity-70',
+                        m === activeMessage && 'bg-highlight !opacity-100',
+                      )}
+                    >
+                      <Icon
+                        className={m.isServer ? 'text-blue-600' : 'text-green-600'}
+                        icon={m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'}
+                      />
+                      <div className="w-full truncate">{m.message}</div>
+                      <div>{format(m.time, 'HH:mm:ss')}</div>
+                    </HStack>
+                  ))}
+                </div>
+                <div
+                  className={classNames(
+                    'transition-all',
+                    activeMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[100%]',
+                  )}
+                >
+                  <div className="pb-2 px-2">
+                    <Separator />
+                  </div>
+                  <div className="pl-2">
+                    <JsonAttributeTree
+                      depth={0}
+                      attrValue={JSON.parse(activeMessage?.message ?? '{}')}
+                      attrKey={''}
+                    />
+                  </div>
+                  {/*<Editor*/}
+                  {/*  className="bg-gray-50 dark:bg-gray-100 max-h-30"*/}
+                  {/*  contentType="application/json"*/}
+                  {/*  heightMode="auto"*/}
+                  {/*  defaultValue={tryFormatJson(activeMessage?.message ?? '')}*/}
+                  {/*  forceUpdateKey={activeMessage?.time.getTime()}*/}
+                  {/*  readOnly*/}
+                  {/*/>*/}
+                </div>
+              </div>
             ) : resp ? (
               <Editor
                 className="bg-gray-50 dark:bg-gray-100"
