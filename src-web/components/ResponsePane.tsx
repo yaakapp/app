@@ -13,6 +13,7 @@ import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
 import { HotKeyList } from './core/HotKeyList';
+import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -23,6 +24,7 @@ import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
+import { JsonViewer } from './responseViewers/JsonViewer';
 import { TextViewer } from './responseViewers/TextViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
 
@@ -179,6 +181,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               ) : contentType?.match(/csv|tab-separated/) ? (
                 <CsvViewer className="pb-2" response={activeResponse} />
               ) : (
+                // ) : contentType?.startsWith('application/json') ? (
+                //   <JsonViewer response={activeResponse} />
                 <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
               )}
             </TabContent>
