@@ -214,34 +214,27 @@ export function GrpcConnectionLayout({ style }: Props) {
                       }}
                       alignItems="center"
                       className={classNames(
-                        'px-2 py-1 font-mono text-xs opacity-70',
-                        m === activeMessage && 'bg-highlight !opacity-100',
+                        'px-2 py-1 font-mono',
+                        m === activeMessage && 'bg-highlight',
                       )}
                     >
                       <Icon
                         className={m.isServer ? 'text-blue-600' : 'text-green-600'}
                         icon={m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'}
                       />
-                      <div className="w-full truncate">{m.message}</div>
-                      <div>{format(m.time, 'HH:mm:ss')}</div>
+                      <div className="w-full truncate text-gray-800 text-xs">{m.message}</div>
+                      <div className="text-gray-600 text-2xs" title={m.time.toISOString()}>
+                        {format(m.time, 'HH:mm:ss')}
+                      </div>
                     </HStack>
                   ))}
                 </div>
-                <div
-                  className={classNames(
-                    'transition-all',
-                    activeMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[100%]',
-                  )}
-                >
+                <div className={classNames(activeMessage ? 'block' : 'hidden')}>
                   <div className="pb-1 px-2">
                     <Separator />
                   </div>
-                  <div className="pl-2 pb-1">
-                    <JsonAttributeTree
-                      depth={0}
-                      attrValue={JSON.parse(activeMessage?.message ?? '{}')}
-                      attrKey={''}
-                    />
+                  <div className="pl-2 pb-1 h-[6rem]">
+                    <JsonAttributeTree attrValue={JSON.parse(activeMessage?.message ?? '{}')} />
                   </div>
                   {/*<Editor*/}
                   {/*  className="bg-gray-50 dark:bg-gray-100 max-h-30"*/}
