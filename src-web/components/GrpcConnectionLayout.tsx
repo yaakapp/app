@@ -8,11 +8,13 @@ import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { Banner } from './core/Banner';
+import { Button } from './core/Button';
 import { Editor } from './core/Editor';
 import { HotKeyList } from './core/HotKeyList';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
+import { RadioDropdown } from './core/RadioDropdown';
 import { Select } from './core/Select';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
@@ -149,7 +151,7 @@ export function GrpcConnectionLayout({ style }: Props) {
             ref={urlContainerEl}
             className={classNames(
               'grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1.5',
-              paneSize < 350 && '!grid-cols-1',
+              paneSize < 400 && '!grid-cols-1',
             )}
           >
             <UrlBar
@@ -164,16 +166,24 @@ export function GrpcConnectionLayout({ style }: Props) {
               onUrlChange={url.set}
             />
             <HStack space={1.5}>
-              <Select
-                hideLabel
-                name="service"
-                label="Service"
-                className="text-gray-800"
-                size="sm"
+              <RadioDropdown
                 value={select.value}
+                items={select.options.map((o) => ({
+                  label: o.label,
+                  value: o.value,
+                  type: 'default',
+                  shortLabel: o.label,
+                }))}
                 onChange={handleChangeService}
-                options={select.options}
-              />
+              >
+                <Button
+                  size="sm"
+                  className="border border-highlight font-mono text-xs text-gray-800"
+                  rightSlot={<Icon className="text-gray-600" size="sm" icon="chevronDown" />}
+                >
+                  {select.options.find((o) => o.value === select.value)?.label}
+                </Button>
+              </RadioDropdown>
               <IconButton
                 className="border border-highlight"
                 size="sm"
