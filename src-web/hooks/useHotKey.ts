@@ -5,44 +5,47 @@ import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
-  | 'request.send'
+  | 'environmentEditor.toggle'
+  | 'grpc.send'
+  | 'hotkeys.showHelp'
   | 'request.create'
   | 'request.duplicate'
-  | 'sidebar.toggle'
-  | 'sidebar.focus'
-  | 'urlBar.focus'
-  | 'environmentEditor.toggle'
-  | 'hotkeys.showHelp'
-  | 'requestSwitcher.prev'
+  | 'request.send'
   | 'requestSwitcher.next'
-  | 'settings.show';
+  | 'requestSwitcher.prev'
+  | 'settings.show'
+  | 'sidebar.focus'
+  | 'sidebar.toggle'
+  | 'urlBar.focus';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
-  'request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
+  'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
+  'grpc.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
+  'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
   'request.create': ['CmdCtrl+n'],
   'request.duplicate': ['CmdCtrl+d'],
-  'sidebar.toggle': ['CmdCtrl+b'],
-  'sidebar.focus': ['CmdCtrl+1'],
-  'urlBar.focus': ['CmdCtrl+l'],
-  'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
-  'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
-  'settings.show': ['CmdCtrl+,'],
-  'requestSwitcher.prev': ['Control+Tab'],
+  'request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'requestSwitcher.next': ['Control+Shift+Tab'],
+  'requestSwitcher.prev': ['Control+Tab'],
+  'settings.show': ['CmdCtrl+,'],
+  'sidebar.focus': ['CmdCtrl+1'],
+  'sidebar.toggle': ['CmdCtrl+b'],
+  'urlBar.focus': ['CmdCtrl+l'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
-  'request.send': 'Send Request',
+  'environmentEditor.toggle': 'Edit Environments',
+  'grpc.send': 'Send Message',
+  'hotkeys.showHelp': 'Show Keyboard Shortcuts',
   'request.create': 'New Request',
   'request.duplicate': 'Duplicate Request',
-  'sidebar.toggle': 'Toggle Sidebar',
-  'sidebar.focus': 'Focus Sidebar',
-  'urlBar.focus': 'Focus URL',
-  'environmentEditor.toggle': 'Edit Environments',
-  'hotkeys.showHelp': 'Show Keyboard Shortcuts',
-  'requestSwitcher.prev': 'Go To Next Request',
+  'request.send': 'Send Request',
   'requestSwitcher.next': 'Go To Previous Request',
+  'requestSwitcher.prev': 'Go To Next Request',
   'settings.show': 'Open Settings',
+  'sidebar.focus': 'Focus Sidebar',
+  'sidebar.toggle': 'Toggle Sidebar',
+  'urlBar.focus': 'Focus URL',
 };
 
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
