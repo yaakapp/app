@@ -19,20 +19,8 @@ export function useGrpc(url: string | null) {
   useListenToTauriEvent<string>(
     'grpc_message',
     (event) => {
-      console.log('GOT MESSAGE', event);
       setMessages((prev) => [
         ...prev,
-        {
-          message: JSON.stringify({
-            dummy: 'Yo, this is a dummy message',
-            another: 'property',
-            list: [1, 2, 3, 4, 5],
-            null: null,
-            bool: true,
-          }),
-          time: new Date(),
-          isServer: false,
-        },
         { message: event.payload, time: new Date(), isServer: true },
       ]);
     },
@@ -59,6 +47,9 @@ export function useGrpc(url: string | null) {
     mutationKey: ['grpc_server_streaming', url],
     mutationFn: async ({ service, method, message }) => {
       if (url === null) throw new Error('No URL provided');
+      setMessages([
+        { isServer: false, message: JSON.stringify(JSON.parse(message)), time: new Date() },
+      ]);
       return (await invoke('grpc_server_streaming', {
         endpoint: url,
         service,

@@ -1,17 +1,16 @@
 import classNames from 'classnames';
 import { format } from 'date-fns';
-import { m } from 'framer-motion';
 import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { tryFormatJson } from '../lib/formatters';
 import { Banner } from './core/Banner';
 import { Editor } from './core/Editor';
 import { HotKeyList } from './core/HotKeyList';
 import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { Select } from './core/Select';
 import { Separator } from './core/Separator';
@@ -144,12 +143,30 @@ export function GrpcConnectionLayout({ style }: Props) {
               id="foo"
               url={url.value ?? ''}
               method={null}
+              submitIcon={null}
               forceUpdateKey="to-do"
               placeholder="localhost:50051"
               onSubmit={handleConnect}
               isLoading={grpc.unary.isLoading}
               onUrlChange={url.set}
-              submitIcon={
+            />
+            <Select
+              hideLabel
+              name="service"
+              label="Service"
+              className="text-gray-800"
+              size="sm"
+              value={select.value}
+              onChange={handleChangeService}
+              options={select.options}
+            />
+            <IconButton
+              className="border border-highlight"
+              size="sm"
+              title="ofo"
+              hotkeyAction="request.send"
+              onClick={handleConnect}
+              icon={
                 !activeMethod?.clientStreaming && activeMethod?.serverStreaming
                   ? 'arrowDownToDot'
                   : activeMethod?.clientStreaming && !activeMethod?.serverStreaming
@@ -158,15 +175,6 @@ export function GrpcConnectionLayout({ style }: Props) {
                   ? 'arrowUpDown'
                   : 'sendHorizontal'
               }
-            />
-            <Select
-              hideLabel
-              name="service"
-              label="Service"
-              size="sm"
-              value={select.value}
-              onChange={handleChangeService}
-              options={select.options}
             />
           </div>
           <GrpcEditor
@@ -225,10 +233,10 @@ export function GrpcConnectionLayout({ style }: Props) {
                     activeMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[100%]',
                   )}
                 >
-                  <div className="pb-2 px-2">
+                  <div className="pb-1 px-2">
                     <Separator />
                   </div>
-                  <div className="pl-2">
+                  <div className="pl-2 pb-1">
                     <JsonAttributeTree
                       depth={0}
                       attrValue={JSON.parse(activeMessage?.message ?? '{}')}
