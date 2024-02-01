@@ -22,8 +22,7 @@ pub struct JsonSchemaEntry {
     enum_: Option<Vec<String>>,
 
     /// Don't allow any other properties in the object
-    #[serde(skip_serializing_if = "Option::is_none")]
-    additional_properties: Option<bool>,
+    additional_properties: bool,
 
     /// Set all properties to required
     #[serde(skip_serializing_if = "Option::is_none")]
