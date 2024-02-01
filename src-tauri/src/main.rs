@@ -8,32 +8,33 @@ extern crate core;
 #[macro_use]
 extern crate objc;
 
-use ::http::Uri;
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::process::exit;
 use std::str::FromStr;
 
+use ::http::Uri;
 use fern::colors::ColoredLevelConfig;
-use grpc::ServiceDefinition;
+use futures::StreamExt;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
 use serde_json::{json, Value};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, RunEvent, State, Window, WindowUrl, Wry};
 use tauri::{Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
+use grpc::ServiceDefinition;
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
@@ -106,7 +107,59 @@ async fn grpc_call_unary(
     } else {
         Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
     };
-    Ok(grpc::call(&uri, service, method, message).await)
+    grpc::unary(&uri, service, method, message).await
+}
+
+#[tauri::command]
+async fn grpc_client_streaming(
+    endpoint: &str,
+    service: &str,
+    method: &str,
+    message: &str,
+    // app_handle: AppHandle<Wry>,
+    // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<String, String> {
+    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        Uri::from_str(endpoint).map_err(|e| e.to_string())?
+    } else {
+        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
+    };
+    grpc::client_streaming(&uri, service, method, message).await
+}
+
+#[tauri::command]
+async fn grpc_server_streaming(
+    endpoint: &str,
+    service: &str,
+    method: &str,
+    message: &str,
+    app_handle: AppHandle<Wry>,
+    // db_instance: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<String, String> {
+    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        Uri::from_str(endpoint).map_err(|e| e.to_string())?
+    } else {
+        Uri::from_str(&format!("http://{}", endpoint)).map_err(|e| e.to_string())?
+    };
+
+    let mut stream = grpc::server_streaming(&uri, service, method, message)
+        .await
+        .unwrap()
+        .into_inner();
+    while let Some(item) = stream.next().await {
+        match item {
+            Ok(item) => {
+                let s = serde_json::to_string(&item).unwrap();
+                emit_side_effect(&app_handle, "grpc_message", s.clone());
+                println!("GOt item: {}", s);
+            }
+            Err(e) => {
+                println!("\terror: {}", e);
+            }
+        }
+    }
+
+    Ok("foo".to_string())
 }
 
 #[tauri::command]
@@ -937,6 +990,9 @@ fn main() {
                 .level_for("reqwest", log::LevelFilter::Info)
                 .level_for("tokio_util", log::LevelFilter::Info)
                 .level_for("cookie_store", log::LevelFilter::Info)
+                .level_for("h2", log::LevelFilter::Info)
+                .level_for("tower", log::LevelFilter::Info)
+                .level_for("tonic", log::LevelFilter::Info)
                 .with_colors(ColoredLevelConfig::default())
                 .level(log::LevelFilter::Trace)
                 .build(),
@@ -1012,6 +1068,8 @@ fn main() {
             get_settings,
             get_workspace,
             grpc_call_unary,
+            grpc_client_streaming,
+            grpc_server_streaming,
             grpc_reflect,
             import_data,
             list_cookie_jars,
