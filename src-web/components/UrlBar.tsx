@@ -14,7 +14,7 @@ type Props = Pick<HttpRequest, 'id' | 'url'> & {
   placeholder: string;
   onSubmit: (e: FormEvent) => void;
   onUrlChange: (url: string) => void;
-  submitIcon?: IconProps['icon'];
+  submitIcon?: IconProps['icon'] | null;
   onMethodChange?: (method: string) => void;
   isLoading: boolean;
   forceUpdateKey: string;
@@ -74,16 +74,18 @@ export const UrlBar = memo(function UrlBar({
           )
         }
         rightSlot={
-          <IconButton
-            size="xs"
-            iconSize="md"
-            title="Send Request"
-            type="submit"
-            className="w-8 mr-0.5 my-0.5"
-            icon={isLoading ? 'update' : submitIcon}
-            spin={isLoading}
-            hotkeyAction="request.send"
-          />
+          submitIcon !== null && (
+            <IconButton
+              size="xs"
+              iconSize="md"
+              title="Send Request"
+              type="submit"
+              className="w-8 mr-0.5 my-0.5"
+              icon={isLoading ? 'update' : submitIcon}
+              spin={isLoading}
+              hotkeyAction="request.send"
+            />
+          )
         }
       />
     </form>
