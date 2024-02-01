@@ -35,6 +35,7 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
+use grpc::manager::GrpcManager;
 use grpc::ServiceDefinition;
 use window_ext::TrafficLightWindowExt;
 
@@ -44,7 +45,7 @@ use crate::models::{
     cancel_pending_responses, create_response, delete_all_responses, delete_cookie_jar,
     delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
     duplicate_request, find_cookie_jars, find_environments, find_folders, find_requests,
-    find_responses, find_workspaces, get_cookie_jar, get_environment, get_folder,
+    find_responses, find_workspaces, generate_id, get_cookie_jar, get_environment, get_folder,
     get_key_value_raw, get_or_create_settings, get_request, get_response, get_workspace,
     get_workspace_export_resources, set_key_value_raw, update_response_if_id, update_settings,
     upsert_cookie_jar, upsert_environment, upsert_folder, upsert_request, upsert_workspace,
@@ -89,11 +90,7 @@ async fn migrate_db(app_handle: AppHandle<Wry>, db: &Mutex<Pool<Sqlite>>) -> Res
 }
 
 #[tauri::command]
-async fn cmd_grpc_reflect(
-    endpoint: &str,
-    // app_handle: AppHandle<Wry>,
-    // db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<Vec<ServiceDefinition>, String> {
+async fn cmd_grpc_reflect(endpoint: &str) -> Result<Vec<ServiceDefinition>, String> {
     let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
     Ok(grpc::callable(&uri).await)
 }
@@ -104,11 +101,16 @@ async fn cmd_grpc_call_unary(
     service: &str,
     method: &str,
     message: &str,
-    // app_handle: AppHandle<Wry>,
-    // db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<String, String> {
     let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
-    grpc::unary(&uri, service, method, message).await
+    grpc_handle
+        .lock()
+        .await
+        .connect("default", uri)
+        .await
+        .unary(service, method, message)
+        .await
 }
 
 #[tauri::command]
@@ -135,26 +137,30 @@ async fn cmd_grpc_server_streaming(
     method: &str,
     message: &str,
     app_handle: AppHandle<Wry>,
+    grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<String, String> {
     let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
-    let mut stream = grpc::server_streaming(&uri, service, method, message)
+    let conn_id = generate_id(Some("grpc"));
+
+    let mut stream = grpc_handle
+        .lock()
         .await
-        .unwrap()
-        .into_inner();
+        .server_streaming(&conn_id, uri, service, method, message)
+        .await
+        .unwrap();
+
     while let Some(item) = stream.next().await {
         match item {
             Ok(item) => {
-                let s = serde_json::to_string(&item).unwrap();
-                emit_side_effect(&app_handle, "grpc_message", s.clone());
-                println!("GOt item: {}", s);
+                let item = serde_json::to_string_pretty(&item).unwrap();
+                println!("Sending message {}", item);
+                emit_side_effect(&app_handle, "grpc_message", item);
             }
-            Err(e) => {
-                println!("\terror: {}", e);
-            }
+            Err(e) => println!("\terror: {}", e),
         }
     }
 
-    Ok("foo".to_string())
+    Ok(conn_id)
 }
 
 #[tauri::command]
@@ -1002,25 +1008,28 @@ fn main() {
             let url = format!("sqlite://{}?mode=rwc", p_string);
             info!("Connecting to database at {}", url);
 
+            // Add updater
+            let yaak_updater = YaakUpdater::new();
+            app.manage(Mutex::new(yaak_updater));
+
+            // Add GRPC manager
+            let grpc_handle = GrpcManager::default();
+            app.manage(Mutex::new(grpc_handle));
+
+            // Add DB handle
             tauri::async_runtime::block_on(async move {
                 let pool = SqlitePool::connect(p.to_str().unwrap())
                     .await
                     .expect("Failed to connect to database");
-
-                // Setup the DB handle
                 let m = Mutex::new(pool.clone());
                 migrate_db(app.handle(), &m)
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
-
-                let yaak_updater = YaakUpdater::new();
-                app.manage(Mutex::new(yaak_updater));
-
                 let _ = cancel_pending_responses(&pool).await;
+            });
 
-                Ok(())
-            })
+            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             cmd_check_for_updates,
