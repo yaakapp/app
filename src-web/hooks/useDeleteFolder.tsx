@@ -26,7 +26,7 @@ export function useDeleteFolder(id: string | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_folder', { folderId: id });
+      return invoke('cmd_delete_folder', { folderId: id });
     },
     onSettled: () => trackEvent('Folder', 'Delete'),
     onSuccess: async (folder) => {

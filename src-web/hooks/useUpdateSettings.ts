@@ -8,7 +8,7 @@ export function useUpdateSettings() {
 
   return useMutation<void, unknown, Settings>({
     mutationFn: async (settings) => {
-      await invoke('update_settings', { settings });
+      await invoke('cmd_update_settings', { settings });
     },
     onMutate: async (settings) => {
       queryClient.setQueryData<Settings>(settingsQueryKey(), settings);

@@ -11,7 +11,7 @@ export function useSettings() {
     useQuery({
       queryKey: settingsQueryKey(),
       queryFn: async () => {
-        return (await invoke('get_settings')) as Settings;
+        return (await invoke('cmd_get_settings')) as Settings;
       },
     }).data ?? undefined
   );

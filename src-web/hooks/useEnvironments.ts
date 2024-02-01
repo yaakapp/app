@@ -15,7 +15,7 @@ export function useEnvironments() {
       queryKey: environmentsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('list_environments', { workspaceId })) as Environment[];
+        return (await invoke('cmd_list_environments', { workspaceId })) as Environment[];
       },
     }).data ?? []
   );

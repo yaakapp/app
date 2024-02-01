@@ -23,7 +23,7 @@ export function useCreateCookieJar() {
         label: 'Name',
         defaultValue: 'My Jar',
       });
-      return invoke('create_cookie_jar', { workspaceId, name });
+      return invoke('cmd_create_cookie_jar', { workspaceId, name });
     },
     onSettled: () => trackEvent('CookieJar', 'Create'),
     onSuccess: async (cookieJar) => {

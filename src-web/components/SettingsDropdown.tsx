@@ -102,7 +102,7 @@ export function SettingsDropdown() {
           label: 'Check for Updates',
           leftSlot: <Icon icon="update" />,
           onSelect: async () => {
-            const hasUpdate: boolean = await invoke('check_for_updates');
+            const hasUpdate: boolean = await invoke('cmd_check_for_updates');
             if (!hasUpdate) {
               alert({
                 id: 'no-updates',

@@ -22,7 +22,7 @@ export function useCreateEnvironment() {
         label: 'Name',
         defaultValue: 'My Environment',
       });
-      return invoke('create_environment', { name, variables: [], workspaceId });
+      return invoke('cmd_create_environment', { name, variables: [], workspaceId });
     },
     onSettled: () => trackEvent('Environment', 'Create'),
     onSuccess: async (environment) => {
