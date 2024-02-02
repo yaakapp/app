@@ -209,8 +209,6 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
       {activeRequest && (
         <>
           <UrlBar
-            key={activeRequest.id} // Force-reset the url bar when the active request changes
-            id={activeRequest.id}
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"

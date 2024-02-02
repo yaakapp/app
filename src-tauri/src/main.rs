@@ -189,25 +189,29 @@ async fn cmd_grpc_bidi_streaming(
             }
         }
     };
-    let event_handler = app_handle.listen_global("grpc_message_in", cb);
+    let event_handler =
+        app_handle.listen_global(format!("grpc_client_msg_{}", conn_id).as_str(), cb);
 
-    let app_handle2 = app_handle.clone();
-    let grpc_listen = async move {
-        loop {
-            match stream.next().await {
-                Some(Ok(item)) => {
-                    let item = serde_json::to_string_pretty(&item).unwrap();
-                    app_handle2
-                        .emit_all("grpc_message", item)
-                        .expect("Failed to emit");
-                }
-                Some(Err(e)) => {
-                    error!("gRPC stream error: {:?}", e);
-                    // TODO: Handle error
-                }
-                None => {
-                    info!("gRPC stream closed by sender");
-                    break;
+    let grpc_listen = {
+        let app_handle = app_handle.clone();
+        let conn_id = conn_id.clone();
+        async move {
+            loop {
+                match stream.next().await {
+                    Some(Ok(item)) => {
+                        let item = serde_json::to_string_pretty(&item).unwrap();
+                        app_handle
+                            .emit_all(format!("grpc_server_msg_{}", &conn_id).as_str(), item)
+                            .expect("Failed to emit");
+                    }
+                    Some(Err(e)) => {
+                        error!("gRPC stream error: {:?}", e);
+                        // TODO: Handle error
+                    }
+                    None => {
+                        info!("gRPC stream closed by sender");
+                        break;
+                    }
                 }
             }
         }
@@ -283,25 +287,29 @@ async fn cmd_grpc_server_streaming(
             }
         }
     };
-    let event_handler = app_handle.listen_global("grpc_message_in", cb);
+    let event_handler =
+        app_handle.listen_global(format!("grpc_client_msg_{}", conn_id).as_str(), cb);
 
-    let app_handle2 = app_handle.clone();
-    let grpc_listen = async move {
-        loop {
-            match stream.next().await {
-                Some(Ok(item)) => {
-                    let item = serde_json::to_string_pretty(&item).unwrap();
-                    app_handle2
-                        .emit_all("grpc_message", item)
-                        .expect("Failed to emit");
-                }
-                Some(Err(e)) => {
-                    error!("gRPC stream error: {:?}", e);
-                    // TODO: Handle error
-                }
-                None => {
-                    info!("gRPC stream closed by sender");
-                    break;
+    let grpc_listen = {
+        let app_handle = app_handle.clone();
+        let conn_id = conn_id.clone();
+        async move {
+            loop {
+                match stream.next().await {
+                    Some(Ok(item)) => {
+                        let item = serde_json::to_string_pretty(&item).unwrap();
+                        app_handle
+                            .emit_all(format!("grpc_server_msg_{}", &conn_id).as_str(), item)
+                            .expect("Failed to emit");
+                    }
+                    Some(Err(e)) => {
+                        error!("gRPC stream error: {:?}", e);
+                        // TODO: Handle error
+                    }
+                    None => {
+                        info!("gRPC stream closed by sender");
+                        break;
+                    }
                 }
             }
         }

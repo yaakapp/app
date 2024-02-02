@@ -8,7 +8,7 @@ import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
 import { RequestMethodDropdown } from './RequestMethodDropdown';
 
-type Props = Pick<HttpRequest, 'id' | 'url'> & {
+type Props = Pick<HttpRequest, 'url'> & {
   className?: string;
   method: HttpRequest['method'] | null;
   placeholder: string;

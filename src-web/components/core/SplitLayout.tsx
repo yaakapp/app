@@ -17,7 +17,7 @@ interface SlotProps {
 interface Props {
   name: string;
   leftSlot: (props: SlotProps) => ReactNode;
-  rightSlot: (props: SlotProps) => ReactNode;
+  rightSlot: null | ((props: SlotProps) => ReactNode);
   style?: CSSProperties;
   className?: string;
   defaultRatio?: number;
@@ -48,33 +48,37 @@ export function SplitLayout({
     `${name}_height::${useActiveWorkspaceId()}`,
   );
   const width = widthRaw ?? defaultRatio;
-  const height = heightRaw ?? defaultRatio;
+  let height = heightRaw ?? defaultRatio;
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
 
+  if (!rightSlot) {
+    height = 0;
+    minHeightPx = 0;
+  }
+
   useResizeObserver(containerRef.current, ({ contentRect }) => {
     setVertical(contentRect.width < STACK_VERTICAL_WIDTH);
   });
 
-  const styles = useMemo<CSSProperties>(
-    () => ({
+  const styles = useMemo<CSSProperties>(() => {
+    return {
       ...style,
       gridTemplate: vertical
         ? `
-          ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
-          ' ${areaD.gridArea}' 0
-          ' ${areaR.gridArea}' minmax(${minHeightPx}px,${height}fr)
-          / 1fr            
-        `
+            ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
+            ' ${areaD.gridArea}' 0
+            ' ${areaR.gridArea}' minmax(${minHeightPx}px,${height}fr)
+            / 1fr            
+          `
         : `
-          ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
-          / ${1 - width}fr   0                ${width}fr           
-        `,
-    }),
-    [vertical, width, height, style],
-  );
+            ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
+            / ${1 - width}fr   0                ${width}fr           
+          `,
+    };
+  }, [style, vertical, height, minHeightPx, width]);
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -142,17 +146,21 @@ export function SplitLayout({
   return (
     <div ref={containerRef} className={classNames(className, 'grid w-full h-full')} style={styles}>
       {leftSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
-      <ResizeHandle
-        style={areaD}
-        isResizing={isResizing}
-        barClassName={'bg-red-300'}
-        className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
-        onResizeStart={handleResizeStart}
-        onReset={handleReset}
-        side={vertical ? 'top' : 'left'}
-        justify="center"
-      />
-      {rightSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
+      {rightSlot && (
+        <>
+          <ResizeHandle
+            style={areaD}
+            isResizing={isResizing}
+            barClassName={'bg-red-300'}
+            className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
+            onResizeStart={handleResizeStart}
+            onReset={handleReset}
+            side={vertical ? 'top' : 'left'}
+            justify="center"
+          />
+          {rightSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
+        </>
+      )}
     </div>
   );
 }
