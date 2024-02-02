@@ -15,27 +15,40 @@ interface SlotProps {
 }
 
 interface Props {
-  style: CSSProperties;
+  name: string;
   leftSlot: (props: SlotProps) => ReactNode;
   rightSlot: (props: SlotProps) => ReactNode;
+  style?: CSSProperties;
+  className?: string;
+  defaultRatio?: number;
+  minHeightPx?: number;
+  minWidthPx?: number;
 }
 
 const areaL = { gridArea: 'left' };
 const areaR = { gridArea: 'right' };
 const areaD = { gridArea: 'drag' };
 
-const DEFAULT = 0.5;
-const MIN_WIDTH_PX = 10;
-const MIN_HEIGHT_PX = 30;
 const STACK_VERTICAL_WIDTH = 700;
 
-export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
+export function SplitLayout({
+  style,
+  leftSlot,
+  rightSlot,
+  className,
+  name,
+  defaultRatio = 0.5,
+  minHeightPx = 10,
+  minWidthPx = 10,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [vertical, setVertical] = useState<boolean>(false);
-  const [widthRaw, setWidth] = useLocalStorage<number>(`body_width::${useActiveWorkspaceId()}`);
-  const [heightRaw, setHeight] = useLocalStorage<number>(`body_height::${useActiveWorkspaceId()}`);
-  const width = widthRaw ?? DEFAULT;
-  const height = heightRaw ?? DEFAULT;
+  const [widthRaw, setWidth] = useLocalStorage<number>(`${name}_width::${useActiveWorkspaceId()}`);
+  const [heightRaw, setHeight] = useLocalStorage<number>(
+    `${name}_height::${useActiveWorkspaceId()}`,
+  );
+  const width = widthRaw ?? defaultRatio;
+  const height = heightRaw ?? defaultRatio;
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
@@ -52,7 +65,7 @@ export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
         ? `
           ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
           ' ${areaD.gridArea}' 0
-          ' ${areaR.gridArea}' minmax(0,${height}fr)
+          ' ${areaR.gridArea}' minmax(${minHeightPx}px,${height}fr)
           / 1fr            
         `
         : `
@@ -71,8 +84,8 @@ export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
   };
 
   const handleReset = useCallback(
-    () => (vertical ? setHeight(DEFAULT) : setWidth(DEFAULT)),
-    [setHeight, vertical, setWidth],
+    () => (vertical ? setHeight(defaultRatio) : setWidth(defaultRatio)),
+    [vertical, setHeight, defaultRatio, setWidth],
   );
 
   const handleResizeStart = useCallback(
@@ -91,18 +104,18 @@ export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
         move: (e: MouseEvent) => {
           e.preventDefault(); // Prevent text selection and things
           if (vertical) {
-            const maxHeightPx = containerRect.height - MIN_HEIGHT_PX;
+            const maxHeightPx = containerRect.height - minHeightPx;
             const newHeightPx = clamp(
               startHeight - (e.clientY - mouseStartY),
-              MIN_HEIGHT_PX,
+              minHeightPx,
               maxHeightPx,
             );
             setHeight(newHeightPx / containerRect.height);
           } else {
-            const maxWidthPx = containerRect.width - MIN_WIDTH_PX;
+            const maxWidthPx = containerRect.width - minWidthPx;
             const newWidthPx = clamp(
               startWidth - (e.clientX - mouseStartX),
-              MIN_WIDTH_PX,
+              minWidthPx,
               maxWidthPx,
             );
             setWidth(newWidthPx / containerRect.width);
@@ -118,7 +131,7 @@ export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [width, height, vertical, setHeight, setWidth],
+    [width, height, vertical, minHeightPx, setHeight, minWidthPx, setWidth],
   );
 
   const activeRequestId = useActiveRequestId();
@@ -127,11 +140,12 @@ export function SplitLayout({ style, leftSlot, rightSlot }: Props) {
   }
 
   return (
-    <div ref={containerRef} className="grid gap-1.5 w-full h-full p-3" style={styles}>
+    <div ref={containerRef} className={classNames(className, 'grid w-full h-full')} style={styles}>
       {leftSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
       <ResizeHandle
         style={areaD}
         isResizing={isResizing}
+        barClassName={'bg-red-300'}
         className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
         onResizeStart={handleResizeStart}
         onReset={handleReset}

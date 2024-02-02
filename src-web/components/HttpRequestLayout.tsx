@@ -11,6 +11,8 @@ interface Props {
 export function HttpRequestLayout({ style }: Props) {
   return (
     <SplitLayout
+      name="http_layout"
+      className="p-3"
       style={style}
       leftSlot={({ orientation, style }) => (
         <RequestPane style={style} fullHeight={orientation === 'horizontal'} />

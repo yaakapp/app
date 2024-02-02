@@ -100,7 +100,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ) : null}
       <div
         className={classNames(
-          'max-w-[15em] truncate w-full',
+          'truncate w-full',
           justify === 'start' ? 'text-left' : 'text-center',
           innerClassName,
         )}
