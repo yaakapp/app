@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useAlert } from '../hooks/useAlert';
 import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
@@ -26,26 +27,31 @@ interface Props {
 }
 
 export function GrpcConnectionLayout({ style }: Props) {
-  const url = useKeyValue<string>({ namespace: 'debug', key: 'grpc_url', defaultValue: '' });
+  const activeRequestId = useActiveRequestId();
+  const url = useKeyValue<string>({
+    namespace: 'debug',
+    key: ['grpc_url', activeRequestId ?? ''],
+    defaultValue: '',
+  });
   const alert = useAlert();
   const service = useKeyValue<string | null>({
     namespace: 'debug',
-    key: 'grpc_service',
+    key: ['grpc_service', activeRequestId ?? ''],
     defaultValue: null,
   });
   const method = useKeyValue<string | null>({
     namespace: 'debug',
-    key: 'grpc_method',
+    key: ['grpc_method', activeRequestId ?? ''],
     defaultValue: null,
   });
   const message = useKeyValue<string>({
     namespace: 'debug',
-    key: 'grpc_message',
+    key: ['grpc_message', activeRequestId ?? ''],
     defaultValue: '',
   });
   const [activeMessage, setActiveMessage] = useState<GrpcMessage | null>(null);
   const [resp, setResp] = useState<string>('');
-  const grpc = useGrpc(url.value ?? null);
+  const grpc = useGrpc(url.value ?? null, activeRequestId);
 
   const activeMethod = useMemo(() => {
     if (grpc.schema == null) return null;
@@ -105,6 +111,7 @@ export function GrpcConnectionLayout({ style }: Props) {
   );
 
   useEffect(() => {
+    console.log('GrpcConnectionLayout');
     if (grpc.schema == null) return;
     const s = grpc.schema.find((s) => s.name === service.value);
     if (s == null) {
@@ -167,11 +174,10 @@ export function GrpcConnectionLayout({ style }: Props) {
             )}
           >
             <UrlBar
-              id="foo"
               url={url.value ?? ''}
               method={null}
               submitIcon={null}
-              forceUpdateKey="to-do"
+              forceUpdateKey={activeRequestId ?? ''}
               placeholder="localhost:50051"
               onSubmit={handleConnect}
               isLoading={grpc.unary.isLoading}
@@ -231,7 +237,7 @@ export function GrpcConnectionLayout({ style }: Props) {
           </div>
           {!service.isLoading && !method.isLoading && (
             <GrpcEditor
-              forceUpdateKey={[service, method].join('::')}
+              forceUpdateKey={activeRequestId ?? ''}
               url={url.value ?? ''}
               defaultValue={message.value}
               onChange={message.set}
@@ -255,16 +261,16 @@ export function GrpcConnectionLayout({ style }: Props) {
               <Banner color="danger" className="m-2">
                 {grpc.unary.error}
               </Banner>
-            ) : grpc.messages.length > 0 ? (
+            ) : (grpc.messages.value ?? []).length > 0 ? (
               <SplitLayout
                 name="grpc_messages2"
                 minHeightPx={20}
                 defaultRatio={0.25}
                 leftSlot={() => (
                   <div className="overflow-y-auto">
-                    {...grpc.messages.map((m, i) => (
+                    {...(grpc.messages.value ?? []).map((m, i) => (
                       <HStack
-                        key={`${m.time.getTime()}::${m.message}::${i}`}
+                        key={`${m.timestamp}::${m.message}::${i}`}
                         space={2}
                         onClick={() => {
                           if (m === activeMessage) setActiveMessage(null);
@@ -292,25 +298,29 @@ export function GrpcConnectionLayout({ style }: Props) {
                               : 'info'
                           }
                         />
-                        <div className="w-full truncate text-gray-800 text-xs">{m.message}</div>
-                        <div className="text-gray-600 text-2xs" title={m.time.toISOString()}>
-                          {format(m.time, 'HH:mm:ss')}
+                        <div className="w-full truncate text-gray-800 text-2xs">{m.message}</div>
+                        <div className="text-gray-600 text-2xs">
+                          {format(m.timestamp, 'HH:mm:ss')}
                         </div>
                       </HStack>
                     ))}
                   </div>
                 )}
-                rightSlot={() =>
-                  activeMessage && (
-                    <div className="grid grid-rows-[auto_minmax(0,1fr)]">
-                      <div className="pb-3 px-2">
-                        <Separator />
-                      </div>
-                      <div className="pl-2 overflow-y-auto">
-                        <JsonAttributeTree attrValue={JSON.parse(activeMessage?.message ?? '{}')} />
-                      </div>
-                    </div>
-                  )
+                rightSlot={
+                  !activeMessage
+                    ? null
+                    : () => (
+                        <div className="grid grid-rows-[auto_minmax(0,1fr)]">
+                          <div className="pb-3 px-2">
+                            <Separator />
+                          </div>
+                          <div className="pl-2 overflow-y-auto">
+                            <JsonAttributeTree
+                              attrValue={JSON.parse(activeMessage?.message ?? '{}')}
+                            />
+                          </div>
+                        </div>
+                      )
                 }
               />
             ) : resp ? (

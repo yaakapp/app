@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { emit } from '@tauri-apps/api/event';
-import { useState } from 'react';
-import { useListenToTauriEvent } from './useListenToTauriEvent';
+import type { UnlistenFn } from '@tauri-apps/api/event';
+import { emit, listen } from '@tauri-apps/api/event';
+import { useEffect, useRef, useState } from 'react';
+import { useKeyValue } from './useKeyValue';
 
 interface ReflectResponseService {
   name: string;
@@ -11,24 +12,23 @@ interface ReflectResponseService {
 
 export interface GrpcMessage {
   message: string;
-  time: Date;
+  timestamp: string;
   type: 'server' | 'client' | 'info';
 }
 
-export function useGrpc(url: string | null) {
-  const [messages, setMessages] = useState<GrpcMessage[]>([]);
+export function useGrpc(url: string | null, requestId: string | null) {
+  const messages = useKeyValue<GrpcMessage[]>({
+    namespace: 'debug',
+    key: ['grpc_msgs', requestId ?? 'n/a'],
+    defaultValue: [],
+  });
   const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
+  const unlisten = useRef<UnlistenFn | null>(null);
 
-  useListenToTauriEvent<string>(
-    'grpc_message',
-    (event) => {
-      setMessages((prev) => [
-        ...prev,
-        { message: event.payload, time: new Date(), type: 'server' },
-      ]);
-    },
-    [setMessages],
-  );
+  useEffect(() => {
+    setActiveConnectionId(null);
+    unlisten.current?.();
+  }, [requestId]);
 
   const unary = useMutation<string, string, { service: string; method: string; message: string }>({
     mutationKey: ['grpc_unary', url],
@@ -51,14 +51,24 @@ export function useGrpc(url: string | null) {
     mutationKey: ['grpc_server_streaming', url],
     mutationFn: async ({ service, method, message }) => {
       if (url === null) throw new Error('No URL provided');
-      setMessages([
-        { type: 'client', message: JSON.stringify(JSON.parse(message)), time: new Date() },
+      await messages.set([
+        {
+          type: 'client',
+          message: JSON.stringify(JSON.parse(message)),
+          timestamp: new Date().toISOString(),
+        },
       ]);
       const id: string = await invoke('cmd_grpc_server_streaming', {
         endpoint: url,
         service,
         method,
         message,
+      });
+      unlisten.current = await listen(`grpc_server_msg_${id}`, async (event) => {
+        await messages.set((prev) => [
+          ...prev,
+          { message: event.payload as string, timestamp: new Date().toISOString(), type: 'server' },
+        ]);
       });
       setActiveConnectionId(id);
     },
@@ -78,16 +88,27 @@ export function useGrpc(url: string | null) {
         method,
         message,
       });
-      setMessages([{ type: 'info', message: `Started connection ${id}`, time: new Date() }]);
+      messages.set([
+        { type: 'info', message: `Started connection ${id}`, timestamp: new Date().toISOString() },
+      ]);
       setActiveConnectionId(id);
+      unlisten.current = await listen(`grpc_server_msg_${id}`, (event) => {
+        messages.set((prev) => [
+          ...prev,
+          { message: event.payload as string, timestamp: new Date().toISOString(), type: 'server' },
+        ]);
+      });
     },
   });
 
   const send = useMutation({
     mutationKey: ['grpc_send', url],
     mutationFn: async ({ message }: { message: string }) => {
-      await emit('grpc_message_in', { Message: message });
-      setMessages((m) => [...m, { type: 'client', message, time: new Date() }]);
+      if (activeConnectionId == null) throw new Error('No active connection');
+      await messages.set((m) => {
+        return [...m, { type: 'client', message, timestamp: new Date().toISOString() }];
+      });
+      await emit(`grpc_client_msg_${activeConnectionId}`, { Message: message });
     },
   });
 
@@ -95,10 +116,11 @@ export function useGrpc(url: string | null) {
     mutationKey: ['grpc_cancel', url],
     mutationFn: async () => {
       setActiveConnectionId(null);
+      unlisten.current?.();
       await emit('grpc_message_in', 'Cancel');
-      setMessages((m) => [
+      await messages.set((m) => [
         ...m,
-        { type: 'info', message: 'Cancelled by client', time: new Date() },
+        { type: 'info', message: 'Cancelled by client', timestamp: new Date().toISOString() },
       ]);
     },
   });
