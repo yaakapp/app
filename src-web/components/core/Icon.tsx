@@ -47,6 +47,7 @@ const icons = {
   arrowUp: lucide.ArrowUpIcon,
   arrowBigDownDash: lucide.ArrowBigDownDashIcon,
   arrowBigUpDash: lucide.ArrowBigUpDashIcon,
+  info: lucide.InfoIcon,
   x: lucide.XIcon,
 
   empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,

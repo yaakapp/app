@@ -61,6 +61,7 @@ datetime = "0.5.2"
 window-shadows = "0.2.2"
 reqwest_cookie_store = "0.6.0"
 grpc = { path = "./grpc" }
+tokio-stream = "0.1.14"
 
 [features]
 # by default Tauri runs in production mode
