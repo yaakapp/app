@@ -2,7 +2,9 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
+import { type } from '@tauri-apps/api/os';
 import { useEffect, useRef, useState } from 'react';
+import { tryFormatJson } from '../lib/formatters';
 import { useKeyValue } from './useKeyValue';
 
 interface ReflectResponseService {
@@ -67,7 +69,11 @@ export function useGrpc(url: string | null, requestId: string | null) {
       unlisten.current = await listen(`grpc_server_msg_${id}`, async (event) => {
         await messages.set((prev) => [
           ...prev,
-          { message: event.payload as string, timestamp: new Date().toISOString(), type: 'server' },
+          {
+            message: tryFormatJson(event.payload as string, false),
+            timestamp: new Date().toISOString(),
+            type: 'server',
+          },
         ]);
       });
       setActiveConnectionId(id);
@@ -95,7 +101,11 @@ export function useGrpc(url: string | null, requestId: string | null) {
       unlisten.current = await listen(`grpc_server_msg_${id}`, (event) => {
         messages.set((prev) => [
           ...prev,
-          { message: event.payload as string, timestamp: new Date().toISOString(), type: 'server' },
+          {
+            message: tryFormatJson(event.payload as string, false),
+            timestamp: new Date().toISOString(),
+            type: 'server',
+          },
         ]);
       });
     },
