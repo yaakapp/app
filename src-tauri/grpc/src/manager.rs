@@ -1,10 +1,13 @@
 use std::collections::HashMap;
 
+use hyper::client::HttpConnector;
+use hyper::Client;
+use hyper_rustls::HttpsConnector;
 use prost_reflect::{DescriptorPool, DynamicMessage};
 use serde_json::Deserializer;
 use tokio::sync::mpsc;
-use tokio_stream::StreamExt;
-use tonic::transport::{Channel, Uri};
+use tonic::body::BoxBody;
+use tonic::transport::Uri;
 use tonic::{IntoRequest, Streaming};
 
 use crate::codec::DynamicCodec;
@@ -15,7 +18,8 @@ type Result<T> = std::result::Result<T, String>;
 #[derive(Clone)]
 pub struct GrpcConnection {
     pool: DescriptorPool,
-    conn: Channel,
+    conn: Client<HttpsConnector<HttpConnector>, BoxBody>,
+    pub uri: Uri,
 }
 
 impl GrpcConnection {
@@ -29,7 +33,7 @@ impl GrpcConnection {
             .map_err(|e| e.to_string())?;
         deserializer.end().unwrap();
 
-        let mut client = tonic::client::Grpc::new(self.conn.clone());
+        let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
         println!(
             "\n---------- SENDING -----------------\n{}",
@@ -63,7 +67,7 @@ impl GrpcConnection {
             .map_err(|e| e.to_string())?;
         deserializer.end().unwrap();
 
-        let mut client = tonic::client::Grpc::new(self.conn.clone());
+        let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
         println!(
             "\n---------- SENDING -----------------\n{}",
@@ -115,24 +119,11 @@ impl GrpcManager {
             .await
             .server_streaming(service, method, message)
             .await
-
-        // while let Some(item) = stream.next().await {
-        //     match item {
-        //         Ok(item) => {
-        //             let item = serde_json::to_string_pretty(&item).unwrap();
-        //             println!("Sending message {}", item);
-        //             self.send.send(item).await.unwrap()
-        //         }
-        //         Err(e) => println!("\terror: {}", e),
-        //     }
-        // }
-
-        // Ok(())
     }
 
     pub async fn connect(&mut self, id: &str, uri: Uri) -> GrpcConnection {
         let (pool, conn) = fill_pool(&uri).await;
-        let connection = GrpcConnection { pool, conn };
+        let connection = GrpcConnection { pool, conn, uri };
         self.connections.insert(id.to_string(), connection.clone());
         connection
     }

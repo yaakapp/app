@@ -67,7 +67,13 @@ export function GrpcConnectionLayout({ style }: Props) {
           body: 'Service or method not selected',
         });
       }
-      if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
+      if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
+        await grpc.bidiStreaming.mutateAsync({
+          service: service.value ?? 'n/a',
+          method: method.value ?? 'n/a',
+          message: message.value ?? '',
+        });
+      } else if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
         await grpc.serverStreaming.mutateAsync({
           service: service.value ?? 'n/a',
           method: method.value ?? 'n/a',
