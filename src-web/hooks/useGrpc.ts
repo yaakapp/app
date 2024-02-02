@@ -1,7 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { message } from '@tauri-apps/api/dialog';
 import { emit } from '@tauri-apps/api/event';
 import { useState } from 'react';
+import { send } from 'vite';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
 
 interface ReflectResponseService {
@@ -12,7 +14,7 @@ interface ReflectResponseService {
 export interface GrpcMessage {
   message: string;
   time: Date;
-  isServer: boolean;
+  type: 'server' | 'client' | 'info';
 }
 
 export function useGrpc(url: string | null) {
@@ -23,7 +25,7 @@ export function useGrpc(url: string | null) {
     (event) => {
       setMessages((prev) => [
         ...prev,
-        { message: event.payload, time: new Date(), isServer: true },
+        { message: event.payload, time: new Date(), type: 'server' },
       ]);
     },
     [],
@@ -50,7 +52,7 @@ export function useGrpc(url: string | null) {
     mutationFn: async ({ service, method, message }) => {
       if (url === null) throw new Error('No URL provided');
       setMessages([
-        { isServer: false, message: JSON.stringify(JSON.parse(message)), time: new Date() },
+        { type: 'client', message: JSON.stringify(JSON.parse(message)), time: new Date() },
       ]);
       const id: string = await invoke('cmd_grpc_server_streaming', {
         endpoint: url,
@@ -70,14 +72,22 @@ export function useGrpc(url: string | null) {
     mutationKey: ['grpc_bidi_streaming', url],
     mutationFn: async ({ service, method, message }) => {
       if (url === null) throw new Error('No URL provided');
-      setMessages([]);
       const id: string = await invoke('cmd_grpc_bidi_streaming', {
         endpoint: url,
         service,
         method,
         message,
       });
+      setMessages([{ type: 'info', message: `Started connection ${id}`, time: new Date() }]);
       setActiveConnectionId(id);
+    },
+  });
+
+  const send = useMutation({
+    mutationKey: ['grpc_send', url],
+    mutationFn: async ({ message }: { message: string }) => {
+      await emit('grpc_message_in', { Message: message });
+      setMessages((m) => [...m, { type: 'client', message, time: new Date() }]);
     },
   });
 
@@ -86,6 +96,10 @@ export function useGrpc(url: string | null) {
     mutationFn: async () => {
       await emit('grpc_message_in', 'Cancel');
       setActiveConnectionId(null);
+      setMessages((m) => [
+        ...m,
+        { type: 'info', message: 'Cancelled by client', time: new Date() },
+      ]);
     },
   });
 
@@ -104,5 +118,7 @@ export function useGrpc(url: string | null) {
     schema: reflect.data,
     cancel,
     messages,
+    isStreaming: activeConnectionId !== null,
+    send,
   };
 }

@@ -2,7 +2,7 @@ import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties, FormEvent } from 'react';
-import React, { useRef, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
@@ -15,7 +15,6 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { RadioDropdown } from './core/RadioDropdown';
-import { Select } from './core/Select';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
@@ -55,6 +54,10 @@ export function GrpcConnectionLayout({ style }: Props) {
     return s.methods.find((m) => m.name === method.value);
   }, [grpc.schema, method.value, service.value]);
 
+  const handleCancel = useCallback(() => {
+    grpc.cancel.mutateAsync().catch(console.error);
+  }, [grpc.cancel]);
+
   const handleConnect = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -92,6 +95,7 @@ export function GrpcConnectionLayout({ style }: Props) {
     [
       activeMethod,
       alert,
+      grpc.bidiStreaming,
       grpc.serverStreaming,
       grpc.unary,
       message.value,
@@ -195,9 +199,11 @@ export function GrpcConnectionLayout({ style }: Props) {
                 size="sm"
                 title="to-do"
                 hotkeyAction="request.send"
-                onClick={handleConnect}
+                onClick={grpc.isStreaming ? handleCancel : handleConnect}
                 icon={
-                  !activeMethod?.clientStreaming && activeMethod?.serverStreaming
+                  grpc.isStreaming
+                    ? 'x'
+                    : !activeMethod?.clientStreaming && activeMethod?.serverStreaming
                     ? 'arrowDownToDot'
                     : activeMethod?.clientStreaming && !activeMethod?.serverStreaming
                     ? 'arrowUpFromDot'
@@ -206,26 +212,29 @@ export function GrpcConnectionLayout({ style }: Props) {
                     : 'sendHorizontal'
                 }
               />
-              <IconButton
-                className="border border-highlight"
-                size="sm"
-                title="to-do"
-                onClick={async () => {
-                  await grpc.cancel.mutateAsync();
-                }}
-                icon="trash"
-              />
+              {activeMethod?.clientStreaming && (
+                <IconButton
+                  className="border border-highlight"
+                  size="sm"
+                  title="to-do"
+                  hotkeyAction="request.send"
+                  onClick={() => grpc.send.mutateAsync({ message: message.value ?? '' })}
+                  icon="sendHorizontal"
+                />
+              )}
             </HStack>
           </div>
-          <GrpcEditor
-            forceUpdateKey={[service, method].join('::')}
-            url={url.value ?? ''}
-            defaultValue={message.value}
-            onChange={message.set}
-            service={service.value ?? null}
-            method={method.value ?? null}
-            className="bg-gray-50"
-          />
+          {!service.isLoading && !method.isLoading && (
+            <GrpcEditor
+              forceUpdateKey={[service, method].join('::')}
+              url={url.value ?? ''}
+              defaultValue={message.value}
+              onChange={message.set}
+              service={service.value ?? null}
+              method={method.value ?? null}
+              className="bg-gray-50"
+            />
+          )}
         </VStack>
       )}
       rightSlot={() =>
@@ -259,8 +268,20 @@ export function GrpcConnectionLayout({ style }: Props) {
                       )}
                     >
                       <Icon
-                        className={m.isServer ? 'text-blue-600' : 'text-green-600'}
-                        icon={m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'}
+                        className={
+                          m.type === 'server'
+                            ? 'text-blue-600'
+                            : m.type === 'client'
+                            ? 'text-green-600'
+                            : 'text-gray-600'
+                        }
+                        icon={
+                          m.type === 'server'
+                            ? 'arrowBigDownDash'
+                            : m.type === 'client'
+                            ? 'arrowBigUpDash'
+                            : 'info'
+                        }
                       />
                       <div className="w-full truncate text-gray-800 text-xs">{m.message}</div>
                       <div className="text-gray-600 text-2xs" title={m.time.toISOString()}>
