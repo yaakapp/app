@@ -78,7 +78,6 @@ impl GrpcConnection {
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
-
         Ok(client
             .server_streaming(req, path, codec)
             .await

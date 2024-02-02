@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
+import { emit } from '@tauri-apps/api/event';
 import { useState } from 'react';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
 
@@ -83,7 +84,7 @@ export function useGrpc(url: string | null) {
   const cancel = useMutation({
     mutationKey: ['grpc_cancel', url],
     mutationFn: async () => {
-      await invoke('cmd_grpc_cancel', { id: activeConnectionId });
+      await emit('grpc_message_in', 'Cancel');
       setActiveConnectionId(null);
     },
   });
@@ -92,7 +93,6 @@ export function useGrpc(url: string | null) {
     queryKey: ['grpc_reflect', url ?? ''],
     queryFn: async () => {
       if (url === null) return [];
-      console.log('GETTING SCHEMA', url);
       return (await invoke('cmd_grpc_reflect', { endpoint: url })) as ReflectResponseService[];
     },
   });
