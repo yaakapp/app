@@ -17,7 +17,7 @@ use std::str::FromStr;
 use ::http::uri::InvalidUri;
 use ::http::Uri;
 use fern::colors::ColoredLevelConfig;
-use futures::StreamExt;
+use futures::{Stream, StreamExt};
 use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
@@ -95,6 +95,14 @@ async fn cmd_grpc_reflect(endpoint: &str) -> Result<Vec<ServiceDefinition>, Stri
     Ok(grpc::callable(&uri).await)
 }
 
+async fn cmd_grpc_cancel(
+    id: &str,
+    grpc_handle: State<'_, Mutex<GrpcManager>>,
+) -> Result<(), String> {
+    // grpc_handle.lock().await.cancel(id).await.unwrap()
+    Ok(())
+}
+
 #[tauri::command]
 async fn cmd_grpc_call_unary(
     endpoint: &str,
@@ -149,17 +157,44 @@ async fn cmd_grpc_server_streaming(
         .await
         .unwrap();
 
-    while let Some(item) = stream.next().await {
-        match item {
-            Ok(item) => {
+    loop {
+        match stream.message().await {
+            Ok(Some(item)) => {
                 let item = serde_json::to_string_pretty(&item).unwrap();
+                println!("GOT MESSAGE {:?}", item);
                 println!("Sending message {}", item);
                 emit_side_effect(&app_handle, "grpc_message", item);
             }
-            Err(e) => println!("\terror: {}", e),
+            Ok(None) => {
+                // sleep for a bit
+                println!("NO MESSAGE YET");
+                sleep(std::time::Duration::from_millis(100)).await;
+            }
+            Err(e) => {
+                return Err(e.to_string());
+            }
         }
     }
 
+    // while let Some(item) = stream.message() {
+    //     println!("GOT MESSAGE");
+    //     // if grpc_handle.lock().await.is_cancelled(&conn_id) {
+    //     //     break;
+    //     // }
+    //
+    //     match item {
+    //         Ok(item) => {
+    //             let item = serde_json::to_string_pretty(&item).unwrap();
+    //             println!("Sending message {}", item);
+    //             emit_side_effect(&app_handle, "grpc_message", item);
+    //         }
+    //         Err(e) => println!("\terror: {}", e),
+    //     }
+    //     // let foo = stream.trailers().await.unwrap();
+    //     break;
+    // }
+
+    println!("DONE");
     Ok(conn_id)
 }
 

@@ -16,6 +16,7 @@ export interface GrpcMessage {
 
 export function useGrpc(url: string | null) {
   const [messages, setMessages] = useState<GrpcMessage[]>([]);
+  const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
   useListenToTauriEvent<string>(
     'grpc_message',
     (event) => {
@@ -40,7 +41,7 @@ export function useGrpc(url: string | null) {
   });
 
   const serverStreaming = useMutation<
-    string,
+    void,
     string,
     { service: string; method: string; message: string }
   >({
@@ -50,12 +51,40 @@ export function useGrpc(url: string | null) {
       setMessages([
         { isServer: false, message: JSON.stringify(JSON.parse(message)), time: new Date() },
       ]);
-      return (await invoke('cmd_grpc_server_streaming', {
+      const id: string = await invoke('cmd_grpc_server_streaming', {
         endpoint: url,
         service,
         method,
         message,
-      })) as string;
+      });
+      setActiveConnectionId(id);
+    },
+  });
+
+  const bidiStreaming = useMutation<
+    void,
+    string,
+    { service: string; method: string; message: string }
+  >({
+    mutationKey: ['grpc_bidi_streaming', url],
+    mutationFn: async ({ service, method, message }) => {
+      if (url === null) throw new Error('No URL provided');
+      setMessages([]);
+      const id: string = await invoke('cmd_grpc_bidi_streaming', {
+        endpoint: url,
+        service,
+        method,
+        message,
+      });
+      setActiveConnectionId(id);
+    },
+  });
+
+  const cancel = useMutation({
+    mutationKey: ['grpc_cancel', url],
+    mutationFn: async () => {
+      await invoke('cmd_grpc_cancel', { id: activeConnectionId });
+      setActiveConnectionId(null);
     },
   });
 
@@ -71,7 +100,9 @@ export function useGrpc(url: string | null) {
   return {
     unary,
     serverStreaming,
+    bidiStreaming,
     schema: reflect.data,
+    cancel,
     messages,
   };
 }
