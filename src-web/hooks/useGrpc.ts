@@ -1,9 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { message } from '@tauri-apps/api/dialog';
 import { emit } from '@tauri-apps/api/event';
 import { useState } from 'react';
-import { send } from 'vite';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
 
 interface ReflectResponseService {
@@ -20,6 +18,7 @@ export interface GrpcMessage {
 export function useGrpc(url: string | null) {
   const [messages, setMessages] = useState<GrpcMessage[]>([]);
   const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
+
   useListenToTauriEvent<string>(
     'grpc_message',
     (event) => {
@@ -28,8 +27,9 @@ export function useGrpc(url: string | null) {
         { message: event.payload, time: new Date(), type: 'server' },
       ]);
     },
-    [],
+    [setMessages],
   );
+
   const unary = useMutation<string, string, { service: string; method: string; message: string }>({
     mutationKey: ['grpc_unary', url],
     mutationFn: async ({ service, method, message }) => {
@@ -94,8 +94,8 @@ export function useGrpc(url: string | null) {
   const cancel = useMutation({
     mutationKey: ['grpc_cancel', url],
     mutationFn: async () => {
-      await emit('grpc_message_in', 'Cancel');
       setActiveConnectionId(null);
+      await emit('grpc_message_in', 'Cancel');
       setMessages((m) => [
         ...m,
         { type: 'info', message: 'Cancelled by client', time: new Date() },

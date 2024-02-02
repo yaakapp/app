@@ -1,10 +1,11 @@
 import classNames from 'classnames';
+import type { ReactNode } from 'react';
 
 interface Props {
   orientation?: 'horizontal' | 'vertical';
   variant?: 'primary' | 'secondary';
   className?: string;
-  children?: string;
+  children?: ReactNode;
 }
 
 export function Separator({
