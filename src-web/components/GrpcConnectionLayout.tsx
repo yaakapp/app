@@ -193,7 +193,7 @@ export function GrpcConnectionLayout({ style }: Props) {
               <IconButton
                 className="border border-highlight"
                 size="sm"
-                title="ofo"
+                title="to-do"
                 hotkeyAction="request.send"
                 onClick={handleConnect}
                 icon={
@@ -205,6 +205,15 @@ export function GrpcConnectionLayout({ style }: Props) {
                     ? 'arrowUpDown'
                     : 'sendHorizontal'
                 }
+              />
+              <IconButton
+                className="border border-highlight"
+                size="sm"
+                title="to-do"
+                onClick={async () => {
+                  await grpc.cancel.mutateAsync();
+                }}
+                icon="trash"
               />
             </HStack>
           </div>

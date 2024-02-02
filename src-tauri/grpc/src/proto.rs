@@ -36,12 +36,6 @@ pub async fn fill_pool(
         .http2_only(true)
         .build(connector);
 
-    println!(
-        "URI uri={} host={:?} authority={:?}",
-        uri,
-        uri.host(),
-        uri.authority()
-    );
     let mut client = ServerReflectionClient::with_origin(transport.clone(), uri.clone());
     let services = list_services(&mut client).await;
 

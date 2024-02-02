@@ -1,5 +1,5 @@
-use std::fs::{create_dir_all, File};
 use std::fs;
+use std::fs::{create_dir_all, File};
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -7,19 +7,19 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use log::{error, info, warn};
-use reqwest::{multipart, Url};
 use reqwest::redirect::Policy;
-use sqlx::{Pool, Sqlite};
+use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Wry};
 
 use crate::{emit_side_effect, models, render, response_err};
 
 pub async fn send_http_request(
-    app_handle: &AppHandle<Wry>,
+    app_handle: AppHandle<Wry>,
     db: &Pool<Sqlite>,
     request: models::HttpRequest,
     response: &models::HttpResponse,
@@ -88,7 +88,7 @@ pub async fn send_http_request(
     let url = match Url::from_str(url_string.as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle, db).await;
+            return response_err(response, e.to_string(), app_handle.clone(), db).await;
         }
     };
 
@@ -293,7 +293,7 @@ pub async fn send_http_request(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle, db).await;
+            return response_err(response, e.to_string(), app_handle.clone(), db).await;
         }
     };
 
@@ -366,7 +366,7 @@ pub async fn send_http_request(
                 .await
                 .expect("Failed to update response");
             if !request.id.is_empty() {
-                emit_side_effect(app_handle, "updated_model", &response);
+                emit_side_effect(app_handle.clone(), "updated_model", &response);
             }
 
             // Copy response to download path, if specified
