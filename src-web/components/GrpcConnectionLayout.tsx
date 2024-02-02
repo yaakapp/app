@@ -154,6 +154,8 @@ export function GrpcConnectionLayout({ style }: Props) {
 
   return (
     <SplitLayout
+      name="grpc_layout"
+      className="p-3"
       style={style}
       leftSlot={() => (
         <VStack space={2}>
@@ -188,7 +190,10 @@ export function GrpcConnectionLayout({ style }: Props) {
               >
                 <Button
                   size="sm"
-                  className="border border-highlight font-mono text-xs text-gray-800"
+                  className={classNames(
+                    'border border-highlight font-mono text-xs text-gray-800',
+                    paneSize < 400 && 'flex-1',
+                  )}
                   rightSlot={<Icon className="text-gray-600" size="sm" icon="chevronDown" />}
                 >
                   {select.options.find((o) => o.value === select.value)?.label}
@@ -198,7 +203,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                 className="border border-highlight"
                 size="sm"
                 title="to-do"
-                hotkeyAction="request.send"
+                hotkeyAction={grpc.isStreaming ? undefined : 'request.send'}
                 onClick={grpc.isStreaming ? handleCancel : handleConnect}
                 icon={
                   grpc.isStreaming
@@ -212,7 +217,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                     : 'sendHorizontal'
                 }
               />
-              {activeMethod?.clientStreaming && (
+              {activeMethod?.clientStreaming && grpc.isStreaming && (
                 <IconButton
                   className="border border-highlight"
                   size="sm"
@@ -251,62 +256,63 @@ export function GrpcConnectionLayout({ style }: Props) {
                 {grpc.unary.error}
               </Banner>
             ) : grpc.messages.length > 0 ? (
-              <div className="grid grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
-                <div className="overflow-y-auto">
-                  {...grpc.messages.map((m) => (
-                    <HStack
-                      key={m.time.getTime()}
-                      space={2}
-                      onClick={() => {
-                        if (m === activeMessage) setActiveMessage(null);
-                        else setActiveMessage(m);
-                      }}
-                      alignItems="center"
-                      className={classNames(
-                        'px-2 py-1 font-mono',
-                        m === activeMessage && 'bg-highlight',
-                      )}
-                    >
-                      <Icon
-                        className={
-                          m.type === 'server'
-                            ? 'text-blue-600'
-                            : m.type === 'client'
-                            ? 'text-green-600'
-                            : 'text-gray-600'
-                        }
-                        icon={
-                          m.type === 'server'
-                            ? 'arrowBigDownDash'
-                            : m.type === 'client'
-                            ? 'arrowBigUpDash'
-                            : 'info'
-                        }
-                      />
-                      <div className="w-full truncate text-gray-800 text-xs">{m.message}</div>
-                      <div className="text-gray-600 text-2xs" title={m.time.toISOString()}>
-                        {format(m.time, 'HH:mm:ss')}
+              <SplitLayout
+                name="grpc_messages2"
+                minHeightPx={20}
+                defaultRatio={0.25}
+                leftSlot={() => (
+                  <div className="overflow-y-auto">
+                    {...grpc.messages.map((m, i) => (
+                      <HStack
+                        key={`${m.time.getTime()}::${m.message}::${i}`}
+                        space={2}
+                        onClick={() => {
+                          if (m === activeMessage) setActiveMessage(null);
+                          else setActiveMessage(m);
+                        }}
+                        alignItems="center"
+                        className={classNames(
+                          'px-2 py-1 font-mono',
+                          m === activeMessage && 'bg-highlight',
+                        )}
+                      >
+                        <Icon
+                          className={
+                            m.type === 'server'
+                              ? 'text-blue-600'
+                              : m.type === 'client'
+                              ? 'text-green-600'
+                              : 'text-gray-600'
+                          }
+                          icon={
+                            m.type === 'server'
+                              ? 'arrowBigDownDash'
+                              : m.type === 'client'
+                              ? 'arrowBigUpDash'
+                              : 'info'
+                          }
+                        />
+                        <div className="w-full truncate text-gray-800 text-xs">{m.message}</div>
+                        <div className="text-gray-600 text-2xs" title={m.time.toISOString()}>
+                          {format(m.time, 'HH:mm:ss')}
+                        </div>
+                      </HStack>
+                    ))}
+                  </div>
+                )}
+                rightSlot={() =>
+                  activeMessage && (
+                    <div className="grid grid-rows-[auto_minmax(0,1fr)]">
+                      <div className="pb-3 px-2">
+                        <Separator />
                       </div>
-                    </HStack>
-                  ))}
-                </div>
-                <div className={classNames(activeMessage ? 'block' : 'hidden')}>
-                  <div className="pb-1 px-2">
-                    <Separator />
-                  </div>
-                  <div className="pl-2 pb-1 h-[6rem]">
-                    <JsonAttributeTree attrValue={JSON.parse(activeMessage?.message ?? '{}')} />
-                  </div>
-                  {/*<Editor*/}
-                  {/*  className="bg-gray-50 dark:bg-gray-100 max-h-30"*/}
-                  {/*  contentType="application/json"*/}
-                  {/*  heightMode="auto"*/}
-                  {/*  defaultValue={tryFormatJson(activeMessage?.message ?? '')}*/}
-                  {/*  forceUpdateKey={activeMessage?.time.getTime()}*/}
-                  {/*  readOnly*/}
-                  {/*/>*/}
-                </div>
-              </div>
+                      <div className="pl-2 overflow-y-auto">
+                        <JsonAttributeTree attrValue={JSON.parse(activeMessage?.message ?? '{}')} />
+                      </div>
+                    </div>
+                  )
+                }
+              />
             ) : resp ? (
               <Editor
                 className="bg-gray-50 dark:bg-gray-100"
