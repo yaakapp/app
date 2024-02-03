@@ -2,7 +2,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
-import { type } from '@tauri-apps/api/os';
 import { useEffect, useRef, useState } from 'react';
 import { tryFormatJson } from '../lib/formatters';
 import { useKeyValue } from './useKeyValue';
@@ -147,7 +146,7 @@ export function useGrpc(url: string | null, requestId: string | null) {
     unary,
     serverStreaming,
     bidiStreaming,
-    schema: reflect.data,
+    services: reflect.data,
     cancel,
     messages,
     isStreaming: activeConnectionId !== null,

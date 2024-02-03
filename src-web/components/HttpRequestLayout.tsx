@@ -12,7 +12,7 @@ export function HttpRequestLayout({ style }: Props) {
   return (
     <SplitLayout
       name="http_layout"
-      className="p-3"
+      className="p-3 gap-1.5"
       style={style}
       leftSlot={({ orientation, style }) => (
         <RequestPane style={style} fullHeight={orientation === 'horizontal'} />

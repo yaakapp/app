@@ -54,11 +54,11 @@ export function GrpcConnectionLayout({ style }: Props) {
   const grpc = useGrpc(url.value ?? null, activeRequestId);
 
   const activeMethod = useMemo(() => {
-    if (grpc.schema == null) return null;
-    const s = grpc.schema.find((s) => s.name === service.value);
+    if (grpc.services == null) return null;
+    const s = grpc.services.find((s) => s.name === service.value);
     if (s == null) return null;
     return s.methods.find((m) => m.name === method.value);
-  }, [grpc.schema, method.value, service.value]);
+  }, [grpc.services, method.value, service.value]);
 
   const handleCancel = useCallback(() => {
     grpc.cancel.mutateAsync().catch(console.error);
@@ -111,12 +111,11 @@ export function GrpcConnectionLayout({ style }: Props) {
   );
 
   useEffect(() => {
-    console.log('GrpcConnectionLayout');
-    if (grpc.schema == null) return;
-    const s = grpc.schema.find((s) => s.name === service.value);
+    if (grpc.services == null) return;
+    const s = grpc.services.find((s) => s.name === service.value);
     if (s == null) {
-      service.set(grpc.schema[0]?.name ?? null);
-      method.set(grpc.schema[0]?.methods[0]?.name ?? null);
+      service.set(grpc.services[0]?.name ?? null);
+      method.set(grpc.services[0]?.methods[0]?.name ?? null);
       return;
     }
 
@@ -125,7 +124,7 @@ export function GrpcConnectionLayout({ style }: Props) {
       method.set(s.methods[0]?.name ?? null);
       return;
     }
-  }, [grpc.schema, method, service]);
+  }, [grpc.services, method, service]);
 
   const handleChangeService = useCallback(
     (v: string) => {
@@ -139,7 +138,7 @@ export function GrpcConnectionLayout({ style }: Props) {
 
   const select = useMemo(() => {
     const options =
-      grpc.schema?.flatMap((s) =>
+      grpc.services?.flatMap((s) =>
         s.methods.map((m) => ({
           label: `${s.name.split('.', 2).pop() ?? s.name}/${m.name}`,
           value: `${s.name}/${m.name}`,
@@ -147,7 +146,7 @@ export function GrpcConnectionLayout({ style }: Props) {
       ) ?? [];
     const value = `${service.value ?? ''}/${method.value ?? ''}`;
     return { value, options };
-  }, [grpc.schema, method.value, service.value]);
+  }, [grpc.services, method.value, service.value]);
 
   const [paneSize, setPaneSize] = useState(99999);
   const urlContainerEl = useRef<HTMLDivElement>(null);
@@ -162,14 +161,14 @@ export function GrpcConnectionLayout({ style }: Props) {
   return (
     <SplitLayout
       name="grpc_layout"
-      className="p-3"
+      className="p-3 gap-1.5"
       style={style}
       leftSlot={() => (
         <VStack space={2}>
           <div
             ref={urlContainerEl}
             className={classNames(
-              'grid grid-cols-[minmax(0,1fr)_auto_auto] gap-1.5',
+              'grid grid-cols-[minmax(0,1fr)_auto] gap-1.5',
               paneSize < 400 && '!grid-cols-1',
             )}
           >
