@@ -121,7 +121,6 @@ export function Sidebar({ className }: Props) {
       childItems.sort((a, b) => a.sortPriority - b.sortPriority);
       const depth = node.depth + 1;
       for (const item of childItems) {
-        console.log('ADD ITEM', item.id, item);
         treeParentMap[item.id] = node;
         node.children.push(next({ item, children: [], depth }));
         if (item.model !== 'folder') {
