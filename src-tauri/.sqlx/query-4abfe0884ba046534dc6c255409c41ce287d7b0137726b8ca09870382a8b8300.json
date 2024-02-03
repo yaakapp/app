@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO grpc_messages (\n                id, workspace_id, request_id, connection_id, message\n            )\n            VALUES (?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n                updated_at = CURRENT_TIMESTAMP,\n                message = excluded.message\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "4abfe0884ba046534dc6c255409c41ce287d7b0137726b8ca09870382a8b8300"
+}

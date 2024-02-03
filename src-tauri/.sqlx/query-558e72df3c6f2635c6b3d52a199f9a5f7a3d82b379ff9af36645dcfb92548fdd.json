@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                folder_id,\n                name,\n                sort_priority\n            FROM folders\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, created_at, updated_at, folder_id, name, sort_priority\n            FROM folders\n            WHERE workspace_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -58,5 +58,5 @@
       false
     ]
   },
-  "hash": "1428d25b6aa3d6ec55742a968571fa951da0406d7bb32408883c584eae7dd53c"
+  "hash": "558e72df3c6f2635c6b3d52a199f9a5f7a3d82b379ff9af36645dcfb92548fdd"
 }

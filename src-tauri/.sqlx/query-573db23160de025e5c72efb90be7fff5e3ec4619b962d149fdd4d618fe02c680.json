@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                folder_id,\n                created_at,\n                updated_at,\n                name,\n                url,\n                url_parameters AS \"url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>\",\n                method,\n                body AS \"body!: Json<HashMap<String, JsonValue>>\",\n                body_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                authentication_type,\n                sort_priority,\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, url, method,\n                body_type, authentication_type, sort_priority,\n                url_parameters AS \"url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>\",\n                body AS \"body!: Json<HashMap<String, JsonValue>>\",\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                headers AS \"headers!: sqlx::types::Json<Vec<HttpRequestHeader>>\"\n            FROM http_requests\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -44,39 +44,39 @@
         "type_info": "Text"
       },
       {
-        "name": "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
+        "name": "method",
         "ordinal": 8,
         "type_info": "Text"
       },
       {
-        "name": "method",
+        "name": "body_type",
         "ordinal": 9,
         "type_info": "Text"
       },
       {
-        "name": "body!: Json<HashMap<String, JsonValue>>",
+        "name": "authentication_type",
         "ordinal": 10,
         "type_info": "Text"
       },
       {
-        "name": "body_type",
+        "name": "sort_priority",
         "ordinal": 11,
-        "type_info": "Text"
+        "type_info": "Float"
       },
       {
-        "name": "authentication!: Json<HashMap<String, JsonValue>>",
+        "name": "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
         "ordinal": 12,
         "type_info": "Text"
       },
       {
-        "name": "authentication_type",
+        "name": "body!: Json<HashMap<String, JsonValue>>",
         "ordinal": 13,
         "type_info": "Text"
       },
       {
-        "name": "sort_priority",
+        "name": "authentication!: Json<HashMap<String, JsonValue>>",
         "ordinal": 14,
-        "type_info": "Float"
+        "type_info": "Text"
       },
       {
         "name": "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>",
@@ -97,14 +97,14 @@
       false,
       false,
       false,
-      false,
-      false,
+      true,
       true,
       false,
-      true,
+      false,
+      false,
       false,
       false
     ]
   },
-  "hash": "6483f3ffeb90e019e9078d98bb831b8e4fbedfb45751d6cd33bd42e518b634dd"
+  "hash": "573db23160de025e5c72efb90be7fff5e3ec4619b962d149fdd4d618fe02c680"
 }

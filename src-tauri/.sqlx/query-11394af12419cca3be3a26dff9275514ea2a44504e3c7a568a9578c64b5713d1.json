@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO http_requests (\n                id, workspace_id, folder_id, name, url, url_parameters, method, body, body_type,\n                authentication, authentication_type, headers, sort_priority\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               folder_id = excluded.folder_id,\n               method = excluded.method,\n               headers = excluded.headers,\n               body = excluded.body,\n               body_type = excluded.body_type,\n               authentication = excluded.authentication,\n               authentication_type = excluded.authentication_type,\n               url = excluded.url,\n               url_parameters = excluded.url_parameters,\n               sort_priority = excluded.sort_priority\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 13
+    },
+    "nullable": []
+  },
+  "hash": "11394af12419cca3be3a26dff9275514ea2a44504e3c7a568a9578c64b5713d1"
+}

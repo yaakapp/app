@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                workspace_id,\n                created_at,\n                updated_at,\n                folder_id,\n                name,\n                sort_priority\n            FROM folders\n            WHERE workspace_id = ?\n        ",
+  "query": "\n            SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method\n            FROM grpc_connections\n            WHERE workspace_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -19,29 +19,29 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "request_id",
         "ordinal": 3,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 4,
         "type_info": "Datetime"
       },
       {
-        "name": "folder_id",
+        "name": "updated_at",
         "ordinal": 5,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
-        "name": "name",
+        "name": "service",
         "ordinal": 6,
         "type_info": "Text"
       },
       {
-        "name": "sort_priority",
+        "name": "method",
         "ordinal": 7,
-        "type_info": "Float"
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -53,10 +53,10 @@
       false,
       false,
       false,
-      true,
+      false,
       false,
       false
     ]
   },
-  "hash": "1517b0f86c841b5f1247bd40c3a9b38ab001d846a410b6e3cd36f9e844d50ddb"
+  "hash": "29d3bee45c4fca4c63231e1205edc708818737fe37137dbba6af2d784c3c0221"
 }
