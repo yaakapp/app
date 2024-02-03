@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                name,\n                description,\n                setting_request_timeout,\n                setting_follow_redirects,\n                setting_validate_certificates,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces\n        ",
+  "query": "\n            SELECT\n                id, model, created_at, updated_at, name, description, setting_request_timeout,\n                setting_follow_redirects, setting_validate_certificates,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -51,11 +51,11 @@
       {
         "name": "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>",
         "ordinal": 9,
-        "type_info": "Text"
+        "type_info": "Null"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       false,
@@ -70,5 +70,5 @@
       false
     ]
   },
-  "hash": "20cf0f8b71e600bc40ee204b60a12b2f3728178f3b8788d2e5cc92821b74d470"
+  "hash": "9ba3f783238b77637ffded4171b2fbb5e5ad0be952a0d832448d65cc5f0effc1"
 }

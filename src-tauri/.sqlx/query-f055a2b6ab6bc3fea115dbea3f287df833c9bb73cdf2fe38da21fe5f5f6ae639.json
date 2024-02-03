@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id,\n                model,\n                created_at,\n                updated_at,\n                theme,\n                appearance,\n                update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "query": "\n            SELECT id, model, workspace_id, request_id, connection_id, created_at, message\n            FROM grpc_messages\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -14,33 +14,33 @@
         "type_info": "Text"
       },
       {
-        "name": "created_at",
+        "name": "workspace_id",
         "ordinal": 2,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "updated_at",
+        "name": "request_id",
         "ordinal": 3,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "theme",
+        "name": "connection_id",
         "ordinal": 4,
         "type_info": "Text"
       },
       {
-        "name": "appearance",
+        "name": "created_at",
         "ordinal": 5,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
-        "name": "update_channel",
+        "name": "message",
         "ordinal": 6,
         "type_info": "Text"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
       false,
@@ -52,5 +52,5 @@
       false
     ]
   },
-  "hash": "3b3fb6271340c6ec21a10b4f1b20502c86c425e0b53ac07692f8a4ed0be09335"
+  "hash": "f055a2b6ab6bc3fea115dbea3f287df833c9bb73cdf2fe38da21fe5f5f6ae639"
 }

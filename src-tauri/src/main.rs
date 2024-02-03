@@ -17,7 +17,7 @@ use std::str::FromStr;
 use ::http::uri::InvalidUri;
 use ::http::Uri;
 use fern::colors::ColoredLevelConfig;
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde::Serialize;
@@ -46,7 +46,7 @@ use crate::models::{
     delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
     duplicate_request, find_cookie_jars, find_environments, find_folders, find_requests,
     find_responses, find_workspaces, generate_id, get_cookie_jar, get_environment, get_folder,
-    get_key_value_raw, get_or_create_settings, get_request, get_response, get_workspace,
+    get_http_request, get_key_value_raw, get_or_create_settings, get_response, get_workspace,
     get_workspace_export_resources, set_key_value_raw, update_response_if_id, update_settings,
     upsert_cookie_jar, upsert_environment, upsert_folder, upsert_request, upsert_workspace,
     CookieJar, Environment, EnvironmentVariable, Folder, HttpRequest, HttpResponse, KeyValue,
@@ -138,8 +138,8 @@ async fn cmd_grpc_bidi_streaming(
     app_handle: AppHandle<Wry>,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<String, String> {
-    let (in_msg_tx, mut in_msg_rx) = tauri::async_runtime::channel::<String>(16);
-    let maybe_in_msg_tx = Mutex::new(Some(in_msg_tx.clone()));
+    let (in_msg_tx, in_msg_rx) = tauri::async_runtime::channel::<String>(16);
+    let _maybe_in_msg_tx = Mutex::new(Some(in_msg_tx.clone()));
     let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
 
     let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
@@ -522,7 +522,7 @@ async fn cmd_send_request(
 ) -> Result<HttpResponse, String> {
     let db = &*db_state.lock().await;
 
-    let request = get_request(db, request_id)
+    let request = get_http_request(db, request_id)
         .await
         .expect("Failed to get request");
 
@@ -977,7 +977,7 @@ async fn cmd_get_request(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
     let db = &*db_state.lock().await;
-    get_request(db, id).await.map_err(|e| e.to_string())
+    get_http_request(db, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
