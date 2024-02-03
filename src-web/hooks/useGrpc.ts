@@ -4,6 +4,7 @@ import type { UnlistenFn } from '@tauri-apps/api/event';
 import { emit, listen } from '@tauri-apps/api/event';
 import { useEffect, useRef, useState } from 'react';
 import { tryFormatJson } from '../lib/formatters';
+import type { GrpcRequest } from '../lib/models';
 import { useKeyValue } from './useKeyValue';
 
 interface ReflectResponseService {
@@ -31,9 +32,9 @@ export function useGrpc(url: string | null, requestId: string | null) {
     unlisten.current?.();
   }, [requestId]);
 
-  const unary = useMutation<string, string, { service: string; method: string; message: string }>({
+  const unary = useMutation<string, string, GrpcRequest>({
     mutationKey: ['grpc_unary', url],
-    mutationFn: async ({ service, method, message }) => {
+    mutationFn: async ({ service, method, message, url }) => {
       if (url === null) throw new Error('No URL provided');
       return (await invoke('cmd_grpc_call_unary', {
         endpoint: url,
@@ -44,13 +45,9 @@ export function useGrpc(url: string | null, requestId: string | null) {
     },
   });
 
-  const serverStreaming = useMutation<
-    void,
-    string,
-    { service: string; method: string; message: string }
-  >({
+  const serverStreaming = useMutation<void, string, GrpcRequest>({
     mutationKey: ['grpc_server_streaming', url],
-    mutationFn: async ({ service, method, message }) => {
+    mutationFn: async ({ service, method, message, url }) => {
       if (url === null) throw new Error('No URL provided');
       await messages.set([
         {
@@ -79,13 +76,9 @@ export function useGrpc(url: string | null, requestId: string | null) {
     },
   });
 
-  const bidiStreaming = useMutation<
-    void,
-    string,
-    { service: string; method: string; message: string }
-  >({
+  const bidiStreaming = useMutation<void, string, GrpcRequest>({
     mutationKey: ['grpc_bidi_streaming', url],
-    mutationFn: async ({ service, method, message }) => {
+    mutationFn: async ({ service, method, message, url }) => {
       if (url === null) throw new Error('No URL provided');
       const id: string = await invoke('cmd_grpc_bidi_streaming', {
         endpoint: url,
@@ -93,7 +86,7 @@ export function useGrpc(url: string | null, requestId: string | null) {
         method,
         message,
       });
-      messages.set([
+      await messages.set([
         { type: 'info', message: `Started connection ${id}`, timestamp: new Date().toISOString() },
       ]);
       setActiveConnectionId(id);

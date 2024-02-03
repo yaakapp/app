@@ -1,11 +1,28 @@
 import { invoke } from '@tauri-apps/api';
-import type { CookieJar, Environment, Folder, HttpRequest, Settings, Workspace } from './models';
+import type {
+  CookieJar,
+  Environment,
+  Folder,
+  GrpcRequest,
+  HttpRequest,
+  Settings,
+  Workspace,
+} from './models';
 
 export async function getSettings(): Promise<Settings> {
   return invoke('cmd_get_settings', {});
 }
 
-export async function getRequest(id: string | null): Promise<HttpRequest | null> {
+export async function getGrpcRequest(id: string | null): Promise<GrpcRequest | null> {
+  if (id === null) return null;
+  const request: GrpcRequest = (await invoke('cmd_get_grpc_request', { id })) ?? null;
+  if (request == null) {
+    return null;
+  }
+  return request;
+}
+
+export async function getHttpRequest(id: string | null): Promise<HttpRequest | null> {
   if (id === null) return null;
   const request: HttpRequest = (await invoke('cmd_get_http_request', { id })) ?? null;
   if (request == null) {

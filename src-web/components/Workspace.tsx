@@ -34,7 +34,6 @@ export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
   const activeRequest = useActiveRequest();
-  console.log('ACTIVE REQUEST', activeRequest);
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);

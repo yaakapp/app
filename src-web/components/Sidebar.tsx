@@ -19,14 +19,15 @@ import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
+import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { usePrompt } from '../hooks/usePrompt';
-import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
+import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
@@ -69,7 +70,8 @@ export function Sidebar({ className }: Props) {
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTree, setSelectedTree] = useState<TreeNode | null>(null);
-  const updateAnyRequest = useUpdateAnyHttpRequest();
+  const updateAnyHttpRequest = useUpdateAnyHttpRequest();
+  const updateAnyGrpcRequest = useUpdateAnyGrpcRequest();
   const updateAnyFolder = useUpdateAnyFolder();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoveredTree, setHoveredTree] = useState<TreeNode | null>(null);
@@ -119,6 +121,7 @@ export function Sidebar({ className }: Props) {
       childItems.sort((a, b) => a.sortPriority - b.sortPriority);
       const depth = node.depth + 1;
       for (const item of childItems) {
+        console.log('ADD ITEM', item.id, item);
         treeParentMap[item.id] = node;
         node.children.push(next({ item, children: [], depth }));
         if (item.model !== 'folder') {
@@ -342,12 +345,11 @@ export function Sidebar({ className }: Props) {
               const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
               return updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
             } else if (child.item.model === 'grpc_request') {
-              // TODO
-              // const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-              // return updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
+              const updateRequest = (r: GrpcRequest) => ({ ...r, sortPriority, folderId });
+              return updateAnyGrpcRequest.mutateAsync({ id: child.item.id, update: updateRequest });
             } else if (child.item.model === 'http_request') {
               const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-              return updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
+              return updateAnyHttpRequest.mutateAsync({ id: child.item.id, update: updateRequest });
             }
           }),
         );
@@ -357,23 +359,23 @@ export function Sidebar({ className }: Props) {
           const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
           await updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
         } else if (child.item.model === 'grpc_request') {
-          // TODO
-          // const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-          // await updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
+          const updateRequest = (r: GrpcRequest) => ({ ...r, sortPriority, folderId });
+          await updateAnyGrpcRequest.mutateAsync({ id: child.item.id, update: updateRequest });
         } else if (child.item.model === 'http_request') {
           const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
-          await updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
+          await updateAnyHttpRequest.mutateAsync({ id: child.item.id, update: updateRequest });
         }
       }
       setDraggingId(null);
     },
     [
-      hoveredIndex,
-      hoveredTree,
       handleClearSelected,
+      hoveredTree,
+      hoveredIndex,
       treeParentMap,
       updateAnyFolder,
-      updateAnyRequest,
+      updateAnyGrpcRequest,
+      updateAnyHttpRequest,
     ],
   );
 
