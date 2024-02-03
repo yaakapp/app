@@ -9,6 +9,7 @@ export function trackEvent(
     | 'Workspace'
     | 'Environment'
     | 'Folder'
+    | 'GrpcRequest'
     | 'HttpRequest'
     | 'HttpResponse'
     | 'KeyValue',

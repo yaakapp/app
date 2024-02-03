@@ -6,7 +6,7 @@ import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
-import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
@@ -43,9 +43,9 @@ interface Props {
 const useActiveTab = createGlobalState<string>('body');
 
 export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
-  const activeRequest = useActiveRequest();
+  const activeRequest = useActiveRequest('http_request');
   const activeRequestId = activeRequest?.id ?? null;
-  const updateRequest = useUpdateRequest(activeRequestId);
+  const updateRequest = useUpdateHttpRequest(activeRequestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest?.id ?? null);

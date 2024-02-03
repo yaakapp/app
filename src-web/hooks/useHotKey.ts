@@ -6,11 +6,11 @@ import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
   | 'environmentEditor.toggle'
-  | 'grpc.send'
   | 'hotkeys.showHelp'
-  | 'request.create'
-  | 'request.duplicate'
-  | 'request.send'
+  | 'grpc_request.send'
+  | 'http_request.create'
+  | 'http_request.duplicate'
+  | 'http_request.send'
   | 'requestSwitcher.next'
   | 'requestSwitcher.prev'
   | 'settings.show'
@@ -20,11 +20,11 @@ export type HotkeyAction =
 
 const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
-  'grpc.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
+  'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
-  'request.create': ['CmdCtrl+n'],
-  'request.duplicate': ['CmdCtrl+d'],
-  'request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
+  'http_request.create': ['CmdCtrl+n'],
+  'http_request.duplicate': ['CmdCtrl+d'],
+  'http_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'requestSwitcher.next': ['Control+Shift+Tab'],
   'requestSwitcher.prev': ['Control+Tab'],
   'settings.show': ['CmdCtrl+,'],
@@ -35,11 +35,11 @@ const hotkeys: Record<HotkeyAction, string[]> = {
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
   'environmentEditor.toggle': 'Edit Environments',
-  'grpc.send': 'Send Message',
+  'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
-  'request.create': 'New Request',
-  'request.duplicate': 'Duplicate Request',
-  'request.send': 'Send Request',
+  'http_request.create': 'New Request',
+  'http_request.duplicate': 'Duplicate Request',
+  'http_request.send': 'Send Request',
   'requestSwitcher.next': 'Go To Previous Request',
   'requestSwitcher.prev': 'Go To Next Request',
   'settings.show': 'Open Settings',

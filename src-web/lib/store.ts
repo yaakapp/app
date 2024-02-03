@@ -7,7 +7,7 @@ export async function getSettings(): Promise<Settings> {
 
 export async function getRequest(id: string | null): Promise<HttpRequest | null> {
   if (id === null) return null;
-  const request: HttpRequest = (await invoke('cmd_get_request', { id })) ?? null;
+  const request: HttpRequest = (await invoke('cmd_get_http_request', { id })) ?? null;
   if (request == null) {
     return null;
   }

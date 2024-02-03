@@ -6,7 +6,7 @@ import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
 import { useConfirm } from './useConfirm';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 import { responsesQueryKey } from './useResponses';
 
 export function useDeleteAnyRequest() {
@@ -27,7 +27,7 @@ export function useDeleteAnyRequest() {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_request', { requestId: id });
+      return invoke('cmd_delete_http_request', { requestId: id });
     },
     onSettled: () => trackEvent('HttpRequest', 'Delete'),
     onSuccess: async (request) => {
@@ -36,7 +36,7 @@ export function useDeleteAnyRequest() {
 
       const { workspaceId, id: requestId } = request;
       queryClient.setQueryData(responsesQueryKey({ requestId }), []); // Responses were deleted
-      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey({ workspaceId }), (requests) =>
+      queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey({ workspaceId }), (requests) =>
         (requests ?? []).filter((r) => r.id !== requestId),
       );
     },

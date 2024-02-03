@@ -1,8 +1,8 @@
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{Pool, Sqlite};
 use sqlx::types::JsonValue;
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
 use crate::{is_dev, models};
@@ -15,6 +15,7 @@ pub enum AnalyticsResource {
     Dialog,
     Environment,
     Folder,
+    GrpcRequest,
     HttpRequest,
     HttpResponse,
     KeyValue,
@@ -30,6 +31,7 @@ impl AnalyticsResource {
             "CookieJar" => Some(AnalyticsResource::CookieJar),
             "Environment" => Some(AnalyticsResource::Environment),
             "Folder" => Some(AnalyticsResource::Folder),
+            "GrpcRequest" => Some(AnalyticsResource::GrpcRequest),
             "HttpRequest" => Some(AnalyticsResource::HttpRequest),
             "HttpResponse" => Some(AnalyticsResource::HttpResponse),
             "KeyValue" => Some(AnalyticsResource::KeyValue),
@@ -89,6 +91,7 @@ fn resource_name(resource: AnalyticsResource) -> &'static str {
         AnalyticsResource::Dialog => "dialog",
         AnalyticsResource::Environment => "environment",
         AnalyticsResource::Folder => "folder",
+        AnalyticsResource::GrpcRequest => "grpc_request",
         AnalyticsResource::HttpRequest => "http_request",
         AnalyticsResource::HttpResponse => "http_response",
         AnalyticsResource::KeyValue => "key_value",

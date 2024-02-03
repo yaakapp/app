@@ -110,7 +110,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         <>
           <span />
           <HotKeyList
-            hotkeys={['request.send', 'request.create', 'sidebar.toggle', 'urlBar.focus']}
+            hotkeys={['http_request.send', 'http_request.create', 'sidebar.toggle', 'urlBar.focus']}
           />
         </>
       )}
