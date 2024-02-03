@@ -3,11 +3,11 @@ import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useAlert } from '../hooks/useAlert';
 import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
-import { useKeyValue } from '../hooks/useKeyValue';
+import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Editor } from './core/Editor';
@@ -27,38 +27,20 @@ interface Props {
 }
 
 export function GrpcConnectionLayout({ style }: Props) {
-  const activeRequestId = useActiveRequestId();
-  const url = useKeyValue<string>({
-    namespace: 'debug',
-    key: ['grpc_url', activeRequestId ?? ''],
-    defaultValue: '',
-  });
+  const activeRequest = useActiveRequest('grpc_request');
+  const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const alert = useAlert();
-  const service = useKeyValue<string | null>({
-    namespace: 'debug',
-    key: ['grpc_service', activeRequestId ?? ''],
-    defaultValue: null,
-  });
-  const method = useKeyValue<string | null>({
-    namespace: 'debug',
-    key: ['grpc_method', activeRequestId ?? ''],
-    defaultValue: null,
-  });
-  const message = useKeyValue<string>({
-    namespace: 'debug',
-    key: ['grpc_message', activeRequestId ?? ''],
-    defaultValue: '',
-  });
   const [activeMessage, setActiveMessage] = useState<GrpcMessage | null>(null);
   const [resp, setResp] = useState<string>('');
-  const grpc = useGrpc(url.value ?? null, activeRequestId);
+  const grpc = useGrpc(activeRequest?.url ?? null, activeRequest?.id ?? null);
 
   const activeMethod = useMemo(() => {
-    if (grpc.services == null) return null;
-    const s = grpc.services.find((s) => s.name === service.value);
+    if (grpc.services == null || activeRequest == null) return null;
+
+    const s = grpc.services.find((s) => s.name === activeRequest.service);
     if (s == null) return null;
-    return s.methods.find((m) => m.name === method.value);
-  }, [grpc.services, method.value, service.value]);
+    return s.methods.find((m) => m.name === activeRequest.method);
+  }, [activeRequest, grpc.services]);
 
   const handleCancel = useCallback(() => {
     grpc.cancel.mutateAsync().catch(console.error);
@@ -67,9 +49,9 @@ export function GrpcConnectionLayout({ style }: Props) {
   const handleConnect = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
-      if (activeMethod == null) return;
+      if (activeMethod == null || activeRequest == null) return;
 
-      if (service.value == null || method.value == null) {
+      if (activeRequest.service == null || activeRequest.method == null) {
         alert({
           id: 'grpc-invalid-service-method',
           title: 'Error',
@@ -77,63 +59,54 @@ export function GrpcConnectionLayout({ style }: Props) {
         });
       }
       if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
-        await grpc.bidiStreaming.mutateAsync({
-          service: service.value ?? 'n/a',
-          method: method.value ?? 'n/a',
-          message: message.value ?? '',
-        });
+        await grpc.bidiStreaming.mutateAsync(activeRequest);
       } else if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
-        await grpc.serverStreaming.mutateAsync({
-          service: service.value ?? 'n/a',
-          method: method.value ?? 'n/a',
-          message: message.value ?? '',
-        });
+        await grpc.serverStreaming.mutateAsync(activeRequest);
       } else {
-        setResp(
-          await grpc.unary.mutateAsync({
-            service: service.value ?? 'n/a',
-            method: method.value ?? 'n/a',
-            message: message.value ?? '',
-          }),
-        );
+        setResp(await grpc.unary.mutateAsync(activeRequest));
       }
     },
-    [
-      activeMethod,
-      alert,
-      grpc.bidiStreaming,
-      grpc.serverStreaming,
-      grpc.unary,
-      message.value,
-      method.value,
-      service.value,
-    ],
+    [activeMethod, activeRequest, alert, grpc.bidiStreaming, grpc.serverStreaming, grpc.unary],
   );
 
   useEffect(() => {
-    if (grpc.services == null) return;
-    const s = grpc.services.find((s) => s.name === service.value);
+    if (grpc.services == null || activeRequest == null) return;
+    const s = grpc.services.find((s) => s.name === activeRequest.service);
     if (s == null) {
-      service.set(grpc.services[0]?.name ?? null);
-      method.set(grpc.services[0]?.methods[0]?.name ?? null);
+      updateRequest.mutate({
+        service: grpc.services[0]?.name ?? null,
+        method: grpc.services[0]?.methods[0]?.name ?? null,
+      });
       return;
     }
 
-    const m = s.methods.find((m) => m.name === method.value);
+    const m = s.methods.find((m) => m.name === activeRequest.method);
     if (m == null) {
-      method.set(s.methods[0]?.name ?? null);
+      updateRequest.mutate({ method: s.methods[0]?.name ?? null });
       return;
     }
-  }, [grpc.services, method, service]);
+  }, [activeRequest, grpc.services, updateRequest]);
 
   const handleChangeService = useCallback(
-    (v: string) => {
+    async (v: string) => {
       const [serviceName, methodName] = v.split('/', 2);
       if (serviceName == null || methodName == null) throw new Error('Should never happen');
-      method.set(methodName);
-      service.set(serviceName);
+      await updateRequest.mutateAsync({
+        service: serviceName,
+        method: methodName,
+      });
     },
-    [method, service],
+    [updateRequest],
+  );
+
+  const handleChangeUrl = useCallback(
+    (url: string) => updateRequest.mutateAsync({ url }),
+    [updateRequest],
+  );
+
+  const handleChangeMessage = useCallback(
+    (message: string) => updateRequest.mutateAsync({ message }),
+    [updateRequest],
   );
 
   const select = useMemo(() => {
@@ -144,9 +117,9 @@ export function GrpcConnectionLayout({ style }: Props) {
           value: `${s.name}/${m.name}`,
         })),
       ) ?? [];
-    const value = `${service.value ?? ''}/${method.value ?? ''}`;
+    const value = `${activeRequest?.service ?? ''}/${activeRequest?.method ?? ''}`;
     return { value, options };
-  }, [grpc.services, method.value, service.value]);
+  }, [activeRequest?.method, activeRequest?.service, grpc.services]);
 
   const [paneSize, setPaneSize] = useState(99999);
   const urlContainerEl = useRef<HTMLDivElement>(null);
@@ -154,8 +127,8 @@ export function GrpcConnectionLayout({ style }: Props) {
     setPaneSize(entry.contentRect.width);
   });
 
-  if (url.isLoading || url.value == null) {
-    return null;
+  if (activeRequest == null) {
+    return;
   }
 
   return (
@@ -173,14 +146,14 @@ export function GrpcConnectionLayout({ style }: Props) {
             )}
           >
             <UrlBar
-              url={url.value ?? ''}
+              url={activeRequest.url ?? ''}
               method={null}
               submitIcon={null}
-              forceUpdateKey={activeRequestId ?? ''}
+              forceUpdateKey={activeRequest?.id ?? ''}
               placeholder="localhost:50051"
               onSubmit={handleConnect}
               isLoading={grpc.unary.isLoading}
-              onUrlChange={url.set}
+              onUrlChange={handleChangeUrl}
             />
             <HStack space={1.5}>
               <RadioDropdown
@@ -228,23 +201,21 @@ export function GrpcConnectionLayout({ style }: Props) {
                   size="sm"
                   title="to-do"
                   hotkeyAction="grpc_request.send"
-                  onClick={() => grpc.send.mutateAsync({ message: message.value ?? '' })}
+                  onClick={() => grpc.send.mutateAsync({ message: activeRequest.message ?? '' })}
                   icon="sendHorizontal"
                 />
               )}
             </HStack>
           </div>
-          {!service.isLoading && !method.isLoading && (
-            <GrpcEditor
-              forceUpdateKey={activeRequestId ?? ''}
-              url={url.value ?? ''}
-              defaultValue={message.value}
-              onChange={message.set}
-              service={service.value ?? null}
-              method={method.value ?? null}
-              className="bg-gray-50"
-            />
-          )}
+          <GrpcEditor
+            forceUpdateKey={activeRequest?.id ?? ''}
+            url={activeRequest.url ?? ''}
+            defaultValue={activeRequest.message}
+            onChange={handleChangeMessage}
+            service={activeRequest.service}
+            method={activeRequest.method}
+            className="bg-gray-50"
+          />
         </VStack>
       )}
       rightSlot={() =>
