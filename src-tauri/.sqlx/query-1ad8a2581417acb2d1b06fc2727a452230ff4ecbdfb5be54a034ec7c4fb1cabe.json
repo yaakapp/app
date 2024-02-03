@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO grpc_connections (\n                id, workspace_id, request_id, service, method\n            )\n            VALUES ( ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n                updated_at = CURRENT_TIMESTAMP,\n                service = excluded.service,\n                method = excluded.method\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "1ad8a2581417acb2d1b06fc2727a452230ff4ecbdfb5be54a034ec7c4fb1cabe"
+}
