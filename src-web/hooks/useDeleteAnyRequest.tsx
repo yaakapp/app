@@ -4,7 +4,7 @@ import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { HttpRequest } from '../lib/models';
-import { getRequest } from '../lib/store';
+import { getHttpRequest } from '../lib/store';
 import { useConfirm } from './useConfirm';
 import { httpRequestsQueryKey } from './useHttpRequests';
 import { responsesQueryKey } from './useResponses';
@@ -15,7 +15,7 @@ export function useDeleteAnyRequest() {
 
   return useMutation<HttpRequest | null, string, string>({
     mutationFn: async (id) => {
-      const request = await getRequest(id);
+      const request = await getHttpRequest(id);
       const confirmed = await confirm({
         id: 'delete-request',
         title: 'Delete Request',
