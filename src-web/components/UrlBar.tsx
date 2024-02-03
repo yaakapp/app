@@ -83,7 +83,7 @@ export const UrlBar = memo(function UrlBar({
               className="w-8 mr-0.5 my-0.5"
               icon={isLoading ? 'update' : submitIcon}
               spin={isLoading}
-              hotkeyAction="request.send"
+              hotkeyAction="http_request.send"
             />
           )
         }

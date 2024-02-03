@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { HttpRequest } from '../lib/models';
 import { getRequest } from '../lib/store';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 
-export function useUpdateAnyRequest() {
+export function useUpdateAnyHttpRequest() {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -20,14 +20,14 @@ export function useUpdateAnyRequest() {
 
       const patchedRequest =
         typeof update === 'function' ? update(request) : { ...request, ...update };
-      await invoke('cmd_update_request', { request: patchedRequest });
+      await invoke('cmd_update_http_request', { request: patchedRequest });
     },
     onMutate: async ({ id, update }) => {
       const request = await getRequest(id);
       if (request === null) return;
       const patchedRequest =
         typeof update === 'function' ? update(request) : { ...request, ...update };
-      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(request), (requests) =>
+      queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey(request), (requests) =>
         (requests ?? []).map((r) => (r.id === patchedRequest.id ? patchedRequest : r)),
       );
     },

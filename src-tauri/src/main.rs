@@ -44,13 +44,14 @@ use crate::http::send_http_request;
 use crate::models::{
     cancel_pending_responses, create_response, delete_all_responses, delete_cookie_jar,
     delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
-    duplicate_request, find_cookie_jars, find_environments, find_folders, find_requests,
-    find_responses, find_workspaces, generate_id, get_cookie_jar, get_environment, get_folder,
-    get_http_request, get_key_value_raw, get_or_create_settings, get_response, get_workspace,
-    get_workspace_export_resources, set_key_value_raw, update_response_if_id, update_settings,
-    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_request, upsert_workspace,
-    CookieJar, Environment, EnvironmentVariable, Folder, HttpRequest, HttpResponse, KeyValue,
-    Settings, Workspace,
+    duplicate_grpc_request, duplicate_http_request, list_cookie_jars, list_folders, list_requests,
+    list_responses, list_workspaces, generate_id, get_cookie_jar, get_environment, get_folder,
+    get_grpc_request, get_http_request, get_key_value_raw, get_or_create_settings, get_response,
+    get_workspace, get_workspace_export_resources, list_environments, list_grpc_requests,
+    set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar,
+    upsert_environment, upsert_folder, upsert_grpc_request, upsert_http_request, upsert_workspace,
+    CookieJar, Environment, EnvironmentVariable, Folder, GrpcRequest, HttpRequest, HttpResponse,
+    KeyValue, Settings, Workspace,
 };
 use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -467,7 +468,7 @@ async fn cmd_import_data(
             }
 
             for r in r.resources.requests {
-                let x = upsert_request(db, r)
+                let x = upsert_http_request(db, r)
                     .await
                     .expect("Failed to create request");
                 imported_resources.requests.push(x.clone());
@@ -747,7 +748,46 @@ async fn cmd_create_environment(
 }
 
 #[tauri::command]
-async fn cmd_create_request(
+async fn cmd_create_grpc_request(
+    workspace_id: &str,
+    name: &str,
+    sort_priority: f64,
+    folder_id: Option<&str>,
+    window: Window<Wry>,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcRequest, String> {
+    let db = &*db_state.lock().await;
+    let created = upsert_grpc_request(
+        db,
+        &GrpcRequest {
+            workspace_id: workspace_id.to_string(),
+            name: name.to_string(),
+            folder_id: folder_id.map(|s| s.to_string()),
+            sort_priority,
+            ..Default::default()
+        },
+    )
+    .await
+    .expect("Failed to create grpc request");
+
+    emit_and_return(&window, "created_model", created)
+}
+
+#[tauri::command]
+async fn cmd_duplicate_grpc_request(
+    id: &str,
+    window: Window<Wry>,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcRequest, String> {
+    let db = &*db_state.lock().await;
+    let request = duplicate_grpc_request(db, id)
+        .await
+        .expect("Failed to duplicate grpc request");
+    emit_and_return(&window, "updated_model", request)
+}
+
+#[tauri::command]
+async fn cmd_create_http_request(
     workspace_id: &str,
     name: &str,
     sort_priority: f64,
@@ -756,7 +796,7 @@ async fn cmd_create_request(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
     let db = &*db_state.lock().await;
-    let created_request = upsert_request(
+    let created_request = upsert_http_request(
         db,
         HttpRequest {
             workspace_id: workspace_id.to_string(),
@@ -768,21 +808,21 @@ async fn cmd_create_request(
         },
     )
     .await
-    .expect("Failed to create request");
+    .expect("Failed to create http request");
 
     emit_and_return(&window, "created_model", created_request)
 }
 
 #[tauri::command]
-async fn cmd_duplicate_request(
+async fn cmd_duplicate_http_request(
     id: &str,
     window: Window<Wry>,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
     let db = &*db_state.lock().await;
-    let request = duplicate_request(db, id)
+    let request = duplicate_http_request(db, id)
         .await
-        .expect("Failed to duplicate request");
+        .expect("Failed to duplicate http request");
     emit_and_return(&window, "updated_model", request)
 }
 
@@ -815,20 +855,46 @@ async fn cmd_update_environment(
 }
 
 #[tauri::command]
-async fn cmd_update_request(
+async fn cmd_update_grpc_request(
+    request: GrpcRequest,
+    window: Window<Wry>,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcRequest, String> {
+    let db = &*db_state.lock().await;
+    let updated_request = upsert_grpc_request(db, &request)
+        .await
+        .expect("Failed to update grpc request");
+    emit_and_return(&window, "updated_model", updated_request)
+}
+
+#[tauri::command]
+async fn cmd_update_http_request(
     request: HttpRequest,
     window: Window<Wry>,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
     let db = &*db_state.lock().await;
-    let updated_request = upsert_request(db, request)
+    let updated_request = upsert_http_request(db, request)
         .await
         .expect("Failed to update request");
     emit_and_return(&window, "updated_model", updated_request)
 }
 
 #[tauri::command]
-async fn cmd_delete_request(
+async fn cmd_delete_grpc_request(
+    window: Window<Wry>,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    request_id: &str,
+) -> Result<HttpRequest, String> {
+    let db = &*db_state.lock().await;
+    let req = delete_request(db, request_id)
+        .await
+        .expect("Failed to delete request");
+    emit_and_return(&window, "deleted_model", req)
+}
+
+#[tauri::command]
+async fn cmd_delete_http_request(
     window: Window<Wry>,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
     request_id: &str,
@@ -846,7 +912,7 @@ async fn cmd_list_folders(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<Folder>, String> {
     let db = &*db_state.lock().await;
-    find_folders(db, workspace_id)
+    list_folders(db, workspace_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -917,12 +983,25 @@ async fn cmd_delete_environment(
 }
 
 #[tauri::command]
-async fn cmd_list_requests(
+async fn cmd_list_grpc_requests(
+    workspace_id: &str,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<GrpcRequest>, String> {
+    let db = &*db_state.lock().await;
+    let requests = list_grpc_requests(db, workspace_id)
+        .await
+        .expect("Failed to find grpc requests");
+    // .map_err(|e| e.to_string())
+    Ok(requests)
+}
+
+#[tauri::command]
+async fn cmd_list_http_requests(
     workspace_id: &str,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<HttpRequest>, String> {
     let db = &*db_state.lock().await;
-    let requests = find_requests(db, workspace_id)
+    let requests = list_requests(db, workspace_id)
         .await
         .expect("Failed to find requests");
     // .map_err(|e| e.to_string())
@@ -935,7 +1014,7 @@ async fn cmd_list_environments(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<Environment>, String> {
     let db = &*db_state.lock().await;
-    let environments = find_environments(db, workspace_id)
+    let environments = list_environments(db, workspace_id)
         .await
         .expect("Failed to find environments");
 
@@ -972,7 +1051,16 @@ async fn cmd_get_folder(
 }
 
 #[tauri::command]
-async fn cmd_get_request(
+async fn cmd_get_grpc_request(
+    id: &str,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcRequest, String> {
+    let db = &*db_state.lock().await;
+    get_grpc_request(db, id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_get_http_request(
     id: &str,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<HttpRequest, String> {
@@ -995,7 +1083,7 @@ async fn cmd_list_cookie_jars(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<CookieJar>, String> {
     let db = &*db_state.lock().await;
-    let cookie_jars = find_cookie_jars(db, workspace_id)
+    let cookie_jars = list_cookie_jars(db, workspace_id)
         .await
         .expect("Failed to find cookie jars");
 
@@ -1041,7 +1129,7 @@ async fn cmd_list_responses(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<HttpResponse>, String> {
     let db = &*db_state.lock().await;
-    find_responses(db, request_id, limit)
+    list_responses(db, request_id, limit)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1075,7 +1163,7 @@ async fn cmd_list_workspaces(
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
 ) -> Result<Vec<Workspace>, String> {
     let db = &*db_state.lock().await;
-    let workspaces = find_workspaces(db)
+    let workspaces = list_workspaces(db)
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
@@ -1203,23 +1291,26 @@ fn main() {
             cmd_create_cookie_jar,
             cmd_create_environment,
             cmd_create_folder,
-            cmd_create_request,
+            cmd_create_grpc_request,
+            cmd_create_http_request,
             cmd_create_workspace,
             cmd_delete_all_responses,
             cmd_delete_cookie_jar,
             cmd_delete_environment,
             cmd_delete_folder,
-            cmd_delete_request,
+            cmd_delete_grpc_request,
+            cmd_delete_http_request,
             cmd_delete_response,
             cmd_delete_workspace,
-            cmd_duplicate_request,
+            cmd_duplicate_http_request,
             cmd_export_data,
             cmd_filter_response,
             cmd_get_cookie_jar,
             cmd_get_environment,
             cmd_get_folder,
             cmd_get_key_value,
-            cmd_get_request,
+            cmd_get_http_request,
+            cmd_get_grpc_request,
             cmd_get_settings,
             cmd_get_workspace,
             cmd_grpc_call_unary,
@@ -1231,7 +1322,8 @@ fn main() {
             cmd_list_cookie_jars,
             cmd_list_environments,
             cmd_list_folders,
-            cmd_list_requests,
+            cmd_list_http_requests,
+            cmd_list_grpc_requests,
             cmd_list_responses,
             cmd_list_workspaces,
             cmd_new_window,
@@ -1243,7 +1335,8 @@ fn main() {
             cmd_update_cookie_jar,
             cmd_update_environment,
             cmd_update_folder,
-            cmd_update_request,
+            cmd_update_grpc_request,
+            cmd_update_http_request,
             cmd_update_settings,
             cmd_update_workspace,
         ])

@@ -11,26 +11,27 @@ import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateFolder } from '../hooks/useCreateFolder';
-import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
 import { useFolders } from '../hooks/useFolders';
+import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { usePrompt } from '../hooks/usePrompt';
-import { useRequests } from '../hooks/useRequests';
+import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
-import { useUpdateAnyRequest } from '../hooks/useUpdateAnyRequest';
-import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
-import type { Folder, HttpRequest, Workspace } from '../lib/models';
+import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { ContextMenu } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -48,7 +49,7 @@ enum ItemTypes {
 }
 
 interface TreeNode {
-  item: Workspace | Folder | HttpRequest;
+  item: Workspace | Folder | HttpRequest | GrpcRequest;
   children: TreeNode[];
   depth: number;
 }
@@ -58,7 +59,8 @@ export function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequestId = useActiveRequestId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const requests = useRequests();
+  const httpRequests = useHttpRequests();
+  const grpcRequests = useGrpcRequests();
   const folders = useFolders();
   const deleteAnyRequest = useDeleteAnyRequest();
   const activeWorkspace = useActiveWorkspace();
@@ -67,7 +69,7 @@ export function Sidebar({ className }: Props) {
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTree, setSelectedTree] = useState<TreeNode | null>(null);
-  const updateAnyRequest = useUpdateAnyRequest();
+  const updateAnyRequest = useUpdateAnyHttpRequest();
   const updateAnyFolder = useUpdateAnyFolder();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [hoveredTree, setHoveredTree] = useState<TreeNode | null>(null);
@@ -78,7 +80,7 @@ export function Sidebar({ className }: Props) {
     namespace: NAMESPACE_NO_SYNC,
   });
 
-  useHotKey('request.duplicate', () => {
+  useHotKey('http_request.duplicate', () => {
     duplicateRequest.mutate();
   });
 
@@ -110,7 +112,7 @@ export function Sidebar({ className }: Props) {
 
     // Put requests and folders into a tree structure
     const next = (node: TreeNode): TreeNode => {
-      const childItems = [...requests, ...folders].filter((f) =>
+      const childItems = [...httpRequests, ...grpcRequests, ...folders].filter((f) =>
         node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
       );
 
@@ -119,7 +121,7 @@ export function Sidebar({ className }: Props) {
       for (const item of childItems) {
         treeParentMap[item.id] = node;
         node.children.push(next({ item, children: [], depth }));
-        if (item.model === 'http_request') {
+        if (item.model !== 'folder') {
           selectableRequests.push({ id: item.id, index: selectableRequestIndex++, tree: node });
         }
       }
@@ -129,7 +131,7 @@ export function Sidebar({ className }: Props) {
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
     return { tree, treeParentMap, selectableRequests };
-  }, [activeWorkspace, requests, folders]);
+  }, [activeWorkspace, httpRequests, grpcRequests, folders]);
 
   const focusActiveRequest = useCallback(
     (
@@ -160,7 +162,7 @@ export function Sidebar({ className }: Props) {
   );
 
   const handleSelect = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const tree = treeParentMap[id ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
       const node = children.find((m) => m.item.id === id) ?? null;
@@ -171,7 +173,7 @@ export function Sidebar({ className }: Props) {
       const { item } = node;
 
       if (item.model === 'folder') {
-        collapsed.set((c) => ({ ...c, [item.id]: !c[item.id] }));
+        await collapsed.set((c) => ({ ...c, [item.id]: !c[item.id] }));
       } else {
         routes.navigate('request', {
           requestId: id,
@@ -339,6 +341,10 @@ export function Sidebar({ className }: Props) {
             if (child.item.model === 'folder') {
               const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
               return updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
+            } else if (child.item.model === 'grpc_request') {
+              // TODO
+              // const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
+              // return updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
             } else if (child.item.model === 'http_request') {
               const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
               return updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
@@ -350,6 +356,10 @@ export function Sidebar({ className }: Props) {
         if (child.item.model === 'folder') {
           const updateFolder = (f: Folder) => ({ ...f, sortPriority, folderId });
           await updateAnyFolder.mutateAsync({ id: child.item.id, update: updateFolder });
+        } else if (child.item.model === 'grpc_request') {
+          // TODO
+          // const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
+          // await updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
         } else if (child.item.model === 'http_request') {
           const updateRequest = (r: HttpRequest) => ({ ...r, sortPriority, folderId });
           await updateAnyRequest.mutateAsync({ id: child.item.id, update: updateRequest });
@@ -454,7 +464,9 @@ function SidebarItems({
             itemId={child.item.id}
             itemName={child.item.name}
             itemFallbackName={
-              child.item.model === 'http_request' ? fallbackRequestName(child.item) : 'New Folder'
+              child.item.model === 'http_request' || child.item.model === 'grpc_request'
+                ? fallbackRequestName(child.item)
+                : 'New Folder'
             }
             itemModel={child.item.model}
             onMove={handleMove}
@@ -524,16 +536,15 @@ const SidebarItem = forwardRef(function SidebarItem(
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const activeRequest = useActiveRequest();
-  const createRequest = useCreateRequest();
+  const createRequest = useCreateHttpRequest();
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(itemId);
   const duplicateRequest = useDuplicateRequest({ id: itemId, navigateAfter: true });
   const sendRequest = useSendRequest(itemId);
-  const sendAndDownloadRequest = useSendRequest(itemId, { download: true });
   const sendManyRequests = useSendManyRequests();
   const latestResponse = useLatestResponse(itemId);
-  const updateRequest = useUpdateRequest(itemId);
+  const updateRequest = useUpdateHttpRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
@@ -570,7 +581,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   );
 
   const handleStartEditing = useCallback(() => {
-    if (itemModel !== 'http_request') return;
+    if (itemModel !== 'http_request' && itemModel !== 'grpc_request') return;
     setEditing(true);
   }, [setEditing, itemModel]);
 
@@ -652,7 +663,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                   {
                     key: 'sendRequest',
                     label: 'Send',
-                    hotKeyAction: 'request.send',
+                    hotKeyAction: 'http_request.send',
                     hotKeyLabelOnly: true, // Already bound in URL bar
                     leftSlot: <Icon icon="sendHorizontal" />,
                     onSelect: () => sendRequest.mutate(),
@@ -661,7 +672,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                   {
                     key: 'duplicateRequest',
                     label: 'Duplicate',
-                    hotKeyAction: 'request.duplicate',
+                    hotKeyAction: 'http_request.duplicate',
                     hotKeyLabelOnly: true, // Would trigger for every request (bad)
                     leftSlot: <Icon icon="copy" />,
                     onSelect: () => {

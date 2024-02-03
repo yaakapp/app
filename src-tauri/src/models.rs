@@ -355,7 +355,7 @@ pub async fn get_key_value_raw(db: &Pool<Sqlite>, namespace: &str, key: &str) ->
     .ok()
 }
 
-pub async fn find_workspaces(db: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
+pub async fn list_workspaces(db: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
     sqlx::query_as!(
         Workspace,
         r#"
@@ -398,7 +398,7 @@ pub async fn delete_workspace(db: &Pool<Sqlite>, id: &str) -> Result<Workspace, 
     .execute(db)
     .await;
 
-    for r in find_responses_by_workspace_id(db, id).await? {
+    for r in list_responses_by_workspace_id(db, id).await? {
         delete_response(db, &r.id).await?;
     }
 
@@ -420,7 +420,7 @@ pub async fn get_cookie_jar(db: &Pool<Sqlite>, id: &str) -> Result<CookieJar, sq
     .await
 }
 
-pub async fn find_cookie_jars(
+pub async fn list_cookie_jars(
     db: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> Result<Vec<CookieJar>, sqlx::Error> {
@@ -452,6 +452,15 @@ pub async fn delete_cookie_jar(db: &Pool<Sqlite>, id: &str) -> Result<CookieJar,
     .await;
 
     Ok(cookie_jar)
+}
+
+pub async fn duplicate_grpc_request(
+    db: &Pool<Sqlite>,
+    id: &str,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let mut request = get_grpc_request(db, id).await?.clone();
+    request.id = "".to_string();
+    upsert_grpc_request(db, &request).await
 }
 
 pub async fn upsert_grpc_request(
@@ -687,7 +696,7 @@ pub async fn upsert_cookie_jar(
     get_cookie_jar(db, &id).await
 }
 
-pub async fn find_environments(
+pub async fn list_environments(
     db: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> Result<Vec<Environment>, sqlx::Error> {
@@ -832,7 +841,7 @@ pub async fn get_folder(db: &Pool<Sqlite>, id: &str) -> Result<Folder, sqlx::Err
     .await
 }
 
-pub async fn find_folders(
+pub async fn list_folders(
     db: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> Result<Vec<Folder>, sqlx::Error> {
@@ -896,13 +905,19 @@ pub async fn upsert_folder(db: &Pool<Sqlite>, r: Folder) -> Result<Folder, sqlx:
     get_folder(db, &id).await
 }
 
-pub async fn duplicate_request(db: &Pool<Sqlite>, id: &str) -> Result<HttpRequest, sqlx::Error> {
+pub async fn duplicate_http_request(
+    db: &Pool<Sqlite>,
+    id: &str,
+) -> Result<HttpRequest, sqlx::Error> {
     let mut request = get_http_request(db, id).await?.clone();
     request.id = "".to_string();
-    upsert_request(db, request).await
+    upsert_http_request(db, request).await
 }
 
-pub async fn upsert_request(db: &Pool<Sqlite>, r: HttpRequest) -> Result<HttpRequest, sqlx::Error> {
+pub async fn upsert_http_request(
+    db: &Pool<Sqlite>,
+    r: HttpRequest,
+) -> Result<HttpRequest, sqlx::Error> {
     let id = match r.id.as_str() {
         "" => generate_id(Some("rq")),
         _ => r.id.to_string(),
@@ -952,7 +967,7 @@ pub async fn upsert_request(db: &Pool<Sqlite>, r: HttpRequest) -> Result<HttpReq
     get_http_request(db, &id).await
 }
 
-pub async fn find_requests(
+pub async fn list_requests(
     db: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> Result<Vec<HttpRequest>, sqlx::Error> {
@@ -1171,7 +1186,7 @@ pub async fn get_response(db: &Pool<Sqlite>, id: &str) -> Result<HttpResponse, s
     .await
 }
 
-pub async fn find_responses(
+pub async fn list_responses(
     db: &Pool<Sqlite>,
     request_id: &str,
     limit: Option<i64>,
@@ -1197,7 +1212,7 @@ pub async fn find_responses(
     .await
 }
 
-pub async fn find_responses_by_workspace_id(
+pub async fn list_responses_by_workspace_id(
     db: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
@@ -1243,7 +1258,7 @@ pub async fn delete_response(db: &Pool<Sqlite>, id: &str) -> Result<HttpResponse
 }
 
 pub async fn delete_all_responses(db: &Pool<Sqlite>, request_id: &str) -> Result<(), sqlx::Error> {
-    for r in find_responses(db, request_id, None).await? {
+    for r in list_responses(db, request_id, None).await? {
         delete_response(db, &r.id).await?;
     }
     Ok(())
@@ -1289,13 +1304,13 @@ pub async fn get_workspace_export_resources(
         timestamp: chrono::Utc::now().naive_utc(),
         resources: WorkspaceExportResources {
             workspaces: vec![workspace],
-            environments: find_environments(db, workspace_id)
+            environments: list_environments(db, workspace_id)
                 .await
                 .expect("Failed to get environments"),
-            folders: find_folders(db, workspace_id)
+            folders: list_folders(db, workspace_id)
                 .await
                 .expect("Failed to get folders"),
-            requests: find_requests(db, workspace_id)
+            requests: list_requests(db, workspace_id)
                 .await
                 .expect("Failed to get requests"),
         },
