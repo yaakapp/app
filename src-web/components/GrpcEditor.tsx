@@ -1,6 +1,7 @@
 import type { EditorView } from 'codemirror';
 import { updateSchema } from 'codemirror-json-schema';
 import { useEffect, useRef } from 'react';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useAlert } from '../hooks/useAlert';
 import { useGrpc } from '../hooks/useGrpc';
 import { tryFormatJson } from '../lib/formatters';
@@ -21,12 +22,13 @@ type Props = Pick<
 
 export function GrpcEditor({ url, service, method, defaultValue, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
-  const grpc = useGrpc(url);
+  const activeRequestId = useActiveRequestId();
+  const grpc = useGrpc(url, activeRequestId);
   const alert = useAlert();
 
   useEffect(() => {
-    if (editorViewRef.current == null || grpc.schema == null) return;
-    const s = grpc.schema?.find((s) => s.name === service);
+    if (editorViewRef.current == null || grpc.services == null) return;
+    const s = grpc.services?.find((s) => s.name === service);
     if (service != null && s == null) {
       alert({
         id: 'grpc-find-service-error',
@@ -77,7 +79,7 @@ export function GrpcEditor({ url, service, method, defaultValue, ...extraEditorP
       });
       console.log('Failed to parse method schema', method, schema);
     }
-  }, [alert, grpc.schema, method, service]);
+  }, [alert, grpc.services, method, service]);
 
   return (
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
