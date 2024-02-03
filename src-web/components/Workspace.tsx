@@ -34,6 +34,7 @@ export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
   const activeRequest = useActiveRequest();
+  console.log('ACTIVE REQUEST', activeRequest);
 
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
@@ -166,7 +167,7 @@ export default function Workspace() {
       >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
-      {activeRequest?.name.includes('gRPC') ? (
+      {activeRequest?.model === 'grpc_request' ? (
         <GrpcConnectionLayout style={body} />
       ) : (
         <HttpRequestLayout style={body} />

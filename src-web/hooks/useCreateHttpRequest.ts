@@ -6,9 +6,9 @@ import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 
-export function useCreateRequest() {
+export function useCreateHttpRequest() {
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const activeRequest = useActiveRequest();
@@ -34,12 +34,12 @@ export function useCreateRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invoke('cmd_create_request', { workspaceId, name: '', ...patch });
+      return invoke('cmd_create_http_request', { workspaceId, name: '', ...patch });
     },
     onSettled: () => trackEvent('HttpRequest', 'Create'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
-        requestsQueryKey({ workspaceId: request.workspaceId }),
+        httpRequestsQueryKey({ workspaceId: request.workspaceId }),
         (requests) => [...(requests ?? []), request],
       );
       routes.navigate('request', {

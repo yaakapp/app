@@ -8,7 +8,7 @@ import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
-import { requestsQueryKey } from '../hooks/useRequests';
+import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { responsesQueryKey } from '../hooks/useResponses';
 import { settingsQueryKey } from '../hooks/useSettings';
@@ -47,7 +47,7 @@ export function GlobalHooks() {
 
     const queryKey =
       payload.model === 'http_request'
-        ? requestsQueryKey(payload)
+        ? httpRequestsQueryKey(payload)
         : payload.model === 'http_response'
         ? responsesQueryKey(payload)
         : payload.model === 'workspace'
@@ -76,7 +76,7 @@ export function GlobalHooks() {
 
     const queryKey =
       payload.model === 'http_request'
-        ? requestsQueryKey(payload)
+        ? httpRequestsQueryKey(payload)
         : payload.model === 'http_response'
         ? responsesQueryKey(payload)
         : payload.model === 'workspace'
@@ -115,7 +115,7 @@ export function GlobalHooks() {
     if (payload.model === 'workspace') {
       queryClient.setQueryData<Workspace[]>(workspacesQueryKey(), removeById(payload));
     } else if (payload.model === 'http_request') {
-      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(payload), removeById(payload));
+      queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey(payload), removeById(payload));
     } else if (payload.model === 'http_response') {
       queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {

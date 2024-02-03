@@ -1,6 +1,6 @@
-import type { HttpRequest } from './models';
+import type { GrpcRequest, HttpRequest } from './models';
 
-export function fallbackRequestName(r: HttpRequest | null): string {
+export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string {
   if (r == null) return '';
 
   if (r.name) {
@@ -9,7 +9,7 @@ export function fallbackRequestName(r: HttpRequest | null): string {
 
   const withoutVariables = r.url.replace(/\$\{\[[^\]]+]}/g, '');
   if (withoutVariables.trim() === '') {
-    return 'New Request';
+    return r.model === 'http_request' ? 'New HTTP Request' : 'new gRPC Request';
   }
 
   const fixedUrl = r.url.match(/^https?:\/\//) ? r.url : 'http://' + r.url;

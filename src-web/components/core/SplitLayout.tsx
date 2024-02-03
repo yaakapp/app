@@ -140,7 +140,7 @@ export function SplitLayout({
 
   const activeRequestId = useActiveRequestId();
   if (activeRequestId === null) {
-    return <HotKeyList hotkeys={['request.create', 'sidebar.toggle']} />;
+    return <HotKeyList hotkeys={['http_request.create', 'sidebar.toggle']} />;
   }
 
   return (

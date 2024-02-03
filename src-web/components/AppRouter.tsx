@@ -1,7 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
 import { useRecentRequests } from '../hooks/useRecentRequests';
-import { useRequests } from '../hooks/useRequests';
+import { useHttpRequests } from '../hooks/useHttpRequests';
 import { GlobalHooks } from './GlobalHooks';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
@@ -49,7 +49,7 @@ export function AppRouter() {
 function WorkspaceOrRedirect() {
   const recentRequests = useRecentRequests();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const requests = useRequests();
+  const requests = useHttpRequests();
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
 

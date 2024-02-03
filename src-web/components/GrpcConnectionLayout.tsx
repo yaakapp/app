@@ -208,7 +208,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                 className="border border-highlight"
                 size="sm"
                 title="to-do"
-                hotkeyAction={grpc.isStreaming ? undefined : 'request.send'}
+                hotkeyAction={grpc.isStreaming ? undefined : 'http_request.send'}
                 onClick={grpc.isStreaming ? handleCancel : handleConnect}
                 icon={
                   grpc.isStreaming
@@ -227,7 +227,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                   className="border border-highlight"
                   size="sm"
                   title="to-do"
-                  hotkeyAction="request.send"
+                  hotkeyAction="grpc_request.send"
                   onClick={() => grpc.send.mutateAsync({ message: message.value ?? '' })}
                   icon="sendHorizontal"
                 />
@@ -331,7 +331,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                 forceUpdateKey={resp}
               />
             ) : (
-              <HotKeyList hotkeys={['grpc.send', 'sidebar.toggle', 'urlBar.focus']} />
+              <HotKeyList hotkeys={['grpc_request.send', 'sidebar.toggle', 'urlBar.focus']} />
             )}
           </div>
         )

@@ -5,7 +5,7 @@ import type { HttpRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useDuplicateRequest({
   id,
@@ -21,12 +21,12 @@ export function useDuplicateRequest({
   return useMutation<HttpRequest, string>({
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null request");
-      return invoke('cmd_duplicate_request', { id });
+      return invoke('cmd_duplicate_http_request', { id });
     },
     onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
     onSuccess: async (request) => {
       queryClient.setQueryData<HttpRequest[]>(
-        requestsQueryKey({ workspaceId: request.workspaceId }),
+        httpRequestsQueryKey({ workspaceId: request.workspaceId }),
         (requests) => [...(requests ?? []), request],
       );
       if (navigateAfter && activeWorkspaceId !== null) {

@@ -7,7 +7,7 @@ import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useHotKey } from '../hooks/useHotKey';
 import { useRecentRequests } from '../hooks/useRecentRequests';
-import { useRequests } from '../hooks/useRequests';
+import { useHttpRequests } from '../hooks/useHttpRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -19,7 +19,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const requests = useRequests();
+  const requests = useHttpRequests();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
