@@ -61,14 +61,14 @@ export function GrpcConnectionLayout({ style }: Props) {
         });
       }
       if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
-        await grpc.bidiStreaming.mutateAsync(activeRequest);
+        await grpc.streaming.mutateAsync(activeRequest.id);
       } else if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
         await grpc.serverStreaming.mutateAsync(activeRequest.id);
       } else {
         await grpc.unary.mutateAsync(activeRequest.id);
       }
     },
-    [activeMethod, activeRequest, alert, grpc.bidiStreaming, grpc.serverStreaming, grpc.unary],
+    [activeMethod, activeRequest, alert, grpc.streaming, grpc.serverStreaming, grpc.unary],
   );
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
-import type { GrpcConnection, GrpcMessage, GrpcRequest } from '../lib/models';
+import type { GrpcConnection, GrpcMessage } from '../lib/models';
 import { useKeyValue } from './useKeyValue';
 
 interface ReflectResponseService {
@@ -44,17 +44,14 @@ export function useGrpc(url: string | null, requestId: string | null) {
     },
   });
 
-  const bidiStreaming = useMutation<void, string, GrpcRequest>({
-    mutationKey: ['grpc_bidi_streaming', url],
-    mutationFn: async ({ service, method, message, url }) => {
+  const streaming = useMutation<void, string, string>({
+    mutationKey: ['grpc_streaming', url],
+    mutationFn: async (requestId) => {
       if (url === null) throw new Error('No URL provided');
-      const id: string = await invoke('cmd_grpc_bidi_streaming', {
-        endpoint: url,
-        service,
-        method,
-        message,
-      });
       await messages.set([]);
+      const id: string = await invoke('cmd_grpc_streaming', {
+        requestId,
+      });
       setActiveConnectionId(id);
     },
   });
@@ -67,6 +64,7 @@ export function useGrpc(url: string | null, requestId: string | null) {
       // await messages.set((m) => {
       //   return [...m, { type: 'client', message, timestamp: new Date().toISOString() }];
       // });
+      console.log('SENDING', activeConnectionId);
       await emit(`grpc_client_msg_${activeConnectionId}`, { Message: message });
     },
   });
@@ -90,7 +88,7 @@ export function useGrpc(url: string | null, requestId: string | null) {
   return {
     unary,
     serverStreaming,
-    bidiStreaming,
+    streaming,
     services: reflect.data,
     cancel,
     isStreaming: activeConnectionId !== null,

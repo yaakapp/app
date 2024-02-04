@@ -56,7 +56,7 @@ impl GrpcConnection {
         Ok(response_json)
     }
 
-    pub async fn bidi_streaming(
+    pub async fn streaming(
         &self,
         service: &str,
         method: &str,
@@ -156,7 +156,7 @@ impl GrpcManager {
             .await
     }
 
-    pub async fn bidi_streaming(
+    pub async fn streaming(
         &mut self,
         id: &str,
         uri: Uri,
@@ -164,10 +164,9 @@ impl GrpcManager {
         method: &str,
         stream: ReceiverStream<String>,
     ) -> Result<Streaming<DynamicMessage>> {
-        println!("Bidi streaming {}", id);
         self.connect(id, uri)
             .await
-            .bidi_streaming(service, method, stream)
+            .streaming(service, method, stream)
             .await
     }
     pub async fn connect(&mut self, id: &str, uri: Uri) -> GrpcConnection {
