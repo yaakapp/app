@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import type { UnlistenFn } from '@tauri-apps/api/event';
-import { emit, listen } from '@tauri-apps/api/event';
-import { useEffect, useRef, useState } from 'react';
+import { emit } from '@tauri-apps/api/event';
+import { useEffect, useState } from 'react';
 import type { GrpcConnection, GrpcMessage, GrpcRequest } from '../lib/models';
 import { useKeyValue } from './useKeyValue';
 

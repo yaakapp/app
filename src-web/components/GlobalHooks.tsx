@@ -69,6 +69,10 @@ export function GlobalHooks() {
         ? cookieJarsQueryKey(payload)
         : null;
 
+    const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
+      payload.model,
+    );
+
     if (queryKey === null) {
       console.log('Unrecognized created model:', payload);
       return;
@@ -76,7 +80,9 @@ export function GlobalHooks() {
 
     if (!shouldIgnoreModel(payload)) {
       // Order newest first
-      queryClient.setQueryData<Model[]>(queryKey, (values) => [payload, ...(values ?? [])]);
+      queryClient.setQueryData<Model[]>(queryKey, (values) =>
+        pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload],
+      );
     }
   });
 
