@@ -228,6 +228,8 @@ pub struct GrpcMessage {
     pub connection_id: String,
     pub created_at: NaiveDateTime,
     pub message: String,
+    pub is_server: bool,
+    pub is_info: bool,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -589,16 +591,17 @@ pub async fn get_grpc_connection(
 
 pub async fn list_grpc_connections(
     db: &Pool<Sqlite>,
-    workspace_id: &str,
+    request_id: &str,
 ) -> Result<Vec<GrpcConnection>, sqlx::Error> {
     sqlx::query_as!(
         GrpcConnection,
         r#"
             SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method
             FROM grpc_connections
-            WHERE workspace_id = ?
+            WHERE request_id = ?
+            ORDER BY created_at DESC
         "#,
-        workspace_id,
+        request_id,
     )
     .fetch_all(db)
     .await
@@ -615,30 +618,36 @@ pub async fn upsert_grpc_message(
     sqlx::query!(
         r#"
             INSERT INTO grpc_messages (
-                id, workspace_id, request_id, connection_id, message
+                id, workspace_id, request_id, connection_id, message, is_server, is_info
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
-                message = excluded.message
+                message = excluded.message,
+                is_server = excluded.is_server,
+                is_info = excluded.is_info
         "#,
         id,
         message.workspace_id,
         message.request_id,
         message.connection_id,
         message.message,
+        message.is_server,
+        message.is_info,
     )
     .execute(db)
     .await?;
 
-    crate::models::get_grpc_message(db, &id).await
+    get_grpc_message(db, &id).await
 }
 
 pub async fn get_grpc_message(db: &Pool<Sqlite>, id: &str) -> Result<GrpcMessage, sqlx::Error> {
     sqlx::query_as!(
         GrpcMessage,
         r#"
-            SELECT id, model, workspace_id, request_id, connection_id, created_at, message
+            SELECT
+                id, model, workspace_id, request_id, connection_id, created_at, message,
+                is_server, is_info
             FROM grpc_messages
             WHERE id = ?
         "#,
@@ -650,16 +659,18 @@ pub async fn get_grpc_message(db: &Pool<Sqlite>, id: &str) -> Result<GrpcMessage
 
 pub async fn list_grpc_messages(
     db: &Pool<Sqlite>,
-    workspace_id: &str,
+    connection_id: &str,
 ) -> Result<Vec<GrpcMessage>, sqlx::Error> {
     sqlx::query_as!(
         GrpcMessage,
         r#"
-            SELECT id, model, workspace_id, request_id, connection_id, created_at, message
+            SELECT
+                id, model, workspace_id, request_id, connection_id, created_at, message,
+                is_server, is_info
             FROM grpc_messages
-            WHERE workspace_id = ?
+            WHERE connection_id = ?
         "#,
-        workspace_id,
+        connection_id,
     )
     .fetch_all(db)
     .await

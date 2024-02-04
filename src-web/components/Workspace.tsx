@@ -34,7 +34,6 @@ export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
   const activeRequest = useActiveRequest();
-
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
   const [isResizing, setIsResizing] = useState<boolean>(false);
@@ -47,7 +46,7 @@ export default function Workspace() {
     const shouldHide = windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH;
     if (shouldHide && !floating) {
       setFloating(true);
-      hide();
+      hide().catch(console.error);
     } else if (!shouldHide && floating) {
       setFloating(false);
     }
@@ -72,10 +71,10 @@ export default function Workspace() {
           e.preventDefault(); // Prevent text selection and things
           const newWidth = startWidth + (e.clientX - mouseStartX);
           if (newWidth < 100) {
-            hide();
+            await hide();
             resetWidth();
           } else {
-            show();
+            await show();
             setWidth(newWidth);
           }
         },

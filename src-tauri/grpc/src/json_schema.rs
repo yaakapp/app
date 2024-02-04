@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use prost_reflect::{DescriptorPool, MessageDescriptor};
 use prost_types::field_descriptor_proto;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -50,8 +50,8 @@ impl Default for JsonType {
 
 impl serde::Serialize for JsonType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
+    where
+        S: serde::Serializer,
     {
         match self {
             JsonType::String => serializer.serialize_str("string"),
@@ -67,8 +67,8 @@ impl serde::Serialize for JsonType {
 
 impl<'de> serde::Deserialize<'de> for JsonType {
     fn deserialize<D>(deserializer: D) -> Result<JsonType, D::Error>
-        where
-            D: serde::Deserializer<'de>,
+    where
+        D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         match s.as_str() {
@@ -83,7 +83,10 @@ impl<'de> serde::Deserialize<'de> for JsonType {
     }
 }
 
-pub fn message_to_json_schema(pool: &DescriptorPool, message: MessageDescriptor) -> JsonSchemaEntry {
+pub fn message_to_json_schema(
+    pool: &DescriptorPool,
+    message: MessageDescriptor,
+) -> JsonSchemaEntry {
     let mut schema = JsonSchemaEntry {
         title: Some(message.name().to_string()),
         type_: JsonType::Object, // Messages are objects

@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
-import type { HttpRequest } from '../lib/models';
+import type { GrpcRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { httpRequestsQueryKey } from './useHttpRequests';
+import { grpcRequestsQueryKey } from './useGrpcRequests';
 
-export function useDuplicateRequest({
+export function useDuplicateGrpcRequest({
   id,
   navigateAfter,
 }: {
@@ -18,15 +18,15 @@ export function useDuplicateRequest({
   const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
   const queryClient = useQueryClient();
-  return useMutation<HttpRequest, string>({
+  return useMutation<GrpcRequest, string>({
     mutationFn: async () => {
-      if (id === null) throw new Error("Can't duplicate a null request");
-      return invoke('cmd_duplicate_http_request', { id });
+      if (id === null) throw new Error("Can't duplicate a null grpc request");
+      return invoke('cmd_duplicate_grpc_request', { id });
     },
-    onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
+    onSettled: () => trackEvent('GrpcRequest', 'Duplicate'),
     onSuccess: async (request) => {
-      queryClient.setQueryData<HttpRequest[]>(
-        httpRequestsQueryKey({ workspaceId: request.workspaceId }),
+      queryClient.setQueryData<GrpcRequest[]>(
+        grpcRequestsQueryKey({ workspaceId: request.workspaceId }),
         (requests) => [...(requests ?? []), request],
       );
       if (navigateAfter && activeWorkspaceId !== null) {

@@ -5,12 +5,12 @@ import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useAlert } from '../hooks/useAlert';
-import type { GrpcMessage } from '../hooks/useGrpc';
 import { useGrpc } from '../hooks/useGrpc';
+import { useGrpcConnections } from '../hooks/useGrpcConnections';
+import { useGrpcMessages } from '../hooks/useGrpcMessages';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
-import { Editor } from './core/Editor';
 import { HotKeyList } from './core/HotKeyList';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -30,9 +30,11 @@ export function GrpcConnectionLayout({ style }: Props) {
   const activeRequest = useActiveRequest('grpc_request');
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const alert = useAlert();
-  const [activeMessage, setActiveMessage] = useState<GrpcMessage | null>(null);
-  const [resp, setResp] = useState<string>('');
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const grpc = useGrpc(activeRequest?.url ?? null, activeRequest?.id ?? null);
+  const connections = useGrpcConnections(activeRequest?.id ?? null);
+  const activeConnection = connections[0] ?? null;
+  const messages = useGrpcMessages(activeConnection?.id ?? null);
 
   const activeMethod = useMemo(() => {
     if (grpc.services == null || activeRequest == null) return null;
@@ -61,9 +63,9 @@ export function GrpcConnectionLayout({ style }: Props) {
       if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
         await grpc.bidiStreaming.mutateAsync(activeRequest);
       } else if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
-        await grpc.serverStreaming.mutateAsync(activeRequest);
+        await grpc.serverStreaming.mutateAsync(activeRequest.id);
       } else {
-        setResp(await grpc.unary.mutateAsync(activeRequest));
+        await grpc.unary.mutateAsync(activeRequest.id);
       }
     },
     [activeMethod, activeRequest, alert, grpc.bidiStreaming, grpc.serverStreaming, grpc.unary],
@@ -127,8 +129,13 @@ export function GrpcConnectionLayout({ style }: Props) {
     setPaneSize(entry.contentRect.width);
   });
 
+  const activeMessage = useMemo(
+    () => messages.find((m) => m.id === activeMessageId) ?? null,
+    [activeMessageId, messages],
+  );
+
   if (activeRequest == null) {
-    return;
+    return null;
   }
 
   return (
@@ -136,7 +143,7 @@ export function GrpcConnectionLayout({ style }: Props) {
       name="grpc_layout"
       className="p-3 gap-1.5"
       style={style}
-      leftSlot={() => (
+      firstSlot={() => (
         <VStack space={2}>
           <div
             ref={urlContainerEl}
@@ -218,7 +225,7 @@ export function GrpcConnectionLayout({ style }: Props) {
           />
         </VStack>
       )}
-      rightSlot={() =>
+      secondSlot={() =>
         !grpc.unary.isLoading && (
           <div
             className={classNames(
@@ -231,20 +238,20 @@ export function GrpcConnectionLayout({ style }: Props) {
               <Banner color="danger" className="m-2">
                 {grpc.unary.error}
               </Banner>
-            ) : (grpc.messages.value ?? []).length > 0 ? (
+            ) : messages.length >= 0 ? (
               <SplitLayout
-                name="grpc_messages2"
+                name="grpc_messages"
                 minHeightPx={20}
                 defaultRatio={0.25}
-                leftSlot={() => (
+                firstSlot={() => (
                   <div className="overflow-y-auto">
-                    {...(grpc.messages.value ?? []).map((m, i) => (
+                    {...messages.map((m) => (
                       <HStack
-                        key={`${m.timestamp}::${m.message}::${i}`}
+                        key={m.id}
                         space={2}
                         onClick={() => {
-                          if (m === activeMessage) setActiveMessage(null);
-                          else setActiveMessage(m);
+                          if (m.id === activeMessageId) setActiveMessageId(null);
+                          else setActiveMessageId(m.id);
                         }}
                         alignItems="center"
                         className={classNames(
@@ -254,29 +261,25 @@ export function GrpcConnectionLayout({ style }: Props) {
                       >
                         <Icon
                           className={
-                            m.type === 'server'
+                            m.isInfo
+                              ? 'text-gray-600'
+                              : m.isServer
                               ? 'text-blue-600'
-                              : m.type === 'client'
-                              ? 'text-green-600'
-                              : 'text-gray-600'
+                              : 'text-green-600'
                           }
                           icon={
-                            m.type === 'server'
-                              ? 'arrowBigDownDash'
-                              : m.type === 'client'
-                              ? 'arrowBigUpDash'
-                              : 'info'
+                            m.isInfo ? 'info' : m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'
                           }
                         />
                         <div className="w-full truncate text-gray-800 text-2xs">{m.message}</div>
                         <div className="text-gray-600 text-2xs">
-                          {format(m.timestamp, 'HH:mm:ss')}
+                          {format(m.createdAt, 'HH:mm:ss')}
                         </div>
                       </HStack>
                     ))}
                   </div>
                 )}
-                rightSlot={
+                secondSlot={
                   !activeMessage
                     ? null
                     : () => (
@@ -293,15 +296,15 @@ export function GrpcConnectionLayout({ style }: Props) {
                       )
                 }
               />
-            ) : resp ? (
-              <Editor
-                className="bg-gray-50 dark:bg-gray-100"
-                contentType="application/json"
-                defaultValue={resp}
-                readOnly
-                forceUpdateKey={resp}
-              />
             ) : (
+              // ) :  ? (
+              //   <Editor
+              //     readOnly
+              //     className="bg-gray-50 dark:bg-gray-100"
+              //     contentType="application/json"
+              //     defaultValue={resp.message}
+              //     forceUpdateKey={resp.id}
+              //   />
               <HotKeyList hotkeys={['grpc_request.send', 'sidebar.toggle', 'urlBar.focus']} />
             )}
           </div>

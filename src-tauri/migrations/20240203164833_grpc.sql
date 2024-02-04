@@ -52,5 +52,7 @@ CREATE TABLE grpc_messages
             ON DELETE CASCADE,
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_server     BOOLEAN                            NOT NULL,
+    is_info       BOOLEAN                            NOT NULL,
     message       TEXT                               NOT NULL
 );

@@ -14,10 +14,10 @@ export function HttpRequestLayout({ style }: Props) {
       name="http_layout"
       className="p-3 gap-1.5"
       style={style}
-      leftSlot={({ orientation, style }) => (
+      firstSlot={({ orientation, style }) => (
         <RequestPane style={style} fullHeight={orientation === 'horizontal'} />
       )}
-      rightSlot={({ style }) => <ResponsePane style={style} />}
+      secondSlot={({ style }) => <ResponsePane style={style} />}
     />
   );
 }
