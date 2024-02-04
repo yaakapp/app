@@ -44,14 +44,15 @@ use crate::http::send_http_request;
 use crate::models::{
     cancel_pending_responses, create_response, delete_all_responses, delete_cookie_jar,
     delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
-    duplicate_grpc_request, duplicate_http_request, list_cookie_jars, list_folders, list_requests,
-    list_responses, list_workspaces, generate_id, get_cookie_jar, get_environment, get_folder,
-    get_grpc_request, get_http_request, get_key_value_raw, get_or_create_settings, get_response,
-    get_workspace, get_workspace_export_resources, list_environments, list_grpc_requests,
-    set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar,
-    upsert_environment, upsert_folder, upsert_grpc_request, upsert_http_request, upsert_workspace,
-    CookieJar, Environment, EnvironmentVariable, Folder, GrpcRequest, HttpRequest, HttpResponse,
-    KeyValue, Settings, Workspace,
+    duplicate_grpc_request, duplicate_http_request, generate_id, get_cookie_jar, get_environment,
+    get_folder, get_grpc_request, get_http_request, get_key_value_raw, get_or_create_settings,
+    get_response, get_workspace, get_workspace_export_resources, list_cookie_jars,
+    list_environments, list_folders, list_grpc_connections, list_grpc_messages, list_grpc_requests,
+    list_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_message, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcMessage, GrpcRequest,
+    HttpRequest, HttpResponse, KeyValue, Settings, Workspace,
 };
 use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -98,20 +99,80 @@ async fn cmd_grpc_reflect(endpoint: &str) -> Result<Vec<ServiceDefinition>, Stri
 
 #[tauri::command]
 async fn cmd_grpc_call_unary(
-    endpoint: &str,
-    service: &str,
-    method: &str,
-    message: &str,
+    request_id: &str,
+    app_handle: AppHandle<Wry>,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
-) -> Result<String, String> {
-    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
-    grpc_handle
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcMessage, String> {
+    let db = &*db_state.lock().await;
+    let req = get_grpc_request(db, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let conn = {
+        let req = req.clone();
+        upsert_grpc_connection(
+            db,
+            &GrpcConnection {
+                workspace_id: req.workspace_id,
+                request_id: req.id,
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.to_string())?
+    };
+    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+
+    {
+        let req = req.clone();
+        let conn = conn.clone();
+        upsert_grpc_message(
+            db,
+            &GrpcMessage {
+                workspace_id: req.workspace_id,
+                request_id: req.id,
+                connection_id: conn.id,
+                is_info: true,
+                message: format!("Initiating connection to {}", req.url),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+    };
+
+    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
+    let conn_id = generate_id(Some("grpc"));
+    let msg = match grpc_handle
         .lock()
         .await
-        .connect("default", uri)
+        .connect(&conn_id, uri)
         .await
-        .unary(service, method, message)
+        .unary(
+            &req.service.unwrap_or_default(),
+            &req.method.unwrap_or_default(),
+            &req.message,
+        )
         .await
+    {
+        Ok(msg) => {
+            upsert_grpc_message(
+                db,
+                &GrpcMessage {
+                    message: msg,
+                    workspace_id: req.workspace_id,
+                    request_id: req.id,
+                    connection_id: conn.id,
+                    is_server: true,
+                    ..Default::default()
+                },
+            )
+            .await
+        }
+        Err(e) => return Err(e.to_string()),
+    };
+
+    msg.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -235,27 +296,47 @@ async fn cmd_grpc_bidi_streaming(
 
 #[tauri::command]
 async fn cmd_grpc_server_streaming(
-    endpoint: &str,
-    service: &str,
-    method: &str,
-    message: &str,
+    request_id: &str,
     app_handle: AppHandle<Wry>,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
-) -> Result<String, String> {
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<GrpcConnection, String> {
+    let db = &*db_state.lock().await;
+    let req = get_grpc_request(db, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let conn = {
+        let req = req.clone();
+        upsert_grpc_connection(
+            db,
+            &GrpcConnection {
+                workspace_id: req.workspace_id,
+                request_id: req.id,
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.to_string())?
+    };
+    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+
     let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
 
-    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
-    let conn_id = generate_id(Some("grpc"));
+    let (service, method) = match (&req.service, &req.method) {
+        (Some(service), Some(method)) => (service, method),
+        _ => return Err("Service and method are required".to_string()),
+    };
 
+    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
     let mut stream = grpc_handle
         .lock()
         .await
-        .server_streaming(&conn_id, uri, service, method, message)
+        .server_streaming(&conn.id, uri, &service, &method, &req.message)
         .await
         .unwrap();
 
     #[derive(serde::Deserialize)]
-    enum GrpcMessage {
+    enum IncomingMsg {
         Message(String),
         Commit,
         Cancel,
@@ -270,15 +351,15 @@ async fn cmd_grpc_server_streaming(
                 return;
             }
 
-            match serde_json::from_str::<GrpcMessage>(ev.payload().unwrap()) {
-                Ok(GrpcMessage::Message(msg)) => {
+            match serde_json::from_str::<IncomingMsg>(ev.payload().unwrap()) {
+                Ok(IncomingMsg::Message(msg)) => {
                     println!("Received message: {}", msg);
                 }
-                Ok(GrpcMessage::Commit) => {
+                Ok(IncomingMsg::Commit) => {
                     println!("Received commit");
                     // TODO: Commit client streaming stream
                 }
-                Ok(GrpcMessage::Cancel) => {
+                Ok(IncomingMsg::Cancel) => {
                     println!("Received cancel");
                     cancelled_tx.send_replace(true);
                 }
@@ -289,19 +370,34 @@ async fn cmd_grpc_server_streaming(
         }
     };
     let event_handler =
-        app_handle.listen_global(format!("grpc_client_msg_{}", conn_id).as_str(), cb);
+        app_handle.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
     let grpc_listen = {
+        let db = db.clone();
+        let conn_id = conn.clone().id;
         let app_handle = app_handle.clone();
-        let conn_id = conn_id.clone();
         async move {
             loop {
+                let req = req.clone();
+                let conn_id = conn_id.clone();
                 match stream.next().await {
                     Some(Ok(item)) => {
                         let item = serde_json::to_string_pretty(&item).unwrap();
-                        app_handle
-                            .emit_all(format!("grpc_server_msg_{}", &conn_id).as_str(), item)
-                            .expect("Failed to emit");
+                        let msg = upsert_grpc_message(
+                            &db,
+                            &GrpcMessage {
+                                message: item,
+                                workspace_id: req.workspace_id,
+                                request_id: req.id,
+                                connection_id: conn_id,
+                                is_server: true,
+                                ..Default::default()
+                            },
+                        )
+                        .await
+                        .map_err(|e| e.to_string())
+                        .expect("Failed to upsert message");
+                        emit_side_effect(app_handle.clone(), "created_model", msg);
                     }
                     Some(Err(e)) => {
                         error!("gRPC stream error: {:?}", e);
@@ -328,7 +424,7 @@ async fn cmd_grpc_server_streaming(
         app_handle.unlisten(event_handler);
     });
 
-    Ok(conn_id)
+    Ok(conn)
 }
 
 #[tauri::command]
@@ -783,7 +879,7 @@ async fn cmd_duplicate_grpc_request(
     let request = duplicate_grpc_request(db, id)
         .await
         .expect("Failed to duplicate grpc request");
-    emit_and_return(&window, "updated_model", request)
+    emit_and_return(&window, "created_model", request)
 }
 
 #[tauri::command]
@@ -823,7 +919,7 @@ async fn cmd_duplicate_http_request(
     let request = duplicate_http_request(db, id)
         .await
         .expect("Failed to duplicate http request");
-    emit_and_return(&window, "updated_model", request)
+    emit_and_return(&window, "created_model", request)
 }
 
 #[tauri::command]
@@ -983,6 +1079,28 @@ async fn cmd_delete_environment(
 }
 
 #[tauri::command]
+async fn cmd_list_grpc_connections(
+    request_id: &str,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<GrpcConnection>, String> {
+    let db = &*db_state.lock().await;
+    list_grpc_connections(db, request_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_list_grpc_messages(
+    connection_id: &str,
+    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+) -> Result<Vec<GrpcMessage>, String> {
+    let db = &*db_state.lock().await;
+    list_grpc_messages(db, connection_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_list_grpc_requests(
     workspace_id: &str,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
@@ -990,8 +1108,7 @@ async fn cmd_list_grpc_requests(
     let db = &*db_state.lock().await;
     let requests = list_grpc_requests(db, workspace_id)
         .await
-        .expect("Failed to find grpc requests");
-    // .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
     Ok(requests)
 }
 
@@ -1123,7 +1240,7 @@ async fn cmd_get_workspace(
 }
 
 #[tauri::command]
-async fn cmd_list_responses(
+async fn cmd_list_http_responses(
     request_id: &str,
     limit: Option<i64>,
     db_state: State<'_, Mutex<Pool<Sqlite>>>,
@@ -1303,6 +1420,7 @@ fn main() {
             cmd_delete_response,
             cmd_delete_workspace,
             cmd_duplicate_http_request,
+            cmd_duplicate_grpc_request,
             cmd_export_data,
             cmd_filter_response,
             cmd_get_cookie_jar,
@@ -1324,7 +1442,9 @@ fn main() {
             cmd_list_folders,
             cmd_list_http_requests,
             cmd_list_grpc_requests,
-            cmd_list_responses,
+            cmd_list_grpc_connections,
+            cmd_list_grpc_messages,
+            cmd_list_http_responses,
             cmd_list_workspaces,
             cmd_new_window,
             cmd_send_ephemeral_request,

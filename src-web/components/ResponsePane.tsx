@@ -5,7 +5,7 @@ import { createGlobalState } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useLatestResponse } from '../hooks/useLatestResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
-import { useResponses } from '../hooks/useResponses';
+import { useHttpResponses } from '../hooks/useHttpResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import type { HttpResponse } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -39,7 +39,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
   const activeRequest = useActiveRequest();
   const latestResponse = useLatestResponse(activeRequest?.id ?? null);
-  const responses = useResponses(activeRequest?.id ?? null);
+  const responses = useHttpResponses(activeRequest?.id ?? null);
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : latestResponse ?? null;

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
-import { responsesQueryKey } from './useResponses';
+import { httpResponsesQueryKey } from './useHttpResponses';
 
 export function useDeleteResponse(id: string | null) {
   const queryClient = useQueryClient();
@@ -12,7 +12,7 @@ export function useDeleteResponse(id: string | null) {
     },
     onSettled: () => trackEvent('HttpResponse', 'Delete'),
     onSuccess: ({ requestId, id: responseId }) => {
-      queryClient.setQueryData<HttpResponse[]>(responsesQueryKey({ requestId }), (responses) =>
+      queryClient.setQueryData<HttpResponse[]>(httpResponsesQueryKey({ requestId }), (responses) =>
         (responses ?? []).filter((response) => response.id !== responseId),
       );
     },
