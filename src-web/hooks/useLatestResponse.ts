@@ -1,7 +1,7 @@
 import type { HttpResponse } from '../lib/models';
-import { useResponses } from './useResponses';
+import { useHttpResponses } from './useHttpResponses';
 
 export function useLatestResponse(requestId: string | null): HttpResponse | null {
-  const responses = useResponses(requestId);
+  const responses = useHttpResponses(requestId);
   return responses[0] ?? null;
 }

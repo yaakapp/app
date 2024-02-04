@@ -3,20 +3,23 @@ import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
+import { grpcMessagesQueryKey } from '../hooks/useGrpcMessages';
+import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
+import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
+import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
-import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { responsesQueryKey } from '../hooks/useResponses';
 import { settingsQueryKey } from '../hooks/useSettings';
 import { useSyncAppearance } from '../hooks/useSyncAppearance';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
-import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
+import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
 
@@ -49,7 +52,13 @@ export function GlobalHooks() {
       payload.model === 'http_request'
         ? httpRequestsQueryKey(payload)
         : payload.model === 'http_response'
-        ? responsesQueryKey(payload)
+        ? httpResponsesQueryKey(payload)
+        : payload.model === 'grpc_connection'
+        ? grpcConnectionsQueryKey(payload)
+        : payload.model === 'grpc_message'
+        ? grpcMessagesQueryKey(payload)
+        : payload.model === 'grpc_request'
+        ? grpcRequestsQueryKey(payload)
         : payload.model === 'workspace'
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
@@ -78,7 +87,13 @@ export function GlobalHooks() {
       payload.model === 'http_request'
         ? httpRequestsQueryKey(payload)
         : payload.model === 'http_response'
-        ? responsesQueryKey(payload)
+        ? httpResponsesQueryKey(payload)
+        : payload.model === 'grpc_connection'
+        ? grpcConnectionsQueryKey(payload)
+        : payload.model === 'grpc_message'
+        ? grpcMessagesQueryKey(payload)
+        : payload.model === 'grpc_request'
+        ? grpcRequestsQueryKey(payload)
         : payload.model === 'workspace'
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
@@ -113,11 +128,17 @@ export function GlobalHooks() {
     if (shouldIgnoreModel(payload)) return;
 
     if (payload.model === 'workspace') {
-      queryClient.setQueryData<Workspace[]>(workspacesQueryKey(), removeById(payload));
+      queryClient.setQueryData(workspacesQueryKey(), removeById(payload));
     } else if (payload.model === 'http_request') {
-      queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey(payload), removeById(payload));
+      queryClient.setQueryData(httpRequestsQueryKey(payload), removeById(payload));
     } else if (payload.model === 'http_response') {
-      queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
+      queryClient.setQueryData(httpResponsesQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_request') {
+      queryClient.setQueryData(grpcRequestsQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_connection') {
+      queryClient.setQueryData(grpcConnectionsQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_message') {
+      queryClient.setQueryData(grpcMessagesQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
     } else if (payload.model === 'cookie_jar') {

@@ -7,7 +7,6 @@ import { useKey, useKeyPressEvent } from 'react-use';
 
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateFolder } from '../hooks/useCreateFolder';
@@ -15,7 +14,8 @@ import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
-import { useDuplicateRequest } from '../hooks/useDuplicateRequest';
+import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
+import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
@@ -29,6 +29,7 @@ import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
@@ -58,14 +59,21 @@ interface TreeNode {
 export function Sidebar({ className }: Props) {
   const { hidden } = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
-  const activeRequestId = useActiveRequestId();
+  const activeRequest = useActiveRequest();
   const activeEnvironmentId = useActiveEnvironmentId();
   const httpRequests = useHttpRequests();
   const grpcRequests = useGrpcRequests();
   const folders = useFolders();
   const deleteAnyRequest = useDeleteAnyRequest();
   const activeWorkspace = useActiveWorkspace();
-  const duplicateRequest = useDuplicateRequest({ id: activeRequestId, navigateAfter: true });
+  const duplicateHttpRequest = useDuplicateHttpRequest({
+    id: activeRequest?.id ?? null,
+    navigateAfter: true,
+  });
+  const duplicateGrpcRequest = useDuplicateGrpcRequest({
+    id: activeRequest?.id ?? null,
+    navigateAfter: true,
+  });
   const routes = useAppRoutes();
   const [hasFocus, setHasFocus] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -82,8 +90,12 @@ export function Sidebar({ className }: Props) {
     namespace: NAMESPACE_NO_SYNC,
   });
 
-  useHotKey('http_request.duplicate', () => {
-    duplicateRequest.mutate();
+  useHotKey('http_request.duplicate', async () => {
+    if (activeRequest?.model === 'http_request') {
+      await duplicateHttpRequest.mutateAsync();
+    } else {
+      await duplicateGrpcRequest.mutateAsync();
+    }
   });
 
   const isCollapsed = useCallback(
@@ -146,9 +158,10 @@ export function Sidebar({ className }: Props) {
       } = {},
     ) => {
       const { forced, noFocusSidebar } = args;
-      const tree = forced?.tree ?? treeParentMap[activeRequestId ?? 'n/a'] ?? null;
+      const tree = forced?.tree ?? treeParentMap[activeRequest?.id ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
-      const id = forced?.id ?? children.find((m) => m.item.id === activeRequestId)?.item.id ?? null;
+      const id =
+        forced?.id ?? children.find((m) => m.item.id === activeRequest?.id)?.item.id ?? null;
       if (id == null) {
         return;
       }
@@ -160,7 +173,7 @@ export function Sidebar({ className }: Props) {
         sidebarRef.current?.focus();
       }
     },
-    [activeRequestId, treeParentMap],
+    [activeRequest, treeParentMap],
   );
 
   const handleSelect = useCallback(
@@ -230,7 +243,7 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Enter', (e) => {
     if (!hasFocus) return;
     const selected = selectableRequests.find((r) => r.id === selectedId);
-    if (!selected || selected.id === activeRequestId || activeWorkspace == null) {
+    if (!selected || selected.id === activeRequest?.id || activeWorkspace == null) {
       return;
     }
 
@@ -541,11 +554,13 @@ const SidebarItem = forwardRef(function SidebarItem(
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(itemId);
-  const duplicateRequest = useDuplicateRequest({ id: itemId, navigateAfter: true });
+  const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
+  const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestResponse = useLatestResponse(itemId);
-  const updateRequest = useUpdateHttpRequest(itemId);
+  const updateHttpRequest = useUpdateHttpRequest(itemId);
+  const updateGrpcRequest = useUpdateGrpcRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
@@ -553,10 +568,15 @@ const SidebarItem = forwardRef(function SidebarItem(
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
-      updateRequest.mutate((r) => ({ ...r, name: el.value }));
+      if (activeRequest == null) return;
+      if (activeRequest.model === 'http_request') {
+        updateHttpRequest.mutate((r) => ({ ...r, name: el.value }));
+      } else if (activeRequest.model === 'grpc_request') {
+        updateGrpcRequest.mutate((r) => ({ ...r, name: el.value }));
+      }
       setEditing(false);
     },
-    [updateRequest],
+    [activeRequest, updateGrpcRequest, updateHttpRequest],
   );
 
   const handleFocus = useCallback((el: HTMLInputElement | null) => {
@@ -677,7 +697,9 @@ const SidebarItem = forwardRef(function SidebarItem(
                     hotKeyLabelOnly: true, // Would trigger for every request (bad)
                     leftSlot: <Icon icon="copy" />,
                     onSelect: () => {
-                      duplicateRequest.mutate();
+                      itemModel === 'http_request'
+                        ? duplicateHttpRequest.mutate()
+                        : duplicateGrpcRequest.mutate();
                     },
                   },
                   {

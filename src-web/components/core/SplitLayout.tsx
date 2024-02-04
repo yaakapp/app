@@ -16,8 +16,8 @@ interface SlotProps {
 
 interface Props {
   name: string;
-  leftSlot: (props: SlotProps) => ReactNode;
-  rightSlot: null | ((props: SlotProps) => ReactNode);
+  firstSlot: (props: SlotProps) => ReactNode;
+  secondSlot: null | ((props: SlotProps) => ReactNode);
   style?: CSSProperties;
   className?: string;
   defaultRatio?: number;
@@ -33,8 +33,8 @@ const STACK_VERTICAL_WIDTH = 700;
 
 export function SplitLayout({
   style,
-  leftSlot,
-  rightSlot,
+  firstSlot,
+  secondSlot,
   className,
   name,
   defaultRatio = 0.5,
@@ -54,7 +54,7 @@ export function SplitLayout({
     null,
   );
 
-  if (!rightSlot) {
+  if (!secondSlot) {
     height = 0;
     minHeightPx = 0;
   }
@@ -145,8 +145,8 @@ export function SplitLayout({
 
   return (
     <div ref={containerRef} className={classNames(className, 'grid w-full h-full')} style={styles}>
-      {leftSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
-      {rightSlot && (
+      {firstSlot({ style: areaL, orientation: vertical ? 'vertical' : 'horizontal' })}
+      {secondSlot && (
         <>
           <ResizeHandle
             style={areaD}
@@ -158,7 +158,7 @@ export function SplitLayout({
             side={vertical ? 'top' : 'left'}
             justify="center"
           />
-          {rightSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
+          {secondSlot({ style: areaR, orientation: vertical ? 'vertical' : 'horizontal' })}
         </>
       )}
     </div>

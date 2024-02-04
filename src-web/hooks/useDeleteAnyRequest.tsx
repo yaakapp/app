@@ -7,7 +7,7 @@ import type { HttpRequest } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
 import { useConfirm } from './useConfirm';
 import { httpRequestsQueryKey } from './useHttpRequests';
-import { responsesQueryKey } from './useResponses';
+import { httpResponsesQueryKey } from './useHttpResponses';
 
 export function useDeleteAnyRequest() {
   const queryClient = useQueryClient();
@@ -35,7 +35,7 @@ export function useDeleteAnyRequest() {
       if (request === null) return;
 
       const { workspaceId, id: requestId } = request;
-      queryClient.setQueryData(responsesQueryKey({ requestId }), []); // Responses were deleted
+      queryClient.setQueryData(httpResponsesQueryKey({ requestId }), []); // Responses were deleted
       queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey({ workspaceId }), (requests) =>
         (requests ?? []).filter((r) => r.id !== requestId),
       );

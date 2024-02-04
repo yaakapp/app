@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, model, workspace_id, request_id, connection_id, created_at, message\n            FROM grpc_messages\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method\n            FROM grpc_connections\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n        ",
   "describe": {
     "columns": [
       {
@@ -24,18 +24,23 @@
         "type_info": "Text"
       },
       {
-        "name": "connection_id",
+        "name": "created_at",
         "ordinal": 4,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
-        "name": "created_at",
+        "name": "updated_at",
         "ordinal": 5,
         "type_info": "Datetime"
       },
       {
-        "name": "message",
+        "name": "service",
         "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "method",
+        "ordinal": 7,
         "type_info": "Text"
       }
     ],
@@ -49,8 +54,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "f055a2b6ab6bc3fea115dbea3f287df833c9bb73cdf2fe38da21fe5f5f6ae639"
+  "hash": "a7b969f33ed0424188b429227d6e3fac2bef52f2e1b0eb1d3846d1293d41f86c"
 }
