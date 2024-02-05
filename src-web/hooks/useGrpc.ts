@@ -29,7 +29,6 @@ export function useGrpc(url: string | null, requestId: string | null) {
         requestId: id,
       })) as GrpcMessage;
       await messages.set([message]);
-      console.log('MESSAGE', message);
       return message;
     },
   });
@@ -40,7 +39,6 @@ export function useGrpc(url: string | null, requestId: string | null) {
       if (url === null) throw new Error('No URL provided');
       await messages.set([]);
       const c = (await invoke('cmd_grpc_client_streaming', { requestId })) as GrpcConnection;
-      console.log('GOT CONNECTION', c);
       setActiveConnectionId(c.id);
     },
   });
@@ -72,10 +70,6 @@ export function useGrpc(url: string | null, requestId: string | null) {
     mutationFn: async ({ message }: { message: string }) => {
       if (activeConnectionId == null) throw new Error('No active connection');
       await messages.set([]);
-      // await messages.set((m) => {
-      //   return [...m, { type: 'client', message, timestamp: new Date().toISOString() }];
-      // });
-      console.log('SENDING', activeConnectionId);
       await emit(`grpc_client_msg_${activeConnectionId}`, { Message: message });
     },
   });

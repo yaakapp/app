@@ -44,14 +44,6 @@ export function GrpcConnectionLayout({ style }: Props) {
     return s.methods.find((m) => m.name === activeRequest.method);
   }, [activeRequest, grpc.services]);
 
-  const handleCancel = useCallback(() => {
-    grpc.cancel.mutateAsync().catch(console.error);
-  }, [grpc.cancel]);
-
-  const handleCommit = useCallback(() => {
-    grpc.commit.mutateAsync().catch(console.error);
-  }, [grpc.commit]);
-
   const handleConnect = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -71,7 +63,8 @@ export function GrpcConnectionLayout({ style }: Props) {
       } else if (activeMethod.clientStreaming && !activeMethod.serverStreaming) {
         await grpc.clientStreaming.mutateAsync(activeRequest.id);
       } else {
-        await grpc.unary.mutateAsync(activeRequest.id);
+        const msg = await grpc.unary.mutateAsync(activeRequest.id);
+        setActiveMessageId(msg.id);
       }
     },
     [
@@ -148,6 +141,15 @@ export function GrpcConnectionLayout({ style }: Props) {
     [activeMessageId, messages],
   );
 
+  const messageType: 'unary' | 'server_streaming' | 'client_streaming' | 'streaming' =
+    useMemo(() => {
+      if (activeMethod == null) return 'unary'; // Good enough
+      if (activeMethod.clientStreaming && activeMethod.serverStreaming) return 'streaming';
+      if (activeMethod.clientStreaming) return 'client_streaming';
+      if (activeMethod.serverStreaming) return 'server_streaming';
+      return 'unary';
+    }, [activeMethod]);
+
   if (activeRequest == null) {
     return null;
   }
@@ -201,21 +203,40 @@ export function GrpcConnectionLayout({ style }: Props) {
               <IconButton
                 className="border border-highlight"
                 size="sm"
-                title="to-do"
+                title={messageType === 'unary' ? 'Send' : 'Connect'}
                 hotkeyAction={grpc.isStreaming ? undefined : 'http_request.send'}
-                onClick={grpc.isStreaming ? handleCancel : handleConnect}
+                onClick={grpc.isStreaming ? () => grpc.cancel.mutateAsync() : handleConnect}
+                disabled={grpc.isStreaming}
+                spin={grpc.isStreaming || grpc.unary.isLoading}
                 icon={
                   grpc.isStreaming
-                    ? 'x'
-                    : !activeMethod?.clientStreaming && activeMethod?.serverStreaming
-                    ? 'arrowDownToDot'
-                    : activeMethod?.clientStreaming && !activeMethod?.serverStreaming
-                    ? 'arrowUpFromDot'
-                    : activeMethod?.clientStreaming && activeMethod?.serverStreaming
-                    ? 'arrowUpDown'
-                    : 'sendHorizontal'
+                    ? 'refresh'
+                    : messageType === 'unary'
+                    ? 'sendHorizontal'
+                    : 'arrowUpDown'
                 }
               />
+              {grpc.isStreaming && (
+                <IconButton
+                  className="border border-highlight"
+                  size="sm"
+                  title="Cancel"
+                  onClick={() => grpc.cancel.mutateAsync()}
+                  icon="x"
+                  disabled={!grpc.isStreaming}
+                />
+              )}
+              {activeMethod?.clientStreaming &&
+                !activeMethod.serverStreaming &&
+                grpc.isStreaming && (
+                  <IconButton
+                    className="border border-highlight"
+                    size="sm"
+                    title="to-do"
+                    onClick={() => grpc.commit.mutateAsync()}
+                    icon="check"
+                  />
+                )}
               {activeMethod?.clientStreaming && grpc.isStreaming && (
                 <IconButton
                   className="border border-highlight"
@@ -226,17 +247,6 @@ export function GrpcConnectionLayout({ style }: Props) {
                   icon="sendHorizontal"
                 />
               )}
-              {activeMethod?.clientStreaming &&
-                !activeMethod.serverStreaming &&
-                grpc.isStreaming && (
-                  <IconButton
-                    className="border border-highlight"
-                    size="sm"
-                    title="to-do"
-                    onClick={handleCommit}
-                    icon="check"
-                  />
-                )}
             </HStack>
           </div>
           <GrpcEditor
@@ -265,11 +275,17 @@ export function GrpcConnectionLayout({ style }: Props) {
               </Banner>
             ) : messages.length >= 0 ? (
               <SplitLayout
-                name="grpc_messages"
+                name={
+                  !activeMethod?.clientStreaming && !activeMethod?.serverStreaming
+                    ? 'grpc_messages_unary'
+                    : 'grpc_messages_streaming'
+                }
+                defaultRatio={
+                  !activeMethod?.clientStreaming && !activeMethod?.serverStreaming ? 0.75 : 0.3
+                }
                 minHeightPx={20}
-                defaultRatio={0.25}
                 firstSlot={() => (
-                  <div className="overflow-y-auto">
+                  <div className="overflow-y-auto w-full">
                     {...messages.map((m) => (
                       <HStack
                         key={m.id}
