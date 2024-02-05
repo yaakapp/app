@@ -21,7 +21,7 @@ import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { useLatestResponse } from '../hooks/useLatestResponse';
+import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { usePrompt } from '../hooks/usePrompt';
 import { useSendManyRequests } from '../hooks/useSendFolder';
 import { useSendRequest } from '../hooks/useSendRequest';
@@ -558,7 +558,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
-  const latestResponse = useLatestResponse(itemId);
+  const latestResponse = useLatestHttpResponse(itemId);
   const updateHttpRequest = useUpdateHttpRequest(itemId);
   const updateGrpcRequest = useUpdateGrpcRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();

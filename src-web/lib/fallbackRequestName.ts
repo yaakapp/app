@@ -14,12 +14,17 @@ export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string
 
   const fixedUrl = r.url.match(/^https?:\/\//) ? r.url : 'http://' + r.url;
 
-  try {
-    const url = new URL(fixedUrl);
-    const pathname = url.pathname === '/' ? '' : url.pathname;
-    return `${url.host}${pathname}`;
-  } catch (_) {
-    // Nothing
+  if (r.model === 'grpc_request' && r.service != null && r.method != null) {
+    const shortService = r.service.split('.').pop();
+    return `${shortService}/${r.method}`;
+  } else {
+    try {
+      const url = new URL(fixedUrl);
+      const pathname = url.pathname === '/' ? '' : url.pathname;
+      return `${url.host}${pathname}`;
+    } catch (_) {
+      // Nothing
+    }
   }
 
   return r.url;

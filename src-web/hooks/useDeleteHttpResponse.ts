@@ -4,11 +4,11 @@ import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
 import { httpResponsesQueryKey } from './useHttpResponses';
 
-export function useDeleteResponse(id: string | null) {
+export function useDeleteHttpResponse(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<HttpResponse>({
     mutationFn: async () => {
-      return await invoke('cmd_delete_response', { id: id });
+      return await invoke('cmd_delete_http_response', { id: id });
     },
     onSettled: () => trackEvent('HttpResponse', 'Delete'),
     onSuccess: ({ requestId, id: responseId }) => {

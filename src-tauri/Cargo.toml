@@ -33,7 +33,7 @@ reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "br
 cookie = { version = "0.18.0" }
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = { version = "1.0.111", features = ["raw_value"] }
-sqlx = { version = "0.7.2", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
+sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
 tauri = { version = "1.5.2", features = [
     "config-toml",
     "devtools",

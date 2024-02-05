@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method\n            FROM grpc_connections\n            WHERE request_id = ?\n            ORDER BY created_at DESC\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, request_id, created_at, updated_at, service,\n                method, elapsed\n            FROM grpc_connections\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -42,6 +42,11 @@
         "name": "method",
         "ordinal": 7,
         "type_info": "Text"
+      },
+      {
+        "name": "elapsed",
+        "ordinal": 8,
+        "type_info": "Int64"
       }
     ],
     "parameters": {
@@ -55,8 +60,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "a7b969f33ed0424188b429227d6e3fac2bef52f2e1b0eb1d3846d1293d41f86c"
+  "hash": "3330be44d8851f8e3456c403b5d1067f4e70e85ef8829b7aaad5b1993c3d01e8"
 }

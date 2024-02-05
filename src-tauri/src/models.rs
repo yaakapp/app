@@ -217,6 +217,7 @@ pub struct GrpcConnection {
     pub updated_at: NaiveDateTime,
     pub service: String,
     pub method: String,
+    pub elapsed: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -416,10 +417,10 @@ pub async fn delete_workspace(app_handle: &AppHandle, id: &str) -> Result<Worksp
     .await;
 
     for r in list_responses_by_workspace_id(app_handle, id).await? {
-        delete_response(app_handle, &r.id).await?;
+        delete_http_response(app_handle, &r.id).await?;
     }
 
-    Ok(workspace)
+    emit_deleted_model(app_handle, workspace)
 }
 
 pub async fn get_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJar, sqlx::Error> {
@@ -471,7 +472,7 @@ pub async fn delete_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<Cooki
     .execute(&db)
     .await;
 
-    Ok(cookie_jar)
+    emit_deleted_model(app_handle, cookie_jar)
 }
 
 pub async fn duplicate_grpc_request(
@@ -522,7 +523,10 @@ pub async fn upsert_grpc_request(
     .execute(&db)
     .await?;
 
-    get_grpc_request(app_handle, &id).await
+    match get_grpc_request(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn get_grpc_request(
@@ -577,24 +581,29 @@ pub async fn upsert_grpc_connection(
     sqlx::query!(
         r#"
             INSERT INTO grpc_connections (
-                id, workspace_id, request_id, service, method
+                id, workspace_id, request_id, service, method, elapsed
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
                 service = excluded.service,
-                method = excluded.method
+                method = excluded.method,
+                elapsed = excluded.elapsed
         "#,
         id,
         connection.workspace_id,
         connection.request_id,
         connection.service,
         connection.method,
+        connection.elapsed,
     )
     .execute(&db)
     .await?;
 
-    get_grpc_connection(app_handle, &id).await
+    match get_grpc_connection(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn get_grpc_connection(
@@ -605,7 +614,9 @@ pub async fn get_grpc_connection(
     sqlx::query_as!(
         GrpcConnection,
         r#"
-            SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method
+            SELECT
+                id, model, workspace_id, request_id, created_at, updated_at, service,
+                method, elapsed
             FROM grpc_connections
             WHERE id = ?
         "#,
@@ -623,7 +634,9 @@ pub async fn list_grpc_connections(
     sqlx::query_as!(
         GrpcConnection,
         r#"
-            SELECT id, model, workspace_id, request_id, created_at, updated_at, service, method
+            SELECT
+                id, model, workspace_id, request_id, created_at, updated_at, service,
+                method, elapsed
             FROM grpc_connections
             WHERE request_id = ?
             ORDER BY created_at DESC
@@ -666,9 +679,8 @@ pub async fn upsert_grpc_message(
     .execute(&db)
     .await?;
 
-    let msg = get_grpc_message(app_handle, &id).await;
-    match msg {
-        Ok(msg) => Ok(emit_upserted_model(app_handle, msg.clone()).await),
+    match get_grpc_message(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
         Err(e) => Err(e),
     }
 }
@@ -743,7 +755,10 @@ pub async fn upsert_cookie_jar(
     .execute(&db)
     .await?;
 
-    get_cookie_jar(&app_handle, &id).await
+    match get_cookie_jar(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn list_environments(
@@ -781,7 +796,7 @@ pub async fn delete_environment(
     .execute(&db)
     .await;
 
-    Ok(env)
+    emit_deleted_model(app_handle, env)
 }
 
 async fn get_settings(app_handle: &AppHandle) -> Result<Settings, sqlx::Error> {
@@ -837,7 +852,11 @@ pub async fn update_settings(
     )
     .execute(&db)
     .await?;
-    get_settings(app_handle).await
+
+    match get_settings(app_handle).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn upsert_environment(
@@ -868,7 +887,11 @@ pub async fn upsert_environment(
     )
     .execute(&db)
     .await?;
-    get_environment(app_handle, &id).await
+
+    match get_environment(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn get_environment(app_handle: &AppHandle, id: &str) -> Result<Environment, sqlx::Error> {
@@ -924,7 +947,7 @@ pub async fn list_folders(
 }
 
 pub async fn delete_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx::Error> {
-    let env = get_folder(app_handle, id).await?;
+    let folder = get_folder(app_handle, id).await?;
     let db = get_db(app_handle).await;
     let _ = sqlx::query!(
         r#"
@@ -936,7 +959,7 @@ pub async fn delete_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, s
     .execute(&db)
     .await;
 
-    Ok(env)
+    emit_deleted_model(app_handle, folder)
 }
 
 pub async fn upsert_folder(app_handle: &AppHandle, r: Folder) -> Result<Folder, sqlx::Error> {
@@ -968,7 +991,10 @@ pub async fn upsert_folder(app_handle: &AppHandle, r: Folder) -> Result<Folder, 
     .execute(&db)
     .await?;
 
-    get_folder(&app_handle, &id).await
+    match get_folder(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn duplicate_http_request(
@@ -1032,7 +1058,10 @@ pub async fn upsert_http_request(
     .execute(&db)
     .await?;
 
-    get_http_request(app_handle, &id).await
+    match get_http_request(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn list_requests(
@@ -1084,11 +1113,14 @@ pub async fn get_http_request(
     .await
 }
 
-pub async fn delete_request(app_handle: &AppHandle, id: &str) -> Result<HttpRequest, sqlx::Error> {
+pub async fn delete_http_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpRequest, sqlx::Error> {
     let req = get_http_request(app_handle, id).await?;
 
     // DB deletes will cascade but this will delete the files
-    delete_all_responses(app_handle, id).await?;
+    delete_all_http_responses(app_handle, id).await?;
 
     let db = get_db(app_handle).await;
     let _ = sqlx::query!(
@@ -1101,7 +1133,7 @@ pub async fn delete_request(app_handle: &AppHandle, id: &str) -> Result<HttpRequ
     .execute(&db)
     .await;
 
-    Ok(req)
+    emit_deleted_model(app_handle, req)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1148,7 +1180,7 @@ pub async fn create_response(
     .execute(&db)
     .await?;
 
-    get_response(app_handle, &id).await
+    get_http_response(app_handle, &id).await
 }
 
 pub async fn cancel_pending_responses(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
@@ -1214,7 +1246,10 @@ pub async fn upsert_workspace(
     .execute(&db)
     .await?;
 
-    get_workspace(app_handle, &id).await
+    match get_workspace(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn update_response(
@@ -1245,10 +1280,17 @@ pub async fn update_response(
     )
     .execute(&db)
     .await?;
-    get_response(app_handle, &response.id).await
+
+    match get_http_response(app_handle, &response.id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn get_response(app_handle: &AppHandle, id: &str) -> Result<HttpResponse, sqlx::Error> {
+pub async fn get_http_response(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpResponse, sqlx::Error> {
     let db = get_db(app_handle).await;
     sqlx::query_as!(
         HttpResponse,
@@ -1317,11 +1359,31 @@ pub async fn list_responses_by_workspace_id(
     .await
 }
 
-pub async fn delete_response(
+pub async fn delete_grpc_connection(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcConnection, sqlx::Error> {
+    let resp = get_grpc_connection(app_handle, id).await?;
+
+    let db = get_db(app_handle).await;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM grpc_connections
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(&db)
+    .await;
+
+    emit_deleted_model(app_handle, resp)
+}
+
+pub async fn delete_http_response(
     app_handle: &AppHandle,
     id: &str,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let resp = get_response(app_handle, id).await?;
+    let resp = get_http_response(app_handle, id).await?;
 
     // Delete the body file if it exists
     if let Some(p) = resp.body_path.clone() {
@@ -1341,15 +1403,25 @@ pub async fn delete_response(
     .execute(&db)
     .await;
 
-    Ok(resp)
+    emit_deleted_model(app_handle, resp)
 }
 
-pub async fn delete_all_responses(
+pub async fn delete_all_grpc_connections(
+    app_handle: &AppHandle,
+    request_id: &str,
+) -> Result<(), sqlx::Error> {
+    for r in list_grpc_connections(app_handle, request_id).await? {
+        delete_grpc_connection(app_handle, &r.id).await?;
+    }
+    Ok(())
+}
+
+pub async fn delete_all_http_responses(
     app_handle: &AppHandle,
     request_id: &str,
 ) -> Result<(), sqlx::Error> {
     for r in list_responses(app_handle, request_id, None).await? {
-        delete_response(app_handle, &r.id).await?;
+        delete_http_response(app_handle, &r.id).await?;
     }
     Ok(())
 }
@@ -1406,11 +1478,16 @@ pub async fn get_workspace_export_resources(
     };
 }
 
-async fn emit_upserted_model<S: Serialize + Clone>(app_handle: &AppHandle, model: S) -> S {
+fn emit_upserted_model<S: Serialize + Clone>(app_handle: &AppHandle, model: S) -> S {
     app_handle
         .emit_all("upserted_model", model.clone())
         .unwrap();
     model
+}
+
+fn emit_deleted_model<S: Serialize + Clone, E>(app_handle: &AppHandle, model: S) -> Result<S, E> {
+    app_handle.emit_all("deleted_model", model.clone()).unwrap();
+    Ok(model)
 }
 
 async fn get_db(app_handle: &AppHandle) -> Pool<Sqlite> {

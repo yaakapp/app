@@ -132,6 +132,7 @@ export interface GrpcConnection extends BaseModel {
   readonly model: 'grpc_connection';
   service: string;
   method: string;
+  elapsed: number;
 }
 
 export interface HttpRequest extends BaseModel {

@@ -20,7 +20,6 @@ use fern::colors::ColoredLevelConfig;
 use futures::StreamExt;
 use log::{debug, error, info, warn};
 use rand::random;
-use serde::Serialize;
 use serde_json::{json, Value};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
@@ -42,11 +41,12 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_responses, create_response, delete_all_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_request, delete_response, delete_workspace,
-    duplicate_grpc_request, duplicate_http_request, generate_id, get_cookie_jar, get_environment,
-    get_folder, get_grpc_request, get_http_request, get_key_value_raw, get_or_create_settings,
-    get_response, get_workspace, get_workspace_export_resources, list_cookie_jars,
+    cancel_pending_responses, create_response, delete_all_grpc_connections,
+    delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder,
+    delete_grpc_connection, delete_http_request, delete_http_response, delete_workspace,
+    duplicate_grpc_request, duplicate_http_request, get_cookie_jar, get_environment, get_folder,
+    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
+    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
     list_environments, list_folders, list_grpc_connections, list_grpc_messages, list_grpc_requests,
     list_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
     update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
@@ -119,7 +119,6 @@ async fn cmd_grpc_call_unary(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -140,11 +139,11 @@ async fn cmd_grpc_call_unary(
     };
 
     let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    let conn_id = generate_id(Some("grpc"));
+    let start = std::time::Instant::now();
     let msg = match grpc_handle
         .lock()
         .await
-        .connect(&conn_id, uri)
+        .connect(&conn.clone().id, uri)
         .await
         .unary(
             &req.service.unwrap_or_default(),
@@ -160,7 +159,7 @@ async fn cmd_grpc_call_unary(
                     message: msg,
                     workspace_id: req.workspace_id,
                     request_id: req.id,
-                    connection_id: conn.id,
+                    connection_id: conn.clone().id,
                     is_server: true,
                     ..Default::default()
                 },
@@ -169,6 +168,16 @@ async fn cmd_grpc_call_unary(
         }
         Err(e) => return Err(e.to_string()),
     };
+
+    upsert_grpc_connection(
+        &app_handle,
+        &GrpcConnection {
+            elapsed: start.elapsed().as_millis() as i64,
+            ..conn
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())?;
 
     msg.map_err(|e| e.to_string())
 }
@@ -194,7 +203,6 @@ async fn cmd_grpc_client_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -296,6 +304,7 @@ async fn cmd_grpc_client_streaming(
     let event_handler =
         app_handle.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
+    let start = std::time::Instant::now();
     let grpc_listen = {
         let app_handle = app_handle.clone();
         let conn = conn.clone();
@@ -308,10 +317,11 @@ async fn cmd_grpc_client_streaming(
                 .client_streaming(&conn.id, uri, &service, &method, in_msg_stream)
                 .await
                 .unwrap();
+            let message = serde_json::to_string(&msg).unwrap();
             upsert_grpc_message(
                 &app_handle,
                 &GrpcMessage {
-                    message: msg.to_string(),
+                    message,
                     workspace_id: req.workspace_id,
                     request_id: req.id,
                     connection_id: conn.id,
@@ -336,12 +346,21 @@ async fn cmd_grpc_client_streaming(
                             message: "Connection completed".to_string(),
                             workspace_id: req.workspace_id,
                             request_id: req.id,
-                            connection_id: conn.id,
+                            connection_id: conn.clone().id,
                             is_info: true,
                             ..Default::default()
                         },
                     )
-                    .await.map_err(|e| e.to_string()).unwrap();
+                    .await.unwrap();
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection {
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    )
+                    .await
+                    .unwrap();
                 },
                 _ = cancelled_rx.changed() => {
                     upsert_grpc_message(
@@ -350,13 +369,22 @@ async fn cmd_grpc_client_streaming(
                             message: "Connection cancelled".to_string(),
                             workspace_id: req.workspace_id,
                             request_id: req.id,
-                            connection_id: conn.id,
+                            connection_id: conn.clone().id,
                             is_info: true,
                             ..Default::default()
                         },
                     )
+                    .await.unwrap();
+
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection {
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    )
                     .await
-                    .map_err(|e| e.to_string()).unwrap();
+                    .unwrap();
                 },
             }
             app_handle.unlisten(event_handler);
@@ -388,7 +416,6 @@ async fn cmd_grpc_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -423,6 +450,7 @@ async fn cmd_grpc_streaming(
         }
     };
 
+    let start = std::time::Instant::now();
     let mut stream = grpc_handle
         .lock()
         .await
@@ -533,26 +561,40 @@ async fn cmd_grpc_streaming(
                             message: "Connection completed".to_string(),
                             workspace_id: req.workspace_id,
                             request_id: req.id,
-                            connection_id: conn.id,
+                            connection_id: conn.clone().id,
                             is_info: true,
                             ..Default::default()
                         },
                     )
-                    .await.map_err(|e| e.to_string()).unwrap();
+                    .await.unwrap();
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection{
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    ).await.unwrap();
                 },
                 _ = cancelled_rx.changed() => {
-                        upsert_grpc_message(
-                            &app_handle,
-                            &GrpcMessage {
-                                message: "Connection cancelled".to_string(),
-                                workspace_id: req.workspace_id,
-                                request_id: req.id,
-                                connection_id: conn.id,
-                                is_info: true,
-                                ..Default::default()
-                            },
-                        )
-                        .await.map_err(|e| e.to_string()).unwrap();
+                    upsert_grpc_message(
+                        &app_handle,
+                        &GrpcMessage {
+                            message: "Connection cancelled".to_string(),
+                            workspace_id: req.workspace_id,
+                            request_id: req.id,
+                            connection_id: conn.clone().id,
+                            is_info: true,
+                            ..Default::default()
+                        },
+                    )
+                    .await.unwrap();
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection{
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    ).await.unwrap();
                 },
             }
             app_handle.unlisten(event_handler);
@@ -585,7 +627,6 @@ async fn cmd_grpc_server_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -647,6 +688,7 @@ async fn cmd_grpc_server_streaming(
     let event_handler =
         app_handle.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
+    let start = std::time::Instant::now();
     let grpc_listen = {
         let conn_id = conn.clone().id;
         let app_handle = app_handle.clone();
@@ -694,32 +736,46 @@ async fn cmd_grpc_server_streaming(
         tauri::async_runtime::spawn(async move {
             tokio::select! {
                 _ = grpc_listen => {
-                        upsert_grpc_message(
-                            &app_handle,
-                            &GrpcMessage {
-                                message: "Connection completed".to_string(),
-                                workspace_id: req.workspace_id,
-                                request_id: req.id,
-                                connection_id: conn.id,
-                                is_info: true,
-                                ..Default::default()
-                            },
-                        )
-                        .await.unwrap();
+                    upsert_grpc_message(
+                        &app_handle,
+                        &GrpcMessage {
+                            message: "Connection completed".to_string(),
+                            workspace_id: req.workspace_id,
+                            request_id: req.id,
+                            connection_id: conn.clone().id,
+                            is_info: true,
+                            ..Default::default()
+                        },
+                    )
+                    .await.unwrap();
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection{
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    ).await.unwrap();
                 },
                 _ = cancelled_rx.changed() => {
-                        upsert_grpc_message(
-                            &app_handle,
-                            &GrpcMessage {
-                                message: "Connection cancelled".to_string(),
-                                workspace_id: req.workspace_id,
-                                request_id: req.id,
-                                connection_id: conn.id,
-                                is_info: true,
-                                ..Default::default()
-                            },
-                        )
-                        .await.unwrap();
+                    upsert_grpc_message(
+                        &app_handle,
+                        &GrpcMessage {
+                            message: "Connection cancelled".to_string(),
+                            workspace_id: req.workspace_id,
+                            request_id: req.id,
+                            connection_id: conn.clone().id,
+                            is_info: true,
+                            ..Default::default()
+                        },
+                    )
+                    .await.unwrap();
+                    upsert_grpc_connection(
+                        &app_handle,
+                        &GrpcConnection{
+                            elapsed: start.elapsed().as_millis() as i64,
+                            ..conn
+                        },
+                    ).await.unwrap();
                 },
             }
             app_handle.unlisten(event_handler);
@@ -774,7 +830,7 @@ async fn cmd_filter_response(
     response_id: &str,
     filter: &str,
 ) -> Result<String, String> {
-    let response = get_response(&app_handle, response_id)
+    let response = get_http_response(&app_handle, response_id)
         .await
         .expect("Failed to get response");
 
@@ -958,8 +1014,6 @@ async fn cmd_send_request(
         None
     };
 
-    emit_side_effect(&app_handle, "upserted_model", response.clone());
-
     send_http_request(
         &app_handle,
         request.clone(),
@@ -982,7 +1036,6 @@ async fn response_err(
     response = update_response_if_id(&app_handle, &response)
         .await
         .expect("Failed to update response");
-    emit_side_effect(&app_handle, "upserted_model", &response);
     Ok(response)
 }
 
@@ -1009,12 +1062,10 @@ async fn cmd_track_event(
 }
 
 #[tauri::command]
-async fn cmd_set_update_mode(
-    update_mode: &str,
-    window: Window<Wry>,
-    app_handle: AppHandle,
-) -> Result<KeyValue, String> {
-    cmd_set_key_value("app", "update_mode", update_mode, window, app_handle).await
+async fn cmd_set_update_mode(update_mode: &str, app_handle: AppHandle) -> Result<KeyValue, String> {
+    cmd_set_key_value("app", "update_mode", update_mode, app_handle)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1032,64 +1083,46 @@ async fn cmd_set_key_value(
     namespace: &str,
     key: &str,
     value: &str,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<KeyValue, String> {
-    let (key_value, created) = set_key_value_raw(&app_handle, namespace, key, value).await;
-
-    if created {
-        emit_and_return(&window, "upserted_model", key_value)
-    } else {
-        emit_and_return(&window, "upserted_model", key_value)
-    }
+    let (key_value, _created) = set_key_value_raw(&app_handle, namespace, key, value).await;
+    Ok(key_value)
 }
 
 #[tauri::command]
-async fn cmd_create_workspace(
-    name: &str,
-    window: Window<Wry>,
-    app_handle: AppHandle,
-) -> Result<Workspace, String> {
-    let created_workspace = upsert_workspace(&app_handle, Workspace::new(name.to_string()))
+async fn cmd_create_workspace(name: &str, app_handle: AppHandle) -> Result<Workspace, String> {
+    upsert_workspace(&app_handle, Workspace::new(name.to_string()))
         .await
-        .expect("Failed to create Workspace");
-
-    emit_and_return(&window, "upserted_model", created_workspace)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_update_cookie_jar(
     cookie_jar: CookieJar,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<CookieJar, String> {
-    let updated = upsert_cookie_jar(&app_handle, &cookie_jar)
+    upsert_cookie_jar(&app_handle, &cookie_jar)
         .await
-        .expect("Failed to update cookie jar");
-
-    emit_and_return(&window, "upserted_model", updated)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_delete_cookie_jar(
-    window: Window<Wry>,
     app_handle: AppHandle,
     cookie_jar_id: &str,
 ) -> Result<CookieJar, String> {
-    let req = delete_cookie_jar(&app_handle, cookie_jar_id)
+    delete_cookie_jar(&app_handle, cookie_jar_id)
         .await
-        .expect("Failed to delete cookie jar");
-    emit_and_return(&window, "deleted_model", req)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_create_cookie_jar(
     workspace_id: &str,
     name: &str,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<CookieJar, String> {
-    let created_cookie_jar = upsert_cookie_jar(
+    upsert_cookie_jar(
         &app_handle,
         &CookieJar {
             name: name.to_string(),
@@ -1098,9 +1131,7 @@ async fn cmd_create_cookie_jar(
         },
     )
     .await
-    .expect("Failed to create cookie jar");
-
-    emit_and_return(&window, "upserted_model", created_cookie_jar)
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1108,10 +1139,9 @@ async fn cmd_create_environment(
     workspace_id: &str,
     name: &str,
     variables: Vec<EnvironmentVariable>,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<Environment, String> {
-    let created_environment = upsert_environment(
+    upsert_environment(
         &app_handle,
         Environment {
             workspace_id: workspace_id.to_string(),
@@ -1121,9 +1151,7 @@ async fn cmd_create_environment(
         },
     )
     .await
-    .expect("Failed to create environment");
-
-    emit_and_return(&window, "upserted_model", created_environment)
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1132,10 +1160,9 @@ async fn cmd_create_grpc_request(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<GrpcRequest, String> {
-    let created = upsert_grpc_request(
+    upsert_grpc_request(
         &app_handle,
         &GrpcRequest {
             workspace_id: workspace_id.to_string(),
@@ -1146,21 +1173,17 @@ async fn cmd_create_grpc_request(
         },
     )
     .await
-    .expect("Failed to create grpc request");
-
-    emit_and_return(&window, "upserted_model", created)
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_duplicate_grpc_request(
     id: &str,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<GrpcRequest, String> {
-    let request = duplicate_grpc_request(&app_handle, id)
+    duplicate_grpc_request(&app_handle, id)
         .await
-        .expect("Failed to duplicate grpc request");
-    emit_and_return(&window, "upserted_model", request)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1169,10 +1192,9 @@ async fn cmd_create_http_request(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let created_request = upsert_http_request(
+    upsert_http_request(
         &app_handle,
         HttpRequest {
             workspace_id: workspace_id.to_string(),
@@ -1184,95 +1206,77 @@ async fn cmd_create_http_request(
         },
     )
     .await
-    .expect("Failed to create http request");
-
-    emit_and_return(&window, "upserted_model", created_request)
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_duplicate_http_request(
     id: &str,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let request = duplicate_http_request(&app_handle, id)
+    duplicate_http_request(&app_handle, id)
         .await
-        .expect("Failed to duplicate http request");
-    emit_and_return(&window, "upserted_model", request)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_update_workspace(
     workspace: Workspace,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<Workspace, String> {
-    let updated_workspace = upsert_workspace(&app_handle, workspace)
+    upsert_workspace(&app_handle, workspace)
         .await
-        .expect("Failed to update request");
-
-    emit_and_return(&window, "upserted_model", updated_workspace)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_update_environment(
     environment: Environment,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<Environment, String> {
-    let updated_environment = upsert_environment(&app_handle, environment)
+    upsert_environment(&app_handle, environment)
         .await
-        .expect("Failed to update environment");
-
-    emit_and_return(&window, "upserted_model", updated_environment)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_update_grpc_request(
     request: GrpcRequest,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<GrpcRequest, String> {
-    let updated_request = upsert_grpc_request(&app_handle, &request)
+    upsert_grpc_request(&app_handle, &request)
         .await
-        .expect("Failed to update grpc request");
-    emit_and_return(&window, "upserted_model", updated_request)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_update_http_request(
     request: HttpRequest,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let updated_request = upsert_http_request(&app_handle, request)
+    upsert_http_request(&app_handle, request)
         .await
-        .expect("Failed to update request");
-    emit_and_return(&window, "upserted_model", updated_request)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_delete_grpc_request(
-    window: Window<Wry>,
     app_handle: AppHandle,
     request_id: &str,
 ) -> Result<HttpRequest, String> {
-    let req = delete_request(&app_handle, request_id)
+    delete_http_request(&app_handle, request_id)
         .await
-        .expect("Failed to delete request");
-    emit_and_return(&window, "deleted_model", req)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_delete_http_request(
-    window: Window<Wry>,
     app_handle: AppHandle,
     request_id: &str,
 ) -> Result<HttpRequest, String> {
-    let req = delete_request(&app_handle, request_id)
+    delete_http_request(&app_handle, request_id)
         .await
-        .expect("Failed to delete request");
-    emit_and_return(&window, "deleted_model", req)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1291,10 +1295,9 @@ async fn cmd_create_folder(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<Folder, String> {
-    let created_request = upsert_folder(
+    upsert_folder(
         &app_handle,
         Folder {
             workspace_id: workspace_id.to_string(),
@@ -1305,45 +1308,31 @@ async fn cmd_create_folder(
         },
     )
     .await
-    .expect("Failed to create folder");
-
-    emit_and_return(&window, "upserted_model", created_request)
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_update_folder(
-    folder: Folder,
-    window: Window<Wry>,
-    app_handle: AppHandle,
-) -> Result<Folder, String> {
-    let updated_folder = upsert_folder(&app_handle, folder)
+async fn cmd_update_folder(folder: Folder, app_handle: AppHandle) -> Result<Folder, String> {
+    upsert_folder(&app_handle, folder)
         .await
-        .expect("Failed to update request");
-    emit_and_return(&window, "upserted_model", updated_folder)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_folder(
-    window: Window<Wry>,
-    app_handle: AppHandle,
-    folder_id: &str,
-) -> Result<Folder, String> {
-    let req = delete_folder(&app_handle, folder_id)
+async fn cmd_delete_folder(app_handle: AppHandle, folder_id: &str) -> Result<Folder, String> {
+    delete_folder(&app_handle, folder_id)
         .await
-        .expect("Failed to delete folder");
-    emit_and_return(&window, "deleted_model", req)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_delete_environment(
-    window: Window<Wry>,
     app_handle: AppHandle,
     environment_id: &str,
 ) -> Result<Environment, String> {
-    let req = delete_environment(&app_handle, environment_id)
+    delete_environment(&app_handle, environment_id)
         .await
-        .expect("Failed to delete environment");
-    emit_and_return(&window, "deleted_model", req)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1409,14 +1398,11 @@ async fn cmd_get_settings(app_handle: AppHandle) -> Result<Settings, ()> {
 #[tauri::command]
 async fn cmd_update_settings(
     settings: Settings,
-    window: Window<Wry>,
     app_handle: AppHandle,
 ) -> Result<Settings, String> {
-    let updated_settings = update_settings(&app_handle, settings)
+    update_settings(&app_handle, settings)
         .await
-        .expect("Failed to update settings");
-
-    emit_and_return(&window, "upserted_model", updated_settings)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1497,20 +1483,38 @@ async fn cmd_list_http_responses(
 }
 
 #[tauri::command]
-async fn cmd_delete_response(
-    id: &str,
-    window: Window<Wry>,
-    app_handle: AppHandle,
-) -> Result<HttpResponse, String> {
-    let response = delete_response(&app_handle, id)
+async fn cmd_delete_http_response(id: &str, app_handle: AppHandle) -> Result<HttpResponse, String> {
+    delete_http_response(&app_handle, id)
         .await
-        .expect("Failed to delete response");
-    emit_and_return(&window, "deleted_model", response)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_all_responses(request_id: &str, app_handle: AppHandle) -> Result<(), String> {
-    delete_all_responses(&app_handle, request_id)
+async fn cmd_delete_grpc_connection(
+    id: &str,
+    app_handle: AppHandle,
+) -> Result<GrpcConnection, String> {
+    delete_grpc_connection(&app_handle, id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_delete_all_grpc_connections(
+    request_id: &str,
+    app_handle: AppHandle,
+) -> Result<(), String> {
+    delete_all_grpc_connections(&app_handle, request_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_delete_all_http_responses(
+    request_id: &str,
+    app_handle: AppHandle,
+) -> Result<(), String> {
+    delete_all_http_responses(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1544,14 +1548,12 @@ async fn cmd_new_window(window: Window<Wry>, url: &str) -> Result<(), String> {
 
 #[tauri::command]
 async fn cmd_delete_workspace(
-    window: Window<Wry>,
     app_handle: AppHandle,
     workspace_id: &str,
 ) -> Result<Workspace, String> {
-    let workspace = delete_workspace(&app_handle, workspace_id)
+    delete_workspace(&app_handle, workspace_id)
         .await
-        .expect("Failed to delete Workspace");
-    emit_and_return(&window, "deleted_model", workspace)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1646,13 +1648,15 @@ fn main() {
             cmd_create_grpc_request,
             cmd_create_http_request,
             cmd_create_workspace,
-            cmd_delete_all_responses,
+            cmd_delete_all_http_responses,
+            cmd_delete_all_grpc_connections,
             cmd_delete_cookie_jar,
             cmd_delete_environment,
             cmd_delete_folder,
             cmd_delete_grpc_request,
+            cmd_delete_grpc_connection,
             cmd_delete_http_request,
-            cmd_delete_response,
+            cmd_delete_http_response,
             cmd_delete_workspace,
             cmd_duplicate_http_request,
             cmd_duplicate_grpc_request,
@@ -1856,21 +1860,6 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> Window<Wry> {
 
     win.position_traffic_lights();
     win
-}
-
-/// Emit an event to all windows, with a source window
-fn emit_and_return<S: Serialize + Clone, E>(
-    current_window: &Window<Wry>,
-    event: &str,
-    payload: S,
-) -> Result<S, E> {
-    current_window.emit_all(event, &payload).unwrap();
-    Ok(payload)
-}
-
-/// Emit an event to all windows, used for side-effects where there is no source window to attribute. This
-fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle, event: &str, payload: S) {
-    app_handle.emit_all(event, &payload).unwrap();
 }
 
 async fn get_update_mode(app_handle: &AppHandle) -> UpdateMode {
