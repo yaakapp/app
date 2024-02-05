@@ -45,47 +45,6 @@ export function GlobalHooks() {
     setPathname(location.pathname).catch(console.error);
   }, [location.pathname]);
 
-  useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
-    if (shouldIgnoreEvent(payload, windowLabel)) return;
-
-    const queryKey =
-      payload.model === 'http_request'
-        ? httpRequestsQueryKey(payload)
-        : payload.model === 'http_response'
-        ? httpResponsesQueryKey(payload)
-        : payload.model === 'grpc_connection'
-        ? grpcConnectionsQueryKey(payload)
-        : payload.model === 'grpc_message'
-        ? grpcMessagesQueryKey(payload)
-        : payload.model === 'grpc_request'
-        ? grpcRequestsQueryKey(payload)
-        : payload.model === 'workspace'
-        ? workspacesQueryKey(payload)
-        : payload.model === 'key_value'
-        ? keyValueQueryKey(payload)
-        : payload.model === 'settings'
-        ? settingsQueryKey()
-        : payload.model === 'cookie_jar'
-        ? cookieJarsQueryKey(payload)
-        : null;
-
-    const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
-      payload.model,
-    );
-
-    if (queryKey === null) {
-      console.log('Unrecognized created model:', payload);
-      return;
-    }
-
-    if (!shouldIgnoreModel(payload)) {
-      // Order newest first
-      queryClient.setQueryData<Model[]>(queryKey, (values) =>
-        pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload],
-      );
-    }
-  });
-
   useListenToTauriEvent<Model>('upserted_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
