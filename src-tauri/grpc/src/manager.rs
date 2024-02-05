@@ -39,11 +39,6 @@ impl GrpcConnection {
 
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        println!(
-            "\n---------- SENDING -----------------\n{}",
-            serde_json::to_string_pretty(&req_message).expect("json")
-        );
-
         let req = req_message.into_request();
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
@@ -52,7 +47,6 @@ impl GrpcConnection {
         let resp = client.unary(req, path, codec).await.unwrap();
         let msg = resp.into_inner();
         let response_json = serde_json::to_string_pretty(&msg).expect("json to string");
-        println!("\n---------- RECEIVING ---------------\n{}", response_json,);
 
         Ok(response_json)
     }
@@ -140,11 +134,6 @@ impl GrpcConnection {
 
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        println!(
-            "\n---------- SENDING -----------------\n{}",
-            serde_json::to_string_pretty(&req_message).expect("json")
-        );
-
         let req = req_message.into_request();
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
@@ -184,7 +173,6 @@ impl GrpcManager {
         method: &str,
         message: &str,
     ) -> Result<Streaming<DynamicMessage>> {
-        println!("Server streaming {}", id);
         self.connect(id, uri)
             .await
             .server_streaming(service, method, message)
