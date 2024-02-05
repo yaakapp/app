@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns';
 import { useDeleteGrpcConnection } from '../hooks/useDeleteGrpcConnection';
 import { useDeleteGrpcConnections } from '../hooks/useDeleteGrpcConnections';
 import type { GrpcConnection } from '../lib/models';
@@ -42,6 +43,7 @@ export const RecentConnectionsDropdown = function ResponsePane({
           key: c.id,
           label: (
             <HStack space={2} alignItems="center">
+              {formatDistanceToNow(c.createdAt)} &bull;{' '}
               <span className="font-mono text-xs">{c.elapsed}ms</span>
             </HStack>
           ),

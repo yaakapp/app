@@ -29,7 +29,7 @@ pub struct MethodDefinition {
     pub server_streaming: bool,
 }
 
-pub async fn callable(uri: &Uri) -> Vec<ServiceDefinition> {
+pub async fn reflect(uri: &Uri) -> Vec<ServiceDefinition> {
     let (pool, _) = fill_pool(uri).await;
 
     pool.services()
