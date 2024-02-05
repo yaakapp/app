@@ -48,6 +48,10 @@ export function GrpcConnectionLayout({ style }: Props) {
     grpc.cancel.mutateAsync().catch(console.error);
   }, [grpc.cancel]);
 
+  const handleCommit = useCallback(() => {
+    grpc.commit.mutateAsync().catch(console.error);
+  }, [grpc.commit]);
+
   const handleConnect = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -62,13 +66,23 @@ export function GrpcConnectionLayout({ style }: Props) {
       }
       if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
         await grpc.streaming.mutateAsync(activeRequest.id);
-      } else if (activeMethod.serverStreaming && !activeMethod.clientStreaming) {
+      } else if (!activeMethod.clientStreaming && activeMethod.serverStreaming) {
         await grpc.serverStreaming.mutateAsync(activeRequest.id);
+      } else if (activeMethod.clientStreaming && !activeMethod.serverStreaming) {
+        await grpc.clientStreaming.mutateAsync(activeRequest.id);
       } else {
         await grpc.unary.mutateAsync(activeRequest.id);
       }
     },
-    [activeMethod, activeRequest, alert, grpc.streaming, grpc.serverStreaming, grpc.unary],
+    [
+      activeMethod,
+      activeRequest,
+      alert,
+      grpc.streaming,
+      grpc.serverStreaming,
+      grpc.clientStreaming,
+      grpc.unary,
+    ],
   );
 
   useEffect(() => {
@@ -212,6 +226,17 @@ export function GrpcConnectionLayout({ style }: Props) {
                   icon="sendHorizontal"
                 />
               )}
+              {activeMethod?.clientStreaming &&
+                !activeMethod.serverStreaming &&
+                grpc.isStreaming && (
+                  <IconButton
+                    className="border border-highlight"
+                    size="sm"
+                    title="to-do"
+                    onClick={handleCommit}
+                    icon="check"
+                  />
+                )}
             </HStack>
           </div>
           <GrpcEditor
@@ -288,9 +313,13 @@ export function GrpcConnectionLayout({ style }: Props) {
                             <Separator />
                           </div>
                           <div className="pl-2 overflow-y-auto">
-                            <JsonAttributeTree
-                              attrValue={JSON.parse(activeMessage?.message ?? '{}')}
-                            />
+                            {activeMessage.isInfo ? (
+                              <span>{activeMessage.message}</span>
+                            ) : (
+                              <JsonAttributeTree
+                                attrValue={JSON.parse(activeMessage?.message ?? '{}')}
+                              />
+                            )}
                           </div>
                         </div>
                       )

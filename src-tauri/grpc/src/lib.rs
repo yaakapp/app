@@ -1,12 +1,10 @@
-use prost_reflect::{DynamicMessage, SerializeOptions};
+use prost_reflect::SerializeOptions;
 use serde::{Deserialize, Serialize};
-use serde_json::Deserializer;
 use tokio_stream::Stream;
 use tonic::transport::Uri;
-use tonic::{IntoRequest, Response, Streaming};
+use tonic::IntoRequest;
 
-use crate::codec::DynamicCodec;
-use crate::proto::{fill_pool, method_desc_to_path};
+use crate::proto::fill_pool;
 
 mod codec;
 mod json_schema;
@@ -31,57 +29,6 @@ pub struct MethodDefinition {
     pub schema: String,
     pub client_streaming: bool,
     pub server_streaming: bool,
-}
-
-struct ClientStream {}
-
-impl Stream for ClientStream {
-    type Item = DynamicMessage;
-
-    fn poll_next(
-        self: std::pin::Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Self::Item>> {
-        println!("poll_next");
-        todo!()
-    }
-}
-
-pub async fn client_streaming(
-    uri: &Uri,
-    service: &str,
-    method: &str,
-    message_json: &str,
-) -> Result<String, String> {
-    let (pool, conn) = fill_pool(uri).await;
-
-    let service = pool.get_service_by_name(service).unwrap();
-    let method = &service.methods().find(|m| m.name() == method).unwrap();
-    let input_message = method.input();
-
-    let mut deserializer = Deserializer::from_str(message_json);
-    let req_message =
-        DynamicMessage::deserialize(input_message, &mut deserializer).map_err(|e| e.to_string())?;
-    deserializer.end().unwrap();
-
-    let mut client = tonic::client::Grpc::with_origin(conn, uri.clone());
-
-    println!(
-        "\n---------- SENDING -----------------\n{}",
-        serde_json::to_string_pretty(&req_message).expect("json")
-    );
-
-    let req = tonic::Request::new(ClientStream {});
-
-    let path = method_desc_to_path(method);
-    let codec = DynamicCodec::new(method.clone());
-    client.ready().await.unwrap();
-
-    let resp = client.client_streaming(req, path, codec).await.unwrap();
-    let response_json = serde_json::to_string_pretty(&resp.into_inner()).expect("json to string");
-    println!("\n---------- RECEIVING ---------------\n{}", response_json,);
-
-    Ok(response_json)
 }
 
 pub async fn callable(uri: &Uri) -> Vec<ServiceDefinition> {
