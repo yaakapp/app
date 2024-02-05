@@ -119,7 +119,7 @@ async fn cmd_grpc_call_unary(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -194,7 +194,7 @@ async fn cmd_grpc_client_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -388,7 +388,7 @@ async fn cmd_grpc_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -585,7 +585,7 @@ async fn cmd_grpc_server_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "created_model", conn.clone());
+    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -966,7 +966,7 @@ async fn cmd_send_request(
         None
     };
 
-    emit_side_effect(app_handle.clone(), "created_model", response.clone());
+    emit_side_effect(app_handle.clone(), "upserted_model", response.clone());
 
     send_http_request(
         app_handle,
@@ -1050,7 +1050,7 @@ async fn cmd_set_key_value(
     let (key_value, created) = set_key_value_raw(db, namespace, key, value).await;
 
     if created {
-        emit_and_return(&window, "created_model", key_value)
+        emit_and_return(&window, "upserted_model", key_value)
     } else {
         emit_and_return(&window, "upserted_model", key_value)
     }
@@ -1067,7 +1067,7 @@ async fn cmd_create_workspace(
         .await
         .expect("Failed to create Workspace");
 
-    emit_and_return(&window, "created_model", created_workspace)
+    emit_and_return(&window, "upserted_model", created_workspace)
 }
 
 #[tauri::command]
@@ -1117,7 +1117,7 @@ async fn cmd_create_cookie_jar(
     .await
     .expect("Failed to create cookie jar");
 
-    emit_and_return(&window, "created_model", created_cookie_jar)
+    emit_and_return(&window, "upserted_model", created_cookie_jar)
 }
 
 #[tauri::command]
@@ -1141,7 +1141,7 @@ async fn cmd_create_environment(
     .await
     .expect("Failed to create environment");
 
-    emit_and_return(&window, "created_model", created_environment)
+    emit_and_return(&window, "upserted_model", created_environment)
 }
 
 #[tauri::command]
@@ -1166,7 +1166,7 @@ async fn cmd_create_grpc_request(
     .await
     .expect("Failed to create grpc request");
 
-    emit_and_return(&window, "created_model", created)
+    emit_and_return(&window, "upserted_model", created)
 }
 
 #[tauri::command]
@@ -1178,7 +1178,7 @@ async fn cmd_duplicate_grpc_request(
     let request = duplicate_grpc_request(&app_handle, id)
         .await
         .expect("Failed to duplicate grpc request");
-    emit_and_return(&window, "created_model", request)
+    emit_and_return(&window, "upserted_model", request)
 }
 
 #[tauri::command]
@@ -1205,7 +1205,7 @@ async fn cmd_create_http_request(
     .await
     .expect("Failed to create http request");
 
-    emit_and_return(&window, "created_model", created_request)
+    emit_and_return(&window, "upserted_model", created_request)
 }
 
 #[tauri::command]
@@ -1218,7 +1218,7 @@ async fn cmd_duplicate_http_request(
     let request = duplicate_http_request(db, id)
         .await
         .expect("Failed to duplicate http request");
-    emit_and_return(&window, "created_model", request)
+    emit_and_return(&window, "upserted_model", request)
 }
 
 #[tauri::command]
@@ -1334,7 +1334,7 @@ async fn cmd_create_folder(
     .await
     .expect("Failed to create folder");
 
-    emit_and_return(&window, "created_model", created_request)
+    emit_and_return(&window, "upserted_model", created_request)
 }
 
 #[tauri::command]
