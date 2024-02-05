@@ -41,18 +41,18 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_responses, create_response, delete_all_grpc_connections,
-    delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder,
-    delete_grpc_connection, delete_http_request, delete_http_response, delete_workspace,
-    duplicate_grpc_request, duplicate_http_request, get_cookie_jar, get_environment, get_folder,
-    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
-    list_environments, list_folders, list_grpc_connections, list_grpc_messages, list_grpc_requests,
-    list_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
-    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_message, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
-    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcMessage, GrpcRequest,
-    HttpRequest, HttpResponse, KeyValue, Settings, Workspace,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_http_request, delete_http_response,
+    delete_workspace, duplicate_grpc_request, duplicate_http_request, get_cookie_jar,
+    get_environment, get_folder, get_grpc_request, get_http_request, get_http_response,
+    get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources,
+    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_messages,
+    list_grpc_requests, list_requests, list_responses, list_workspaces, set_key_value_raw,
+    update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder,
+    upsert_grpc_connection, upsert_grpc_message, upsert_grpc_request, upsert_http_request,
+    upsert_workspace, CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection,
+    GrpcMessage, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace,
 };
 use crate::plugin::{ImportResources, ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -92,9 +92,15 @@ async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(
 }
 
 #[tauri::command]
-async fn cmd_grpc_reflect(endpoint: &str) -> Result<Vec<ServiceDefinition>, String> {
-    let uri = safe_uri(endpoint).map_err(|e| e.to_string())?;
-    Ok(grpc::callable(&uri).await)
+async fn cmd_grpc_reflect(
+    request_id: &str,
+    app_handle: AppHandle,
+) -> Result<Vec<ServiceDefinition>, String> {
+    let req = get_grpc_request(&app_handle, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
+    Ok(grpc::reflect(&uri).await)
 }
 
 #[tauri::command]
@@ -1636,6 +1642,7 @@ fn main() {
                 app.manage(m);
                 let h = app.handle();
                 let _ = cancel_pending_responses(&h).await;
+                let _ = cancel_pending_grpc_connections(&h).await;
             });
 
             Ok(())

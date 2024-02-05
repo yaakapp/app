@@ -9,7 +9,6 @@ import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcMessages } from '../hooks/useGrpcMessages';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
-import { count, pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { HotKeyList } from './core/HotKeyList';
@@ -33,10 +32,10 @@ export function GrpcConnectionLayout({ style }: Props) {
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const alert = useAlert();
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
-  const grpc = useGrpc(activeRequest?.url ?? null, activeRequest?.id ?? null);
   const connections = useGrpcConnections(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const messages = useGrpcMessages(activeConnection?.id ?? null);
+  const grpc = useGrpc(activeRequest, activeConnection);
 
   const activeMethod = useMemo(() => {
     if (grpc.services == null || activeRequest == null) return null;
@@ -59,13 +58,13 @@ export function GrpcConnectionLayout({ style }: Props) {
         });
       }
       if (activeMethod.clientStreaming && activeMethod.serverStreaming) {
-        await grpc.streaming.mutateAsync(activeRequest.id);
+        await grpc.streaming.mutateAsync();
       } else if (!activeMethod.clientStreaming && activeMethod.serverStreaming) {
-        await grpc.serverStreaming.mutateAsync(activeRequest.id);
+        await grpc.serverStreaming.mutateAsync();
       } else if (activeMethod.clientStreaming && !activeMethod.serverStreaming) {
-        await grpc.clientStreaming.mutateAsync(activeRequest.id);
+        await grpc.clientStreaming.mutateAsync();
       } else {
-        const msg = await grpc.unary.mutateAsync(activeRequest.id);
+        const msg = await grpc.unary.mutateAsync();
         setActiveMessageId(msg.id);
       }
     },
@@ -291,7 +290,7 @@ export function GrpcConnectionLayout({ style }: Props) {
                   <div className="w-full grid grid-rows-[auto_minmax(0,1fr)] items-center">
                     <HStack className="pl-3 mb-1 font-mono" alignItems="center">
                       <HStack alignItems="center" space={2}>
-                        {count('message', messages.filter((m) => !m.isInfo).length)}
+                        <span>{messages.filter((m) => !m.isInfo).length} messages</span>
                         {grpc.isStreaming && (
                           <Icon icon="refresh" size="sm" spin className="text-gray-600" />
                         )}
