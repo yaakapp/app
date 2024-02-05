@@ -8,6 +8,7 @@ import { Icon } from './Icon';
 export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
   innerClassName?: string;
   color?: 'custom' | 'default' | 'gray' | 'primary' | 'secondary' | 'warning' | 'danger';
+  variant?: 'border' | 'solid';
   isLoading?: boolean;
   size?: 'sm' | 'md' | 'xs';
   justify?: 'start' | 'center';
@@ -27,10 +28,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     innerClassName,
     children,
     forDropdown,
-    color,
+    color = 'default',
     type = 'button',
     justify = 'center',
     size = 'md',
+    variant = 'solid',
     leftSlot,
     rightSlot,
     disabled,
@@ -53,24 +55,53 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         'flex-shrink-0 flex items-center',
         'focus-visible-or-class:ring rounded-md',
         disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
-        color === 'custom' && 'ring-blue-500/50',
-        color === 'default' &&
-          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
-        color === 'gray' &&
-          'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
-        color === 'primary' && 'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
-        color === 'secondary' &&
-          'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
-        color === 'warning' &&
-          'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
-        color === 'danger' && 'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
         justify === 'start' && 'justify-start',
         justify === 'center' && 'justify-center',
         size === 'md' && 'h-md px-3',
         size === 'sm' && 'h-sm px-2.5 text-sm',
         size === 'xs' && 'h-xs px-2 text-sm',
+        variant === 'border' && 'border',
+        // Solids
+        variant === 'solid' && color === 'custom' && 'ring-blue-500/50',
+        variant === 'solid' &&
+          color === 'default' &&
+          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
+        variant === 'solid' &&
+          color === 'gray' &&
+          'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
+        variant === 'solid' &&
+          color === 'primary' &&
+          'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
+        variant === 'solid' &&
+          color === 'secondary' &&
+          'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
+        variant === 'solid' &&
+          color === 'warning' &&
+          'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
+        variant === 'solid' &&
+          color === 'danger' &&
+          'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
+        // Borders
+        variant === 'border' &&
+          color === 'default' &&
+          'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-1000 ring-blue-500/50',
+        variant === 'border' &&
+          color === 'gray' &&
+          'border-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
+        variant === 'border' &&
+          color === 'primary' &&
+          'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',
+        variant === 'border' &&
+          color === 'secondary' &&
+          'border-violet-500/70 text-violet-700 enabled:hocus:border-violet-500 ring-violet-500/50',
+        variant === 'border' &&
+          color === 'warning' &&
+          'border-orange-500/70 text-orange-700 enabled:hocus:border-orange-500 ring-orange-500/50',
+        variant === 'border' &&
+          color === 'danger' &&
+          'border-red-500/70 text-red-700 enabled:hocus:border-red-500 ring-red-500/50',
       ),
-    [className, disabled, color, justify, size],
+    [className, disabled, justify, size, variant, color],
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);

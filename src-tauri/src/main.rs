@@ -100,7 +100,7 @@ async fn cmd_grpc_reflect(
         .await
         .map_err(|e| e.to_string())?;
     let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    Ok(grpc::reflect(&uri).await)
+    grpc::reflect(&uri).await
 }
 
 #[tauri::command]
@@ -150,7 +150,7 @@ async fn cmd_grpc_call_unary(
         .lock()
         .await
         .connect(&conn.clone().id, uri)
-        .await
+        .await?
         .unary(
             &req.service.unwrap_or_default(),
             &req.method.unwrap_or_default(),

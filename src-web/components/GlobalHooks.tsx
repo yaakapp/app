@@ -86,10 +86,8 @@ export function GlobalHooks() {
       queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
         const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
         if (index >= 0) {
-          console.log('UPDATED MODEL', payload);
           return [...values.slice(0, index), payload, ...values.slice(index + 1)];
         } else {
-          console.log('INSERTED MODEL', payload);
           return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
         }
       });
