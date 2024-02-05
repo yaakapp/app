@@ -366,7 +366,7 @@ pub async fn send_http_request(
                 .await
                 .expect("Failed to update response");
             if !request.id.is_empty() {
-                emit_side_effect(app_handle.clone(), "updated_model", &response);
+                emit_side_effect(app_handle.clone(), "upserted_model", &response);
             }
 
             // Copy response to download path, if specified
@@ -399,7 +399,7 @@ pub async fn send_http_request(
                 cookie_jar.cookies = json_cookies;
                 match models::upsert_cookie_jar(db, &cookie_jar).await {
                     Ok(updated_jar) => {
-                        emit_side_effect(app_handle, "updated_model", &updated_jar);
+                        emit_side_effect(app_handle, "upserted_model", &updated_jar);
                     }
                     Err(e) => {
                         error!("Failed to update cookie jar: {}", e);
