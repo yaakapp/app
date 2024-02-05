@@ -86,7 +86,7 @@ export function GlobalHooks() {
     }
   });
 
-  useListenToTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('upserted_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
     const queryKey =
@@ -119,12 +119,21 @@ export function GlobalHooks() {
       wasUpdatedExternally(payload.id);
     }
 
+    const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
+      payload.model,
+    );
+
     if (!shouldIgnoreModel(payload)) {
-      console.time('set query date');
-      queryClient.setQueryData<Model[]>(queryKey, (values) =>
-        values?.map((v) => (modelsEq(v, payload) ? payload : v)),
-      );
-      console.timeEnd('set query date');
+      queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
+        const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
+        if (index >= 0) {
+          console.log('UPDATED MODEL', payload);
+          return [...values.slice(0, index), payload, ...values.slice(index + 1)];
+        } else {
+          console.log('INSERTED MODEL', payload);
+          return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
+        }
+      });
     }
   });
 

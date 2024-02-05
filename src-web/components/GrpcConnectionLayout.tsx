@@ -19,6 +19,7 @@ import { RadioDropdown } from './core/RadioDropdown';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
+import { StatusTag } from './core/StatusTag';
 import { GrpcEditor } from './GrpcEditor';
 import { UrlBar } from './UrlBar';
 
@@ -200,22 +201,22 @@ export function GrpcConnectionLayout({ style }: Props) {
                   {select.options.find((o) => o.value === select.value)?.label}
                 </Button>
               </RadioDropdown>
-              <IconButton
-                className="border border-highlight"
-                size="sm"
-                title={messageType === 'unary' ? 'Send' : 'Connect'}
-                hotkeyAction={grpc.isStreaming ? undefined : 'http_request.send'}
-                onClick={grpc.isStreaming ? () => grpc.cancel.mutateAsync() : handleConnect}
-                disabled={grpc.isStreaming}
-                spin={grpc.isStreaming || grpc.unary.isLoading}
-                icon={
-                  grpc.isStreaming
-                    ? 'refresh'
-                    : messageType === 'unary'
-                    ? 'sendHorizontal'
-                    : 'arrowUpDown'
-                }
-              />
+              {!grpc.isStreaming && (
+                <IconButton
+                  className="border border-highlight"
+                  size="sm"
+                  title={messageType === 'unary' ? 'Send' : 'Connect'}
+                  hotkeyAction={grpc.isStreaming ? undefined : 'http_request.send'}
+                  onClick={handleConnect}
+                  icon={
+                    grpc.isStreaming
+                      ? 'refresh'
+                      : messageType === 'unary'
+                      ? 'sendHorizontal'
+                      : 'arrowUpDown'
+                  }
+                />
+              )}
               {grpc.isStreaming && (
                 <IconButton
                   className="border border-highlight"
@@ -285,39 +286,53 @@ export function GrpcConnectionLayout({ style }: Props) {
                 }
                 minHeightPx={20}
                 firstSlot={() => (
-                  <div className="overflow-y-auto w-full">
-                    {...messages.map((m) => (
-                      <HStack
-                        key={m.id}
-                        space={2}
-                        onClick={() => {
-                          if (m.id === activeMessageId) setActiveMessageId(null);
-                          else setActiveMessageId(m.id);
-                        }}
-                        alignItems="center"
-                        className={classNames(
-                          'px-2 py-1 font-mono',
-                          m === activeMessage && 'bg-highlight',
+                  <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
+                    <HStack className="px-3 mb-2">
+                      <div className="font-mono">
+                        {grpc.isStreaming ? (
+                          <HStack alignItems="center" space={2}>
+                            <Icon icon="refresh" size="sm" spin />
+                            Connected
+                          </HStack>
+                        ) : (
+                          'Done'
                         )}
-                      >
-                        <Icon
-                          className={
-                            m.isInfo
-                              ? 'text-gray-600'
-                              : m.isServer
-                              ? 'text-blue-600'
-                              : 'text-green-600'
-                          }
-                          icon={
-                            m.isInfo ? 'info' : m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'
-                          }
-                        />
-                        <div className="w-full truncate text-gray-800 text-2xs">{m.message}</div>
-                        <div className="text-gray-600 text-2xs">
-                          {format(m.createdAt, 'HH:mm:ss')}
-                        </div>
-                      </HStack>
-                    ))}
+                      </div>
+                    </HStack>
+                    <div className="overflow-y-auto h-full">
+                      {...messages.map((m) => (
+                        <HStack
+                          key={m.id}
+                          space={2}
+                          onClick={() => {
+                            if (m.id === activeMessageId) setActiveMessageId(null);
+                            else setActiveMessageId(m.id);
+                          }}
+                          alignItems="center"
+                          className={classNames(
+                            'px-2 py-1 font-mono',
+                            m === activeMessage && 'bg-highlight',
+                          )}
+                        >
+                          <Icon
+                            className={
+                              m.isInfo
+                                ? 'text-gray-600'
+                                : m.isServer
+                                ? 'text-blue-600'
+                                : 'text-green-600'
+                            }
+                            icon={
+                              m.isInfo ? 'info' : m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'
+                            }
+                          />
+                          <div className="w-full truncate text-gray-800 text-2xs">{m.message}</div>
+                          <div className="text-gray-600 text-2xs">
+                            {format(m.createdAt, 'HH:mm:ss')}
+                          </div>
+                        </HStack>
+                      ))}
+                    </div>
                   </div>
                 )}
                 secondSlot={
