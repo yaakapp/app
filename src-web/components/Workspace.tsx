@@ -14,6 +14,7 @@ import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { Button } from './core/Button';
+import { HotKeyList } from './core/HotKeyList';
 import { HStack } from './core/Stacks';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
 import { HttpRequestLayout } from './HttpRequestLayout';
@@ -165,10 +166,12 @@ export default function Workspace() {
       >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
-      {activeRequest?.model === 'grpc_request' ? (
+      {activeRequest == null ? (
+        <HotKeyList hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']} />
+      ) : activeRequest.model === 'grpc_request' ? (
         <GrpcConnectionLayout style={body} />
       ) : (
-        <HttpRequestLayout style={body} />
+        <HttpRequestLayout activeRequest={activeRequest} style={body} />
       )}
     </div>
   );

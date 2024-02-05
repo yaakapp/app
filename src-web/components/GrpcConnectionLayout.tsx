@@ -9,6 +9,7 @@ import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcMessages } from '../hooks/useGrpcMessages';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
+import { count, pluralize } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { HotKeyList } from './core/HotKeyList';
@@ -20,6 +21,7 @@ import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
 import { GrpcEditor } from './GrpcEditor';
+import { RecentConnectionsDropdown } from './RecentConnectionsDropdown';
 import { UrlBar } from './UrlBar';
 
 interface Props {
@@ -266,7 +268,7 @@ export function GrpcConnectionLayout({ style }: Props) {
             className={classNames(
               'max-h-full h-full grid grid-rows-[minmax(0,1fr)] grid-cols-1',
               'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
-              'shadow shadow-gray-100 dark:shadow-gray-0 relative pt-1',
+              'shadow shadow-gray-100 dark:shadow-gray-0 relative',
             )}
           >
             {grpc.unary.error ? (
@@ -286,18 +288,23 @@ export function GrpcConnectionLayout({ style }: Props) {
                 }
                 minHeightPx={20}
                 firstSlot={() => (
-                  <div className="w-full grid grid-rows-[auto_minmax(0,1fr)]">
-                    <HStack className="px-3 mb-2">
-                      <div className="font-mono">
-                        {grpc.isStreaming ? (
-                          <HStack alignItems="center" space={2}>
-                            <Icon icon="refresh" size="sm" spin />
-                            Connected
-                          </HStack>
-                        ) : (
-                          'Done'
+                  <div className="w-full grid grid-rows-[auto_minmax(0,1fr)] items-center">
+                    <HStack className="pl-3 mb-1 font-mono" alignItems="center">
+                      <HStack alignItems="center" space={2}>
+                        {count('message', messages.filter((m) => !m.isInfo).length)}
+                        {grpc.isStreaming && (
+                          <Icon icon="refresh" size="sm" spin className="text-gray-600" />
                         )}
-                      </div>
+                      </HStack>
+                      {activeConnection && (
+                        <RecentConnectionsDropdown
+                          connections={connections}
+                          activeConnection={activeConnection}
+                          onPinned={() => {
+                            // todo
+                          }}
+                        />
+                      )}
                     </HStack>
                     <div className="overflow-y-auto h-full">
                       {...messages.map((m) => (

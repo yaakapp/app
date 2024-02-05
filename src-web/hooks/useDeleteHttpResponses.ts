@@ -3,12 +3,12 @@ import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import { httpResponsesQueryKey } from './useHttpResponses';
 
-export function useDeleteResponses(requestId?: string) {
+export function useDeleteHttpResponses(requestId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       if (requestId === undefined) return;
-      await invoke('cmd_delete_all_responses', { requestId });
+      await invoke('cmd_delete_all_http_responses', { requestId });
     },
     onSettled: () => trackEvent('HttpResponse', 'DeleteMany'),
     onSuccess: async () => {
