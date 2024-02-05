@@ -19,7 +19,6 @@ import { RadioDropdown } from './core/RadioDropdown';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
-import { StatusTag } from './core/StatusTag';
 import { GrpcEditor } from './GrpcEditor';
 import { UrlBar } from './UrlBar';
 
@@ -276,6 +275,7 @@ export function GrpcConnectionLayout({ style }: Props) {
               </Banner>
             ) : messages.length >= 0 ? (
               <SplitLayout
+                forceVertical
                 name={
                   !activeMethod?.clientStreaming && !activeMethod?.serverStreaming
                     ? 'grpc_messages_unary'

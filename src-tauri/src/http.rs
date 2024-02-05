@@ -13,14 +13,12 @@ use log::{error, info, warn};
 use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
-use sqlx::{Pool, Sqlite};
-use tauri::{AppHandle, Wry};
+use tauri::AppHandle;
 
 use crate::{emit_side_effect, models, render, response_err};
 
 pub async fn send_http_request(
-    app_handle: AppHandle<Wry>,
-    db: &Pool<Sqlite>,
+    app_handle: &AppHandle,
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
@@ -28,7 +26,7 @@ pub async fn send_http_request(
     download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
     let environment_ref = environment.as_ref();
-    let workspace = models::get_workspace(db, &request.workspace_id)
+    let workspace = models::get_workspace(app_handle, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
 
@@ -88,7 +86,7 @@ pub async fn send_http_request(
     let url = match Url::from_str(url_string.as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle.clone(), db).await;
+            return response_err(response, e.to_string(), app_handle).await;
         }
     };
 
@@ -293,7 +291,7 @@ pub async fn send_http_request(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle.clone(), db).await;
+            return response_err(response, e.to_string(), app_handle).await;
         }
     };
 
@@ -362,11 +360,11 @@ pub async fn send_http_request(
                 );
             }
 
-            response = models::update_response_if_id(db, &response)
+            response = models::update_response_if_id(app_handle, &response)
                 .await
                 .expect("Failed to update response");
             if !request.id.is_empty() {
-                emit_side_effect(app_handle.clone(), "upserted_model", &response);
+                emit_side_effect(app_handle, "upserted_model", &response);
             }
 
             // Copy response to download path, if specified
@@ -397,7 +395,7 @@ pub async fn send_http_request(
                         .collect::<Vec<_>>(),
                 );
                 cookie_jar.cookies = json_cookies;
-                match models::upsert_cookie_jar(db, &cookie_jar).await {
+                match models::upsert_cookie_jar(&app_handle, &cookie_jar).await {
                     Ok(updated_jar) => {
                         emit_side_effect(app_handle, "upserted_model", &updated_jar);
                     }
@@ -409,6 +407,6 @@ pub async fn send_http_request(
 
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), app_handle, db).await,
+        Err(e) => response_err(response, e.to_string(), app_handle).await,
     }
 }

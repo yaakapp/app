@@ -78,7 +78,7 @@ pub struct CustomResponse {
     pub status_reason: Option<&'static str>,
 }
 
-async fn migrate_db(app_handle: AppHandle<Wry>, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
+async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
     let p = app_handle
         .path_resolver()
@@ -100,7 +100,7 @@ async fn cmd_grpc_reflect(endpoint: &str) -> Result<Vec<ServiceDefinition>, Stri
 #[tauri::command]
 async fn cmd_grpc_call_unary(
     request_id: &str,
-    app_handle: AppHandle<Wry>,
+    app_handle: AppHandle,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<GrpcMessage, String> {
     let req = get_grpc_request(&app_handle, request_id)
@@ -119,7 +119,7 @@ async fn cmd_grpc_call_unary(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
+    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -176,7 +176,7 @@ async fn cmd_grpc_call_unary(
 #[tauri::command]
 async fn cmd_grpc_client_streaming(
     request_id: &str,
-    app_handle: AppHandle<Wry>,
+    app_handle: AppHandle,
 ) -> Result<GrpcConnection, String> {
     let req = get_grpc_request(&app_handle, request_id)
         .await
@@ -194,7 +194,7 @@ async fn cmd_grpc_client_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
+    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -369,7 +369,7 @@ async fn cmd_grpc_client_streaming(
 #[tauri::command]
 async fn cmd_grpc_streaming(
     request_id: &str,
-    app_handle: AppHandle<Wry>,
+    app_handle: AppHandle,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<String, String> {
     let req = get_grpc_request(&app_handle, request_id)
@@ -388,7 +388,7 @@ async fn cmd_grpc_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
+    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let conn = conn.clone();
@@ -565,7 +565,7 @@ async fn cmd_grpc_streaming(
 #[tauri::command]
 async fn cmd_grpc_server_streaming(
     request_id: &str,
-    app_handle: AppHandle<Wry>,
+    app_handle: AppHandle,
     grpc_handle: State<'_, Mutex<GrpcManager>>,
 ) -> Result<GrpcConnection, String> {
     let req = get_grpc_request(&app_handle, request_id)
@@ -585,7 +585,7 @@ async fn cmd_grpc_server_streaming(
         .await
         .map_err(|e| e.to_string())?
     };
-    emit_side_effect(app_handle.clone(), "upserted_model", conn.clone());
+    emit_side_effect(&app_handle, "upserted_model", conn.clone());
 
     {
         let req = req.clone();
@@ -734,15 +734,13 @@ async fn cmd_send_ephemeral_request(
     mut request: HttpRequest,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
-    app_handle: AppHandle<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<HttpResponse, String> {
-    let db = &*db_state.lock().await;
     let response = HttpResponse::new();
     request.id = "".to_string();
     let environment = match environment_id {
         Some(id) => Some(
-            get_environment(db, id)
+            get_environment(&app_handle, id)
                 .await
                 .expect("Failed to get environment"),
         ),
@@ -750,7 +748,7 @@ async fn cmd_send_ephemeral_request(
     };
     let cookie_jar = match cookie_jar_id {
         Some(id) => Some(
-            get_cookie_jar(db, id)
+            get_cookie_jar(&app_handle, id)
                 .await
                 .expect("Failed to get cookie jar"),
         ),
@@ -759,8 +757,7 @@ async fn cmd_send_ephemeral_request(
 
     // let cookie_jar_id2 = cookie_jar_id.unwrap_or("").to_string();
     send_http_request(
-        app_handle,
-        db,
+        &app_handle,
         request,
         &response,
         environment,
@@ -773,12 +770,11 @@ async fn cmd_send_ephemeral_request(
 #[tauri::command]
 async fn cmd_filter_response(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     response_id: &str,
     filter: &str,
 ) -> Result<String, String> {
-    let db = &*db_state.lock().await;
-    let response = get_response(db, response_id)
+    let response = get_response(&app_handle, response_id)
         .await
         .expect("Failed to get response");
 
@@ -811,10 +807,9 @@ async fn cmd_filter_response(
 #[tauri::command]
 async fn cmd_import_data(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     file_paths: Vec<&str>,
 ) -> Result<ImportResources, String> {
-    let db = &*db_state.lock().await;
     let mut result: Option<ImportResult> = None;
     let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
@@ -844,7 +839,7 @@ async fn cmd_import_data(
 
             info!("Importing resources");
             for w in r.resources.workspaces {
-                let x = upsert_workspace(db, w)
+                let x = upsert_workspace(&app_handle, w)
                     .await
                     .expect("Failed to create workspace");
                 imported_resources.workspaces.push(x.clone());
@@ -852,7 +847,7 @@ async fn cmd_import_data(
             }
 
             for e in r.resources.environments {
-                let x = upsert_environment(db, e)
+                let x = upsert_environment(&app_handle, e)
                     .await
                     .expect("Failed to create environment");
                 imported_resources.environments.push(x.clone());
@@ -860,13 +855,15 @@ async fn cmd_import_data(
             }
 
             for f in r.resources.folders {
-                let x = upsert_folder(db, f).await.expect("Failed to create folder");
+                let x = upsert_folder(&app_handle, f)
+                    .await
+                    .expect("Failed to create folder");
                 imported_resources.folders.push(x.clone());
                 info!("Imported folder: {}", x.name);
             }
 
             for r in r.resources.requests {
-                let x = upsert_http_request(db, r)
+                let x = upsert_http_request(&app_handle, r)
                     .await
                     .expect("Failed to create request");
                 imported_resources.requests.push(x.clone());
@@ -880,13 +877,11 @@ async fn cmd_import_data(
 
 #[tauri::command]
 async fn cmd_export_data(
-    app_handle: AppHandle<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     export_path: &str,
     workspace_id: &str,
 ) -> Result<(), String> {
-    let db = &*db_state.lock().await;
-    let export_data = get_workspace_export_resources(&app_handle, db, workspace_id).await;
+    let export_data = get_workspace_export_resources(&app_handle, workspace_id).await;
     let f = File::options()
         .create(true)
         .truncate(true)
@@ -912,22 +907,19 @@ async fn cmd_export_data(
 
 #[tauri::command]
 async fn cmd_send_request(
-    app_handle: AppHandle<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     request_id: &str,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
     download_dir: Option<&str>,
 ) -> Result<HttpResponse, String> {
-    let db = &*db_state.lock().await;
-
-    let request = get_http_request(db, request_id)
+    let request = get_http_request(&app_handle, request_id)
         .await
         .expect("Failed to get request");
 
     let environment = match environment_id {
         Some(id) => Some(
-            get_environment(db, id)
+            get_environment(&app_handle, id)
                 .await
                 .expect("Failed to get environment"),
         ),
@@ -936,7 +928,7 @@ async fn cmd_send_request(
 
     let cookie_jar = match cookie_jar_id {
         Some(id) => Some(
-            get_cookie_jar(db, id)
+            get_cookie_jar(&app_handle, id)
                 .await
                 .expect("Failed to get cookie jar"),
         ),
@@ -944,7 +936,7 @@ async fn cmd_send_request(
     };
 
     let response = create_response(
-        db,
+        &app_handle,
         &request.id,
         0,
         0,
@@ -966,11 +958,10 @@ async fn cmd_send_request(
         None
     };
 
-    emit_side_effect(app_handle.clone(), "upserted_model", response.clone());
+    emit_side_effect(&app_handle, "upserted_model", response.clone());
 
     send_http_request(
-        app_handle,
-        db,
+        &app_handle,
         request.clone(),
         &response,
         environment,
@@ -983,16 +974,15 @@ async fn cmd_send_request(
 async fn response_err(
     response: &HttpResponse,
     error: String,
-    app_handle: AppHandle<Wry>,
-    db: &Pool<Sqlite>,
+    app_handle: &AppHandle,
 ) -> Result<HttpResponse, String> {
     let mut response = response.clone();
     response.elapsed = -1;
     response.error = Some(error.clone());
-    response = update_response_if_id(db, &response)
+    response = update_response_if_id(&app_handle, &response)
         .await
         .expect("Failed to update response");
-    emit_side_effect(app_handle, "upserted_model", &response);
+    emit_side_effect(&app_handle, "upserted_model", &response);
     Ok(response)
 }
 
@@ -1022,19 +1012,18 @@ async fn cmd_track_event(
 async fn cmd_set_update_mode(
     update_mode: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<KeyValue, String> {
-    cmd_set_key_value("app", "update_mode", update_mode, window, db_state).await
+    cmd_set_key_value("app", "update_mode", update_mode, window, app_handle).await
 }
 
 #[tauri::command]
 async fn cmd_get_key_value(
     namespace: &str,
     key: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Option<KeyValue>, ()> {
-    let db = &*db_state.lock().await;
-    let result = get_key_value_raw(db, namespace, key).await;
+    let result = get_key_value_raw(&app_handle, namespace, key).await;
     Ok(result)
 }
 
@@ -1044,10 +1033,9 @@ async fn cmd_set_key_value(
     key: &str,
     value: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<KeyValue, String> {
-    let db = &*db_state.lock().await;
-    let (key_value, created) = set_key_value_raw(db, namespace, key, value).await;
+    let (key_value, created) = set_key_value_raw(&app_handle, namespace, key, value).await;
 
     if created {
         emit_and_return(&window, "upserted_model", key_value)
@@ -1060,10 +1048,9 @@ async fn cmd_set_key_value(
 async fn cmd_create_workspace(
     name: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Workspace, String> {
-    let db = &*db_state.lock().await;
-    let created_workspace = upsert_workspace(db, Workspace::new(name.to_string()))
+    let created_workspace = upsert_workspace(&app_handle, Workspace::new(name.to_string()))
         .await
         .expect("Failed to create Workspace");
 
@@ -1074,11 +1061,9 @@ async fn cmd_create_workspace(
 async fn cmd_update_cookie_jar(
     cookie_jar: CookieJar,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<CookieJar, String> {
-    let db = &*db_state.lock().await;
-
-    let updated = upsert_cookie_jar(db, &cookie_jar)
+    let updated = upsert_cookie_jar(&app_handle, &cookie_jar)
         .await
         .expect("Failed to update cookie jar");
 
@@ -1088,11 +1073,10 @@ async fn cmd_update_cookie_jar(
 #[tauri::command]
 async fn cmd_delete_cookie_jar(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     cookie_jar_id: &str,
 ) -> Result<CookieJar, String> {
-    let db = &*db_state.lock().await;
-    let req = delete_cookie_jar(db, cookie_jar_id)
+    let req = delete_cookie_jar(&app_handle, cookie_jar_id)
         .await
         .expect("Failed to delete cookie jar");
     emit_and_return(&window, "deleted_model", req)
@@ -1103,11 +1087,10 @@ async fn cmd_create_cookie_jar(
     workspace_id: &str,
     name: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<CookieJar, String> {
-    let db = &*db_state.lock().await;
     let created_cookie_jar = upsert_cookie_jar(
-        db,
+        &app_handle,
         &CookieJar {
             name: name.to_string(),
             workspace_id: workspace_id.to_string(),
@@ -1126,11 +1109,10 @@ async fn cmd_create_environment(
     name: &str,
     variables: Vec<EnvironmentVariable>,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Environment, String> {
-    let db = &*db_state.lock().await;
     let created_environment = upsert_environment(
-        db,
+        &app_handle,
         Environment {
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
@@ -1188,11 +1170,10 @@ async fn cmd_create_http_request(
     sort_priority: f64,
     folder_id: Option<&str>,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
     let created_request = upsert_http_request(
-        db,
+        &app_handle,
         HttpRequest {
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
@@ -1212,10 +1193,9 @@ async fn cmd_create_http_request(
 async fn cmd_duplicate_http_request(
     id: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
-    let request = duplicate_http_request(db, id)
+    let request = duplicate_http_request(&app_handle, id)
         .await
         .expect("Failed to duplicate http request");
     emit_and_return(&window, "upserted_model", request)
@@ -1225,10 +1205,9 @@ async fn cmd_duplicate_http_request(
 async fn cmd_update_workspace(
     workspace: Workspace,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Workspace, String> {
-    let db = &*db_state.lock().await;
-    let updated_workspace = upsert_workspace(db, workspace)
+    let updated_workspace = upsert_workspace(&app_handle, workspace)
         .await
         .expect("Failed to update request");
 
@@ -1239,10 +1218,9 @@ async fn cmd_update_workspace(
 async fn cmd_update_environment(
     environment: Environment,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Environment, String> {
-    let db = &*db_state.lock().await;
-    let updated_environment = upsert_environment(db, environment)
+    let updated_environment = upsert_environment(&app_handle, environment)
         .await
         .expect("Failed to update environment");
 
@@ -1265,10 +1243,9 @@ async fn cmd_update_grpc_request(
 async fn cmd_update_http_request(
     request: HttpRequest,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
-    let updated_request = upsert_http_request(db, request)
+    let updated_request = upsert_http_request(&app_handle, request)
         .await
         .expect("Failed to update request");
     emit_and_return(&window, "upserted_model", updated_request)
@@ -1277,11 +1254,10 @@ async fn cmd_update_http_request(
 #[tauri::command]
 async fn cmd_delete_grpc_request(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     request_id: &str,
 ) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
-    let req = delete_request(db, request_id)
+    let req = delete_request(&app_handle, request_id)
         .await
         .expect("Failed to delete request");
     emit_and_return(&window, "deleted_model", req)
@@ -1290,11 +1266,10 @@ async fn cmd_delete_grpc_request(
 #[tauri::command]
 async fn cmd_delete_http_request(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     request_id: &str,
 ) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
-    let req = delete_request(db, request_id)
+    let req = delete_request(&app_handle, request_id)
         .await
         .expect("Failed to delete request");
     emit_and_return(&window, "deleted_model", req)
@@ -1303,10 +1278,9 @@ async fn cmd_delete_http_request(
 #[tauri::command]
 async fn cmd_list_folders(
     workspace_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<Folder>, String> {
-    let db = &*db_state.lock().await;
-    list_folders(db, workspace_id)
+    list_folders(&app_handle, workspace_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1318,11 +1292,10 @@ async fn cmd_create_folder(
     sort_priority: f64,
     folder_id: Option<&str>,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Folder, String> {
-    let db = &*db_state.lock().await;
     let created_request = upsert_folder(
-        db,
+        &app_handle,
         Folder {
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
@@ -1341,10 +1314,9 @@ async fn cmd_create_folder(
 async fn cmd_update_folder(
     folder: Folder,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Folder, String> {
-    let db = &*db_state.lock().await;
-    let updated_folder = upsert_folder(db, folder)
+    let updated_folder = upsert_folder(&app_handle, folder)
         .await
         .expect("Failed to update request");
     emit_and_return(&window, "upserted_model", updated_folder)
@@ -1353,11 +1325,10 @@ async fn cmd_update_folder(
 #[tauri::command]
 async fn cmd_delete_folder(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     folder_id: &str,
 ) -> Result<Folder, String> {
-    let db = &*db_state.lock().await;
-    let req = delete_folder(db, folder_id)
+    let req = delete_folder(&app_handle, folder_id)
         .await
         .expect("Failed to delete folder");
     emit_and_return(&window, "deleted_model", req)
@@ -1366,11 +1337,10 @@ async fn cmd_delete_folder(
 #[tauri::command]
 async fn cmd_delete_environment(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     environment_id: &str,
 ) -> Result<Environment, String> {
-    let db = &*db_state.lock().await;
-    let req = delete_environment(db, environment_id)
+    let req = delete_environment(&app_handle, environment_id)
         .await
         .expect("Failed to delete environment");
     emit_and_return(&window, "deleted_model", req)
@@ -1379,10 +1349,9 @@ async fn cmd_delete_environment(
 #[tauri::command]
 async fn cmd_list_grpc_connections(
     request_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<GrpcConnection>, String> {
-    let db = &*db_state.lock().await;
-    list_grpc_connections(db, request_id)
+    list_grpc_connections(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1390,10 +1359,9 @@ async fn cmd_list_grpc_connections(
 #[tauri::command]
 async fn cmd_list_grpc_messages(
     connection_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<GrpcMessage>, String> {
-    let db = &*db_state.lock().await;
-    list_grpc_messages(db, connection_id)
+    list_grpc_messages(&app_handle, connection_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1401,10 +1369,9 @@ async fn cmd_list_grpc_messages(
 #[tauri::command]
 async fn cmd_list_grpc_requests(
     workspace_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<GrpcRequest>, String> {
-    let db = &*db_state.lock().await;
-    let requests = list_grpc_requests(db, workspace_id)
+    let requests = list_grpc_requests(&app_handle, workspace_id)
         .await
         .map_err(|e| e.to_string())?;
     Ok(requests)
@@ -1413,10 +1380,9 @@ async fn cmd_list_grpc_requests(
 #[tauri::command]
 async fn cmd_list_http_requests(
     workspace_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<HttpRequest>, String> {
-    let db = &*db_state.lock().await;
-    let requests = list_requests(db, workspace_id)
+    let requests = list_requests(&app_handle, workspace_id)
         .await
         .expect("Failed to find requests");
     // .map_err(|e| e.to_string())
@@ -1426,10 +1392,9 @@ async fn cmd_list_http_requests(
 #[tauri::command]
 async fn cmd_list_environments(
     workspace_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<Environment>, String> {
-    let db = &*db_state.lock().await;
-    let environments = list_environments(db, workspace_id)
+    let environments = list_environments(&app_handle, workspace_id)
         .await
         .expect("Failed to find environments");
 
@@ -1437,19 +1402,17 @@ async fn cmd_list_environments(
 }
 
 #[tauri::command]
-async fn cmd_get_settings(db_state: State<'_, Mutex<Pool<Sqlite>>>) -> Result<Settings, ()> {
-    let db = &*db_state.lock().await;
-    Ok(get_or_create_settings(db).await)
+async fn cmd_get_settings(app_handle: AppHandle) -> Result<Settings, ()> {
+    Ok(get_or_create_settings(&app_handle).await)
 }
 
 #[tauri::command]
 async fn cmd_update_settings(
     settings: Settings,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Settings, String> {
-    let db = &*db_state.lock().await;
-    let updated_settings = update_settings(db, settings)
+    let updated_settings = update_settings(&app_handle, settings)
         .await
         .expect("Failed to update settings");
 
@@ -1457,52 +1420,43 @@ async fn cmd_update_settings(
 }
 
 #[tauri::command]
-async fn cmd_get_folder(
-    id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<Folder, String> {
-    let db = &*db_state.lock().await;
-    get_folder(db, id).await.map_err(|e| e.to_string())
+async fn cmd_get_folder(id: &str, app_handle: AppHandle) -> Result<Folder, String> {
+    get_folder(&app_handle, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_grpc_request(id: &str, app_handle: AppHandle<Wry>) -> Result<GrpcRequest, String> {
+async fn cmd_get_grpc_request(id: &str, app_handle: AppHandle) -> Result<GrpcRequest, String> {
     get_grpc_request(&app_handle, id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_http_request(
-    id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<HttpRequest, String> {
-    let db = &*db_state.lock().await;
-    get_http_request(db, id).await.map_err(|e| e.to_string())
+async fn cmd_get_http_request(id: &str, app_handle: AppHandle) -> Result<HttpRequest, String> {
+    get_http_request(&app_handle, id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_cookie_jar(
-    id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<CookieJar, String> {
-    let db = &*db_state.lock().await;
-    get_cookie_jar(db, id).await.map_err(|e| e.to_string())
+async fn cmd_get_cookie_jar(id: &str, app_handle: AppHandle) -> Result<CookieJar, String> {
+    get_cookie_jar(&app_handle, id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_list_cookie_jars(
     workspace_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<CookieJar>, String> {
-    let db = &*db_state.lock().await;
-    let cookie_jars = list_cookie_jars(db, workspace_id)
+    let cookie_jars = list_cookie_jars(&app_handle, workspace_id)
         .await
         .expect("Failed to find cookie jars");
 
     if cookie_jars.is_empty() {
         let cookie_jar = upsert_cookie_jar(
-            db,
+            &app_handle,
             &CookieJar {
                 name: "Default".to_string(),
                 workspace_id: workspace_id.to_string(),
@@ -1518,31 +1472,26 @@ async fn cmd_list_cookie_jars(
 }
 
 #[tauri::command]
-async fn cmd_get_environment(
-    id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<Environment, String> {
-    let db = &*db_state.lock().await;
-    get_environment(db, id).await.map_err(|e| e.to_string())
+async fn cmd_get_environment(id: &str, app_handle: AppHandle) -> Result<Environment, String> {
+    get_environment(&app_handle, id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_workspace(
-    id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<Workspace, String> {
-    let db = &*db_state.lock().await;
-    get_workspace(db, id).await.map_err(|e| e.to_string())
+async fn cmd_get_workspace(id: &str, app_handle: AppHandle) -> Result<Workspace, String> {
+    get_workspace(&app_handle, id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 async fn cmd_list_http_responses(
     request_id: &str,
     limit: Option<i64>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<Vec<HttpResponse>, String> {
-    let db = &*db_state.lock().await;
-    list_responses(db, request_id, limit)
+    list_responses(&app_handle, request_id, limit)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1551,37 +1500,29 @@ async fn cmd_list_http_responses(
 async fn cmd_delete_response(
     id: &str,
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
 ) -> Result<HttpResponse, String> {
-    let db = &*db_state.lock().await;
-    let response = delete_response(db, id)
+    let response = delete_response(&app_handle, id)
         .await
         .expect("Failed to delete response");
     emit_and_return(&window, "deleted_model", response)
 }
 
 #[tauri::command]
-async fn cmd_delete_all_responses(
-    request_id: &str,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<(), String> {
-    let db = &*db_state.lock().await;
-    delete_all_responses(db, request_id)
+async fn cmd_delete_all_responses(request_id: &str, app_handle: AppHandle) -> Result<(), String> {
+    delete_all_responses(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_workspaces(
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
-) -> Result<Vec<Workspace>, String> {
-    let db = &*db_state.lock().await;
-    let workspaces = list_workspaces(db)
+async fn cmd_list_workspaces(app_handle: AppHandle) -> Result<Vec<Workspace>, String> {
+    let workspaces = list_workspaces(&app_handle)
         .await
         .expect("Failed to find workspaces");
     if workspaces.is_empty() {
         let workspace = upsert_workspace(
-            db,
+            &app_handle,
             Workspace {
                 name: "Yaak".to_string(),
                 ..Default::default()
@@ -1604,11 +1545,10 @@ async fn cmd_new_window(window: Window<Wry>, url: &str) -> Result<(), String> {
 #[tauri::command]
 async fn cmd_delete_workspace(
     window: Window<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     workspace_id: &str,
 ) -> Result<Workspace, String> {
-    let db = &*db_state.lock().await;
-    let workspace = delete_workspace(db, workspace_id)
+    let workspace = delete_workspace(&app_handle, workspace_id)
         .await
         .expect("Failed to delete Workspace");
     emit_and_return(&window, "deleted_model", workspace)
@@ -1616,12 +1556,10 @@ async fn cmd_delete_workspace(
 
 #[tauri::command]
 async fn cmd_check_for_updates(
-    app_handle: AppHandle<Wry>,
-    db_state: State<'_, Mutex<Pool<Sqlite>>>,
+    app_handle: AppHandle,
     yaak_updater: State<'_, Mutex<YaakUpdater>>,
 ) -> Result<bool, String> {
-    let db = &*db_state.lock().await;
-    let update_mode = get_update_mode(db).await;
+    let update_mode = get_update_mode(&app_handle).await;
     yaak_updater
         .lock()
         .await
@@ -1694,7 +1632,8 @@ fn main() {
                     .await
                     .expect("Failed to migrate database");
                 app.manage(m);
-                let _ = cancel_pending_responses(&pool).await;
+                let h = app.handle();
+                let _ = cancel_pending_responses(&h).await;
             });
 
             Ok(())
@@ -1790,9 +1729,7 @@ fn main() {
 
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
-                        let db_state: State<'_, Mutex<Pool<Sqlite>>> = h.state();
-                        let db = &*db_state.lock().await;
-                        let info = analytics::track_launch_event(&h, db).await;
+                        let info = analytics::track_launch_event(&h).await;
                         info!("Launched Yaak {:?}", info);
 
                         // Wait for window render and give a chance for the user to notice
@@ -1811,9 +1748,7 @@ fn main() {
                     // Run update check whenever window is focused
                     tauri::async_runtime::spawn(async move {
                         let val: State<'_, Mutex<YaakUpdater>> = h.state();
-                        let db_state: State<'_, Mutex<Pool<Sqlite>>> = h.state();
-                        let db = &*db_state.lock().await;
-                        let update_mode = get_update_mode(&db).await;
+                        let update_mode = get_update_mode(&h).await;
                         _ = val.lock().await.check(&h, update_mode).await;
                     });
                 }
@@ -1833,7 +1768,7 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_window(handle: &AppHandle<Wry>, url: Option<&str>) -> Window<Wry> {
+fn create_window(handle: &AppHandle, url: Option<&str>) -> Window<Wry> {
     let app_menu = window_menu::os_default("Yaak".to_string().as_str());
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}", window_num);
@@ -1934,12 +1869,12 @@ fn emit_and_return<S: Serialize + Clone, E>(
 }
 
 /// Emit an event to all windows, used for side-effects where there is no source window to attribute. This
-fn emit_side_effect<S: Serialize + Clone>(app_handle: AppHandle<Wry>, event: &str, payload: S) {
+fn emit_side_effect<S: Serialize + Clone>(app_handle: &AppHandle, event: &str, payload: S) {
     app_handle.emit_all(event, &payload).unwrap();
 }
 
-async fn get_update_mode(db: &Pool<Sqlite>) -> UpdateMode {
-    let settings = get_or_create_settings(db).await;
+async fn get_update_mode(app_handle: &AppHandle) -> UpdateMode {
+    let settings = get_or_create_settings(app_handle).await;
     update_mode_from_str(settings.update_channel.as_str())
 }
 

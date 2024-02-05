@@ -2,7 +2,6 @@ use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
-use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager};
 
 use crate::{is_dev, models};
@@ -128,15 +127,16 @@ pub struct LaunchEventInfo {
     pub num_launches: i32,
 }
 
-pub async fn track_launch_event(app_handle: &AppHandle, db: &Pool<Sqlite>) -> LaunchEventInfo {
+pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
     let namespace = "analytics";
     let last_tracked_version_key = "last_tracked_version";
 
     let mut info = LaunchEventInfo::default();
 
-    info.num_launches = models::get_key_value_int(db, namespace, "num_launches", 0).await + 1;
+    info.num_launches =
+        models::get_key_value_int(app_handle, namespace, "num_launches", 0).await + 1;
     info.previous_version =
-        models::get_key_value_string(db, namespace, last_tracked_version_key, "").await;
+        models::get_key_value_string(app_handle, namespace, last_tracked_version_key, "").await;
     info.current_version = app_handle.package_info().version.to_string();
 
     if info.previous_version.is_empty() {
@@ -172,13 +172,13 @@ pub async fn track_launch_event(app_handle: &AppHandle, db: &Pool<Sqlite>) -> La
     // Update key values
 
     models::set_key_value_string(
-        db,
+        app_handle,
         namespace,
         last_tracked_version_key,
         info.current_version.as_str(),
     )
     .await;
-    models::set_key_value_int(db, namespace, "num_launches", info.num_launches).await;
+    models::set_key_value_int(app_handle, namespace, "num_launches", info.num_launches).await;
 
     info
 }
