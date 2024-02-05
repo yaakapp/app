@@ -34,6 +34,17 @@ export function useGrpc(url: string | null, requestId: string | null) {
     },
   });
 
+  const clientStreaming = useMutation<void, string, string>({
+    mutationKey: ['grpc_client_streaming', url],
+    mutationFn: async (requestId) => {
+      if (url === null) throw new Error('No URL provided');
+      await messages.set([]);
+      const c = (await invoke('cmd_grpc_client_streaming', { requestId })) as GrpcConnection;
+      console.log('GOT CONNECTION', c);
+      setActiveConnectionId(c.id);
+    },
+  });
+
   const serverStreaming = useMutation<void, string, string>({
     mutationKey: ['grpc_server_streaming', url],
     mutationFn: async (requestId) => {
@@ -77,6 +88,14 @@ export function useGrpc(url: string | null, requestId: string | null) {
     },
   });
 
+  const commit = useMutation({
+    mutationKey: ['grpc_commit', url],
+    mutationFn: async () => {
+      setActiveConnectionId(null);
+      await emit(`grpc_client_msg_${activeConnectionId}`, 'Commit');
+    },
+  });
+
   const reflect = useQuery<ReflectResponseService[]>({
     queryKey: ['grpc_reflect', url ?? ''],
     queryFn: async () => {
@@ -87,10 +106,12 @@ export function useGrpc(url: string | null, requestId: string | null) {
 
   return {
     unary,
+    clientStreaming,
     serverStreaming,
     streaming,
     services: reflect.data,
     cancel,
+    commit,
     isStreaming: activeConnectionId !== null,
     send,
   };
