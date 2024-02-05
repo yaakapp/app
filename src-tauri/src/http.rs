@@ -15,7 +15,7 @@ use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
 use tauri::AppHandle;
 
-use crate::{emit_side_effect, models, render, response_err};
+use crate::{models, render, response_err};
 
 pub async fn send_http_request(
     app_handle: &AppHandle,
@@ -363,9 +363,6 @@ pub async fn send_http_request(
             response = models::update_response_if_id(app_handle, &response)
                 .await
                 .expect("Failed to update response");
-            if !request.id.is_empty() {
-                emit_side_effect(app_handle, "upserted_model", &response);
-            }
 
             // Copy response to download path, if specified
             match (download_path, response.body_path.clone()) {
@@ -395,13 +392,8 @@ pub async fn send_http_request(
                         .collect::<Vec<_>>(),
                 );
                 cookie_jar.cookies = json_cookies;
-                match models::upsert_cookie_jar(&app_handle, &cookie_jar).await {
-                    Ok(updated_jar) => {
-                        emit_side_effect(app_handle, "upserted_model", &updated_jar);
-                    }
-                    Err(e) => {
-                        error!("Failed to update cookie jar: {}", e);
-                    }
+                if let Err(e) = models::upsert_cookie_jar(&app_handle, &cookie_jar).await {
+                    error!("Failed to update cookie jar: {}", e);
                 };
             }
 

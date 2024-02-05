@@ -33,7 +33,8 @@ CREATE TABLE grpc_connections
     created_at   DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     service      TEXT                               NOT NULL,
-    method       TEXT                               NOT NULL
+    method       TEXT                               NOT NULL,
+    elapsed      INTEGER                            NOT NULL
 );
 
 CREATE TABLE grpc_messages
