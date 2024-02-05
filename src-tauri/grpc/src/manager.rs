@@ -173,7 +173,7 @@ impl GrpcManager {
         message: &str,
     ) -> Result<Streaming<DynamicMessage>> {
         self.connect(id, uri)
-            .await
+            .await?
             .server_streaming(service, method, message)
             .await
     }
@@ -187,7 +187,7 @@ impl GrpcManager {
         stream: ReceiverStream<String>,
     ) -> Result<DynamicMessage> {
         self.connect(id, uri)
-            .await
+            .await?
             .client_streaming(service, method, stream)
             .await
     }
@@ -201,15 +201,15 @@ impl GrpcManager {
         stream: ReceiverStream<String>,
     ) -> Result<Streaming<DynamicMessage>> {
         self.connect(id, uri)
-            .await
+            .await?
             .streaming(service, method, stream)
             .await
     }
 
-    pub async fn connect(&mut self, id: &str, uri: Uri) -> GrpcConnection {
-        let (pool, conn) = fill_pool(&uri).await;
+    pub async fn connect(&mut self, id: &str, uri: Uri) -> Result<GrpcConnection> {
+        let (pool, conn) = fill_pool(&uri).await?;
         let connection = GrpcConnection { pool, conn, uri };
         self.connections.insert(id.to_string(), connection.clone());
-        connection
+        Ok(connection)
     }
 }

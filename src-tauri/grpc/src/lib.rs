@@ -29,10 +29,11 @@ pub struct MethodDefinition {
     pub server_streaming: bool,
 }
 
-pub async fn reflect(uri: &Uri) -> Vec<ServiceDefinition> {
-    let (pool, _) = fill_pool(uri).await;
+pub async fn reflect(uri: &Uri) -> Result<Vec<ServiceDefinition>, String> {
+    let (pool, _) = fill_pool(uri).await?;
 
-    pool.services()
+    Ok(pool
+        .services()
         .map(|s| {
             let mut def = ServiceDefinition {
                 name: s.full_name().to_string(),
@@ -53,5 +54,5 @@ pub async fn reflect(uri: &Uri) -> Vec<ServiceDefinition> {
             }
             def
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>())
 }
