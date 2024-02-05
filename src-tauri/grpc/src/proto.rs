@@ -5,6 +5,7 @@ use anyhow::anyhow;
 use hyper::client::HttpConnector;
 use hyper::Client;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
+use log::warn;
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::FileDescriptorProto;
@@ -12,6 +13,7 @@ use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
 use tonic::transport::Uri;
+use tonic::Code::Unimplemented;
 use tonic::Request;
 use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
 use tonic_reflection::pb::server_reflection_request::MessageRequest;
@@ -20,10 +22,13 @@ use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool(
     uri: &Uri,
-) -> (
-    DescriptorPool,
-    Client<HttpsConnector<HttpConnector>, BoxBody>,
-) {
+) -> Result<
+    (
+        DescriptorPool,
+        Client<HttpsConnector<HttpConnector>, BoxBody>,
+    ),
+    String,
+> {
     let mut pool = DescriptorPool::new();
     let connector = HttpsConnectorBuilder::new().with_native_roots();
     let connector = connector.https_or_http().enable_http2().wrap_connector({
@@ -37,34 +42,33 @@ pub async fn fill_pool(
         .build(connector);
 
     let mut client = ServerReflectionClient::with_origin(transport.clone(), uri.clone());
-    let services = list_services(&mut client).await;
 
-    for service in services {
+    for service in list_services(&mut client).await? {
         if service == "grpc.reflection.v1alpha.ServerReflection" {
             continue;
         }
         file_descriptor_set_from_service_name(&service, &mut pool, &mut client).await;
     }
 
-    (pool, transport)
+    Ok((pool, transport))
 }
 
 async fn list_services(
     reflect_client: &mut ServerReflectionClient<Client<HttpsConnector<HttpConnector>, BoxBody>>,
-) -> Vec<String> {
+) -> Result<Vec<String>, String> {
     let response =
-        send_reflection_request(reflect_client, MessageRequest::ListServices("".into())).await;
+        send_reflection_request(reflect_client, MessageRequest::ListServices("".into())).await?;
 
     let list_services_response = match response {
         MessageResponse::ListServicesResponse(resp) => resp,
         _ => panic!("Expected a ListServicesResponse variant"),
     };
 
-    list_services_response
+    Ok(list_services_response
         .service
         .iter()
         .map(|s| s.name.clone())
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>())
 }
 
 async fn file_descriptor_set_from_service_name(
@@ -72,11 +76,21 @@ async fn file_descriptor_set_from_service_name(
     pool: &mut DescriptorPool,
     client: &mut ServerReflectionClient<Client<HttpsConnector<HttpConnector>, BoxBody>>,
 ) {
-    let response = send_reflection_request(
+    let response = match send_reflection_request(
         client,
         MessageRequest::FileContainingSymbol(service_name.into()),
     )
-    .await;
+    .await
+    {
+        Ok(resp) => resp,
+        Err(e) => {
+            warn!(
+                "Error fetching file descriptor for service {}: {}",
+                service_name, e
+            );
+            return;
+        }
+    };
 
     let file_descriptor_response = match response {
         MessageResponse::FileDescriptorResponse(resp) => resp,
@@ -109,8 +123,14 @@ async fn file_descriptor_set_by_filename(
     let response =
         send_reflection_request(client, MessageRequest::FileByFilename(filename.into())).await;
     let file_descriptor_response = match response {
-        MessageResponse::FileDescriptorResponse(resp) => resp,
-        _ => panic!("Expected a FileDescriptorResponse variant"),
+        Ok(MessageResponse::FileDescriptorResponse(resp)) => resp,
+        Ok(_) => {
+            panic!("Expected a FileDescriptorResponse variant")
+        }
+        Err(e) => {
+            warn!("Error fetching file descriptor for {}: {}", filename, e);
+            return;
+        }
     };
 
     for fd in file_descriptor_response.file_descriptor_proto {
@@ -123,7 +143,7 @@ async fn file_descriptor_set_by_filename(
 async fn send_reflection_request(
     client: &mut ServerReflectionClient<Client<HttpsConnector<HttpConnector>, BoxBody>>,
     message: MessageRequest,
-) -> MessageResponse {
+) -> Result<MessageResponse, String> {
     let reflection_request = ServerReflectionRequest {
         host: "".into(), // Doesn't matter
         message_request: Some(message),
@@ -134,14 +154,17 @@ async fn send_reflection_request(
     client
         .server_reflection_info(request)
         .await
-        .expect("server reflection failed")
+        .map_err(|e| match e.code() {
+            Unimplemented => "Reflection not implemented for server".to_string(),
+            _ => e.to_string(),
+        })?
         .into_inner()
         .next()
         .await
         .expect("steamed response")
-        .expect("successful response")
+        .map_err(|e| e.to_string())?
         .message_response
-        .expect("some MessageResponse")
+        .ok_or("No reflection response".to_string())
 }
 
 pub fn method_desc_to_path(md: &MethodDescriptor) -> PathAndQuery {

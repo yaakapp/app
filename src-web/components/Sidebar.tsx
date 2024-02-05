@@ -755,12 +755,14 @@ const SidebarItem = forwardRef(function SidebarItem(
           )}
           {latestGrpcConnection ? (
             <div className="ml-auto">
-              {latestGrpcConnection.elapsed === 0 && <Icon spin size="sm" icon="update" />}
+              {latestGrpcConnection.elapsed === 0 && (
+                <Icon spin size="sm" icon="update" className="text-gray-400" />
+              )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="update" />
+                <Icon spin size="sm" icon="update" className="text-gray-400" />
               ) : (
                 <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
               )}
