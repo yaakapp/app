@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::Client;
 use hyper_rustls::HttpsConnector;

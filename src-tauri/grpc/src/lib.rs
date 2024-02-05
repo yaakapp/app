@@ -1,8 +1,6 @@
 use prost_reflect::SerializeOptions;
 use serde::{Deserialize, Serialize};
-use tokio_stream::Stream;
 use tonic::transport::Uri;
-use tonic::IntoRequest;
 
 use crate::proto::fill_pool;
 
