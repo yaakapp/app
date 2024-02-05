@@ -1,8 +1,8 @@
 use std::time::SystemTime;
 
 use log::info;
-use tauri::{AppHandle, updater, Window, Wry};
 use tauri::api::dialog;
+use tauri::{updater, AppHandle, Window};
 
 use crate::is_dev;
 
@@ -27,14 +27,17 @@ impl YaakUpdater {
     }
     pub async fn force_check(
         &mut self,
-        app_handle: &AppHandle<Wry>,
+        app_handle: &AppHandle,
         mode: UpdateMode,
     ) -> Result<bool, updater::Error> {
         self.last_update_check = SystemTime::now();
 
         let update_mode = get_update_mode_str(mode);
         let enabled = !is_dev();
-        info!("Checking for updates mode={} enabled={}", update_mode, enabled);
+        info!(
+            "Checking for updates mode={} enabled={}",
+            update_mode, enabled
+        );
 
         if !enabled {
             return Ok(false);
@@ -89,10 +92,11 @@ impl YaakUpdater {
     }
     pub async fn check(
         &mut self,
-        app_handle: &AppHandle<Wry>,
+        app_handle: &AppHandle,
         mode: UpdateMode,
     ) -> Result<bool, updater::Error> {
-        let ignore_check = self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
+        let ignore_check =
+            self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
         if ignore_check {
             return Ok(false);
         }
