@@ -1183,6 +1183,20 @@ pub async fn create_response(
     get_http_response(app_handle, &id).await
 }
 
+pub async fn cancel_pending_grpc_connections(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query!(
+        r#"
+            UPDATE grpc_connections
+            SET (elapsed) = (-1)
+            WHERE elapsed = 0;
+        "#,
+    )
+    .execute(&db)
+    .await?;
+    Ok(())
+}
+
 pub async fn cancel_pending_responses(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
     let db = get_db(app_handle).await;
     sqlx::query!(

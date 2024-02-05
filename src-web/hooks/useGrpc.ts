@@ -1,100 +1,71 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
-import { useEffect, useState } from 'react';
-import type { GrpcConnection, GrpcMessage } from '../lib/models';
-import { useKeyValue } from './useKeyValue';
+import type { GrpcConnection, GrpcMessage, GrpcRequest } from '../lib/models';
 
 interface ReflectResponseService {
   name: string;
   methods: { name: string; schema: string; serverStreaming: boolean; clientStreaming: boolean }[];
 }
 
-export function useGrpc(url: string | null, requestId: string | null) {
-  const messages = useKeyValue<GrpcMessage[]>({
-    namespace: 'debug',
-    key: ['grpc_msgs', requestId ?? 'n/a'],
-    defaultValue: [],
-  });
-  const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
+export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
+  const requestId = req?.id ?? 'n/a';
 
-  useEffect(() => {
-    setActiveConnectionId(null);
-  }, [requestId]);
-
-  const unary = useMutation<GrpcMessage, string, string>({
-    mutationKey: ['grpc_unary', url],
-    mutationFn: async (id) => {
+  const unary = useMutation<GrpcMessage, string>({
+    mutationKey: ['grpc_unary', conn?.id ?? 'n/a'],
+    mutationFn: async () => {
       const message = (await invoke('cmd_grpc_call_unary', {
-        requestId: id,
+        requestId,
       })) as GrpcMessage;
-      await messages.set([message]);
       return message;
     },
   });
 
-  const clientStreaming = useMutation<void, string, string>({
-    mutationKey: ['grpc_client_streaming', url],
-    mutationFn: async (requestId) => {
-      if (url === null) throw new Error('No URL provided');
-      await messages.set([]);
-      const c = (await invoke('cmd_grpc_client_streaming', { requestId })) as GrpcConnection;
-      setActiveConnectionId(c.id);
+  const clientStreaming = useMutation<void, string>({
+    mutationKey: ['grpc_client_streaming', conn?.id ?? 'n/a'],
+    mutationFn: async () => {
+      await invoke('cmd_grpc_client_streaming', { requestId });
     },
   });
 
-  const serverStreaming = useMutation<void, string, string>({
-    mutationKey: ['grpc_server_streaming', url],
-    mutationFn: async (requestId) => {
-      if (url === null) throw new Error('No URL provided');
-      await messages.set([]);
-      const c = (await invoke('cmd_grpc_server_streaming', { requestId })) as GrpcConnection;
-      setActiveConnectionId(c.id);
+  const serverStreaming = useMutation<void, string>({
+    mutationKey: ['grpc_server_streaming', conn?.id ?? 'n/a'],
+    mutationFn: async () => {
+      await invoke('cmd_grpc_server_streaming', { requestId });
     },
   });
 
-  const streaming = useMutation<void, string, string>({
-    mutationKey: ['grpc_streaming', url],
-    mutationFn: async (requestId) => {
-      if (url === null) throw new Error('No URL provided');
-      await messages.set([]);
-      const id: string = await invoke('cmd_grpc_streaming', {
-        requestId,
-      });
-      setActiveConnectionId(id);
+  const streaming = useMutation<void, string>({
+    mutationKey: ['grpc_streaming', conn?.id ?? 'n/a'],
+    mutationFn: async () => {
+      await invoke('cmd_grpc_streaming', { requestId });
     },
   });
 
   const send = useMutation({
-    mutationKey: ['grpc_send', url],
     mutationFn: async ({ message }: { message: string }) => {
-      if (activeConnectionId == null) throw new Error('No active connection');
-      await messages.set([]);
-      await emit(`grpc_client_msg_${activeConnectionId}`, { Message: message });
+      await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, { Message: message });
     },
   });
 
   const cancel = useMutation({
-    mutationKey: ['grpc_cancel', url],
+    mutationKey: ['grpc_cancel', conn?.id ?? 'n/a'],
     mutationFn: async () => {
-      setActiveConnectionId(null);
-      await emit(`grpc_client_msg_${activeConnectionId}`, 'Cancel');
+      await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Cancel');
     },
   });
 
   const commit = useMutation({
-    mutationKey: ['grpc_commit', url],
+    mutationKey: ['grpc_commit', conn?.id ?? 'n/a'],
     mutationFn: async () => {
-      setActiveConnectionId(null);
-      await emit(`grpc_client_msg_${activeConnectionId}`, 'Commit');
+      await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Commit');
     },
   });
 
   const reflect = useQuery<ReflectResponseService[]>({
-    queryKey: ['grpc_reflect', url ?? ''],
+    queryKey: ['grpc_reflect', conn?.id ?? 'n/a'],
     queryFn: async () => {
-      if (url === null) return [];
-      return (await invoke('cmd_grpc_reflect', { endpoint: url })) as ReflectResponseService[];
+      return (await invoke('cmd_grpc_reflect', { requestId })) as ReflectResponseService[];
     },
   });
 
@@ -106,7 +77,7 @@ export function useGrpc(url: string | null, requestId: string | null) {
     services: reflect.data,
     cancel,
     commit,
-    isStreaming: activeConnectionId !== null,
+    isStreaming: conn?.elapsed === 0,
     send,
   };
 }

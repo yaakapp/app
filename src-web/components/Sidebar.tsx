@@ -21,6 +21,7 @@ import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useKeyValue } from '../hooks/useKeyValue';
+import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { usePrompt } from '../hooks/usePrompt';
 import { useSendManyRequests } from '../hooks/useSendFolder';
@@ -558,7 +559,8 @@ const SidebarItem = forwardRef(function SidebarItem(
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
-  const latestResponse = useLatestHttpResponse(itemId);
+  const latestHttpResponse = useLatestHttpResponse(itemId);
+  const latestGrpcConnection = useLatestGrpcConnection(itemId);
   const updateHttpRequest = useUpdateHttpRequest(itemId);
   const updateGrpcRequest = useUpdateGrpcRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
@@ -751,15 +753,19 @@ const SidebarItem = forwardRef(function SidebarItem(
           ) : (
             <span className="truncate">{itemName || itemFallbackName}</span>
           )}
-          {latestResponse && (
+          {latestGrpcConnection ? (
             <div className="ml-auto">
-              {isResponseLoading(latestResponse) ? (
+              {latestGrpcConnection.elapsed === 0 && <Icon spin size="sm" icon="update" />}
+            </div>
+          ) : latestHttpResponse ? (
+            <div className="ml-auto">
+              {isResponseLoading(latestHttpResponse) ? (
                 <Icon spin size="sm" icon="update" />
               ) : (
-                <StatusTag className="text-2xs dark:opacity-80" response={latestResponse} />
+                <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
               )}
             </div>
-          )}
+          ) : null}
         </button>
       </div>
       {children}
