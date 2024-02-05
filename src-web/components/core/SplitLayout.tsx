@@ -23,6 +23,7 @@ interface Props {
   defaultRatio?: number;
   minHeightPx?: number;
   minWidthPx?: number;
+  forceVertical?: boolean;
 }
 
 const areaL = { gridArea: 'left' };
@@ -37,6 +38,7 @@ export function SplitLayout({
   secondSlot,
   className,
   name,
+  forceVertical,
   defaultRatio = 0.5,
   minHeightPx = 10,
   minWidthPx = 10,
@@ -66,14 +68,15 @@ export function SplitLayout({
   const styles = useMemo<CSSProperties>(() => {
     return {
       ...style,
-      gridTemplate: vertical
-        ? `
+      gridTemplate:
+        forceVertical || vertical
+          ? `
             ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
             ' ${areaD.gridArea}' 0
             ' ${areaR.gridArea}' minmax(${minHeightPx}px,${height}fr)
             / 1fr            
           `
-        : `
+          : `
             ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
             / ${1 - width}fr   0                ${width}fr           
           `,
