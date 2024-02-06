@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Simulate } from 'react-dom/test-utils';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
@@ -12,14 +13,18 @@ export const SidebarActions = memo(function SidebarActions() {
   const createHttpRequest = useCreateHttpRequest();
   const createGrpcRequest = useCreateGrpcRequest();
   const createFolder = useCreateFolder();
-  const { hidden, toggle } = useSidebarHidden();
+  const { hidden, show, hide } = useSidebarHidden();
 
   return (
     <HStack>
       <IconButton
         onClick={async () => {
           trackEvent('Sidebar', 'Toggle');
-          await toggle();
+
+          // NOTE: We're not using `toggle` because it may be out of sync
+          // from changes in other windows
+          if (hidden) await show();
+          else await hide();
         }}
         className="pointer-events-auto"
         size="sm"

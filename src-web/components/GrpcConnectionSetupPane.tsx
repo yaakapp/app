@@ -6,9 +6,7 @@ import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import type { GrpcRequest } from '../lib/models';
-import { Banner } from './core/Banner';
 import { Button } from './core/Button';
-import { FormattedError } from './core/FormattedError';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { RadioDropdown } from './core/RadioDropdown';
@@ -74,6 +72,11 @@ export function GrpcConnectionSetupPane({
 
   const handleChangeMessage = useCallback(
     (message: string) => updateRequest.mutateAsync({ message }),
+    [updateRequest],
+  );
+
+  const handleSelectProtoFiles = useCallback(
+    (paths: string[]) => updateRequest.mutateAsync({ protoFiles: paths }),
     [updateRequest],
   );
 
@@ -225,17 +228,14 @@ export function GrpcConnectionSetupPane({
         </HStack>
       </div>
       <GrpcEditor
-        forceUpdateKey={activeRequest?.id ?? ''}
-        url={activeRequest.url ?? ''}
-        defaultValue={activeRequest.message}
         onChange={handleChangeMessage}
-        service={activeRequest.service}
         services={services}
-        method={activeRequest.method}
         className="bg-gray-50"
         reflectionError={reflectionError}
         reflectionLoading={reflectionLoading}
         onReflect={onReflectRefetch}
+        onSelectProtoFiles={handleSelectProtoFiles}
+        request={activeRequest}
       />
     </VStack>
   );

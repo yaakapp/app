@@ -204,6 +204,7 @@ pub struct GrpcRequest {
     pub service: Option<String>,
     pub method: Option<String>,
     pub message: String,
+    pub proto_files: Json<Vec<String>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -497,9 +498,10 @@ pub async fn upsert_grpc_request(
     sqlx::query!(
         r#"
             INSERT INTO grpc_requests (
-                id, name, workspace_id, folder_id, sort_priority, url, service, method, message
+                id, name, workspace_id, folder_id, sort_priority, url, service, method, message,
+                proto_files
              )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
                 name = excluded.name,
@@ -508,7 +510,8 @@ pub async fn upsert_grpc_request(
                 url = excluded.url,
                 service = excluded.service,
                 method = excluded.method,
-                message = excluded.message
+                message = excluded.message,
+                proto_files = excluded.proto_files
         "#,
         id,
         trimmed_name,
@@ -519,6 +522,7 @@ pub async fn upsert_grpc_request(
         request.service,
         request.method,
         request.message,
+        request.proto_files,
     )
     .execute(&db)
     .await?;
@@ -539,7 +543,8 @@ pub async fn get_grpc_request(
         r#"
             SELECT
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
-                url, service, method, message
+                url, service, method, message,
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
             FROM grpc_requests
             WHERE id = ?
         "#,
@@ -559,7 +564,8 @@ pub async fn list_grpc_requests(
         r#"
             SELECT
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
-                url, service, method, message
+                url, service, method, message,
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
             FROM grpc_requests
             WHERE workspace_id = ?
         "#,

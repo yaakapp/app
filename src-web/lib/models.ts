@@ -114,6 +114,7 @@ export interface GrpcRequest extends BaseModel {
   service: string | null;
   method: string | null;
   message: string;
+  protoFiles: string[];
 }
 
 export interface GrpcMessage extends BaseModel {
