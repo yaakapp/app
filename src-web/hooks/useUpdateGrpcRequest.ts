@@ -3,8 +3,10 @@ import type { GrpcRequest } from '../lib/models';
 import { useUpdateAnyGrpcRequest } from './useUpdateAnyGrpcRequest';
 
 export function useUpdateGrpcRequest(id: string | null) {
-  const updateAnyRequest = useUpdateAnyGrpcRequest();
+  const updateAnyGrpcRequest = useUpdateAnyGrpcRequest();
   return useMutation<void, unknown, Partial<GrpcRequest> | ((r: GrpcRequest) => GrpcRequest)>({
-    mutationFn: async (update) => updateAnyRequest.mutateAsync({ id: id ?? 'n/a', update }),
+    mutationFn: async (update) => {
+      return updateAnyGrpcRequest.mutateAsync({ id: id ?? 'n/a', update });
+    },
   });
 }

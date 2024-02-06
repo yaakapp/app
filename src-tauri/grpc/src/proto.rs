@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::anyhow;
@@ -9,17 +10,27 @@ use log::warn;
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::FileDescriptorProto;
+use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
 use tonic::transport::Uri;
-use tonic::Code::Unimplemented;
 use tonic::Request;
 use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
 use tonic_reflection::pb::server_reflection_request::MessageRequest;
 use tonic_reflection::pb::server_reflection_response::MessageResponse;
 use tonic_reflection::pb::ServerReflectionRequest;
 
+pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool, String> {
+    let mut pool = DescriptorPool::new();
+    for p in paths {
+        let bytes = fs::read(p).await.unwrap();
+        let fdp = FileDescriptorProto::decode(bytes.deref()).unwrap();
+        pool.add_file_descriptor_proto(fdp)
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(pool)
+}
 pub async fn fill_pool(
     uri: &Uri,
 ) -> Result<
@@ -155,7 +166,9 @@ async fn send_reflection_request(
         .server_reflection_info(request)
         .await
         .map_err(|e| match e.code() {
-            Unimplemented => "Reflection not implemented for server".to_string(),
+            tonic::Code::Unavailable => "Failed to connect to endpoint".to_string(),
+            tonic::Code::Unauthenticated => "Authentication failed".to_string(),
+            tonic::Code::DeadlineExceeded => "Deadline exceeded".to_string(),
             _ => e.to_string(),
         })?
         .into_inner()

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message\n            FROM grpc_requests\n            WHERE workspace_id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message,\n                proto_files AS \"proto_files!: sqlx::types::Json<Vec<String>>\"\n            FROM grpc_requests\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -62,6 +62,11 @@
         "name": "message",
         "ordinal": 11,
         "type_info": "Text"
+      },
+      {
+        "name": "proto_files!: sqlx::types::Json<Vec<String>>",
+        "ordinal": 12,
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -79,8 +84,9 @@
       false,
       true,
       true,
+      false,
       false
     ]
   },
-  "hash": "35c9607291ee400e7696393bec7f4aa254a2dd163c4f79ea368ac6ee5f74c365"
+  "hash": "7398403d3de2dc5c5b4b6392f083041d9a55194bb97819225a2612fdeb60ad42"
 }

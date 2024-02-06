@@ -28,6 +28,7 @@ export function useKeyValue<T extends Object | null>({
   const query = useQuery<T>({
     queryKey: keyValueQueryKey({ namespace, key }),
     queryFn: async () => getKeyValue({ namespace, key, fallback: defaultValue }),
+    refetchOnWindowFocus: false,
   });
 
   const mutate = useMutation<void, unknown, T>({

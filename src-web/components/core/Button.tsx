@@ -60,7 +60,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         size === 'md' && 'h-md px-3',
         size === 'sm' && 'h-sm px-2.5 text-sm',
         size === 'xs' && 'h-xs px-2 text-sm',
-        variant === 'border' && 'border',
         // Solids
         variant === 'solid' && color === 'custom' && 'ring-blue-500/50',
         variant === 'solid' &&
@@ -82,12 +81,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
           color === 'danger' &&
           'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
         // Borders
+        variant === 'border' && 'border',
         variant === 'border' &&
           color === 'default' &&
-          'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-1000 ring-blue-500/50',
+          'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-800 ring-blue-500/50',
         variant === 'border' &&
           color === 'gray' &&
-          'border-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
+          'border-gray-500/70 text-gray-700 enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-800 ring-blue-500/50',
         variant === 'border' &&
           color === 'primary' &&
           'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',

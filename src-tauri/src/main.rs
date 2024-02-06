@@ -34,7 +34,7 @@ use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
-use grpc::manager::GrpcManager;
+use grpc::manager::GrpcHandle;
 use grpc::ServiceDefinition;
 use window_ext::TrafficLightWindowExt;
 
@@ -95,19 +95,20 @@ async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(
 async fn cmd_grpc_reflect(
     request_id: &str,
     app_handle: AppHandle,
+    grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
     let req = get_grpc_request(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())?;
     let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    grpc::reflect(&uri).await
+    grpc_handle.lock().await.clean_reflect(&uri).await
 }
 
 #[tauri::command]
 async fn cmd_grpc_call_unary(
     request_id: &str,
     app_handle: AppHandle,
-    grpc_handle: State<'_, Mutex<GrpcManager>>,
+    grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<GrpcMessage, String> {
     let req = get_grpc_request(&app_handle, request_id)
         .await
@@ -316,7 +317,7 @@ async fn cmd_grpc_client_streaming(
         let conn = conn.clone();
         let req = req.clone();
         async move {
-            let grpc_handle = app_handle.state::<Mutex<GrpcManager>>();
+            let grpc_handle = app_handle.state::<Mutex<GrpcHandle>>();
             let msg = grpc_handle
                 .lock()
                 .await
@@ -404,7 +405,7 @@ async fn cmd_grpc_client_streaming(
 async fn cmd_grpc_streaming(
     request_id: &str,
     app_handle: AppHandle,
-    grpc_handle: State<'_, Mutex<GrpcManager>>,
+    grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
     let req = get_grpc_request(&app_handle, request_id)
         .await
@@ -614,7 +615,7 @@ async fn cmd_grpc_streaming(
 async fn cmd_grpc_server_streaming(
     request_id: &str,
     app_handle: AppHandle,
-    grpc_handle: State<'_, Mutex<GrpcManager>>,
+    grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<GrpcConnection, String> {
     let req = get_grpc_request(&app_handle, request_id)
         .await
@@ -1627,7 +1628,7 @@ fn main() {
             app.manage(Mutex::new(yaak_updater));
 
             // Add GRPC manager
-            let grpc_handle = GrpcManager::default();
+            let grpc_handle = GrpcHandle::default();
             app.manage(Mutex::new(grpc_handle));
 
             // Add DB handle
