@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
-import { useCallback } from 'react';
+import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { GrpcConnection, GrpcMessage, GrpcRequest } from '../lib/models';
+import { useDebouncedValue } from './useDebouncedValue';
 
 export interface ReflectResponseService {
   name: string;
@@ -50,11 +51,16 @@ export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
     mutationFn: async () => await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Commit'),
   });
 
-  const reflect = useQuery<ReflectResponseService[]>({
-    queryKey: ['grpc_reflect', req?.url ?? 'n/a'],
+  const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 1000);
+  const reflect = useQuery<ReflectResponseService[] | null>({
+    enabled: req != null && req.protoFiles.length === 0,
+    queryKey: ['grpc_reflect', debouncedUrl],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return (await invoke('cmd_grpc_reflect', { requestId })) as ReflectResponseService[];
+      console.log('REFLECTING...');
+      return (await minPromiseMillis(
+        invoke('cmd_grpc_reflect', { requestId }),
+        1000,
+      )) as ReflectResponseService[];
     },
   });
 

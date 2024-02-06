@@ -1,8 +1,5 @@
 use prost_reflect::SerializeOptions;
 use serde::{Deserialize, Serialize};
-use tonic::transport::Uri;
-
-use crate::proto::fill_pool;
 
 mod codec;
 mod json_schema;
@@ -27,32 +24,4 @@ pub struct MethodDefinition {
     pub schema: String,
     pub client_streaming: bool,
     pub server_streaming: bool,
-}
-
-pub async fn reflect(uri: &Uri) -> Result<Vec<ServiceDefinition>, String> {
-    let (pool, _) = fill_pool(uri).await?;
-
-    Ok(pool
-        .services()
-        .map(|s| {
-            let mut def = ServiceDefinition {
-                name: s.full_name().to_string(),
-                methods: vec![],
-            };
-            for method in s.methods() {
-                let input_message = method.input();
-                def.methods.push(MethodDefinition {
-                    name: method.name().to_string(),
-                    server_streaming: method.is_server_streaming(),
-                    client_streaming: method.is_client_streaming(),
-                    schema: serde_json::to_string_pretty(&json_schema::message_to_json_schema(
-                        &pool,
-                        input_message,
-                    ))
-                    .unwrap(),
-                })
-            }
-            def
-        })
-        .collect::<Vec<_>>())
 }

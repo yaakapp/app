@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import type { GrpcRequest } from '../lib/models';
+import { sleep } from '../lib/sleep';
 import { getGrpcRequest } from '../lib/store';
 import { grpcRequestsQueryKey } from './useGrpcRequests';
 

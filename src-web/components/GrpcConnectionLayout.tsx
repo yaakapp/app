@@ -90,7 +90,7 @@ export function GrpcConnectionLayout({ style }: Props) {
           onReflectRefetch={grpc.reflect.refetch}
           services={services ?? null}
           reflectionError={grpc.reflect.error as string | undefined}
-          reflectionLoading={grpc.reflect.isLoading}
+          reflectionLoading={grpc.reflect.isFetching}
         />
       )}
       secondSlot={({ style }) =>
