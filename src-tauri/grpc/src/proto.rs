@@ -24,6 +24,7 @@ use tonic_reflection::pb::server_reflection_response::MessageResponse;
 use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool, String> {
+    println!("FILL POOL FROM FILES");
     let mut pool = DescriptorPool::new();
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
     let desc_path = temp_dir().join(random_file_name);
@@ -88,6 +89,7 @@ pub fn get_transport() -> Client<HttpsConnector<HttpConnector>, BoxBody> {
 }
 
 pub async fn fill_pool(uri: &Uri) -> Result<DescriptorPool, String> {
+    println!("FILL POOL FROM URI");
     let mut pool = DescriptorPool::new();
     let mut client = ServerReflectionClient::with_origin(get_transport(), uri.clone());
 
