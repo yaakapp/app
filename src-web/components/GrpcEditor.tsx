@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/api/dialog';
+import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import { updateSchema } from 'codemirror-json-schema';
 import { useEffect, useRef } from 'react';
@@ -7,14 +7,12 @@ import type { ReflectResponseService } from '../hooks/useGrpc';
 import { tryFormatJson } from '../lib/formatters';
 import type { GrpcRequest } from '../lib/models';
 import { count } from '../lib/pluralize';
-import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
 import { Editor } from './core/Editor';
 import { FormattedError } from './core/FormattedError';
 import { InlineCode } from './core/InlineCode';
-import { Link } from './core/Link';
-import { HStack, VStack } from './core/Stacks';
+import { VStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
 import { GrpcProtoSelection } from './GrpcProtoSelection';
 
@@ -23,16 +21,12 @@ type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'className'> & {
   reflectionError?: string;
   reflectionLoading?: boolean;
   request: GrpcRequest;
-  onReflect: () => void;
-  onSelectProtoFiles: (paths: string[]) => void;
 };
 
 export function GrpcEditor({
   services,
   reflectionError,
   reflectionLoading,
-  onReflect,
-  onSelectProtoFiles,
   request,
   ...extraEditorProps
 }: Props) {
@@ -97,6 +91,7 @@ export function GrpcEditor({
   }, [alert, services, request.method, request.service]);
 
   const reflectionUnavailable = reflectionError?.match(/unimplemented/i);
+  const reflectionSuccess = !reflectionError && services != null && request.protoFiles.length === 0;
   reflectionError = reflectionUnavailable ? undefined : reflectionError;
 
   return (
@@ -110,7 +105,7 @@ export function GrpcEditor({
         placeholder="..."
         ref={editorViewRef}
         actions={[
-          <div key="reflection" className="!opacity-100">
+          <div key="reflection" className={classNames(!reflectionSuccess && '!opacity-100')}>
             <Button
               size="xs"
               color={
@@ -128,39 +123,13 @@ export function GrpcEditor({
                   title: 'Configure Schema',
                   size: 'md',
                   id: 'reflection-failed',
-                  render: ({ hide }) => (
-                    <VStack space={6} className="pb-5">
-                      {reflectionError && <FormattedError>{reflectionError}</FormattedError>}
-                      {reflectionUnavailable && request.protoFiles.length === 0 && (
-                        <Banner>
-                          <VStack space={3}>
-                            <p>
-                              <InlineCode>{request.url}</InlineCode> doesn&apos;t implement{' '}
-                              <Link href="https://github.com/grpc/grpc/blob/9aa3c5835a4ed6afae9455b63ed45c761d695bca/doc/server-reflection.md">
-                                Server Reflection
-                              </Link>{' '}
-                              . Please manually add the <InlineCode>.proto</InlineCode> files to get
-                              started.
-                            </p>
-                            <div>
-                              <Button
-                                size="xs"
-                                color="gray"
-                                variant="border"
-                                onClick={() => {
-                                  hide();
-                                  onReflect();
-                                }}
-                              >
-                                Retry Reflection
-                              </Button>
-                            </div>
-                          </VStack>
-                        </Banner>
-                      )}
-                      <GrpcProtoSelection requestId={request.id} />
-                    </VStack>
-                  ),
+                  render: ({ hide }) => {
+                    return (
+                      <VStack space={6} className="pb-5">
+                        <GrpcProtoSelection onDone={hide} requestId={request.id} />
+                      </VStack>
+                    );
+                  },
                 });
               }}
             >
@@ -170,10 +139,10 @@ export function GrpcEditor({
                 ? 'Select Proto Files'
                 : reflectionError
                 ? 'Server Error'
-                : services != null
-                ? 'Proto Schema'
                 : request.protoFiles.length > 0
-                ? count('Proto File', request.protoFiles.length)
+                ? count('File', request.protoFiles.length)
+                : services != null && request.protoFiles.length === 0
+                ? 'Schema Detected'
                 : 'Select Schema'}
             </Button>
           </div>,

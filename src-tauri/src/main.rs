@@ -11,6 +11,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir_all, read_to_string, File};
+use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
@@ -100,8 +101,28 @@ async fn cmd_grpc_reflect(
     let req = get_grpc_request(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())?;
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    grpc_handle.lock().await.clean_reflect(&uri).await
+    if req.proto_files.0.len() > 0 {
+        println!("REFLECT FROM FILES");
+        grpc_handle
+            .lock()
+            .await
+            .services_from_files(
+                req.proto_files
+                    .0
+                    .iter()
+                    .map(|p| PathBuf::from_str(p).unwrap())
+                    .collect(),
+            )
+            .await
+    } else {
+        println!("REFLECT FROM URI");
+        let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
+        grpc_handle
+            .lock()
+            .await
+            .services_from_reflection(&uri)
+            .await
+    }
 }
 
 #[tauri::command]
@@ -150,7 +171,15 @@ async fn cmd_grpc_call_unary(
     let msg = match grpc_handle
         .lock()
         .await
-        .connect(&conn.clone().id, uri)
+        .connect(
+            &req.clone().id,
+            uri,
+            req.proto_files
+                .0
+                .iter()
+                .map(|p| PathBuf::from_str(p).unwrap())
+                .collect(),
+        )
         .await?
         .unary(
             &req.service.unwrap_or_default(),
@@ -321,7 +350,18 @@ async fn cmd_grpc_client_streaming(
             let msg = grpc_handle
                 .lock()
                 .await
-                .client_streaming(&conn.id, uri, &service, &method, in_msg_stream)
+                .connect(
+                    &req.clone().id,
+                    uri,
+                    req.proto_files
+                        .0
+                        .iter()
+                        .map(|p| PathBuf::from_str(p).unwrap())
+                        .collect(),
+                )
+                .await
+                .unwrap()
+                .client_streaming(&service, &method, in_msg_stream)
                 .await
                 .unwrap();
             let message = serde_json::to_string(&msg).unwrap();
@@ -461,7 +501,17 @@ async fn cmd_grpc_streaming(
     let mut stream = grpc_handle
         .lock()
         .await
-        .streaming(&conn.id, uri, &service, &method, in_msg_stream)
+        .connect(
+            &req.clone().id,
+            uri,
+            req.proto_files
+                .0
+                .iter()
+                .map(|p| PathBuf::from_str(p).unwrap())
+                .collect(),
+        )
+        .await?
+        .streaming(&service, &method, in_msg_stream)
         .await
         .unwrap();
 
@@ -664,7 +714,17 @@ async fn cmd_grpc_server_streaming(
     let mut stream = grpc_handle
         .lock()
         .await
-        .server_streaming(&conn.id, uri, &service, &method, &req.message)
+        .connect(
+            &req.clone().id,
+            uri,
+            req.proto_files
+                .0
+                .iter()
+                .map(|p| PathBuf::from_str(p).unwrap())
+                .collect(),
+        )
+        .await?
+        .server_streaming(&service, &method, &req.message)
         .await
         .unwrap();
 
