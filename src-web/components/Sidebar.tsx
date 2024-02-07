@@ -11,7 +11,8 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
-import { useDeleteAnyRequest } from '../hooks/useDeleteAnyRequest';
+import { useDeleteAnyGrpcRequest } from '../hooks/useDeleteAnyGrpcRequest';
+import { useDeleteAnyHttpRequest } from '../hooks/useDeleteAnyHttpRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
@@ -36,6 +37,7 @@ import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
+import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
@@ -65,7 +67,8 @@ export function Sidebar({ className }: Props) {
   const httpRequests = useHttpRequests();
   const grpcRequests = useGrpcRequests();
   const folders = useFolders();
-  const deleteAnyRequest = useDeleteAnyRequest();
+  const deleteAnyHttpRequest = useDeleteAnyHttpRequest();
+  const deleteAnyGrpcRequest = useDeleteAnyGrpcRequest();
   const activeWorkspace = useActiveWorkspace();
   const duplicateHttpRequest = useDuplicateHttpRequest({
     id: activeRequest?.id ?? null,
@@ -223,9 +226,10 @@ export function Sidebar({ className }: Props) {
 
       const selected = selectableRequests.find((r) => r.id === selectedId);
       if (selected == null) return;
-      deleteAnyRequest.mutate(selected.id);
+      deleteAnyHttpRequest.mutate(selected.id);
+      deleteAnyGrpcRequest.mutate(selected.id);
     },
-    [deleteAnyRequest, hasFocus, selectableRequests, selectedId],
+    [deleteAnyHttpRequest, deleteAnyGrpcRequest, hasFocus, selectableRequests, selectedId],
   );
 
   useKeyPressEvent('Backspace', handleDeleteKey);
@@ -683,15 +687,19 @@ const SidebarItem = forwardRef(function SidebarItem(
                   },
                 ]
               : [
-                  {
-                    key: 'sendRequest',
-                    label: 'Send',
-                    hotKeyAction: 'http_request.send',
-                    hotKeyLabelOnly: true, // Already bound in URL bar
-                    leftSlot: <Icon icon="sendHorizontal" />,
-                    onSelect: () => sendRequest.mutate(),
-                  },
-                  { type: 'separator' },
+                  ...((itemModel === 'http_request'
+                    ? [
+                        {
+                          key: 'sendRequest',
+                          label: 'Send',
+                          hotKeyAction: 'http_request.send',
+                          hotKeyLabelOnly: true, // Already bound in URL bar
+                          leftSlot: <Icon icon="sendHorizontal" />,
+                          onSelect: () => sendRequest.mutate(),
+                        },
+                        { type: 'separator' },
+                      ]
+                    : []) as DropdownItem[]),
                   {
                     key: 'duplicateRequest',
                     label: 'Duplicate',

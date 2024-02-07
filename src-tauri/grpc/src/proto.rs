@@ -24,7 +24,6 @@ use tonic_reflection::pb::server_reflection_response::MessageResponse;
 use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool, String> {
-    println!("FILL POOL FROM FILES");
     let mut pool = DescriptorPool::new();
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
     let desc_path = temp_dir().join(random_file_name);
@@ -51,8 +50,6 @@ pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool,
         }
     }
 
-    debug!("Running: {:?}", cmd);
-
     let output = cmd.output().map_err(|e| e.to_string())?;
     if !output.status.success() {
         return Err(format!(
@@ -75,21 +72,7 @@ pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool,
     Ok(pool)
 }
 
-pub fn get_transport() -> Client<HttpsConnector<HttpConnector>, BoxBody> {
-    let connector = HttpsConnectorBuilder::new().with_native_roots();
-    let connector = connector.https_or_http().enable_http2().wrap_connector({
-        let mut http_connector = HttpConnector::new();
-        http_connector.enforce_http(false);
-        http_connector
-    });
-    Client::builder()
-        .pool_max_idle_per_host(0)
-        .http2_only(true)
-        .build(connector)
-}
-
 pub async fn fill_pool(uri: &Uri) -> Result<DescriptorPool, String> {
-    println!("FILL POOL FROM URI");
     let mut pool = DescriptorPool::new();
     let mut client = ServerReflectionClient::with_origin(get_transport(), uri.clone());
 
@@ -101,6 +84,19 @@ pub async fn fill_pool(uri: &Uri) -> Result<DescriptorPool, String> {
     }
 
     Ok(pool)
+}
+
+pub fn get_transport() -> Client<HttpsConnector<HttpConnector>, BoxBody> {
+    let connector = HttpsConnectorBuilder::new().with_native_roots();
+    let connector = connector.https_or_http().enable_http2().wrap_connector({
+        let mut http_connector = HttpConnector::new();
+        http_connector.enforce_http(false);
+        http_connector
+    });
+    Client::builder()
+        .pool_max_idle_per_host(0)
+        .http2_only(true)
+        .build(connector)
 }
 
 async fn list_services(
