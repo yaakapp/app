@@ -1,15 +1,17 @@
+use std::env::temp_dir;
 use std::ops::Deref;
 use std::path::PathBuf;
+use std::process::Command;
 use std::str::FromStr;
 
 use anyhow::anyhow;
 use hyper::client::HttpConnector;
 use hyper::Client;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
-use log::warn;
+use log::{debug, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
-use prost_types::FileDescriptorProto;
+use prost_types::{FileDescriptorProto, FileDescriptorSet};
 use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
@@ -23,36 +25,71 @@ use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool, String> {
     let mut pool = DescriptorPool::new();
+    let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
+    let desc_path = temp_dir().join(random_file_name);
+    let bin = protoc_bin_vendored::protoc_bin_path().unwrap();
+
+    let mut cmd = Command::new(bin.clone());
+    cmd.arg("--include_imports")
+        .arg("--include_source_info")
+        .arg("-o")
+        .arg(&desc_path);
+
     for p in paths {
-        let bytes = fs::read(p).await.unwrap();
-        let fdp = FileDescriptorProto::decode(bytes.deref()).unwrap();
-        pool.add_file_descriptor_proto(fdp)
-            .map_err(|e| e.to_string())?;
+        if p.as_path().exists() {
+            cmd.arg(p.as_path().to_string_lossy().as_ref());
+        } else {
+            continue;
+        }
+
+        let parent = p.as_path().parent();
+        if let Some(parent_path) = parent {
+            cmd.arg("-I").arg(parent_path);
+        } else {
+            debug!("ignoring {:?} since it does not exist.", parent)
+        }
     }
+
+    debug!("Running: {:?}", cmd);
+
+    let output = cmd.output().map_err(|e| e.to_string())?;
+    if !output.status.success() {
+        return Err(format!(
+            "protoc failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
+    let bytes = fs::read(desc_path.as_path())
+        .await
+        .map_err(|e| e.to_string())?;
+    let fdp = FileDescriptorSet::decode(bytes.deref()).map_err(|e| e.to_string())?;
+    pool.add_file_descriptor_set(fdp)
+        .map_err(|e| e.to_string())?;
+
+    fs::remove_file(desc_path.as_path())
+        .await
+        .map_err(|e| e.to_string())?;
+
     Ok(pool)
 }
-pub async fn fill_pool(
-    uri: &Uri,
-) -> Result<
-    (
-        DescriptorPool,
-        Client<HttpsConnector<HttpConnector>, BoxBody>,
-    ),
-    String,
-> {
-    let mut pool = DescriptorPool::new();
+
+pub fn get_transport() -> Client<HttpsConnector<HttpConnector>, BoxBody> {
     let connector = HttpsConnectorBuilder::new().with_native_roots();
     let connector = connector.https_or_http().enable_http2().wrap_connector({
         let mut http_connector = HttpConnector::new();
         http_connector.enforce_http(false);
         http_connector
     });
-    let transport = Client::builder()
+    Client::builder()
         .pool_max_idle_per_host(0)
         .http2_only(true)
-        .build(connector);
+        .build(connector)
+}
 
-    let mut client = ServerReflectionClient::with_origin(transport.clone(), uri.clone());
+pub async fn fill_pool(uri: &Uri) -> Result<DescriptorPool, String> {
+    let mut pool = DescriptorPool::new();
+    let mut client = ServerReflectionClient::with_origin(get_transport(), uri.clone());
 
     for service in list_services(&mut client).await? {
         if service == "grpc.reflection.v1alpha.ServerReflection" {
@@ -61,7 +98,7 @@ pub async fn fill_pool(
         file_descriptor_set_from_service_name(&service, &mut pool, &mut client).await;
     }
 
-    Ok((pool, transport))
+    Ok(pool)
 }
 
 async fn list_services(

@@ -64,22 +64,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         variant === 'solid' && color === 'custom' && 'ring-blue-500/50',
         variant === 'solid' &&
           color === 'default' &&
-          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-1000 ring-blue-500/50',
+          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-500/50',
         variant === 'solid' &&
           color === 'gray' &&
-          'text-gray-800 bg-highlight enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-1000 ring-blue-500/50',
-        variant === 'solid' &&
-          color === 'primary' &&
-          'bg-blue-400 text-white enabled:hocus:bg-blue-500 ring-blue-500/50',
-        variant === 'solid' &&
-          color === 'secondary' &&
-          'bg-violet-400 text-white enabled:hocus:bg-violet-500 ring-violet-500/50',
-        variant === 'solid' &&
-          color === 'warning' &&
-          'bg-orange-400 text-white enabled:hocus:bg-orange-500 ring-orange-500/50',
-        variant === 'solid' &&
-          color === 'danger' &&
-          'bg-red-400 text-white enabled:hocus:bg-red-500 ring-red-500/50',
+          'text-gray-800 bg-highlight enabled:hocus:text-gray-1000 ring-gray-400',
+        variant === 'solid' && color === 'primary' && 'bg-blue-400 text-white ring-blue-700',
+        variant === 'solid' && color === 'secondary' && 'bg-violet-400 text-white ring-violet-700',
+        variant === 'solid' && color === 'warning' && 'bg-orange-400 text-white ring-orange-700',
+        variant === 'solid' && color === 'danger' && 'bg-red-400 text-white ring-red-700',
         // Borders
         variant === 'border' && 'border',
         variant === 'border' &&
