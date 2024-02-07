@@ -65,6 +65,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
           <div className="overflow-y-auto h-full">
             {...messages.map((m) => (
               <HStack
+                role="button"
                 key={m.id}
                 space={2}
                 onClick={() => {
@@ -72,7 +73,10 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                   else setActiveMessageId(m.id);
                 }}
                 alignItems="center"
-                className={classNames('px-2 py-1 font-mono', m === activeMessage && 'bg-highlight')}
+                className={classNames(
+                  'px-2 py-1 font-mono cursor-default group',
+                  m === activeMessage && '!bg-highlight',
+                )}
               >
                 <Icon
                   className={
@@ -80,8 +84,22 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                   }
                   icon={m.isInfo ? 'info' : m.isServer ? 'arrowBigDownDash' : 'arrowBigUpDash'}
                 />
-                <div className="w-full truncate text-gray-800 text-2xs">{m.message}</div>
-                <div className="text-gray-600 text-2xs">{format(m.createdAt, 'HH:mm:ss')}</div>
+                <div
+                  className={classNames(
+                    'w-full truncate text-gray-800 text-2xs group-hover:text-gray-900',
+                    m.id === activeMessageId && 'text-gray-900',
+                  )}
+                >
+                  {m.message}
+                </div>
+                <div
+                  className={classNames(
+                    'text-gray-600 text-2xs group-hover:text-gray-700',
+                    m.id === activeMessageId && 'text-gray-700',
+                  )}
+                >
+                  {format(m.createdAt, 'HH:mm:ss')}
+                </div>
               </HStack>
             ))}
           </div>

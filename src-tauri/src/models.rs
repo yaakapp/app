@@ -1379,6 +1379,26 @@ pub async fn list_responses_by_workspace_id(
     .await
 }
 
+pub async fn delete_grpc_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let req = get_grpc_request(app_handle, id).await?;
+
+    let db = get_db(app_handle).await;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM grpc_requests
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(&db)
+    .await;
+
+    emit_deleted_model(app_handle, req)
+}
+
 pub async fn delete_grpc_connection(
     app_handle: &AppHandle,
     id: &str,
