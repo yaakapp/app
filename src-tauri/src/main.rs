@@ -101,12 +101,15 @@ async fn cmd_grpc_reflect(
     let req = get_grpc_request(&app_handle, request_id)
         .await
         .map_err(|e| e.to_string())?;
+    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
     if req.proto_files.0.len() > 0 {
         println!("REFLECT FROM FILES");
         grpc_handle
             .lock()
             .await
             .services_from_files(
+                &req.id,
+                &uri,
                 req.proto_files
                     .0
                     .iter()
@@ -115,12 +118,10 @@ async fn cmd_grpc_reflect(
             )
             .await
     } else {
-        println!("REFLECT FROM URI");
-        let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
         grpc_handle
             .lock()
             .await
-            .services_from_reflection(&uri)
+            .services_from_reflection(&req.id, &uri)
             .await
     }
 }

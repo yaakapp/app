@@ -54,9 +54,10 @@ export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
   const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 1000);
   const reflect = useQuery<ReflectResponseService[] | null, string>({
     enabled: req != null,
-    queryKey: ['grpc_reflect', debouncedUrl],
+    queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl],
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      console.log('useGrpc.reflect', { requestId });
       return (await minPromiseMillis(
         invoke('cmd_grpc_reflect', { requestId }),
         300,
