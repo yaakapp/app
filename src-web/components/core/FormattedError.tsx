@@ -6,7 +6,6 @@ interface Props {
 }
 
 export function FormattedError({ children }: Props) {
-  console.log('ERROR', children);
   return (
     <pre
       className={classNames(
