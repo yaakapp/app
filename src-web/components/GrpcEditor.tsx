@@ -91,7 +91,6 @@ export function GrpcEditor({
   }, [alert, services, request.method, request.service]);
 
   const reflectionUnavailable = reflectionError?.match(/unimplemented/i);
-  const reflectionSuccess = !reflectionError && services != null && request.protoFiles.length === 0;
   reflectionError = reflectionUnavailable ? undefined : reflectionError;
 
   return (
@@ -105,7 +104,7 @@ export function GrpcEditor({
         placeholder="..."
         ref={editorViewRef}
         actions={[
-          <div key="reflection" className={classNames(!reflectionSuccess && '!opacity-100')}>
+          <div key="reflection" className={classNames(services == null && '!opacity-100')}>
             <Button
               size="xs"
               color={

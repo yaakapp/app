@@ -112,11 +112,11 @@ export function useAnyHotkey(
       }
       currentKeys.current.delete(normalizeKey(e.key, os));
     };
-    document.addEventListener('keydown', down);
-    document.addEventListener('keyup', up);
+    document.addEventListener('keydown', down, { capture: true });
+    document.addEventListener('keyup', up, { capture: true });
     return () => {
-      document.removeEventListener('keydown', down);
-      document.removeEventListener('keyup', up);
+      document.removeEventListener('keydown', down, { capture: true });
+      document.removeEventListener('keyup', up, { capture: true });
     };
   }, [options.enable, os]);
 }

@@ -52,7 +52,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
             await grpc.reflect.refetch();
           }}
         >
-          Add Files
+          Add File
         </Button>
         <Button
           isLoading={grpc.reflect.isFetching}
@@ -139,7 +139,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
             <Link href="https://github.com/grpc/grpc/blob/9aa3c5835a4ed6afae9455b63ed45c761d695bca/doc/server-reflection.md">
               Server Reflection
             </Link>{' '}
-            . Please manually add the <InlineCode>.proto</InlineCode> files to get started.
+            . Please manually add the <InlineCode>.proto</InlineCode> file to get started.
           </Banner>
         )}
       </VStack>
