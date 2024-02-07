@@ -150,32 +150,39 @@ impl GrpcConnection {
 }
 
 pub struct GrpcHandle {
-    connections: HashMap<String, GrpcConnection>,
     pools: HashMap<String, DescriptorPool>,
 }
 
 impl Default for GrpcHandle {
     fn default() -> Self {
-        let connections = HashMap::new();
         let pools = HashMap::new();
-        Self { connections, pools }
+        Self { pools }
     }
 }
 
 impl GrpcHandle {
     pub async fn services_from_files(
-        &self,
+        &mut self,
+        id: &str,
+        uri: &Uri,
         paths: Vec<PathBuf>,
     ) -> Result<Vec<ServiceDefinition>, String> {
         let pool = fill_pool_from_files(paths).await?;
+        self.pools.insert(self.get_pool_key(id, uri), pool.clone());
         Ok(self.services_from_pool(&pool))
     }
     pub async fn services_from_reflection(
         &mut self,
+        id: &str,
         uri: &Uri,
     ) -> Result<Vec<ServiceDefinition>, String> {
         let pool = fill_pool(uri).await?;
+        self.pools.insert(self.get_pool_key(id, uri), pool.clone());
         Ok(self.services_from_pool(&pool))
+    }
+
+    fn get_pool_key(&self, id: &str, uri: &Uri) -> String {
+        format!("{}-{}", id, uri)
     }
 
     fn services_from_pool(&self, pool: &DescriptorPool) -> Vec<ServiceDefinition> {
@@ -268,7 +275,6 @@ impl GrpcHandle {
 
         let conn = get_transport();
         let connection = GrpcConnection { pool, conn, uri };
-        self.connections.insert(id.to_string(), connection.clone());
         Ok(connection)
     }
 }
