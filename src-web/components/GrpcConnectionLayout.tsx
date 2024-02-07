@@ -87,7 +87,6 @@ export function GrpcConnectionLayout({ style }: Props) {
           onCommit={grpc.commit.mutate}
           onCancel={grpc.cancel.mutate}
           onSend={grpc.send.mutate}
-          onReflectRefetch={grpc.reflect.refetch}
           services={services ?? null}
           reflectionError={grpc.reflect.error as string | undefined}
           reflectionLoading={grpc.reflect.isFetching}
