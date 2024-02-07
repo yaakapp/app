@@ -34,7 +34,6 @@ interface Props {
   onClientStreaming: () => void;
   onServerStreaming: () => void;
   onStreaming: () => void;
-  onReflectRefetch: () => void;
   services: ReflectResponseService[] | null;
 }
 
@@ -45,7 +44,6 @@ export function GrpcConnectionSetupPane({
   activeRequest,
   reflectionError,
   reflectionLoading,
-  onReflectRefetch,
   onStreaming,
   onClientStreaming,
   onServerStreaming,
@@ -230,7 +228,6 @@ export function GrpcConnectionSetupPane({
         className="bg-gray-50"
         reflectionError={reflectionError}
         reflectionLoading={reflectionLoading}
-        onReflect={onReflectRefetch}
         request={activeRequest}
       />
     </VStack>

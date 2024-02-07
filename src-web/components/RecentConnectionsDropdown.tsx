@@ -1,8 +1,8 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useDeleteGrpcConnection } from '../hooks/useDeleteGrpcConnection';
 import { useDeleteGrpcConnections } from '../hooks/useDeleteGrpcConnections';
 import type { GrpcConnection } from '../lib/models';
-import { pluralize } from '../lib/pluralize';
+import { count, pluralize } from '../lib/pluralize';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -14,27 +14,23 @@ interface Props {
   onPinned: (r: GrpcConnection) => void;
 }
 
-export const RecentConnectionsDropdown = function ResponsePane({
-  activeConnection,
-  connections,
-  onPinned,
-}: Props) {
-  const deleteResponse = useDeleteGrpcConnection(activeConnection?.id ?? null);
-  const deleteAllResponses = useDeleteGrpcConnections(activeConnection?.requestId);
+export function RecentConnectionsDropdown({ activeConnection, connections, onPinned }: Props) {
+  const deleteConnection = useDeleteGrpcConnection(activeConnection?.id ?? null);
+  const deleteAllConnections = useDeleteGrpcConnections(activeConnection?.requestId);
 
   return (
     <Dropdown
       items={[
         {
           key: 'clear-single',
-          label: 'Clear Response',
-          onSelect: deleteResponse.mutate,
+          label: 'Clear Connection',
+          onSelect: deleteConnection.mutate,
           disabled: connections.length === 0,
         },
         {
           key: 'clear-all',
-          label: `Clear ${connections.length} ${pluralize('Response', connections.length)}`,
-          onSelect: deleteAllResponses.mutate,
+          label: `Clear ${count('Connection', connections.length)}`,
+          onSelect: deleteAllConnections.mutate,
           hidden: connections.length <= 1,
           disabled: connections.length === 0,
         },
@@ -43,7 +39,7 @@ export const RecentConnectionsDropdown = function ResponsePane({
           key: c.id,
           label: (
             <HStack space={2} alignItems="center">
-              {formatDistanceToNow(c.createdAt)} &bull;{' '}
+              {formatDistanceToNowStrict(c.createdAt + 'Z')} ago &bull;{' '}
               <span className="font-mono text-xs">{c.elapsed}ms</span>
             </HStack>
           ),
@@ -53,7 +49,7 @@ export const RecentConnectionsDropdown = function ResponsePane({
       ]}
     >
       <IconButton
-        title="Show response history"
+        title="Show connection history"
         icon="chevronDown"
         className="ml-auto"
         size="sm"
@@ -61,4 +57,4 @@ export const RecentConnectionsDropdown = function ResponsePane({
       />
     </Dropdown>
   );
-};
+}
