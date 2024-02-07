@@ -75,11 +75,6 @@ export function GrpcConnectionSetupPane({
     [updateRequest],
   );
 
-  const handleSelectProtoFiles = useCallback(
-    (paths: string[]) => updateRequest.mutateAsync({ protoFiles: paths }),
-    [updateRequest],
-  );
-
   const select = useMemo(() => {
     const options =
       services?.flatMap((s) =>
@@ -159,10 +154,12 @@ export function GrpcConnectionSetupPane({
               shortLabel: o.label,
             }))}
             extraItems={[
+              { type: 'separator' },
               {
-                label: 'Custom',
+                label: 'Refresh',
                 type: 'default',
                 key: 'custom',
+                leftSlot: <Icon className="text-gray-600" size="sm" icon="refresh" />,
               },
             ]}
           >
@@ -234,7 +231,6 @@ export function GrpcConnectionSetupPane({
         reflectionError={reflectionError}
         reflectionLoading={reflectionLoading}
         onReflect={onReflectRefetch}
-        onSelectProtoFiles={handleSelectProtoFiles}
         request={activeRequest}
       />
     </VStack>

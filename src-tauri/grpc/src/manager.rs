@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use hyper::client::HttpConnector;
 use hyper::Client;
@@ -13,10 +14,8 @@ use tonic::transport::Uri;
 use tonic::{IntoRequest, IntoStreamingRequest, Streaming};
 
 use crate::codec::DynamicCodec;
-use crate::proto::{fill_pool, method_desc_to_path};
+use crate::proto::{fill_pool, fill_pool_from_files, get_transport, method_desc_to_path};
 use crate::{json_schema, MethodDefinition, ServiceDefinition};
-
-type Result<T> = std::result::Result<T, String>;
 
 #[derive(Clone)]
 pub struct GrpcConnection {
@@ -26,7 +25,12 @@ pub struct GrpcConnection {
 }
 
 impl GrpcConnection {
-    pub async fn unary(&self, service: &str, method: &str, message: &str) -> Result<String> {
+    pub async fn unary(
+        &self,
+        service: &str,
+        method: &str,
+        message: &str,
+    ) -> Result<String, String> {
         let service = self.pool.get_service_by_name(service).unwrap();
         let method = &service.methods().find(|m| m.name() == method).unwrap();
         let input_message = method.input();
@@ -55,7 +59,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<Streaming<DynamicMessage>> {
+    ) -> Result<Streaming<DynamicMessage>, String> {
         let service = self.pool.get_service_by_name(service).unwrap();
         let method = &service.methods().find(|m| m.name() == method).unwrap();
 
@@ -87,7 +91,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<DynamicMessage> {
+    ) -> Result<DynamicMessage, String> {
         let service = self.pool.get_service_by_name(service).unwrap();
         let method = &service.methods().find(|m| m.name() == method).unwrap();
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
@@ -121,7 +125,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
-    ) -> Result<Streaming<DynamicMessage>> {
+    ) -> Result<Streaming<DynamicMessage>, String> {
         let service = self.pool.get_service_by_name(service).unwrap();
         let method = &service.methods().find(|m| m.name() == method).unwrap();
         let input_message = method.input();
@@ -159,56 +163,56 @@ impl Default for GrpcHandle {
 }
 
 impl GrpcHandle {
-    pub async fn clean_reflect(&mut self, uri: &Uri) -> Result<Vec<ServiceDefinition>> {
-        self.pools.remove(&uri.to_string());
-        self.reflect(uri).await
+    pub async fn services_from_files(
+        &self,
+        paths: Vec<PathBuf>,
+    ) -> Result<Vec<ServiceDefinition>, String> {
+        let pool = fill_pool_from_files(paths).await?;
+        Ok(self.services_from_pool(&pool))
+    }
+    pub async fn services_from_reflection(
+        &mut self,
+        uri: &Uri,
+    ) -> Result<Vec<ServiceDefinition>, String> {
+        let pool = fill_pool(uri).await?;
+        Ok(self.services_from_pool(&pool))
     }
 
-    pub async fn reflect(&mut self, uri: &Uri) -> Result<Vec<ServiceDefinition>> {
-        let pool = match self.pools.get(&uri.to_string()) {
-            Some(p) => p.clone(),
-            None => {
-                let (pool, _) = fill_pool(uri).await?;
-                self.pools.insert(uri.to_string(), pool.clone());
-                pool
-            }
-        };
-
-        let result =
-            pool.services()
-                .map(|s| {
-                    let mut def = ServiceDefinition {
-                        name: s.full_name().to_string(),
-                        methods: vec![],
-                    };
-                    for method in s.methods() {
-                        let input_message = method.input();
-                        def.methods.push(MethodDefinition {
-                            name: method.name().to_string(),
-                            server_streaming: method.is_server_streaming(),
-                            client_streaming: method.is_client_streaming(),
-                            schema: serde_json::to_string_pretty(
-                                &json_schema::message_to_json_schema(&pool, input_message),
-                            )
-                            .unwrap(),
-                        })
-                    }
-                    def
-                })
-                .collect::<Vec<_>>();
-
-        Ok(result)
+    fn services_from_pool(&self, pool: &DescriptorPool) -> Vec<ServiceDefinition> {
+        pool.services()
+            .map(|s| {
+                let mut def = ServiceDefinition {
+                    name: s.full_name().to_string(),
+                    methods: vec![],
+                };
+                for method in s.methods() {
+                    let input_message = method.input();
+                    def.methods.push(MethodDefinition {
+                        name: method.name().to_string(),
+                        server_streaming: method.is_server_streaming(),
+                        client_streaming: method.is_client_streaming(),
+                        schema: serde_json::to_string_pretty(&json_schema::message_to_json_schema(
+                            &pool,
+                            input_message,
+                        ))
+                        .unwrap(),
+                    })
+                }
+                def
+            })
+            .collect::<Vec<_>>()
     }
 
     pub async fn server_streaming(
         &mut self,
         id: &str,
         uri: Uri,
+        proto_files: Vec<PathBuf>,
         service: &str,
         method: &str,
         message: &str,
-    ) -> Result<Streaming<DynamicMessage>> {
-        self.connect(id, uri)
+    ) -> Result<Streaming<DynamicMessage>, String> {
+        self.connect(id, uri, proto_files)
             .await?
             .server_streaming(service, method, message)
             .await
@@ -218,11 +222,12 @@ impl GrpcHandle {
         &mut self,
         id: &str,
         uri: Uri,
+        proto_files: Vec<PathBuf>,
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<DynamicMessage> {
-        self.connect(id, uri)
+    ) -> Result<DynamicMessage, String> {
+        self.connect(id, uri, proto_files)
             .await?
             .client_streaming(service, method, stream)
             .await
@@ -232,18 +237,36 @@ impl GrpcHandle {
         &mut self,
         id: &str,
         uri: Uri,
+        proto_files: Vec<PathBuf>,
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<Streaming<DynamicMessage>> {
-        self.connect(id, uri)
+    ) -> Result<Streaming<DynamicMessage>, String> {
+        self.connect(id, uri, proto_files)
             .await?
             .streaming(service, method, stream)
             .await
     }
 
-    pub async fn connect(&mut self, id: &str, uri: Uri) -> Result<GrpcConnection> {
-        let (pool, conn) = fill_pool(&uri).await?;
+    pub async fn connect(
+        &mut self,
+        id: &str,
+        uri: Uri,
+        proto_files: Vec<PathBuf>,
+    ) -> Result<GrpcConnection, String> {
+        let pool = match self.pools.get(id) {
+            Some(p) => p.clone(),
+            None => match proto_files.len() {
+                0 => fill_pool(&uri).await?,
+                _ => {
+                    let pool = fill_pool_from_files(proto_files).await?;
+                    self.pools.insert(id.to_string(), pool.clone());
+                    pool
+                }
+            },
+        };
+
+        let conn = get_transport();
         let connection = GrpcConnection { pool, conn, uri };
         self.connections.insert(id.to_string(), connection.clone());
         Ok(connection)

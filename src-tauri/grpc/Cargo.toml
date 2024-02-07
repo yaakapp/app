@@ -16,5 +16,7 @@ prost-reflect = { version = "0.12.0", features = ["serde", "derive"] }
 log = "0.4.20"
 once_cell = { version = "1.19.0", features = [] }
 anyhow = "1.0.79"
-hyper = { version = "0.14"}
+hyper = { version = "0.14" }
 hyper-rustls = { version = "0.24.0", features = ["http2"] }
+protoc-bin-vendored = "3.0.0"
+uuid = { version = "1.7.0", features = ["v4"] }
