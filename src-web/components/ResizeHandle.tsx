@@ -1,12 +1,10 @@
 import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React from 'react';
-import { Separator } from './core/Separator';
 
 interface ResizeBarProps {
   style?: CSSProperties;
   className?: string;
-  barClassName?: string;
   isResizing: boolean;
   onResizeStart: (e: ReactMouseEvent<HTMLDivElement>) => void;
   onReset?: () => void;
@@ -18,7 +16,6 @@ export function ResizeHandle({
   style,
   justify,
   className,
-  barClassName,
   onResizeStart,
   onReset,
   isResizing,

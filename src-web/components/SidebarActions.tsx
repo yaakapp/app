@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { Simulate } from 'react-dom/test-utils';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';

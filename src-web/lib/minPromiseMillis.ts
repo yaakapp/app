@@ -10,10 +10,12 @@ export async function minPromiseMillis<T>(promise: Promise<T>, millis: number) {
     result = await promise;
   } catch (e) {
     err = e;
+    const delayFor = millis - (Date.now() - start);
+    await sleep(delayFor);
+    throw err;
   }
 
   const delayFor = millis - (Date.now() - start);
   await sleep(delayFor);
-  if (err) throw err;
-  else return result;
+  return result;
 }

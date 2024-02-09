@@ -13,12 +13,12 @@ use log::{error, info, warn};
 use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
-use tauri::AppHandle;
+use tauri::{Manager, Window};
 
 use crate::{models, render, response_err};
 
 pub async fn send_http_request(
-    app_handle: &AppHandle,
+    window: &Window,
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
@@ -26,7 +26,7 @@ pub async fn send_http_request(
     download_path: Option<PathBuf>,
 ) -> Result<models::HttpResponse, String> {
     let environment_ref = environment.as_ref();
-    let workspace = models::get_workspace(app_handle, &request.workspace_id)
+    let workspace = models::get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
 
@@ -86,7 +86,7 @@ pub async fn send_http_request(
     let url = match Url::from_str(url_string.as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle).await;
+            return response_err(response, e.to_string(), window).await;
         }
     };
 
@@ -291,7 +291,7 @@ pub async fn send_http_request(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
-            return response_err(response, e.to_string(), app_handle).await;
+            return response_err(response, e.to_string(), window).await;
         }
     };
 
@@ -337,7 +337,7 @@ pub async fn send_http_request(
 
             {
                 // Write body to FS
-                let dir = app_handle.path_resolver().app_data_dir().unwrap();
+                let dir = window.app_handle().path_resolver().app_data_dir().unwrap();
                 let base_dir = dir.join("responses");
                 create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
                 let body_path = match response.id.is_empty() {
@@ -360,7 +360,7 @@ pub async fn send_http_request(
                 );
             }
 
-            response = models::update_response_if_id(app_handle, &response)
+            response = models::update_response_if_id(window, &response)
                 .await
                 .expect("Failed to update response");
 
@@ -392,13 +392,13 @@ pub async fn send_http_request(
                         .collect::<Vec<_>>(),
                 );
                 cookie_jar.cookies = json_cookies;
-                if let Err(e) = models::upsert_cookie_jar(&app_handle, &cookie_jar).await {
+                if let Err(e) = models::upsert_cookie_jar(window, &cookie_jar).await {
                     error!("Failed to update cookie jar: {}", e);
                 };
             }
 
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), app_handle).await,
+        Err(e) => response_err(response, e.to_string(), window).await,
     }
 }

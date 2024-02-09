@@ -15,6 +15,9 @@ export function BasicAuth({ requestId, authentication }: Props) {
     <VStack className="my-2" space={2}>
       <Input
         useTemplating
+        autocompleteVariables
+        forceUpdateKey={requestId}
+        placeholder="username"
         label="Username"
         name="username"
         size="sm"
@@ -28,6 +31,9 @@ export function BasicAuth({ requestId, authentication }: Props) {
       />
       <Input
         useTemplating
+        autocompleteVariables
+        forceUpdateKey={requestId}
+        placeholder="password"
         label="Password"
         name="password"
         size="sm"

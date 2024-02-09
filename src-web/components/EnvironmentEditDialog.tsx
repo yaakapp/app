@@ -161,6 +161,7 @@ const EnvironmentEditor = function ({
                   ),
                   name: 'name',
                   label: 'Name',
+                  placeholder: 'New Name',
                   defaultValue: environment.name,
                 });
                 updateEnvironment.mutate({ name });

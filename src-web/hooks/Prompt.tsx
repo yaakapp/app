@@ -10,8 +10,8 @@ export interface PromptProps {
   onResult: (value: string) => void;
   label: InputProps['label'];
   name: InputProps['name'];
-  defaultValue?: InputProps['defaultValue'];
-  placeholder?: InputProps['placeholder'];
+  defaultValue: InputProps['defaultValue'];
+  placeholder: InputProps['placeholder'];
   confirmLabel?: string;
 }
 

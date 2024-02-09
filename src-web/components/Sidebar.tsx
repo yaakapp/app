@@ -660,6 +660,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                         ),
                         name: 'name',
                         label: 'Name',
+                        placeholder: 'New Name',
                         defaultValue: itemName,
                       });
                       updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
