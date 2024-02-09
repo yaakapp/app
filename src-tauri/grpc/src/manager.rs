@@ -30,7 +30,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
-    ) -> Result<String, String> {
+    ) -> Result<DynamicMessage, String> {
         let service = self.pool.get_service_by_name(service).unwrap();
         let method = &service.methods().find(|m| m.name() == method).unwrap();
         let input_message = method.input();
@@ -47,11 +47,11 @@ impl GrpcConnection {
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
 
-        let resp = client.unary(req, path, codec).await.unwrap();
-        let msg = resp.into_inner();
-        let response_json = serde_json::to_string_pretty(&msg).expect("json to string");
-
-        Ok(response_json)
+        Ok(client
+            .unary(req, path, codec)
+            .await
+            .map_err(|e| e.to_string())?
+            .into_inner())
     }
 
     pub async fn streaming(

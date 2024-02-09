@@ -13,7 +13,7 @@ interface Props {
 export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPath }: Props) => {
   attrKeyJsonPath = attrKeyJsonPath ?? `${attrKey}`;
 
-  const [isExpanded, setIsExpanded] = useState(depth === 0);
+  const [isExpanded, setIsExpanded] = useState(true);
   const toggleExpanded = () => setIsExpanded((v) => !v);
 
   const { isExpandable, children, label, labelClassName } = useMemo<{
@@ -78,7 +78,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
     </span>
   );
   return (
-    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-xs')}>
+    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-2xs')}>
       <div className="flex items-center">
         {isExpandable ? (
           <button className="group relative flex items-center pl-4 w-full" onClick={toggleExpanded}>

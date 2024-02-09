@@ -1,4 +1,4 @@
-use prost_reflect::SerializeOptions;
+use prost_reflect::{DynamicMessage, SerializeOptions};
 use serde::{Deserialize, Serialize};
 
 mod codec;
@@ -24,4 +24,17 @@ pub struct MethodDefinition {
     pub schema: String,
     pub client_streaming: bool,
     pub server_streaming: bool,
+}
+
+static SERIALIZE_OPTIONS: &'static SerializeOptions = &SerializeOptions::new()
+    .skip_default_fields(false)
+    .stringify_64_bit_integers(false);
+
+pub fn serialize_message(msg: &DynamicMessage) -> Result<String, String> {
+    let mut buf = Vec::new();
+    let mut se = serde_json::Serializer::pretty(&mut buf);
+    msg.serialize_with_options(&mut se, SERIALIZE_OPTIONS)
+        .map_err(|e| e.to_string())?;
+    let s = String::from_utf8(buf).expect("serde_json to emit valid utf8");
+    Ok(s)
 }
