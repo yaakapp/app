@@ -10,7 +10,7 @@ export function workspacesQueryKey(_?: {}) {
 export function useWorkspaces() {
   return (
     useQuery(workspacesQueryKey(), async () => {
-      return (await invoke('list_workspaces')) as Workspace[];
+      return (await invoke('cmd_list_workspaces')) as Workspace[];
     }).data ?? []
   );
 }

@@ -16,7 +16,7 @@ export function useCreateFolder() {
       }
       patch.name = patch.name || 'New Folder';
       patch.sortPriority = patch.sortPriority || -Date.now();
-      return invoke('create_folder', { workspaceId, ...patch });
+      return invoke('cmd_create_folder', { workspaceId, ...patch });
     },
     onSettled: () => trackEvent('Folder', 'Create'),
     onSuccess: async (request) => {

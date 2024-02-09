@@ -9,6 +9,9 @@ export function trackEvent(
     | 'Workspace'
     | 'Environment'
     | 'Folder'
+    | 'GrpcMessage'
+    | 'GrpcConnection'
+    | 'GrpcRequest'
     | 'HttpRequest'
     | 'HttpResponse'
     | 'KeyValue',
@@ -25,7 +28,7 @@ export function trackEvent(
     | 'Duplicate',
   attributes: Record<string, string | number> = {},
 ) {
-  invoke('track_event', {
+  invoke('cmd_track_event', {
     resource: resource,
     action,
     attributes,

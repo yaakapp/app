@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO cookie_jars (\n                id, workspace_id, name, cookies\n             )\n            VALUES (?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               cookies = excluded.cookies\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "b3fae40a793a6724dd2286a9ca4bc0a9c000a631ee0d751a9dc4f3e76de3d57c"
+}

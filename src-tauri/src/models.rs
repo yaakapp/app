@@ -4,10 +4,11 @@ use std::fs;
 use log::error;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::{Pool, Sqlite};
-use sqlx::types::{Json, JsonValue};
 use sqlx::types::chrono::NaiveDateTime;
-use tauri::AppHandle;
+use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
+use tauri::{AppHandle, Manager};
+use tokio::sync::Mutex;
 
 fn default_true() -> bool {
     true
@@ -58,9 +59,7 @@ impl Workspace {
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-pub struct CookieX {
-
-}
+pub struct CookieX {}
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -93,6 +92,19 @@ pub struct EnvironmentVariable {
     pub enabled: bool,
     pub name: String,
     pub value: String,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Folder {
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub id: String,
+    pub workspace_id: String,
+    pub folder_id: Option<String>,
+    pub model: String,
+    pub name: String,
+    pub sort_priority: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -139,19 +151,6 @@ pub struct HttpRequest {
     pub headers: Json<Vec<HttpRequestHeader>>,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(default, rename_all = "camelCase")]
-pub struct Folder {
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub id: String,
-    pub workspace_id: String,
-    pub folder_id: Option<String>,
-    pub model: String,
-    pub name: String,
-    pub sort_priority: f64,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpResponseHeader {
@@ -192,6 +191,65 @@ impl HttpResponse {
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
+pub struct GrpcRequest {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub folder_id: Option<String>,
+    pub name: String,
+    pub sort_priority: f64,
+    pub url: String,
+    pub service: Option<String>,
+    pub method: Option<String>,
+    pub message: String,
+    pub proto_files: Json<Vec<String>>,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcConnection {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub service: String,
+    pub method: String,
+    pub elapsed: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcMessage {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub request_id: String,
+    pub connection_id: String,
+    pub created_at: NaiveDateTime,
+    pub message: String,
+    pub is_server: bool,
+    pub is_info: bool,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcResponse {
+    pub id: String,
+    pub model: String,
+    pub workspace_id: String,
+    pub grpc_endpoint_id: String,
+    pub grpc_connection_id: String,
+    pub request_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
+#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct KeyValue {
     pub model: String,
     pub created_at: NaiveDateTime,
@@ -202,32 +260,32 @@ pub struct KeyValue {
 }
 
 pub async fn set_key_value_string(
+    app_handle: &AppHandle,
     namespace: &str,
     key: &str,
     value: &str,
-    pool: &Pool<Sqlite>,
 ) -> (KeyValue, bool) {
     let encoded = serde_json::to_string(value);
-    set_key_value_raw(namespace, key, &encoded.unwrap(), pool).await
+    set_key_value_raw(app_handle, namespace, key, &encoded.unwrap()).await
 }
 
 pub async fn set_key_value_int(
+    app_handle: &AppHandle,
     namespace: &str,
     key: &str,
     value: i32,
-    pool: &Pool<Sqlite>,
 ) -> (KeyValue, bool) {
     let encoded = serde_json::to_string(&value);
-    set_key_value_raw(namespace, key, &encoded.unwrap(), pool).await
+    set_key_value_raw(app_handle, namespace, key, &encoded.unwrap()).await
 }
 
 pub async fn get_key_value_string(
+    app_handle: &AppHandle,
     namespace: &str,
     key: &str,
     default: &str,
-    pool: &Pool<Sqlite>,
 ) -> String {
-    match get_key_value_raw(namespace, key, pool).await {
+    match get_key_value_raw(app_handle, namespace, key).await {
         None => default.to_string(),
         Some(v) => {
             let result = serde_json::from_str(&v.value);
@@ -238,17 +296,17 @@ pub async fn get_key_value_string(
                     default.to_string()
                 }
             }
-        },
+        }
     }
 }
 
 pub async fn get_key_value_int(
+    app_handle: &AppHandle,
     namespace: &str,
     key: &str,
     default: i32,
-    pool: &Pool<Sqlite>,
 ) -> i32 {
-    match get_key_value_raw(namespace, key, pool).await {
+    match get_key_value_raw(app_handle, namespace, key).await {
         None => default.clone(),
         Some(v) => {
             let result = serde_json::from_str(&v.value);
@@ -259,17 +317,18 @@ pub async fn get_key_value_int(
                     default.clone()
                 }
             }
-        },
+        }
     }
 }
 
 pub async fn set_key_value_raw(
+    app_handle: &AppHandle,
     namespace: &str,
     key: &str,
     value: &str,
-    pool: &Pool<Sqlite>,
 ) -> (KeyValue, bool) {
-    let existing = get_key_value_raw(namespace, key, pool).await;
+    let db = get_db(app_handle).await;
+    let existing = get_key_value_raw(app_handle, namespace, key).await;
     sqlx::query!(
         r#"
             INSERT INTO key_values (namespace, key, value)
@@ -281,17 +340,22 @@ pub async fn set_key_value_raw(
         key,
         value,
     )
-    .execute(pool)
+    .execute(&db)
     .await
     .expect("Failed to insert key value");
 
-    let kv = get_key_value_raw(namespace, key, pool)
+    let kv = get_key_value_raw(app_handle, namespace, key)
         .await
         .expect("Failed to get key value");
     (kv, existing.is_none())
 }
 
-pub async fn get_key_value_raw(namespace: &str, key: &str, pool: &Pool<Sqlite>) -> Option<KeyValue> {
+pub async fn get_key_value_raw(
+    app_handle: &AppHandle,
+    namespace: &str,
+    key: &str,
+) -> Option<KeyValue> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         KeyValue,
         r#"
@@ -302,58 +366,47 @@ pub async fn get_key_value_raw(namespace: &str, key: &str, pool: &Pool<Sqlite>) 
         namespace,
         key,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
     .ok()
 }
 
-pub async fn find_workspaces(pool: &Pool<Sqlite>) -> Result<Vec<Workspace>, sqlx::Error> {
+pub async fn list_workspaces(app_handle: &AppHandle) -> Result<Vec<Workspace>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Workspace,
         r#"
             SELECT
-                id,
-                model,
-                created_at,
-                updated_at,
-                name,
-                description,
-                setting_request_timeout,
-                setting_follow_redirects,
-                setting_validate_certificates,
+                id, model, created_at, updated_at, name, description, setting_request_timeout,
+                setting_follow_redirects, setting_validate_certificates,
                 variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces
         "#,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn get_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, sqlx::Error> {
+pub async fn get_workspace(app_handle: &AppHandle, id: &str) -> Result<Workspace, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Workspace,
         r#"
             SELECT
-                id,
-                model,
-                created_at,
-                updated_at,
-                name,
-                description,
-                setting_request_timeout,
-                setting_follow_redirects,
-                setting_validate_certificates,
+                id, model, created_at, updated_at, name, description, setting_request_timeout,
+                setting_follow_redirects, setting_validate_certificates,
                 variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM workspaces WHERE id = ?
         "#,
         id,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace, sqlx::Error> {
-    let workspace = get_workspace(id, pool).await?;
+pub async fn delete_workspace(app_handle: &AppHandle, id: &str) -> Result<Workspace, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    let workspace = get_workspace(app_handle, id).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM workspaces
@@ -361,58 +414,54 @@ pub async fn delete_workspace(id: &str, pool: &Pool<Sqlite>) -> Result<Workspace
         "#,
         id,
     )
-    .execute(pool)
+    .execute(&db)
     .await;
 
-    for r in find_responses_by_workspace_id(id, pool).await? {
-        delete_response(&r.id, pool).await?;
+    for r in list_responses_by_workspace_id(app_handle, id).await? {
+        delete_http_response(app_handle, &r.id).await?;
     }
 
-    Ok(workspace)
+    emit_deleted_model(app_handle, workspace)
 }
 
-pub async fn get_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, sqlx::Error> {
+pub async fn get_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJar, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         CookieJar,
         r#"
             SELECT
-                id,
-                model,
-                created_at,
-                updated_at,
-                workspace_id,
-                name,
+                id, model, created_at, updated_at, workspace_id, name,
                 cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE id = ?
         "#,
         id,
     )
-        .fetch_one(pool)
-        .await
+    .fetch_one(&db)
+    .await
 }
 
-pub async fn find_cookie_jars(workspace_id: &str, pool: &Pool<Sqlite>) -> Result<Vec<CookieJar>, sqlx::Error> {
+pub async fn list_cookie_jars(
+    app_handle: &AppHandle,
+    workspace_id: &str,
+) -> Result<Vec<CookieJar>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         CookieJar,
         r#"
             SELECT
-                id,
-                model,
-                created_at,
-                updated_at,
-                workspace_id,
-                name,
+                id, model, created_at, updated_at, workspace_id, name,
                 cookies AS "cookies!: sqlx::types::Json<Vec<JsonValue>>"
             FROM cookie_jars WHERE workspace_id = ?
         "#,
         workspace_id,
     )
-        .fetch_all(pool)
-        .await
+    .fetch_all(&db)
+    .await
 }
 
-pub async fn delete_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJar, sqlx::Error> {
-    let cookie_jar = get_cookie_jar(id, pool).await?;
+pub async fn delete_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJar, sqlx::Error> {
+    let cookie_jar = get_cookie_jar(app_handle, id).await?;
+    let db = get_db(app_handle).await;
 
     let _ = sqlx::query!(
         r#"
@@ -421,14 +470,269 @@ pub async fn delete_cookie_jar(id: &str, pool: &Pool<Sqlite>) -> Result<CookieJa
         "#,
         id,
     )
-        .execute(pool)
-        .await;
+    .execute(&db)
+    .await;
 
-    Ok(cookie_jar)
+    emit_deleted_model(app_handle, cookie_jar)
+}
+
+pub async fn duplicate_grpc_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let mut request = get_grpc_request(app_handle, id).await?.clone();
+    request.id = "".to_string();
+    upsert_grpc_request(app_handle, &request).await
+}
+
+pub async fn upsert_grpc_request(
+    app_handle: &AppHandle,
+    request: &GrpcRequest,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    let id = match request.id.as_str() {
+        "" => generate_id(Some("gr")),
+        _ => request.id.to_string(),
+    };
+    let trimmed_name = request.name.trim();
+    sqlx::query!(
+        r#"
+            INSERT INTO grpc_requests (
+                id, name, workspace_id, folder_id, sort_priority, url, service, method, message,
+                proto_files
+             )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                updated_at = CURRENT_TIMESTAMP,
+                name = excluded.name,
+                folder_id = excluded.folder_id,
+                sort_priority = excluded.sort_priority,
+                url = excluded.url,
+                service = excluded.service,
+                method = excluded.method,
+                message = excluded.message,
+                proto_files = excluded.proto_files
+        "#,
+        id,
+        trimmed_name,
+        request.workspace_id,
+        request.folder_id,
+        request.sort_priority,
+        request.url,
+        request.service,
+        request.method,
+        request.message,
+        request.proto_files,
+    )
+    .execute(&db)
+    .await?;
+
+    match get_grpc_request(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
+}
+
+pub async fn get_grpc_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query_as!(
+        GrpcRequest,
+        r#"
+            SELECT
+                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
+                url, service, method, message,
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
+            FROM grpc_requests
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .fetch_one(&db)
+    .await
+}
+
+pub async fn list_grpc_requests(
+    app_handle: &AppHandle,
+    workspace_id: &str,
+) -> Result<Vec<GrpcRequest>, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query_as!(
+        GrpcRequest,
+        r#"
+            SELECT
+                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
+                url, service, method, message,
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
+            FROM grpc_requests
+            WHERE workspace_id = ?
+        "#,
+        workspace_id,
+    )
+    .fetch_all(&db)
+    .await
+}
+
+pub async fn upsert_grpc_connection(
+    app_handle: &AppHandle,
+    connection: &GrpcConnection,
+) -> Result<GrpcConnection, sqlx::Error> {
+    let db = get_db(&app_handle).await;
+    let id = match connection.id.as_str() {
+        "" => generate_id(Some("gc")),
+        _ => connection.id.to_string(),
+    };
+    sqlx::query!(
+        r#"
+            INSERT INTO grpc_connections (
+                id, workspace_id, request_id, service, method, elapsed
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                updated_at = CURRENT_TIMESTAMP,
+                service = excluded.service,
+                method = excluded.method,
+                elapsed = excluded.elapsed
+        "#,
+        id,
+        connection.workspace_id,
+        connection.request_id,
+        connection.service,
+        connection.method,
+        connection.elapsed,
+    )
+    .execute(&db)
+    .await?;
+
+    match get_grpc_connection(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
+}
+
+pub async fn get_grpc_connection(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcConnection, sqlx::Error> {
+    let db = get_db(&app_handle).await;
+    sqlx::query_as!(
+        GrpcConnection,
+        r#"
+            SELECT
+                id, model, workspace_id, request_id, created_at, updated_at, service,
+                method, elapsed
+            FROM grpc_connections
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .fetch_one(&db)
+    .await
+}
+
+pub async fn list_grpc_connections(
+    app_handle: &AppHandle,
+    request_id: &str,
+) -> Result<Vec<GrpcConnection>, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query_as!(
+        GrpcConnection,
+        r#"
+            SELECT
+                id, model, workspace_id, request_id, created_at, updated_at, service,
+                method, elapsed
+            FROM grpc_connections
+            WHERE request_id = ?
+            ORDER BY created_at DESC
+        "#,
+        request_id,
+    )
+    .fetch_all(&db)
+    .await
+}
+
+pub async fn upsert_grpc_message(
+    app_handle: &AppHandle,
+    message: &GrpcMessage,
+) -> Result<GrpcMessage, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    let id = match message.id.as_str() {
+        "" => generate_id(Some("gm")),
+        _ => message.id.to_string(),
+    };
+    sqlx::query!(
+        r#"
+            INSERT INTO grpc_messages (
+                id, workspace_id, request_id, connection_id, message, is_server, is_info
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                updated_at = CURRENT_TIMESTAMP,
+                message = excluded.message,
+                is_server = excluded.is_server,
+                is_info = excluded.is_info
+        "#,
+        id,
+        message.workspace_id,
+        message.request_id,
+        message.connection_id,
+        message.message,
+        message.is_server,
+        message.is_info,
+    )
+    .execute(&db)
+    .await?;
+
+    match get_grpc_message(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
+}
+
+pub async fn get_grpc_message(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcMessage, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query_as!(
+        GrpcMessage,
+        r#"
+            SELECT
+                id, model, workspace_id, request_id, connection_id, created_at, message,
+                is_server, is_info
+            FROM grpc_messages
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .fetch_one(&db)
+    .await
+}
+
+pub async fn list_grpc_messages(
+    app_handle: &AppHandle,
+    connection_id: &str,
+) -> Result<Vec<GrpcMessage>, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query_as!(
+        GrpcMessage,
+        r#"
+            SELECT
+                id, model, workspace_id, request_id, connection_id, created_at, message,
+                is_server, is_info
+            FROM grpc_messages
+            WHERE connection_id = ?
+        "#,
+        connection_id,
+    )
+    .fetch_all(&db)
+    .await
 }
 
 pub async fn upsert_cookie_jar(
-    pool: &Pool<Sqlite>,
+    app_handle: &AppHandle,
     cookie_jar: &CookieJar,
 ) -> Result<CookieJar, sqlx::Error> {
     let id = match cookie_jar.id.as_str() {
@@ -436,13 +740,12 @@ pub async fn upsert_cookie_jar(
         _ => cookie_jar.id.to_string(),
     };
     let trimmed_name = cookie_jar.name.trim();
+
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             INSERT INTO cookie_jars (
-                id,
-                workspace_id,
-                name,
-                cookies
+                id, workspace_id, name, cookies
              )
             VALUES (?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -455,16 +758,20 @@ pub async fn upsert_cookie_jar(
         trimmed_name,
         cookie_jar.cookies,
     )
-        .execute(pool)
-        .await?;
+    .execute(&db)
+    .await?;
 
-    get_cookie_jar(&id, pool).await
+    match get_cookie_jar(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn find_environments(
+pub async fn list_environments(
+    app_handle: &AppHandle,
     workspace_id: &str,
-    pool: &Pool<Sqlite>,
 ) -> Result<Vec<Environment>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Environment,
         r#"
@@ -475,12 +782,16 @@ pub async fn find_environments(
         "#,
         workspace_id,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
-    let env = get_environment(id, pool).await?;
+pub async fn delete_environment(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<Environment, sqlx::Error> {
+    let db = get_db(app_handle).await;
+    let env = get_environment(app_handle, id).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM environments
@@ -488,71 +799,74 @@ pub async fn delete_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environ
         "#,
         id,
     )
-    .execute(pool)
+    .execute(&db)
     .await;
 
-    Ok(env)
+    emit_deleted_model(app_handle, env)
 }
 
-async fn get_settings(pool: &Pool<Sqlite>) -> Result<Settings, sqlx::Error> {
+async fn get_settings(app_handle: &AppHandle) -> Result<Settings, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Settings,
         r#"
             SELECT
-                id,
-                model,
-                created_at,
-                updated_at,
-                theme,
-                appearance,
-                update_channel
+                id, model, created_at, updated_at, theme, appearance, update_channel
             FROM settings
             WHERE id = 'default'
         "#,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn get_or_create_settings(pool: &Pool<Sqlite>) -> Settings {
-    if let Ok(settings) = get_settings(pool).await {
-        settings
-    } else {
-        sqlx::query!(
-            r#"
+pub async fn get_or_create_settings(app_handle: &AppHandle) -> Settings {
+    if let Ok(settings) = get_settings(app_handle).await {
+        return settings;
+    }
+
+    let db = get_db(app_handle).await;
+    sqlx::query!(
+        r#"
                 INSERT INTO settings (id)
                 VALUES ('default')
             "#,
-        )
-        .execute(pool)
-        .await.expect("Failed to insert settings");
-        get_settings(pool).await.expect("Failed to get settings")
-    }
+    )
+    .execute(&db)
+    .await
+    .expect("Failed to insert settings");
+
+    get_settings(&app_handle)
+        .await
+        .expect("Failed to get settings")
 }
 
 pub async fn update_settings(
-    pool: &Pool<Sqlite>,
+    app_handle: &AppHandle,
     settings: Settings,
 ) -> Result<Settings, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             UPDATE settings SET (
-                theme,
-                appearance,
-                update_channel
+                theme, appearance, update_channel
             ) = (?, ?, ?) WHERE id = 'default';
         "#,
         settings.theme,
         settings.appearance,
         settings.update_channel
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
-    get_settings(pool).await
+
+    match get_settings(app_handle).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn upsert_environment(
-    pool: &Pool<Sqlite>,
+    app_handle: &AppHandle,
     environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
     let id = match environment.id.as_str() {
@@ -560,13 +874,11 @@ pub async fn upsert_environment(
         _ => environment.id.to_string(),
     };
     let trimmed_name = environment.name.trim();
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             INSERT INTO environments (
-                id,
-                workspace_id,
-                name,
-                variables
+                id, workspace_id, name, variables
             )
             VALUES (?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -579,81 +891,70 @@ pub async fn upsert_environment(
         trimmed_name,
         environment.variables,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
-    get_environment(&id, pool).await
+
+    match get_environment(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn get_environment(id: &str, pool: &Pool<Sqlite>) -> Result<Environment, sqlx::Error> {
+pub async fn get_environment(app_handle: &AppHandle, id: &str) -> Result<Environment, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Environment,
         r#"
             SELECT
-                id,
-                model,
-                workspace_id,
-                created_at,
-                updated_at,
-                name,
+                id, model, workspace_id, created_at, updated_at, name,
                 variables AS "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>"
             FROM environments
             WHERE id = ?
         "#,
         id,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn get_folder(id: &str, pool: &Pool<Sqlite>) -> Result<Folder, sqlx::Error> {
+pub async fn get_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Folder,
         r#"
             SELECT
-                id,
-                model,
-                workspace_id,
-                created_at,
-                updated_at,
-                folder_id,
-                name,
-                sort_priority
+                id, model, workspace_id, created_at, updated_at, folder_id, name, sort_priority
             FROM folders
             WHERE id = ?
         "#,
         id,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn find_folders(
+pub async fn list_folders(
+    app_handle: &AppHandle,
     workspace_id: &str,
-    pool: &Pool<Sqlite>,
 ) -> Result<Vec<Folder>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         Folder,
         r#"
             SELECT
-                id,
-                model,
-                workspace_id,
-                created_at,
-                updated_at,
-                folder_id,
-                name,
-                sort_priority
+                id, model, workspace_id, created_at, updated_at, folder_id, name, sort_priority
             FROM folders
             WHERE workspace_id = ?
         "#,
         workspace_id,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn delete_folder(id: &str, pool: &Pool<Sqlite>) -> Result<Folder, sqlx::Error> {
-    let env = get_folder(id, pool).await?;
+pub async fn delete_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx::Error> {
+    let folder = get_folder(app_handle, id).await?;
+    let db = get_db(app_handle).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM folders
@@ -661,27 +962,24 @@ pub async fn delete_folder(id: &str, pool: &Pool<Sqlite>) -> Result<Folder, sqlx
         "#,
         id,
     )
-    .execute(pool)
+    .execute(&db)
     .await;
 
-    Ok(env)
+    emit_deleted_model(app_handle, folder)
 }
 
-pub async fn upsert_folder(pool: &Pool<Sqlite>, r: Folder) -> Result<Folder, sqlx::Error> {
+pub async fn upsert_folder(app_handle: &AppHandle, r: Folder) -> Result<Folder, sqlx::Error> {
     let id = match r.id.as_str() {
         "" => generate_id(Some("fl")),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
 
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             INSERT INTO folders (
-                id,
-                workspace_id,
-                folder_id,
-                name,
-                sort_priority
+                id, workspace_id, folder_id, name, sort_priority
             )
             VALUES (?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -696,20 +994,26 @@ pub async fn upsert_folder(pool: &Pool<Sqlite>, r: Folder) -> Result<Folder, sql
         trimmed_name,
         r.sort_priority,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
 
-    get_folder(&id, pool).await
+    match get_folder(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn duplicate_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let mut request = get_request(id, pool).await?.clone();
+pub async fn duplicate_http_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpRequest, sqlx::Error> {
+    let mut request = get_http_request(app_handle, id).await?.clone();
     request.id = "".to_string();
-    upsert_request(pool, request).await
+    upsert_http_request(app_handle, request).await
 }
 
-pub async fn upsert_request(
-    pool: &Pool<Sqlite>,
+pub async fn upsert_http_request(
+    app_handle: &AppHandle,
     r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
     let id = match r.id.as_str() {
@@ -720,22 +1024,13 @@ pub async fn upsert_request(
     let auth_json = Json(r.authentication);
     let trimmed_name = r.name.trim();
 
+    let db = get_db(app_handle).await;
+
     sqlx::query!(
         r#"
             INSERT INTO http_requests (
-                id,
-                workspace_id,
-                folder_id,
-                name,
-                url,
-                url_parameters,
-                method,
-                body,
-                body_type,
-                authentication,
-                authentication_type,
-                headers,
-                sort_priority
+                id, workspace_id, folder_id, name, url, url_parameters, method, body, body_type,
+                authentication, authentication_type, headers, sort_priority
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -766,81 +1061,74 @@ pub async fn upsert_request(
         headers_json,
         r.sort_priority,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
 
-    get_request(&id, pool).await
+    match get_http_request(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn find_requests(
+pub async fn list_requests(
+    app_handle: &AppHandle,
     workspace_id: &str,
-    pool: &Pool<Sqlite>,
 ) -> Result<Vec<HttpRequest>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         HttpRequest,
         r#"
             SELECT
-                id,
-                model,
-                workspace_id,
-                folder_id,
-                created_at,
-                updated_at,
-                name,
-                url,
+                id, model, workspace_id, folder_id, created_at, updated_at, name, url,
                 url_parameters AS "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
-                method,
+                method, body_type, authentication_type, sort_priority,
                 body AS "body!: Json<HashMap<String, JsonValue>>",
-                body_type,
                 authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
-                authentication_type,
-                sort_priority,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE workspace_id = ?
         "#,
         workspace_id,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn get_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
+pub async fn get_http_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpRequest, sqlx::Error> {
+    let db = get_db(app_handle).await;
+
     sqlx::query_as!(
         HttpRequest,
         r#"
             SELECT
-                id,
-                model,
-                workspace_id,
-                folder_id,
-                created_at,
-                updated_at,
-                name,
-                url,
+                id, model, workspace_id, folder_id, created_at, updated_at, name, url, method,
+                body_type, authentication_type, sort_priority,
                 url_parameters AS "url_parameters!: sqlx::types::Json<Vec<HttpUrlParameter>>",
-                method,
                 body AS "body!: Json<HashMap<String, JsonValue>>",
-                body_type,
                 authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
-                authentication_type,
-                sort_priority,
                 headers AS "headers!: sqlx::types::Json<Vec<HttpRequestHeader>>"
             FROM http_requests
             WHERE id = ?
         "#,
         id,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest, sqlx::Error> {
-    let req = get_request(id, pool).await?;
+pub async fn delete_http_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpRequest, sqlx::Error> {
+    let req = get_http_request(app_handle, id).await?;
 
     // DB deletes will cascade but this will delete the files
-    delete_all_responses(id, pool).await?;
+    delete_all_http_responses(app_handle, id).await?;
 
+    let db = get_db(app_handle).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_requests
@@ -848,14 +1136,15 @@ pub async fn delete_request(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRequest
         "#,
         id,
     )
-    .execute(pool)
+    .execute(&db)
     .await;
 
-    Ok(req)
+    emit_deleted_model(app_handle, req)
 }
 
 #[allow(clippy::too_many_arguments)]
 pub async fn create_response(
+    app_handle: &AppHandle,
     request_id: &str,
     elapsed: i64,
     elapsed_headers: i64,
@@ -867,27 +1156,16 @@ pub async fn create_response(
     headers: Vec<HttpResponseHeader>,
     version: Option<&str>,
     remote_addr: Option<&str>,
-    pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let req = get_request(request_id, pool).await?;
+    let req = get_http_request(app_handle, request_id).await?;
     let id = generate_id(Some("rp"));
     let headers_json = Json(headers);
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             INSERT INTO http_responses (
-                id,
-                request_id,
-                workspace_id,
-                elapsed,
-                elapsed_headers,
-                url,
-                status,
-                status_reason,
-                content_length,
-                body_path,
-                headers,
-                version,
-                remote_addr
+                id, request_id, workspace_id, elapsed, elapsed_headers, url, status, status_reason,
+                content_length, body_path, headers, version, remote_addr
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         "#,
@@ -905,13 +1183,28 @@ pub async fn create_response(
         version,
         remote_addr,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
 
-    get_response(&id, pool).await
+    get_http_response(app_handle, &id).await
 }
 
-pub async fn cancel_pending_responses(pool: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
+pub async fn cancel_pending_grpc_connections(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
+    let db = get_db(app_handle).await;
+    sqlx::query!(
+        r#"
+            UPDATE grpc_connections
+            SET (elapsed) = (-1)
+            WHERE elapsed = 0;
+        "#,
+    )
+    .execute(&db)
+    .await?;
+    Ok(())
+}
+
+pub async fn cancel_pending_responses(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             UPDATE http_responses
@@ -919,24 +1212,24 @@ pub async fn cancel_pending_responses(pool: &Pool<Sqlite>) -> Result<(), sqlx::E
             WHERE elapsed = 0;
         "#,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
     Ok(())
 }
 
 pub async fn update_response_if_id(
+    app_handle: &AppHandle,
     response: &HttpResponse,
-    pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
     if response.id.is_empty() {
         Ok(response.clone())
     } else {
-        update_response(response, pool).await
+        update_response(app_handle, response).await
     }
 }
 
 pub async fn upsert_workspace(
-    pool: &Pool<Sqlite>,
+    app_handle: &AppHandle,
     workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
     let id = match workspace.id.as_str() {
@@ -944,16 +1237,13 @@ pub async fn upsert_workspace(
         _ => workspace.id.to_string(),
     };
     let trimmed_name = workspace.name.trim();
+
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             INSERT INTO workspaces (
-                id,
-                name,
-                description,
-                variables,
-                setting_request_timeout,
-                setting_follow_redirects,
-                setting_validate_certificates
+                id, name, description, variables, setting_request_timeout,
+                setting_follow_redirects, setting_validate_certificates
              )
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
@@ -973,32 +1263,26 @@ pub async fn upsert_workspace(
         workspace.setting_follow_redirects,
         workspace.setting_validate_certificates,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
 
-    get_workspace(&id, pool).await
+    match get_workspace(app_handle, &id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn update_response(
+    app_handle: &AppHandle,
     response: &HttpResponse,
-    pool: &Pool<Sqlite>,
 ) -> Result<HttpResponse, sqlx::Error> {
     let headers_json = Json(&response.headers);
+    let db = get_db(app_handle).await;
     sqlx::query!(
         r#"
             UPDATE http_responses SET (
-                elapsed,
-                elapsed_headers,
-                url,
-                status,
-                status_reason,
-                content_length,
-                body_path,
-                error,
-                headers,
-                version,
-                remote_addr,
-                updated_at
+                elapsed, elapsed_headers, url, status, status_reason, content_length, body_path,
+                error, headers, version, remote_addr, updated_at
             ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) WHERE id = ?;
         "#,
         response.elapsed,
@@ -1014,12 +1298,20 @@ pub async fn update_response(
         response.remote_addr,
         response.id,
     )
-    .execute(pool)
+    .execute(&db)
     .await?;
-    get_response(&response.id, pool).await
+
+    match get_http_response(app_handle, &response.id).await {
+        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+        Err(e) => Err(e),
+    }
 }
 
-pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
+pub async fn get_http_response(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpResponse, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1033,16 +1325,17 @@ pub async fn get_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse,
         "#,
         id,
     )
-    .fetch_one(pool)
+    .fetch_one(&db)
     .await
 }
 
-pub async fn find_responses(
+pub async fn list_responses(
+    app_handle: &AppHandle,
     request_id: &str,
     limit: Option<i64>,
-    pool: &Pool<Sqlite>,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
     let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1059,14 +1352,15 @@ pub async fn find_responses(
         request_id,
         limit_unwrapped,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn find_responses_by_workspace_id(
+pub async fn list_responses_by_workspace_id(
+    app_handle: &AppHandle,
     workspace_id: &str,
-    pool: &Pool<Sqlite>,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
+    let db = get_db(app_handle).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1081,12 +1375,55 @@ pub async fn find_responses_by_workspace_id(
         "#,
         workspace_id,
     )
-    .fetch_all(pool)
+    .fetch_all(&db)
     .await
 }
 
-pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpResponse, sqlx::Error> {
-    let resp = get_response(id, pool).await?;
+pub async fn delete_grpc_request(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcRequest, sqlx::Error> {
+    let req = get_grpc_request(app_handle, id).await?;
+
+    let db = get_db(app_handle).await;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM grpc_requests
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(&db)
+    .await;
+
+    emit_deleted_model(app_handle, req)
+}
+
+pub async fn delete_grpc_connection(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<GrpcConnection, sqlx::Error> {
+    let resp = get_grpc_connection(app_handle, id).await?;
+
+    let db = get_db(app_handle).await;
+    let _ = sqlx::query!(
+        r#"
+            DELETE FROM grpc_connections
+            WHERE id = ?
+        "#,
+        id,
+    )
+    .execute(&db)
+    .await;
+
+    emit_deleted_model(app_handle, resp)
+}
+
+pub async fn delete_http_response(
+    app_handle: &AppHandle,
+    id: &str,
+) -> Result<HttpResponse, sqlx::Error> {
+    let resp = get_http_response(app_handle, id).await?;
 
     // Delete the body file if it exists
     if let Some(p) = resp.body_path.clone() {
@@ -1095,6 +1432,7 @@ pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRespon
         };
     }
 
+    let db = get_db(app_handle).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_responses
@@ -1102,18 +1440,28 @@ pub async fn delete_response(id: &str, pool: &Pool<Sqlite>) -> Result<HttpRespon
         "#,
         id,
     )
-    .execute(pool)
+    .execute(&db)
     .await;
 
-    Ok(resp)
+    emit_deleted_model(app_handle, resp)
 }
 
-pub async fn delete_all_responses(
+pub async fn delete_all_grpc_connections(
+    app_handle: &AppHandle,
     request_id: &str,
-    pool: &Pool<Sqlite>,
 ) -> Result<(), sqlx::Error> {
-    for r in find_responses(request_id, None, pool).await? {
-        delete_response(&r.id, pool).await?;
+    for r in list_grpc_connections(app_handle, request_id).await? {
+        delete_grpc_connection(app_handle, &r.id).await?;
+    }
+    Ok(())
+}
+
+pub async fn delete_all_http_responses(
+    app_handle: &AppHandle,
+    request_id: &str,
+) -> Result<(), sqlx::Error> {
+    for r in list_responses(app_handle, request_id, None).await? {
+        delete_http_response(app_handle, &r.id).await?;
     }
     Ok(())
 }
@@ -1146,10 +1494,9 @@ pub struct WorkspaceExportResources {
 
 pub async fn get_workspace_export_resources(
     app_handle: &AppHandle,
-    pool: &Pool<Sqlite>,
     workspace_id: &str,
 ) -> WorkspaceExport {
-    let workspace = get_workspace(workspace_id, pool)
+    let workspace = get_workspace(app_handle, workspace_id)
         .await
         .expect("Failed to get workspace");
     return WorkspaceExport {
@@ -1158,15 +1505,33 @@ pub async fn get_workspace_export_resources(
         timestamp: chrono::Utc::now().naive_utc(),
         resources: WorkspaceExportResources {
             workspaces: vec![workspace],
-            environments: find_environments(workspace_id, pool)
+            environments: list_environments(app_handle, workspace_id)
                 .await
                 .expect("Failed to get environments"),
-            folders: find_folders(workspace_id, pool)
+            folders: list_folders(app_handle, workspace_id)
                 .await
                 .expect("Failed to get folders"),
-            requests: find_requests(workspace_id, pool)
+            requests: list_requests(app_handle, workspace_id)
                 .await
                 .expect("Failed to get requests"),
         },
     };
+}
+
+fn emit_upserted_model<S: Serialize + Clone>(app_handle: &AppHandle, model: S) -> S {
+    app_handle
+        .emit_all("upserted_model", model.clone())
+        .unwrap();
+    model
+}
+
+fn emit_deleted_model<S: Serialize + Clone, E>(app_handle: &AppHandle, model: S) -> Result<S, E> {
+    app_handle.emit_all("deleted_model", model.clone()).unwrap();
+    Ok(model)
+}
+
+async fn get_db(app_handle: &AppHandle) -> Pool<Sqlite> {
+    let db_state = app_handle.state::<Mutex<Pool<Sqlite>>>();
+    let db = &*db_state.lock().await;
+    db.clone()
 }

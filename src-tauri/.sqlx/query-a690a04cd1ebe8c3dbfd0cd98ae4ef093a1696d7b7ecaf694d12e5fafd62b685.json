@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            UPDATE grpc_connections\n            SET (elapsed) = (-1)\n            WHERE elapsed = 0;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "a690a04cd1ebe8c3dbfd0cd98ae4ef093a1696d7b7ecaf694d12e5fafd62b685"
+}

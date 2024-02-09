@@ -23,7 +23,7 @@ export function useDeleteEnvironment(environment: Environment | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_environment', { environmentId: environment?.id });
+      return invoke('cmd_delete_environment', { environmentId: environment?.id });
     },
     onSettled: () => trackEvent('Environment', 'Delete'),
     onSuccess: async (environment) => {

@@ -3,20 +3,23 @@ import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
+import { grpcMessagesQueryKey } from '../hooks/useGrpcMessages';
+import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
+import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
+import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
-import { requestsQueryKey } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { responsesQueryKey } from '../hooks/useResponses';
 import { settingsQueryKey } from '../hooks/useSettings';
-import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { useSyncAppearance } from '../hooks/useSyncAppearance';
+import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
-import type { HttpRequest, HttpResponse, Model, Workspace } from '../lib/models';
+import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
 
@@ -42,43 +45,20 @@ export function GlobalHooks() {
     setPathname(location.pathname).catch(console.error);
   }, [location.pathname]);
 
-  useListenToTauriEvent<Model>('created_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('upserted_model', ({ payload, windowLabel }) => {
     if (shouldIgnoreEvent(payload, windowLabel)) return;
 
     const queryKey =
       payload.model === 'http_request'
-        ? requestsQueryKey(payload)
+        ? httpRequestsQueryKey(payload)
         : payload.model === 'http_response'
-        ? responsesQueryKey(payload)
-        : payload.model === 'workspace'
-        ? workspacesQueryKey(payload)
-        : payload.model === 'key_value'
-        ? keyValueQueryKey(payload)
-        : payload.model === 'settings'
-        ? settingsQueryKey()
-        : payload.model === 'cookie_jar'
-        ? cookieJarsQueryKey(payload)
-        : null;
-
-    if (queryKey === null) {
-      console.log('Unrecognized created model:', payload);
-      return;
-    }
-
-    if (!shouldIgnoreModel(payload)) {
-      // Order newest first
-      queryClient.setQueryData<Model[]>(queryKey, (values) => [payload, ...(values ?? [])]);
-    }
-  });
-
-  useListenToTauriEvent<Model>('updated_model', ({ payload, windowLabel }) => {
-    if (shouldIgnoreEvent(payload, windowLabel)) return;
-
-    const queryKey =
-      payload.model === 'http_request'
-        ? requestsQueryKey(payload)
-        : payload.model === 'http_response'
-        ? responsesQueryKey(payload)
+        ? httpResponsesQueryKey(payload)
+        : payload.model === 'grpc_connection'
+        ? grpcConnectionsQueryKey(payload)
+        : payload.model === 'grpc_message'
+        ? grpcMessagesQueryKey(payload)
+        : payload.model === 'grpc_request'
+        ? grpcRequestsQueryKey(payload)
         : payload.model === 'workspace'
         ? workspacesQueryKey(payload)
         : payload.model === 'key_value'
@@ -98,12 +78,19 @@ export function GlobalHooks() {
       wasUpdatedExternally(payload.id);
     }
 
+    const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
+      payload.model,
+    );
+
     if (!shouldIgnoreModel(payload)) {
-      console.time('set query date');
-      queryClient.setQueryData<Model[]>(queryKey, (values) =>
-        values?.map((v) => (modelsEq(v, payload) ? payload : v)),
-      );
-      console.timeEnd('set query date');
+      queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
+        const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
+        if (index >= 0) {
+          return [...values.slice(0, index), payload, ...values.slice(index + 1)];
+        } else {
+          return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
+        }
+      });
     }
   });
 
@@ -113,11 +100,17 @@ export function GlobalHooks() {
     if (shouldIgnoreModel(payload)) return;
 
     if (payload.model === 'workspace') {
-      queryClient.setQueryData<Workspace[]>(workspacesQueryKey(), removeById(payload));
+      queryClient.setQueryData(workspacesQueryKey(), removeById(payload));
     } else if (payload.model === 'http_request') {
-      queryClient.setQueryData<HttpRequest[]>(requestsQueryKey(payload), removeById(payload));
+      queryClient.setQueryData(httpRequestsQueryKey(payload), removeById(payload));
     } else if (payload.model === 'http_response') {
-      queryClient.setQueryData<HttpResponse[]>(responsesQueryKey(payload), removeById(payload));
+      queryClient.setQueryData(httpResponsesQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_request') {
+      queryClient.setQueryData(grpcRequestsQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_connection') {
+      queryClient.setQueryData(grpcConnectionsQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_message') {
+      queryClient.setQueryData(grpcMessagesQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
     } else if (payload.model === 'cookie_jar') {

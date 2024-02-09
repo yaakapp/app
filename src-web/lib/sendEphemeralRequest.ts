@@ -7,5 +7,5 @@ export async function sendEphemeralRequest(
 ): Promise<HttpResponse> {
   // Remove some things that we don't want to associate
   const newRequest = { ...request };
-  return invoke('send_ephemeral_request', { request: newRequest, environmentId });
+  return invoke('cmd_send_ephemeral_request', { request: newRequest, environmentId });
 }

@@ -15,7 +15,7 @@ export function useFolders() {
       queryKey: foldersQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('list_folders', { workspaceId })) as Folder[];
+        return (await invoke('cmd_list_folders', { workspaceId })) as Folder[];
       },
     }).data ?? []
   );

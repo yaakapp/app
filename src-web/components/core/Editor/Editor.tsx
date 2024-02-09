@@ -38,7 +38,7 @@ export interface EditorProps {
   className?: string;
   heightMode?: 'auto' | 'full';
   contentType?: string | null;
-  forceUpdateKey?: string;
+  forceUpdateKey?: string | number;
   autoFocus?: boolean;
   autoSelect?: boolean;
   defaultValue?: string | null;

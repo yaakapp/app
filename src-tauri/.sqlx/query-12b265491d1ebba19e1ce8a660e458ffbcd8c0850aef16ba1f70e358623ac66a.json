@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO workspaces (\n                id, name, description, variables, setting_request_timeout,\n                setting_follow_redirects, setting_validate_certificates\n             )\n            VALUES (?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n               updated_at = CURRENT_TIMESTAMP,\n               name = excluded.name,\n               description = excluded.description,\n               variables = excluded.variables,\n               setting_request_timeout = excluded.setting_request_timeout,\n               setting_follow_redirects = excluded.setting_follow_redirects,\n               setting_validate_certificates = excluded.setting_validate_certificates\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "12b265491d1ebba19e1ce8a660e458ffbcd8c0850aef16ba1f70e358623ac66a"
+}

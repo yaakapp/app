@@ -2,12 +2,11 @@ import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
-import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useLatestResponse } from '../hooks/useLatestResponse';
+import { useHttpResponses } from '../hooks/useHttpResponses';
+import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
-import { useResponses } from '../hooks/useResponses';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import type { HttpResponse } from '../lib/models';
+import type { HttpRequest, HttpResponse } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
@@ -29,15 +28,15 @@ import { WebPageViewer } from './responseViewers/WebPageViewer';
 interface Props {
   style?: CSSProperties;
   className?: string;
+  activeRequest: HttpRequest;
 }
 
 const useActiveTab = createGlobalState<string>('body');
 
-export const ResponsePane = memo(function ResponsePane({ style, className }: Props) {
+export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
   const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
-  const activeRequest = useActiveRequest();
-  const latestResponse = useLatestResponse(activeRequest?.id ?? null);
-  const responses = useResponses(activeRequest?.id ?? null);
+  const latestResponse = useLatestHttpResponse(activeRequest.id);
+  const responses = useHttpResponses(activeRequest.id);
   const activeResponse: HttpResponse | null = pinnedResponseId
     ? responses.find((r) => r.id === pinnedResponseId) ?? null
     : latestResponse ?? null;
@@ -85,10 +84,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
     [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
-  if (activeRequest === null) {
-    return null;
-  }
-
   return (
     <div
       style={style}
@@ -108,7 +103,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
         <>
           <span />
           <HotKeyList
-            hotkeys={['request.send', 'request.create', 'sidebar.toggle', 'urlBar.focus']}
+            hotkeys={['http_request.send', 'http_request.create', 'sidebar.toggle', 'urlBar.focus']}
           />
         </>
       )}
@@ -179,6 +174,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className }: Pro
               ) : contentType?.match(/csv|tab-separated/) ? (
                 <CsvViewer className="pb-2" response={activeResponse} />
               ) : (
+                // ) : contentType?.startsWith('application/json') ? (
+                //   <JsonViewer response={activeResponse} />
                 <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
               )}
             </TabContent>
