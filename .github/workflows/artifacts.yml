@@ -46,6 +46,8 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
       - name: Install dependencies
         run: npm ci
+      - name: Build plugins
+        run: npm run build:plugins
       - name: Run tests
         run: npm test
       # Pin dev version to get non-default targets
