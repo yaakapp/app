@@ -1,11 +1,11 @@
 use std::fs;
 
-use boa_engine::{
-    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
-    property::Attribute, Source,
-};
 use boa_engine::builtins::promise::PromiseState;
 use boa_engine::module::ModuleLoader;
+use boa_engine::{
+    js_string, module::SimpleModuleLoader, property::Attribute, Context, JsNativeError, JsValue,
+    Module, Source,
+};
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
@@ -87,7 +87,7 @@ fn run_plugin(
 ) -> serde_json::Value {
     let plugin_dir = app_handle
         .path_resolver()
-        .resolve_resource("plugins")
+        .resolve_resource("plugins/build")
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("index.mjs");
