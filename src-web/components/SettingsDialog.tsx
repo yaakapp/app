@@ -29,11 +29,20 @@ export const SettingsDialog = () => {
         size="sm"
         value={settings.appearance}
         onChange={(appearance) => updateSettings.mutateAsync({ ...settings, appearance })}
-        options={{
-          system: 'System',
-          light: 'Light',
-          dark: 'Dark',
-        }}
+        options={[
+          {
+            label: 'System',
+            value: 'system',
+          },
+          {
+            label: 'Light',
+            value: 'light',
+          },
+          {
+            label: 'Dark',
+            value: 'dark',
+          },
+        ]}
       />
 
       <Select
@@ -44,10 +53,16 @@ export const SettingsDialog = () => {
         size="sm"
         value={settings.updateChannel}
         onChange={(updateChannel) => updateSettings.mutateAsync({ ...settings, updateChannel })}
-        options={{
-          stable: 'Release',
-          beta: 'Early Bird (Beta)',
-        }}
+        options={[
+          {
+            label: 'Release',
+            value: 'stable',
+          },
+          {
+            label: 'Early Bird (Beta)',
+            value: 'beta',
+          },
+        ]}
       />
 
       <Separator className="my-4" />

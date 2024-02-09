@@ -6,7 +6,7 @@ import type { Workspace } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { useConfirm } from './useConfirm';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 import { workspacesQueryKey } from './useWorkspaces';
 
 export function useDeleteWorkspace(workspace: Workspace | null) {
@@ -28,7 +28,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_workspace', { workspaceId: workspace?.id });
+      return invoke('cmd_delete_workspace', { workspaceId: workspace?.id });
     },
     onSettled: () => trackEvent('Workspace', 'Delete'),
     onSuccess: async (workspace) => {
@@ -43,8 +43,8 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
       }
 
       // Also clean up other things that may have been deleted
-      queryClient.setQueryData(requestsQueryKey({ workspaceId }), []);
-      await queryClient.invalidateQueries(requestsQueryKey({ workspaceId }));
+      queryClient.setQueryData(httpRequestsQueryKey({ workspaceId }), []);
+      await queryClient.invalidateQueries(httpRequestsQueryKey({ workspaceId }));
     },
   });
 }

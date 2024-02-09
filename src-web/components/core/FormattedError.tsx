@@ -1,11 +1,11 @@
 import classNames from 'classnames';
+import type { ReactNode } from 'react';
 
 interface Props {
-  children: string;
+  children: ReactNode;
 }
 
 export function FormattedError({ children }: Props) {
-  console.log('ERROR', children);
   return (
     <pre
       className={classNames(

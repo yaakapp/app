@@ -5,44 +5,47 @@ import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
-  | 'request.send'
-  | 'request.create'
-  | 'request.duplicate'
-  | 'sidebar.toggle'
-  | 'sidebar.focus'
-  | 'urlBar.focus'
   | 'environmentEditor.toggle'
   | 'hotkeys.showHelp'
-  | 'requestSwitcher.prev'
+  | 'grpc_request.send'
+  | 'http_request.create'
+  | 'http_request.duplicate'
+  | 'http_request.send'
   | 'requestSwitcher.next'
-  | 'settings.show';
+  | 'requestSwitcher.prev'
+  | 'settings.show'
+  | 'sidebar.focus'
+  | 'sidebar.toggle'
+  | 'urlBar.focus';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
-  'request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
-  'request.create': ['CmdCtrl+n'],
-  'request.duplicate': ['CmdCtrl+d'],
-  'sidebar.toggle': ['CmdCtrl+b'],
-  'sidebar.focus': ['CmdCtrl+1'],
-  'urlBar.focus': ['CmdCtrl+l'],
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
+  'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
-  'settings.show': ['CmdCtrl+,'],
-  'requestSwitcher.prev': ['Control+Tab'],
+  'http_request.create': ['CmdCtrl+n'],
+  'http_request.duplicate': ['CmdCtrl+d'],
+  'http_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'requestSwitcher.next': ['Control+Shift+Tab'],
+  'requestSwitcher.prev': ['Control+Tab'],
+  'settings.show': ['CmdCtrl+,'],
+  'sidebar.focus': ['CmdCtrl+1'],
+  'sidebar.toggle': ['CmdCtrl+b'],
+  'urlBar.focus': ['CmdCtrl+l'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
-  'request.send': 'Send Request',
-  'request.create': 'New Request',
-  'request.duplicate': 'Duplicate Request',
-  'sidebar.toggle': 'Toggle Sidebar',
-  'sidebar.focus': 'Focus Sidebar',
-  'urlBar.focus': 'Focus URL',
   'environmentEditor.toggle': 'Edit Environments',
+  'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
-  'requestSwitcher.prev': 'Go To Next Request',
+  'http_request.create': 'New Request',
+  'http_request.duplicate': 'Duplicate Request',
+  'http_request.send': 'Send Request',
   'requestSwitcher.next': 'Go To Previous Request',
+  'requestSwitcher.prev': 'Go To Next Request',
   'settings.show': 'Open Settings',
+  'sidebar.focus': 'Focus Sidebar',
+  'sidebar.toggle': 'Toggle Sidebar',
+  'urlBar.focus': 'Focus URL',
 };
 
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
@@ -109,11 +112,11 @@ export function useAnyHotkey(
       }
       currentKeys.current.delete(normalizeKey(e.key, os));
     };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
+    document.addEventListener('keydown', down, { capture: true });
+    document.addEventListener('keyup', up, { capture: true });
     return () => {
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
+      document.removeEventListener('keydown', down, { capture: true });
+      document.removeEventListener('keyup', up, { capture: true });
     };
   }, [options.enable, os]);
 }

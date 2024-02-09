@@ -1,8 +1,8 @@
 import { isResponseLoading } from '../lib/models';
-import { useLatestResponse } from './useLatestResponse';
+import { useLatestHttpResponse } from './useLatestHttpResponse';
 
 export function useIsResponseLoading(requestId: string | null): boolean {
-  const response = useLatestResponse(requestId);
+  const response = useLatestHttpResponse(requestId);
   if (response === null) return false;
   return isResponseLoading(response);
 }

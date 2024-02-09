@@ -1,14 +1,12 @@
+import { type } from '@tauri-apps/api/os';
+import { appWindow } from '@tauri-apps/api/window';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { attachConsole } from 'tauri-plugin-log-api';
 import { App } from './components/App';
-import { maybeRestorePathname } from './lib/persistPathname';
 import './main.css';
 import { getSettings } from './lib/store';
 import type { Appearance } from './lib/theme/window';
 import { setAppearanceOnDocument } from './lib/theme/window';
-import { appWindow } from '@tauri-apps/api/window';
-import { type } from '@tauri-apps/api/os';
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = await type();
@@ -16,8 +14,8 @@ if (osType !== 'Darwin') {
   await appWindow.setDecorations(false);
 }
 
-await attachConsole();
-await maybeRestorePathname();
+// await attachConsole();
+// await maybeRestorePathname();
 
 const settings = await getSettings();
 setAppearanceOnDocument(settings.appearance as Appearance);

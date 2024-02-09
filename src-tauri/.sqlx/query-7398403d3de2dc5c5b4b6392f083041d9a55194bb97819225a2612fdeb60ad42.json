@@ -1,0 +1,92 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message,\n                proto_files AS \"proto_files!: sqlx::types::Json<Vec<String>>\"\n            FROM grpc_requests\n            WHERE id = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "model",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "workspace_id",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "folder_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 4,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 5,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "name",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "sort_priority",
+        "ordinal": 7,
+        "type_info": "Float"
+      },
+      {
+        "name": "url",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "service",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "method",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "message",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "proto_files!: sqlx::types::Json<Vec<String>>",
+        "ordinal": 12,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "7398403d3de2dc5c5b4b6392f083041d9a55194bb97819225a2612fdeb60ad42"
+}

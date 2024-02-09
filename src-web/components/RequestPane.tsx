@@ -1,10 +1,11 @@
 import classNames from 'classnames';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, FormEvent } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
-import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { useUpdateRequest } from '../hooks/useUpdateRequest';
+import { useSendRequest } from '../hooks/useSendRequest';
+import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
@@ -33,131 +34,131 @@ import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 
 interface Props {
-  style?: CSSProperties;
+  style: CSSProperties;
   fullHeight: boolean;
   className?: string;
+  activeRequest: HttpRequest;
 }
 
 const useActiveTab = createGlobalState<string>('body');
 
-export const RequestPane = memo(function RequestPane({ style, fullHeight, className }: Props) {
-  const activeRequest = useActiveRequest();
-  const activeRequestId = activeRequest?.id ?? null;
-  const updateRequest = useUpdateRequest(activeRequestId);
+export const RequestPane = memo(function RequestPane({
+  style,
+  fullHeight,
+  className,
+  activeRequest,
+}: Props) {
+  const activeRequestId = activeRequest.id;
+  const updateRequest = useUpdateHttpRequest(activeRequestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
-  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest?.id ?? null);
+  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
   const tabs: TabItem[] = useMemo(
-    () =>
-      activeRequest === null
-        ? []
-        : [
-            {
-              value: 'body',
-              options: {
-                value: activeRequest.bodyType,
-                items: [
-                  { type: 'separator', label: 'Form Data' },
-                  { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
-                  { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
-                  { type: 'separator', label: 'Text Content' },
-                  { label: 'JSON', value: BODY_TYPE_JSON },
-                  { label: 'XML', value: BODY_TYPE_XML },
-                  { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
-                  { type: 'separator', label: 'Other' },
-                  { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
-                ],
-                onChange: async (bodyType) => {
-                  const patch: Partial<HttpRequest> = { bodyType };
-                  if (bodyType === BODY_TYPE_NONE) {
-                    patch.headers = activeRequest?.headers.filter(
-                      (h) => h.name.toLowerCase() !== 'content-type',
-                    );
-                  } else if (
-                    bodyType === BODY_TYPE_FORM_URLENCODED ||
-                    bodyType === BODY_TYPE_FORM_MULTIPART ||
-                    bodyType === BODY_TYPE_JSON ||
-                    bodyType === BODY_TYPE_XML
-                  ) {
-                    patch.method = 'POST';
-                    patch.headers = [
-                      ...(activeRequest?.headers.filter(
-                        (h) => h.name.toLowerCase() !== 'content-type',
-                      ) ?? []),
-                      {
-                        name: 'Content-Type',
-                        value: bodyType,
-                        enabled: true,
-                      },
-                    ];
-                  } else if (bodyType == BODY_TYPE_GRAPHQL) {
-                    patch.method = 'POST';
-                    patch.headers = [
-                      ...(activeRequest?.headers.filter(
-                        (h) => h.name.toLowerCase() !== 'content-type',
-                      ) ?? []),
-                      {
-                        name: 'Content-Type',
-                        value: 'application/json',
-                        enabled: true,
-                      },
-                    ];
-                  }
-
-                  // Force update header editor so any changed headers are reflected
-                  setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
-
-                  updateRequest.mutate(patch);
-                },
-              },
-            },
-            {
-              value: 'params',
-              label: (
-                <div className="flex items-center">
-                  Params
-                  <CountBadge count={activeRequest.urlParameters.filter((p) => p.name).length} />
-                </div>
-              ),
-            },
-            {
-              value: 'headers',
-              label: (
-                <div className="flex items-center">
-                  Headers
-                  <CountBadge count={activeRequest.headers.filter((h) => h.name).length} />
-                </div>
-              ),
-            },
-            {
-              value: 'auth',
-              label: 'Auth',
-              options: {
-                value: activeRequest.authenticationType,
-                items: [
-                  { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
-                  { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
-                  { type: 'separator' },
-                  { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
-                ],
-                onChange: async (authenticationType) => {
-                  let authentication: HttpRequest['authentication'] = activeRequest?.authentication;
-                  if (authenticationType === AUTH_TYPE_BASIC) {
-                    authentication = {
-                      username: authentication.username ?? '',
-                      password: authentication.password ?? '',
-                    };
-                  } else if (authenticationType === AUTH_TYPE_BEARER) {
-                    authentication = {
-                      token: authentication.token ?? '',
-                    };
-                  }
-                  updateRequest.mutate({ authenticationType, authentication });
-                },
-              },
-            },
+    () => [
+      {
+        value: 'body',
+        options: {
+          value: activeRequest.bodyType,
+          items: [
+            { type: 'separator', label: 'Form Data' },
+            { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
+            { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
+            { type: 'separator', label: 'Text Content' },
+            { label: 'JSON', value: BODY_TYPE_JSON },
+            { label: 'XML', value: BODY_TYPE_XML },
+            { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
+            { type: 'separator', label: 'Other' },
+            { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
           ],
+          onChange: async (bodyType) => {
+            const patch: Partial<HttpRequest> = { bodyType };
+            if (bodyType === BODY_TYPE_NONE) {
+              patch.headers = activeRequest.headers.filter(
+                (h) => h.name.toLowerCase() !== 'content-type',
+              );
+            } else if (
+              bodyType === BODY_TYPE_FORM_URLENCODED ||
+              bodyType === BODY_TYPE_FORM_MULTIPART ||
+              bodyType === BODY_TYPE_JSON ||
+              bodyType === BODY_TYPE_XML
+            ) {
+              patch.method = 'POST';
+              patch.headers = [
+                ...(activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
+                  []),
+                {
+                  name: 'Content-Type',
+                  value: bodyType,
+                  enabled: true,
+                },
+              ];
+            } else if (bodyType == BODY_TYPE_GRAPHQL) {
+              patch.method = 'POST';
+              patch.headers = [
+                ...(activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
+                  []),
+                {
+                  name: 'Content-Type',
+                  value: 'application/json',
+                  enabled: true,
+                },
+              ];
+            }
+
+            // Force update header editor so any changed headers are reflected
+            setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
+
+            updateRequest.mutate(patch);
+          },
+        },
+      },
+      {
+        value: 'params',
+        label: (
+          <div className="flex items-center">
+            Params
+            <CountBadge count={activeRequest.urlParameters.filter((p) => p.name).length} />
+          </div>
+        ),
+      },
+      {
+        value: 'headers',
+        label: (
+          <div className="flex items-center">
+            Headers
+            <CountBadge count={activeRequest.headers.filter((h) => h.name).length} />
+          </div>
+        ),
+      },
+      {
+        value: 'auth',
+        label: 'Auth',
+        options: {
+          value: activeRequest.authenticationType,
+          items: [
+            { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
+            { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
+            { type: 'separator' },
+            { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
+          ],
+          onChange: async (authenticationType) => {
+            let authentication: HttpRequest['authentication'] = activeRequest.authentication;
+            if (authenticationType === AUTH_TYPE_BASIC) {
+              authentication = {
+                username: authentication.username ?? '',
+                password: authentication.password ?? '',
+              };
+            } else if (authenticationType === AUTH_TYPE_BEARER) {
+              authentication = {
+                token: authentication.token ?? '',
+              };
+            }
+            updateRequest.mutate({ authenticationType, authentication });
+          },
+        },
+      },
+    ],
     [activeRequest, updateRequest],
   );
 
@@ -178,6 +179,27 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
     [updateRequest],
   );
 
+  const sendRequest = useSendRequest(activeRequest.id ?? null);
+  const handleSend = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      await sendRequest.mutateAsync();
+    },
+    [sendRequest],
+  );
+
+  const handleMethodChange = useCallback(
+    (method: string) => updateRequest.mutate({ method }),
+    [updateRequest],
+  );
+  const handleUrlChange = useCallback(
+    (url: string) => updateRequest.mutate({ url }),
+    [updateRequest],
+  );
+
+  const isLoading = useIsResponseLoading(activeRequestId ?? null);
+  const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
+
   return (
     <div
       style={style}
@@ -186,10 +208,14 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
       {activeRequest && (
         <>
           <UrlBar
-            key={activeRequest.id} // Force-reset the url bar when the active request changes
-            id={activeRequest.id}
             url={activeRequest.url}
             method={activeRequest.method}
+            placeholder="https://example.com"
+            onSubmit={handleSend}
+            onMethodChange={handleMethodChange}
+            onUrlChange={handleUrlChange}
+            forceUpdateKey={updateKey}
+            isLoading={isLoading}
           />
           <Tabs
             value={activeTab}
@@ -240,7 +266,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
+                  defaultValue={`${activeRequest.body?.text ?? ''}`}
                   contentType="application/json"
                   onChange={handleBodyTextChange}
                   format={tryFormatJson}
@@ -253,7 +279,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   placeholder="..."
                   className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
+                  defaultValue={`${activeRequest.body?.text ?? ''}`}
                   contentType="text/xml"
                   onChange={handleBodyTextChange}
                 />
@@ -262,7 +288,7 @@ export const RequestPane = memo(function RequestPane({ style, fullHeight, classN
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
                   className="!bg-gray-50"
-                  defaultValue={`${activeRequest?.body?.text ?? ''}`}
+                  defaultValue={`${activeRequest.body?.text ?? ''}`}
                   onChange={handleBodyTextChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (

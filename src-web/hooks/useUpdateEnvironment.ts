@@ -14,7 +14,7 @@ export function useUpdateEnvironment(id: string | null) {
       }
 
       const newEnvironment = typeof v === 'function' ? v(environment) : { ...environment, ...v };
-      await invoke('update_environment', { environment: newEnvironment });
+      await invoke('cmd_update_environment', { environment: newEnvironment });
     },
     onMutate: async (v) => {
       const environment = await getEnvironment(id);

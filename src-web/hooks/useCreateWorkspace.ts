@@ -10,7 +10,7 @@ export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }
   const queryClient = useQueryClient();
   return useMutation<Workspace, unknown, Pick<Workspace, 'name'>>({
     mutationFn: (patch) => {
-      return invoke('create_workspace', patch);
+      return invoke('cmd_create_workspace', patch);
     },
     onSettled: () => trackEvent('Workspace', 'Create'),
     onSuccess: async (workspace) => {

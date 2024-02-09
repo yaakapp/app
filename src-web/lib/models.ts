@@ -12,6 +12,9 @@ export const AUTH_TYPE_BEARER = 'bearer';
 export type Model =
   | Settings
   | Workspace
+  | GrpcConnection
+  | GrpcRequest
+  | GrpcMessage
   | HttpRequest
   | HttpResponse
   | KeyValue
@@ -99,6 +102,38 @@ export interface HttpUrlParameter {
   name: string;
   value: string;
   enabled?: boolean;
+}
+
+export interface GrpcRequest extends BaseModel {
+  readonly workspaceId: string;
+  readonly model: 'grpc_request';
+  folderId: string | null;
+  sortPriority: number;
+  name: string;
+  url: string;
+  service: string | null;
+  method: string | null;
+  message: string;
+  protoFiles: string[];
+}
+
+export interface GrpcMessage extends BaseModel {
+  readonly workspaceId: string;
+  readonly requestId: string;
+  readonly connectionId: string;
+  readonly model: 'grpc_message';
+  message: string;
+  isServer: boolean;
+  isInfo: boolean;
+}
+
+export interface GrpcConnection extends BaseModel {
+  readonly workspaceId: string;
+  readonly requestId: string;
+  readonly model: 'grpc_connection';
+  service: string;
+  method: string;
+  elapsed: number;
 }
 
 export interface HttpRequest extends BaseModel {

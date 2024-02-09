@@ -399,7 +399,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   {items.map((item, i) => {
                     if (item.type === 'separator') {
                       return (
-                        <Separator key={i} className="ml-2 my-1.5">
+                        <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
                           {item.label}
                         </Separator>
                       );
@@ -473,7 +473,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       className={classNames(
         className,
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
-        'focus:bg-highlight focus:text-gray-900 rounded',
+        'focus:bg-highlight focus:text-gray-800 rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}

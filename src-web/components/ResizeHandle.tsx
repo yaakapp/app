@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import React from 'react';
+import { Separator } from './core/Separator';
 
 interface ResizeBarProps {
   style?: CSSProperties;
@@ -17,6 +18,7 @@ export function ResizeHandle({
   style,
   justify,
   className,
+  barClassName,
   onResizeStart,
   onReset,
   isResizing,
@@ -28,6 +30,8 @@ export function ResizeHandle({
       aria-hidden
       draggable
       style={style}
+      onDragStart={onResizeStart}
+      onDoubleClick={onReset}
       className={classNames(
         className,
         'group z-10 flex',
@@ -39,8 +43,6 @@ export function ResizeHandle({
         side === 'left' && 'left-0',
         side === 'top' && 'top-0',
       )}
-      onDragStart={onResizeStart}
-      onDoubleClick={onReset}
     >
       {/* Show global overlay with cursor style to ensure cursor remains the same when moving quickly */}
       {isResizing && (

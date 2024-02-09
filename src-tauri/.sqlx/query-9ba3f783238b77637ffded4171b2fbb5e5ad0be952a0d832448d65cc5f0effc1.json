@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                id, model, created_at, updated_at, name, description, setting_request_timeout,\n                setting_follow_redirects, setting_validate_certificates,\n                variables AS \"variables!: sqlx::types::Json<Vec<EnvironmentVariable>>\"\n            FROM workspaces WHERE id = ?\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "model",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 2,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 3,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "name",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "setting_request_timeout",
+        "ordinal": 6,
+        "type_info": "Int64"
+      },
+      {
+        "name": "setting_follow_redirects",
+        "ordinal": 7,
+        "type_info": "Bool"
+      },
+      {
+        "name": "setting_validate_certificates",
+        "ordinal": 8,
+        "type_info": "Bool"
+      },
+      {
+        "name": "variables!: sqlx::types::Json<Vec<EnvironmentVariable>>",
+        "ordinal": 9,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9ba3f783238b77637ffded4171b2fbb5e5ad0be952a0d832448d65cc5f0effc1"
+}

@@ -8,14 +8,17 @@ import type {
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { Button } from './core/Button';
+import { HotKeyList } from './core/HotKeyList';
 import { HStack } from './core/Stacks';
+import { GrpcConnectionLayout } from './GrpcConnectionLayout';
+import { HttpRequestLayout } from './HttpRequestLayout';
 import { Overlay } from './Overlay';
-import { RequestResponse } from './RequestResponse';
 import { ResizeHandle } from './ResizeHandle';
 import { Sidebar } from './Sidebar';
 import { SidebarActions } from './SidebarActions';
@@ -31,7 +34,7 @@ const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
 export default function Workspace() {
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
-
+  const activeRequest = useActiveRequest();
   const windowSize = useWindowSize();
   const [floating, setFloating] = useState<boolean>(false);
   const [isResizing, setIsResizing] = useState<boolean>(false);
@@ -44,7 +47,7 @@ export default function Workspace() {
     const shouldHide = windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH;
     if (shouldHide && !floating) {
       setFloating(true);
-      hide();
+      hide().catch(console.error);
     } else if (!shouldHide && floating) {
       setFloating(false);
     }
@@ -69,10 +72,10 @@ export default function Workspace() {
           e.preventDefault(); // Prevent text selection and things
           const newWidth = startWidth + (e.clientX - mouseStartX);
           if (newWidth < 100) {
-            hide();
+            await hide();
             resetWidth();
           } else {
-            show();
+            await show();
             setWidth(newWidth);
           }
         },
@@ -163,7 +166,13 @@ export default function Workspace() {
       >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
-      <RequestResponse style={body} />
+      {activeRequest == null ? (
+        <HotKeyList hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']} />
+      ) : activeRequest.model === 'grpc_request' ? (
+        <GrpcConnectionLayout style={body} />
+      ) : (
+        <HttpRequestLayout activeRequest={activeRequest} style={body} />
+      )}
     </div>
   );
 }

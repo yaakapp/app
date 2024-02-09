@@ -51,23 +51,13 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           ),
           render: ({ hide }) => {
             return (
-              <HStack space={2} justifyContent="end" alignItems="center" className="mt-4 mb-6">
+              <HStack
+                space={2}
+                justifyContent="start"
+                alignItems="center"
+                className="mt-4 mb-6 flex-row-reverse"
+              >
                 <Button
-                  className="focus"
-                  color="gray"
-                  rightSlot={<Icon icon="externalLink" />}
-                  onClick={async () => {
-                    hide();
-                    const environmentId = (await getRecentEnvironments(w.id))[0];
-                    await invoke('new_window', {
-                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
-                    });
-                  }}
-                >
-                  New Window
-                </Button>
-                <Button
-                  autoFocus
                   className="focus"
                   color="gray"
                   onClick={async () => {
@@ -77,6 +67,20 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   }}
                 >
                   This Window
+                </Button>
+                <Button
+                  className="focus"
+                  color="gray"
+                  rightSlot={<Icon icon="externalLink" />}
+                  onClick={async () => {
+                    hide();
+                    const environmentId = (await getRecentEnvironments(w.id))[0];
+                    await invoke('cmd_new_window', {
+                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
+                    });
+                  }}
+                >
+                  New Window
                 </Button>
               </HStack>
             );

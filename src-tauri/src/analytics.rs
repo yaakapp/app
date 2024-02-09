@@ -1,10 +1,8 @@
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sqlx::{Pool, Sqlite};
 use sqlx::types::JsonValue;
-use tauri::{AppHandle, Manager, State};
-use tokio::sync::Mutex;
+use tauri::{AppHandle, Manager};
 
 use crate::{is_dev, models};
 
@@ -16,6 +14,9 @@ pub enum AnalyticsResource {
     Dialog,
     Environment,
     Folder,
+    GrpcConnection,
+    GrpcMessage,
+    GrpcRequest,
     HttpRequest,
     HttpResponse,
     KeyValue,
@@ -31,6 +32,9 @@ impl AnalyticsResource {
             "CookieJar" => Some(AnalyticsResource::CookieJar),
             "Environment" => Some(AnalyticsResource::Environment),
             "Folder" => Some(AnalyticsResource::Folder),
+            "GrpcConnection" => Some(AnalyticsResource::GrpcConnection),
+            "GrpcMessage" => Some(AnalyticsResource::GrpcMessage),
+            "GrpcRequest" => Some(AnalyticsResource::GrpcRequest),
             "HttpRequest" => Some(AnalyticsResource::HttpRequest),
             "HttpResponse" => Some(AnalyticsResource::HttpResponse),
             "KeyValue" => Some(AnalyticsResource::KeyValue),
@@ -90,6 +94,9 @@ fn resource_name(resource: AnalyticsResource) -> &'static str {
         AnalyticsResource::Dialog => "dialog",
         AnalyticsResource::Environment => "environment",
         AnalyticsResource::Folder => "folder",
+        AnalyticsResource::GrpcRequest => "grpc_request",
+        AnalyticsResource::GrpcConnection => "grpc_connection",
+        AnalyticsResource::GrpcMessage => "grpc_message",
         AnalyticsResource::HttpRequest => "http_request",
         AnalyticsResource::HttpResponse => "http_response",
         AnalyticsResource::KeyValue => "key_value",
@@ -129,14 +136,13 @@ pub struct LaunchEventInfo {
 pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
     let namespace = "analytics";
     let last_tracked_version_key = "last_tracked_version";
-    let db_instance: State<'_, Mutex<Pool<Sqlite>>> = app_handle.state();
-    let pool = &*db_instance.lock().await;
 
     let mut info = LaunchEventInfo::default();
 
-    info.num_launches = models::get_key_value_int(namespace, "num_launches", 0, pool).await + 1;
+    info.num_launches =
+        models::get_key_value_int(app_handle, namespace, "num_launches", 0).await + 1;
     info.previous_version =
-        models::get_key_value_string(namespace, last_tracked_version_key, "", pool).await;
+        models::get_key_value_string(app_handle, namespace, last_tracked_version_key, "").await;
     info.current_version = app_handle.package_info().version.to_string();
 
     if info.previous_version.is_empty() {
@@ -167,19 +173,18 @@ pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
         AnalyticsAction::Launch,
         Some(json!({ "num_launches": info.num_launches })),
     )
-        .await;
-
+    .await;
 
     // Update key values
 
     models::set_key_value_string(
+        app_handle,
         namespace,
         last_tracked_version_key,
         info.current_version.as_str(),
-        pool,
     )
     .await;
-    models::set_key_value_int(namespace, "num_launches", info.num_launches, pool).await;
+    models::set_key_value_int(app_handle, namespace, "num_launches", info.num_launches).await;
 
     info
 }

@@ -6,6 +6,7 @@ const gapClasses = {
   0: 'gap-0',
   0.5: 'gap-0.5',
   1: 'gap-1',
+  1.5: 'gap-1.5',
   2: 'gap-2',
   3: 'gap-3',
   4: 'gap-4',
@@ -56,7 +57,7 @@ export const VStack = forwardRef(function VStack(
 type BaseStackProps = HTMLAttributes<HTMLElement> & {
   as?: ComponentType | 'ul' | 'label' | 'form';
   space?: keyof typeof gapClasses;
-  alignItems?: 'start' | 'center' | 'stretch';
+  alignItems?: 'start' | 'center' | 'stretch' | 'end';
   justifyContent?: 'start' | 'center' | 'end' | 'between';
 };
 
@@ -75,6 +76,7 @@ const BaseStack = forwardRef(function BaseStack(
         alignItems === 'center' && 'items-center',
         alignItems === 'start' && 'items-start',
         alignItems === 'stretch' && 'items-stretch',
+        alignItems === 'end' && 'items-end',
         justifyContent === 'start' && 'justify-start',
         justifyContent === 'center' && 'justify-center',
         justifyContent === 'end' && 'justify-end',
