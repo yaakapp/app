@@ -36,7 +36,7 @@ use tokio::time::sleep;
 use window_shadows::set_shadow;
 
 use grpc::manager::GrpcHandle;
-use grpc::ServiceDefinition;
+use grpc::{serialize_message, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
@@ -193,7 +193,7 @@ async fn cmd_grpc_call_unary(
             upsert_grpc_message(
                 &app_handle,
                 &GrpcMessage {
-                    message: msg,
+                    message: serialize_message(&msg)?,
                     workspace_id: req.workspace_id,
                     request_id: req.id,
                     connection_id: conn.clone().id,
@@ -365,7 +365,7 @@ async fn cmd_grpc_client_streaming(
                 .client_streaming(&service, &method, in_msg_stream)
                 .await
                 .unwrap();
-            let message = serde_json::to_string(&msg).unwrap();
+            let message = serialize_message(&msg).unwrap();
             upsert_grpc_message(
                 &app_handle,
                 &GrpcMessage {
@@ -576,7 +576,7 @@ async fn cmd_grpc_streaming(
             loop {
                 match stream.next().await {
                     Some(Ok(item)) => {
-                        let item = serde_json::to_string_pretty(&item).unwrap();
+                        let item = serialize_message(&item).unwrap();
                         let req = req.clone();
                         let conn = conn.clone();
                         upsert_grpc_message(
@@ -591,7 +591,6 @@ async fn cmd_grpc_streaming(
                             },
                         )
                         .await
-                        .map_err(|e| e.to_string())
                         .unwrap();
                     }
                     Some(Err(e)) => {
@@ -727,7 +726,7 @@ async fn cmd_grpc_server_streaming(
         .await?
         .server_streaming(&service, &method, &req.message)
         .await
-        .unwrap();
+        .expect("FAILED");
 
     #[derive(serde::Deserialize)]
     enum IncomingMsg {
@@ -768,7 +767,7 @@ async fn cmd_grpc_server_streaming(
                 let app_handle = app_handle.clone();
                 match stream.next().await {
                     Some(Ok(item)) => {
-                        let item = serde_json::to_string_pretty(&item).unwrap();
+                        let item = serialize_message(&item).unwrap();
                         upsert_grpc_message(
                             &app_handle,
                             &GrpcMessage {
