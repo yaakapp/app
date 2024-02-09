@@ -143,12 +143,14 @@ pub fn message_to_json_schema(
 
     schema.properties = Some(properties);
 
-    schema.required = Some(
-        message
-            .fields()
-            .map(|f| f.name().to_string())
-            .collect::<Vec<_>>(),
-    );
+    // All proto 3 fields are optional, so maybe we could
+    // make this a setting?
+    // schema.required = Some(
+    //     message
+    //         .fields()
+    //         .map(|f| f.name().to_string())
+    //         .collect::<Vec<_>>(),
+    // );
 
     schema
 }

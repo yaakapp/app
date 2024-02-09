@@ -45,6 +45,7 @@ pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool,
         let parent = p.as_path().parent();
         if let Some(parent_path) = parent {
             cmd.arg("-I").arg(parent_path);
+            cmd.arg("-I").arg(parent_path.parent().unwrap());
         } else {
             debug!("ignoring {:?} since it does not exist.", parent)
         }
