@@ -81,7 +81,7 @@ export function SplitLayout({
             / ${1 - width}fr   0                ${width}fr           
           `,
     };
-  }, [style, vertical, height, minHeightPx, width]);
+  }, [forceVertical, style, vertical, height, minHeightPx, width]);
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -154,7 +154,6 @@ export function SplitLayout({
           <ResizeHandle
             style={areaD}
             isResizing={isResizing}
-            barClassName={'bg-red-300'}
             className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
             onResizeStart={handleResizeStart}
             onReset={handleReset}

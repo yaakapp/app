@@ -20,6 +20,7 @@ export function useCreateCookieJar() {
         id: 'new-cookie-jar',
         name: 'name',
         title: 'New CookieJar',
+        placeholder: 'My Jar',
         label: 'Name',
         defaultValue: 'My Jar',
       });

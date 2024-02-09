@@ -37,7 +37,7 @@ export type InputProps = Omit<
     rightSlot?: ReactNode;
     size?: 'xs' | 'sm' | 'md' | 'auto';
     className?: string;
-    placeholder?: string;
+    placeholder: string;
     validate?: (v: string) => boolean;
     require?: boolean;
     wrapLines?: boolean;

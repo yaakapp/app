@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 
 interface Props {
   depth?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   attrValue: any;
   attrKey?: string | number;
   attrKeyJsonPath?: string;
@@ -44,7 +45,8 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
     } else if (jsonType === '[object Array]') {
       return {
         children: isExpanded
-          ? attrValue.flatMap((v: any, i: number) => (
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            attrValue.flatMap((v: any, i: number) => (
               <JsonAttributeTree
                 depth={depth + 1}
                 attrValue={v}

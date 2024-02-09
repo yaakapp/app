@@ -1,4 +1,3 @@
-import { r } from 'vitest/dist/types-94cfe4b4';
 import type { GrpcRequest, HttpRequest } from '../lib/models';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useGrpcRequests } from './useGrpcRequests';

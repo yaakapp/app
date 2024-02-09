@@ -31,6 +31,7 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
+import { EditorView } from 'codemirror';
 import { jsonSchema } from 'codemirror-json-schema';
 import type { Environment, Workspace } from '../../../lib/models';
 import type { EditorProps } from './index';
@@ -60,6 +61,8 @@ export const myHighlightStyle = HighlightStyle.define([
   { tag: [t.keyword, t.meta, t.operator], color: 'hsl(var(--color-red-600))' },
 ]);
 
+const myTheme = EditorView.theme({}, { dark: true });
+
 // export const defaultHighlightStyle = HighlightStyle.define([
 //   { tag: t.meta, color: '#404740' },
 //   { tag: t.link, textDecoration: 'underline' },
@@ -83,7 +86,7 @@ export const myHighlightStyle = HighlightStyle.define([
 // ]);
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
-  'application/grpc': jsonSchema() as any, // TODO: Fix this
+  'application/grpc': jsonSchema() as unknown as LanguageSupport, // TODO: Fix this
   'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
@@ -131,6 +134,7 @@ export const baseExtensions = [
     },
   }),
   syntaxHighlighting(myHighlightStyle),
+  myTheme,
   EditorState.allowMultipleSelections.of(true),
 ];
 

@@ -61,6 +61,7 @@ export function CookieDropdown() {
                     ),
                     name: 'name',
                     label: 'Name',
+                    placeholder: 'New name',
                     defaultValue: activeCookieJar?.name,
                   });
                   updateCookieJar.mutate({ name });
