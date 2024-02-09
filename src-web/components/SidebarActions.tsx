@@ -1,6 +1,8 @@
 import { memo } from 'react';
+import { Simulate } from 'react-dom/test-utils';
 import { useCreateFolder } from '../hooks/useCreateFolder';
-import { useCreateRequest } from '../hooks/useCreateRequest';
+import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
+import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { trackEvent } from '../lib/analytics';
 import { Dropdown } from './core/Dropdown';
@@ -8,16 +10,21 @@ import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 
 export const SidebarActions = memo(function SidebarActions() {
-  const createRequest = useCreateRequest();
+  const createHttpRequest = useCreateHttpRequest();
+  const createGrpcRequest = useCreateGrpcRequest();
   const createFolder = useCreateFolder();
-  const { hidden, toggle } = useSidebarHidden();
+  const { hidden, show, hide } = useSidebarHidden();
 
   return (
     <HStack>
       <IconButton
-        onClick={() => {
+        onClick={async () => {
           trackEvent('Sidebar', 'Toggle');
-          toggle();
+
+          // NOTE: We're not using `toggle` because it may be out of sync
+          // from changes in other windows
+          if (hidden) await show();
+          else await hide();
         }}
         className="pointer-events-auto"
         size="sm"
@@ -28,14 +35,19 @@ export const SidebarActions = memo(function SidebarActions() {
       <Dropdown
         items={[
           {
-            key: 'create-request',
-            label: 'New Request',
-            hotKeyAction: 'request.create',
-            onSelect: () => createRequest.mutate({}),
+            key: 'create-http-request',
+            label: 'HTTP Request',
+            hotKeyAction: 'http_request.create',
+            onSelect: () => createHttpRequest.mutate({}),
+          },
+          {
+            key: 'create-grpc-request',
+            label: 'GRPC Request',
+            onSelect: () => createGrpcRequest.mutate({}),
           },
           {
             key: 'create-folder',
-            label: 'New Folder',
+            label: 'Folder',
             onSelect: () => createFolder.mutate({}),
           },
         ]}

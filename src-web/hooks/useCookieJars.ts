@@ -15,7 +15,7 @@ export function useCookieJars() {
       queryKey: cookieJarsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('list_cookie_jars', { workspaceId })) as CookieJar[];
+        return (await invoke('cmd_list_cookie_jars', { workspaceId })) as CookieJar[];
       },
     }).data ?? []
   );

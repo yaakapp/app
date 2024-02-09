@@ -6,7 +6,7 @@ import type { Folder } from '../lib/models';
 import { getFolder } from '../lib/store';
 import { useConfirm } from './useConfirm';
 import { foldersQueryKey } from './useFolders';
-import { requestsQueryKey } from './useRequests';
+import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useDeleteFolder(id: string | null) {
   const queryClient = useQueryClient();
@@ -26,7 +26,7 @@ export function useDeleteFolder(id: string | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('delete_folder', { folderId: id });
+      return invoke('cmd_delete_folder', { folderId: id });
     },
     onSettled: () => trackEvent('Folder', 'Delete'),
     onSuccess: async (folder) => {
@@ -36,7 +36,7 @@ export function useDeleteFolder(id: string | null) {
       const { workspaceId } = folder;
 
       // Nesting makes it hard to clean things up, so just clear everything that could have been deleted
-      await queryClient.invalidateQueries(requestsQueryKey({ workspaceId }));
+      await queryClient.invalidateQueries(httpRequestsQueryKey({ workspaceId }));
       await queryClient.invalidateQueries(foldersQueryKey({ workspaceId }));
     },
   });

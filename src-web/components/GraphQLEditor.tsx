@@ -72,7 +72,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   const dialog = useDialog();
 
   return (
-    <div className="pb-2 h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
+    <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto]">
       <Editor
         contentType="application/graphql"
         defaultValue={query ?? ''}
@@ -124,19 +124,22 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         }
         {...extraEditorProps}
       />
-      <Separator variant="primary" />
-      <p className="pt-1 text-gray-500 text-sm">Variables</p>
-      <Editor
-        format={tryFormatJson}
-        contentType="application/json"
-        defaultValue={JSON.stringify(variables, null, 2)}
-        heightMode="auto"
-        onChange={handleChangeVariables}
-        placeholder="{}"
-        useTemplating
-        autocompleteVariables
-        {...extraEditorProps}
-      />
+      <div className="grid min-h-[5rem]">
+        <Separator variant="primary" className="pb-1">
+          Variables
+        </Separator>
+        <Editor
+          format={tryFormatJson}
+          contentType="application/json"
+          defaultValue={JSON.stringify(variables, null, 2)}
+          heightMode="auto"
+          onChange={handleChangeVariables}
+          placeholder="{}"
+          useTemplating
+          autocompleteVariables
+          {...extraEditorProps}
+        />
+      </div>
     </div>
   );
 }

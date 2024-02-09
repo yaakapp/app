@@ -11,7 +11,7 @@ export function useVariables({ environmentId }: { environmentId: string }) {
     useQuery({
       queryKey: variablesQueryKey({ environmentId }),
       queryFn: async () => {
-        return (await invoke('list_variables', { environmentId })) as EnvironmentVariable[];
+        return (await invoke('cmd_list_variables', { environmentId })) as EnvironmentVariable[];
       },
     }).data ?? []
   );

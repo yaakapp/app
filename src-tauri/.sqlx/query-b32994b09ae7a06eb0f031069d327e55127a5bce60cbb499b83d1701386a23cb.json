@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT\n                id, model, created_at, updated_at, theme, appearance, update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "model",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 2,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 3,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "theme",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "appearance",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "update_channel",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b32994b09ae7a06eb0f031069d327e55127a5bce60cbb499b83d1701386a23cb"
+}

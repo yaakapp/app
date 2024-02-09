@@ -1,5 +1,5 @@
-import { useDeleteResponse } from '../hooks/useDeleteResponse';
-import { useDeleteResponses } from '../hooks/useDeleteResponses';
+import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
+import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import type { HttpResponse } from '../lib/models';
 import { Dropdown } from './core/Dropdown';
 import { pluralize } from '../lib/pluralize';
@@ -19,8 +19,8 @@ export const RecentResponsesDropdown = function ResponsePane({
   responses,
   onPinnedResponse,
 }: Props) {
-  const deleteResponse = useDeleteResponse(activeResponse?.id ?? null);
-  const deleteAllResponses = useDeleteResponses(activeResponse?.requestId);
+  const deleteResponse = useDeleteHttpResponse(activeResponse?.id ?? null);
+  const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
 
   return (
     <Dropdown

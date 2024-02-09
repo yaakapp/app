@@ -28,6 +28,15 @@
     @apply select-none cursor-default;
   }
 
+  a,
+  a * {
+    @apply cursor-pointer !important;
+  }
+
+  table th {
+    @apply text-left;
+  }
+
   .hide-scrollbars {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {

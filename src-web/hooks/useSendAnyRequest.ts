@@ -4,7 +4,7 @@ import { save } from '@tauri-apps/api/dialog';
 import slugify from 'slugify';
 import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
-import { getRequest } from '../lib/store';
+import { getHttpRequest } from '../lib/store';
 import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useAlert } from './useAlert';
@@ -15,7 +15,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
   const { activeCookieJar } = useActiveCookieJar();
   return useMutation<HttpResponse | null, string, string | null>({
     mutationFn: async (id) => {
-      const request = await getRequest(id);
+      const request = await getHttpRequest(id);
       if (request == null) {
         return null;
       }
@@ -31,7 +31,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         }
       }
 
-      return invoke('send_request', {
+      return invoke('cmd_send_request', {
         requestId: id,
         environmentId,
         downloadDir: downloadDir,
