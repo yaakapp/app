@@ -20,6 +20,7 @@ export function useCreateEnvironment() {
         name: 'name',
         title: 'New Environment',
         label: 'Name',
+        placeholder: 'My Environment',
         defaultValue: 'My Environment',
       });
       return invoke('cmd_create_environment', { name, variables: [], workspaceId });

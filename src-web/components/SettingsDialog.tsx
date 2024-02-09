@@ -78,6 +78,7 @@ export const SettingsDialog = () => {
           size="sm"
           name="requestTimeout"
           label="Request Timeout (ms)"
+          placeholder="0"
           labelPosition="left"
           labelClassName="w-1/3"
           containerClassName="col-span-2"

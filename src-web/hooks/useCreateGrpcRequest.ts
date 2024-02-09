@@ -1,13 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
-import type { GrpcRequest, HttpRequest } from '../lib/models';
+import type { GrpcRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
-import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { grpcRequestsQueryKey } from './useGrpcRequests';
-import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useCreateGrpcRequest() {
   const workspaceId = useActiveWorkspaceId();

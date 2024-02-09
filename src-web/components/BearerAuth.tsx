@@ -16,6 +16,7 @@ export function BearerAuth({ requestId, authentication }: Props) {
       <Input
         useTemplating
         autocompleteVariables
+        placeholder="token"
         type="password"
         label="Token"
         name="token"

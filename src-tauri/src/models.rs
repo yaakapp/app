@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Wry};
 use tokio::sync::Mutex;
 
 fn default_true() -> bool {
@@ -260,32 +260,32 @@ pub struct KeyValue {
 }
 
 pub async fn set_key_value_string(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
     let encoded = serde_json::to_string(value);
-    set_key_value_raw(app_handle, namespace, key, &encoded.unwrap()).await
+    set_key_value_raw(mgr, namespace, key, &encoded.unwrap()).await
 }
 
 pub async fn set_key_value_int(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
     value: i32,
 ) -> (KeyValue, bool) {
     let encoded = serde_json::to_string(&value);
-    set_key_value_raw(app_handle, namespace, key, &encoded.unwrap()).await
+    set_key_value_raw(mgr, namespace, key, &encoded.unwrap()).await
 }
 
 pub async fn get_key_value_string(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
     default: &str,
 ) -> String {
-    match get_key_value_raw(app_handle, namespace, key).await {
+    match get_key_value_raw(mgr, namespace, key).await {
         None => default.to_string(),
         Some(v) => {
             let result = serde_json::from_str(&v.value);
@@ -301,12 +301,12 @@ pub async fn get_key_value_string(
 }
 
 pub async fn get_key_value_int(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
     default: i32,
 ) -> i32 {
-    match get_key_value_raw(app_handle, namespace, key).await {
+    match get_key_value_raw(mgr, namespace, key).await {
         None => default.clone(),
         Some(v) => {
             let result = serde_json::from_str(&v.value);
@@ -322,13 +322,13 @@ pub async fn get_key_value_int(
 }
 
 pub async fn set_key_value_raw(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
-    let db = get_db(app_handle).await;
-    let existing = get_key_value_raw(app_handle, namespace, key).await;
+    let db = get_db(mgr).await;
+    let existing = get_key_value_raw(mgr, namespace, key).await;
     sqlx::query!(
         r#"
             INSERT INTO key_values (namespace, key, value)
@@ -344,18 +344,18 @@ pub async fn set_key_value_raw(
     .await
     .expect("Failed to insert key value");
 
-    let kv = get_key_value_raw(app_handle, namespace, key)
+    let kv = get_key_value_raw(mgr, namespace, key)
         .await
         .expect("Failed to get key value");
     (kv, existing.is_none())
 }
 
 pub async fn get_key_value_raw(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     namespace: &str,
     key: &str,
 ) -> Option<KeyValue> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         KeyValue,
         r#"
@@ -371,8 +371,8 @@ pub async fn get_key_value_raw(
     .ok()
 }
 
-pub async fn list_workspaces(app_handle: &AppHandle) -> Result<Vec<Workspace>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn list_workspaces(mgr: &impl Manager<Wry>) -> Result<Vec<Workspace>, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Workspace,
         r#"
@@ -387,8 +387,8 @@ pub async fn list_workspaces(app_handle: &AppHandle) -> Result<Vec<Workspace>, s
     .await
 }
 
-pub async fn get_workspace(app_handle: &AppHandle, id: &str) -> Result<Workspace, sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn get_workspace(mgr: &impl Manager<Wry>, id: &str) -> Result<Workspace, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Workspace,
         r#"
@@ -404,9 +404,9 @@ pub async fn get_workspace(app_handle: &AppHandle, id: &str) -> Result<Workspace
     .await
 }
 
-pub async fn delete_workspace(app_handle: &AppHandle, id: &str) -> Result<Workspace, sqlx::Error> {
-    let db = get_db(app_handle).await;
-    let workspace = get_workspace(app_handle, id).await?;
+pub async fn delete_workspace(mgr: &impl Manager<Wry>, id: &str) -> Result<Workspace, sqlx::Error> {
+    let db = get_db(mgr).await;
+    let workspace = get_workspace(mgr, id).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM workspaces
@@ -417,15 +417,15 @@ pub async fn delete_workspace(app_handle: &AppHandle, id: &str) -> Result<Worksp
     .execute(&db)
     .await;
 
-    for r in list_responses_by_workspace_id(app_handle, id).await? {
-        delete_http_response(app_handle, &r.id).await?;
+    for r in list_responses_by_workspace_id(mgr, id).await? {
+        delete_http_response(mgr, &r.id).await?;
     }
 
-    emit_deleted_model(app_handle, workspace)
+    emit_deleted_model(mgr, workspace)
 }
 
-pub async fn get_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJar, sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn get_cookie_jar(mgr: &impl Manager<Wry>, id: &str) -> Result<CookieJar, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         CookieJar,
         r#"
@@ -441,10 +441,10 @@ pub async fn get_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJa
 }
 
 pub async fn list_cookie_jars(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<CookieJar>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         CookieJar,
         r#"
@@ -459,9 +459,12 @@ pub async fn list_cookie_jars(
     .await
 }
 
-pub async fn delete_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<CookieJar, sqlx::Error> {
-    let cookie_jar = get_cookie_jar(app_handle, id).await?;
-    let db = get_db(app_handle).await;
+pub async fn delete_cookie_jar(
+    mgr: &impl Manager<Wry>,
+    id: &str,
+) -> Result<CookieJar, sqlx::Error> {
+    let cookie_jar = get_cookie_jar(mgr, id).await?;
+    let db = get_db(mgr).await;
 
     let _ = sqlx::query!(
         r#"
@@ -473,23 +476,23 @@ pub async fn delete_cookie_jar(app_handle: &AppHandle, id: &str) -> Result<Cooki
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, cookie_jar)
+    emit_deleted_model(mgr, cookie_jar)
 }
 
 pub async fn duplicate_grpc_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcRequest, sqlx::Error> {
-    let mut request = get_grpc_request(app_handle, id).await?.clone();
+    let mut request = get_grpc_request(mgr, id).await?.clone();
     request.id = "".to_string();
-    upsert_grpc_request(app_handle, &request).await
+    upsert_grpc_request(mgr, &request).await
 }
 
 pub async fn upsert_grpc_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request: &GrpcRequest,
 ) -> Result<GrpcRequest, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let id = match request.id.as_str() {
         "" => generate_id(Some("gr")),
         _ => request.id.to_string(),
@@ -527,17 +530,17 @@ pub async fn upsert_grpc_request(
     .execute(&db)
     .await?;
 
-    match get_grpc_request(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_grpc_request(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn get_grpc_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcRequest, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcRequest,
         r#"
@@ -555,10 +558,10 @@ pub async fn get_grpc_request(
 }
 
 pub async fn list_grpc_requests(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<GrpcRequest>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcRequest,
         r#"
@@ -576,10 +579,10 @@ pub async fn list_grpc_requests(
 }
 
 pub async fn upsert_grpc_connection(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection, sqlx::Error> {
-    let db = get_db(&app_handle).await;
+    let db = get_db(mgr).await;
     let id = match connection.id.as_str() {
         "" => generate_id(Some("gc")),
         _ => connection.id.to_string(),
@@ -606,17 +609,17 @@ pub async fn upsert_grpc_connection(
     .execute(&db)
     .await?;
 
-    match get_grpc_connection(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_grpc_connection(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn get_grpc_connection(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcConnection, sqlx::Error> {
-    let db = get_db(&app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcConnection,
         r#"
@@ -633,10 +636,10 @@ pub async fn get_grpc_connection(
 }
 
 pub async fn list_grpc_connections(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request_id: &str,
 ) -> Result<Vec<GrpcConnection>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcConnection,
         r#"
@@ -654,10 +657,10 @@ pub async fn list_grpc_connections(
 }
 
 pub async fn upsert_grpc_message(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     message: &GrpcMessage,
 ) -> Result<GrpcMessage, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let id = match message.id.as_str() {
         "" => generate_id(Some("gm")),
         _ => message.id.to_string(),
@@ -685,17 +688,17 @@ pub async fn upsert_grpc_message(
     .execute(&db)
     .await?;
 
-    match get_grpc_message(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_grpc_message(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn get_grpc_message(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcMessage, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcMessage,
         r#"
@@ -712,10 +715,10 @@ pub async fn get_grpc_message(
 }
 
 pub async fn list_grpc_messages(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     connection_id: &str,
 ) -> Result<Vec<GrpcMessage>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcMessage,
         r#"
@@ -732,7 +735,7 @@ pub async fn list_grpc_messages(
 }
 
 pub async fn upsert_cookie_jar(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     cookie_jar: &CookieJar,
 ) -> Result<CookieJar, sqlx::Error> {
     let id = match cookie_jar.id.as_str() {
@@ -741,7 +744,7 @@ pub async fn upsert_cookie_jar(
     };
     let trimmed_name = cookie_jar.name.trim();
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             INSERT INTO cookie_jars (
@@ -761,17 +764,17 @@ pub async fn upsert_cookie_jar(
     .execute(&db)
     .await?;
 
-    match get_cookie_jar(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_cookie_jar(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn list_environments(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<Environment>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Environment,
         r#"
@@ -787,11 +790,11 @@ pub async fn list_environments(
 }
 
 pub async fn delete_environment(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<Environment, sqlx::Error> {
-    let db = get_db(app_handle).await;
-    let env = get_environment(app_handle, id).await?;
+    let db = get_db(mgr).await;
+    let env = get_environment(mgr, id).await?;
     let _ = sqlx::query!(
         r#"
             DELETE FROM environments
@@ -802,11 +805,11 @@ pub async fn delete_environment(
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, env)
+    emit_deleted_model(mgr, env)
 }
 
-async fn get_settings(app_handle: &AppHandle) -> Result<Settings, sqlx::Error> {
-    let db = get_db(app_handle).await;
+async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Settings,
         r#"
@@ -820,12 +823,12 @@ async fn get_settings(app_handle: &AppHandle) -> Result<Settings, sqlx::Error> {
     .await
 }
 
-pub async fn get_or_create_settings(app_handle: &AppHandle) -> Settings {
-    if let Ok(settings) = get_settings(app_handle).await {
+pub async fn get_or_create_settings(mgr: &impl Manager<Wry>) -> Settings {
+    if let Ok(settings) = get_settings(mgr).await {
         return settings;
     }
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
                 INSERT INTO settings (id)
@@ -836,16 +839,14 @@ pub async fn get_or_create_settings(app_handle: &AppHandle) -> Settings {
     .await
     .expect("Failed to insert settings");
 
-    get_settings(&app_handle)
-        .await
-        .expect("Failed to get settings")
+    get_settings(mgr).await.expect("Failed to get settings")
 }
 
 pub async fn update_settings(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     settings: Settings,
 ) -> Result<Settings, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             UPDATE settings SET (
@@ -859,14 +860,14 @@ pub async fn update_settings(
     .execute(&db)
     .await?;
 
-    match get_settings(app_handle).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_settings(mgr).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn upsert_environment(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
     let id = match environment.id.as_str() {
@@ -874,7 +875,7 @@ pub async fn upsert_environment(
         _ => environment.id.to_string(),
     };
     let trimmed_name = environment.name.trim();
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             INSERT INTO environments (
@@ -894,14 +895,17 @@ pub async fn upsert_environment(
     .execute(&db)
     .await?;
 
-    match get_environment(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_environment(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
-pub async fn get_environment(app_handle: &AppHandle, id: &str) -> Result<Environment, sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn get_environment(
+    mgr: &impl Manager<Wry>,
+    id: &str,
+) -> Result<Environment, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Environment,
         r#"
@@ -917,8 +921,8 @@ pub async fn get_environment(app_handle: &AppHandle, id: &str) -> Result<Environ
     .await
 }
 
-pub async fn get_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn get_folder(mgr: &impl Manager<Wry>, id: &str) -> Result<Folder, sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Folder,
         r#"
@@ -934,10 +938,10 @@ pub async fn get_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx
 }
 
 pub async fn list_folders(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<Folder>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         Folder,
         r#"
@@ -952,9 +956,9 @@ pub async fn list_folders(
     .await
 }
 
-pub async fn delete_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, sqlx::Error> {
-    let folder = get_folder(app_handle, id).await?;
-    let db = get_db(app_handle).await;
+pub async fn delete_folder(mgr: &impl Manager<Wry>, id: &str) -> Result<Folder, sqlx::Error> {
+    let folder = get_folder(mgr, id).await?;
+    let db = get_db(mgr).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM folders
@@ -965,17 +969,17 @@ pub async fn delete_folder(app_handle: &AppHandle, id: &str) -> Result<Folder, s
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, folder)
+    emit_deleted_model(mgr, folder)
 }
 
-pub async fn upsert_folder(app_handle: &AppHandle, r: Folder) -> Result<Folder, sqlx::Error> {
+pub async fn upsert_folder(mgr: &impl Manager<Wry>, r: Folder) -> Result<Folder, sqlx::Error> {
     let id = match r.id.as_str() {
         "" => generate_id(Some("fl")),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             INSERT INTO folders (
@@ -997,23 +1001,23 @@ pub async fn upsert_folder(app_handle: &AppHandle, r: Folder) -> Result<Folder, 
     .execute(&db)
     .await?;
 
-    match get_folder(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_folder(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn duplicate_http_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<HttpRequest, sqlx::Error> {
-    let mut request = get_http_request(app_handle, id).await?.clone();
+    let mut request = get_http_request(mgr, id).await?.clone();
     request.id = "".to_string();
-    upsert_http_request(app_handle, request).await
+    upsert_http_request(mgr, request).await
 }
 
 pub async fn upsert_http_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
     let id = match r.id.as_str() {
@@ -1024,7 +1028,7 @@ pub async fn upsert_http_request(
     let auth_json = Json(r.authentication);
     let trimmed_name = r.name.trim();
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
 
     sqlx::query!(
         r#"
@@ -1064,17 +1068,17 @@ pub async fn upsert_http_request(
     .execute(&db)
     .await?;
 
-    match get_http_request(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_http_request(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn list_requests(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<HttpRequest>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         HttpRequest,
         r#"
@@ -1095,10 +1099,10 @@ pub async fn list_requests(
 }
 
 pub async fn get_http_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<HttpRequest, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
 
     sqlx::query_as!(
         HttpRequest,
@@ -1120,15 +1124,15 @@ pub async fn get_http_request(
 }
 
 pub async fn delete_http_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<HttpRequest, sqlx::Error> {
-    let req = get_http_request(app_handle, id).await?;
+    let req = get_http_request(mgr, id).await?;
 
     // DB deletes will cascade but this will delete the files
-    delete_all_http_responses(app_handle, id).await?;
+    delete_all_http_responses(mgr, id).await?;
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_requests
@@ -1139,12 +1143,12 @@ pub async fn delete_http_request(
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, req)
+    emit_deleted_model(mgr, req)
 }
 
 #[allow(clippy::too_many_arguments)]
 pub async fn create_response(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request_id: &str,
     elapsed: i64,
     elapsed_headers: i64,
@@ -1157,10 +1161,10 @@ pub async fn create_response(
     version: Option<&str>,
     remote_addr: Option<&str>,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let req = get_http_request(app_handle, request_id).await?;
+    let req = get_http_request(mgr, request_id).await?;
     let id = generate_id(Some("rp"));
     let headers_json = Json(headers);
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             INSERT INTO http_responses (
@@ -1186,11 +1190,11 @@ pub async fn create_response(
     .execute(&db)
     .await?;
 
-    get_http_response(app_handle, &id).await
+    get_http_response(mgr, &id).await
 }
 
-pub async fn cancel_pending_grpc_connections(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn cancel_pending_grpc_connections(mgr: &impl Manager<Wry>) -> Result<(), sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             UPDATE grpc_connections
@@ -1203,8 +1207,8 @@ pub async fn cancel_pending_grpc_connections(app_handle: &AppHandle) -> Result<(
     Ok(())
 }
 
-pub async fn cancel_pending_responses(app_handle: &AppHandle) -> Result<(), sqlx::Error> {
-    let db = get_db(app_handle).await;
+pub async fn cancel_pending_responses(mgr: &impl Manager<Wry>) -> Result<(), sqlx::Error> {
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             UPDATE http_responses
@@ -1218,18 +1222,18 @@ pub async fn cancel_pending_responses(app_handle: &AppHandle) -> Result<(), sqlx
 }
 
 pub async fn update_response_if_id(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     response: &HttpResponse,
 ) -> Result<HttpResponse, sqlx::Error> {
     if response.id.is_empty() {
         Ok(response.clone())
     } else {
-        update_response(app_handle, response).await
+        update_response(mgr, response).await
     }
 }
 
 pub async fn upsert_workspace(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
     let id = match workspace.id.as_str() {
@@ -1238,7 +1242,7 @@ pub async fn upsert_workspace(
     };
     let trimmed_name = workspace.name.trim();
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             INSERT INTO workspaces (
@@ -1266,18 +1270,18 @@ pub async fn upsert_workspace(
     .execute(&db)
     .await?;
 
-    match get_workspace(app_handle, &id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_workspace(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn update_response(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     response: &HttpResponse,
 ) -> Result<HttpResponse, sqlx::Error> {
     let headers_json = Json(&response.headers);
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query!(
         r#"
             UPDATE http_responses SET (
@@ -1301,17 +1305,17 @@ pub async fn update_response(
     .execute(&db)
     .await?;
 
-    match get_http_response(app_handle, &response.id).await {
-        Ok(m) => Ok(emit_upserted_model(app_handle, m)),
+    match get_http_response(mgr, &response.id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
         Err(e) => Err(e),
     }
 }
 
 pub async fn get_http_response(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1330,12 +1334,12 @@ pub async fn get_http_response(
 }
 
 pub async fn list_responses(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request_id: &str,
     limit: Option<i64>,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
     let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1357,10 +1361,10 @@ pub async fn list_responses(
 }
 
 pub async fn list_responses_by_workspace_id(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<HttpResponse>, sqlx::Error> {
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     sqlx::query_as!(
         HttpResponse,
         r#"
@@ -1380,12 +1384,12 @@ pub async fn list_responses_by_workspace_id(
 }
 
 pub async fn delete_grpc_request(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcRequest, sqlx::Error> {
-    let req = get_grpc_request(app_handle, id).await?;
+    let req = get_grpc_request(mgr, id).await?;
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM grpc_requests
@@ -1396,16 +1400,16 @@ pub async fn delete_grpc_request(
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, req)
+    emit_deleted_model(mgr, req)
 }
 
 pub async fn delete_grpc_connection(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcConnection, sqlx::Error> {
-    let resp = get_grpc_connection(app_handle, id).await?;
+    let resp = get_grpc_connection(mgr, id).await?;
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM grpc_connections
@@ -1416,14 +1420,14 @@ pub async fn delete_grpc_connection(
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, resp)
+    emit_deleted_model(mgr, resp)
 }
 
 pub async fn delete_http_response(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let resp = get_http_response(app_handle, id).await?;
+    let resp = get_http_response(mgr, id).await?;
 
     // Delete the body file if it exists
     if let Some(p) = resp.body_path.clone() {
@@ -1432,7 +1436,7 @@ pub async fn delete_http_response(
         };
     }
 
-    let db = get_db(app_handle).await;
+    let db = get_db(mgr).await;
     let _ = sqlx::query!(
         r#"
             DELETE FROM http_responses
@@ -1443,25 +1447,25 @@ pub async fn delete_http_response(
     .execute(&db)
     .await;
 
-    emit_deleted_model(app_handle, resp)
+    emit_deleted_model(mgr, resp)
 }
 
 pub async fn delete_all_grpc_connections(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request_id: &str,
 ) -> Result<(), sqlx::Error> {
-    for r in list_grpc_connections(app_handle, request_id).await? {
-        delete_grpc_connection(app_handle, &r.id).await?;
+    for r in list_grpc_connections(mgr, request_id).await? {
+        delete_grpc_connection(mgr, &r.id).await?;
     }
     Ok(())
 }
 
 pub async fn delete_all_http_responses(
-    app_handle: &AppHandle,
+    mgr: &impl Manager<Wry>,
     request_id: &str,
 ) -> Result<(), sqlx::Error> {
-    for r in list_responses(app_handle, request_id, None).await? {
-        delete_http_response(app_handle, &r.id).await?;
+    for r in list_responses(mgr, request_id, None).await? {
+        delete_http_response(mgr, &r.id).await?;
     }
     Ok(())
 }
@@ -1518,20 +1522,18 @@ pub async fn get_workspace_export_resources(
     };
 }
 
-fn emit_upserted_model<S: Serialize + Clone>(app_handle: &AppHandle, model: S) -> S {
-    app_handle
-        .emit_all("upserted_model", model.clone())
-        .unwrap();
+fn emit_upserted_model<S: Serialize + Clone>(mgr: &impl Manager<Wry>, model: S) -> S {
+    mgr.emit_all("upserted_model", model.clone()).unwrap();
     model
 }
 
-fn emit_deleted_model<S: Serialize + Clone, E>(app_handle: &AppHandle, model: S) -> Result<S, E> {
-    app_handle.emit_all("deleted_model", model.clone()).unwrap();
+fn emit_deleted_model<S: Serialize + Clone, E>(mgr: &impl Manager<Wry>, model: S) -> Result<S, E> {
+    mgr.emit_all("deleted_model", model.clone()).unwrap();
     Ok(model)
 }
 
-async fn get_db(app_handle: &AppHandle) -> Pool<Sqlite> {
-    let db_state = app_handle.state::<Mutex<Pool<Sqlite>>>();
+async fn get_db(w: &impl Manager<Wry>) -> Pool<Sqlite> {
+    let db_state = w.state::<Mutex<Pool<Sqlite>>>();
     let db = &*db_state.lock().await;
     db.clone()
 }

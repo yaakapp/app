@@ -117,6 +117,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             ),
             name: 'name',
             label: 'Name',
+            placeholder: 'New Name',
             defaultValue: activeWorkspace?.name,
           });
           updateWorkspace.mutate({ name });
@@ -142,6 +143,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             defaultValue: 'My Workspace',
             title: 'New Workspace',
             confirmLabel: 'Create',
+            placeholder: 'My Workspace',
           });
           createWorkspace.mutate({ name });
         },
