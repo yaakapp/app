@@ -127,100 +127,11 @@ async fn cmd_grpc_reflect(
 }
 
 #[tauri::command]
-async fn cmd_grpc_call_unary(
+async fn cmd_grpc_go(
     request_id: &str,
     w: Window,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
-) -> Result<GrpcMessage, String> {
-    let req = get_grpc_request(&w, request_id)
-        .await
-        .map_err(|e| e.to_string())?;
-    let conn = {
-        let req = req.clone();
-        upsert_grpc_connection(
-            &w,
-            &GrpcConnection {
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                ..Default::default()
-            },
-        )
-        .await
-        .map_err(|e| e.to_string())?
-    };
-
-    {
-        let req = req.clone();
-        let conn = conn.clone();
-        upsert_grpc_message(
-            &w,
-            &GrpcMessage {
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                connection_id: conn.id,
-                is_info: true,
-                message: format!("Initiating connection to {}", req.url),
-                ..Default::default()
-            },
-        )
-        .await
-        .map_err(|e| e.to_string())?;
-    };
-
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    let start = std::time::Instant::now();
-    let msg = match grpc_handle
-        .lock()
-        .await
-        .connect(
-            &req.clone().id,
-            uri,
-            req.proto_files
-                .0
-                .iter()
-                .map(|p| PathBuf::from_str(p).unwrap())
-                .collect(),
-        )
-        .await?
-        .unary(
-            &req.service.unwrap_or_default(),
-            &req.method.unwrap_or_default(),
-            &req.message,
-        )
-        .await
-    {
-        Ok(msg) => {
-            upsert_grpc_message(
-                &w,
-                &GrpcMessage {
-                    message: serialize_message(&msg)?,
-                    workspace_id: req.workspace_id,
-                    request_id: req.id,
-                    connection_id: conn.clone().id,
-                    is_server: true,
-                    ..Default::default()
-                },
-            )
-            .await
-        }
-        Err(e) => return Err(e.to_string()),
-    };
-
-    upsert_grpc_connection(
-        &w,
-        &GrpcConnection {
-            elapsed: start.elapsed().as_millis() as i64,
-            ..conn
-        },
-    )
-    .await
-    .map_err(|e| e.to_string())?;
-
-    msg.map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-async fn cmd_grpc_client_streaming(request_id: &str, w: Window) -> Result<GrpcConnection, String> {
+) -> Result<String, String> {
     let req = get_grpc_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())?;
@@ -253,7 +164,7 @@ async fn cmd_grpc_client_streaming(request_id: &str, w: Window) -> Result<GrpcCo
             },
         )
         .await
-        .unwrap();
+        .expect("Failed to upsert message");
     };
 
     let (in_msg_tx, in_msg_rx) = tauri::async_runtime::channel::<String>(16);
@@ -272,11 +183,30 @@ async fn cmd_grpc_client_streaming(request_id: &str, w: Window) -> Result<GrpcCo
         }
     };
 
+    let start = std::time::Instant::now();
+    let connection = grpc_handle
+        .lock()
+        .await
+        .connect(
+            &req.clone().id,
+            uri,
+            req.proto_files
+                .0
+                .iter()
+                .map(|p| PathBuf::from_str(p).unwrap())
+                .collect(),
+        )
+        .await?;
+
+    let method_desc = connection
+        .method(&service, &method)
+        .expect("Service not found");
+
     #[derive(serde::Deserialize)]
     enum IncomingMsg {
         Message(String),
-        Commit,
         Cancel,
+        Commit,
     }
 
     let cb = {
@@ -320,6 +250,7 @@ async fn cmd_grpc_client_streaming(request_id: &str, w: Window) -> Result<GrpcCo
                             },
                         )
                         .await
+                        .map_err(|e| e.to_string())
                         .unwrap();
                     });
                 }
@@ -337,237 +268,76 @@ async fn cmd_grpc_client_streaming(request_id: &str, w: Window) -> Result<GrpcCo
     };
     let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
-    let start = std::time::Instant::now();
     let grpc_listen = {
         let w = w.clone();
         let conn = conn.clone();
         let req = req.clone();
         async move {
-            let grpc_handle = w.state::<Mutex<GrpcHandle>>();
-            let msg = grpc_handle
-                .lock()
-                .await
-                .connect(
-                    &req.clone().id,
-                    uri,
-                    req.proto_files
-                        .0
-                        .iter()
-                        .map(|p| PathBuf::from_str(p).unwrap())
-                        .collect(),
+            let (maybe_stream, maybe_msg) = match (
+                method_desc.is_client_streaming(),
+                method_desc.is_server_streaming(),
+            ) {
+                (true, true) => (
+                    Some(
+                        connection
+                            .streaming(&service, &method, in_msg_stream)
+                            .await
+                            .unwrap(),
+                    ),
+                    None,
+                ),
+                (true, false) => (
+                    None,
+                    Some(
+                        connection
+                            .client_streaming(&service, &method, in_msg_stream)
+                            .await
+                            .map_err(|e| e.to_string())
+                            .unwrap(),
+                    ),
+                ),
+                (false, true) => (
+                    Some(
+                        connection
+                            .server_streaming(&service, &method, &req.message)
+                            .await
+                            .unwrap(),
+                    ),
+                    None,
+                ),
+                (false, false) => (
+                    None,
+                    Some(
+                        connection
+                            .unary(&service, &method, &req.message)
+                            .await
+                            .unwrap(),
+                    ),
+                ),
+            };
+
+            if let Some(msg) = maybe_msg {
+                let req = req.clone();
+                let conn = conn.clone();
+                upsert_grpc_message(
+                    &w,
+                    &GrpcMessage {
+                        message: serialize_message(&msg).unwrap(),
+                        workspace_id: req.workspace_id,
+                        request_id: req.id,
+                        connection_id: conn.id,
+                        is_server: true,
+                        ..Default::default()
+                    },
                 )
                 .await
-                .unwrap()
-                .client_streaming(&service, &method, in_msg_stream)
-                .await
+                .map_err(|e| e.to_string())
                 .unwrap();
-            let message = serialize_message(&msg).unwrap();
-            upsert_grpc_message(
-                &w,
-                &GrpcMessage {
-                    message,
-                    workspace_id: req.workspace_id,
-                    request_id: req.id,
-                    connection_id: conn.id,
-                    is_server: true,
-                    ..Default::default()
-                },
-            )
-            .await
-            .unwrap();
-        }
-    };
-
-    {
-        let conn = conn.clone();
-        let w = w.clone();
-        tauri::async_runtime::spawn(async move {
-            tokio::select! {
-                _ = grpc_listen => {
-                    upsert_grpc_message(
-                        &w,
-                        &GrpcMessage {
-                            message: "Connection completed".to_string(),
-                            workspace_id: req.workspace_id,
-                            request_id: req.id,
-                            connection_id: conn.clone().id,
-                            is_info: true,
-                            ..Default::default()
-                        },
-                    )
-                    .await.unwrap();
-                    upsert_grpc_connection(
-                        &w,
-                        &GrpcConnection {
-                            elapsed: start.elapsed().as_millis() as i64,
-                            ..conn
-                        },
-                    )
-                    .await
-                    .unwrap();
-                },
-                _ = cancelled_rx.changed() => {
-                    upsert_grpc_message(
-                        &w,
-                        &GrpcMessage {
-                            message: "Connection cancelled".to_string(),
-                            workspace_id: req.workspace_id,
-                            request_id: req.id,
-                            connection_id: conn.clone().id,
-                            is_info: true,
-                            ..Default::default()
-                        },
-                    )
-                    .await.unwrap();
-
-                    upsert_grpc_connection(
-                        &w,
-                        &GrpcConnection {
-                            elapsed: start.elapsed().as_millis() as i64,
-                            ..conn
-                        },
-                    )
-                    .await
-                    .unwrap();
-                },
             }
-            w.unlisten(event_handler);
-        });
-    };
-
-    Ok(conn)
-}
-
-#[tauri::command]
-async fn cmd_grpc_streaming(
-    request_id: &str,
-    w: Window,
-    grpc_handle: State<'_, Mutex<GrpcHandle>>,
-) -> Result<String, String> {
-    let req = get_grpc_request(&w, request_id)
-        .await
-        .map_err(|e| e.to_string())?;
-    let conn = {
-        let req = req.clone();
-        upsert_grpc_connection(
-            &w,
-            &GrpcConnection {
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                ..Default::default()
-            },
-        )
-        .await
-        .map_err(|e| e.to_string())?
-    };
-
-    {
-        let conn = conn.clone();
-        let req = req.clone();
-        upsert_grpc_message(
-            &w,
-            &GrpcMessage {
-                message: "Initiating connection".to_string(),
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                connection_id: conn.id,
-                is_info: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .expect("Failed to upsert message");
-    };
-
-    let (in_msg_tx, in_msg_rx) = tauri::async_runtime::channel::<String>(16);
-    let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
-
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-
-    let in_msg_stream = tokio_stream::wrappers::ReceiverStream::new(in_msg_rx);
-
-    let (service, method) = {
-        let req = req.clone();
-        match (req.service, req.method) {
-            (Some(service), Some(method)) => (service, method),
-            _ => return Err("Service and method are required".to_string()),
-        }
-    };
-
-    let start = std::time::Instant::now();
-    let mut stream = grpc_handle
-        .lock()
-        .await
-        .connect(
-            &req.clone().id,
-            uri,
-            req.proto_files
-                .0
-                .iter()
-                .map(|p| PathBuf::from_str(p).unwrap())
-                .collect(),
-        )
-        .await?
-        .streaming(&service, &method, in_msg_stream)
-        .await
-        .unwrap();
-
-    #[derive(serde::Deserialize)]
-    enum IncomingMsg {
-        Message(String),
-        Cancel,
-    }
-
-    let cb = {
-        let cancelled_rx = cancelled_rx.clone();
-        let w = w.clone();
-        let conn = conn.clone();
-        let req = req.clone();
-
-        move |ev: tauri::Event| {
-            if *cancelled_rx.borrow() {
-                // Stream is cancelled
-                return;
-            }
-
-            match serde_json::from_str::<IncomingMsg>(ev.payload().unwrap()) {
-                Ok(IncomingMsg::Message(msg)) => {
-                    in_msg_tx.try_send(msg.clone()).unwrap();
-                    let w = w.clone();
-                    let req = req.clone();
-                    let conn = conn.clone();
-                    tauri::async_runtime::spawn(async move {
-                        upsert_grpc_message(
-                            &w,
-                            &GrpcMessage {
-                                message: msg,
-                                workspace_id: req.workspace_id,
-                                request_id: req.id,
-                                connection_id: conn.id,
-                                ..Default::default()
-                            },
-                        )
-                        .await
-                        .map_err(|e| e.to_string())
-                        .unwrap();
-                    });
-                }
-                Ok(IncomingMsg::Cancel) => {
-                    cancelled_tx.send_replace(true);
-                }
-                Err(e) => {
-                    error!("Failed to parse gRPC message: {:?}", e);
-                }
-            }
-        }
-    };
-    let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
-
-    let grpc_listen = {
-        let w = w.clone();
-        let conn = conn.clone();
-        let req = req.clone();
-        async move {
+            let mut stream = match maybe_stream {
+                Some(s) => s,
+                None => return,
+            };
             loop {
                 match stream.next().await {
                     Some(Ok(item)) => {
@@ -605,6 +375,7 @@ async fn cmd_grpc_streaming(
         let conn = conn.clone();
         tauri::async_runtime::spawn(async move {
             let w = w.clone();
+            let req = req.clone();
             tokio::select! {
                 _ = grpc_listen => {
                     upsert_grpc_message(
@@ -654,196 +425,6 @@ async fn cmd_grpc_streaming(
     };
 
     Ok(conn.id)
-}
-
-#[tauri::command]
-async fn cmd_grpc_server_streaming(
-    request_id: &str,
-    w: Window,
-    grpc_handle: State<'_, Mutex<GrpcHandle>>,
-) -> Result<GrpcConnection, String> {
-    let req = get_grpc_request(&w, request_id)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let conn = {
-        let req = req.clone();
-        upsert_grpc_connection(
-            &w,
-            &GrpcConnection {
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                ..Default::default()
-            },
-        )
-        .await
-        .map_err(|e| e.to_string())?
-    };
-
-    {
-        let req = req.clone();
-        let conn = conn.clone();
-        upsert_grpc_message(
-            &w,
-            &GrpcMessage {
-                message: "Initiating connection".to_string(),
-                workspace_id: req.workspace_id,
-                request_id: req.id,
-                connection_id: conn.id,
-                is_info: true,
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
-    }
-
-    let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
-
-    let (service, method) = match (&req.service, &req.method) {
-        (Some(service), Some(method)) => (service, method),
-        _ => return Err("Service and method are required".to_string()),
-    };
-
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    let mut stream = grpc_handle
-        .lock()
-        .await
-        .connect(
-            &req.clone().id,
-            uri,
-            req.proto_files
-                .0
-                .iter()
-                .map(|p| PathBuf::from_str(p).unwrap())
-                .collect(),
-        )
-        .await?
-        .server_streaming(&service, &method, &req.message)
-        .await
-        .expect("FAILED");
-
-    #[derive(serde::Deserialize)]
-    enum IncomingMsg {
-        Cancel,
-    }
-
-    let cb = {
-        let cancelled_rx = cancelled_rx.clone();
-
-        move |ev: tauri::Event| {
-            if *cancelled_rx.borrow() {
-                // Stream is cancelled
-                return;
-            }
-
-            match serde_json::from_str::<IncomingMsg>(ev.payload().unwrap()) {
-                Ok(IncomingMsg::Cancel) => {
-                    cancelled_tx.send_replace(true);
-                }
-                Err(e) => {
-                    error!("Failed to parse gRPC message: {:?}", e);
-                }
-            }
-        }
-    };
-    let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
-
-    let start = std::time::Instant::now();
-    let grpc_listen = {
-        let conn_id = conn.clone().id;
-        let w = w.clone();
-        let req = req.clone();
-        async move {
-            loop {
-                let req = req.clone();
-                let conn_id = conn_id.clone();
-                let w = w.clone();
-                match stream.next().await {
-                    Some(Ok(item)) => {
-                        let item = serialize_message(&item).unwrap();
-                        upsert_grpc_message(
-                            &w,
-                            &GrpcMessage {
-                                message: item,
-                                workspace_id: req.workspace_id,
-                                request_id: req.id,
-                                connection_id: conn_id,
-                                is_server: true,
-                                ..Default::default()
-                            },
-                        )
-                        .await
-                        .map_err(|e| e.to_string())
-                        .expect("Failed to upsert message");
-                    }
-                    Some(Err(e)) => {
-                        error!("gRPC stream error: {:?}", e);
-                        // TODO: Handle error
-                    }
-                    None => {
-                        info!("gRPC stream closed by sender");
-                        break;
-                    }
-                }
-            }
-        }
-    };
-
-    {
-        let conn = conn.clone();
-        let req = req.clone();
-        let w = w.clone();
-        tauri::async_runtime::spawn(async move {
-            tokio::select! {
-                _ = grpc_listen => {
-                    upsert_grpc_message(
-                        &w,
-                        &GrpcMessage {
-                            message: "Connection completed".to_string(),
-                            workspace_id: req.workspace_id,
-                            request_id: req.id,
-                            connection_id: conn.clone().id,
-                            is_info: true,
-                            ..Default::default()
-                        },
-                    )
-                    .await.unwrap();
-                    upsert_grpc_connection(
-                        &w,
-                        &GrpcConnection{
-                            elapsed: start.elapsed().as_millis() as i64,
-                            ..conn
-                        },
-                    ).await.unwrap();
-                },
-                _ = cancelled_rx.changed() => {
-                    upsert_grpc_message(
-                        &w,
-                        &GrpcMessage {
-                            message: "Connection cancelled".to_string(),
-                            workspace_id: req.workspace_id,
-                            request_id: req.id,
-                            connection_id: conn.clone().id,
-                            is_info: true,
-                            ..Default::default()
-                        },
-                    )
-                    .await.unwrap();
-                    upsert_grpc_connection(
-                        &w,
-                        &GrpcConnection{
-                            elapsed: start.elapsed().as_millis() as i64,
-                            ..conn
-                        },
-                    ).await.unwrap();
-                },
-            }
-            w.unlisten(event_handler);
-        });
-    }
-
-    Ok(conn)
 }
 
 #[tauri::command]
@@ -1637,10 +1218,7 @@ fn main() {
             cmd_get_grpc_request,
             cmd_get_settings,
             cmd_get_workspace,
-            cmd_grpc_call_unary,
-            cmd_grpc_client_streaming,
-            cmd_grpc_server_streaming,
-            cmd_grpc_streaming,
+            cmd_grpc_go,
             cmd_grpc_reflect,
             cmd_import_data,
             cmd_list_cookie_jars,

@@ -1,11 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useDuplicateHttpRequest({
   id,
@@ -17,7 +16,6 @@ export function useDuplicateHttpRequest({
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
-  const queryClient = useQueryClient();
   return useMutation<HttpRequest, string>({
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null request");
@@ -25,10 +23,6 @@ export function useDuplicateHttpRequest({
     },
     onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
     onSuccess: async (request) => {
-      queryClient.setQueryData<HttpRequest[]>(
-        httpRequestsQueryKey({ workspaceId: request.workspaceId }),
-        (requests) => [...(requests ?? []), request],
-      );
       if (navigateAfter && activeWorkspaceId !== null) {
         routes.navigate('request', {
           workspaceId: activeWorkspaceId,

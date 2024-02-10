@@ -13,7 +13,7 @@ const methodMap: Record<string, string> = {
   delete: 'DELETE',
   options: 'OPTIONS',
   head: 'HEAD',
-  grpc: 'gRPC',
+  grpc: 'GRPC',
 };
 
 export function HttpMethodTag({ children: method, className }: Props) {

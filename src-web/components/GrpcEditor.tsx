@@ -36,10 +36,18 @@ export function GrpcEditor({
 
   // Find the schema for the selected service and method and update the editor
   useEffect(() => {
-    if (editorViewRef.current == null || services === null) return;
+    if (
+      editorViewRef.current == null ||
+      services === null ||
+      request.service === null ||
+      request.method === null
+    ) {
+      return;
+    }
 
     const s = services.find((s) => s.name === request.service);
-    if (request.service != null && s == null) {
+    if (s == null) {
+      console.log('Failed to find service', { service: request.service, services });
       alert({
         id: 'grpc-find-service-error',
         title: "Couldn't Find Service",
@@ -52,8 +60,9 @@ export function GrpcEditor({
       return;
     }
 
-    const schema = s?.methods.find((m) => m.name === request.method)?.schema;
+    const schema = s.methods.find((m) => m.name === request.method)?.schema;
     if (request.method != null && schema == null) {
+      console.log('Failed to find method', { method: request.method, methods: s?.methods });
       alert({
         id: 'grpc-find-schema-error',
         title: "Couldn't Find Method",
