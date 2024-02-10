@@ -1,11 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { GrpcRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { grpcRequestsQueryKey } from './useGrpcRequests';
 
 export function useDuplicateGrpcRequest({
   id,
@@ -17,7 +16,6 @@ export function useDuplicateGrpcRequest({
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
-  const queryClient = useQueryClient();
   return useMutation<GrpcRequest, string>({
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null grpc request");
@@ -25,10 +23,6 @@ export function useDuplicateGrpcRequest({
     },
     onSettled: () => trackEvent('GrpcRequest', 'Duplicate'),
     onSuccess: async (request) => {
-      queryClient.setQueryData<GrpcRequest[]>(
-        grpcRequestsQueryKey({ workspaceId: request.workspaceId }),
-        (requests) => [...(requests ?? []), request],
-      );
       if (navigateAfter && activeWorkspaceId !== null) {
         routes.navigate('request', {
           workspaceId: activeWorkspaceId,

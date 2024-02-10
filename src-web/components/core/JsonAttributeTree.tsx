@@ -31,6 +31,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               .sort((a, b) => a.localeCompare(b))
               .flatMap((k) => (
                 <JsonAttributeTree
+                  key={k}
                   depth={depth + 1}
                   attrValue={attrValue[k]}
                   attrKey={k}
@@ -48,6 +49,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
             attrValue.flatMap((v: any, i: number) => (
               <JsonAttributeTree
+                key={i}
                 depth={depth + 1}
                 attrValue={v}
                 attrKey={i}

@@ -493,7 +493,7 @@ function SidebarItems({
               child.item.model === 'http_request' ? (
                 <HttpMethodTag className="opacity-50">{child.item.method}</HttpMethodTag>
               ) : child.item.model === 'grpc_request' ? (
-                <HttpMethodTag className="opacity-50">gRPC</HttpMethodTag>
+                <HttpMethodTag className="opacity-50">GRPC</HttpMethodTag>
               ) : null
             }
             onMove={handleMove}

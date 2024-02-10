@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
-import type { GrpcConnection, GrpcMessage, GrpcRequest } from '../lib/models';
+import type { GrpcConnection, GrpcRequest } from '../lib/models';
 import { useDebouncedValue } from './useDebouncedValue';
 
 export interface ReflectResponseService {
@@ -13,27 +13,20 @@ export interface ReflectResponseService {
 export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
   const requestId = req?.id ?? 'n/a';
 
-  const unary = useMutation<GrpcMessage, string>({
-    mutationKey: ['grpc_unary', conn?.id ?? 'n/a'],
-    mutationFn: async () =>
-      (await invoke('cmd_grpc_call_unary', {
-        requestId,
-      })) as GrpcMessage,
+  const unary = useMutation<void, string>({
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
   });
 
   const clientStreaming = useMutation<void, string>({
-    mutationKey: ['grpc_client_streaming', conn?.id ?? 'n/a'],
-    mutationFn: async () => await invoke('cmd_grpc_client_streaming', { requestId }),
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
   });
 
   const serverStreaming = useMutation<void, string>({
-    mutationKey: ['grpc_server_streaming', conn?.id ?? 'n/a'],
-    mutationFn: async () => await invoke('cmd_grpc_server_streaming', { requestId }),
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
   });
 
   const streaming = useMutation<void, string>({
-    mutationKey: ['grpc_streaming', conn?.id ?? 'n/a'],
-    mutationFn: async () => await invoke('cmd_grpc_streaming', { requestId }),
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
   });
 
   const send = useMutation({
