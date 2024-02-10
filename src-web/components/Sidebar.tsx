@@ -39,6 +39,7 @@ import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models'
 import { isResponseLoading } from '../lib/models';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
+import { HttpMethodTag } from './core/HttpMethodTag';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
@@ -488,6 +489,13 @@ function SidebarItems({
                 : 'New Folder'
             }
             itemModel={child.item.model}
+            itemPrefix={
+              child.item.model === 'http_request' ? (
+                <HttpMethodTag className="opacity-50">{child.item.method}</HttpMethodTag>
+              ) : child.item.model === 'grpc_request' ? (
+                <HttpMethodTag className="opacity-50">gRPC</HttpMethodTag>
+              ) : null
+            }
             onMove={handleMove}
             onEnd={handleEnd}
             onSelect={onSelect}
@@ -531,6 +539,7 @@ type SidebarItemProps = {
   itemName: string;
   itemFallbackName: string;
   itemModel: string;
+  itemPrefix: ReactNode;
   useProminentStyles?: boolean;
   selected?: boolean;
   draggable?: boolean;
@@ -546,6 +555,7 @@ const SidebarItem = forwardRef(function SidebarItem(
     itemFallbackName,
     itemId,
     itemModel,
+    itemPrefix,
     useProminentStyles,
     selected,
     onSelect,
@@ -733,7 +743,7 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex items-center text-sm h-xs px-2 rounded-md transition-colors',
+            'w-full flex gap-2 items-center text-sm h-xs pl-2 rounded-md transition-colors',
             editing && 'ring-1 focus-within:ring-focus',
             isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
@@ -746,37 +756,40 @@ const SidebarItem = forwardRef(function SidebarItem(
               size="sm"
               icon="chevronRight"
               className={classNames(
-                '-ml-0.5 mr-2 transition-transform',
+                '-ml-0.5 transition-transform opacity-50',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
           )}
-          {editing ? (
-            <input
-              ref={handleFocus}
-              defaultValue={itemName}
-              className="bg-transparent outline-none w-full"
-              onBlur={handleBlur}
-              onKeyDown={handleInputKeyDown}
-            />
-          ) : (
-            <span className="truncate">{itemName || itemFallbackName}</span>
-          )}
-          {latestGrpcConnection ? (
-            <div className="ml-auto">
-              {latestGrpcConnection.elapsed === 0 && (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
-              )}
-            </div>
-          ) : latestHttpResponse ? (
-            <div className="ml-auto">
-              {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
-              ) : (
-                <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
-              )}
-            </div>
-          ) : null}
+          <div className="flex items-end gap-2 min-w-0">
+            {itemPrefix}
+            {editing ? (
+              <input
+                ref={handleFocus}
+                defaultValue={itemName}
+                className="bg-transparent outline-none w-full"
+                onBlur={handleBlur}
+                onKeyDown={handleInputKeyDown}
+              />
+            ) : (
+              <span className="truncate">{itemName || itemFallbackName}</span>
+            )}
+            {latestGrpcConnection ? (
+              <div className="ml-auto">
+                {latestGrpcConnection.elapsed === 0 && (
+                  <Icon spin size="sm" icon="update" className="text-gray-400" />
+                )}
+              </div>
+            ) : latestHttpResponse ? (
+              <div className="ml-auto">
+                {isResponseLoading(latestHttpResponse) ? (
+                  <Icon spin size="sm" icon="update" className="text-gray-400" />
+                ) : (
+                  <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
+                )}
+              </div>
+            ) : null}
+          </div>
         </button>
       </div>
       {children}

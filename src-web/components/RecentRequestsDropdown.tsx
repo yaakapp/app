@@ -5,6 +5,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useHttpRequests } from '../hooks/useHttpRequests';
@@ -19,10 +20,12 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const requests = useHttpRequests();
+  const httpRequests = useHttpRequests();
+  const grpcRequests = useGrpcRequests();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
+  const requests = useMemo(() => [...httpRequests, ...grpcRequests], [httpRequests, grpcRequests]);
 
   // Toggle the menu on Cmd+k
   useKey('k', (e) => {

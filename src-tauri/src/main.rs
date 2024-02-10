@@ -1564,7 +1564,7 @@ fn main() {
                 "App Config Dir: {}",
                 app_config_dir.as_path().to_string_lossy(),
             );
-            info!("App Data Dir: {}", app_data_dir.as_path().to_string_lossy(),);
+            info!("App Data Dir: {}", app_data_dir.as_path().to_string_lossy());
             let dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app_data_dir,

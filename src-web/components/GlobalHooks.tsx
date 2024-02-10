@@ -46,8 +46,6 @@ export function GlobalHooks() {
   }, [location.pathname]);
 
   useListenToTauriEvent<Model>('upserted_model', ({ payload, windowLabel }) => {
-    if (shouldIgnoreEvent(payload, windowLabel)) return;
-
     const queryKey =
       payload.model === 'http_request'
         ? httpRequestsQueryKey(payload)
@@ -74,7 +72,7 @@ export function GlobalHooks() {
       return;
     }
 
-    if (payload.model === 'http_request') {
+    if (payload.model === 'http_request' && windowLabel !== appWindow.label) {
       wasUpdatedExternally(payload.id);
     }
 
@@ -82,21 +80,19 @@ export function GlobalHooks() {
       payload.model,
     );
 
-    if (!shouldIgnoreModel(payload)) {
-      queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
-        const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
-        if (index >= 0) {
-          return [...values.slice(0, index), payload, ...values.slice(index + 1)];
-        } else {
-          return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
-        }
-      });
-    }
+    if (shouldIgnoreModel(payload)) return;
+
+    queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
+      const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
+      if (index >= 0) {
+        return [...values.slice(0, index), payload, ...values.slice(index + 1)];
+      } else {
+        return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
+      }
+    });
   });
 
   useListenToTauriEvent<Model>('deleted_model', ({ payload, windowLabel }) => {
-    if (shouldIgnoreEvent(payload, windowLabel)) return;
-
     if (shouldIgnoreModel(payload)) return;
 
     if (payload.model === 'workspace') {
@@ -141,9 +137,6 @@ export function GlobalHooks() {
 function removeById<T extends { id: string }>(model: T) {
   return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id);
 }
-
-const shouldIgnoreEvent = (payload: Model, windowLabel: string) =>
-  windowLabel === appWindow.label && payload.model !== 'http_response';
 
 const shouldIgnoreModel = (payload: Model) => {
   if (payload.model === 'key_value') {
