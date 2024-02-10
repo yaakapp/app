@@ -1147,7 +1147,7 @@ pub async fn delete_http_request(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub async fn create_response(
+pub async fn create_http_response(
     mgr: &impl Manager<Wry>,
     request_id: &str,
     elapsed: i64,
@@ -1190,7 +1190,10 @@ pub async fn create_response(
     .execute(&db)
     .await?;
 
-    get_http_response(mgr, &id).await
+    match get_http_response(mgr, &id).await {
+        Ok(m) => Ok(emit_upserted_model(mgr, m)),
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn cancel_pending_grpc_connections(mgr: &impl Manager<Wry>) -> Result<(), sqlx::Error> {
