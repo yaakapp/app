@@ -31,7 +31,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         }
       }
 
-      return invoke('cmd_send_request', {
+      return invoke('cmd_send_http_request', {
         requestId: id,
         environmentId,
         downloadDir: downloadDir,
