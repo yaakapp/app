@@ -71,11 +71,11 @@ module.exports = {
       red: color('red'),
       orange: color('orange'),
       yellow: color('yellow'),
-      gray: color('gray'),
       blue: color('blue'),
       green: color('green'),
       pink: color('pink'),
       violet: color('violet'),
+      gray: color('gray'),
     },
   },
   plugins: [
