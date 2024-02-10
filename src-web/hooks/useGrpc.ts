@@ -57,7 +57,6 @@ export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
     queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl],
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      console.log('useGrpc.reflect', { requestId });
       return (await minPromiseMillis(
         invoke('cmd_grpc_reflect', { requestId }),
         300,
