@@ -743,7 +743,7 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-2 items-center text-sm h-xs pl-2 rounded-md transition-colors',
+            'w-full flex gap-2 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
             editing && 'ring-1 focus-within:ring-focus',
             isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
@@ -774,22 +774,22 @@ const SidebarItem = forwardRef(function SidebarItem(
             ) : (
               <span className="truncate">{itemName || itemFallbackName}</span>
             )}
-            {latestGrpcConnection ? (
-              <div className="ml-auto">
-                {latestGrpcConnection.elapsed === 0 && (
-                  <Icon spin size="sm" icon="update" className="text-gray-400" />
-                )}
-              </div>
-            ) : latestHttpResponse ? (
-              <div className="ml-auto">
-                {isResponseLoading(latestHttpResponse) ? (
-                  <Icon spin size="sm" icon="update" className="text-gray-400" />
-                ) : (
-                  <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
-                )}
-              </div>
-            ) : null}
           </div>
+          {latestGrpcConnection ? (
+            <div className="ml-auto">
+              {latestGrpcConnection.elapsed === 0 && (
+                <Icon spin size="sm" icon="update" className="text-gray-400" />
+              )}
+            </div>
+          ) : latestHttpResponse ? (
+            <div className="ml-auto">
+              {isResponseLoading(latestHttpResponse) ? (
+                <Icon spin size="sm" icon="update" className="text-gray-400" />
+              ) : (
+                <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
+              )}
+            </div>
+          ) : null}
         </button>
       </div>
       {children}

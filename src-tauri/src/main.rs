@@ -42,7 +42,7 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_response,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
     delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
     delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
     delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
@@ -1001,7 +1001,7 @@ async fn cmd_export_data(
 }
 
 #[tauri::command]
-async fn cmd_send_request(
+async fn cmd_send_http_request(
     w: Window,
     request_id: &str,
     environment_id: Option<&str>,
@@ -1030,7 +1030,7 @@ async fn cmd_send_request(
         None => None,
     };
 
-    let response = create_response(
+    let response = create_http_response(
         &w,
         &request.id,
         0,
@@ -1654,7 +1654,7 @@ fn main() {
             cmd_list_workspaces,
             cmd_new_window,
             cmd_send_ephemeral_request,
-            cmd_send_request,
+            cmd_send_http_request,
             cmd_set_key_value,
             cmd_set_update_mode,
             cmd_track_event,

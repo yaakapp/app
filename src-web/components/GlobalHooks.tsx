@@ -92,7 +92,7 @@ export function GlobalHooks() {
     });
   });
 
-  useListenToTauriEvent<Model>('deleted_model', ({ payload, windowLabel }) => {
+  useListenToTauriEvent<Model>('deleted_model', ({ payload }) => {
     if (shouldIgnoreModel(payload)) return;
 
     if (payload.model === 'workspace') {
