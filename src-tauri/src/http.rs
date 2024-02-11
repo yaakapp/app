@@ -80,10 +80,16 @@ pub async fn send_http_request(
         ));
     }
 
-    // .use_rustls_tls() // TODO: Make this configurable (maybe)
     let client = client_builder.build().expect("Failed to build client");
 
-    let url = match Url::from_str(url_string.as_str()) {
+    let uri = match http::Uri::from_str(url_string.as_str()) {
+        Ok(u) => u,
+        Err(e) => {
+            return response_err(response, e.to_string(), window).await;
+        }
+    };
+    // Yes, we're parsing both URI and URL because they could return different errors
+    let url = match Url::from_str(uri.to_string().as_str()) {
         Ok(u) => u,
         Err(e) => {
             return response_err(response, e.to_string(), window).await;
@@ -92,7 +98,7 @@ pub async fn send_http_request(
 
     let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
-    let mut request_builder = client.request(m, url.clone());
+    let mut request_builder = client.request(m, url);
 
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, HeaderValue::from_static("yaak"));
