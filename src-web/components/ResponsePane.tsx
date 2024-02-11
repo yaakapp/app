@@ -94,11 +94,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
-      {activeResponse?.error && (
-        <Banner color="danger" className="m-2">
-          {activeResponse.error}
-        </Banner>
-      )}
       {!activeResponse && (
         <>
           <span />
@@ -107,7 +102,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           />
         </>
       )}
-      {activeResponse && !activeResponse.error && !isResponseLoading(activeResponse) && (
+      {activeResponse && !isResponseLoading(activeResponse) && (
         <>
           <HStack
             alignItems="center"
@@ -149,37 +144,43 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             )}
           </HStack>
 
-          <Tabs
-            value={activeTab}
-            onChangeValue={setActiveTab}
-            label="Response"
-            tabs={tabs}
-            className="ml-3 mr-1"
-            tabListClassName="mt-1.5"
-          >
-            <TabContent value="headers">
-              <ResponseHeaders response={activeResponse} />
-            </TabContent>
-            <TabContent value="body">
-              {!activeResponse.contentLength ? (
-                <EmptyStateText>Empty Body</EmptyStateText>
-              ) : contentType?.startsWith('image') ? (
-                <ImageViewer className="pb-2" response={activeResponse} />
-              ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
-                <div className="text-sm italic text-gray-500">
-                  Cannot preview text responses larger than 2MB
-                </div>
-              ) : viewMode === 'pretty' && contentType?.includes('html') ? (
-                <WebPageViewer response={activeResponse} />
-              ) : contentType?.match(/csv|tab-separated/) ? (
-                <CsvViewer className="pb-2" response={activeResponse} />
-              ) : (
-                // ) : contentType?.startsWith('application/json') ? (
-                //   <JsonViewer response={activeResponse} />
-                <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
-              )}
-            </TabContent>
-          </Tabs>
+          {activeResponse?.error ? (
+            <Banner color="danger" className="m-2 mt-4">
+              {activeResponse.error}
+            </Banner>
+          ) : (
+            <Tabs
+              value={activeTab}
+              onChangeValue={setActiveTab}
+              label="Response"
+              tabs={tabs}
+              className="ml-3 mr-1"
+              tabListClassName="mt-1.5"
+            >
+              <TabContent value="headers">
+                <ResponseHeaders response={activeResponse} />
+              </TabContent>
+              <TabContent value="body">
+                {!activeResponse.contentLength ? (
+                  <EmptyStateText>Empty Body</EmptyStateText>
+                ) : contentType?.startsWith('image') ? (
+                  <ImageViewer className="pb-2" response={activeResponse} />
+                ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
+                  <div className="text-sm italic text-gray-500">
+                    Cannot preview text responses larger than 2MB
+                  </div>
+                ) : viewMode === 'pretty' && contentType?.includes('html') ? (
+                  <WebPageViewer response={activeResponse} />
+                ) : contentType?.match(/csv|tab-separated/) ? (
+                  <CsvViewer className="pb-2" response={activeResponse} />
+                ) : (
+                  // ) : contentType?.startsWith('application/json') ? (
+                  //   <JsonViewer response={activeResponse} />
+                  <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
+                )}
+              </TabContent>
+            </Tabs>
+          )}
         </>
       )}
     </div>
