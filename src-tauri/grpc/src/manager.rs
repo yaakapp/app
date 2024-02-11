@@ -11,7 +11,7 @@ use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::transport::Uri;
-use tonic::{IntoRequest, IntoStreamingRequest, Streaming};
+use tonic::{IntoRequest, IntoStreamingRequest, Response, Status, Streaming};
 
 use crate::codec::DynamicCodec;
 use crate::proto::{fill_pool, fill_pool_from_files, get_transport, method_desc_to_path};
@@ -75,7 +75,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<Streaming<DynamicMessage>, String> {
+    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
@@ -92,12 +92,8 @@ impl GrpcConnection {
             .into_streaming_request();
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
-        client.ready().await.unwrap();
-        Ok(client
-            .streaming(req, path, codec)
-            .await
-            .map_err(|s| s.to_string())?
-            .into_inner())
+        client.ready().await.map_err(|e| e.to_string())?;
+        Ok(client.streaming(req, path, codec).await)
     }
 
     pub async fn client_streaming(
@@ -138,7 +134,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
-    ) -> Result<Streaming<DynamicMessage>, String> {
+    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
 
@@ -152,12 +148,8 @@ impl GrpcConnection {
         let req = req_message.into_request();
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
-        client.ready().await.unwrap();
-        Ok(client
-            .server_streaming(req, path, codec)
-            .await
-            .map_err(|s| s.to_string())?
-            .into_inner())
+        client.ready().await.map_err(|e| e.to_string())?;
+        Ok(client.server_streaming(req, path, codec).await)
     }
 }
 
@@ -230,7 +222,7 @@ impl GrpcHandle {
         service: &str,
         method: &str,
         message: &str,
-    ) -> Result<Streaming<DynamicMessage>, String> {
+    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         self.connect(id, uri, proto_files)
             .await?
             .server_streaming(service, method, message)
@@ -260,7 +252,7 @@ impl GrpcHandle {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
-    ) -> Result<Streaming<DynamicMessage>, String> {
+    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         self.connect(id, uri, proto_files)
             .await?
             .streaming(service, method, stream)
