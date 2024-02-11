@@ -20,7 +20,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useKey, useKeyPressEvent, useWindowSize } from 'react-use';
+import { useKey, useWindowSize } from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
 import { Overlay } from '../Overlay';
@@ -60,8 +60,8 @@ export interface DropdownProps {
 
 export interface DropdownRef {
   isOpen: boolean;
-  open: (activeIndex?: number) => void;
-  toggle: (activeIndex?: number) => void;
+  open: () => void;
+  toggle: () => void;
   close?: () => void;
   next?: () => void;
   prev?: () => void;
@@ -88,21 +88,17 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
 
   useHotKey(openOnHotKeyAction ?? null, () => {
     setIsOpen(true);
+    menuRef.current?.next?.();
   });
 
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
     isOpen: isOpen,
-    toggle(activeIndex?: number) {
-      if (!isOpen) this.open(activeIndex);
+    toggle() {
+      if (!isOpen) this.open();
       else setIsOpen(false);
     },
-    open(activeIndex?: number) {
-      if (activeIndex === undefined) {
-        setDefaultSelectedIndex(undefined);
-      } else {
-        setDefaultSelectedIndex(activeIndex >= 0 ? activeIndex : items.length + activeIndex);
-      }
+    open() {
       setIsOpen(true);
     },
   }));
@@ -225,21 +221,23 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     setMenuStyles({ maxHeight: windowBox.height - menuBox.top - 5 });
   }, []);
 
+  const handleClose = useCallback(() => {
+    onClose();
+    setSelectedIndex(null);
+  }, [onClose]);
+
   // Close menu on space bar
   const handleMenuKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === ' ') {
         e.preventDefault();
-        onClose();
+        handleClose();
       }
     },
-    [onClose],
+    [handleClose],
   );
 
-  useKeyPressEvent('Escape', (e) => {
-    e.preventDefault();
-    onClose();
-  });
+  useHotKey('dropdown.close', handleClose);
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((currIndex) => {
@@ -287,19 +285,19 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
 
   const handleSelect = useCallback(
     (i: DropdownItem) => {
-      onClose();
+      handleClose();
       setSelectedIndex(null);
       if (i.type !== 'separator') {
         i.onSelect?.();
       }
     },
-    [onClose],
+    [handleClose],
   );
 
   useImperativeHandle(
     ref,
     () => ({
-      close: onClose,
+      close: handleClose,
       prev: handlePrev,
       next: handleNext,
       select: () => {
@@ -308,7 +306,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
         handleSelect(item);
       },
     }),
-    [handleNext, handlePrev, handleSelect, items, onClose, selectedIndex],
+    [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
   );
 
   const { containerStyles, triangleStyles } = useMemo<{
@@ -365,7 +363,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       {isOpen && (
         <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
           <div>
-            <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={onClose} />
+            <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
               tabIndex={0}
               onKeyDown={handleMenuKeyDown}
