@@ -145,7 +145,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           </HStack>
 
           {activeResponse?.error ? (
-            <Banner color="danger" className="m-2 mt-4">
+            <Banner color="danger" className="m-2">
               {activeResponse.error}
             </Banner>
           ) : (

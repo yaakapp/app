@@ -32,11 +32,11 @@ export const SidebarActions = memo(function SidebarActions() {
         icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
       />
       <Dropdown
+        openOnHotKeyAction="http_request.create"
         items={[
           {
             key: 'create-http-request',
             label: 'HTTP Request',
-            hotKeyAction: 'http_request.create',
             onSelect: () => createHttpRequest.mutate({}),
           },
           {
