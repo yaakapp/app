@@ -5,6 +5,7 @@ import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
+  | 'dropdown.close'
   | 'environmentEditor.toggle'
   | 'hotkeys.showHelp'
   | 'grpc_request.send'
@@ -19,6 +20,7 @@ export type HotkeyAction =
   | 'urlBar.focus';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
+  'dropdown.close': ['Escape'],
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
   'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
@@ -34,6 +36,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
+  'dropdown.close': 'Close Dropdown',
   'environmentEditor.toggle': 'Edit Environments',
   'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
@@ -81,7 +84,7 @@ export function useAnyHotkey(
 
   useEffect(() => {
     // Sometimes the keyup event doesn't fire, so we clear the keys after a timeout
-    const clearCurrentKeys = debounce(() => currentKeys.current.clear(), 1000);
+    const clearCurrentKeys = debounce(() => currentKeys.current.clear(), 5000);
 
     const down = (e: KeyboardEvent) => {
       if (options.enable === false) {

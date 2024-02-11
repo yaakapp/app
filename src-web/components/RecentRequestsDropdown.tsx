@@ -31,7 +31,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   useKey('k', (e) => {
     if (e.metaKey) {
       e.preventDefault();
-      dropdownRef.current?.toggle(0);
+      dropdownRef.current?.toggle();
     }
   });
 
@@ -42,12 +42,12 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   });
 
   useHotKey('requestSwitcher.prev', () => {
-    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open(1);
+    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open();
     dropdownRef.current?.next?.();
   });
 
   useHotKey('requestSwitcher.next', () => {
-    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open(-1);
+    if (!dropdownRef.current?.isOpen) dropdownRef.current?.open();
     dropdownRef.current?.prev?.();
   });
 
