@@ -4,7 +4,7 @@ import {
   closeBracketsKeymap,
   completionKeymap,
 } from '@codemirror/autocomplete';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
@@ -133,6 +133,7 @@ export const baseExtensions = [
       return (a.boost ?? 0) - (b.boost ?? 0);
     },
   }),
+  keymap.of([indentWithTab]),
   syntaxHighlighting(myHighlightStyle),
   myTheme,
   EditorState.allowMultipleSelections.of(true),
