@@ -312,6 +312,7 @@ async fn cmd_grpc_go(
                 }
                 Some(Err(e)) => {
                     // TODO: Make into error
+                    println!("Error connecting: {:?}", e);
                     upsert_grpc_message(
                         &w,
                         &GrpcMessage {
@@ -328,9 +329,26 @@ async fn cmd_grpc_go(
             }
 
             let mut stream = match maybe_stream {
-                Some(Ok(s)) => s,
+                Some(Ok(Ok(s))) => s.into_inner(),
+                Some(Ok(Err(e))) => {
+                    // TODO: Make into error, and use status
+                    println!("Connection status error: {:?}", e);
+                    upsert_grpc_message(
+                        &w,
+                        &GrpcMessage {
+                            message: e.message().to_string(),
+                            is_server: true,
+                            is_info: true,
+                            ..base_msg.clone()
+                        },
+                    )
+                    .await
+                    .unwrap();
+                    return;
+                }
                 Some(Err(e)) => {
                     // TODO: Make into error
+                    println!("Generic error: {:?}", e);
                     upsert_grpc_message(
                         &w,
                         &GrpcMessage {
@@ -370,7 +388,8 @@ async fn cmd_grpc_go(
                         upsert_grpc_message(
                             &w,
                             &GrpcMessage {
-                                message: "Connection completed".to_string(),
+                                message: "Connection closed".to_string(),
+                                is_info: true,
                                 ..base_msg.clone()
                             },
                         )
@@ -378,12 +397,13 @@ async fn cmd_grpc_go(
                         .unwrap();
                         break;
                     }
-                    Err(e) => {
+                    Err(status) => {
                         // TODO: Make into error
+                        println!("Error status: {:?}", status);
                         upsert_grpc_message(
                             &w,
                             &GrpcMessage {
-                                message: e.to_string(),
+                                message: status.message().to_string(),
                                 is_server: true,
                                 is_info: true,
                                 ..base_msg.clone()
