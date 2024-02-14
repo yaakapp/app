@@ -1,19 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { GrpcRequest } from '../lib/models';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { grpcRequestsQueryKey } from './useGrpcRequests';
 
 export function useCreateGrpcRequest() {
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  // const activeRequest = useActiveRequest();
   const activeRequest = null;
   const routes = useAppRoutes();
-  const queryClient = useQueryClient();
 
   return useMutation<
     GrpcRequest,
@@ -38,11 +35,6 @@ export function useCreateGrpcRequest() {
     },
     onSettled: () => trackEvent('GrpcRequest', 'Create'),
     onSuccess: async (request) => {
-      queryClient.setQueryData<GrpcRequest[]>(
-        grpcRequestsQueryKey({ workspaceId: request.workspaceId }),
-        (requests) => [...(requests ?? []), request],
-      );
-      // TODO: This should navigate to the new request
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,

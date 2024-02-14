@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
@@ -6,19 +6,17 @@ import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
-import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useCreateHttpRequest() {
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
-  const queryClient = useQueryClient();
 
   return useMutation<
     HttpRequest,
     unknown,
-    Partial<Pick<HttpRequest, 'name' | 'sortPriority' | 'folderId'>>
+    Partial<Pick<HttpRequest, 'name' | 'sortPriority' | 'folderId' | 'bodyType' | 'method'>>
   >({
     mutationFn: (patch) => {
       if (workspaceId === null) {
@@ -38,10 +36,6 @@ export function useCreateHttpRequest() {
     },
     onSettled: () => trackEvent('HttpRequest', 'Create'),
     onSuccess: async (request) => {
-      queryClient.setQueryData<HttpRequest[]>(
-        httpRequestsQueryKey({ workspaceId: request.workspaceId }),
-        (requests) => [...(requests ?? []), request],
-      );
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,

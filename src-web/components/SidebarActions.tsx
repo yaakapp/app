@@ -4,6 +4,7 @@ import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { trackEvent } from '../lib/analytics';
+import { BODY_TYPE_GRAPHQL } from '../lib/models';
 import { Dropdown } from './core/Dropdown';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
@@ -43,6 +44,12 @@ export const SidebarActions = memo(function SidebarActions() {
             key: 'create-grpc-request',
             label: 'GRPC Request',
             onSelect: () => createGrpcRequest.mutate({}),
+          },
+          {
+            key: 'create-graphql-request',
+            label: 'GraphQL Request',
+            onSelect: () =>
+              createHttpRequest.mutate({ bodyType: BODY_TYPE_GRAPHQL, method: 'POST' }),
           },
           {
             key: 'create-folder',

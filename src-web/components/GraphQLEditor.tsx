@@ -38,7 +38,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
       const operationName = p.operationName;
       return { query, variables, operationName };
     } catch (err) {
-      return { query: 'failed to parse' };
+      return { query: '' };
     }
   }, [defaultValue]);
 
