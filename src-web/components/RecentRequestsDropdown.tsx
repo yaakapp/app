@@ -54,7 +54,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
 
-    const recentRequestItems: DropdownItem[] = [{ type: 'separator', label: 'Recent Requests' }];
+    const recentRequestItems: DropdownItem[] = [];
     for (const id of recentRequestIds) {
       const request = requests.find((r) => r.id === id);
       if (request === undefined) continue;

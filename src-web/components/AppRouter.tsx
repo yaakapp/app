@@ -1,13 +1,10 @@
 import { createBrowserRouter, Navigate, Outlet, RouterProvider, useParams } from 'react-router-dom';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
-import { useHttpRequests } from '../hooks/useHttpRequests';
-import { useRecentRequests } from '../hooks/useRecentRequests';
 import { DialogProvider } from './DialogContext';
 import { GlobalHooks } from './GlobalHooks';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
-import Workspaces from './Workspaces';
+import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 
 const router = createBrowserRouter([
   {
@@ -17,17 +14,17 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to={routePaths.workspaces()} replace={true} />,
+        element: <RedirectToLatestWorkspace />,
       },
       {
         path: routePaths.workspaces(),
-        element: <Workspaces />,
+        element: <RedirectToLatestWorkspace />,
       },
       {
         path: routePaths.workspace({
           workspaceId: ':workspaceId',
         }),
-        element: <WorkspaceOrRedirect />,
+        element: <Workspace />,
       },
       {
         path: routePaths.request({
@@ -46,32 +43,6 @@ const router = createBrowserRouter([
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
-}
-
-function WorkspaceOrRedirect() {
-  const recentRequests = useRecentRequests();
-  const requests = useHttpRequests();
-  const request = requests.find((r) => r.id === recentRequests[0]);
-  const routes = useAppRoutes();
-
-  // Keep environment if it's in the query params
-  const environmentId = useActiveEnvironmentId() ?? undefined;
-
-  if (request === undefined) {
-    return <Workspace />;
-  }
-
-  const { id: requestId, workspaceId } = request;
-
-  return (
-    <Navigate
-      to={routes.paths.request({
-        workspaceId,
-        environmentId,
-        requestId,
-      })}
-    />
-  );
 }
 
 function RedirectLegacyEnvironmentURLs() {

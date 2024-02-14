@@ -7,6 +7,7 @@ import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { getRecentRequests } from '../hooks/useRecentRequests';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import type { ButtonProps } from './core/Button';
@@ -63,7 +64,12 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     const environmentId = (await getRecentEnvironments(w.id))[0];
-                    routes.navigate('workspace', { workspaceId: w.id, environmentId });
+                    const requestId = (await getRecentRequests(w.id))[0];
+                    if (requestId != null) {
+                      routes.navigate('request', { workspaceId: w.id, environmentId, requestId });
+                    } else {
+                      routes.navigate('workspace', { workspaceId: w.id, environmentId });
+                    }
                   }}
                 >
                   This Window
@@ -75,9 +81,16 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                   onClick={async () => {
                     hide();
                     const environmentId = (await getRecentEnvironments(w.id))[0];
-                    await invoke('cmd_new_window', {
-                      url: routes.paths.workspace({ workspaceId: w.id, environmentId }),
-                    });
+                    const requestId = (await getRecentRequests(w.id))[0];
+                    const path =
+                      requestId != null
+                        ? routes.paths.request({
+                            workspaceId: w.id,
+                            environmentId,
+                            requestId,
+                          })
+                        : routes.paths.workspace({ workspaceId: w.id, environmentId });
+                    await invoke('cmd_new_window', { url: path });
                   }}
                 >
                   New Window
