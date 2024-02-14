@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ForwardedRef, ReactNode } from 'react';
-import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Fragment, forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
@@ -490,7 +490,9 @@ function SidebarItems({
             }
             itemModel={child.item.model}
             itemPrefix={
-              child.item.model === 'http_request' ? (
+              child.item.model === 'http_request' && child.item.bodyType === 'graphql' ? (
+                <HttpMethodTag className="opacity-50">GQL</HttpMethodTag>
+              ) : child.item.model === 'http_request' ? (
                 <HttpMethodTag className="opacity-50">{child.item.method}</HttpMethodTag>
               ) : child.item.model === 'grpc_request' ? (
                 <HttpMethodTag className="opacity-50">GRPC</HttpMethodTag>
