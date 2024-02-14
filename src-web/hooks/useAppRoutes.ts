@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useActiveRequestId } from './useActiveRequestId';
 import type { Environment } from '../lib/models';
@@ -23,7 +24,11 @@ export const routePaths = {
       environmentId: ':environmentId',
     } as RouteParamsWorkspace,
   ) {
-    return `/workspaces/${workspaceId}/environments/${environmentId ?? '__default__'}`;
+    let path = `/workspaces/${workspaceId}`;
+    if (environmentId != null) {
+      path += `?${QUERY_ENVIRONMENT_ID}=${encodeURIComponent(environmentId)}`;
+    }
+    return path;
   },
   request(
     { workspaceId, environmentId, requestId } = {
@@ -32,7 +37,11 @@ export const routePaths = {
       requestId: ':requestId',
     } as RouteParamsRequest,
   ) {
-    return `${this.workspace({ workspaceId, environmentId })}/requests/${requestId}`;
+    let path = `/workspaces/${workspaceId}/requests/${requestId}`;
+    if (environmentId != null) {
+      path += `?${QUERY_ENVIRONMENT_ID}=${encodeURIComponent(environmentId)}`;
+    }
+    return path;
   },
 };
 
@@ -41,16 +50,16 @@ export function useAppRoutes() {
   const requestId = useActiveRequestId();
   const nav = useNavigate();
 
-  const navigate = useCallback(<T extends keyof typeof routePaths>(
-    path: T,
-    ...params: Parameters<(typeof routePaths)[T]>
-  ) => {
-    // Not sure how to make TS work here, but it's good from the
-    // outside caller perspective.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resolvedPath = routePaths[path](...(params as any));
-    nav(resolvedPath);
-  }, [nav]);
+  const navigate = useCallback(
+    <T extends keyof typeof routePaths>(path: T, ...params: Parameters<(typeof routePaths)[T]>) => {
+      // Not sure how to make TS work here, but it's good from the
+      // outside caller perspective.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const resolvedPath = routePaths[path](...(params as any));
+      nav(resolvedPath);
+    },
+    [nav],
+  );
 
   const setEnvironment = useCallback(
     (environment: Environment | null) => {

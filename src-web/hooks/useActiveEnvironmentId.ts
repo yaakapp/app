@@ -1,9 +1,11 @@
-import { useParams } from 'react-router-dom';
-import type { RouteParamsRequest } from './useAppRoutes';
+import { useSearchParams } from 'react-router-dom';
+
+export const QUERY_ENVIRONMENT_ID = 'environment_id';
 
 export function useActiveEnvironmentId(): string | null {
-  const { environmentId } = useParams<RouteParamsRequest>();
-  if (environmentId == null || environmentId === '__default__') {
+  const [params] = useSearchParams();
+  const environmentId = params.get(QUERY_ENVIRONMENT_ID);
+  if (environmentId == null) {
     return null;
   }
 
