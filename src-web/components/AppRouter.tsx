@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet, RouterProvider, useParams } from 'react-router-dom';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -53,6 +54,9 @@ function WorkspaceOrRedirect() {
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
 
+  // Keep environment if it's in the query params
+  const environmentId = useActiveEnvironmentId() ?? undefined;
+
   if (request === undefined) {
     return <Workspace />;
   }
@@ -63,6 +67,7 @@ function WorkspaceOrRedirect() {
     <Navigate
       to={routes.paths.request({
         workspaceId,
+        environmentId,
         requestId,
       })}
     />
