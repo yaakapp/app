@@ -1,19 +1,18 @@
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useParams } from 'react-router-dom';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
-import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useHttpRequests } from '../hooks/useHttpRequests';
+import { useRecentRequests } from '../hooks/useRecentRequests';
+import { DialogProvider } from './DialogContext';
 import { GlobalHooks } from './GlobalHooks';
+import RouteError from './RouteError';
 import Workspace from './Workspace';
 import Workspaces from './Workspaces';
-import { DialogProvider } from './DialogContext';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
-import RouteError from './RouteError';
 
 const router = createBrowserRouter([
   {
     path: '/',
     errorElement: <RouteError />,
-    element: <Layout />,
+    element: <DefaultLayout />,
     children: [
       {
         path: '/',
@@ -26,17 +25,19 @@ const router = createBrowserRouter([
       {
         path: routePaths.workspace({
           workspaceId: ':workspaceId',
-          environmentId: ':environmentId',
         }),
         element: <WorkspaceOrRedirect />,
       },
       {
         path: routePaths.request({
           workspaceId: ':workspaceId',
-          environmentId: ':environmentId',
           requestId: ':requestId',
         }),
         element: <Workspace />,
+      },
+      {
+        path: '/workspaces/:workspaceId/environments/:environmentId/requests/:requestId',
+        element: <RedirectLegacyEnvironmentURLs />,
       },
     ],
   },
@@ -48,7 +49,6 @@ export function AppRouter() {
 
 function WorkspaceOrRedirect() {
   const recentRequests = useRecentRequests();
-  const activeEnvironmentId = useActiveEnvironmentId();
   const requests = useHttpRequests();
   const request = requests.find((r) => r.id === recentRequests[0]);
   const routes = useAppRoutes();
@@ -58,20 +58,43 @@ function WorkspaceOrRedirect() {
   }
 
   const { id: requestId, workspaceId } = request;
-  const environmentId = activeEnvironmentId ?? undefined;
 
   return (
     <Navigate
       to={routes.paths.request({
         workspaceId,
-        environmentId,
         requestId,
       })}
     />
   );
 }
 
-function Layout() {
+function RedirectLegacyEnvironmentURLs() {
+  const routes = useAppRoutes();
+  const {
+    requestId,
+    environmentId: rawEnvironmentId,
+    workspaceId,
+  } = useParams<{
+    requestId?: string;
+    workspaceId?: string;
+    environmentId?: string;
+  }>();
+  const environmentId = rawEnvironmentId === '__default__' ? undefined : rawEnvironmentId;
+
+  let to = '/';
+  if (workspaceId != null && requestId != null) {
+    to = routes.paths.request({ workspaceId, environmentId, requestId });
+  } else if (workspaceId != null) {
+    to = routes.paths.workspace({ workspaceId, environmentId });
+  } else {
+    to = routes.paths.workspaces();
+  }
+
+  return <Navigate to={to} />;
+}
+
+function DefaultLayout() {
   return (
     <DialogProvider>
       <Outlet />
