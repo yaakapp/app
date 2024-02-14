@@ -39,8 +39,8 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
                 />
               ))
           : null,
-        isExpandable: true,
-        label: isExpanded ? '{ }' : `{⋯}`,
+        isExpandable: Object.keys(attrValue).length > 0,
+        label: isExpanded ? `{${Object.keys(attrValue).length || ' '}}` : `{⋯}`,
         labelClassName: 'text-gray-600',
       };
     } else if (jsonType === '[object Array]') {
@@ -57,8 +57,8 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               />
             ))
           : null,
-        isExpandable: true,
-        label: isExpanded ? '[ ]' : `[⋯]`,
+        isExpandable: attrValue.length > 0,
+        label: isExpanded ? `[${attrValue.length || ' '}]` : `[⋯]`,
         labelClassName: 'text-gray-600',
       };
     } else {
@@ -90,12 +90,12 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               size="xs"
               icon="chevronRight"
               className={classNames(
-                'left-0 absolute transition-transform text-gray-600 flex items-center',
-                'group-hover:text-gray-900',
+                'left-0 absolute transition-transform flex items-center',
+                'text-gray-600 group-hover:text-gray-900',
                 isExpanded ? 'rotate-90' : '',
               )}
             />
-            <span className="text-violet-600 mr-1.5 whitespace-nowrap">
+            <span className="text-violet-600 group-hover:text-violet-700 mr-1.5 whitespace-nowrap">
               {attrKey === undefined ? '$' : attrKey}:
             </span>
             {labelEl}
