@@ -52,10 +52,10 @@
     }
 
     .placeholder-widget {
-      @apply text-xs text-violet-700 dark:text-violet-800 px-1 rounded cursor-default dark:shadow;
+      @apply text-xs text-violet-700 dark:text-violet-700 px-1 rounded cursor-default dark:shadow;
 
       /* NOTE: Background and border are translucent so we can see text selection through it */
-      @apply bg-violet-400/30 border border-violet-500/20 border-opacity-40;
+      @apply bg-violet-500/20 border border-violet-500/20 border-opacity-40;
 
       /* Bring above on hover */
       @apply hover:z-10 relative;
@@ -63,7 +63,7 @@
       -webkit-text-security: none;
 
       &.placeholder-widget-error {
-        @apply bg-red-300/40 border-red-300/80 border-opacity-40 hover:border-red-300 hover:bg-red-300/50;
+        @apply text-red-700 dark:text-red-800 bg-red-300/40 border-red-300/80 border-opacity-40 hover:border-red-300 hover:bg-red-300/50;
       }
     }
   }
