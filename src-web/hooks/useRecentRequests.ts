@@ -1,30 +1,45 @@
-import { useEffect } from 'react';
-import { createGlobalState, useEffectOnce, useLocalStorage } from 'react-use';
+import { useEffect, useMemo } from 'react';
+import { createGlobalState, useEffectOnce } from 'react-use';
+import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useGrpcRequests } from './useGrpcRequests';
+import { useHttpRequest } from './useHttpRequest';
+import { useHttpRequests } from './useHttpRequests';
+import { useKeyValue } from './useKeyValue';
 
 const useHistoryState = createGlobalState<string[]>([]);
 
+const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
+const namespace = NAMESPACE_GLOBAL;
+const defaultValue: string[] = [];
+
 export function useRecentRequests() {
+  const httpRequests = useHttpRequests();
+  const grpcRequests = useGrpcRequests();
+  const requests = useMemo(() => [...httpRequests, ...grpcRequests], [httpRequests, grpcRequests]);
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeRequestId = useActiveRequestId();
+
   const [history, setHistory] = useHistoryState();
-  const [lsState, setLSState] = useLocalStorage<string[]>(
-    'recent_requests::' + activeWorkspaceId,
-    [],
-  );
+  const kv = useKeyValue<string[]>({
+    key: kvKey(activeWorkspaceId ?? 'n/a'),
+    namespace,
+    defaultValue,
+  });
 
   // Load local storage state on initial render
   useEffectOnce(() => {
-    if (lsState) {
-      setHistory(lsState);
+    if (kv.value) {
+      setHistory(kv.value);
     }
   });
 
   // Update local storage state when history changes
   useEffect(() => {
-    setLSState(history);
-  }, [history, setLSState]);
+    kv.set(history);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [history]);
 
   // Set history when active request changes
   useEffect(() => {
@@ -35,5 +50,18 @@ export function useRecentRequests() {
     });
   }, [activeRequestId, setHistory]);
 
-  return history;
+  const onlyValidIds = useMemo(
+    () => history.filter((id) => requests.some((r) => r.id === id)),
+    [history, requests],
+  );
+
+  return onlyValidIds;
+}
+
+export async function getRecentRequests(workspaceId: string) {
+  return getKeyValue<string[]>({
+    namespace,
+    key: kvKey(workspaceId),
+    fallback: defaultValue,
+  });
 }

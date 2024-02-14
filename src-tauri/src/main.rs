@@ -299,6 +299,7 @@ async fn cmd_grpc_go(
 
             match maybe_msg {
                 Some(Ok(msg)) => {
+                    println!("Message: {:?}", msg);
                     upsert_grpc_message(
                         &w,
                         &GrpcMessage {
@@ -329,7 +330,11 @@ async fn cmd_grpc_go(
             }
 
             let mut stream = match maybe_stream {
-                Some(Ok(Ok(s))) => s.into_inner(),
+                Some(Ok(Ok(s))) => {
+                    // TODO: Store metadata on... connection? Or in a message
+                    println!("METADATA: {:?}", s.metadata());
+                    s.into_inner()
+                }
                 Some(Ok(Err(e))) => {
                     // TODO: Make into error, and use status
                     println!("Connection status error: {:?}", e);
@@ -829,6 +834,8 @@ async fn cmd_create_http_request(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
+    method: Option<&str>,
+    body_type: Option<&str>,
     w: Window,
 ) -> Result<HttpRequest, String> {
     upsert_http_request(
@@ -836,8 +843,9 @@ async fn cmd_create_http_request(
         HttpRequest {
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
-            method: "GET".to_string(),
             folder_id: folder_id.map(|s| s.to_string()),
+            body_type: body_type.map(|s| s.to_string()),
+            method: method.map(|s| s.to_string()).unwrap_or("GET".to_string()),
             sort_priority,
             ..Default::default()
         },
