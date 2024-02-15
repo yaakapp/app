@@ -41,15 +41,15 @@ export const SidebarActions = memo(function SidebarActions() {
             onSelect: () => createHttpRequest.mutate({}),
           },
           {
-            key: 'create-grpc-request',
-            label: 'GRPC Request',
-            onSelect: () => createGrpcRequest.mutate({}),
-          },
-          {
             key: 'create-graphql-request',
-            label: 'GraphQL Request',
+            label: 'GraphQL Query',
             onSelect: () =>
               createHttpRequest.mutate({ bodyType: BODY_TYPE_GRAPHQL, method: 'POST' }),
+          },
+          {
+            key: 'create-grpc-request',
+            label: 'GRPC Call',
+            onSelect: () => createGrpcRequest.mutate({}),
           },
           {
             key: 'create-folder',

@@ -1,14 +1,13 @@
 import { useEffect, useMemo } from 'react';
-import { createGlobalState, useEffectOnce } from 'react-use';
+import { createGlobalState } from 'react-use';
 import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useGrpcRequests } from './useGrpcRequests';
-import { useHttpRequest } from './useHttpRequest';
 import { useHttpRequests } from './useHttpRequests';
 import { useKeyValue } from './useKeyValue';
 
-const useHistoryState = createGlobalState<string[]>([]);
+const useHistoryState = createGlobalState<string[] | null>(null);
 
 const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
 const namespace = NAMESPACE_GLOBAL;
@@ -29,29 +28,33 @@ export function useRecentRequests() {
   });
 
   // Load local storage state on initial render
-  useEffectOnce(() => {
+  useEffect(() => {
     if (kv.value) {
+      console.log('SET HISTORY', kv.value);
       setHistory(kv.value);
     }
-  });
+  }, [kv.isLoading]);
 
   // Update local storage state when history changes
   useEffect(() => {
+    if (history == null) return;
+    console.log('SET KV', history);
     kv.set(history);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history]);
 
   // Set history when active request changes
   useEffect(() => {
-    setHistory((currentHistory: string[]) => {
-      if (activeRequestId === null) return currentHistory;
+    setHistory((currentHistory) => {
+      console.log('ACTIVE REQUEST CHANGED', kv.isLoading, activeRequestId, currentHistory);
+      if (activeRequestId === null || currentHistory == null) return currentHistory;
       const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
       return [activeRequestId, ...withoutCurrentRequest];
     });
-  }, [activeRequestId, setHistory]);
+  }, [activeRequestId, kv.isLoading, setHistory]);
 
   const onlyValidIds = useMemo(
-    () => history.filter((id) => requests.some((r) => r.id === id)),
+    () => history?.filter((id) => requests.some((r) => r.id === id)) ?? [],
     [history, requests],
   );
 

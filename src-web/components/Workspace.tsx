@@ -71,7 +71,7 @@ export default function Workspace() {
         move: async (e: MouseEvent) => {
           e.preventDefault(); // Prevent text selection and things
           const newWidth = startWidth + (e.clientX - mouseStartX);
-          if (newWidth < 100) {
+          if (newWidth < 50) {
             await hide();
             resetWidth();
           } else {
