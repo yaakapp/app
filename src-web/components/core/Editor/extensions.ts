@@ -133,7 +133,6 @@ export const baseExtensions = [
       return (a.boost ?? 0) - (b.boost ?? 0);
     },
   }),
-  keymap.of([indentWithTab]),
   syntaxHighlighting(myHighlightStyle),
   myTheme,
   EditorState.allowMultipleSelections.of(true),
@@ -160,6 +159,7 @@ export const multiLineExtensions = [
   highlightActiveLineGutter(),
   highlightSelectionMatches({ minSelectionLength: 2 }),
   keymap.of([
+    indentWithTab,
     ...closeBracketsKeymap,
     ...defaultKeymap,
     ...searchKeymap,
