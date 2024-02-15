@@ -5,6 +5,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useActiveRequestId } from '../../hooks/useActiveRequestId';
 import { useActiveWorkspaceId } from '../../hooks/useActiveWorkspaceId';
+import { useDebouncedState } from '../../hooks/useDebouncedState';
 import { clamp } from '../../lib/clamp';
 import { ResizeHandle } from '../ResizeHandle';
 import { HotKeyList } from './HotKeyList';
@@ -44,7 +45,7 @@ export function SplitLayout({
   minWidthPx = 10,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [vertical, setVertical] = useState<boolean>(false);
+  const [vertical, setVertical] = useDebouncedState<boolean>(false, 100);
   const [widthRaw, setWidth] = useLocalStorage<number>(`${name}_width::${useActiveWorkspaceId()}`);
   const [heightRaw, setHeight] = useLocalStorage<number>(
     `${name}_height::${useActiveWorkspaceId()}`,
