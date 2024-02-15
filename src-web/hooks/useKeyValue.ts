@@ -45,11 +45,13 @@ export function useKeyValue<T extends Object | null>({
           if (newV === kv) return;
           return mutate.mutateAsync(newV);
         });
-      } else if (value !== query.data) {
+      } else {
+        // TODO: Make this only update if the value is different. I tried this but it seems query.data
+        //  is stale.
         await mutate.mutateAsync(value);
       }
     },
-    [defaultValue, key, mutate, namespace, query.data],
+    [defaultValue, key, mutate, namespace],
   );
 
   const reset = useCallback(async () => mutate.mutateAsync(defaultValue), [mutate, defaultValue]);

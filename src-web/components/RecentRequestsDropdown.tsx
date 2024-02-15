@@ -7,8 +7,8 @@ import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
-import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useHttpRequests } from '../hooks/useHttpRequests';
+import { useRecentRequests } from '../hooks/useRecentRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -77,10 +77,11 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
     if (recentRequestItems.length === 0) {
       return [
         {
+          key: 'no-recent-requests',
           label: 'No recent requests',
           disabled: true,
         },
-      ] as DropdownItem[];
+      ];
     }
 
     return recentRequestItems.slice(0, 20);

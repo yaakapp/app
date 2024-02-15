@@ -69,7 +69,7 @@ export const UrlBar = memo(function UrlBar({
             <RequestMethodDropdown
               method={method}
               onChange={onMethodChange}
-              className="mx-0.5 my-0.5"
+              className="!h-auto my-0.5 mr-0.5"
             />
           )
         }
@@ -80,7 +80,7 @@ export const UrlBar = memo(function UrlBar({
               iconSize="md"
               title="Send Request"
               type="submit"
-              className="w-8 mr-0.5 my-0.5"
+              className="w-8 !h-auto my-0.5 mr-0.5"
               icon={isLoading ? 'update' : submitIcon}
               spin={isLoading}
               hotkeyAction="http_request.send"
