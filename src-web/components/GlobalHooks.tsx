@@ -30,7 +30,7 @@ export function GlobalHooks() {
   // if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
-  useRecentRequests();
+  console.log(useRecentRequests());
 
   useSyncAppearance();
 

@@ -1,12 +1,9 @@
 import { useEffect, useMemo } from 'react';
-import { createGlobalState, useEffectOnce } from 'react-use';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
-import { useKeyValue } from './useKeyValue';
-import { NAMESPACE_GLOBAL, getKeyValue } from '../lib/keyValueStore';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useEnvironments } from './useEnvironments';
-
-const useHistoryState = createGlobalState<string[]>([]);
+import { useKeyValue } from './useKeyValue';
 
 const kvKey = (workspaceId: string) => 'recent_environments::' + workspaceId;
 const namespace = NAMESPACE_GLOBAL;
@@ -16,38 +13,25 @@ export function useRecentEnvironments() {
   const environments = useEnvironments();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const [history, setHistory] = useHistoryState();
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspaceId ?? 'n/a'),
     namespace,
     defaultValue,
   });
 
-  // Load local storage state on initial render
-  useEffectOnce(() => {
-    if (kv.value) {
-      setHistory(kv.value);
-    }
-  });
-
-  // Update local storage state when history changes
-  useEffect(() => {
-    kv.set(history);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history]);
-
   // Set history when active request changes
   useEffect(() => {
-    setHistory((currentHistory: string[]) => {
+    kv.set((currentHistory: string[]) => {
       if (activeEnvironmentId === null) return currentHistory;
       const withoutCurrentEnvironment = currentHistory.filter((id) => id !== activeEnvironmentId);
       return [activeEnvironmentId, ...withoutCurrentEnvironment];
-    });
-  }, [activeEnvironmentId, setHistory]);
+    }).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeEnvironmentId]);
 
   const onlyValidIds = useMemo(
-    () => history.filter((id) => environments.some((e) => e.id === id)),
-    [history, environments],
+    () => kv.value?.filter((id) => environments.some((e) => e.id === id)) ?? [],
+    [kv.value, environments],
   );
 
   return onlyValidIds;

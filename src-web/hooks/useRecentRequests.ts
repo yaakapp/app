@@ -1,13 +1,10 @@
 import { useEffect, useMemo } from 'react';
-import { createGlobalState } from 'react-use';
 import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useGrpcRequests } from './useGrpcRequests';
 import { useHttpRequests } from './useHttpRequests';
 import { useKeyValue } from './useKeyValue';
-
-const useHistoryState = createGlobalState<string[] | null>(null);
 
 const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
 const namespace = NAMESPACE_GLOBAL;
@@ -20,42 +17,25 @@ export function useRecentRequests() {
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeRequestId = useActiveRequestId();
 
-  const [history, setHistory] = useHistoryState();
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspaceId ?? 'n/a'),
     namespace,
     defaultValue,
   });
 
-  // Load local storage state on initial render
-  useEffect(() => {
-    if (kv.value) {
-      console.log('SET HISTORY', kv.value);
-      setHistory(kv.value);
-    }
-  }, [kv.isLoading]);
-
-  // Update local storage state when history changes
-  useEffect(() => {
-    if (history == null) return;
-    console.log('SET KV', history);
-    kv.set(history);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history]);
-
   // Set history when active request changes
   useEffect(() => {
-    setHistory((currentHistory) => {
-      console.log('ACTIVE REQUEST CHANGED', kv.isLoading, activeRequestId, currentHistory);
-      if (activeRequestId === null || currentHistory == null) return currentHistory;
+    kv.set((currentHistory) => {
+      if (activeRequestId === null) return currentHistory;
       const withoutCurrentRequest = currentHistory.filter((id) => id !== activeRequestId);
       return [activeRequestId, ...withoutCurrentRequest];
-    });
-  }, [activeRequestId, kv.isLoading, setHistory]);
+    }).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRequestId]);
 
   const onlyValidIds = useMemo(
-    () => history?.filter((id) => requests.some((r) => r.id === id)) ?? [],
-    [history, requests],
+    () => kv.value?.filter((id) => requests.some((r) => r.id === id)) ?? [],
+    [kv.value, requests],
   );
 
   return onlyValidIds;
