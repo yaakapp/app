@@ -16,7 +16,7 @@ export const SidebarActions = memo(function SidebarActions() {
   const { hidden, show, hide } = useSidebarHidden();
 
   return (
-    <HStack>
+    <HStack className="h-full" alignItems="center">
       <IconButton
         onClick={async () => {
           trackEvent('Sidebar', 'Toggle');
