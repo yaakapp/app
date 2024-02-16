@@ -1,8 +1,7 @@
 import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
 import type { CSSProperties, FormEvent } from 'react';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { useDebouncedState } from '../hooks/useDebouncedState';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
@@ -58,7 +57,7 @@ export function GrpcConnectionSetupPane({
   const activeConnection = connections[0] ?? null;
   const isStreaming = activeConnection?.elapsed === 0;
 
-  const [paneSize, setPaneSize] = useDebouncedState(99999, 100);
+  const [paneSize, setPaneSize] = useState(99999);
   const urlContainerEl = useRef<HTMLDivElement>(null);
   useResizeObserver<HTMLDivElement>(urlContainerEl.current, (entry) => {
     setPaneSize(entry.contentRect.width);

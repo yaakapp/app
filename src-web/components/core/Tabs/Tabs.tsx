@@ -75,7 +75,7 @@ export function Tabs({
           tabListClassName,
           'flex items-center overflow-x-auto overflow-y-visible hide-scrollbars mt-1 mb-2',
           // Give space for button focus states within overflow boundary.
-          '-mx-5 pl-3 py-1',
+          '-ml-5 pl-3 pr-1 py-1',
         )}
       >
         <HStack space={2} className="flex-shrink-0">
