@@ -480,6 +480,7 @@ function SidebarItems({
         <Fragment key={child.item.id}>
           {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
           <DraggableSidebarItem
+            draggable
             selected={selectedId === child.item.id}
             itemId={child.item.id}
             itemName={child.item.name}
@@ -563,6 +564,7 @@ const SidebarItem = forwardRef(function SidebarItem(
     onSelect,
     isCollapsed,
     child,
+    draggable,
   }: SidebarItemProps,
   ref: ForwardedRef<HTMLLIElement>,
 ) {
@@ -644,7 +646,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   }, []);
 
   return (
-    <li ref={ref}>
+    <li ref={ref} draggable={draggable}>
       <div className={classNames(className, 'block relative group/item px-2 pb-0.5')}>
         <ContextMenu
           show={showContextMenu}
@@ -864,7 +866,6 @@ function DraggableSidebarItem({
   return (
     <SidebarItem
       ref={ref}
-      draggable
       className={classNames(isDragging && 'opacity-20')}
       itemName={itemName}
       itemId={itemId}

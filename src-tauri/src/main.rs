@@ -1356,7 +1356,7 @@ fn is_dev() -> bool {
 }
 
 fn create_window(handle: &AppHandle, url: Option<&str>) -> Window {
-    let app_menu = window_menu::os_default("Yaak".to_string().as_str());
+    // let app_menu = window_menu::os_default("Yaak".to_string().as_str());
     let window_num = handle.windows().len();
     let window_id = format!("wnd_{}", window_num);
     let mut win_builder = tauri::WindowBuilder::new(
@@ -1366,6 +1366,7 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> Window {
     )
     .fullscreen(false)
     .resizable(true)
+    .disable_file_drop_handler() // Required for frontend Dnd on windows
     .inner_size(1100.0, 600.0)
     .position(
         // Randomly offset so windows don't stack exactly
