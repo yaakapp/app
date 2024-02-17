@@ -8,6 +8,6 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
-    outDir: resolve(__dirname, '../../src-tauri/plugins/build/filter-xpath'),
+    outDir: resolve(__dirname, '../../src-tauri/plugins/filter-xpath'),
   },
 });

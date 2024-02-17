@@ -1,7 +1,7 @@
 import { invoke, shell } from '@tauri-apps/api';
 import { useRef, useState } from 'react';
 import { useAlert } from '../hooks/useAlert';
-import { useAppVersion } from '../hooks/useAppVersion';
+import { useAppInfo } from '../hooks/useAppInfo';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
@@ -18,7 +18,7 @@ import { SettingsDialog } from './SettingsDialog';
 export function SettingsDropdown() {
   const importData = useImportData();
   const exportData = useExportData();
-  const appVersion = useAppVersion();
+  const appInfo = useAppInfo();
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
   const alert = useAlert();
@@ -96,7 +96,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="folderOutput" />,
           onSelect: () => exportData.mutate(),
         },
-        { type: 'separator', label: `Yaak v${appVersion.data}` },
+        { type: 'separator', label: `Yaak v${appInfo.data?.version}` },
         {
           key: 'update-check',
           label: 'Check for Updates',
@@ -126,7 +126,7 @@ export function SettingsDropdown() {
           variant: showChangelog ? 'notify' : 'default',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => shell.open(`https://yaak.app/changelog/${appVersion.data}`),
+          onSelect: () => shell.open(`https://yaak.app/changelog/${appInfo.data?.version}`),
         },
       ]}
     >

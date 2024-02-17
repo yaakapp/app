@@ -5,7 +5,7 @@ import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
 export type HotkeyAction =
-  | 'dropdown.close'
+  | 'popup.close'
   | 'environmentEditor.toggle'
   | 'hotkeys.showHelp'
   | 'grpc_request.send'
@@ -20,7 +20,7 @@ export type HotkeyAction =
   | 'urlBar.focus';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
-  'dropdown.close': ['Escape'],
+  'popup.close': ['Escape'],
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
   'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
@@ -36,7 +36,7 @@ const hotkeys: Record<HotkeyAction, string[]> = {
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
-  'dropdown.close': 'Close Dropdown',
+  'popup.close': 'Close Dropdown',
   'environmentEditor.toggle': 'Edit Environments',
   'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
