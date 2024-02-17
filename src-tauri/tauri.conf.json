@@ -47,6 +47,9 @@
         "all": false,
         "open": true,
         "save": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
