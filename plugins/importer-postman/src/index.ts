@@ -1,4 +1,4 @@
-import { Environment, Folder, HttpRequest, Workspace } from '../../../../src-web/lib/models';
+import { Environment, Folder, HttpRequest, Workspace } from '../../../src-web/lib/models';
 
 const POSTMAN_2_1_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json';
 const POSTMAN_2_0_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json';
