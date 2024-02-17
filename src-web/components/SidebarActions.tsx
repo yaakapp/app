@@ -52,6 +52,9 @@ export const SidebarActions = memo(function SidebarActions() {
             onSelect: () => createGrpcRequest.mutate({}),
           },
           {
+            type: 'separator',
+          },
+          {
             key: 'create-folder',
             label: 'Folder',
             onSelect: () => createFolder.mutate({}),
