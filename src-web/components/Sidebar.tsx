@@ -329,6 +329,11 @@ export function Sidebar({ className }: Props) {
         return;
       }
 
+      // Block dragging folder into itself
+      if (hoveredTree.item.id === itemId) {
+        return;
+      }
+
       const parentTree = treeParentMap[itemId] ?? null;
       const index = parentTree?.children.findIndex((n) => n.item.id === itemId) ?? -1;
       const child = parentTree?.children[index ?? -1];
@@ -647,7 +652,7 @@ const SidebarItem = forwardRef(function SidebarItem(
 
   return (
     <li ref={ref} draggable={draggable}>
-      <div className={classNames(className, 'block relative group/item px-2 pb-0.5')}>
+      <div className={classNames(className, 'block relative group/item px-1.5 pb-0.5')}>
         <ContextMenu
           show={showContextMenu}
           items={
@@ -760,7 +765,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               size="sm"
               icon="chevronRight"
               className={classNames(
-                '-ml-0.5 transition-transform opacity-50',
+                'transition-transform opacity-50',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
