@@ -237,7 +237,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     [handleClose],
   );
 
-  useHotKey('dropdown.close', handleClose);
+  useHotKey('popup.close', handleClose);
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((currIndex) => {

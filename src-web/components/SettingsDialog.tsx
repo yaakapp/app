@@ -1,4 +1,5 @@
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useAppInfo } from '../hooks/useAppInfo';
 import { useSettings } from '../hooks/useSettings';
 import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
@@ -14,6 +15,7 @@ export const SettingsDialog = () => {
   const updateWorkspace = useUpdateWorkspace(workspace?.id ?? null);
   const settings = useSettings();
   const updateSettings = useUpdateSettings();
+  const appInfo = useAppInfo();
 
   if (settings == null || workspace == null) {
     return null;
@@ -25,7 +27,6 @@ export const SettingsDialog = () => {
         name="appearance"
         label="Appearance"
         labelPosition="left"
-        labelClassName="w-1/3"
         size="sm"
         value={settings.appearance}
         onChange={(appearance) => updateSettings.mutateAsync({ ...settings, appearance })}
@@ -49,7 +50,6 @@ export const SettingsDialog = () => {
         name="updateChannel"
         label="Update Channel"
         labelPosition="left"
-        labelClassName="w-1/3"
         size="sm"
         value={settings.updateChannel}
         onChange={(updateChannel) => updateSettings.mutateAsync({ ...settings, updateChannel })}
@@ -80,8 +80,6 @@ export const SettingsDialog = () => {
           label="Request Timeout (ms)"
           placeholder="0"
           labelPosition="left"
-          labelClassName="w-1/3"
-          containerClassName="col-span-2"
           defaultValue={`${workspace.settingRequestTimeout}`}
           validate={(value) => parseInt(value) >= 0}
           onChange={(v) => updateWorkspace.mutateAsync({ settingRequestTimeout: parseInt(v) || 0 })}
@@ -103,6 +101,28 @@ export const SettingsDialog = () => {
           }
         />
       </VStack>
+
+      <Separator className="my-4" />
+
+      <Heading size={2}>App Info</Heading>
+      <table className="text-sm w-full">
+        <tbody>
+          <tr>
+            <td className="h-xs pr-3">Version</td>
+            <td className="h-xs text-xs font-mono select-all cursor-text">
+              {appInfo.data?.version}
+            </td>
+          </tr>
+          {appInfo.data && (
+            <tr>
+              <td className="h-xs pr-3 whitespace-nowrap">Data Directory</td>
+              <td className="h-xs text-xs font-mono select-all cursor-text break-all min-w-0">
+                {appInfo.data.appDataDir}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </VStack>
   );
 };
