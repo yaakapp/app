@@ -154,7 +154,7 @@ export const RequestPane = memo(function RequestPane({
                 token: authentication.token ?? '',
               };
             }
-            updateRequest.mutate({ authenticationType, authentication });
+            await updateRequest.mutateAsync({ authenticationType, authentication });
           },
         },
       },
@@ -226,17 +226,9 @@ export const RequestPane = memo(function RequestPane({
           >
             <TabContent value="auth">
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
-                <BasicAuth
-                  key={forceUpdateKey}
-                  requestId={activeRequest.id}
-                  authentication={activeRequest.authentication}
-                />
+                <BasicAuth key={forceUpdateKey} request={activeRequest} />
               ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
-                <BearerAuth
-                  key={forceUpdateKey}
-                  requestId={activeRequest.id}
-                  authentication={activeRequest.authentication}
-                />
+                <BearerAuth key={forceUpdateKey} request={activeRequest} />
               ) : (
                 <EmptyStateText>
                   No Authentication {activeRequest.authenticationType}

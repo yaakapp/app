@@ -82,7 +82,7 @@ export function Tabs({
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classNames(
-              isActive ? '' : 'text-gray-600 hover:text-gray-800',
+              isActive ? 'text-gray-800' : 'text-gray-600 hover:text-gray-700',
               '!px-2 ml-[1px]',
             );
 

@@ -5,9 +5,12 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
+import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import type { GrpcRequest } from '../lib/models';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
+import { BasicAuth } from './BasicAuth';
+import { BearerAuth } from './BearerAuth';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
@@ -15,6 +18,7 @@ import { RadioDropdown } from './core/RadioDropdown';
 import { HStack, VStack } from './core/Stacks';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
+import { EmptyStateText } from './EmptyStateText';
 import { GrpcEditor } from './GrpcEditor';
 import { UrlBar } from './UrlBar';
 
@@ -31,13 +35,10 @@ interface Props {
     | 'streaming'
     | 'no-schema'
     | 'no-method';
-  onUnary: () => void;
   onCommit: () => void;
   onCancel: () => void;
   onSend: (v: { message: string }) => void;
-  onClientStreaming: () => void;
-  onServerStreaming: () => void;
-  onStreaming: () => void;
+  onGo: () => void;
   services: ReflectResponseService[] | null;
 }
 
@@ -50,19 +51,17 @@ export function GrpcConnectionSetupPane({
   activeRequest,
   reflectionError,
   reflectionLoading,
-  onStreaming,
-  onClientStreaming,
-  onServerStreaming,
+  onGo,
   onCommit,
   onCancel,
   onSend,
-  onUnary,
 }: Props) {
   const connections = useGrpcConnections(activeRequest.id ?? null);
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const isStreaming = activeConnection?.elapsed === 0;
   const [activeTab, setActiveTab] = useActiveTab();
+  const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
   const [paneSize, setPaneSize] = useState(99999);
   const urlContainerEl = useRef<HTMLDivElement>(null);
@@ -116,17 +115,9 @@ export function GrpcConnectionSetupPane({
           body: 'Service or method not selected',
         });
       }
-      if (methodType === 'streaming') {
-        onStreaming();
-      } else if (methodType === 'server_streaming') {
-        onServerStreaming();
-      } else if (methodType === 'client_streaming') {
-        onClientStreaming();
-      } else {
-        onUnary();
-      }
+      onGo();
     },
-    [activeRequest, methodType, onStreaming, onServerStreaming, onClientStreaming, onUnary],
+    [activeRequest, onGo],
   );
 
   const tabs: TabItem[] = useMemo(
@@ -136,7 +127,7 @@ export function GrpcConnectionSetupPane({
         value: 'auth',
         label: 'Auth',
         options: {
-          value: AUTH_TYPE_NONE, // TODO
+          value: activeRequest.authenticationType,
           items: [
             { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
             { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
@@ -144,13 +135,24 @@ export function GrpcConnectionSetupPane({
             { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
           ],
           onChange: async (authenticationType) => {
-            // TODO
+            let authentication: GrpcRequest['authentication'] = activeRequest.authentication;
+            if (authenticationType === AUTH_TYPE_BASIC) {
+              authentication = {
+                username: authentication.username ?? '',
+                password: authentication.password ?? '',
+              };
+            } else if (authenticationType === AUTH_TYPE_BEARER) {
+              authentication = {
+                token: authentication.token ?? '',
+              };
+            }
+            await updateRequest.mutateAsync({ authenticationType, authentication });
           },
         },
       },
       { value: 'metadata', label: 'Metadata' },
     ],
-    [],
+    [activeRequest.authentication, activeRequest.authenticationType, updateRequest],
   );
 
   return (
@@ -166,7 +168,7 @@ export function GrpcConnectionSetupPane({
           url={activeRequest.url ?? ''}
           method={null}
           submitIcon={null}
-          forceUpdateKey={activeRequest?.id ?? ''}
+          forceUpdateKey={forceUpdateKey}
           placeholder="localhost:50051"
           onSubmit={handleConnect}
           onUrlChange={handleChangeUrl}
@@ -269,6 +271,15 @@ export function GrpcConnectionSetupPane({
             reflectionLoading={reflectionLoading}
             request={activeRequest}
           />
+        </TabContent>
+        <TabContent value="auth">
+          {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
+            <BasicAuth key={forceUpdateKey} request={activeRequest} />
+          ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
+            <BearerAuth key={forceUpdateKey} request={activeRequest} />
+          ) : (
+            <EmptyStateText>No Authentication {activeRequest.authenticationType}</EmptyStateText>
+          )}
         </TabContent>
       </Tabs>
     </VStack>

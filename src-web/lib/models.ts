@@ -115,6 +115,8 @@ export interface GrpcRequest extends BaseModel {
   method: string | null;
   message: string;
   protoFiles: string[];
+  authentication: Record<string, string | number | boolean | null | undefined>;
+  authenticationType: string | null;
 }
 
 export interface GrpcMessage extends BaseModel {
