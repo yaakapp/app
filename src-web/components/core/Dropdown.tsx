@@ -236,7 +236,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const isSpecial = e.ctrlKey || e.metaKey || e.altKey;
     if (isCharacter && !isSpecial) {
       e.preventDefault();
-      setFilter((f) => f + e.key);
+      setFilter((f) => (f + e.key).trim());
       setSelectedIndex(0);
     } else if (e.key === 'Backspace' && !isSpecial) {
       e.preventDefault();
@@ -356,10 +356,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   }, [triggerShape, containerWidth]);
 
   const filteredItems = useMemo(
-    () =>
-      items.filter(
-        (i) => filter === '' || getNodeText(i.label).toLowerCase().includes(filter.toLowerCase()),
-      ),
+    () => items.filter((i) => getNodeText(i.label).toLowerCase().includes(filter.toLowerCase())),
     [items, filter],
   );
 
@@ -425,42 +422,36 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     <HStack
                       space={2}
                       alignItems="center"
-                      className="py-0.5 px-1.5 mb-1 text-xs border border-highlight mx-2 rounded font-mono"
+                      className="pb-0.5 px-1.5 mb-2 text-xs border border-highlight mx-2 rounded font-mono h-2xs"
                     >
-                      <Icon icon="search" size="xs" className="text-gray-600" />
+                      <Icon icon="search" size="xs" className="text-gray-700" />
                       <div className="text-gray-800">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
                     <span className="text-gray-500 text-sm text-center px-2 py-1">No matches</span>
                   )}
-                  {items
-                    .filter(
-                      (i) =>
-                        filter === '' ||
-                        getNodeText(i.label).toLowerCase().includes(filter.toLowerCase()),
-                    )
-                    .map((item, i) => {
-                      if (item.type === 'separator') {
-                        return (
-                          <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
-                            {item.label}
-                          </Separator>
-                        );
-                      }
-                      if (item.hidden) {
-                        return null;
-                      }
+                  {filteredItems.map((item, i) => {
+                    if (item.type === 'separator') {
                       return (
-                        <MenuItem
-                          focused={i === selectedIndex}
-                          onFocus={handleFocus}
-                          onSelect={handleSelect}
-                          key={item.key}
-                          item={item}
-                        />
+                        <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
+                          {item.label}
+                        </Separator>
                       );
-                    })}
+                    }
+                    if (item.hidden) {
+                      return null;
+                    }
+                    return (
+                      <MenuItem
+                        focused={i === selectedIndex}
+                        onFocus={handleFocus}
+                        onSelect={handleSelect}
+                        key={item.key}
+                        item={item}
+                      />
+                    );
+                  })}
                 </VStack>
               )}
             </motion.div>

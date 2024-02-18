@@ -1,6 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
 const height = {
+  '2xs': '1.5rem',
   xs: '1.75rem',
   sm: '2.0rem',
   md: '2.5rem',
