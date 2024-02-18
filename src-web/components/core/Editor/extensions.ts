@@ -32,7 +32,6 @@ import {
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import { jsonSchema } from 'codemirror-json-schema';
 import type { Environment, Workspace } from '../../../lib/models';
 import type { EditorProps } from './index';
 import { text } from './text/extension';
@@ -86,7 +85,7 @@ const myTheme = EditorView.theme({}, { dark: true });
 // ]);
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
-  'application/grpc': jsonSchema() as unknown as LanguageSupport, // TODO: Fix this
+  'application/grpc': json(), // TODO: Make JSONSchema work
   'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
