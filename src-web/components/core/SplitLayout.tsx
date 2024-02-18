@@ -3,11 +3,9 @@ import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useActiveRequestId } from '../../hooks/useActiveRequestId';
 import { useActiveWorkspaceId } from '../../hooks/useActiveWorkspaceId';
 import { clamp } from '../../lib/clamp';
 import { ResizeHandle } from '../ResizeHandle';
-import { HotKeyList } from './HotKeyList';
 
 interface SlotProps {
   orientation: 'horizontal' | 'vertical';
@@ -141,11 +139,6 @@ export function SplitLayout({
     },
     [width, height, vertical, minHeightPx, setHeight, minWidthPx, setWidth],
   );
-
-  const activeRequestId = useActiveRequestId();
-  if (activeRequestId === null) {
-    return <HotKeyList hotkeys={['http_request.create', 'sidebar.toggle']} />;
-  }
 
   return (
     <div ref={containerRef} className={classNames(className, 'grid w-full h-full')} style={styles}>
