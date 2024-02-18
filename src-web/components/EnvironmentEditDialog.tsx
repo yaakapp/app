@@ -73,9 +73,11 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
             >
               Global Variables
             </SidebarButton>
-            <div className="px-2">
-              <Separator className="my-3"></Separator>
-            </div>
+            {environments.length > 0 && (
+              <div className="px-2">
+                <Separator className="my-3"></Separator>
+              </div>
+            )}
             {environments.map((e) => (
               <SidebarButton
                 key={e.id}
@@ -164,11 +166,6 @@ const EnvironmentEditor = function ({
       <HStack space={2} className="justify-between">
         <Heading className="w-full flex items-center">
           <div>{environment?.name ?? 'Global Variables'}</div>
-          {environment == null && (
-            <span className="pr-3 text-sm text-gray-600 pl-2 font-normal italic ml-auto">
-              Always available no matter which environment is active
-            </span>
-          )}
         </Heading>
       </HStack>
       <PairEditor
