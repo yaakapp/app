@@ -23,11 +23,13 @@ import React, {
 import { useKey, useWindowSize } from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
+import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
 import { Separator } from './Separator';
-import { VStack } from './Stacks';
+import { HStack, VStack } from './Stacks';
+import { Icon } from './Icon';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -209,9 +211,10 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   }: MenuProps,
   ref,
 ) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultSelectedIndex ?? null);
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
+  const [filter, setFilter] = useState<string>('');
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   // Calculate the max height so we can scroll
   const initMenu = useCallback((el: HTMLDivElement | null) => {
@@ -224,20 +227,30 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   const handleClose = useCallback(() => {
     onClose();
     setSelectedIndex(null);
+    setFilter('');
   }, [onClose]);
 
   // Close menu on space bar
-  const handleMenuKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === ' ') {
-        e.preventDefault();
-        handleClose();
-      }
-    },
-    [handleClose],
-  );
+  const handleMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const isCharacter = e.key.length === 1;
+    const isSpecial = e.ctrlKey || e.metaKey || e.altKey;
+    if (isCharacter && !isSpecial) {
+      e.preventDefault();
+      setFilter((f) => f + e.key);
+      setSelectedIndex(0);
+    } else if (e.key === 'Backspace' && !isSpecial) {
+      e.preventDefault();
+      setFilter((f) => f.slice(0, -1));
+    }
+  };
 
-  useHotKey('popup.close', handleClose);
+  useHotKey('popup.close', () => {
+    if (filter !== '') {
+      setFilter('');
+    } else {
+      handleClose();
+    }
+  });
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((currIndex) => {
@@ -309,6 +322,11 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
   );
 
+  const initContainerRef = (n: HTMLDivElement | null) => {
+    if (n == null) return null;
+    setContainerWidth(n.offsetWidth);
+  };
+
   const { containerStyles, triangleStyles } = useMemo<{
     containerStyles: CSSProperties;
     triangleStyles: CSSProperties | null;
@@ -328,27 +346,36 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       bottom: upsideDown ? docRect.height - top : undefined,
       right: onRight ? docRect.width - triggerShape?.right : undefined,
       left: !onRight ? triggerShape?.left : undefined,
+      width: containerWidth ?? 'auto',
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
       ? { right: width / 2, marginRight: '-0.2rem', ...size }
       : { left: width / 2, marginLeft: '-0.2rem', ...size };
     return { containerStyles, triangleStyles };
-  }, [triggerShape]);
+  }, [triggerShape, containerWidth]);
+
+  const filteredItems = useMemo(
+    () =>
+      items.filter(
+        (i) => filter === '' || getNodeText(i.label).toLowerCase().includes(filter.toLowerCase()),
+      ),
+    [items, filter],
+  );
 
   const handleFocus = useCallback(
     (i: DropdownItem) => {
-      const index = items.findIndex((item) => item === i) ?? null;
+      const index = filteredItems.findIndex((item) => item === i) ?? null;
       setSelectedIndex(index);
     },
-    [items],
+    [filteredItems],
   );
 
   if (items.length === 0) return null;
 
   return (
     <>
-      {items.map(
+      {filteredItems.map(
         (item) =>
           item.type !== 'separator' &&
           !item.hotKeyLabelOnly && (
@@ -372,7 +399,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
               role="menu"
               aria-orientation="vertical"
               dir="ltr"
-              ref={containerRef}
+              ref={initContainerRef}
               style={containerStyles}
               className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
             >
@@ -394,27 +421,46 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     'border-gray-200 overflow-auto mb-1 mx-0.5',
                   )}
                 >
-                  {items.map((item, i) => {
-                    if (item.type === 'separator') {
+                  {filter && (
+                    <HStack
+                      space={2}
+                      alignItems="center"
+                      className="py-0.5 px-1.5 mb-1 text-xs border border-highlight mx-2 rounded font-mono"
+                    >
+                      <Icon icon="search" size="xs" className="text-gray-600" />
+                      <div className="text-gray-800">{filter}</div>
+                    </HStack>
+                  )}
+                  {filteredItems.length === 0 && (
+                    <span className="text-gray-500 text-sm text-center px-2 py-1">No matches</span>
+                  )}
+                  {items
+                    .filter(
+                      (i) =>
+                        filter === '' ||
+                        getNodeText(i.label).toLowerCase().includes(filter.toLowerCase()),
+                    )
+                    .map((item, i) => {
+                      if (item.type === 'separator') {
+                        return (
+                          <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
+                            {item.label}
+                          </Separator>
+                        );
+                      }
+                      if (item.hidden) {
+                        return null;
+                      }
                       return (
-                        <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
-                          {item.label}
-                        </Separator>
+                        <MenuItem
+                          focused={i === selectedIndex}
+                          onFocus={handleFocus}
+                          onSelect={handleSelect}
+                          key={item.key}
+                          item={item}
+                        />
                       );
-                    }
-                    if (item.hidden) {
-                      return null;
-                    }
-                    return (
-                      <MenuItem
-                        focused={i === selectedIndex}
-                        onFocus={handleFocus}
-                        onSelect={handleSelect}
-                        key={item.key}
-                        item={item}
-                      />
-                    );
-                  })}
+                    })}
                 </VStack>
               )}
             </motion.div>

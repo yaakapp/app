@@ -1,23 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { Workspace } from '../lib/models';
 import { useAppRoutes } from './useAppRoutes';
-import { workspacesQueryKey } from './useWorkspaces';
 
 export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }) {
   const routes = useAppRoutes();
-  const queryClient = useQueryClient();
   return useMutation<Workspace, unknown, Pick<Workspace, 'name'>>({
     mutationFn: (patch) => {
       return invoke('cmd_create_workspace', patch);
     },
     onSettled: () => trackEvent('Workspace', 'Create'),
     onSuccess: async (workspace) => {
-      queryClient.setQueryData<Workspace[]>(workspacesQueryKey({}), (workspaces) => [
-        ...(workspaces ?? []),
-        workspace,
-      ]);
       if (navigateAfter) {
         routes.navigate('workspace', { workspaceId: workspace.id });
       }
