@@ -14,8 +14,9 @@ export interface DialogProps {
   title?: ReactNode;
   description?: ReactNode;
   className?: string;
-  size?: 'sm' | 'md' | 'full' | 'dynamic';
+  size?: 'sm' | 'md' | 'lg' | 'full' | 'dynamic';
   hideX?: boolean;
+  noPadding?: boolean;
 }
 
 export function Dialog({
@@ -27,6 +28,7 @@ export function Dialog({
   title,
   description,
   hideX,
+  noPadding,
 }: DialogProps) {
   const titleId = useMemo(() => Math.random().toString(36).slice(2), []);
   const descriptionId = useMemo(
@@ -50,30 +52,36 @@ export function Dialog({
             animate={{ top: 0, scale: 1 }}
             className={classNames(
               className,
-              'gap-2 grid grid-rows-[auto_minmax(0,1fr)]',
-              'pt-4 relative bg-gray-50 pointer-events-auto',
+              'grid grid-rows-[auto_minmax(0,1fr)]',
+              'relative bg-gray-50 pointer-events-auto',
               'rounded-lg',
               'dark:border border-highlight shadow shadow-black/10',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
+              size === 'lg' && 'w-[65rem] max-h-[80vh]',
               size === 'full' && 'w-[100vw] h-[100vh]',
               size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
             )}
           >
             {title ? (
-              <Heading className="px-6 pt-4" size={1} id={titleId}>
+              <Heading className="px-6 mt-4 mb-2" size={1} id={titleId}>
                 {title}
               </Heading>
             ) : (
               <span />
             )}
             {description && (
-              <p className="px-6" id={descriptionId}>
+              <p className="px-6 text-gray-700" id={descriptionId}>
                 {description}
               </p>
             )}
-            <div className="h-full w-full grid grid-cols-[minmax(0,1fr)] overflow-y-auto px-6 py-2">
+            <div
+              className={classNames(
+                'h-full w-full grid grid-cols-[minmax(0,1fr)] overflow-y-auto',
+                !noPadding && 'px-6 py-2',
+              )}
+            >
               {children}
             </div>
 

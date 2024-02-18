@@ -329,7 +329,7 @@ const FormRow = memo(function FormRow({
             'justify-center opacity-0 group-hover:opacity-70',
           )}
         >
-          <Icon icon="gripVertical" className="pointer-events-none" />
+          <Icon size="sm" icon="gripVertical" className="pointer-events-none" />
         </div>
       ) : (
         <span className="w-3" />
@@ -425,6 +425,7 @@ const FormRow = memo(function FormRow({
         color="custom"
         icon={!isLast ? 'trash' : 'empty'}
         size="sm"
+        iconSize="sm"
         title="Delete header"
         onClick={!isLast ? handleDelete : undefined}
         className="ml-0.5 opacity-0 group-hover:!opacity-100 focus-visible:!opacity-100"

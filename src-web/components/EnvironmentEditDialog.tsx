@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
-import { useCallback, useMemo, useState } from 'react';
-import { useWindowSize } from 'react-use';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
@@ -11,17 +10,19 @@ import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import type { Environment, Workspace } from '../lib/models';
 import { Button } from './core/Button';
-import type { DropdownItem } from './core/Dropdown';
-import { Dropdown } from './core/Dropdown';
+import { ContextMenu } from './core/Dropdown';
 import type {
   GenericCompletionConfig,
   GenericCompletionOption,
 } from './core/Editor/genericCompletion';
+import { Heading } from './core/Heading';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
 import type { PairEditorProps } from './core/PairEditor';
 import { PairEditor } from './core/PairEditor';
+import { Separator } from './core/Separator';
+import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
 
 interface Props {
@@ -36,9 +37,6 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
   const createEnvironment = useCreateEnvironment();
   const activeWorkspace = useActiveWorkspace();
 
-  const windowSize = useWindowSize();
-  const showSidebar = windowSize.width > 500;
-
   const selectedEnvironment = useMemo(
     () => environments.find((e) => e.id === selectedEnvironmentId) ?? null,
     [environments, selectedEnvironmentId],
@@ -50,60 +48,72 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
   };
 
   return (
-    <div
-      className={classNames(
-        'h-full pt-1 grid gap-x-8 grid-rows-[minmax(0,1fr)]',
-        showSidebar ? 'grid-cols-[auto_minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
-      )}
-    >
-      {showSidebar && (
-        <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2 pb-4">
-          <div className="min-w-0 h-full w-full overflow-y-scroll">
+    <SplitLayout
+      name="env_editor"
+      defaultRatio={0.75}
+      layout="horizontal"
+      className="gap-0"
+      firstSlot={() => (
+        <aside className="w-full min-w-0 pt-2">
+          <div className="min-w-0 h-full overflow-y-auto pt-1">
             <SidebarButton
               active={selectedEnvironment?.id == null}
               onClick={() => setSelectedEnvironmentId(null)}
+              className="group"
+              environment={null}
+              rightSlot={
+                <IconButton
+                  size="sm"
+                  title="Add sub environment"
+                  icon="plusCircle"
+                  iconClassName="text-gray-500 group-hover:text-gray-700"
+                  onClick={handleCreateEnvironment}
+                />
+              }
             >
-              Global
+              Global Variables
             </SidebarButton>
+            <div className="px-2">
+              <Separator className="my-3"></Separator>
+            </div>
             {environments.map((e) => (
               <SidebarButton
                 key={e.id}
                 active={selectedEnvironment?.id === e.id}
+                environment={e}
                 onClick={() => setSelectedEnvironmentId(e.id)}
               >
-                &rarr; {e.name}
+                {e.name}
               </SidebarButton>
             ))}
           </div>
-          <Button
-            size="sm"
-            className="w-full text-center"
-            color="gray"
-            justify="center"
-            onClick={handleCreateEnvironment}
-          >
-            New Environment
-          </Button>
         </aside>
       )}
-      {activeWorkspace != null && (
-        <EnvironmentEditor environment={selectedEnvironment} workspace={activeWorkspace} />
-      )}
-    </div>
+      secondSlot={() =>
+        activeWorkspace != null && (
+          <EnvironmentEditor
+            className="pt-2 border-l border-highlight"
+            environment={selectedEnvironment}
+            workspace={activeWorkspace}
+          />
+        )
+      }
+    />
   );
 };
 
 const EnvironmentEditor = function ({
   environment,
   workspace,
+  className,
 }: {
   environment: Environment | null;
   workspace: Workspace;
+  className?: string;
 }) {
   const environments = useEnvironments();
-  const updateEnvironment = useUpdateEnvironment(environment?.id ?? 'n/a');
+  const updateEnvironment = useUpdateEnvironment(environment?.id ?? null);
   const updateWorkspace = useUpdateWorkspace(workspace.id);
-  const deleteEnvironment = useDeleteEnvironment(environment);
   const variables = environment == null ? workspace.variables : environment.variables;
   const handleChange = useCallback<PairEditorProps['onChange']>(
     (variables) => {
@@ -143,12 +153,96 @@ const EnvironmentEditor = function ({
     return { options };
   }, [environments, variables, workspace, environment]);
 
+  const validateName = useCallback((name: string) => {
+    // Empty just means the variable doesn't have a name yet, and is unusable
+    if (name === '') return true;
+    return name.match(/^[a-z_][a-z0-9_]*$/i) != null;
+  }, []);
+
+  return (
+    <VStack space={4} className={classNames(className, 'pl-4')}>
+      <HStack space={2} className="justify-between">
+        <Heading className="w-full flex items-center">
+          <div>{environment?.name ?? 'Global Variables'}</div>
+          {environment == null && (
+            <span className="pr-3 text-sm text-gray-600 pl-2 font-normal italic ml-auto">
+              Always available no matter which environment is active
+            </span>
+          )}
+        </Heading>
+      </HStack>
+      <PairEditor
+        nameAutocomplete={nameAutocomplete}
+        nameAutocompleteVariables={false}
+        namePlaceholder="VAR_NAME"
+        nameValidate={validateName}
+        valueAutocompleteVariables={false}
+        forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}
+        pairs={variables}
+        onChange={handleChange}
+      />
+    </VStack>
+  );
+};
+
+function SidebarButton({
+  children,
+  className,
+  active,
+  onClick,
+  rightSlot,
+  environment,
+}: {
+  className?: string;
+  children: ReactNode;
+  active: boolean;
+  onClick: () => void;
+  rightSlot?: ReactNode;
+  environment: Environment | null;
+}) {
   const prompt = usePrompt();
-  const items = useMemo<DropdownItem[] | null>(
-    () =>
-      environment == null
-        ? null
-        : [
+  const updateEnvironment = useUpdateEnvironment(environment?.id ?? null);
+  const deleteEnvironment = useDeleteEnvironment(environment);
+  const [showContextMenu, setShowContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  return (
+    <>
+      <div
+        className={classNames(
+          className,
+          'w-full grid grid-cols-[minmax(0,1fr)_auto] items-center',
+          'px-1', // Padding to show focus border
+        )}
+      >
+        <Button
+          color="custom"
+          size="xs"
+          className={classNames(
+            'w-full',
+            active ? 'text-gray-800' : 'text-gray-600 hover:text-gray-700',
+          )}
+          justify="start"
+          onClick={onClick}
+          onContextMenu={handleContextMenu}
+        >
+          {children}
+        </Button>
+        {rightSlot}
+      </div>
+      {environment != null && (
+        <ContextMenu
+          show={showContextMenu}
+          onClose={() => setShowContextMenu(null)}
+          items={[
             {
               key: 'rename',
               label: 'Rename',
@@ -177,68 +271,9 @@ const EnvironmentEditor = function ({
               leftSlot: <Icon icon="trash" size="sm" />,
               onSelect: () => deleteEnvironment.mutate(),
             },
-          ],
-    [deleteEnvironment, updateEnvironment, prompt, environment],
-  );
-
-  const validateName = useCallback((name: string) => {
-    // Empty just means the variable doesn't have a name yet, and is unusable
-    if (name === '') return true;
-    return name.match(/^[a-z_][a-z0-9_]*$/i) != null;
-  }, []);
-
-  return (
-    <VStack space={2}>
-      <HStack space={2} className="justify-between">
-        <h1 className="text-xl">{environment?.name ?? 'Global Environment'}</h1>
-        {items != null && (
-          <Dropdown items={items}>
-            <IconButton
-              icon="moreVertical"
-              title="Environment Actions"
-              size="sm"
-              className="!h-auto w-8"
-            />
-          </Dropdown>
-        )}
-      </HStack>
-      <PairEditor
-        nameAutocomplete={nameAutocomplete}
-        nameAutocompleteVariables={false}
-        namePlaceholder="VAR_NAME"
-        nameValidate={validateName}
-        valueAutocompleteVariables={false}
-        forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}
-        pairs={variables}
-        onChange={handleChange}
-      />
-    </VStack>
-  );
-};
-
-function SidebarButton({
-  children,
-  className,
-  active,
-  onClick,
-}: {
-  className?: string;
-  children: ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      tabIndex={active ? 0 : -1}
-      onClick={onClick}
-      className={classNames(
-        className,
-        'flex items-center text-sm text-left w-full mb-1 h-xs rounded px-2',
-        'text-gray-600 hocus:text-gray-800 focus:bg-highlightSecondary outline-none',
-        active && '!text-gray-900',
+          ]}
+        />
       )}
-    >
-      {children}
-    </button>
+    </>
   );
 }

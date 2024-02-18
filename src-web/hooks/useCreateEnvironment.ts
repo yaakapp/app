@@ -19,6 +19,7 @@ export function useCreateEnvironment() {
         id: 'new-environment',
         name: 'name',
         title: 'New Environment',
+        description: 'Create multiple environments with different sets of variables',
         label: 'Name',
         placeholder: 'My Environment',
         defaultValue: 'My Environment',
