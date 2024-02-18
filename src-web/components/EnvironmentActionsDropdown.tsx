@@ -2,7 +2,6 @@ import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -22,7 +21,6 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
 }: Props) {
   const environments = useEnvironments();
   const activeEnvironment = useActiveEnvironment();
-  const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
   const routes = useAppRoutes();
 
@@ -54,28 +52,15 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
       ...((environments.length > 0
         ? [{ type: 'separator', label: 'Environments' }]
         : []) as DropdownItem[]),
-      ...((environments.length > 0
-        ? [
-            {
-              key: 'edit',
-              label: 'Manage Environments',
-              hotKeyAction: 'environmentEditor.toggle',
-              leftSlot: <Icon icon="box" />,
-              onSelect: showEnvironmentDialog,
-            },
-          ]
-        : []) as DropdownItem[]),
       {
-        key: 'new',
-        label: 'New Environment',
-        leftSlot: <Icon icon="plus" />,
-        onSelect: async () => {
-          await createEnvironment.mutateAsync();
-          showEnvironmentDialog();
-        },
+        key: 'edit',
+        label: 'Manage Environments',
+        hotKeyAction: 'environmentEditor.toggle',
+        leftSlot: <Icon icon="box" />,
+        onSelect: showEnvironmentDialog,
       },
     ],
-    [activeEnvironment?.id, createEnvironment, environments, routes, showEnvironmentDialog],
+    [activeEnvironment?.id, environments, routes, showEnvironmentDialog],
   );
 
   return (
@@ -89,7 +74,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         )}
         {...buttonProps}
       >
-        {activeEnvironment?.name ?? 'No Environment'}
+        {activeEnvironment?.name ?? 'Environment'}
       </Button>
     </Dropdown>
   );

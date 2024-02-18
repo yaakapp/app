@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import type { ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
@@ -58,13 +59,19 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       {showSidebar && (
         <aside className="grid grid-rows-[minmax(0,1fr)_auto] gap-y-0.5 h-full max-w-[250px] pr-3 border-r border-gray-100 -ml-2 pb-4">
           <div className="min-w-0 h-full w-full overflow-y-scroll">
+            <SidebarButton
+              active={selectedEnvironment?.id == null}
+              onClick={() => setSelectedEnvironmentId(null)}
+            >
+              Global
+            </SidebarButton>
             {environments.map((e) => (
               <SidebarButton
                 key={e.id}
                 active={selectedEnvironment?.id === e.id}
                 onClick={() => setSelectedEnvironmentId(e.id)}
               >
-                {e.name}
+                &rarr; {e.name}
               </SidebarButton>
             ))}
           </div>
@@ -79,12 +86,8 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
           </Button>
         </aside>
       )}
-      {activeWorkspace != null ? (
+      {activeWorkspace != null && (
         <EnvironmentEditor environment={selectedEnvironment} workspace={activeWorkspace} />
-      ) : (
-        <div className="flex w-full h-full items-center justify-center text-gray-400 italic">
-          select an environment
-        </div>
       )}
     </div>
   );
@@ -187,7 +190,7 @@ const EnvironmentEditor = function ({
   return (
     <VStack space={2}>
       <HStack space={2} className="justify-between">
-        <h1 className="text-xl">{environment?.name ?? 'Base Environment'}</h1>
+        <h1 className="text-xl">{environment?.name ?? 'Global Environment'}</h1>
         {items != null && (
           <Dropdown items={items}>
             <IconButton
@@ -220,7 +223,7 @@ function SidebarButton({
   onClick,
 }: {
   className?: string;
-  children: string;
+  children: ReactNode;
   active: boolean;
   onClick: () => void;
 }) {
