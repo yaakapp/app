@@ -205,6 +205,8 @@ pub struct GrpcRequest {
     pub method: Option<String>,
     pub message: String,
     pub proto_files: Json<Vec<String>>,
+    pub authentication_type: Option<String>,
+    pub authentication: Json<HashMap<String, JsonValue>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -502,9 +504,9 @@ pub async fn upsert_grpc_request(
         r#"
             INSERT INTO grpc_requests (
                 id, name, workspace_id, folder_id, sort_priority, url, service, method, message,
-                proto_files
+                proto_files, authentication_type, authentication
              )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
                 name = excluded.name,
@@ -514,7 +516,9 @@ pub async fn upsert_grpc_request(
                 service = excluded.service,
                 method = excluded.method,
                 message = excluded.message,
-                proto_files = excluded.proto_files
+                proto_files = excluded.proto_files,
+                authentication_type = excluded.authentication_type,
+                authentication = excluded.authentication
         "#,
         id,
         trimmed_name,
@@ -526,6 +530,8 @@ pub async fn upsert_grpc_request(
         request.method,
         request.message,
         request.proto_files,
+        request.authentication_type,
+        request.authentication,
     )
     .execute(&db)
     .await?;
@@ -546,7 +552,8 @@ pub async fn get_grpc_request(
         r#"
             SELECT
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
-                url, service, method, message,
+                url, service, method, message, authentication_type,
+                authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
                 proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
             FROM grpc_requests
             WHERE id = ?
@@ -567,7 +574,8 @@ pub async fn list_grpc_requests(
         r#"
             SELECT
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
-                url, service, method, message,
+                url, service, method, message, authentication_type,
+                authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
                 proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
             FROM grpc_requests
             WHERE workspace_id = ?

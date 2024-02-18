@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message,\n                proto_files AS \"proto_files!: sqlx::types::Json<Vec<String>>\"\n            FROM grpc_requests\n            WHERE workspace_id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message, authentication_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                proto_files AS \"proto_files!: sqlx::types::Json<Vec<String>>\"\n            FROM grpc_requests\n            WHERE workspace_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -64,8 +64,18 @@
         "type_info": "Text"
       },
       {
-        "name": "proto_files!: sqlx::types::Json<Vec<String>>",
+        "name": "authentication_type",
         "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "authentication!: Json<HashMap<String, JsonValue>>",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "proto_files!: sqlx::types::Json<Vec<String>>",
+        "ordinal": 14,
         "type_info": "Text"
       }
     ],
@@ -85,8 +95,10 @@
       true,
       true,
       false,
+      true,
+      false,
       false
     ]
   },
-  "hash": "761d27c3ec425c37ad9abe9c732a9c1746c81ca50d2c413e540b74c8c8e908b7"
+  "hash": "545d21ff21bd02468be86746325dc9f1b50f3fe53d7735194d91927b5d14a436"
 }

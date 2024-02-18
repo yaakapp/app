@@ -80,10 +80,7 @@ export function GrpcConnectionLayout({ style }: Props) {
           style={style}
           activeRequest={activeRequest}
           methodType={methodType}
-          onUnary={grpc.unary.mutate}
-          onServerStreaming={grpc.serverStreaming.mutate}
-          onClientStreaming={grpc.clientStreaming.mutate}
-          onStreaming={grpc.streaming.mutate}
+          onGo={grpc.go.mutate}
           onCommit={grpc.commit.mutate}
           onCancel={grpc.cancel.mutate}
           onSend={grpc.send.mutate}
@@ -93,7 +90,7 @@ export function GrpcConnectionLayout({ style }: Props) {
         />
       )}
       secondSlot={({ style }) =>
-        !grpc.unary.isLoading && (
+        !grpc.go.isLoading && (
           <div
             style={style}
             className={classNames(
@@ -102,9 +99,9 @@ export function GrpcConnectionLayout({ style }: Props) {
               'shadow shadow-gray-100 dark:shadow-gray-0 relative',
             )}
           >
-            {grpc.unary.error ? (
+            {grpc.go.error ? (
               <Banner color="danger" className="m-2">
-                {grpc.unary.error}
+                {grpc.go.error}
               </Banner>
             ) : messages.length >= 0 ? (
               <GrpcConnectionMessagesPane activeRequest={activeRequest} methodType={methodType} />
