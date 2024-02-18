@@ -42,6 +42,7 @@ const icons = {
   plusCircle: lucide.PlusCircleIcon,
   question: lucide.ShieldQuestionIcon,
   refresh: lucide.RefreshCwIcon,
+  search: lucide.SearchIcon,
   sendHorizontal: lucide.SendHorizonalIcon,
   settings2: lucide.Settings2Icon,
   settings: lucide.SettingsIcon,
