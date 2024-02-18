@@ -132,7 +132,6 @@ export function GrpcConnectionSetupPane({
   const tabs: TabItem[] = useMemo(
     () => [
       { value: 'message', label: 'Message' },
-      { value: 'metadata', label: 'Metadata' },
       {
         value: 'auth',
         label: 'Auth',
@@ -149,6 +148,7 @@ export function GrpcConnectionSetupPane({
           },
         },
       },
+      { value: 'metadata', label: 'Metadata' },
     ],
     [],
   );
