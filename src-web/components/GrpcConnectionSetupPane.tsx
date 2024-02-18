@@ -7,13 +7,14 @@ import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
-import type { GrpcRequest } from '../lib/models';
+import type { GrpcMetadataEntry, GrpcRequest } from '../lib/models';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { PairEditor } from './core/PairEditor';
 import { RadioDropdown } from './core/RadioDropdown';
 import { HStack, VStack } from './core/Stacks';
 import type { TabItem } from './core/Tabs/Tabs';
@@ -155,6 +156,11 @@ export function GrpcConnectionSetupPane({
     [activeRequest.authentication, activeRequest.authenticationType, updateRequest],
   );
 
+  const handleMetadataChange = useCallback(
+    (metadata: GrpcMetadataEntry[]) => updateRequest.mutate({ metadata }),
+    [updateRequest],
+  );
+
   return (
     <VStack style={style}>
       <div
@@ -280,6 +286,15 @@ export function GrpcConnectionSetupPane({
           ) : (
             <EmptyStateText>No Authentication {activeRequest.authenticationType}</EmptyStateText>
           )}
+        </TabContent>
+        <TabContent value="metadata">
+          <PairEditor
+            valueAutocompleteVariables
+            nameAutocompleteVariables
+            pairs={activeRequest.metadata}
+            onChange={handleMetadataChange}
+            forceUpdateKey={forceUpdateKey}
+          />
         </TabContent>
       </Tabs>
     </VStack>
