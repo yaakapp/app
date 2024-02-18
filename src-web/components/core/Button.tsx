@@ -51,6 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       classNames(
         className,
         'max-w-full min-w-0', // Help with truncation
+        'hocus:opacity-100', // Force opacity for certain hover effects
         'whitespace-nowrap outline-none',
         'flex-shrink-0 flex items-center',
         'focus-visible-or-class:ring rounded-md',

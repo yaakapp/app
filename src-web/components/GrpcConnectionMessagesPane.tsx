@@ -38,7 +38,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
 
   return (
     <SplitLayout
-      forceVertical
+      layout="vertical"
       style={style}
       name={methodType === 'unary' ? 'grpc_messages_unary' : 'grpc_messages_streaming'}
       defaultRatio={methodType === 'unary' ? 0.75 : 0.3}

@@ -27,7 +27,10 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   const showEnvironmentDialog = useCallback(() => {
     dialog.toggle({
       id: 'environment-editor',
-      title: 'Manage Environments',
+      hideX: true,
+      noPadding: true,
+      size: 'lg',
+      className: 'h-[80vh]',
       render: () => <EnvironmentEditDialog initialEnvironment={activeEnvironment} />,
     });
   }, [dialog, activeEnvironment]);

@@ -23,7 +23,7 @@ interface Props {
   defaultRatio?: number;
   minHeightPx?: number;
   minWidthPx?: number;
-  forceVertical?: boolean;
+  layout?: 'responsive' | 'vertical' | 'horizontal';
 }
 
 const areaL = { gridArea: 'left' };
@@ -38,13 +38,13 @@ export function SplitLayout({
   secondSlot,
   className,
   name,
-  forceVertical,
+  layout = 'responsive',
   defaultRatio = 0.5,
   minHeightPx = 10,
   minWidthPx = 10,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [vertical, setVertical] = useState<boolean>(false);
+  const [verticalBasedOnSize, setVerticalBasedOnSize] = useState<boolean>(false);
   const [widthRaw, setWidth] = useLocalStorage<number>(`${name}_width::${useActiveWorkspaceId()}`);
   const [heightRaw, setHeight] = useLocalStorage<number>(
     `${name}_height::${useActiveWorkspaceId()}`,
@@ -62,26 +62,27 @@ export function SplitLayout({
   }
 
   useResizeObserver(containerRef.current, ({ contentRect }) => {
-    setVertical(contentRect.width < STACK_VERTICAL_WIDTH);
+    setVerticalBasedOnSize(contentRect.width < STACK_VERTICAL_WIDTH);
   });
+
+  const vertical = layout !== 'horizontal' && (layout === 'vertical' || verticalBasedOnSize);
 
   const styles = useMemo<CSSProperties>(() => {
     return {
       ...style,
-      gridTemplate:
-        forceVertical || vertical
-          ? `
+      gridTemplate: vertical
+        ? `
             ' ${areaL.gridArea}' minmax(0,${1 - height}fr)
             ' ${areaD.gridArea}' 0
             ' ${areaR.gridArea}' minmax(${minHeightPx}px,${height}fr)
             / 1fr            
           `
-          : `
+        : `
             ' ${areaL.gridArea} ${areaD.gridArea} ${areaR.gridArea}' minmax(0,1fr)
             / ${1 - width}fr   0                ${width}fr           
           `,
     };
-  }, [forceVertical, style, vertical, height, minHeightPx, width]);
+  }, [style, vertical, height, minHeightPx, width]);
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -154,7 +155,7 @@ export function SplitLayout({
           <ResizeHandle
             style={areaD}
             isResizing={isResizing}
-            className={classNames(vertical ? 'translate-y-0.5' : 'translate-x-0.5')}
+            className={classNames(vertical ? '-translate-y-1.5' : '-translate-x-1.5')}
             onResizeStart={handleResizeStart}
             onReset={handleReset}
             side={vertical ? 'top' : 'left'}
