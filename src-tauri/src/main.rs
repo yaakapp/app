@@ -16,7 +16,7 @@ use std::process::exit;
 use std::str::FromStr;
 
 use ::http::uri::InvalidUri;
-use ::http::Uri;
+use ::http::{HeaderValue, Uri};
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
@@ -275,6 +275,23 @@ async fn cmd_grpc_go(
     };
     let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
     let mut metadata = HashMap::new();
+
+    // Add rest of metadata
+    for h in req.clone().metadata.0 {
+        if h.name.is_empty() && h.value.is_empty() {
+            continue;
+        }
+
+        if !h.enabled {
+            continue;
+        }
+
+        let name = render::render(&h.name, &workspace, environment.as_ref());
+        let value = render::render(&h.value, &workspace, environment.as_ref());
+
+        metadata.insert(name, value);
+    }
+
     if let Some(b) = &req.authentication_type {
         let req = req.clone();
         let environment_ref = environment.as_ref();
@@ -304,6 +321,7 @@ async fn cmd_grpc_go(
             metadata.insert("Authorization".to_string(), format!("Bearer {token}"));
         }
     }
+
     println!("METADATA: {:?}", metadata);
 
     let grpc_listen = {

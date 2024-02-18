@@ -104,6 +104,12 @@ export interface HttpUrlParameter {
   enabled?: boolean;
 }
 
+export interface GrpcMetadataEntry {
+  name: string;
+  value: string;
+  enabled?: boolean;
+}
+
 export interface GrpcRequest extends BaseModel {
   readonly workspaceId: string;
   readonly model: 'grpc_request';
@@ -117,6 +123,7 @@ export interface GrpcRequest extends BaseModel {
   protoFiles: string[];
   authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
+  metadata: GrpcMetadataEntry[];
 }
 
 export interface GrpcMessage extends BaseModel {
