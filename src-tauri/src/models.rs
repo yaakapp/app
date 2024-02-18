@@ -189,6 +189,15 @@ impl HttpResponse {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct GrpcMetadataEntry {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    pub name: String,
+    pub value: String,
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct GrpcRequest {
@@ -207,6 +216,7 @@ pub struct GrpcRequest {
     pub proto_files: Json<Vec<String>>,
     pub authentication_type: Option<String>,
     pub authentication: Json<HashMap<String, JsonValue>>,
+    pub metadata: Json<Vec<GrpcMetadataEntry>>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -504,9 +514,9 @@ pub async fn upsert_grpc_request(
         r#"
             INSERT INTO grpc_requests (
                 id, name, workspace_id, folder_id, sort_priority, url, service, method, message,
-                proto_files, authentication_type, authentication
+                proto_files, authentication_type, authentication, metadata
              )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
                 name = excluded.name,
@@ -518,7 +528,8 @@ pub async fn upsert_grpc_request(
                 message = excluded.message,
                 proto_files = excluded.proto_files,
                 authentication_type = excluded.authentication_type,
-                authentication = excluded.authentication
+                authentication = excluded.authentication,
+                metadata = excluded.metadata
         "#,
         id,
         trimmed_name,
@@ -532,6 +543,7 @@ pub async fn upsert_grpc_request(
         request.proto_files,
         request.authentication_type,
         request.authentication,
+        request.metadata,
     )
     .execute(&db)
     .await?;
@@ -554,7 +566,8 @@ pub async fn get_grpc_request(
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
                 url, service, method, message, authentication_type,
                 authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
-                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>",
+                metadata AS "metadata!: sqlx::types::Json<Vec<GrpcMetadataEntry>>"
             FROM grpc_requests
             WHERE id = ?
         "#,
@@ -576,7 +589,8 @@ pub async fn list_grpc_requests(
                 id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,
                 url, service, method, message, authentication_type,
                 authentication AS "authentication!: Json<HashMap<String, JsonValue>>",
-                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>"
+                proto_files AS "proto_files!: sqlx::types::Json<Vec<String>>",
+                metadata AS "metadata!: sqlx::types::Json<Vec<GrpcMetadataEntry>>"
             FROM grpc_requests
             WHERE workspace_id = ?
         "#,
@@ -1032,8 +1046,6 @@ pub async fn upsert_http_request(
         "" => generate_id(Some("rq")),
         _ => r.id.to_string(),
     };
-    let headers_json = Json(r.headers);
-    let auth_json = Json(r.authentication);
     let trimmed_name = r.name.trim();
 
     let db = get_db(mgr).await;
@@ -1068,9 +1080,9 @@ pub async fn upsert_http_request(
         r.method,
         r.body,
         r.body_type,
-        auth_json,
+        r.authentication,
         r.authentication_type,
-        headers_json,
+        r.headers,
         r.sort_priority,
     )
     .execute(&db)
@@ -1291,7 +1303,6 @@ pub async fn update_response(
     mgr: &impl Manager<Wry>,
     response: &HttpResponse,
 ) -> Result<HttpResponse, sqlx::Error> {
-    let headers_json = Json(&response.headers);
     let db = get_db(mgr).await;
     sqlx::query!(
         r#"
@@ -1308,7 +1319,7 @@ pub async fn update_response(
         response.content_length,
         response.body_path,
         response.error,
-        headers_json,
+        response.headers,
         response.version,
         response.remote_addr,
         response.id,

@@ -1,22 +1,26 @@
 CREATE TABLE grpc_requests
 (
-    id            TEXT                               NOT NULL
+    id                  TEXT                               NOT NULL
         PRIMARY KEY,
-    model         TEXT     DEFAULT 'grpc_request'    NOT NULL,
-    workspace_id  TEXT                               NOT NULL
+    model               TEXT     DEFAULT 'grpc_request'    NOT NULL,
+    workspace_id        TEXT                               NOT NULL
         REFERENCES workspaces
             ON DELETE CASCADE,
-    folder_id     TEXT                               NULL
+    folder_id           TEXT                               NULL
         REFERENCES folders
             ON DELETE CASCADE,
-    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    name          TEXT                               NOT NULL,
-    sort_priority REAL                               NOT NULL,
-    url           TEXT                               NOT NULL,
-    service       TEXT                               NULL,
-    method        TEXT                               NULL,
-    message       TEXT                               NOT NULL
+    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    name                TEXT                               NOT NULL,
+    sort_priority       REAL                               NOT NULL,
+    url                 TEXT                               NOT NULL,
+    service             TEXT                               NULL,
+    method              TEXT                               NULL,
+    message             TEXT                               NOT NULL,
+    proto_files         TEXT     DEFAULT '[]'              NOT NULL,
+    authentication      TEXT     DEFAULT '{}'              NOT NULL,
+    authentication_type TEXT                               NULL,
+    metadata            TEXT     DEFAULT '[]'              NOT NULL
 );
 
 CREATE TABLE grpc_connections
