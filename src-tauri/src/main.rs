@@ -16,7 +16,7 @@ use std::process::exit;
 use std::str::FromStr;
 
 use ::http::uri::InvalidUri;
-use ::http::{HeaderValue, Uri};
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};

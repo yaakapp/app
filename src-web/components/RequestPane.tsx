@@ -9,6 +9,7 @@ import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
+  BODY_TYPE_OTHER,
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
   AUTH_TYPE_NONE,
@@ -68,6 +69,7 @@ export const RequestPane = memo(function RequestPane({
             { label: 'JSON', value: BODY_TYPE_JSON },
             { label: 'XML', value: BODY_TYPE_XML },
             { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
+            { label: 'Other', value: BODY_TYPE_OTHER },
             { type: 'separator', label: 'Other' },
             { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
           ],
@@ -81,6 +83,7 @@ export const RequestPane = memo(function RequestPane({
               bodyType === BODY_TYPE_FORM_URLENCODED ||
               bodyType === BODY_TYPE_FORM_MULTIPART ||
               bodyType === BODY_TYPE_JSON ||
+              bodyType === BODY_TYPE_OTHER ||
               bodyType === BODY_TYPE_XML
             ) {
               patch.method = 'POST';
@@ -273,6 +276,17 @@ export const RequestPane = memo(function RequestPane({
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   contentType="text/xml"
+                  onChange={handleBodyTextChange}
+                />
+              ) : activeRequest.bodyType === BODY_TYPE_OTHER ? (
+                <Editor
+                  forceUpdateKey={forceUpdateKey}
+                  useTemplating
+                  autocompleteVariables
+                  placeholder="..."
+                  className="!bg-gray-50"
+                  heightMode={fullHeight ? 'full' : 'auto'}
+                  defaultValue={`${activeRequest.body?.text ?? ''}`}
                   onChange={handleBodyTextChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
