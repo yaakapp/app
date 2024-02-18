@@ -2,15 +2,19 @@ import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
 import type { CSSProperties, FormEvent } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import type { GrpcRequest } from '../lib/models';
+import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { RadioDropdown } from './core/RadioDropdown';
 import { HStack, VStack } from './core/Stacks';
+import type { TabItem } from './core/Tabs/Tabs';
+import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { GrpcEditor } from './GrpcEditor';
 import { UrlBar } from './UrlBar';
 
@@ -37,6 +41,8 @@ interface Props {
   services: ReflectResponseService[] | null;
 }
 
+const useActiveTab = createGlobalState<string>('message');
+
 export function GrpcConnectionSetupPane({
   style,
   services,
@@ -56,6 +62,7 @@ export function GrpcConnectionSetupPane({
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const isStreaming = activeConnection?.elapsed === 0;
+  const [activeTab, setActiveTab] = useActiveTab();
 
   const [paneSize, setPaneSize] = useState(99999);
   const urlContainerEl = useRef<HTMLDivElement>(null);
@@ -122,8 +129,32 @@ export function GrpcConnectionSetupPane({
     [activeRequest, methodType, onStreaming, onServerStreaming, onClientStreaming, onUnary],
   );
 
+  const tabs: TabItem[] = useMemo(
+    () => [
+      { value: 'message', label: 'Message' },
+      { value: 'metadata', label: 'Metadata' },
+      {
+        value: 'auth',
+        label: 'Auth',
+        options: {
+          value: AUTH_TYPE_NONE, // TODO
+          items: [
+            { label: 'Basic Auth', shortLabel: 'Basic', value: AUTH_TYPE_BASIC },
+            { label: 'Bearer Token', shortLabel: 'Bearer', value: AUTH_TYPE_BEARER },
+            { type: 'separator' },
+            { label: 'No Authentication', shortLabel: 'Auth', value: AUTH_TYPE_NONE },
+          ],
+          onChange: async (authenticationType) => {
+            // TODO
+          },
+        },
+      },
+    ],
+    [],
+  );
+
   return (
-    <VStack space={2} style={style}>
+    <VStack style={style}>
       <div
         ref={urlContainerEl}
         className={classNames(
@@ -222,14 +253,24 @@ export function GrpcConnectionSetupPane({
           )}
         </HStack>
       </div>
-      <GrpcEditor
-        onChange={handleChangeMessage}
-        services={services}
-        className="bg-gray-50"
-        reflectionError={reflectionError}
-        reflectionLoading={reflectionLoading}
-        request={activeRequest}
-      />
+      <Tabs
+        value={activeTab}
+        label="Request"
+        onChangeValue={setActiveTab}
+        tabs={tabs}
+        tabListClassName="mt-2 !mb-1.5"
+      >
+        <TabContent value="message">
+          <GrpcEditor
+            onChange={handleChangeMessage}
+            services={services}
+            className="bg-gray-50"
+            reflectionError={reflectionError}
+            reflectionLoading={reflectionLoading}
+            request={activeRequest}
+          />
+        </TabContent>
+      </Tabs>
     </VStack>
   );
 }
