@@ -219,6 +219,8 @@ async fn cmd_grpc_go(
 
     let cb = {
         let cancelled_rx = cancelled_rx.clone();
+        let environment = environment.clone();
+        let workspace = workspace.clone();
         let w = w.clone();
         let base_msg = base_msg.clone();
 
@@ -240,10 +242,12 @@ async fn cmd_grpc_go(
             };
 
             match serde_json::from_str::<IncomingMsg>(ev.payload().unwrap()) {
-                Ok(IncomingMsg::Message(msg)) => {
-                    in_msg_tx.try_send(msg.clone()).unwrap();
+                Ok(IncomingMsg::Message(raw_msg)) => {
+                    in_msg_tx.try_send(raw_msg.clone()).unwrap();
                     let w = w.clone();
                     let base_msg = base_msg.clone();
+                    let environment_ref = environment.as_ref();
+                    let msg = render::render(raw_msg.as_str(), &workspace, environment_ref);
                     tauri::async_runtime::spawn(async move {
                         upsert_grpc_message(
                             &w,
@@ -306,6 +310,9 @@ async fn cmd_grpc_go(
         let w = w.clone();
         let base_msg = base_msg.clone();
         let req = req.clone();
+        let workspace = workspace.clone();
+        let environment = environment.clone();
+        let msg = render::render(&req.message, &workspace, environment.as_ref());
         async move {
             let (maybe_stream, maybe_msg) = match (
                 method_desc.is_client_streaming(),
@@ -330,18 +337,14 @@ async fn cmd_grpc_go(
                 (false, true) => (
                     Some(
                         connection
-                            .server_streaming(&service, &method, &req.message, metadata)
+                            .server_streaming(&service, &method, &msg, metadata)
                             .await,
                     ),
                     None,
                 ),
                 (false, false) => (
                     None,
-                    Some(
-                        connection
-                            .unary(&service, &method, &req.message, metadata)
-                            .await,
-                    ),
+                    Some(connection.unary(&service, &method, &msg, metadata).await),
                 ),
             };
 
