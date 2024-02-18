@@ -17,6 +17,7 @@ use std::str::FromStr;
 
 use ::http::uri::InvalidUri;
 use ::http::Uri;
+use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
@@ -128,10 +129,18 @@ async fn cmd_grpc_reflect(
 #[tauri::command]
 async fn cmd_grpc_go(
     request_id: &str,
+    environment_id: Option<&str>,
     w: Window,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
     let req = get_grpc_request(&w, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let environment = match environment_id {
+        Some(id) => Some(get_environment(&w, id).await.map_err(|e| e.to_string())?),
+        None => None,
+    };
+    let workspace = get_workspace(&w, &req.workspace_id)
         .await
         .map_err(|e| e.to_string())?;
     let conn = {
@@ -261,6 +270,37 @@ async fn cmd_grpc_go(
         }
     };
     let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
+    let mut metadata = HashMap::new();
+    if let Some(b) = &req.authentication_type {
+        let req = req.clone();
+        let environment_ref = environment.as_ref();
+        let empty_value = &serde_json::to_value("").unwrap();
+        let a = req.authentication.0;
+
+        if b == "basic" {
+            let raw_username = a
+                .get("username")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or("");
+            let raw_password = a
+                .get("password")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or("");
+            let username = render::render(raw_username, &workspace, environment_ref);
+            let password = render::render(raw_password, &workspace, environment_ref);
+
+            let auth = format!("{username}:{password}");
+            let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
+            metadata.insert("Authorization".to_string(), format!("Basic {}", encoded));
+        } else if b == "bearer" {
+            let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
+            let token = render::render(raw_token, &workspace, environment_ref);
+            metadata.insert("Authorization".to_string(), format!("Bearer {token}"));
+        }
+    }
+    println!("METADATA: {:?}", metadata);
 
     let grpc_listen = {
         let w = w.clone();
@@ -272,28 +312,36 @@ async fn cmd_grpc_go(
                 method_desc.is_server_streaming(),
             ) {
                 (true, true) => (
-                    Some(connection.streaming(&service, &method, in_msg_stream).await),
+                    Some(
+                        connection
+                            .streaming(&service, &method, in_msg_stream, metadata)
+                            .await,
+                    ),
                     None,
                 ),
                 (true, false) => (
                     None,
                     Some(
                         connection
-                            .client_streaming(&service, &method, in_msg_stream)
+                            .client_streaming(&service, &method, in_msg_stream, metadata)
                             .await,
                     ),
                 ),
                 (false, true) => (
                     Some(
                         connection
-                            .server_streaming(&service, &method, &req.message)
+                            .server_streaming(&service, &method, &req.message, metadata)
                             .await,
                     ),
                     None,
                 ),
                 (false, false) => (
                     None,
-                    Some(connection.unary(&service, &method, &req.message).await),
+                    Some(
+                        connection
+                            .unary(&service, &method, &req.message, metadata)
+                            .await,
+                    ),
                 ),
             };
 

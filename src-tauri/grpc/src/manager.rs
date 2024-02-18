@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use hyper::client::HttpConnector;
 use hyper::Client;
@@ -10,8 +11,9 @@ use serde_json::Deserializer;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
+use tonic::metadata::{MetadataKey, MetadataValue};
 use tonic::transport::Uri;
-use tonic::{IntoRequest, IntoStreamingRequest, Response, Status, Streaming};
+use tonic::{IntoRequest, IntoStreamingRequest, Request, Response, Status, Streaming};
 
 use crate::codec::DynamicCodec;
 use crate::proto::{fill_pool, fill_pool_from_files, get_transport, method_desc_to_path};
@@ -47,6 +49,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
+        metadata: HashMap<String, String>,
     ) -> Result<DynamicMessage, String> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
@@ -58,7 +61,9 @@ impl GrpcConnection {
 
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        let req = req_message.into_request();
+        let mut req = req_message.into_request();
+        decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
+
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
@@ -75,12 +80,13 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
+        metadata: HashMap<String, String>,
     ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
         let method2 = method.clone();
-        let req = stream
+        let mut req = stream
             .map(move |s| {
                 let mut deserializer = Deserializer::from_str(&s);
                 let req_message = DynamicMessage::deserialize(method2.input(), &mut deserializer)
@@ -90,6 +96,9 @@ impl GrpcConnection {
                 req_message
             })
             .into_streaming_request();
+
+        decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
+
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.map_err(|e| e.to_string())?;
@@ -101,11 +110,12 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
+        metadata: HashMap<String, String>,
     ) -> Result<DynamicMessage, String> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        let req = {
+        let mut req = {
             let method = method.clone();
             stream
                 .map(move |s| {
@@ -119,6 +129,9 @@ impl GrpcConnection {
                 })
                 .into_streaming_request()
         };
+
+        decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
+
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
@@ -134,6 +147,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
+        metadata: HashMap<String, String>,
     ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
@@ -145,7 +159,9 @@ impl GrpcConnection {
 
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        let req = req_message.into_request();
+        let mut req = req_message.into_request();
+        decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
+
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.map_err(|e| e.to_string())?;
@@ -222,10 +238,11 @@ impl GrpcHandle {
         service: &str,
         method: &str,
         message: &str,
+        metadata: HashMap<String, String>,
     ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         self.connect(id, uri, proto_files)
             .await?
-            .server_streaming(service, method, message)
+            .server_streaming(service, method, message, metadata)
             .await
     }
 
@@ -237,10 +254,11 @@ impl GrpcHandle {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
+        metadata: HashMap<String, String>,
     ) -> Result<DynamicMessage, String> {
         self.connect(id, uri, proto_files)
             .await?
-            .client_streaming(service, method, stream)
+            .client_streaming(service, method, stream, metadata)
             .await
     }
 
@@ -252,10 +270,11 @@ impl GrpcHandle {
         service: &str,
         method: &str,
         stream: ReceiverStream<String>,
+        metadata: HashMap<String, String>,
     ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         self.connect(id, uri, proto_files)
             .await?
-            .streaming(service, method, stream)
+            .streaming(service, method, stream, metadata)
             .await
     }
 
@@ -281,4 +300,14 @@ impl GrpcHandle {
         let connection = GrpcConnection { pool, conn, uri };
         Ok(connection)
     }
+}
+
+fn decorate_req<T>(metadata: HashMap<String, String>, req: &mut Request<T>) -> Result<(), String> {
+    for (k, v) in metadata {
+        req.metadata_mut().insert(
+            MetadataKey::from_str(k.as_str()).map_err(|e| e.to_string())?,
+            MetadataValue::from_str(v.as_str()).map_err(|e| e.to_string())?,
+        );
+    }
+    Ok(())
 }

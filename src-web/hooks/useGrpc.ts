@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api';
 import { emit } from '@tauri-apps/api/event';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { GrpcConnection, GrpcRequest } from '../lib/models';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useDebouncedValue } from './useDebouncedValue';
 
 export interface ReflectResponseService {
@@ -12,21 +13,10 @@ export interface ReflectResponseService {
 
 export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
   const requestId = req?.id ?? 'n/a';
+  const environmentId = useActiveEnvironmentId();
 
-  const unary = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
-  });
-
-  const clientStreaming = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
-  });
-
-  const serverStreaming = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
-  });
-
-  const streaming = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId }),
+  const go = useMutation<void, string>({
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId, environmentId }),
   });
 
   const send = useMutation({
@@ -58,10 +48,7 @@ export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
   });
 
   return {
-    unary,
-    clientStreaming,
-    serverStreaming,
-    streaming,
+    go,
     reflect,
     cancel,
     commit,
