@@ -62,7 +62,8 @@
     "react-use": "^17.4.0",
     "slugify": "^1.6.6",
     "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "xml-formatter": "^3.6.2"
   },
   "devDependencies": {
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
