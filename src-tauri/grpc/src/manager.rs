@@ -9,7 +9,6 @@ pub use prost_reflect::DynamicMessage;
 use prost_reflect::{DescriptorPool, MethodDescriptor, ServiceDescriptor};
 use serde_json::Deserializer;
 use tokio_stream::wrappers::ReceiverStream;
-use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::metadata::{MetadataKey, MetadataValue};
 use tonic::transport::Uri;
@@ -50,7 +49,7 @@ impl GrpcConnection {
         method: &str,
         message: &str,
         metadata: HashMap<String, String>,
-    ) -> Result<DynamicMessage, String> {
+    ) -> Result<Response<DynamicMessage>, String> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
 
@@ -68,34 +67,23 @@ impl GrpcConnection {
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
 
-        Ok(client
+        client
             .unary(req, path, codec)
             .await
-            .map_err(|e| e.to_string())?
-            .into_inner())
+            .map_err(|e| e.to_string())
     }
 
     pub async fn streaming(
         &self,
         service: &str,
         method: &str,
-        stream: ReceiverStream<String>,
+        stream: ReceiverStream<DynamicMessage>,
         metadata: HashMap<String, String>,
     ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
-        let method2 = method.clone();
-        let mut req = stream
-            .map(move |s| {
-                let mut deserializer = Deserializer::from_str(&s);
-                let req_message = DynamicMessage::deserialize(method2.input(), &mut deserializer)
-                    .map_err(|e| e.to_string())
-                    .unwrap();
-                deserializer.end().unwrap();
-                req_message
-            })
-            .into_streaming_request();
+        let mut req = stream.into_streaming_request();
 
         decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
 
@@ -109,37 +97,21 @@ impl GrpcConnection {
         &self,
         service: &str,
         method: &str,
-        stream: ReceiverStream<String>,
+        stream: ReceiverStream<DynamicMessage>,
         metadata: HashMap<String, String>,
-    ) -> Result<DynamicMessage, String> {
+    ) -> Result<Response<DynamicMessage>, String> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
-
-        let mut req = {
-            let method = method.clone();
-            stream
-                .map(move |s| {
-                    let mut deserializer = Deserializer::from_str(&s);
-                    let req_message =
-                        DynamicMessage::deserialize(method.input(), &mut deserializer)
-                            .map_err(|e| e.to_string())
-                            .unwrap();
-                    deserializer.end().unwrap();
-                    req_message
-                })
-                .into_streaming_request()
-        };
-
+        let mut req = stream.into_streaming_request();
         decorate_req(metadata, &mut req).map_err(|e| e.to_string())?;
 
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
-        Ok(client
+        client
             .client_streaming(req, path, codec)
             .await
-            .map_err(|s| s.to_string())?
-            .into_inner())
+            .map_err(|s| s.to_string())
     }
 
     pub async fn server_streaming(
@@ -228,54 +200,6 @@ impl GrpcHandle {
                 def
             })
             .collect::<Vec<_>>()
-    }
-
-    pub async fn server_streaming(
-        &mut self,
-        id: &str,
-        uri: Uri,
-        proto_files: Vec<PathBuf>,
-        service: &str,
-        method: &str,
-        message: &str,
-        metadata: HashMap<String, String>,
-    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
-        self.connect(id, uri, proto_files)
-            .await?
-            .server_streaming(service, method, message, metadata)
-            .await
-    }
-
-    pub async fn client_streaming(
-        &mut self,
-        id: &str,
-        uri: Uri,
-        proto_files: Vec<PathBuf>,
-        service: &str,
-        method: &str,
-        stream: ReceiverStream<String>,
-        metadata: HashMap<String, String>,
-    ) -> Result<DynamicMessage, String> {
-        self.connect(id, uri, proto_files)
-            .await?
-            .client_streaming(service, method, stream, metadata)
-            .await
-    }
-
-    pub async fn streaming(
-        &mut self,
-        id: &str,
-        uri: Uri,
-        proto_files: Vec<PathBuf>,
-        service: &str,
-        method: &str,
-        stream: ReceiverStream<String>,
-        metadata: HashMap<String, String>,
-    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
-        self.connect(id, uri, proto_files)
-            .await?
-            .streaming(service, method, stream, metadata)
-            .await
     }
 
     pub async fn connect(

@@ -1,10 +1,8 @@
 import { shell } from '@tauri-apps/api';
-import classNames from 'classnames';
-import type { ReactNode } from 'react';
 import type { HttpResponse } from '../lib/models';
 import { IconButton } from './core/IconButton';
+import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
 import { Separator } from './core/Separator';
-import { HStack } from './core/Stacks';
 
 interface Props {
   response: HttpResponse;
@@ -13,16 +11,16 @@ interface Props {
 export function ResponseHeaders({ response }: Props) {
   return (
     <div className="overflow-auto h-full pb-4">
-      <dl className="text-xs w-full font-mono flex flex-col">
+      <KeyValueRows>
         {response.headers.map((h, i) => (
-          <Row key={i} label={h.name} value={h.value} labelClassName="!text-violet-600" />
+          <KeyValueRow key={i} label={h.name} value={h.value} labelClassName="!text-violet-600" />
         ))}
-      </dl>
+      </KeyValueRows>
       <Separator className="my-4">Other Info</Separator>
-      <dl className="text-xs w-full font-mono divide-highlightSecondary">
-        <Row label="Version" value={response.version} />
-        <Row label="Remote Address" value={response.remoteAddr} />
-        <Row
+      <KeyValueRows>
+        <KeyValueRow label="Version" value={response.version} />
+        <KeyValueRow label="Remote Address" value={response.remoteAddr} />
+        <KeyValueRow
           label={
             <div className="flex items-center">
               URL
@@ -41,26 +39,7 @@ export function ResponseHeaders({ response }: Props) {
             </div>
           }
         />
-      </dl>
+      </KeyValueRows>
     </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  labelClassName,
-}: {
-  label: ReactNode;
-  value: ReactNode;
-  labelClassName?: string;
-}) {
-  return (
-    <HStack space={3} className="py-0.5">
-      <dd className={classNames(labelClassName, 'w-1/3 text-gray-700 select-text cursor-text')}>
-        {label}
-      </dd>
-      <dt className="w-2/3 select-text cursor-text break-all">{value}</dt>
-    </HStack>
   );
 }

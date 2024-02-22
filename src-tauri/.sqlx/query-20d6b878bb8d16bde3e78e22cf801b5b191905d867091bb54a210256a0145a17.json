@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, workspace_id, request_id, connection_id, created_at, message,\n                is_server, is_info\n            FROM grpc_messages\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, request_id, connection_id, created_at, content,\n                event_type AS \"event_type!: GrpcEventType\",\n                metadata AS \"metadata!: sqlx::types::Json<HashMap<String, String>>\"\n            FROM grpc_events\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -34,19 +34,19 @@
         "type_info": "Datetime"
       },
       {
-        "name": "message",
+        "name": "content",
         "ordinal": 6,
         "type_info": "Text"
       },
       {
-        "name": "is_server",
+        "name": "event_type!: GrpcEventType",
         "ordinal": 7,
-        "type_info": "Bool"
+        "type_info": "Text"
       },
       {
-        "name": "is_info",
+        "name": "metadata!: sqlx::types::Json<HashMap<String, String>>",
         "ordinal": 8,
-        "type_info": "Bool"
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -64,5 +64,5 @@
       false
     ]
   },
-  "hash": "3c52c0fa3372cdd2657a775c3b93fb65f42d3226cec27220469558e14973328c"
+  "hash": "20d6b878bb8d16bde3e78e22cf801b5b191905d867091bb54a210256a0145a17"
 }

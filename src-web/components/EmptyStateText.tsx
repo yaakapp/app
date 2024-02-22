@@ -6,7 +6,7 @@ interface Props {
 
 export function EmptyStateText({ children }: Props) {
   return (
-    <div className="rounded-lg border border-dashed border-highlight h-full text-gray-400 flex items-center justify-center">
+    <div className="rounded-lg border border-dashed border-highlight h-full py-2 text-gray-400 flex items-center justify-center">
       {children}
     </div>
   );
