@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
-import { useGrpcMessages } from '../hooks/useGrpcMessages';
+import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { Banner } from './core/Banner';
 import { HotKeyList } from './core/HotKeyList';
@@ -21,7 +21,7 @@ export function GrpcConnectionLayout({ style }: Props) {
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const connections = useGrpcConnections(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
-  const messages = useGrpcMessages(activeConnection?.id ?? null);
+  const messages = useGrpcEvents(activeConnection?.id ?? null);
   const grpc = useGrpc(activeRequest, activeConnection);
 
   const services = grpc.reflect.data ?? null;

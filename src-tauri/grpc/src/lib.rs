@@ -1,10 +1,14 @@
-use prost_reflect::{DynamicMessage, SerializeOptions};
+use prost_reflect::{DynamicMessage, MethodDescriptor, SerializeOptions};
 use serde::{Deserialize, Serialize};
+use serde_json::Deserializer;
 
 mod codec;
 mod json_schema;
 pub mod manager;
 mod proto;
+
+pub use tonic::metadata::*;
+pub use tonic::Code;
 
 pub fn serialize_options() -> SerializeOptions {
     SerializeOptions::new().skip_default_fields(false)
@@ -37,4 +41,12 @@ pub fn serialize_message(msg: &DynamicMessage) -> Result<String, String> {
         .map_err(|e| e.to_string())?;
     let s = String::from_utf8(buf).expect("serde_json to emit valid utf8");
     Ok(s)
+}
+
+pub fn deserialize_message(msg: &str, method: MethodDescriptor) -> Result<DynamicMessage, String> {
+    let mut deserializer = Deserializer::from_str(&msg);
+    let req_message = DynamicMessage::deserialize(method.input(), &mut deserializer)
+        .map_err(|e| e.to_string())?;
+    deserializer.end().map_err(|e| e.to_string())?;
+    Ok(req_message)
 }

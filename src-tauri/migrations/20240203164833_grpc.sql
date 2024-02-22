@@ -1,63 +1,67 @@
 CREATE TABLE grpc_requests
 (
-    id                  TEXT                               NOT NULL
+    id                  TEXT                                                  NOT NULL
         PRIMARY KEY,
-    model               TEXT     DEFAULT 'grpc_request'    NOT NULL,
-    workspace_id        TEXT                               NOT NULL
+    model               TEXT     DEFAULT 'grpc_request'                       NOT NULL,
+    workspace_id        TEXT                                                  NOT NULL
         REFERENCES workspaces
             ON DELETE CASCADE,
-    folder_id           TEXT                               NULL
+    folder_id           TEXT                                                  NULL
         REFERENCES folders
             ON DELETE CASCADE,
-    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    name                TEXT                               NOT NULL,
-    sort_priority       REAL                               NOT NULL,
-    url                 TEXT                               NOT NULL,
-    service             TEXT                               NULL,
-    method              TEXT                               NULL,
-    message             TEXT                               NOT NULL,
-    proto_files         TEXT     DEFAULT '[]'              NOT NULL,
-    authentication      TEXT     DEFAULT '{}'              NOT NULL,
-    authentication_type TEXT                               NULL,
-    metadata            TEXT     DEFAULT '[]'              NOT NULL
+    created_at          DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    updated_at          DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    name                TEXT                                                  NOT NULL,
+    sort_priority       REAL                                                  NOT NULL,
+    url                 TEXT                                                  NOT NULL,
+    service             TEXT                                                  NULL,
+    method              TEXT                                                  NULL,
+    message             TEXT                                                  NOT NULL,
+    proto_files         TEXT     DEFAULT '[]'                                 NOT NULL,
+    authentication      TEXT     DEFAULT '{}'                                 NOT NULL,
+    authentication_type TEXT                                                  NULL,
+    metadata            TEXT     DEFAULT '[]'                                 NOT NULL
 );
 
 CREATE TABLE grpc_connections
 (
-    id           TEXT                               NOT NULL
+    id           TEXT                                                  NOT NULL
         PRIMARY KEY,
-    model        TEXT     DEFAULT 'grpc_connection' NOT NULL,
-    workspace_id TEXT                               NOT NULL
+    model        TEXT     DEFAULT 'grpc_connection'                    NOT NULL,
+    workspace_id TEXT                                                  NOT NULL
         REFERENCES workspaces
             ON DELETE CASCADE,
-    request_id   TEXT                               NOT NULL
+    request_id   TEXT                                                  NOT NULL
         REFERENCES grpc_requests
             ON DELETE CASCADE,
-    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    service      TEXT                               NOT NULL,
-    method       TEXT                               NOT NULL,
-    elapsed      INTEGER                            NOT NULL
+    created_at   DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    updated_at   DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    url          TEXT                                                  NOT NULL,
+    service      TEXT                                                  NOT NULL,
+    method       TEXT                                                  NOT NULL,
+    status       INTEGER  DEFAULT -1                                   NOT NULL,
+    error        TEXT                                                  NULL,
+    elapsed      INTEGER  DEFAULT 0                                    NOT NULL,
+    trailers     TEXT     DEFAULT '{}'                                 NOT NULL
 );
 
-CREATE TABLE grpc_messages
+CREATE TABLE grpc_events
 (
-    id            TEXT                               NOT NULL
+    id            TEXT                                                  NOT NULL
         PRIMARY KEY,
-    model         TEXT     DEFAULT 'grpc_message'    NOT NULL,
-    workspace_id  TEXT                               NOT NULL
+    model         TEXT     DEFAULT 'grpc_event'                         NOT NULL,
+    workspace_id  TEXT                                                  NOT NULL
         REFERENCES workspaces
             ON DELETE CASCADE,
-    request_id    TEXT                               NOT NULL
+    request_id    TEXT                                                  NOT NULL
         REFERENCES grpc_requests
             ON DELETE CASCADE,
-    connection_id TEXT                               NOT NULL
+    connection_id TEXT                                                  NOT NULL
         REFERENCES grpc_connections
             ON DELETE CASCADE,
-    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    is_server     BOOLEAN                            NOT NULL,
-    is_info       BOOLEAN                            NOT NULL,
-    message       TEXT                               NOT NULL
+    created_at    DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    updated_at    DATETIME DEFAULT(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW')) NOT NULL,
+    metadata      TEXT     DEFAULT '{}'                                 NOT NULL,
+    event_type    TEXT                                                  NOT NULL,
+    content       TEXT                                                  NOT NULL
 );

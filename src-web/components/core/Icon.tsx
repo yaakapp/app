@@ -4,8 +4,11 @@ import type { HTMLAttributes } from 'react';
 import { memo } from 'react';
 
 const icons = {
+  alert: lucide.AlertTriangleIcon,
   archive: lucide.ArchiveIcon,
   arrowBigDownDash: lucide.ArrowBigDownDashIcon,
+  arrowBigLeftDash: lucide.ArrowBigLeftDashIcon,
+  arrowBigRightDash: lucide.ArrowBigRightDashIcon,
   arrowBigUpDash: lucide.ArrowBigUpDashIcon,
   arrowDown: lucide.ArrowDownIcon,
   arrowDownToDot: lucide.ArrowDownToDotIcon,
@@ -60,12 +63,14 @@ export interface IconProps {
   className?: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   spin?: boolean;
+  title?: string;
 }
 
-export const Icon = memo(function Icon({ icon, spin, size = 'md', className }: IconProps) {
+export const Icon = memo(function Icon({ icon, spin, size = 'md', className, title }: IconProps) {
   const Component = icons[icon] ?? icons.question;
   return (
     <Component
+      title={title}
       className={classNames(
         className,
         'text-inherit flex-shrink-0',
