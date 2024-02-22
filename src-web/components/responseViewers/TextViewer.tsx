@@ -6,7 +6,7 @@ import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useResponseContentType } from '../../hooks/useResponseContentType';
 import { useToggle } from '../../hooks/useToggle';
-import { tryFormatJson } from '../../lib/formatters';
+import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import type { HttpResponse } from '../../lib/models';
 import { Editor } from '../core/Editor';
 import { IconButton } from '../core/IconButton';
@@ -23,7 +23,12 @@ export function TextViewer({ response, pretty }: Props) {
 
   const contentType = useResponseContentType(response);
   const rawBody = useResponseBodyText(response) ?? '';
-  const formattedBody = pretty && contentType?.includes('json') ? tryFormatJson(rawBody) : rawBody;
+  const formattedBody =
+    pretty && contentType?.includes('json')
+      ? tryFormatJson(rawBody)
+      : pretty && contentType?.includes('xml')
+      ? tryFormatXml(rawBody)
+      : rawBody;
   const filteredResponse = useFilterResponse({ filter: filterText, responseId: response.id });
 
   const body = filteredResponse ?? formattedBody;
