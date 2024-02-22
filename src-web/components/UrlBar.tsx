@@ -69,7 +69,7 @@ export const UrlBar = memo(function UrlBar({
             <RequestMethodDropdown
               method={method}
               onChange={onMethodChange}
-              className="!h-auto my-0.5 mr-0.5"
+              className="!h-auto my-0.5 ml-0.5"
             />
           )
         }

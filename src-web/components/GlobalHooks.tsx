@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
-import { grpcMessagesQueryKey } from '../hooks/useGrpcMessages';
+import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
 import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
 import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
@@ -53,8 +53,8 @@ export function GlobalHooks() {
         ? httpResponsesQueryKey(payload)
         : payload.model === 'grpc_connection'
         ? grpcConnectionsQueryKey(payload)
-        : payload.model === 'grpc_message'
-        ? grpcMessagesQueryKey(payload)
+        : payload.model === 'grpc_event'
+        ? grpcEventsQueryKey(payload)
         : payload.model === 'grpc_request'
         ? grpcRequestsQueryKey(payload)
         : payload.model === 'workspace'
@@ -107,8 +107,8 @@ export function GlobalHooks() {
       queryClient.setQueryData(grpcRequestsQueryKey(payload), removeById(payload));
     } else if (payload.model === 'grpc_connection') {
       queryClient.setQueryData(grpcConnectionsQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'grpc_message') {
-      queryClient.setQueryData(grpcMessagesQueryKey(payload), removeById(payload));
+    } else if (payload.model === 'grpc_event') {
+      queryClient.setQueryData(grpcEventsQueryKey(payload), removeById(payload));
     } else if (payload.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(payload), undefined);
     } else if (payload.model === 'cookie_jar') {

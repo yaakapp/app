@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO grpc_events (\n                id, workspace_id, request_id, connection_id, content, event_type, metadata\n            )\n            VALUES (?, ?, ?, ?, ?, ?, ?)\n            ON CONFLICT (id) DO UPDATE SET\n                updated_at = CURRENT_TIMESTAMP,\n                content = excluded.content,\n                event_type = excluded.event_type,\n                metadata = excluded.metadata\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "3dce053aef78e831db2369f3c49e891cb8a9e1ba6e7a60fe9e24292a3f97dca3"
+}

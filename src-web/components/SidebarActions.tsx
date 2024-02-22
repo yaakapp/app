@@ -48,7 +48,7 @@ export const SidebarActions = memo(function SidebarActions() {
           },
           {
             key: 'create-grpc-request',
-            label: 'GRPC Call',
+            label: 'gRPC Call',
             onSelect: () => createGrpcRequest.mutate({}),
           },
           {

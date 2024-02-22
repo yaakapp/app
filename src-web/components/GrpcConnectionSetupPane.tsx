@@ -218,7 +218,7 @@ export function GrpcConnectionSetupPane({
               className="border border-highlight"
               size="sm"
               title={methodType === 'unary' ? 'Send' : 'Connect'}
-              hotkeyAction={isStreaming ? undefined : 'http_request.send'}
+              hotkeyAction="grpc_request.send"
               onClick={handleConnect}
               disabled={methodType === 'no-schema' || methodType === 'no-method'}
               icon={
@@ -240,24 +240,24 @@ export function GrpcConnectionSetupPane({
               disabled={!isStreaming}
             />
           )}
-          {methodType === 'client_streaming' && isStreaming && (
-            <IconButton
-              className="border border-highlight"
-              size="sm"
-              title="to-do"
-              onClick={onCommit}
-              icon="check"
-            />
-          )}
           {(methodType === 'client_streaming' || methodType === 'streaming') && isStreaming && (
-            <IconButton
-              className="border border-highlight"
-              size="sm"
-              title="to-do"
-              hotkeyAction="grpc_request.send"
-              onClick={() => onSend({ message: activeRequest.message ?? '' })}
-              icon="sendHorizontal"
-            />
+            <>
+              <IconButton
+                className="border border-highlight"
+                size="sm"
+                title="to-do"
+                onClick={onCommit}
+                icon="check"
+              />
+              <IconButton
+                className="border border-highlight"
+                size="sm"
+                title="to-do"
+                hotkeyAction="grpc_request.send"
+                onClick={() => onSend({ message: activeRequest.message ?? '' })}
+                icon="sendHorizontal"
+              />
+            </>
           )}
         </HStack>
       </div>

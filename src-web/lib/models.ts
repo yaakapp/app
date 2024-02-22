@@ -15,7 +15,7 @@ export type Model =
   | Workspace
   | GrpcConnection
   | GrpcRequest
-  | GrpcMessage
+  | GrpcEvent
   | HttpRequest
   | HttpResponse
   | KeyValue
@@ -127,14 +127,14 @@ export interface GrpcRequest extends BaseModel {
   metadata: GrpcMetadataEntry[];
 }
 
-export interface GrpcMessage extends BaseModel {
+export interface GrpcEvent extends BaseModel {
   readonly workspaceId: string;
   readonly requestId: string;
   readonly connectionId: string;
-  readonly model: 'grpc_message';
-  message: string;
-  isServer: boolean;
-  isInfo: boolean;
+  readonly model: 'grpc_event';
+  content: string;
+  eventType: 'info' | 'error' | 'client_message' | 'server_message' | 'connection_response';
+  metadata: Record<string, string>;
 }
 
 export interface GrpcConnection extends BaseModel {
@@ -144,6 +144,11 @@ export interface GrpcConnection extends BaseModel {
   service: string;
   method: string;
   elapsed: number;
+  elapsedConnection: number;
+  status: number;
+  url: string;
+  error: string | null;
+  trailers: Record<string, string>;
 }
 
 export interface HttpRequest extends BaseModel {
