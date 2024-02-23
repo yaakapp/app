@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { format, addMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 import type { CSSProperties, ReactNode } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
@@ -27,48 +27,11 @@ interface Props {
     | 'no-method';
 }
 
-const CONNECTION_RESPONSE_EVENT_ID = 'connection_response';
-
 export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }: Props) {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const connections = useGrpcConnections(activeRequest.id ?? null);
   const activeConnection = connections[0] ?? null;
-  const ogEvents = useGrpcEvents(activeConnection?.id ?? null);
-
-  const events = useMemo(() => {
-    const createdAt =
-      activeConnection != null &&
-      addMilliseconds(activeConnection.createdAt, activeConnection.elapsed)
-        .toISOString()
-        .replace('Z', '');
-    if (activeConnection == null || activeConnection.elapsed === 0) {
-      return ogEvents;
-    } else if (activeConnection.error != null) {
-      return [
-        ...ogEvents,
-        {
-          id: CONNECTION_RESPONSE_EVENT_ID,
-          eventType: 'error',
-          content: activeConnection.error,
-          metadata: activeConnection.trailers,
-          createdAt,
-          updatedAt: createdAt,
-        } as GrpcEvent,
-      ];
-    } else {
-      return [
-        ...ogEvents,
-        {
-          id: CONNECTION_RESPONSE_EVENT_ID,
-          eventType: activeConnection.status === 0 ? 'connection_response' : 'error',
-          content: `Connection ${GRPC_CODES[activeConnection.status] ?? 'closed'}`,
-          metadata: activeConnection.trailers,
-          createdAt,
-          updatedAt: createdAt,
-        } as GrpcEvent,
-      ];
-    }
-  }, [activeConnection, ogEvents]);
+  const events = useGrpcEvents(activeConnection?.id ?? null);
 
   const activeEvent = useMemo(
     () => events.find((m) => m.id === activeEventId) ?? null,
@@ -110,19 +73,16 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               />
             </HStack>
             <div className="overflow-y-auto h-full">
-              {...events.map((m) => (
-                <MessageRow
-                  key={m.id}
-                  isActive={m.id === activeEventId}
-                  eventType={m.eventType}
-                  timestamp={m.createdAt}
+              {...events.map((e) => (
+                <EventRow
+                  key={e.id}
+                  event={e}
+                  isActive={e.id === activeEventId}
                   onClick={() => {
-                    if (m.id === activeEventId) setActiveEventId(null);
-                    else setActiveEventId(m.id);
+                    if (e.id === activeEventId) setActiveEventId(null);
+                    else setActiveEventId(e.id);
                   }}
-                >
-                  {m.content}
-                </MessageRow>
+                />
               ))}
             </div>
           </div>
@@ -147,11 +107,11 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               ) : (
                 <div className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
                   <div className="mb-2 select-text cursor-text font-semibold">
-                    {activeEvent.content}
+                    {activeEvent.error ?? activeEvent.content}
                   </div>
                   {Object.keys(activeEvent.metadata).length === 0 ? (
                     <EmptyStateText>
-                      No {activeEvent.eventType === 'connection_response' ? 'trailers' : 'metadata'}
+                      No {activeEvent.eventType === 'connection_end' ? 'trailers' : 'metadata'}
                     </EmptyStateText>
                   ) : (
                     <KeyValueRows>
@@ -170,19 +130,16 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
   );
 }
 
-function MessageRow({
+function EventRow({
   onClick,
   isActive,
-  eventType,
-  children,
-  timestamp,
+  event,
 }: {
   onClick?: () => void;
   isActive?: boolean;
-  eventType: GrpcEvent['eventType'];
-  children: ReactNode;
-  timestamp: string;
+  event: GrpcEvent;
 }) {
+  const { eventType, status, createdAt, content, error } = event;
   return (
     <button
       onClick={onClick}
@@ -199,9 +156,9 @@ function MessageRow({
             ? 'text-blue-600'
             : eventType === 'client_message'
             ? 'text-violet-600'
-            : eventType === 'error'
+            : eventType === 'error' || (status != null && status > 0)
             ? 'text-orange-600'
-            : eventType === 'connection_response'
+            : eventType === 'connection_end'
             ? 'text-green-600'
             : 'text-gray-700'
         }
@@ -210,9 +167,9 @@ function MessageRow({
             ? 'Server message'
             : eventType === 'client_message'
             ? 'Client message'
-            : eventType === 'error'
+            : eventType === 'error' || (status != null && status > 0)
             ? 'Error'
-            : eventType === 'connection_response'
+            : eventType === 'connection_end'
             ? 'Connection response'
             : undefined
         }
@@ -221,16 +178,16 @@ function MessageRow({
             ? 'arrowBigDownDash'
             : eventType === 'client_message'
             ? 'arrowBigUpDash'
-            : eventType === 'error'
+            : eventType === 'error' || (status != null && status > 0)
             ? 'alert'
-            : eventType === 'connection_response'
+            : eventType === 'connection_end'
             ? 'check'
             : 'info'
         }
       />
-      <div className={classNames('w-full truncate text-2xs')}>{children}</div>
+      <div className={classNames('w-full truncate text-2xs')}>{error ?? content}</div>
       <div className={classNames('opacity-50 text-2xs')}>
-        {format(timestamp + 'Z', 'HH:mm:ss.SSS')}
+        {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
       </div>
     </button>
   );

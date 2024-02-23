@@ -237,7 +237,7 @@ pub struct GrpcConnection {
     pub trailers: Json<HashMap<String, String>>,
 }
 
-#[derive(sqlx::Type, Debug, Clone, Serialize, Deserialize)]
+#[derive(sqlx::Type, Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[sqlx(rename_all = "snake_case")]
 pub enum GrpcEventType {
@@ -245,7 +245,8 @@ pub enum GrpcEventType {
     Error,
     ClientMessage,
     ServerMessage,
-    ConnectionResponse,
+    ConnectionStart,
+    ConnectionEnd,
 }
 
 impl Default for GrpcEventType {
@@ -266,6 +267,8 @@ pub struct GrpcEvent {
     pub content: String,
     pub event_type: GrpcEventType,
     pub metadata: Json<HashMap<String, String>>,
+    pub status: Option<i64>,
+    pub error: Option<String>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -699,32 +702,37 @@ pub async fn list_grpc_connections(
 
 pub async fn upsert_grpc_event(
     mgr: &impl Manager<Wry>,
-    message: &GrpcEvent,
+    event: &GrpcEvent,
 ) -> Result<GrpcEvent, sqlx::Error> {
     let db = get_db(mgr).await;
-    let id = match message.id.as_str() {
+    let id = match event.id.as_str() {
         "" => generate_id(Some("ge")),
-        _ => message.id.to_string(),
+        _ => event.id.to_string(),
     };
     sqlx::query!(
         r#"
             INSERT INTO grpc_events (
-                id, workspace_id, request_id, connection_id, content, event_type, metadata
+                id, workspace_id, request_id, connection_id, content, event_type, metadata, 
+                status, error
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
                 content = excluded.content,
                 event_type = excluded.event_type,
-                metadata = excluded.metadata
+                metadata = excluded.metadata,
+                status = excluded.status,
+                error = excluded.error
         "#,
         id,
-        message.workspace_id,
-        message.request_id,
-        message.connection_id,
-        message.content,
-        message.event_type,
-        message.metadata,
+        event.workspace_id,
+        event.request_id,
+        event.connection_id,
+        event.content,
+        event.event_type,
+        event.metadata,
+        event.status,
+        event.error,
     )
     .execute(&db)
     .await?;
@@ -744,7 +752,7 @@ pub async fn get_grpc_event(
         GrpcEvent,
         r#"
             SELECT
-                id, model, workspace_id, request_id, connection_id, created_at, content,
+                id, model, workspace_id, request_id, connection_id, created_at, content, status, error,
                 event_type AS "event_type!: GrpcEventType",
                 metadata AS "metadata!: sqlx::types::Json<HashMap<String, String>>"
             FROM grpc_events
@@ -765,7 +773,7 @@ pub async fn list_grpc_events(
         GrpcEvent,
         r#"
             SELECT
-                id, model, workspace_id, request_id, connection_id, created_at, content,
+                id, model, workspace_id, request_id, connection_id, created_at, content, status, error,
                 event_type AS "event_type!: GrpcEventType",
                 metadata AS "metadata!: sqlx::types::Json<HashMap<String, String>>"
             FROM grpc_events
