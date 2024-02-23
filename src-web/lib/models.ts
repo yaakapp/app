@@ -133,7 +133,15 @@ export interface GrpcEvent extends BaseModel {
   readonly connectionId: string;
   readonly model: 'grpc_event';
   content: string;
-  eventType: 'info' | 'error' | 'client_message' | 'server_message' | 'connection_response';
+  status: number | null;
+  error: string | null;
+  eventType:
+    | 'info'
+    | 'error'
+    | 'client_message'
+    | 'server_message'
+    | 'connection_start'
+    | 'connection_end';
   metadata: Record<string, string>;
 }
 
