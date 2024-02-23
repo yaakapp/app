@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, workspace_id, request_id, connection_id, created_at, content,\n                event_type AS \"event_type!: GrpcEventType\",\n                metadata AS \"metadata!: sqlx::types::Json<HashMap<String, String>>\"\n            FROM grpc_events\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, request_id, connection_id, created_at, content, status, error,\n                event_type AS \"event_type!: GrpcEventType\",\n                metadata AS \"metadata!: sqlx::types::Json<HashMap<String, String>>\"\n            FROM grpc_events\n            WHERE id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -39,13 +39,23 @@
         "type_info": "Text"
       },
       {
-        "name": "event_type!: GrpcEventType",
+        "name": "status",
         "ordinal": 7,
+        "type_info": "Int64"
+      },
+      {
+        "name": "error",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "event_type!: GrpcEventType",
+        "ordinal": 9,
         "type_info": "Text"
       },
       {
         "name": "metadata!: sqlx::types::Json<HashMap<String, String>>",
-        "ordinal": 8,
+        "ordinal": 10,
         "type_info": "Text"
       }
     ],
@@ -60,9 +70,11 @@
       false,
       false,
       false,
+      true,
+      true,
       false,
       false
     ]
   },
-  "hash": "20d6b878bb8d16bde3e78e22cf801b5b191905d867091bb54a210256a0145a17"
+  "hash": "92d8f003a8f7df692345f2d2fd2504c9222645976e3433e32e190f4ee4bf100d"
 }
