@@ -1,6 +1,24 @@
 import classNames from 'classnames';
-import type { ReactNode } from 'react';
-import { HStack } from './Stacks';
+import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
+
+export function KeyValueRows({
+  children,
+}: {
+  children:
+    | ReactElement<HTMLAttributes<HTMLTableColElement>>
+    | ReactElement<HTMLAttributes<HTMLTableColElement>>[];
+}) {
+  children = Array.isArray(children) ? children : [children];
+  return (
+    <table className="text-xs font-mono min-w-0 w-full mb-auto">
+      <tbody className="divide-highlightSecondary">
+        {children.map((child, i) => (
+          <tr key={i}>{child}</tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
 
 interface Props {
   label: ReactNode;
@@ -8,17 +26,13 @@ interface Props {
   labelClassName?: string;
 }
 
-export function KeyValueRows({ children }: { children: ReactNode }) {
-  return <dl className="text-xs w-full font-mono divide-highlightSecondary">{children}</dl>;
-}
-
 export function KeyValueRow({ label, value, labelClassName }: Props) {
   return (
-    <HStack space={3} className="py-0.5">
-      <dd className={classNames(labelClassName, 'w-1/3 text-gray-700 select-text cursor-text')}>
+    <>
+      <td className={classNames('py-1 pr-2 text-gray-700 select-text cursor-text', labelClassName)}>
         {label}
-      </dd>
-      <dt className="w-2/3 select-text cursor-text break-all">{value}</dt>
-    </HStack>
+      </td>
+      <td className="py-1 cursor-text select-text break-all min-w-0">{value}</td>
+    </>
   );
 }

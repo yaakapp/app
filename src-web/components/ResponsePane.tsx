@@ -1,17 +1,17 @@
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
-import { useHttpResponses } from '../hooks/useHttpResponses';
-import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
+import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseContentType } from '../hooks/useResponseContentType';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import type { HttpRequest, HttpResponse } from '../lib/models';
+import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
 import { HotKeyList } from './core/HotKeyList';
+import { Icon } from './core/Icon';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -34,26 +34,10 @@ interface Props {
 const useActiveTab = createGlobalState<string>('body');
 
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
-  const [pinnedResponseId, setPinnedResponseId] = useState<string | null>(null);
-  const latestResponse = useLatestHttpResponse(activeRequest.id);
-  const responses = useHttpResponses(activeRequest.id);
-  const activeResponse: HttpResponse | null = pinnedResponseId
-    ? responses.find((r) => r.id === pinnedResponseId) ?? null
-    : latestResponse ?? null;
+  const { activeResponse, setPinnedResponse, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
-
-  // Unset pinned response when a new one comes in
-  useEffect(() => setPinnedResponseId(null), [responses.length]);
-
   const contentType = useResponseContentType(activeResponse);
-
-  const handlePinnedResponse = useCallback(
-    (r: HttpResponse) => {
-      setPinnedResponseId(r.id);
-    },
-    [setPinnedResponseId],
-  );
 
   const tabs = useMemo<TabItem[]>(
     () => [
@@ -89,21 +73,21 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
       style={style}
       className={classNames(
         className,
-        'max-h-full h-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1',
+        'max-h-full h-full',
         'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
-      {!activeResponse && (
-        <>
-          <span />
-          <HotKeyList
-            hotkeys={['http_request.send', 'http_request.create', 'sidebar.toggle', 'urlBar.focus']}
-          />
-        </>
-      )}
-      {activeResponse && !isResponseLoading(activeResponse) && (
-        <>
+      {activeResponse == null ? (
+        <HotKeyList
+          hotkeys={['http_request.send', 'http_request.create', 'sidebar.toggle', 'urlBar.focus']}
+        />
+      ) : isResponseLoading(activeResponse) ? (
+        <div className="h-full w-full flex items-center justify-center">
+          <Icon size="lg" className="opacity-disabled" spin icon="refresh" />
+        </div>
+      ) : (
+        <div className="grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
             alignItems="center"
             className={classNames(
@@ -138,7 +122,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                 <RecentResponsesDropdown
                   responses={responses}
                   activeResponse={activeResponse}
-                  onPinnedResponse={handlePinnedResponse}
+                  onPinnedResponse={setPinnedResponse}
                 />
               </HStack>
             )}
@@ -179,7 +163,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               </TabContent>
             </Tabs>
           )}
-        </>
+        </div>
       )}
     </div>
   );

@@ -10,7 +10,7 @@ export function useDeleteHttpResponse(id: string | null) {
     mutationFn: async () => {
       return await invoke('cmd_delete_http_response', { id: id });
     },
-    onSettled: () => trackEvent('HttpResponse', 'Delete'),
+    onSettled: () => trackEvent('http_response', 'delete'),
     onSuccess: ({ requestId, id: responseId }) => {
       queryClient.setQueryData<HttpResponse[]>(httpResponsesQueryKey({ requestId }), (responses) =>
         (responses ?? []).filter((response) => response.id !== responseId),

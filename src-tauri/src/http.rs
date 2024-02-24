@@ -7,13 +7,15 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
+use reqwest::redirect::Policy;
 use sqlx::types::{Json, JsonValue};
 use tauri::{Manager, Window};
+use tokio::sync::oneshot;
+use tokio::sync::watch::{Receiver};
 
 use crate::{models, render, response_err};
 
@@ -24,6 +26,7 @@ pub async fn send_http_request(
     environment: Option<models::Environment>,
     cookie_jar: Option<models::CookieJar>,
     download_path: Option<PathBuf>,
+    cancel_rx: &mut Receiver<bool>,
 ) -> Result<models::HttpResponse, String> {
     let environment_ref = environment.as_ref();
     let workspace = models::get_workspace(window, &request.workspace_id)
@@ -302,7 +305,19 @@ pub async fn send_http_request(
     };
 
     let start = std::time::Instant::now();
-    let raw_response = client.execute(sendable_req).await;
+
+    let (resp_tx, resp_rx) = oneshot::channel();
+    
+    tokio::spawn(async move {
+        let _ = resp_tx.send(client.execute(sendable_req).await);
+    });
+    
+    let raw_response = tokio::select! {
+        Ok(r) = resp_rx => {r}
+        _ = cancel_rx.changed() => {
+            return response_err(response, "Request was cancelled".to_string(), window).await;
+        }
+    };
 
     match raw_response {
         Ok(v) => {

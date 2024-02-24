@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::AppHandle;
 
-use crate::models::{Environment, Folder, HttpRequest, Workspace, WorkspaceExportResources};
+use crate::models::{WorkspaceExportResources};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct FilterResult {

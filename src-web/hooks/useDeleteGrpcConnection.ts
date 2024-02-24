@@ -10,7 +10,7 @@ export function useDeleteGrpcConnection(id: string | null) {
     mutationFn: async () => {
       return await invoke('cmd_delete_grpc_connection', { id: id });
     },
-    onSettled: () => trackEvent('GrpcConnection', 'Delete'),
+    onSettled: () => trackEvent('grpc_connection', 'delete'),
     onSuccess: ({ requestId, id: connectionId }) => {
       queryClient.setQueryData<GrpcConnection[]>(
         grpcConnectionsQueryKey({ requestId }),

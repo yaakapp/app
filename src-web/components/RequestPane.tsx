@@ -1,8 +1,10 @@
 import classNames from 'classnames';
-import type { CSSProperties, FormEvent } from 'react';
+import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
+import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
@@ -183,13 +185,15 @@ export const RequestPane = memo(function RequestPane({
   );
 
   const sendRequest = useSendRequest(activeRequest.id ?? null);
-  const handleSend = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      await sendRequest.mutateAsync();
-    },
-    [sendRequest],
-  );
+  const { activeResponse } = usePinnedHttpResponse(activeRequest);
+  const cancelResponse = useCancelHttpResponse(activeResponse?.id ?? null);
+  const handleSend = useCallback(async () => {
+    await sendRequest.mutateAsync();
+  }, [sendRequest]);
+
+  const handleCancel = useCallback(async () => {
+    await cancelResponse.mutateAsync();
+  }, [cancelResponse]);
 
   const handleMethodChange = useCallback(
     (method: string) => updateRequest.mutate({ method }),
@@ -214,7 +218,8 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onSubmit={handleSend}
+            onSend={handleSend}
+            onCancel={handleCancel}
             onMethodChange={handleMethodChange}
             onUrlChange={handleUrlChange}
             forceUpdateKey={updateKey}

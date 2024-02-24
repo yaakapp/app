@@ -1,6 +1,6 @@
 import useResizeObserver from '@react-hook/resize-observer';
 import classNames from 'classnames';
-import type { CSSProperties, FormEvent } from 'react';
+import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
@@ -104,22 +104,18 @@ export function GrpcConnectionSetupPane({
     [updateRequest],
   );
 
-  const handleConnect = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      if (activeRequest == null) return;
+  const handleConnect = useCallback(async () => {
+    if (activeRequest == null) return;
 
-      if (activeRequest.service == null || activeRequest.method == null) {
-        alert({
-          id: 'grpc-invalid-service-method',
-          title: 'Error',
-          body: 'Service or method not selected',
-        });
-      }
-      onGo();
-    },
-    [activeRequest, onGo],
-  );
+    if (activeRequest.service == null || activeRequest.method == null) {
+      alert({
+        id: 'grpc-invalid-service-method',
+        title: 'Error',
+        body: 'Service or method not selected',
+      });
+    }
+    onGo();
+  }, [activeRequest, onGo]);
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -176,9 +172,10 @@ export function GrpcConnectionSetupPane({
           submitIcon={null}
           forceUpdateKey={forceUpdateKey}
           placeholder="localhost:50051"
-          onSubmit={handleConnect}
+          onSend={handleConnect}
           onUrlChange={handleChangeUrl}
-          isLoading={false}
+          onCancel={onCancel}
+          isLoading={isStreaming}
         />
         <HStack space={1.5}>
           <RadioDropdown
