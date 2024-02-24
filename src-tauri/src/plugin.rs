@@ -1,18 +1,18 @@
 use std::fs;
 
+use boa_engine::{
+    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
+    property::Attribute, Source,
+};
 use boa_engine::builtins::promise::PromiseState;
 use boa_engine::module::ModuleLoader;
-use boa_engine::{
-    js_string, module::SimpleModuleLoader, property::Attribute, Context, JsNativeError, JsValue,
-    Module, Source,
-};
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::AppHandle;
 
-use crate::models::{Environment, Folder, HttpRequest, Workspace};
+use crate::models::{Environment, Folder, HttpRequest, Workspace, WorkspaceExportResources};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct FilterResult {
@@ -21,15 +21,7 @@ pub struct FilterResult {
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ImportResult {
-    pub resources: ImportResources,
-}
-
-#[derive(Default, Debug, Deserialize, Serialize)]
-pub struct ImportResources {
-    pub workspaces: Vec<Workspace>,
-    pub environments: Vec<Environment>,
-    pub folders: Vec<Folder>,
-    pub requests: Vec<HttpRequest>,
+    pub resources: WorkspaceExportResources,
 }
 
 pub async fn run_plugin_filter(

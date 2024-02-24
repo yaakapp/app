@@ -42,22 +42,8 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
-use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
-    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
-    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
-    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
-    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
-    list_grpc_connections, list_grpc_events, list_grpc_requests, list_requests, list_responses,
-    list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar,
-    upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event,
-    upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar, Environment,
-    EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest,
-    HttpRequest, HttpResponse, KeyValue, Settings, Workspace,
-};
-use crate::plugin::{ImportResources, ImportResult};
+use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace, WorkspaceExportResources};
+use crate::plugin::{ImportResult};
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
@@ -691,7 +677,7 @@ async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Resu
 }
 
 #[tauri::command]
-async fn cmd_import_data(w: Window, file_paths: Vec<&str>) -> Result<ImportResources, String> {
+async fn cmd_import_data(w: Window, file_paths: Vec<&str>) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
@@ -714,7 +700,7 @@ async fn cmd_import_data(w: Window, file_paths: Vec<&str>) -> Result<ImportResou
     match result {
         None => Err("No importers found for the chosen file".to_string()),
         Some(r) => {
-            let mut imported_resources = ImportResources::default();
+            let mut imported_resources = WorkspaceExportResources::default();
 
             info!("Importing resources");
             for v in r.resources.workspaces {
@@ -739,11 +725,19 @@ async fn cmd_import_data(w: Window, file_paths: Vec<&str>) -> Result<ImportResou
                 info!("Imported folder: {}", x.name);
             }
 
-            for v in r.resources.requests {
+            for v in r.resources.http_requests {
                 let x = upsert_http_request(&w, v)
                     .await
-                    .expect("Failed to create request");
-                imported_resources.requests.push(x.clone());
+                    .expect("Failed to create HTTP request");
+                imported_resources.http_requests.push(x.clone());
+                info!("Imported request: {}", x.name);
+            }
+
+            for v in r.resources.grpc_requests {
+                let x = upsert_grpc_request(&w, &v)
+                    .await
+                    .expect("Failed to create GRPC request");
+                imported_resources.grpc_requests.push(x.clone());
                 info!("Imported request: {}", x.name);
             }
 

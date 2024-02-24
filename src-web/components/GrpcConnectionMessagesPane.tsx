@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { format } from 'date-fns';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
