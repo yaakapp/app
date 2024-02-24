@@ -10,7 +10,7 @@ export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }
     mutationFn: (patch) => {
       return invoke('cmd_create_workspace', patch);
     },
-    onSettled: () => trackEvent('Workspace', 'Create'),
+    onSettled: () => trackEvent('workspace', 'create'),
     onSuccess: async (workspace) => {
       if (navigateAfter) {
         routes.navigate('workspace', { workspaceId: workspace.id });

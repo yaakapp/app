@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -7,7 +8,8 @@ use tauri::{AppHandle, Manager};
 use crate::{is_dev, models};
 
 // serializable
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum AnalyticsResource {
     App,
     CookieJar,
@@ -25,28 +27,21 @@ pub enum AnalyticsResource {
 }
 
 impl AnalyticsResource {
-    pub fn from_str(s: &str) -> Option<AnalyticsResource> {
-        match s {
-            "App" => Some(AnalyticsResource::App),
-            "Dialog" => Some(AnalyticsResource::Dialog),
-            "CookieJar" => Some(AnalyticsResource::CookieJar),
-            "Environment" => Some(AnalyticsResource::Environment),
-            "Folder" => Some(AnalyticsResource::Folder),
-            "GrpcConnection" => Some(AnalyticsResource::GrpcConnection),
-            "GrpcEvent" => Some(AnalyticsResource::GrpcEvent),
-            "GrpcRequest" => Some(AnalyticsResource::GrpcRequest),
-            "HttpRequest" => Some(AnalyticsResource::HttpRequest),
-            "HttpResponse" => Some(AnalyticsResource::HttpResponse),
-            "KeyValue" => Some(AnalyticsResource::KeyValue),
-            "Sidebar" => Some(AnalyticsResource::Sidebar),
-            "Workspace" => Some(AnalyticsResource::Workspace),
-            _ => None,
-        }
+    pub fn from_str(s: &str) -> serde_json::Result<AnalyticsResource> {
+        return serde_json::from_str(format!("\"{s}\"").as_str());
     }
 }
 
-#[derive(Serialize, Deserialize)]
+impl Display for AnalyticsResource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", serde_json::to_string(self).unwrap().replace("\"", ""))
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum AnalyticsAction {
+    Cancel,
     Create,
     Delete,
     DeleteMany,
@@ -65,63 +60,14 @@ pub enum AnalyticsAction {
 }
 
 impl AnalyticsAction {
-    pub fn from_str(s: &str) -> Option<AnalyticsAction> {
-        match s {
-            "Create" => Some(AnalyticsAction::Create),
-            "Delete" => Some(AnalyticsAction::Delete),
-            "DeleteMany" => Some(AnalyticsAction::DeleteMany),
-            "Duplicate" => Some(AnalyticsAction::Duplicate),
-            "Export" => Some(AnalyticsAction::Export),
-            "Hide" => Some(AnalyticsAction::Hide),
-            "Import" => Some(AnalyticsAction::Import),
-            "Launch" => Some(AnalyticsAction::Launch),
-            "LaunchFirst" => Some(AnalyticsAction::LaunchFirst),
-            "LaunchUpdate" => Some(AnalyticsAction::LaunchUpdate),
-            "Send" => Some(AnalyticsAction::Send),
-            "Show" => Some(AnalyticsAction::Show),
-            "Toggle" => Some(AnalyticsAction::Toggle),
-            "Update" => Some(AnalyticsAction::Update),
-            "Upsert" => Some(AnalyticsAction::Upsert),
-            _ => None,
-        }
+    pub fn from_str(s: &str) -> serde_json::Result<AnalyticsAction> {
+        return serde_json::from_str(format!("\"{s}\"").as_str());
     }
 }
 
-fn resource_name(resource: AnalyticsResource) -> &'static str {
-    match resource {
-        AnalyticsResource::App => "app",
-        AnalyticsResource::CookieJar => "cookie_jar",
-        AnalyticsResource::Dialog => "dialog",
-        AnalyticsResource::Environment => "environment",
-        AnalyticsResource::Folder => "folder",
-        AnalyticsResource::GrpcRequest => "grpc_request",
-        AnalyticsResource::GrpcConnection => "grpc_connection",
-        AnalyticsResource::GrpcEvent => "grpc_event",
-        AnalyticsResource::HttpRequest => "http_request",
-        AnalyticsResource::HttpResponse => "http_response",
-        AnalyticsResource::KeyValue => "key_value",
-        AnalyticsResource::Sidebar => "sidebar",
-        AnalyticsResource::Workspace => "workspace",
-    }
-}
-
-fn action_name(action: AnalyticsAction) -> &'static str {
-    match action {
-        AnalyticsAction::Create => "create",
-        AnalyticsAction::Delete => "delete",
-        AnalyticsAction::DeleteMany => "delete_many",
-        AnalyticsAction::Duplicate => "duplicate",
-        AnalyticsAction::Export => "export",
-        AnalyticsAction::Hide => "hide",
-        AnalyticsAction::Import => "import",
-        AnalyticsAction::Launch => "launch",
-        AnalyticsAction::LaunchFirst => "launch_first",
-        AnalyticsAction::LaunchUpdate => "launch_update",
-        AnalyticsAction::Send => "send",
-        AnalyticsAction::Show => "show",
-        AnalyticsAction::Toggle => "toggle",
-        AnalyticsAction::Update => "update",
-        AnalyticsAction::Upsert => "upsert",
+impl Display for AnalyticsAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", serde_json::to_string(self).unwrap().replace("\"", ""))
     }
 }
 
@@ -195,7 +141,7 @@ pub async fn track_event(
     action: AnalyticsAction,
     attributes: Option<JsonValue>,
 ) {
-    let event = format!("{}.{}", resource_name(resource), action_name(action));
+    let event = format!("{}.{}", resource, action);
     let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
     let info = app_handle.package_info();
     let tz = datetime::sys_timezone().unwrap_or("unknown".to_string());

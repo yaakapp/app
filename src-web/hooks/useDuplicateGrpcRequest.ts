@@ -21,7 +21,7 @@ export function useDuplicateGrpcRequest({
       if (id === null) throw new Error("Can't duplicate a null grpc request");
       return invoke('cmd_duplicate_grpc_request', { id });
     },
-    onSettled: () => trackEvent('GrpcRequest', 'Duplicate'),
+    onSettled: () => trackEvent('grpc_request', 'duplicate'),
     onSuccess: async (request) => {
       if (navigateAfter && activeWorkspaceId !== null) {
         routes.navigate('request', {

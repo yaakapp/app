@@ -141,74 +141,56 @@ function EventRow({
 }) {
   const { eventType, status, createdAt, content, error } = event;
   return (
-    <button
-      onClick={onClick}
-      className={classNames(
-        'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
-        'px-1 py-1 font-mono cursor-default group focus:outline-none',
-        isActive && '!bg-highlight text-gray-900',
-        'text-gray-800 hover:text-gray-900',
-      )}
-    >
-      <Icon
-        className={
-          eventType === 'server_message'
-            ? 'text-blue-600'
-            : eventType === 'client_message'
-            ? 'text-violet-600'
-            : eventType === 'error' || (status != null && status > 0)
-            ? 'text-orange-600'
-            : eventType === 'connection_end'
-            ? 'text-green-600'
-            : 'text-gray-700'
-        }
-        title={
-          eventType === 'server_message'
-            ? 'Server message'
-            : eventType === 'client_message'
-            ? 'Client message'
-            : eventType === 'error' || (status != null && status > 0)
-            ? 'Error'
-            : eventType === 'connection_end'
-            ? 'Connection response'
-            : undefined
-        }
-        icon={
-          eventType === 'server_message'
-            ? 'arrowBigDownDash'
-            : eventType === 'client_message'
-            ? 'arrowBigUpDash'
-            : eventType === 'error' || (status != null && status > 0)
-            ? 'alert'
-            : eventType === 'connection_end'
-            ? 'check'
-            : 'info'
-        }
-      />
-      <div className={classNames('w-full truncate text-2xs')}>{error ?? content}</div>
-      <div className={classNames('opacity-50 text-2xs')}>
-        {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
-      </div>
-    </button>
+    <div className="px-1">
+      <button
+        onClick={onClick}
+        className={classNames(
+          'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
+          'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
+          isActive && '!bg-highlight text-gray-900',
+          'text-gray-800 hover:text-gray-900',
+        )}
+      >
+        <Icon
+          className={
+            eventType === 'server_message'
+              ? 'text-blue-600'
+              : eventType === 'client_message'
+              ? 'text-violet-600'
+              : eventType === 'error' || (status != null && status > 0)
+              ? 'text-orange-600'
+              : eventType === 'connection_end'
+              ? 'text-green-600'
+              : 'text-gray-700'
+          }
+          title={
+            eventType === 'server_message'
+              ? 'Server message'
+              : eventType === 'client_message'
+              ? 'Client message'
+              : eventType === 'error' || (status != null && status > 0)
+              ? 'Error'
+              : eventType === 'connection_end'
+              ? 'Connection response'
+              : undefined
+          }
+          icon={
+            eventType === 'server_message'
+              ? 'arrowBigDownDash'
+              : eventType === 'client_message'
+              ? 'arrowBigUpDash'
+              : eventType === 'error' || (status != null && status > 0)
+              ? 'alert'
+              : eventType === 'connection_end'
+              ? 'check'
+              : 'info'
+          }
+        />
+        <div className={classNames('w-full truncate text-2xs')}>{error ?? content}</div>
+        <div className={classNames('opacity-50 text-2xs')}>
+          {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
+        </div>
+      </button>
+    </div>
   );
 }
-
-const GRPC_CODES: Record<number, string> = {
-  0: 'Ok',
-  1: 'Cancelled',
-  2: 'Unknown',
-  3: 'Invalid argument',
-  4: 'Deadline exceeded',
-  5: 'Not found',
-  6: 'Already exists',
-  7: 'Permission denied',
-  8: 'Resource exhausted',
-  9: 'Failed precondition',
-  10: 'Aborted',
-  11: 'Out of range',
-  12: 'Unimplemented',
-  13: 'Internal',
-  14: 'Unavailable',
-  15: 'Data loss',
-  16: 'Unauthenticated',
-};

@@ -31,7 +31,7 @@ export function useDeleteAnyHttpRequest() {
       if (!confirmed) return null;
       return invoke('cmd_delete_http_request', { requestId: id });
     },
-    onSettled: () => trackEvent('HttpRequest', 'Delete'),
+    onSettled: () => trackEvent('http_request', 'delete'),
     onSuccess: async (request) => {
       // Was it cancelled?
       if (request === null) return;

@@ -12,8 +12,9 @@ type Props = Pick<HttpRequest, 'url'> & {
   className?: string;
   method: HttpRequest['method'] | null;
   placeholder: string;
-  onSubmit: (e: FormEvent) => void;
+  onSend: () => void;
   onUrlChange: (url: string) => void;
+  onCancel: () => void;
   submitIcon?: IconProps['icon'] | null;
   onMethodChange?: (method: string) => void;
   isLoading: boolean;
@@ -27,7 +28,8 @@ export const UrlBar = memo(function UrlBar({
   method,
   placeholder,
   className,
-  onSubmit,
+  onSend,
+  onCancel,
   onMethodChange,
   submitIcon = 'sendHorizontal',
   isLoading,
@@ -43,8 +45,13 @@ export const UrlBar = memo(function UrlBar({
     inputRef.current?.focus();
   });
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    isLoading ? onCancel() : onSend();
+  };
+
   return (
-    <form onSubmit={onSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={className}>
       <Input
         autocompleteVariables
         ref={inputRef}
@@ -81,8 +88,7 @@ export const UrlBar = memo(function UrlBar({
               title="Send Request"
               type="submit"
               className="w-8 !h-auto my-0.5 mr-0.5"
-              icon={isLoading ? 'update' : submitIcon}
-              spin={isLoading}
+              icon={isLoading ? 'x' : submitIcon}
               hotkeyAction="http_request.send"
             />
           )

@@ -21,7 +21,7 @@ export function useDuplicateHttpRequest({
       if (id === null) throw new Error("Can't duplicate a null request");
       return invoke('cmd_duplicate_http_request', { id });
     },
-    onSettled: () => trackEvent('HttpRequest', 'Duplicate'),
+    onSettled: () => trackEvent('http_request', 'duplicate'),
     onSuccess: async (request) => {
       if (navigateAfter && activeWorkspaceId !== null) {
         routes.navigate('request', {

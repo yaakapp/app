@@ -30,7 +30,7 @@ export function useDeleteAnyGrpcRequest() {
       if (!confirmed) return null;
       return invoke('cmd_delete_grpc_request', { requestId: id });
     },
-    onSettled: () => trackEvent('GrpcRequest', 'Delete'),
+    onSettled: () => trackEvent('grpc_request', 'delete'),
     onSuccess: async (request) => {
       if (request === null) return;
 

@@ -1,6 +1,5 @@
 import { defaultKeymap } from '@codemirror/commands';
-import { Compartment, EditorState, Transaction } from '@codemirror/state';
-import type { ViewUpdate } from '@codemirror/view';
+import { Compartment, EditorState } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
@@ -148,14 +147,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType, autocomplete, useTemplating, environment, workspace]);
 
-  useEffect(() => {
-    if (cm.current === null) return;
-    const { view } = cm.current;
-    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: defaultValue ?? '' } });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forceUpdateKey]);
-
   const classList = className?.split(/\s+/) ?? [];
   const bgClassList = classList
     .filter((c) => c.match(/(^|:)?bg-.+/)) // Find bg-* classes
@@ -163,57 +154,59 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     .map((c) => c.replace(/^dark:bg-/, 'dark:!bg-')); // !important
 
   // Initialize the editor when ref mounts
-  const initEditorRef = useCallback((container: HTMLDivElement | null) => {
-    if (container === null) {
-      cm.current?.view.destroy();
-      cm.current = null;
-      return;
-    }
-
-    let view: EditorView;
-    try {
-      const languageCompartment = new Compartment();
-      const langExt = getLanguageExtension({
-        contentType,
-        useTemplating,
-        autocomplete,
-        environment,
-        workspace,
-      });
-
-      const state = EditorState.create({
-        doc: `${defaultValue ?? ''}`,
-        extensions: [
-          languageCompartment.of(langExt),
-          placeholderCompartment.current.of([]),
-          wrapLinesCompartment.current.of([]),
-          ...getExtensions({
-            container,
-            readOnly,
-            singleLine,
-            onChange: handleChange,
-            onFocus: handleFocus,
-            onBlur: handleBlur,
-            onKeyDown: handleKeyDown,
-          }),
-        ],
-      });
-
-      view = new EditorView({ state, parent: container });
-      cm.current = { view, languageCompartment };
-      syncGutterBg({ parent: container, bgClassList });
-      if (autoFocus) {
-        view.focus();
+  const initEditorRef = useCallback(
+    (container: HTMLDivElement | null) => {
+      if (container === null) {
+        cm.current?.view.destroy();
+        cm.current = null;
+        return;
       }
-      if (autoSelect) {
-        view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
-      }
-    } catch (e) {
-      console.log('Failed to initialize Codemirror', e);
-    }
 
+      let view: EditorView;
+      try {
+        const languageCompartment = new Compartment();
+        const langExt = getLanguageExtension({
+          contentType,
+          useTemplating,
+          autocomplete,
+          environment,
+          workspace,
+        });
+
+        const state = EditorState.create({
+          doc: `${defaultValue ?? ''}`,
+          extensions: [
+            languageCompartment.of(langExt),
+            placeholderCompartment.current.of([]),
+            wrapLinesCompartment.current.of([]),
+            ...getExtensions({
+              container,
+              readOnly,
+              singleLine,
+              onChange: handleChange,
+              onFocus: handleFocus,
+              onBlur: handleBlur,
+              onKeyDown: handleKeyDown,
+            }),
+          ],
+        });
+
+        view = new EditorView({ state, parent: container });
+        cm.current = { view, languageCompartment };
+        syncGutterBg({ parent: container, bgClassList });
+        if (autoFocus) {
+          view.focus();
+        }
+        if (autoSelect) {
+          view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+        }
+      } catch (e) {
+        console.log('Failed to initialize Codemirror', e);
+      }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    [forceUpdateKey],
+  );
 
   // Add bg classes to actions, so they appear over the text
   const decoratedActions = useMemo(() => {
@@ -340,27 +333,11 @@ function getExtensions({
 
     // Handle onChange
     EditorView.updateListener.of((update) => {
-      // Only fire onChange if the document changed and the update was from user input. This prevents firing onChange when the document is updated when
-      // changing pages (one request to another in header editor)
-      if (onChange && update.docChanged && isViewUpdateFromUserInput(update)) {
+      if (onChange && update.docChanged) {
         onChange.current?.(update.state.doc.toString());
       }
     }),
   ];
-}
-
-function isViewUpdateFromUserInput(viewUpdate: ViewUpdate) {
-  // Make sure document has changed, ensuring user events like selections don't count.
-  if (viewUpdate.docChanged) {
-    // Check transactions for any that are direct user input, not changes from Y.js or another extension.
-    for (const transaction of viewUpdate.transactions) {
-      // Not using Transaction.isUserEvent because that only checks for a specific User event type ( "input", "delete", etc.). Checking the annotation directly allows for any type of user event.
-      const userEventType = transaction.annotation(Transaction.userEvent);
-      if (userEventType) return userEventType;
-    }
-  }
-
-  return false;
 }
 
 const syncGutterBg = ({

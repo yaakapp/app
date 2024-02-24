@@ -1,11 +1,15 @@
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppInfo } from '../hooks/useAppInfo';
+import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useSettings } from '../hooks/useSettings';
 import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
+import { trackEvent } from '../lib/analytics';
 import { Checkbox } from './core/Checkbox';
 import { Heading } from './core/Heading';
+import { IconButton } from './core/IconButton';
 import { Input } from './core/Input';
+import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
 import { Select } from './core/Select';
 import { Separator } from './core/Separator';
 import { VStack } from './core/Stacks';
@@ -16,6 +20,7 @@ export const SettingsDialog = () => {
   const settings = useSettings();
   const updateSettings = useUpdateSettings();
   const appInfo = useAppInfo();
+  const checkForUpdates = useCheckForUpdates();
 
   if (settings == null || workspace == null) {
     return null;
@@ -29,7 +34,10 @@ export const SettingsDialog = () => {
         labelPosition="left"
         size="sm"
         value={settings.appearance}
-        onChange={(appearance) => updateSettings.mutateAsync({ ...settings, appearance })}
+        onChange={async (appearance) => {
+          await updateSettings.mutateAsync({ ...settings, appearance });
+          trackEvent('setting', 'update', { appearance });
+        }}
         options={[
           {
             label: 'System',
@@ -46,24 +54,37 @@ export const SettingsDialog = () => {
         ]}
       />
 
-      <Select
-        name="updateChannel"
-        label="Update Channel"
-        labelPosition="left"
-        size="sm"
-        value={settings.updateChannel}
-        onChange={(updateChannel) => updateSettings.mutateAsync({ ...settings, updateChannel })}
-        options={[
-          {
-            label: 'Release',
-            value: 'stable',
-          },
-          {
-            label: 'Early Bird (Beta)',
-            value: 'beta',
-          },
-        ]}
-      />
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
+        <Select
+          name="updateChannel"
+          label="Update Channel"
+          labelPosition="left"
+          size="sm"
+          value={settings.updateChannel}
+          onChange={async (updateChannel) => {
+            trackEvent('setting', 'update', { update_channel: updateChannel });
+            await updateSettings.mutateAsync({ ...settings, updateChannel });
+          }}
+          options={[
+            {
+              label: 'Release',
+              value: 'stable',
+            },
+            {
+              label: 'Early Bird (Beta)',
+              value: 'beta',
+            },
+          ]}
+        />
+        <IconButton
+          variant="border"
+          size="sm"
+          title="Check for updates"
+          icon="refresh"
+          spin={checkForUpdates.isLoading}
+          onClick={() => checkForUpdates.mutateAsync()}
+        />
+      </div>
 
       <Separator className="my-4" />
 
@@ -88,41 +109,33 @@ export const SettingsDialog = () => {
         <Checkbox
           checked={workspace.settingValidateCertificates}
           title="Validate TLS Certificates"
-          onChange={(settingValidateCertificates) =>
-            updateWorkspace.mutateAsync({ settingValidateCertificates })
-          }
+          onChange={async (settingValidateCertificates) => {
+            trackEvent('workspace', 'update', {
+              validate_certificates: JSON.stringify(settingValidateCertificates),
+            });
+            await updateWorkspace.mutateAsync({ settingValidateCertificates });
+          }}
         />
 
         <Checkbox
           checked={workspace.settingFollowRedirects}
           title="Follow Redirects"
-          onChange={(settingFollowRedirects) =>
-            updateWorkspace.mutateAsync({ settingFollowRedirects })
-          }
+          onChange={async (settingFollowRedirects) => {
+            trackEvent('workspace', 'update', {
+              follow_redirects: JSON.stringify(settingFollowRedirects),
+            });
+            await updateWorkspace.mutateAsync({ settingFollowRedirects });
+          }}
         />
       </VStack>
 
       <Separator className="my-4" />
 
       <Heading size={2}>App Info</Heading>
-      <table className="text-sm w-full">
-        <tbody>
-          <tr>
-            <td className="h-xs pr-3">Version</td>
-            <td className="h-xs text-xs font-mono select-all cursor-text">
-              {appInfo.data?.version}
-            </td>
-          </tr>
-          {appInfo.data && (
-            <tr>
-              <td className="h-xs pr-3 whitespace-nowrap">Data Directory</td>
-              <td className="h-xs text-xs font-mono select-all cursor-text break-all min-w-0">
-                {appInfo.data.appDataDir}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <KeyValueRows>
+        <KeyValueRow label="Version" value={appInfo.data?.version} />
+        <KeyValueRow label="Data Directory" value={appInfo.data?.appDataDir} />
+      </KeyValueRows>
     </VStack>
   );
 };
