@@ -27,6 +27,7 @@ interface Props {
   style?: CSSProperties;
   className?: string;
   activeRequest: GrpcRequest;
+  protoFiles: string[];
   reflectionError?: string;
   reflectionLoading?: boolean;
   methodType:
@@ -50,6 +51,7 @@ export function GrpcConnectionSetupPane({
   services,
   methodType,
   activeRequest,
+  protoFiles,
   reflectionError,
   reflectionLoading,
   onGo,
@@ -273,6 +275,7 @@ export function GrpcConnectionSetupPane({
             reflectionError={reflectionError}
             reflectionLoading={reflectionLoading}
             request={activeRequest}
+            protoFiles={protoFiles}
           />
         </TabContent>
         <TabContent value="auth">

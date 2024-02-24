@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message, authentication_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                proto_files AS \"proto_files!: sqlx::types::Json<Vec<String>>\",\n                metadata AS \"metadata!: sqlx::types::Json<Vec<GrpcMetadataEntry>>\"\n            FROM grpc_requests\n            WHERE id = ?\n        ",
+  "query": "\n            SELECT\n                id, model, workspace_id, folder_id, created_at, updated_at, name, sort_priority,\n                url, service, method, message, authentication_type,\n                authentication AS \"authentication!: Json<HashMap<String, JsonValue>>\",\n                metadata AS \"metadata!: sqlx::types::Json<Vec<GrpcMetadataEntry>>\"\n            FROM grpc_requests\n            WHERE workspace_id = ?\n        ",
   "describe": {
     "columns": [
       {
@@ -74,13 +74,8 @@
         "type_info": "Text"
       },
       {
-        "name": "proto_files!: sqlx::types::Json<Vec<String>>",
-        "ordinal": 14,
-        "type_info": "Text"
-      },
-      {
         "name": "metadata!: sqlx::types::Json<Vec<GrpcMetadataEntry>>",
-        "ordinal": 15,
+        "ordinal": 14,
         "type_info": "Text"
       }
     ],
@@ -102,9 +97,8 @@
       false,
       true,
       false,
-      false,
       false
     ]
   },
-  "hash": "697afa2c3072b7b01676be53d5857066724fc23c94cd279d074253d5581b6f2c"
+  "hash": "1821c2f60b9fa4514d58eb73b23e25ad683b80b9bd0c2944063190a0d0a19ee5"
 }

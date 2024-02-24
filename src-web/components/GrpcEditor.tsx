@@ -21,6 +21,7 @@ type Props = Pick<EditorProps, 'heightMode' | 'onChange' | 'className'> & {
   reflectionError?: string;
   reflectionLoading?: boolean;
   request: GrpcRequest;
+  protoFiles: string[];
 };
 
 export function GrpcEditor({
@@ -28,6 +29,7 @@ export function GrpcEditor({
   reflectionError,
   reflectionLoading,
   request,
+  protoFiles,
   ...extraEditorProps
 }: Props) {
   const editorViewRef = useRef<EditorView>(null);
@@ -149,9 +151,9 @@ export function GrpcEditor({
                 ? 'Select Proto Files'
                 : reflectionError
                 ? 'Server Error'
-                : request.protoFiles.length > 0
-                ? count('File', request.protoFiles.length)
-                : services != null && request.protoFiles.length === 0
+                : protoFiles.length > 0
+                ? count('File', protoFiles.length)
+                : services != null && protoFiles.length === 0
                 ? 'Schema Detected'
                 : 'Select Schema'}
             </Button>

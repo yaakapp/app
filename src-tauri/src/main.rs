@@ -98,6 +98,7 @@ async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(
 #[tauri::command]
 async fn cmd_grpc_reflect(
     request_id: &str,
+    proto_files: Vec<String>,
     window: Window,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
@@ -105,15 +106,14 @@ async fn cmd_grpc_reflect(
         .await
         .map_err(|e| e.to_string())?;
     let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
-    if req.proto_files.0.len() > 0 {
+    if proto_files.len() > 0 {
         grpc_handle
             .lock()
             .await
             .services_from_files(
                 &req.id,
                 &uri,
-                req.proto_files
-                    .0
+                proto_files
                     .iter()
                     .map(|p| PathBuf::from_str(p).unwrap())
                     .collect(),
@@ -132,6 +132,7 @@ async fn cmd_grpc_reflect(
 async fn cmd_grpc_go(
     request_id: &str,
     environment_id: Option<&str>,
+    proto_files: Vec<String>,
     w: Window,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
@@ -240,8 +241,7 @@ async fn cmd_grpc_go(
         .connect(
             &req.clone().id,
             uri,
-            req.proto_files
-                .0
+            proto_files
                 .iter()
                 .map(|p| PathBuf::from_str(p).unwrap())
                 .collect(),

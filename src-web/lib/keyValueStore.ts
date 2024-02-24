@@ -1,7 +1,6 @@
 import { invoke } from '@tauri-apps/api';
 import type { KeyValue } from './models';
 
-export const NAMESPACE_APP = 'app';
 export const NAMESPACE_GLOBAL = 'global';
 export const NAMESPACE_NO_SYNC = 'no_sync';
 

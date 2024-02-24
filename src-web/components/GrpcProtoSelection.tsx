@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/api/dialog';
 import { useGrpc } from '../hooks/useGrpc';
+import { useGrpcProtoFiles } from '../hooks/useGrpcProtoFiles';
 import { useGrpcRequest } from '../hooks/useGrpcRequest';
-import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { count } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
@@ -18,10 +18,11 @@ interface Props {
 
 export function GrpcProtoSelection({ requestId }: Props) {
   const request = useGrpcRequest(requestId);
-  const grpc = useGrpc(request, null);
-  const updateRequest = useUpdateGrpcRequest(request?.id ?? null);
+  const protoFilesKv = useGrpcProtoFiles(requestId);
+  const protoFiles = protoFilesKv.value ?? [];
+  const grpc = useGrpc(request, null, protoFiles);
   const services = grpc.reflect.data;
-  const serverReflection = request?.protoFiles.length === 0 && services != null;
+  const serverReflection = protoFiles.length === 0 && services != null;
   let reflectError = grpc.reflect.error ?? null;
   const reflectionUnimplemented = `${reflectError}`.match(/unimplemented/i);
 
@@ -47,8 +48,8 @@ export function GrpcProtoSelection({ requestId }: Props) {
               filters: [{ name: 'Proto Files', extensions: ['proto'] }],
             });
             if (files == null || typeof files === 'string') return;
-            const newFiles = files.filter((f) => !request.protoFiles.includes(f));
-            await updateRequest.mutateAsync({ protoFiles: [...request.protoFiles, ...newFiles] });
+            const newFiles = files.filter((f) => !protoFiles.includes(f));
+            await protoFilesKv.set([...protoFiles, ...newFiles]);
             await grpc.reflect.refetch();
           }}
         >
@@ -99,7 +100,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
           </Banner>
         )}
 
-        {request.protoFiles.length > 0 && (
+        {protoFiles.length > 0 && (
           <table className="w-full divide-y">
             <thead>
               <tr>
@@ -110,7 +111,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {request.protoFiles.map((f, i) => (
+              {protoFiles.map((f, i) => (
                 <tr key={f + i} className="group">
                   <td className="pl-1 text-sm font-mono">{f.split('/').pop()}</td>
                   <td className="w-0 py-0.5">
@@ -120,9 +121,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
                       icon="trash"
                       className="ml-auto opacity-30 transition-opacity group-hover:opacity-100"
                       onClick={async () => {
-                        await updateRequest.mutateAsync({
-                          protoFiles: request.protoFiles.filter((p) => p !== f),
-                        });
+                        await protoFilesKv.set(protoFiles.filter((p) => p !== f));
                         grpc.reflect.remove();
                       }}
                     />
@@ -133,7 +132,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
           </table>
         )}
         {reflectError && <FormattedError>{reflectError}</FormattedError>}
-        {reflectionUnimplemented && request.protoFiles.length === 0 && (
+        {reflectionUnimplemented && protoFiles.length === 0 && (
           <Banner>
             <InlineCode>{request.url}</InlineCode> doesn&apos;t implement{' '}
             <Link href="https://github.com/grpc/grpc/blob/9aa3c5835a4ed6afae9455b63ed45c761d695bca/doc/server-reflection.md">
