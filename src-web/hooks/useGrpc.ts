@@ -11,12 +11,16 @@ export interface ReflectResponseService {
   methods: { name: string; schema: string; serverStreaming: boolean; clientStreaming: boolean }[];
 }
 
-export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
+export function useGrpc(
+  req: GrpcRequest | null,
+  conn: GrpcConnection | null,
+  protoFiles: string[],
+) {
   const requestId = req?.id ?? 'n/a';
   const environmentId = useActiveEnvironmentId();
 
   const go = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId, environmentId }),
+    mutationFn: async () => await invoke('cmd_grpc_go', { requestId, environmentId, protoFiles }),
   });
 
   const send = useMutation({
@@ -35,13 +39,13 @@ export function useGrpc(req: GrpcRequest | null, conn: GrpcConnection | null) {
   });
 
   const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 1000);
-  const reflect = useQuery<ReflectResponseService[] | null, string>({
+  const reflect = useQuery<ReflectResponseService[], string>({
     enabled: req != null,
     queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl],
     refetchOnWindowFocus: false,
     queryFn: async () => {
       return (await minPromiseMillis(
-        invoke('cmd_grpc_reflect', { requestId }),
+        invoke('cmd_grpc_reflect', { requestId, protoFiles }),
         300,
       )) as ReflectResponseService[];
     },

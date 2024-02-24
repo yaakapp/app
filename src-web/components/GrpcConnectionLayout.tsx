@@ -5,6 +5,7 @@ import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
+import { useGrpcProtoFiles } from '../hooks/useGrpcProtoFiles';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { Banner } from './core/Banner';
 import { HotKeyList } from './core/HotKeyList';
@@ -22,7 +23,9 @@ export function GrpcConnectionLayout({ style }: Props) {
   const connections = useGrpcConnections(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const messages = useGrpcEvents(activeConnection?.id ?? null);
-  const grpc = useGrpc(activeRequest, activeConnection);
+  const protoFilesKv = useGrpcProtoFiles(activeRequest?.id ?? null);
+  const protoFiles = protoFilesKv.value ?? [];
+  const grpc = useGrpc(activeRequest, activeConnection, protoFiles);
 
   const services = grpc.reflect.data ?? null;
   useEffect(() => {
@@ -79,6 +82,7 @@ export function GrpcConnectionLayout({ style }: Props) {
         <GrpcConnectionSetupPane
           style={style}
           activeRequest={activeRequest}
+          protoFiles={protoFiles}
           methodType={methodType}
           onGo={grpc.go.mutate}
           onCommit={grpc.commit.mutate}

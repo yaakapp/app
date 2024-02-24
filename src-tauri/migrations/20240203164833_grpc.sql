@@ -17,7 +17,6 @@ CREATE TABLE grpc_requests
     service             TEXT                                                    NULL,
     method              TEXT                                                    NULL,
     message             TEXT                                                    NOT NULL,
-    proto_files         TEXT     DEFAULT '[]'                                   NOT NULL,
     authentication      TEXT     DEFAULT '{}'                                   NOT NULL,
     authentication_type TEXT                                                    NULL,
     metadata            TEXT     DEFAULT '[]'                                   NOT NULL

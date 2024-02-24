@@ -121,7 +121,6 @@ export interface GrpcRequest extends BaseModel {
   service: string | null;
   method: string | null;
   message: string;
-  protoFiles: string[];
   authentication: Record<string, string | number | boolean | null | undefined>;
   authenticationType: string | null;
   metadata: GrpcMetadataEntry[];
