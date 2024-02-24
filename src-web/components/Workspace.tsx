@@ -17,6 +17,7 @@ import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { Button } from './core/Button';
 import { HotKeyList } from './core/HotKeyList';
 import { HStack } from './core/Stacks';
+import { CreateDropdown } from './CreateDropdown';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
 import { HttpRequestLayout } from './HttpRequestLayout';
 import { Overlay } from './Overlay';
@@ -167,12 +168,14 @@ export default function Workspace() {
           hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
           bottomSlot={
             <HStack space={1} justifyContent="center" className="mt-3">
-              <Button size="sm" color="gray" onClick={() => importData.mutate()}>
+              <Button variant="border" size="sm" onClick={() => importData.mutate()}>
                 Import
               </Button>
-              <Button size="sm" color="gray">
-                New Request
-              </Button>
+              <CreateDropdown hideFolder>
+                <Button variant="border" forDropdown size="sm">
+                  New Request
+                </Button>
+              </CreateDropdown>
             </HStack>
           }
         />
