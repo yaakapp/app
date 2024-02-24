@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
-import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useFormattedHotkey, useHotKey } from '../../hooks/useHotKey';
 import { Icon } from './Icon';

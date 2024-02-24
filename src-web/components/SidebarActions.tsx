@@ -12,7 +12,7 @@ export const SidebarActions = memo(function SidebarActions() {
     <HStack className="h-full" alignItems="center">
       <IconButton
         onClick={async () => {
-          trackEvent('Sidebar', 'Toggle');
+          trackEvent('sidebar', 'toggle');
 
           // NOTE: We're not using `toggle` because it may be out of sync
           // from changes in other windows

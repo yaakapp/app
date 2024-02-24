@@ -2,30 +2,33 @@ import { invoke } from '@tauri-apps/api';
 
 export function trackEvent(
   resource:
-    | 'App'
-    | 'Dialog'
-    | 'CookieJar'
-    | 'Sidebar'
-    | 'Workspace'
-    | 'Environment'
-    | 'Folder'
-    | 'GrpcEvent'
-    | 'GrpcConnection'
-    | 'GrpcRequest'
-    | 'HttpRequest'
-    | 'HttpResponse'
-    | 'KeyValue',
+    | 'app'
+    | 'cookie_jar'
+    | 'dialog'
+    | 'environment'
+    | 'folder'
+    | 'grpc_connection'
+    | 'grpc_event'
+    | 'grpc_request'
+    | 'http_request'
+    | 'http_response'
+    | 'key_value'
+    | 'setting'
+    | 'sidebar'
+    | 'workspace',
   action:
-    | 'Toggle'
-    | 'Show'
-    | 'Hide'
-    | 'Launch'
-    | 'Create'
-    | 'Update'
-    | 'Delete'
-    | 'DeleteMany'
-    | 'Send'
-    | 'Duplicate',
+    | 'cancel'
+    | 'create'
+    | 'delete'
+    | 'delete_many'
+    | 'duplicate'
+    | 'hide'
+    | 'launch'
+    | 'send'
+    | 'show'
+    | 'toggle'
+    | 'update',
+
   attributes: Record<string, string | number> = {},
 ) {
   invoke('cmd_track_event', {

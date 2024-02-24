@@ -10,7 +10,7 @@ export function useDeleteHttpResponses(requestId?: string) {
       if (requestId === undefined) return;
       await invoke('cmd_delete_all_http_responses', { requestId });
     },
-    onSettled: () => trackEvent('HttpResponse', 'DeleteMany'),
+    onSettled: () => trackEvent('http_response', 'delete_many'),
     onSuccess: async () => {
       if (requestId === undefined) return;
       queryClient.setQueryData(httpResponsesQueryKey({ requestId }), []);

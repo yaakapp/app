@@ -25,7 +25,7 @@ export function useDeleteEnvironment(environment: Environment | null) {
       if (!confirmed) return null;
       return invoke('cmd_delete_environment', { environmentId: environment?.id });
     },
-    onSettled: () => trackEvent('Environment', 'Delete'),
+    onSettled: () => trackEvent('environment', 'delete'),
     onSuccess: async (environment) => {
       if (environment === null) return;
 

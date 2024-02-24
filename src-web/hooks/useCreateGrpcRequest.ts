@@ -33,7 +33,7 @@ export function useCreateGrpcRequest() {
       // patch.folderId = patch.folderId; // TODO: || activeRequest?.folderId;
       return invoke('cmd_create_grpc_request', { workspaceId, name: '', ...patch });
     },
-    onSettled: () => trackEvent('GrpcRequest', 'Create'),
+    onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
       routes.navigate('request', {
         workspaceId: request.workspaceId,

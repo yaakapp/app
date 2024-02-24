@@ -26,7 +26,7 @@ export function useCreateEnvironment() {
       });
       return invoke('cmd_create_environment', { name, variables: [], workspaceId });
     },
-    onSettled: () => trackEvent('Environment', 'Create'),
+    onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (workspaceId == null) return;
       routes.setEnvironment(environment);

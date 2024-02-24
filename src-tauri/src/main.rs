@@ -10,40 +10,54 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-use ::http::uri::InvalidUri;
 use ::http::Uri;
+use ::http::uri::InvalidUri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
 use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
 use tauri::{Manager, WindowEvent};
+#[cfg(target_os = "macos")]
+use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex};
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
+use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
-use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace, WorkspaceExportResources};
-use crate::plugin::{ImportResult};
+use crate::models::{
+    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
+    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
+    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
+    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
+    duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar,
+    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
+    get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest,
+    HttpRequest, HttpResponse, KeyValue, list_cookie_jars, list_environments,
+    list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
+    list_requests, list_responses, list_workspaces, set_key_value_raw, Settings,
+    update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace, WorkspaceExportResources,
+};
+use crate::plugin::ImportResult;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
 mod analytics;
@@ -640,8 +654,21 @@ async fn cmd_send_ephemeral_request(
         None => None,
     };
 
-    // let cookie_jar_id2 = cookie_jar_id.unwrap_or("").to_string();
-    send_http_request(&window, request, &response, environment, cookie_jar, None).await
+    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
+    window.listen_global(format!("cancel_http_response_{}", response.id), move |_event| {
+        let _ = cancel_tx.send(true);
+    });
+
+    send_http_request(
+        &window,
+        request,
+        &response,
+        environment,
+        cookie_jar,
+        None,
+        &mut cancel_rx,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -677,7 +704,10 @@ async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Resu
 }
 
 #[tauri::command]
-async fn cmd_import_data(w: Window, file_paths: Vec<&str>) -> Result<WorkspaceExportResources, String> {
+async fn cmd_import_data(
+    w: Window,
+    file_paths: Vec<&str>,
+) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
@@ -778,19 +808,19 @@ async fn cmd_export_data(
 
 #[tauri::command]
 async fn cmd_send_http_request(
-    w: Window,
+    window: Window,
     request_id: &str,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
     download_dir: Option<&str>,
 ) -> Result<HttpResponse, String> {
-    let request = get_http_request(&w, request_id)
+    let request = get_http_request(&window, request_id)
         .await
         .expect("Failed to get request");
 
     let environment = match environment_id {
         Some(id) => Some(
-            get_environment(&w, id)
+            get_environment(&window, id)
                 .await
                 .expect("Failed to get environment"),
         ),
@@ -799,7 +829,7 @@ async fn cmd_send_http_request(
 
     let cookie_jar = match cookie_jar_id {
         Some(id) => Some(
-            get_cookie_jar(&w, id)
+            get_cookie_jar(&window, id)
                 .await
                 .expect("Failed to get cookie jar"),
         ),
@@ -807,7 +837,7 @@ async fn cmd_send_http_request(
     };
 
     let response = create_http_response(
-        &w,
+        &window,
         &request.id,
         0,
         0,
@@ -829,13 +859,19 @@ async fn cmd_send_http_request(
         None
     };
 
+    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
+    window.listen_global(format!("cancel_http_response_{}", response.id), move |_event| {
+        let _ = cancel_tx.send(true);
+    });
+
     send_http_request(
-        &w,
+        &window,
         request.clone(),
         &response,
         environment,
         cookie_jar,
         download_path,
+        &mut cancel_rx,
     )
     .await
 }
@@ -865,11 +901,13 @@ async fn cmd_track_event(
         AnalyticsResource::from_str(resource),
         AnalyticsAction::from_str(action),
     ) {
-        (Some(resource), Some(action)) => {
+        (Ok(resource), Ok(action)) => {
             analytics::track_event(&window.app_handle(), resource, action, attributes).await;
         }
-        _ => {
-            error!("Invalid action/resource for track_event: {action} {resource}");
+        (r, a) => {
+            println!("HttpRequest: {:?}", serde_json::to_string(&AnalyticsResource::HttpRequest));
+            println!("Send: {:?}", serde_json::to_string(&AnalyticsAction::Send));
+            error!("Invalid action/resource for track_event: {resource}.{action} = {:?}.{:?}", r, a);
             return Err("Invalid event".to_string());
         }
     };

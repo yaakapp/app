@@ -27,7 +27,7 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   const actions = useMemo<Actions>(
     () => ({
       show({ id, ...props }: DialogEntry) {
-        trackEvent('Dialog', 'Show', { id });
+        trackEvent('dialog', 'show', { id });
         setDialogs((a) => [...a.filter((d) => d.id !== id), { id, ...props }]);
       },
       toggle({ id, ...props }: DialogEntry) {

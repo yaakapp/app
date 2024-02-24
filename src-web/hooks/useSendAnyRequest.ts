@@ -38,7 +38,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         cookieJarId: activeCookieJar?.id,
       });
     },
-    onSettled: () => trackEvent('HttpRequest', 'Send'),
+    onSettled: () => trackEvent('http_request', 'send'),
     onError: (err) => alert({ id: 'send-failed', title: 'Send Failed', body: err }),
   });
 }

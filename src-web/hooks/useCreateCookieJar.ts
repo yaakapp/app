@@ -26,7 +26,7 @@ export function useCreateCookieJar() {
       });
       return invoke('cmd_create_cookie_jar', { workspaceId, name });
     },
-    onSettled: () => trackEvent('CookieJar', 'Create'),
+    onSettled: () => trackEvent('cookie_jar', 'create'),
     onSuccess: async (cookieJar) => {
       queryClient.setQueryData<CookieJar[]>(
         cookieJarsQueryKey({ workspaceId: cookieJar.workspaceId }),

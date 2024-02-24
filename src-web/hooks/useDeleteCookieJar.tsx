@@ -25,7 +25,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
       if (!confirmed) return null;
       return invoke('cmd_delete_cookie_jar', { cookieJarId: cookieJar?.id });
     },
-    onSettled: () => trackEvent('CookieJar', 'Delete'),
+    onSettled: () => trackEvent('cookie_jar', 'delete'),
     onSuccess: async (cookieJar) => {
       if (cookieJar === null) return;
 
