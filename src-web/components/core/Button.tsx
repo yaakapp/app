@@ -46,55 +46,51 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const hotkeyTrigger = useFormattedHotkey(hotkeyAction ?? null)?.join('');
   const fullTitle = hotkeyTrigger ? `${title}  ${hotkeyTrigger}` : title;
 
-  const classes = useMemo(
-    () =>
-      classNames(
-        className,
-        'max-w-full min-w-0', // Help with truncation
-        'hocus:opacity-100', // Force opacity for certain hover effects
-        'whitespace-nowrap outline-none',
-        'flex-shrink-0 flex items-center',
-        'focus-visible-or-class:ring rounded-md',
-        disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
-        justify === 'start' && 'justify-start',
-        justify === 'center' && 'justify-center',
-        size === 'md' && 'h-md px-3',
-        size === 'sm' && 'h-sm px-2.5 text-sm',
-        size === 'xs' && 'h-xs px-2 text-sm',
-        // Solids
-        variant === 'solid' && color === 'custom' && 'ring-blue-400',
-        variant === 'solid' &&
-          color === 'default' &&
-          'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',
-        variant === 'solid' &&
-          color === 'gray' &&
-          'text-gray-800 bg-highlight enabled:hocus:text-gray-1000 ring-blue-400',
-        variant === 'solid' && color === 'primary' && 'bg-blue-400 text-white ring-blue-700',
-        variant === 'solid' && color === 'secondary' && 'bg-violet-400 text-white ring-violet-700',
-        variant === 'solid' && color === 'warning' && 'bg-orange-400 text-white ring-orange-700',
-        variant === 'solid' && color === 'danger' && 'bg-red-400 text-white ring-red-700',
-        // Borders
-        variant === 'border' && 'border',
-        variant === 'border' &&
-          color === 'default' &&
-          'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-800 ring-blue-500/50',
-        variant === 'border' &&
-          color === 'gray' &&
-          'border-gray-500/70 text-gray-700 enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-800 ring-blue-500/50',
-        variant === 'border' &&
-          color === 'primary' &&
-          'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',
-        variant === 'border' &&
-          color === 'secondary' &&
-          'border-violet-500/70 text-violet-700 enabled:hocus:border-violet-500 ring-violet-500/50',
-        variant === 'border' &&
-          color === 'warning' &&
-          'border-orange-500/70 text-orange-700 enabled:hocus:border-orange-500 ring-orange-500/50',
-        variant === 'border' &&
-          color === 'danger' &&
-          'border-red-500/70 text-red-700 enabled:hocus:border-red-500 ring-red-500/50',
-      ),
-    [className, disabled, justify, size, variant, color],
+  const classes = classNames(
+    className,
+    'max-w-full min-w-0', // Help with truncation
+    'hocus:opacity-100', // Force opacity for certain hover effects
+    'whitespace-nowrap outline-none',
+    'flex-shrink-0 flex items-center',
+    'focus-visible-or-class:ring rounded-md',
+    disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
+    justify === 'start' && 'justify-start',
+    justify === 'center' && 'justify-center',
+    size === 'md' && 'h-md px-3',
+    size === 'sm' && 'h-sm px-2.5 text-sm',
+    size === 'xs' && 'h-xs px-2 text-sm',
+    // Solids
+    variant === 'solid' && color === 'custom' && 'ring-blue-400',
+    variant === 'solid' &&
+      color === 'default' &&
+      'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',
+    variant === 'solid' &&
+      color === 'gray' &&
+      'text-gray-800 bg-highlight enabled:hocus:text-gray-1000 ring-blue-400',
+    variant === 'solid' && color === 'primary' && 'bg-blue-400 text-white ring-blue-700',
+    variant === 'solid' && color === 'secondary' && 'bg-violet-400 text-white ring-violet-700',
+    variant === 'solid' && color === 'warning' && 'bg-orange-400 text-white ring-orange-700',
+    variant === 'solid' && color === 'danger' && 'bg-red-400 text-white ring-red-700',
+    // Borders
+    variant === 'border' && 'border',
+    variant === 'border' &&
+      color === 'default' &&
+      'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-800 ring-blue-500/50',
+    variant === 'border' &&
+      color === 'gray' &&
+      'border-gray-500/70 text-gray-700 enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-800 ring-blue-500/50',
+    variant === 'border' &&
+      color === 'primary' &&
+      'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',
+    variant === 'border' &&
+      color === 'secondary' &&
+      'border-violet-500/70 text-violet-700 enabled:hocus:border-violet-500 ring-violet-500/50',
+    variant === 'border' &&
+      color === 'warning' &&
+      'border-orange-500/70 text-orange-700 enabled:hocus:border-orange-500 ring-orange-500/50',
+    variant === 'border' &&
+      color === 'danger' &&
+      'border-red-500/70 text-red-700 enabled:hocus:border-red-500 ring-red-500/50',
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);
