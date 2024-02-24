@@ -10,52 +10,52 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-use ::http::Uri;
 use ::http::uri::InvalidUri;
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
-use tokio::sync::{Mutex};
+use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar,
-    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
-    get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
-    get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest,
-    HttpRequest, HttpResponse, KeyValue, list_cookie_jars, list_environments,
-    list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
-    list_requests, list_responses, list_workspaces, set_key_value_raw, Settings,
-    update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace, WorkspaceExportResources,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
+    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
+    list_grpc_connections, list_grpc_events, list_grpc_requests, list_requests, list_responses,
+    list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar,
+    upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event,
+    upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar, Environment,
+    EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest,
+    HttpRequest, HttpResponse, KeyValue, Settings, Workspace, WorkspaceExportResources,
 };
 use crate::plugin::ImportResult;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
@@ -454,16 +454,26 @@ async fn cmd_grpc_go(
                 Some(Err(e)) => {
                     upsert_grpc_event(
                         &w,
-                        &GrpcEvent {
-                            content: "Failed to connect".to_string(),
-                            event_type: GrpcEventType::ConnectionEnd,
-                            error: Some(e.to_string()),
-                            status: Some(Code::Unknown as i64),
-                            ..base_event.clone()
-                        },
+                        &(match e.status {
+                            Some(s) => GrpcEvent {
+                                error: Some(s.message().to_string()),
+                                status: Some(s.code() as i64),
+                                content: "Failed to connect".to_string(),
+                                metadata: Json(metadata_to_map(s.metadata().clone())),
+                                event_type: GrpcEventType::ConnectionEnd,
+                                ..base_event.clone()
+                            },
+                            None => GrpcEvent {
+                                error: Some(e.message),
+                                status: Some(Code::Unknown as i64),
+                                content: "Failed to connect".to_string(),
+                                event_type: GrpcEventType::ConnectionEnd,
+                                ..base_event.clone()
+                            },
+                        }),
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                 }
                 None => {
                     // Server streaming doesn't return initial message
@@ -471,7 +481,7 @@ async fn cmd_grpc_go(
             }
 
             let mut stream = match maybe_stream {
-                Some(Ok(Ok(stream))) => {
+                Some(Ok(stream)) => {
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -490,31 +500,26 @@ async fn cmd_grpc_go(
                     .unwrap();
                     stream.into_inner()
                 }
-                Some(Ok(Err(e))) => {
-                    upsert_grpc_event(
-                        &w,
-                        &GrpcEvent {
-                            error: Some(e.message().to_string()),
-                            status: Some(e.code() as i64),
-                            content: e.code().description().to_string(),
-                            event_type: GrpcEventType::ConnectionEnd,
-                            ..base_event.clone()
-                        },
-                    )
-                    .await
-                    .unwrap();
-                    return;
-                }
                 Some(Err(e)) => {
                     upsert_grpc_event(
                         &w,
-                        &GrpcEvent {
-                            error: Some(e),
-                            status: Some(Code::Unknown as i64),
-                            content: "Unknown error".to_string(),
-                            event_type: GrpcEventType::ConnectionEnd,
-                            ..base_event.clone()
-                        },
+                        &(match e.status {
+                            Some(s) => GrpcEvent {
+                                error: Some(s.message().to_string()),
+                                status: Some(s.code() as i64),
+                                content: "Failed to connect".to_string(),
+                                metadata: Json(metadata_to_map(s.metadata().clone())),
+                                event_type: GrpcEventType::ConnectionEnd,
+                                ..base_event.clone()
+                            },
+                            None => GrpcEvent {
+                                error: Some(e.message),
+                                status: Some(Code::Unknown as i64),
+                                content: "Failed to connect".to_string(),
+                                event_type: GrpcEventType::ConnectionEnd,
+                                ..base_event.clone()
+                            },
+                        }),
                     )
                     .await
                     .unwrap();
@@ -655,9 +660,12 @@ async fn cmd_send_ephemeral_request(
     };
 
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_global(format!("cancel_http_response_{}", response.id), move |_event| {
-        let _ = cancel_tx.send(true);
-    });
+    window.listen_global(
+        format!("cancel_http_response_{}", response.id),
+        move |_event| {
+            let _ = cancel_tx.send(true);
+        },
+    );
 
     send_http_request(
         &window,
@@ -860,9 +868,12 @@ async fn cmd_send_http_request(
     };
 
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_global(format!("cancel_http_response_{}", response.id), move |_event| {
-        let _ = cancel_tx.send(true);
-    });
+    window.listen_global(
+        format!("cancel_http_response_{}", response.id),
+        move |_event| {
+            let _ = cancel_tx.send(true);
+        },
+    );
 
     send_http_request(
         &window,
@@ -905,9 +916,15 @@ async fn cmd_track_event(
             analytics::track_event(&window.app_handle(), resource, action, attributes).await;
         }
         (r, a) => {
-            println!("HttpRequest: {:?}", serde_json::to_string(&AnalyticsResource::HttpRequest));
+            println!(
+                "HttpRequest: {:?}",
+                serde_json::to_string(&AnalyticsResource::HttpRequest)
+            );
             println!("Send: {:?}", serde_json::to_string(&AnalyticsAction::Send));
-            error!("Invalid action/resource for track_event: {resource}.{action} = {:?}.{:?}", r, a);
+            error!(
+                "Invalid action/resource for track_event: {resource}.{action} = {:?}.{:?}",
+                r, a
+            );
             return Err("Invalid event".to_string());
         }
     };

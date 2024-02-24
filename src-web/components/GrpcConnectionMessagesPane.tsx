@@ -106,20 +106,29 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                 </>
               ) : (
                 <div className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
-                  <div className="mb-2 select-text cursor-text font-semibold">
-                    {activeEvent.error ?? activeEvent.content}
+                  <div>
+                    <div className="select-text cursor-text font-semibold">
+                      {activeEvent.content}
+                    </div>
+                    {activeEvent.error && (
+                      <div className="text-xs font-mono py-1 text-orange-700">
+                        {activeEvent.error}
+                      </div>
+                    )}
                   </div>
-                  {Object.keys(activeEvent.metadata).length === 0 ? (
-                    <EmptyStateText>
-                      No {activeEvent.eventType === 'connection_end' ? 'trailers' : 'metadata'}
-                    </EmptyStateText>
-                  ) : (
-                    <KeyValueRows>
-                      {Object.entries(activeEvent.metadata).map(([key, value]) => (
-                        <KeyValueRow key={key} label={key} value={value} />
-                      ))}
-                    </KeyValueRows>
-                  )}
+                  <div className="py-2 h-full">
+                    {Object.keys(activeEvent.metadata).length === 0 ? (
+                      <EmptyStateText>
+                        No {activeEvent.eventType === 'connection_end' ? 'trailers' : 'metadata'}
+                      </EmptyStateText>
+                    ) : (
+                      <KeyValueRows>
+                        {Object.entries(activeEvent.metadata).map(([key, value]) => (
+                          <KeyValueRow key={key} label={key} value={value} />
+                        ))}
+                      </KeyValueRows>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -186,7 +195,14 @@ function EventRow({
               : 'info'
           }
         />
-        <div className={classNames('w-full truncate text-2xs')}>{error ?? content}</div>
+        <div className={classNames('w-full truncate text-2xs')}>
+          {content}
+          {error && (
+            <>
+              <span className="text-orange-600"> ({error})</span>
+            </>
+          )}
+        </div>
         <div className={classNames('opacity-50 text-2xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
         </div>
