@@ -9,6 +9,7 @@ import type {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useImportData } from '../hooks/useImportData';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -36,6 +37,7 @@ export default function Workspace() {
   const { hide, show, hidden } = useSidebarHidden();
   const activeRequest = useActiveRequest();
   const windowSize = useWindowSize();
+  const importData = useImportData();
   const [floating, setFloating] = useState<boolean>(false);
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
@@ -165,7 +167,7 @@ export default function Workspace() {
           hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
           bottomSlot={
             <HStack space={1} justifyContent="center" className="mt-3">
-              <Button size="sm" color="gray">
+              <Button size="sm" color="gray" onClick={() => importData.mutate()}>
                 Import
               </Button>
               <Button size="sm" color="gray">

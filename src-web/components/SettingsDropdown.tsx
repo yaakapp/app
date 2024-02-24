@@ -65,30 +65,7 @@ export function SettingsDropdown() {
           key: 'import-data',
           label: 'Import Data',
           leftSlot: <Icon icon="folderInput" />,
-          onSelect: () => {
-            dialog.show({
-              id: 'import',
-              title: 'Import Data',
-              size: 'sm',
-              render: ({ hide }) => {
-                return (
-                  <VStack space={3} className="pb-4">
-                    <p>Insomnia or Postman Collection v2/v2.1 formats are supported</p>
-                    <Button
-                      size="sm"
-                      color="primary"
-                      onClick={async () => {
-                        await importData.mutateAsync();
-                        hide();
-                      }}
-                    >
-                      Select File
-                    </Button>
-                  </VStack>
-                );
-              },
-            });
-          },
+          onSelect: () => importData.mutate(),
         },
         {
           key: 'export-data',

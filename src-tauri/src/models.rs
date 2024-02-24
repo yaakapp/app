@@ -712,7 +712,7 @@ pub async fn upsert_grpc_event(
     sqlx::query!(
         r#"
             INSERT INTO grpc_events (
-                id, workspace_id, request_id, connection_id, content, event_type, metadata, 
+                id, workspace_id, request_id, connection_id, content, event_type, metadata,
                 status, error
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -743,10 +743,7 @@ pub async fn upsert_grpc_event(
     }
 }
 
-pub async fn get_grpc_event(
-    mgr: &impl Manager<Wry>,
-    id: &str,
-) -> Result<GrpcEvent, sqlx::Error> {
+pub async fn get_grpc_event(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcEvent, sqlx::Error> {
     let db = get_db(mgr).await;
     sqlx::query_as!(
         GrpcEvent,
@@ -760,8 +757,8 @@ pub async fn get_grpc_event(
         "#,
         id,
     )
-    .fetch_one(&db)
-    .await
+        .fetch_one(&db)
+        .await
 }
 
 pub async fn list_grpc_events(
@@ -781,8 +778,8 @@ pub async fn list_grpc_events(
         "#,
         connection_id,
     )
-    .fetch_all(&db)
-    .await
+        .fetch_all(&db)
+        .await
 }
 
 pub async fn upsert_cookie_jar(
@@ -1532,19 +1529,20 @@ pub fn generate_id(prefix: Option<&str>) -> String {
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct WorkspaceExport {
-    yaak_version: String,
-    yaak_schema: i64,
-    timestamp: NaiveDateTime,
-    resources: WorkspaceExportResources,
+   pub yaak_version: String,
+   pub yaak_schema: i64,
+   pub timestamp: NaiveDateTime,
+   pub resources: WorkspaceExportResources,
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct WorkspaceExportResources {
-    workspaces: Vec<Workspace>,
-    environments: Vec<Environment>,
-    folders: Vec<Folder>,
-    requests: Vec<HttpRequest>,
+   pub workspaces: Vec<Workspace>,
+   pub environments: Vec<Environment>,
+   pub folders: Vec<Folder>,
+   pub http_requests: Vec<HttpRequest>,
+   pub grpc_requests: Vec<GrpcRequest>,
 }
 
 pub async fn get_workspace_export_resources(
@@ -1556,7 +1554,7 @@ pub async fn get_workspace_export_resources(
         .expect("Failed to get workspace");
     return WorkspaceExport {
         yaak_version: app_handle.package_info().version.clone().to_string(),
-        yaak_schema: 1,
+        yaak_schema: 2,
         timestamp: chrono::Utc::now().naive_utc(),
         resources: WorkspaceExportResources {
             workspaces: vec![workspace],
@@ -1566,9 +1564,12 @@ pub async fn get_workspace_export_resources(
             folders: list_folders(app_handle, workspace_id)
                 .await
                 .expect("Failed to get folders"),
-            requests: list_requests(app_handle, workspace_id)
+            http_requests: list_requests(app_handle, workspace_id)
                 .await
                 .expect("Failed to get requests"),
+            grpc_requests: list_grpc_requests(app_handle, workspace_id)
+                .await
+                .expect("Failed to get grpc requests"),
         },
     };
 }
