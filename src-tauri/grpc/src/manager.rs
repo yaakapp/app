@@ -25,6 +25,30 @@ pub struct GrpcConnection {
     pub uri: Uri,
 }
 
+#[derive(Default)]
+pub struct StreamError {
+    pub message: String,
+    pub status: Option<Status>,
+}
+
+impl From<String> for StreamError {
+    fn from(value: String) -> Self {
+        StreamError {
+            message: value.to_string(),
+            status: None,
+        }
+    }
+}
+
+impl From<Status> for StreamError {
+    fn from(s: Status) -> Self {
+        StreamError {
+            message: s.message().to_string(),
+            status: Some(s),
+        }
+    }
+}
+
 impl GrpcConnection {
     pub fn service(&self, service: &str) -> Result<ServiceDescriptor, String> {
         let service = self
@@ -49,7 +73,7 @@ impl GrpcConnection {
         method: &str,
         message: &str,
         metadata: HashMap<String, String>,
-    ) -> Result<Response<DynamicMessage>, String> {
+    ) -> Result<Response<DynamicMessage>, StreamError> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
 
@@ -67,10 +91,7 @@ impl GrpcConnection {
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.unwrap();
 
-        client
-            .unary(req, path, codec)
-            .await
-            .map_err(|e| e.to_string())
+        Ok(client.unary(req, path, codec).await?)
     }
 
     pub async fn streaming(
@@ -79,7 +100,7 @@ impl GrpcConnection {
         method: &str,
         stream: ReceiverStream<DynamicMessage>,
         metadata: HashMap<String, String>,
-    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
+    ) -> Result<Response<Streaming<DynamicMessage>>, StreamError> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
 
@@ -90,7 +111,7 @@ impl GrpcConnection {
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.map_err(|e| e.to_string())?;
-        Ok(client.streaming(req, path, codec).await)
+        Ok(client.streaming(req, path, codec).await?)
     }
 
     pub async fn client_streaming(
@@ -99,7 +120,7 @@ impl GrpcConnection {
         method: &str,
         stream: ReceiverStream<DynamicMessage>,
         metadata: HashMap<String, String>,
-    ) -> Result<Response<DynamicMessage>, String> {
+    ) -> Result<Response<DynamicMessage>, StreamError> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
         let mut req = stream.into_streaming_request();
@@ -111,7 +132,10 @@ impl GrpcConnection {
         client
             .client_streaming(req, path, codec)
             .await
-            .map_err(|s| s.to_string())
+            .map_err(|e| StreamError {
+                message: e.message().to_string(),
+                status: Some(e),
+            })
     }
 
     pub async fn server_streaming(
@@ -120,7 +144,7 @@ impl GrpcConnection {
         method: &str,
         message: &str,
         metadata: HashMap<String, String>,
-    ) -> Result<Result<Response<Streaming<DynamicMessage>>, Status>, String> {
+    ) -> Result<Response<Streaming<DynamicMessage>>, StreamError> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
 
@@ -137,7 +161,7 @@ impl GrpcConnection {
         let path = method_desc_to_path(method);
         let codec = DynamicCodec::new(method.clone());
         client.ready().await.map_err(|e| e.to_string())?;
-        Ok(client.server_streaming(req, path, codec).await)
+        Ok(client.server_streaming(req, path, codec).await?)
     }
 }
 
