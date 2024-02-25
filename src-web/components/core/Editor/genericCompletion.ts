@@ -3,6 +3,8 @@ import type { CompletionContext } from '@codemirror/autocomplete';
 export interface GenericCompletionOption {
   label: string;
   type: 'constant' | 'variable';
+  detail?: string;
+  info?: string;
   /** When given, should be a number from -99 to 99 that adjusts
    * how this completion is ranked compared to other completions
    * that match the input as well as this one. A negative number
@@ -26,7 +28,7 @@ export function genericCompletion({ options, minMatch = 1 }: GenericCompletionCo
     if (!matchedMinimumLength && !context.explicit) return null;
 
     const optionsWithoutExactMatches = options.filter((o) => o.label !== toMatch.text);
-    return { 
+    return {
       validFor: () => true, // Not really sure why this is all it needs
       from: toMatch.from,
       options: optionsWithoutExactMatches,

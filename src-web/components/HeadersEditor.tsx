@@ -53,11 +53,18 @@ const valueAutocomplete = (headerName: string): GenericCompletionConfig | undefi
 
 const nameAutocomplete: PairEditorProps['nameAutocomplete'] = {
   minMatch: MIN_MATCH,
-  options: headerNames.map((t) => ({
-    label: t,
-    type: 'constant',
-    boost: 1, // Put above other completions
-  })),
+  options: headerNames.map((t) =>
+    typeof t === 'string'
+      ? {
+          label: t,
+          type: 'constant',
+          boost: 1, // Put above other completions
+        }
+      : {
+          ...t,
+          boost: 1, // Put above other completions
+        },
+  ),
 };
 
 const validateHttpHeader = (v: string) => {
