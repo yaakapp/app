@@ -26,5 +26,3 @@ dist-ssr
 
 *.sqlite
 *.sqlite-*
-
-src-tauri/plugins/*
