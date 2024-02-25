@@ -215,7 +215,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   const decoratedActions = useMemo(() => {
     const results = [];
     const actionClassName = classNames(
-      'transition-opacity opacity-0 group-hover:opacity-50 hover:!opacity-100 shadow',
+      'transition-opacity opacity-0 group-hover:opacity-80 hover:!opacity-100 shadow',
       bgClassList,
     );
 
