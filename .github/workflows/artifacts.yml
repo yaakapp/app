@@ -7,6 +7,7 @@ permissions: write-all
 
 jobs:
   build-artifacts:
+    name: Build
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
       - name: install dependencies (ubuntu only)
         if: matrix.os == 'ubuntu-20.04'
