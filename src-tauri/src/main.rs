@@ -89,7 +89,8 @@ async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(
         .resolve_resource("migrations")
         .expect("failed to resolve resource");
     info!("Running migrations at {}", p.to_string_lossy());
-    let m = Migrator::new(p).await.expect("Failed to load migrations");
+    let mut m = Migrator::new(p).await.expect("Failed to load migrations");
+    m.set_ignore_missing(true); // So we can rollback versions and not crash
     m.run(pool).await.expect("Failed to run migrations");
     info!("Migrations complete!");
     Ok(())
@@ -472,8 +473,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                 }
                 None => {
                     // Server streaming doesn't return initial message
