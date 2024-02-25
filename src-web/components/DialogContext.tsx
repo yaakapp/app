@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
+import { useHotKey } from '../hooks/useHotKey';
 import { trackEvent } from '../lib/analytics';
 import type { DialogProps } from './core/Dialog';
 import { Dialog } from './core/Dialog';
@@ -59,6 +60,7 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
 function DialogInstance({ id, render, ...props }: DialogEntry) {
   const { actions } = useContext(DialogContext);
   const children = render({ hide: () => actions.hide(id) });
+  useHotKey('popup.close', () => actions.hide(id));
   return (
     <Dialog open onClose={() => actions.hide(id)} {...props}>
       {children}
