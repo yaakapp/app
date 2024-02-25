@@ -8,16 +8,17 @@ import { Dropdown } from './core/Dropdown';
 interface Props {
   hideFolder?: boolean;
   children: DropdownProps['children'];
+  openOnHotKeyAction?: DropdownProps['openOnHotKeyAction'];
 }
 
-export function CreateDropdown({ hideFolder, children }: Props) {
+export function CreateDropdown({ hideFolder, children, openOnHotKeyAction }: Props) {
   const createHttpRequest = useCreateHttpRequest();
   const createGrpcRequest = useCreateGrpcRequest();
   const createFolder = useCreateFolder();
 
   return (
     <Dropdown
-      openOnHotKeyAction="http_request.create"
+      openOnHotKeyAction={openOnHotKeyAction}
       items={[
         {
           key: 'create-http-request',
