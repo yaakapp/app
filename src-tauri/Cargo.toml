@@ -12,7 +12,7 @@ edition = "2021"
 strip = true  # Automatically strip symbols from the binary.
 
 [build-dependencies]
-tauri-build = { version = "1.2", features = [] }
+tauri-build = { version = "1.5", features = [] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
@@ -34,7 +34,7 @@ cookie = { version = "0.18.0" }
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = { version = "1.0.111", features = ["raw_value"] }
 sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "1.5.2", features = [
+tauri = { version = "1.5.4", features = [
     "config-toml",
     "path-all",
     "devtools",
