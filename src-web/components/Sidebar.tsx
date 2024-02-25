@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ForwardedRef, ReactNode } from 'react';
-import React, { Fragment, forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
@@ -11,8 +11,6 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateFolder } from '../hooks/useCreateFolder';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
-import { useDeleteAnyGrpcRequest } from '../hooks/useDeleteAnyGrpcRequest';
-import { useDeleteAnyHttpRequest } from '../hooks/useDeleteAnyHttpRequest';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
@@ -68,8 +66,6 @@ export function Sidebar({ className }: Props) {
   const httpRequests = useHttpRequests();
   const grpcRequests = useGrpcRequests();
   const folders = useFolders();
-  const deleteAnyHttpRequest = useDeleteAnyHttpRequest();
-  const deleteAnyGrpcRequest = useDeleteAnyGrpcRequest();
   const activeWorkspace = useActiveWorkspace();
   const duplicateHttpRequest = useDuplicateHttpRequest({
     id: activeRequest?.id ?? null,
@@ -108,9 +104,10 @@ export function Sidebar({ className }: Props) {
     [collapsed.value],
   );
 
-  const { tree, treeParentMap, selectableRequests } = useMemo<{
+  const { tree, treeParentMap, selectableRequests, selectedRequest } = useMemo<{
     tree: TreeNode | null;
     treeParentMap: Record<string, TreeNode>;
+    selectedRequest: HttpRequest | GrpcRequest | null;
     selectableRequests: {
       id: string;
       index: number;
@@ -123,14 +120,23 @@ export function Sidebar({ className }: Props) {
       index: number;
       tree: TreeNode;
     }[] = [];
+
     if (activeWorkspace == null) {
-      return { tree: null, treeParentMap, selectableRequests };
+      return { tree: null, treeParentMap, selectableRequests, selectedRequest: null };
     }
 
+    let selectedRequest: HttpRequest | GrpcRequest | null = null;
     let selectableRequestIndex = 0;
 
     // Put requests and folders into a tree structure
     const next = (node: TreeNode): TreeNode => {
+      if (
+        node.item.id === selectedId &&
+        (node.item.model === 'http_request' || node.item.model === 'grpc_request')
+      ) {
+        selectedRequest = node.item;
+      }
+
       const childItems = [...httpRequests, ...grpcRequests, ...folders].filter((f) =>
         node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
       );
@@ -149,8 +155,10 @@ export function Sidebar({ className }: Props) {
 
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
-    return { tree, treeParentMap, selectableRequests };
-  }, [activeWorkspace, httpRequests, grpcRequests, folders]);
+    return { tree, treeParentMap, selectableRequests, selectedRequest };
+  }, [activeWorkspace, selectedId, httpRequests, grpcRequests, folders]);
+
+  const deleteSelectedRequest = useDeleteRequest(selectedRequest);
 
   const focusActiveRequest = useCallback(
     (
@@ -221,16 +229,15 @@ export function Sidebar({ className }: Props) {
   const handleBlur = useCallback(() => setHasFocus(false), []);
 
   const handleDeleteKey = useCallback(
-    (e: KeyboardEvent) => {
+    async (e: KeyboardEvent) => {
       if (!hasFocus) return;
       e.preventDefault();
 
       const selected = selectableRequests.find((r) => r.id === selectedId);
       if (selected == null) return;
-      deleteAnyHttpRequest.mutate(selected.id);
-      deleteAnyGrpcRequest.mutate(selected.id);
+      await deleteSelectedRequest.mutateAsync();
     },
-    [deleteAnyHttpRequest, deleteAnyGrpcRequest, hasFocus, selectableRequests, selectedId],
+    [hasFocus, selectableRequests, deleteSelectedRequest, selectedId],
   );
 
   useKeyPressEvent('Backspace', handleDeleteKey);
@@ -577,7 +584,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const createRequest = useCreateHttpRequest();
   const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
-  const deleteRequest = useDeleteRequest(itemId);
+  const deleteRequest = useDeleteRequest(activeRequest ?? null);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const sendRequest = useSendRequest(itemId);
