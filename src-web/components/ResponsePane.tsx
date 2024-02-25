@@ -87,7 +87,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           <Icon size="lg" className="opacity-disabled" spin icon="refresh" />
         </div>
       ) : (
-        <div className="grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
+        <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
             alignItems="center"
             className={classNames(
