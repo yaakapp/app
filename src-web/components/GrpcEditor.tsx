@@ -1,7 +1,15 @@
+import { jsonLanguage } from '@codemirror/lang-json';
+import { linter } from '@codemirror/lint';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
-import { updateSchema } from 'codemirror-json-schema';
-import { useEffect, useRef } from 'react';
+import {
+  handleRefresh,
+  jsonCompletion,
+  jsonSchemaLinter,
+  stateExtensions,
+  updateSchema,
+} from 'codemirror-json-schema';
+import { useEffect, useMemo, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { tryFormatJson } from '../lib/formatters';
@@ -101,13 +109,82 @@ export function GrpcEditor({
     }
   }, [alert, services, request.method, request.service]);
 
+  const extraExtensions = useMemo(
+    () => [
+      linter(jsonSchemaLinter(), {
+        delay: 200,
+        needsRefresh: handleRefresh,
+      }),
+      jsonLanguage.data.of({
+        autocomplete: jsonCompletion(),
+      }),
+      stateExtensions(/** Init with empty schema **/),
+    ],
+    [],
+  );
+
   const reflectionUnavailable = reflectionError?.match(/unimplemented/i);
   reflectionError = reflectionUnavailable ? undefined : reflectionError;
+
+  const actions = useMemo(
+    () => [
+      <div key="reflection" className={classNames(services == null && '!opacity-100')}>
+        <Button
+          size="xs"
+          color={
+            reflectionLoading
+              ? 'gray'
+              : reflectionUnavailable
+              ? 'secondary'
+              : reflectionError
+              ? 'danger'
+              : 'gray'
+          }
+          isLoading={reflectionLoading}
+          onClick={() => {
+            dialog.show({
+              title: 'Configure Schema',
+              size: 'md',
+              id: 'reflection-failed',
+              render: ({ hide }) => {
+                return (
+                  <VStack space={6} className="pb-5">
+                    <GrpcProtoSelection onDone={hide} requestId={request.id} />
+                  </VStack>
+                );
+              },
+            });
+          }}
+        >
+          {reflectionLoading
+            ? 'Inspecting Schema'
+            : reflectionUnavailable
+            ? 'Select Proto Files'
+            : reflectionError
+            ? 'Server Error'
+            : protoFiles.length > 0
+            ? count('File', protoFiles.length)
+            : services != null && protoFiles.length === 0
+            ? 'Schema Detected'
+            : 'Select Schema'}
+        </Button>
+      </div>,
+    ],
+    [
+      dialog,
+      protoFiles.length,
+      reflectionError,
+      reflectionLoading,
+      reflectionUnavailable,
+      request.id,
+      services,
+    ],
+  );
 
   return (
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
-        contentType="application/grpc"
+        contentType="application/json"
         autocompleteVariables
         useTemplating
         forceUpdateKey={request.id}
@@ -116,49 +193,8 @@ export function GrpcEditor({
         heightMode="auto"
         placeholder="..."
         ref={editorViewRef}
-        actions={[
-          <div key="reflection" className={classNames(services == null && '!opacity-100')}>
-            <Button
-              size="xs"
-              color={
-                reflectionLoading
-                  ? 'gray'
-                  : reflectionUnavailable
-                  ? 'secondary'
-                  : reflectionError
-                  ? 'danger'
-                  : 'gray'
-              }
-              isLoading={reflectionLoading}
-              onClick={() => {
-                dialog.show({
-                  title: 'Configure Schema',
-                  size: 'md',
-                  id: 'reflection-failed',
-                  render: ({ hide }) => {
-                    return (
-                      <VStack space={6} className="pb-5">
-                        <GrpcProtoSelection onDone={hide} requestId={request.id} />
-                      </VStack>
-                    );
-                  },
-                });
-              }}
-            >
-              {reflectionLoading
-                ? 'Inspecting Schema'
-                : reflectionUnavailable
-                ? 'Select Proto Files'
-                : reflectionError
-                ? 'Server Error'
-                : protoFiles.length > 0
-                ? count('File', protoFiles.length)
-                : services != null && protoFiles.length === 0
-                ? 'Schema Detected'
-                : 'Select Schema'}
-            </Button>
-          </div>,
-        ]}
+        extraExtensions={extraExtensions}
+        actions={actions}
         {...extraEditorProps}
       />
     </div>

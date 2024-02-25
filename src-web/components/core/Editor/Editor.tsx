@@ -1,5 +1,5 @@
 import { defaultKeymap } from '@codemirror/commands';
-import { Compartment, EditorState } from '@codemirror/state';
+import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
@@ -53,6 +53,7 @@ export interface EditorProps {
   format?: (v: string) => string;
   autocomplete?: GenericCompletionConfig;
   autocompleteVariables?: boolean;
+  extraExtensions?: Extension[];
   actions?: ReactNode;
 }
 
@@ -76,6 +77,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     singleLine,
     format,
     autocomplete,
+    extraExtensions,
     autocompleteVariables,
     actions,
     wrapLines,
@@ -188,6 +190,7 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
               onBlur: handleBlur,
               onKeyDown: handleKeyDown,
             }),
+            ...(extraExtensions ?? []),
           ],
         });
 
