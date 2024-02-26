@@ -126,7 +126,7 @@ export const baseExtensions = [
   // debouncedAutocompletionDisplay({ millis: 1000 }),
   // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
   autocompletion({
-    // closeOnBlur: false,
+    closeOnBlur: false, // For debugging in devtools without closing it
     compareCompletions: (a, b) => {
       // Don't sort completions at all, only on boost
       return (a.boost ?? 0) - (b.boost ?? 0);

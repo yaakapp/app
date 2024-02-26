@@ -35,14 +35,17 @@
     }
 
     /* Don't show selection on blurred input */
+
     .cm-selectionBackground {
       @apply bg-transparent;
     }
+
     &.cm-focused .cm-selectionBackground {
       @apply bg-selection;
     }
 
     /* Style gutters */
+
     .cm-gutters {
       @apply border-0 text-gray-500/50;
 
@@ -100,10 +103,10 @@
       @apply font-mono text-[0.75rem];
 
       /*
-             * Round corners or they'll stick out of the editor bounds of editor is rounded.
-             * Could potentially be pushed up from the editor like we do with bg color but this
-             * is probably fine.
-             */
+                   * Round corners or they'll stick out of the editor bounds of editor is rounded.
+                   * Could potentially be pushed up from the editor like we do with bg color but this
+                   * is probably fine.
+                   */
       @apply rounded-lg;
     }
   }
@@ -164,8 +167,9 @@
     @apply h-full flex items-center;
 
     /* Break characters on line wrapping mode, useful for URL field.
-     * We can make this dynamic if we need it to be configurable later
-     */
+         * We can make this dynamic if we need it to be configurable later
+         */
+
     &.cm-lineWrapping {
       @apply break-all;
     }
@@ -175,6 +179,58 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip {
   @apply shadow-lg bg-gray-50 rounded text-gray-700 border border-gray-200 z-50 pointer-events-auto text-[0.75rem];
+
+  .cm-completionIcon {
+    @apply italic font-mono;
+
+    &.cm-completionIcon-class::after {
+      content: 'o' !important;
+    }
+
+    &.cm-completionIcon-constant::after {
+      content: 'c' !important;
+    }
+
+    &.cm-completionIcon-enum::after {
+      content: 'e' !important;
+    }
+
+    &.cm-completionIcon-function::after {
+      content: 'z' !important;
+    }
+
+    &.cm-completionIcon-interface::after {
+      content: 'i' !important;
+    }
+
+    &.cm-completionIcon-keyword::after {
+      content: 'k' !important;
+    }
+
+    &.cm-completionIcon-method::after {
+      content: 'm' !important;
+    }
+
+    &.cm-completionIcon-namespace::after {
+      content: 'n' !important;
+    }
+
+    &.cm-completionIcon-property::after {
+      content: 'a' !important;
+    }
+
+    &.cm-completionIcon-text::after {
+      content: 'x' !important;
+    }
+
+    &.cm-completionIcon-type::after {
+      content: 't' !important;
+    }
+
+    &.cm-completionIcon-variable::after {
+      content: 'x' !important;
+    }
+  }
 
   &.cm-completionInfo-right {
     @apply ml-1 -mt-0.5 text-sm;
@@ -232,12 +288,8 @@
   }
 
   /* Hide the "All" button */
+
   button[name='select'] {
     @apply hidden;
   }
-}
-
-/* Add default icon. Needs low priority so it can be overwritten */
-.cm-completionIcon::after {
-  content: '𝑥';
 }

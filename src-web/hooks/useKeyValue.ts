@@ -18,16 +18,16 @@ export function keyValueQueryKey({
 export function useKeyValue<T extends Object | null>({
   namespace = DEFAULT_NAMESPACE,
   key,
-  defaultValue,
+  fallback,
 }: {
   namespace?: string;
   key: string | string[];
-  defaultValue: T;
+  fallback: T;
 }) {
   const queryClient = useQueryClient();
   const query = useQuery<T>({
     queryKey: keyValueQueryKey({ namespace, key }),
-    queryFn: async () => getKeyValue({ namespace, key, fallback: defaultValue }),
+    queryFn: async () => getKeyValue({ namespace, key, fallback }),
     refetchOnWindowFocus: false,
   });
 
@@ -40,7 +40,7 @@ export function useKeyValue<T extends Object | null>({
   const set = useCallback(
     async (value: ((v: T) => T) | T) => {
       if (typeof value === 'function') {
-        await getKeyValue({ namespace, key, fallback: defaultValue }).then((kv) => {
+        await getKeyValue({ namespace, key, fallback }).then((kv) => {
           const newV = value(kv);
           if (newV === kv) return;
           return mutate.mutateAsync(newV);
@@ -51,10 +51,10 @@ export function useKeyValue<T extends Object | null>({
         await mutate.mutateAsync(value);
       }
     },
-    [defaultValue, key, mutate, namespace],
+    [fallback, key, mutate, namespace],
   );
 
-  const reset = useCallback(async () => mutate.mutateAsync(defaultValue), [mutate, defaultValue]);
+  const reset = useCallback(async () => mutate.mutateAsync(fallback), [mutate, fallback]);
 
   return useMemo(
     () => ({
