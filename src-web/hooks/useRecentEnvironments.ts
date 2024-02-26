@@ -7,7 +7,7 @@ import { useKeyValue } from './useKeyValue';
 
 const kvKey = (workspaceId: string) => 'recent_environments::' + workspaceId;
 const namespace = NAMESPACE_GLOBAL;
-const defaultValue: string[] = [];
+const fallback: string[] = [];
 
 export function useRecentEnvironments() {
   const environments = useEnvironments();
@@ -16,7 +16,7 @@ export function useRecentEnvironments() {
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspaceId ?? 'n/a'),
     namespace,
-    defaultValue,
+    fallback,
   });
 
   // Set history when active request changes
@@ -41,6 +41,6 @@ export async function getRecentEnvironments(workspaceId: string) {
   return getKeyValue<string[]>({
     namespace,
     key: kvKey(workspaceId),
-    fallback: defaultValue,
+    fallback,
   });
 }

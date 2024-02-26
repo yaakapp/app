@@ -8,7 +8,7 @@ export function useSidebarHidden() {
   const { set, value } = useKeyValue<boolean>({
     namespace: NAMESPACE_NO_SYNC,
     key: ['sidebar_hidden', activeWorkspaceId ?? 'n/a'],
-    defaultValue: false,
+    fallback: false,
   });
 
   return useMemo(() => {
