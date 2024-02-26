@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2024.3.0-beta.1"
+    "version": "2024.3.0-beta.2"
   },
   "tauri": {
     "windows": [],
@@ -32,7 +32,13 @@
       },
       "shell": {
         "all": false,
-        "open": true
+        "open": true,
+        "sidecar": true,
+        "scope": [
+          { "name": "protoc", "sidecar": true,
+            "args": true
+          }
+        ]
       },
       "window": {
         "close": true,
@@ -56,7 +62,9 @@
       "active": true,
       "category": "DeveloperTool",
       "copyright": "",
-      "externalBin": [],
+      "externalBin": [
+        "protoc-vendored/protoc"
+      ],
       "icon": [
         "icons/release/32x32.png",
         "icons/release/128x128.png",
