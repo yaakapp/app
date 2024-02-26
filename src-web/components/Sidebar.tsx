@@ -9,8 +9,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCreateFolder } from '../hooks/useCreateFolder';
-import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
+import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
@@ -581,8 +580,6 @@ const SidebarItem = forwardRef(function SidebarItem(
   ref: ForwardedRef<HTMLLIElement>,
 ) {
   const activeRequest = useActiveRequest();
-  const createRequest = useCreateHttpRequest();
-  const createFolder = useCreateFolder();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(activeRequest ?? null);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
@@ -597,6 +594,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
   const isActive = activeRequest?.id === itemId;
+  const createDropdownItems = useCreateDropdownItems({ folderId: itemId });
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
@@ -700,18 +698,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                     onSelect: () => deleteFolder.mutate(),
                   },
                   { type: 'separator' },
-                  {
-                    key: 'createRequest',
-                    label: 'New Request',
-                    leftSlot: <Icon icon="plus" />,
-                    onSelect: () => createRequest.mutate({ folderId: itemId }),
-                  },
-                  {
-                    key: 'createFolder',
-                    label: 'New Folder',
-                    leftSlot: <Icon icon="plus" />,
-                    onSelect: () => createFolder.mutate({ folderId: itemId, sortPriority: -1 }),
-                  },
+                  ...createDropdownItems,
                 ]
               : [
                   ...((itemModel === 'http_request'
