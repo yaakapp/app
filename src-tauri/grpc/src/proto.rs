@@ -1,23 +1,23 @@
 use std::env::temp_dir;
 use std::ops::Deref;
 use std::path::PathBuf;
-use std::process::Command;
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use hyper::client::HttpConnector;
 use hyper::Client;
+use hyper::client::HttpConnector;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
-use log::{debug, warn};
+use log::{debug, info, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::{FileDescriptorProto, FileDescriptorSet};
+use tauri::api::process::{Command, CommandEvent};
 use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
-use tonic::transport::Uri;
 use tonic::Request;
+use tonic::transport::Uri;
 use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
 use tonic_reflection::pb::server_reflection_request::MessageRequest;
 use tonic_reflection::pb::server_reflection_response::MessageResponse;
@@ -27,36 +27,67 @@ pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool,
     let mut pool = DescriptorPool::new();
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
     let desc_path = temp_dir().join(random_file_name);
-    let bin = protoc_bin_vendored::protoc_bin_path().unwrap();
 
-    let mut cmd = Command::new(bin.clone());
-    cmd.arg("--include_imports")
-        .arg("--include_source_info")
-        .arg("-o")
-        .arg(&desc_path);
+    let mut args = vec![
+        "--include_imports".to_string(),
+        "--include_source_info".to_string(),
+        "-o".to_string(),
+        desc_path.to_string_lossy().to_string(),
+    ];
 
     for p in paths {
         if p.as_path().exists() {
-            cmd.arg(p.as_path().to_string_lossy().as_ref());
+            args.push(p.to_string_lossy().to_string());
         } else {
             continue;
         }
 
         let parent = p.as_path().parent();
         if let Some(parent_path) = parent {
-            cmd.arg("-I").arg(parent_path);
-            cmd.arg("-I").arg(parent_path.parent().unwrap());
+            args.push("-I".to_string());
+            args.push(parent_path.to_string_lossy().to_string());
+            args.push("-I".to_string());
+            args.push(parent_path.parent().unwrap().to_string_lossy().to_string());
         } else {
             debug!("ignoring {:?} since it does not exist.", parent)
         }
     }
 
-    let output = cmd.output().map_err(|e| e.to_string())?;
-    if !output.status.success() {
-        return Err(format!(
-            "protoc failed: {}",
-            String::from_utf8_lossy(&output.stderr)
-        ));
+    let (mut rx, _child) = Command::new_sidecar("protoc")
+        .expect("protoc not found")
+        .args(args)
+        .spawn()
+        .expect("protoc failed to start");
+
+    while let Some(event) = rx.recv().await {
+        match event {
+            CommandEvent::Stdout(line) => {
+                info!("protoc stdout: {}", line);
+            }
+            CommandEvent::Stderr(line) => {
+                info!("protoc stderr: {}", line);
+            }
+            CommandEvent::Error(e) => {
+                return Err(e.to_string());
+            }
+            CommandEvent::Terminated(c) => {
+                match c.code {
+                    Some(0) => {
+                        // success
+                    }
+                    Some(code) => {
+                        return Err(format!(
+                            "protoc failed with exit code: {}",
+                            code,
+                        ));
+                    }
+                    None => {
+                        return Err("protoc failed with no exit code".to_string());
+                    }
+                }
+            }
+            _ => {}
+        };
     }
 
     let bytes = fs::read(desc_path.as_path())
