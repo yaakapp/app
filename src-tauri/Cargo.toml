@@ -44,6 +44,7 @@ tauri = { version = "1.5.4", features = [
     "os-all",
     "protocol-asset",
     "shell-open",
+    "shell-sidecar",
     "updater",
     "window-close",
     "window-maximize",
