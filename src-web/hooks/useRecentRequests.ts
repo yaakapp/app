@@ -8,7 +8,7 @@ import { useKeyValue } from './useKeyValue';
 
 const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
 const namespace = NAMESPACE_GLOBAL;
-const defaultValue: string[] = [];
+const fallback: string[] = [];
 
 export function useRecentRequests() {
   const httpRequests = useHttpRequests();
@@ -20,7 +20,7 @@ export function useRecentRequests() {
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspaceId ?? 'n/a'),
     namespace,
-    defaultValue,
+    fallback,
   });
 
   // Set history when active request changes
@@ -45,6 +45,6 @@ export async function getRecentRequests(workspaceId: string) {
   return getKeyValue<string[]>({
     namespace,
     key: kvKey(workspaceId),
-    fallback: defaultValue,
+    fallback,
   });
 }

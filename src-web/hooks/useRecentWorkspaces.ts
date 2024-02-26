@@ -6,7 +6,7 @@ import { useWorkspaces } from './useWorkspaces';
 
 const kvKey = () => 'recent_workspaces';
 const namespace = NAMESPACE_GLOBAL;
-const defaultValue: string[] = [];
+const fallback: string[] = [];
 
 export function useRecentWorkspaces() {
   const workspaces = useWorkspaces();
@@ -14,7 +14,7 @@ export function useRecentWorkspaces() {
   const kv = useKeyValue<string[]>({
     key: kvKey(),
     namespace,
-    defaultValue,
+    fallback,
   });
 
   // Set history when active request changes
@@ -39,6 +39,6 @@ export async function getRecentWorkspaces() {
   return getKeyValue<string[]>({
     namespace,
     key: kvKey(),
-    fallback: defaultValue,
+    fallback: fallback,
   });
 }
