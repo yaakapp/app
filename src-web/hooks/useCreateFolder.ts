@@ -4,17 +4,29 @@ import { trackEvent } from '../lib/analytics';
 import type { Folder } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { foldersQueryKey } from './useFolders';
+import { usePrompt } from './usePrompt';
 
 export function useCreateFolder() {
   const workspaceId = useActiveWorkspaceId();
   const queryClient = useQueryClient();
+  const prompt = usePrompt();
 
   return useMutation<Folder, unknown, Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>>({
-    mutationFn: (patch) => {
+    mutationFn: async (patch) => {
       if (workspaceId === null) {
         throw new Error("Cannot create folder when there's no active workspace");
       }
-      patch.name = patch.name || 'New Folder';
+      patch.name =
+        patch.name ||
+        (await prompt({
+          id: 'new-folder',
+          name: 'name',
+          label: 'Name',
+          defaultValue: 'Folder',
+          title: 'New Folder',
+          confirmLabel: 'Create',
+          placeholder: 'Name',
+        }));
       patch.sortPriority = patch.sortPriority || -Date.now();
       return invoke('cmd_create_folder', { workspaceId, ...patch });
     },
