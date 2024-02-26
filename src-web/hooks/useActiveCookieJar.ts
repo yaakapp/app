@@ -11,7 +11,7 @@ export function useActiveCookieJar() {
   const kv = useKeyValue<string | null>({
     namespace: NAMESPACE_GLOBAL,
     key: ['activeCookieJar', workspaceId ?? 'n/a'],
-    defaultValue: null,
+    fallback: null,
   });
 
   const activeCookieJar = cookieJars.find((cookieJar) => cookieJar.id === kv.value);

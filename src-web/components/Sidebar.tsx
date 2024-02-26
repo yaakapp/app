@@ -86,7 +86,7 @@ export function Sidebar({ className }: Props) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const collapsed = useKeyValue<Record<string, boolean>>({
     key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
-    defaultValue: {},
+    fallback: {},
     namespace: NAMESPACE_NO_SYNC,
   });
 

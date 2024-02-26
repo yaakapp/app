@@ -54,6 +54,6 @@ export function useCreateDropdownItems({
             },
           ]) as DropdownItem[]),
     ],
-    [createFolder, createGrpcRequest, createHttpRequest, hideFolder],
+    [createFolder, createGrpcRequest, createHttpRequest, folderId, hideFolder, hideIcons],
   );
 }
