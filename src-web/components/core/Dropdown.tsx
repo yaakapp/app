@@ -410,7 +410,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
               )}
               {containerStyles && (
                 <VStack
-                  space={0.5}
                   ref={initMenu}
                   style={menuStyles}
                   className={classNames(
