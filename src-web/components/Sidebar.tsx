@@ -90,13 +90,17 @@ export function Sidebar({ className }: Props) {
     namespace: NAMESPACE_NO_SYNC,
   });
 
-  useHotKey('http_request.duplicate', async () => {
-    if (activeRequest?.model === 'http_request') {
-      await duplicateHttpRequest.mutateAsync();
-    } else {
-      await duplicateGrpcRequest.mutateAsync();
-    }
-  });
+  useHotKey(
+    'http_request.duplicate',
+    async () => {
+      if (activeRequest?.model === 'http_request') {
+        await duplicateHttpRequest.mutateAsync();
+      } else {
+        await duplicateGrpcRequest.mutateAsync();
+      }
+    },
+    { enable: !hidden },
+  );
 
   const isCollapsed = useCallback(
     (id: string) => collapsed.value?.[id] ?? false,
@@ -242,25 +246,29 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useHotKey('sidebar.focus', async () => {
-    // Hide the sidebar if it's already focused
-    if (!hidden && hasFocus) {
-      await hide();
-      return;
-    }
+  useHotKey(
+    'sidebar.focus',
+    async () => {
+      // Hide the sidebar if it's already focused
+      if (!hidden && hasFocus) {
+        await hide();
+        return;
+      }
 
-    // Show the sidebar if it's hidden
-    if (hidden) {
-      await show();
-    }
+      // Show the sidebar if it's hidden
+      if (hidden) {
+        await show();
+      }
 
-    // Select 0 index on focus if none selected
-    focusActiveRequest(
-      selectedTree != null && selectedId != null
-        ? { forced: { id: selectedId, tree: selectedTree } }
-        : undefined,
-    );
-  });
+      // Select 0 index on focus if none selected
+      focusActiveRequest(
+        selectedTree != null && selectedId != null
+          ? { forced: { id: selectedId, tree: selectedTree } }
+          : undefined,
+      );
+    },
+    { enable: !hidden },
+  );
 
   useKeyPressEvent('Enter', (e) => {
     if (!hasFocus) return;

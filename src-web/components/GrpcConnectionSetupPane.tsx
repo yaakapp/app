@@ -119,6 +119,11 @@ export function GrpcConnectionSetupPane({
     onGo();
   }, [activeRequest, onGo]);
 
+  const handleSend = useCallback(async () => {
+    if (activeRequest == null) return;
+    onSend({ message: activeRequest.message });
+  }, [activeRequest, onGo]);
+
   const tabs: TabItem[] = useMemo(
     () => [
       { value: 'message', label: 'Message' },
@@ -212,51 +217,51 @@ export function GrpcConnectionSetupPane({
               {select.options.find((o) => o.value === select.value)?.label ?? 'No Schema'}
             </Button>
           </RadioDropdown>
-          {!isStreaming && (
+          {methodType === 'client_streaming' || methodType === 'streaming' ? (
+            <>
+              {isStreaming && (
+                <>
+                  <IconButton
+                    className="border border-highlight"
+                    size="sm"
+                    title="Cancel"
+                    onClick={onCancel}
+                    icon="x"
+                  />
+                  <IconButton
+                    className="border border-highlight"
+                    size="sm"
+                    title="Commit"
+                    onClick={onCommit}
+                    icon="check"
+                  />
+                </>
+              )}
+              <IconButton
+                className="border border-highlight"
+                size="sm"
+                title={isStreaming ? 'Connect' : 'Send'}
+                hotkeyAction="grpc_request.send"
+                onClick={isStreaming ? handleSend : handleConnect}
+                icon={isStreaming ? 'sendHorizontal' : 'arrowUpDown'}
+              />
+            </>
+          ) : (
             <IconButton
               className="border border-highlight"
               size="sm"
               title={methodType === 'unary' ? 'Send' : 'Connect'}
               hotkeyAction="grpc_request.send"
-              onClick={handleConnect}
+              onClick={isStreaming ? onCancel : handleConnect}
               disabled={methodType === 'no-schema' || methodType === 'no-method'}
               icon={
                 isStreaming
-                  ? 'refresh'
+                  ? 'x'
                   : methodType.includes('streaming')
                   ? 'arrowUpDown'
                   : 'sendHorizontal'
               }
             />
-          )}
-          {isStreaming && (
-            <IconButton
-              className="border border-highlight"
-              size="sm"
-              title="Cancel"
-              onClick={onCancel}
-              icon="x"
-              disabled={!isStreaming}
-            />
-          )}
-          {(methodType === 'client_streaming' || methodType === 'streaming') && isStreaming && (
-            <>
-              <IconButton
-                className="border border-highlight"
-                size="sm"
-                title="to-do"
-                onClick={onCommit}
-                icon="check"
-              />
-              <IconButton
-                className="border border-highlight"
-                size="sm"
-                title="to-do"
-                hotkeyAction="grpc_request.send"
-                onClick={() => onSend({ message: activeRequest.message ?? '' })}
-                icon="sendHorizontal"
-              />
-            </>
           )}
         </HStack>
       </div>
