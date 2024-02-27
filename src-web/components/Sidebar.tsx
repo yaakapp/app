@@ -58,7 +58,7 @@ interface TreeNode {
 }
 
 export function Sidebar({ className }: Props) {
-  const { hidden } = useSidebarHidden();
+  const { hidden, show, hide } = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
   const activeEnvironmentId = useActiveEnvironmentId();
@@ -242,8 +242,18 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useHotKey('sidebar.focus', () => {
-    if (hidden || hasFocus) return;
+  useHotKey('sidebar.focus', async () => {
+    // Hide the sidebar if it's already focused
+    if (!hidden && hasFocus) {
+      await hide();
+      return;
+    }
+
+    // Show the sidebar if it's hidden
+    if (hidden) {
+      await show();
+    }
+
     // Select 0 index on focus if none selected
     focusActiveRequest(
       selectedTree != null && selectedId != null
