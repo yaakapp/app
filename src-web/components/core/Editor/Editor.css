@@ -4,11 +4,6 @@
   .cm-editor {
     @apply w-full block text-base;
 
-    * {
-      @apply cursor-text;
-      @apply caret-transparent !important;
-    }
-
     .cm-cursor {
       @apply border-gray-800 !important;
     }
@@ -32,6 +27,11 @@
     .cm-scroller {
       /* Inherit line-height from outside */
       line-height: inherit;
+
+      * {
+        @apply cursor-text;
+        @apply caret-transparent !important;
+      }
     }
 
     /* Don't show selection on blurred input */
@@ -103,10 +103,10 @@
       @apply font-mono text-[0.75rem];
 
       /*
-                   * Round corners or they'll stick out of the editor bounds of editor is rounded.
-                   * Could potentially be pushed up from the editor like we do with bg color but this
-                   * is probably fine.
-                   */
+                         * Round corners or they'll stick out of the editor bounds of editor is rounded.
+                         * Could potentially be pushed up from the editor like we do with bg color but this
+                         * is probably fine.
+                         */
       @apply rounded-lg;
     }
   }
@@ -167,8 +167,8 @@
     @apply h-full flex items-center;
 
     /* Break characters on line wrapping mode, useful for URL field.
-         * We can make this dynamic if we need it to be configurable later
-         */
+             * We can make this dynamic if we need it to be configurable later
+             */
 
     &.cm-lineWrapping {
       @apply break-all;
@@ -272,7 +272,7 @@
 }
 
 .cm-editor .cm-panels {
-  @apply bg-transparent border-0 text-gray-800 z-50;
+  @apply bg-gray-100 p-1 border-0 text-gray-800 z-20 rounded-md;
 
   input,
   button {
@@ -280,11 +280,19 @@
   }
 
   button {
-    @apply appearance-none bg-none bg-gray-800 text-gray-100 focus:bg-gray-900 cursor-default;
+    @apply appearance-none bg-none bg-gray-200 hocus:bg-gray-300 hocus:text-gray-950 border-0 text-gray-800 cursor-default;
+  }
+
+  button[name='close'] {
+    @apply text-gray-600 hocus:text-gray-900 px-2 -mr-1.5 !important;
   }
 
   input {
-    @apply bg-gray-50 border border-highlight focus:border-focus outline-none;
+    @apply bg-gray-50 border border-gray-500/50 focus:border-focus outline-none;
+  }
+
+  label {
+    @apply focus-within:text-gray-950;
   }
 
   /* Hide the "All" button */

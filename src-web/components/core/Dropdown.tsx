@@ -244,13 +244,14 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     }
   };
 
-  useHotKey('popup.close', () => {
-    if (filter !== '') {
-      setFilter('');
-    } else {
-      handleClose();
-    }
-  });
+  useHotKey(
+    'popup.close',
+    () => {
+      if (filter !== '') setFilter('');
+      else handleClose();
+    },
+    { enable: isOpen },
+  );
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((currIndex) => {
