@@ -90,17 +90,13 @@ export function Sidebar({ className }: Props) {
     namespace: NAMESPACE_NO_SYNC,
   });
 
-  useHotKey(
-    'http_request.duplicate',
-    async () => {
-      if (activeRequest?.model === 'http_request') {
-        await duplicateHttpRequest.mutateAsync();
-      } else {
-        await duplicateGrpcRequest.mutateAsync();
-      }
-    },
-    { enable: !hidden },
-  );
+  useHotKey('http_request.duplicate', async () => {
+    if (activeRequest?.model === 'http_request') {
+      await duplicateHttpRequest.mutateAsync();
+    } else {
+      await duplicateGrpcRequest.mutateAsync();
+    }
+  });
 
   const isCollapsed = useCallback(
     (id: string) => collapsed.value?.[id] ?? false,
@@ -178,13 +174,14 @@ export function Sidebar({ className }: Props) {
       const children = tree?.children ?? [];
       const id =
         forced?.id ?? children.find((m) => m.item.id === activeRequest?.id)?.item.id ?? null;
+
+      setHasFocus(true);
+      setSelectedId(id);
+      setSelectedTree(tree);
+
       if (id == null) {
         return;
       }
-
-      setSelectedId(id);
-      setSelectedTree(tree);
-      setHasFocus(true);
       if (!noFocusSidebar) {
         sidebarRef.current?.focus();
       }
@@ -246,29 +243,26 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Backspace', handleDeleteKey);
   useKeyPressEvent('Delete', handleDeleteKey);
 
-  useHotKey(
-    'sidebar.focus',
-    async () => {
-      // Hide the sidebar if it's already focused
-      if (!hidden && hasFocus) {
-        await hide();
-        return;
-      }
+  useHotKey('sidebar.focus', async () => {
+    console.log('sidebar.focus', { hidden, hasFocus });
+    // Hide the sidebar if it's already focused
+    if (!hidden && hasFocus) {
+      await hide();
+      return;
+    }
 
-      // Show the sidebar if it's hidden
-      if (hidden) {
-        await show();
-      }
+    // Show the sidebar if it's hidden
+    if (hidden) {
+      await show();
+    }
 
-      // Select 0 index on focus if none selected
-      focusActiveRequest(
-        selectedTree != null && selectedId != null
-          ? { forced: { id: selectedId, tree: selectedTree } }
-          : undefined,
-      );
-    },
-    { enable: !hidden },
-  );
+    // Select 0 index on focus if none selected
+    focusActiveRequest(
+      selectedTree != null && selectedId != null
+        ? { forced: { id: selectedId, tree: selectedTree } }
+        : undefined,
+    );
+  });
 
   useKeyPressEvent('Enter', (e) => {
     if (!hasFocus) return;
