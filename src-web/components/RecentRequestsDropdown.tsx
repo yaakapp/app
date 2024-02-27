@@ -14,6 +14,7 @@ import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem, DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
+import { HttpMethodTag } from './core/HttpMethodTag';
 
 export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'className'>) {
   const dropdownRef = useRef<DropdownRef>(null);
@@ -63,6 +64,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
         key: request.id,
         label: fallbackRequestName(request),
         // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
+        leftSlot: <HttpMethodTag request={request} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,
