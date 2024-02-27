@@ -1,7 +1,8 @@
 import classNames from 'classnames';
+import type { GrpcRequest, HttpRequest } from '../../lib/models';
 
 interface Props {
-  children: string;
+  request: HttpRequest | GrpcRequest;
   className?: string;
 }
 
@@ -16,10 +17,17 @@ const methodMap: Record<string, string> = {
   grpc: 'GRPC',
 };
 
-export function HttpMethodTag({ children: method, className }: Props) {
+export function HttpMethodTag({ request, className }: Props) {
+  const method =
+    request.model === 'http_request' && request.bodyType === 'graphql'
+      ? 'GQL'
+      : request.model === 'grpc_request'
+      ? 'GRPC'
+      : request.method;
+
   const m = method.toLowerCase();
   return (
-    <span className={classNames(className, 'text-2xs font-mono')}>
+    <span className={classNames(className, 'text-2xs font-mono opacity-50')}>
       {methodMap[m] ?? m.slice(0, 3).toUpperCase()}
     </span>
   );
