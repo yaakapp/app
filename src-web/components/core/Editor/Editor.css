@@ -272,7 +272,7 @@
 }
 
 .cm-editor .cm-panels {
-  @apply bg-gray-100 p-1 border-0 text-gray-800 z-20 rounded-md;
+  @apply bg-gray-100 backdrop-blur-sm p-1 mb-1 text-gray-800 z-20 rounded-md;
 
   input,
   button {
