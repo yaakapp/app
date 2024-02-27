@@ -1386,7 +1386,11 @@ fn main() {
                 .level_for("tower", log::LevelFilter::Info)
                 .level_for("tracing", log::LevelFilter::Info)
                 .with_colors(ColoredLevelConfig::default())
-                .level(log::LevelFilter::Trace)
+                .level(if is_dev() {
+                    log::LevelFilter::Trace
+                } else {
+                    log::LevelFilter::Info
+                })
                 .build(),
         )
         .setup(|app| {
@@ -1530,7 +1534,7 @@ fn main() {
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&h).await;
-                        info!("Launched Yaak {:?}", info);
+                        debug!("Launched Yaak {:?}", info);
 
                         // Wait for window render and give a chance for the user to notice
                         if info.launched_after_update && info.num_launches > 1 {
