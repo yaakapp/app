@@ -83,8 +83,7 @@ export function useHotKey(
       }
 
       const key = normalizeKey(e.key, os);
-
-      currentKeys.current.add(normalizeKey(key, os));
+      currentKeys.current.add(key);
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {
@@ -108,7 +107,7 @@ export function useHotKey(
         return;
       }
       const key = normalizeKey(e.key, os);
-      currentKeys.current.delete(normalizeKey(key, os));
+      currentKeys.current.delete(key);
 
       // Clear all keys if no longer holding modifier
       // HACK: This is to get around the case of DOWN SHIFT -> DOWN : -> UP SHIFT -> UP ;
