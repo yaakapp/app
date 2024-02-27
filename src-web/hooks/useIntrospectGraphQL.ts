@@ -22,7 +22,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
-  const [introspection, setIntrospection] = useLocalStorage<IntrospectionQuery>(
+  const [introspection, setIntrospection] = useLocalStorage<IntrospectionQuery | null>(
     `introspection:${baseRequest.id}`,
   );
 
@@ -61,7 +61,10 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
 
     const runIntrospection = () => {
       fetchIntrospection()
-        .catch((e) => setError(e.message))
+        .catch((e) => {
+          setIntrospection(null);
+          setError(e.message);
+        })
         .finally(() => setIsLoading(false));
     };
 
@@ -82,5 +85,6 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     [introspection],
   );
 
+  console.log('SCHEMA', introspection);
   return { schema, isLoading, error, refetch };
 }
