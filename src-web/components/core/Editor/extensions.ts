@@ -18,7 +18,7 @@ import {
 } from '@codemirror/language';
 import { lintKeymap } from '@codemirror/lint';
 
-import { highlightSelectionMatches, searchKeymap } from '@codemirror/search';
+import { searchKeymap } from '@codemirror/search';
 import { EditorState } from '@codemirror/state';
 import {
   crosshairCursor,
@@ -156,7 +156,6 @@ export const multiLineExtensions = [
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLineGutter(),
-  highlightSelectionMatches({ minSelectionLength: 2 }),
   keymap.of([
     indentWithTab,
     ...closeBracketsKeymap,
