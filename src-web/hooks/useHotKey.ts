@@ -63,13 +63,17 @@ export function useHotKey(
   options: Options = {},
 ) {
   useAnyHotkey((hkAction, e) => {
+    // Triggered hotkey!
     if (hkAction === action) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('TRIGGERED HOTKEY', hkAction, options);
       callback(e);
     }
   }, options);
 }
 
-export function useAnyHotkey(
+function useAnyHotkey(
   callback: (action: HotkeyAction, e: KeyboardEvent) => void,
   options: Options,
 ) {
@@ -100,9 +104,6 @@ export function useAnyHotkey(
             keys.length === currentKeys.current.size &&
             keys.every((key) => currentKeys.current.has(key))
           ) {
-            // Triggered hotkey!
-            e.preventDefault();
-            e.stopPropagation();
             callbackRef.current(hkAction, e);
           }
         }

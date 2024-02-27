@@ -20,7 +20,7 @@ if (osType !== 'Darwin') {
 const settings = await getSettings();
 setAppearanceOnDocument(settings.appearance as Appearance);
 
-document.addEventListener('keydown', (e) => {
+window.addEventListener('keypress', (e) => {
   // Don't go back in history on backspace
   if (e.key === 'Backspace') e.preventDefault();
 });

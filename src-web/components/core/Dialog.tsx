@@ -36,7 +36,7 @@ export function Dialog({
     [description],
   );
 
-  useHotKey('popup.close', onClose);
+  useHotKey('popup.close', onClose, { enable: open });
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">
