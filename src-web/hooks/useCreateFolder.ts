@@ -2,12 +2,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
 import { trackEvent } from '../lib/analytics';
 import type { Folder } from '../lib/models';
+import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { foldersQueryKey } from './useFolders';
 import { usePrompt } from './usePrompt';
 
 export function useCreateFolder() {
   const workspaceId = useActiveWorkspaceId();
+  const activeRequest = useActiveRequest();
   const queryClient = useQueryClient();
   const prompt = usePrompt();
 
@@ -28,6 +30,7 @@ export function useCreateFolder() {
           placeholder: 'Name',
         }));
       patch.sortPriority = patch.sortPriority || -Date.now();
+      patch.folderId = patch.folderId || activeRequest?.folderId;
       return invoke('cmd_create_folder', { workspaceId, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),

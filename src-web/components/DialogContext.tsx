@@ -20,7 +20,7 @@ interface Actions {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DialogContext = createContext<State>({} as any);
+const DialogContext = createContext<State>({} as State);
 
 export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   const [dialogs, setDialogs] = useState<State['dialogs']>([]);

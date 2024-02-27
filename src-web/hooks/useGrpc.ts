@@ -38,7 +38,7 @@ export function useGrpc(
     mutationFn: async () => await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, 'Commit'),
   });
 
-  const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 1000);
+  const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 500);
   const reflect = useQuery<ReflectResponseService[], string>({
     enabled: req != null,
     queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl],

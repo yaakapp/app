@@ -20,9 +20,10 @@ if (osType !== 'Darwin') {
 const settings = await getSettings();
 setAppearanceOnDocument(settings.appearance as Appearance);
 
-window.addEventListener('keypress', (e) => {
-  // Don't go back in history on backspace
-  if (e.key === 'Backspace') e.preventDefault();
+window.addEventListener('keydown', (e) => {
+  // Hack to not go back in history on backspace. Check for document body
+  // or else it will prevent backspace in input fields.
+  if (e.key === 'Backspace' && e.target === document.body) e.preventDefault();
 });
 
 createRoot(document.getElementById('root') as HTMLElement).render(

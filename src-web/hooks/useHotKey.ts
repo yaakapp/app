@@ -4,6 +4,8 @@ import { capitalize } from '../lib/capitalize';
 import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
+const HOLD_KEYS = ['Shift', 'CmdCtrl', 'Alt', 'Meta'];
+
 export type HotkeyAction =
   | 'popup.close'
   | 'environmentEditor.toggle'
@@ -62,21 +64,6 @@ export function useHotKey(
   callback: (e: KeyboardEvent) => void,
   options: Options = {},
 ) {
-  useAnyHotkey((hkAction, e) => {
-    // Triggered hotkey!
-    if (hkAction === action) {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('TRIGGERED HOTKEY', hkAction, options);
-      callback(e);
-    }
-  }, options);
-}
-
-function useAnyHotkey(
-  callback: (action: HotkeyAction, e: KeyboardEvent) => void,
-  options: Options,
-) {
   const currentKeys = useRef<Set<string>>(new Set());
   const callbackRef = useRef(callback);
   const osInfo = useOsInfo();
@@ -87,7 +74,7 @@ function useAnyHotkey(
   }, [callback]);
 
   useEffect(() => {
-    // Sometimes the keyup event doesn't fire, so we clear the keys after a timeout
+    // Sometimes the keyup event doesn't fire (eg, cmd+Tab), so we clear the keys after a timeout
     const clearCurrentKeys = debounce(() => currentKeys.current.clear(), 5000);
 
     const down = (e: KeyboardEvent) => {
@@ -95,26 +82,41 @@ function useAnyHotkey(
         return;
       }
 
-      currentKeys.current.add(normalizeKey(e.key, os));
+      const key = normalizeKey(e.key, os);
+
+      currentKeys.current.add(normalizeKey(key, os));
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {
           const keys = hkKey.split('+');
           if (
             keys.length === currentKeys.current.size &&
-            keys.every((key) => currentKeys.current.has(key))
+            keys.every((key) => currentKeys.current.has(key)) &&
+            hkAction === action
           ) {
-            callbackRef.current(hkAction, e);
+            e.preventDefault();
+            e.stopPropagation();
+            callbackRef.current(e);
           }
         }
       }
+
       clearCurrentKeys();
     };
     const up = (e: KeyboardEvent) => {
       if (options.enable === false) {
         return;
       }
-      currentKeys.current.delete(normalizeKey(e.key, os));
+      const key = normalizeKey(e.key, os);
+      currentKeys.current.delete(normalizeKey(key, os));
+
+      // Clear all keys if no longer holding modifier
+      // HACK: This is to get around the case of DOWN SHIFT -> DOWN : -> UP SHIFT -> UP ;
+      //  As you see, the ":" is not removed because it turned into ";" when shift was released
+      const isHoldingModifier = HOLD_KEYS.some((k) => currentKeys.current.has(k));
+      if (!isHoldingModifier) {
+        currentKeys.current.clear();
+      }
     };
     document.addEventListener('keydown', down, { capture: true });
     document.addEventListener('keyup', up, { capture: true });
