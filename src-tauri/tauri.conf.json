@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2024.3.1"
+    "version": "2024.3.2"
   },
   "tauri": {
     "windows": [],
@@ -76,7 +76,8 @@
       "longDescription": "The best cross-platform visual API client",
       "resources": [
         "migrations/*",
-        "plugins/*"
+        "plugins/*",
+        "protoc-vendored/include/*"
       ],
       "shortDescription": "The best API client",
       "targets": [
