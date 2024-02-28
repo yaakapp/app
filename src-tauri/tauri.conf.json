@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Yaak",
-    "version": "2024.3.2"
+    "version": "2024.3.3"
   },
   "tauri": {
     "windows": [],
@@ -28,7 +28,7 @@
         "scope": [
           "$RESOURCE/*",
           "$APPDATA/responses/*"
-        ]
+]
       },
       "shell": {
         "all": false,
