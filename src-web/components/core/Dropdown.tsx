@@ -289,17 +289,27 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     });
   }, [items]);
 
-  useKey('ArrowUp', (e) => {
-    if (!isOpen) return;
-    e.preventDefault();
-    handlePrev();
-  });
+  useKey(
+    'ArrowUp',
+    (e) => {
+      if (!isOpen) return;
+      e.preventDefault();
+      handlePrev();
+    },
+    {},
+    [isOpen],
+  );
 
-  useKey('ArrowDown', (e) => {
-    if (!isOpen) return;
-    e.preventDefault();
-    handleNext();
-  });
+  useKey(
+    'ArrowDown',
+    (e) => {
+      if (!isOpen) return;
+      e.preventDefault();
+      handleNext();
+    },
+    {},
+    [isOpen],
+  );
 
   const handleSelect = useCallback(
     (i: DropdownItem) => {
