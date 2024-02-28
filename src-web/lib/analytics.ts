@@ -18,6 +18,7 @@ export function trackEvent(
     | 'workspace',
   action:
     | 'cancel'
+    | 'commit'
     | 'create'
     | 'delete'
     | 'delete_many'
