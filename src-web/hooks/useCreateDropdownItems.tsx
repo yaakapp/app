@@ -32,7 +32,12 @@ export function useCreateDropdownItems({
         label: 'GraphQL Query',
         leftSlot: hideIcons ? undefined : <Icon icon="plus" />,
         onSelect: () =>
-          createHttpRequest.mutate({ folderId, bodyType: BODY_TYPE_GRAPHQL, method: 'POST' }),
+          createHttpRequest.mutate({
+            folderId,
+            bodyType: BODY_TYPE_GRAPHQL,
+            method: 'POST',
+            headers: [{ name: 'Content-Type', value: 'application/json' }],
+          }),
       },
       {
         key: 'create-grpc-request',
