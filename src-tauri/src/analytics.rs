@@ -1,11 +1,13 @@
 use std::fmt::Display;
+
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
 use tauri::{AppHandle, Manager};
 
-use crate::{is_dev, models};
+use crate::is_dev;
+use crate::models::{generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string};
 
 // serializable
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,7 +36,11 @@ impl AnalyticsResource {
 
 impl Display for AnalyticsResource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", serde_json::to_string(self).unwrap().replace("\"", ""))
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(self).unwrap().replace("\"", "")
+        )
     }
 }
 
@@ -67,7 +73,11 @@ impl AnalyticsAction {
 
 impl Display for AnalyticsAction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", serde_json::to_string(self).unwrap().replace("\"", ""))
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(self).unwrap().replace("\"", "")
+        )
     }
 }
 
@@ -85,10 +95,9 @@ pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
 
     let mut info = LaunchEventInfo::default();
 
-    info.num_launches =
-        models::get_key_value_int(app_handle, namespace, "num_launches", 0).await + 1;
+    info.num_launches = get_key_value_int(app_handle, namespace, "num_launches", 0).await + 1;
     info.previous_version =
-        models::get_key_value_string(app_handle, namespace, last_tracked_version_key, "").await;
+        get_key_value_string(app_handle, namespace, last_tracked_version_key, "").await;
     info.current_version = app_handle.package_info().version.to_string();
 
     if info.previous_version.is_empty() {
@@ -123,14 +132,14 @@ pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
 
     // Update key values
 
-    models::set_key_value_string(
+    set_key_value_string(
         app_handle,
         namespace,
         last_tracked_version_key,
         info.current_version.as_str(),
     )
     .await;
-    models::set_key_value_int(app_handle, namespace, "num_launches", info.num_launches).await;
+    set_key_value_int(app_handle, namespace, "num_launches", info.num_launches).await;
 
     info
 }
@@ -141,6 +150,7 @@ pub async fn track_event(
     action: AnalyticsAction,
     attributes: Option<JsonValue>,
 ) {
+    let id = get_id(app_handle).await;
     let event = format!("{}.{}", resource, action);
     let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
     let info = app_handle.package_info();
@@ -154,6 +164,7 @@ pub async fn track_event(
         false => "https://t.yaak.app",
     };
     let params = vec![
+        ("u", id),
         ("e", event.clone()),
         ("a", attributes_json.clone()),
         ("id", site.to_string()),
@@ -215,4 +226,15 @@ fn get_window_size(app_handle: &AppHandle) -> String {
         (width / 100.0).round() * 100.0,
         (height / 100.0).round() * 100.0
     )
+}
+
+async fn get_id(app_handle: &AppHandle) -> String {
+    let id = get_key_value_string(app_handle, "analytics", "id", "").await;
+    if id.is_empty() {
+        let new_id = generate_id(None);
+        set_key_value_string(app_handle, "analytics", "id", new_id.as_str()).await;
+        new_id
+    } else {
+        id
+    }
 }
