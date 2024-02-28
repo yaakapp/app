@@ -8,6 +8,7 @@ use hyper_rustls::HttpsConnector;
 pub use prost_reflect::DynamicMessage;
 use prost_reflect::{DescriptorPool, MethodDescriptor, ServiceDescriptor};
 use serde_json::Deserializer;
+use tauri::AppHandle;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::body::BoxBody;
 use tonic::metadata::{MetadataKey, MetadataValue};
@@ -166,13 +167,14 @@ impl GrpcConnection {
 }
 
 pub struct GrpcHandle {
+    app_handle: AppHandle,
     pools: HashMap<String, DescriptorPool>,
 }
 
-impl Default for GrpcHandle {
-    fn default() -> Self {
+impl GrpcHandle {
+    pub fn new(app_handle: &AppHandle) -> Self {
         let pools = HashMap::new();
-        Self { pools }
+        Self { pools, app_handle: app_handle.clone() }
     }
 }
 
@@ -183,7 +185,7 @@ impl GrpcHandle {
         uri: &Uri,
         paths: Vec<PathBuf>,
     ) -> Result<Vec<ServiceDefinition>, String> {
-        let pool = fill_pool_from_files(paths).await?;
+        let pool = fill_pool_from_files(&self.app_handle, paths).await?;
         self.pools.insert(self.get_pool_key(id, uri), pool.clone());
         Ok(self.services_from_pool(&pool))
     }
@@ -237,7 +239,7 @@ impl GrpcHandle {
             None => match proto_files.len() {
                 0 => fill_pool(&uri).await?,
                 _ => {
-                    let pool = fill_pool_from_files(proto_files).await?;
+                    let pool = fill_pool_from_files(&self.app_handle, proto_files).await?;
                     self.pools.insert(id.to_string(), pool.clone());
                     pool
                 }
