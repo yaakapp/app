@@ -48,6 +48,7 @@ impl Display for AnalyticsResource {
 #[serde(rename_all = "snake_case")]
 pub enum AnalyticsAction {
     Cancel,
+    Commit,
     Create,
     Delete,
     DeleteMany,
