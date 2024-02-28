@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import { useHotKey } from '../../hooks/useHotKey';
+import { useKey } from 'react-use';
 import { Overlay } from '../Overlay';
 import { Heading } from './Heading';
 import { IconButton } from './IconButton';
@@ -36,7 +36,15 @@ export function Dialog({
     [description],
   );
 
-  useHotKey('popup.close', onClose, { enable: open });
+  useKey(
+    'Escape',
+    () => {
+      if (!open) return;
+      onClose();
+    },
+    {},
+    [open],
+  );
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">

@@ -4,10 +4,9 @@ import { capitalize } from '../lib/capitalize';
 import { debounce } from '../lib/debounce';
 import { useOsInfo } from './useOsInfo';
 
-const HOLD_KEYS = ['Shift', 'CmdCtrl', 'Alt', 'Meta'];
+const HOLD_KEYS = ['Shift', 'Control', 'Command', 'Alt', 'Meta'];
 
 export type HotkeyAction =
-  | 'popup.close'
   | 'environmentEditor.toggle'
   | 'hotkeys.showHelp'
   | 'grpc_request.send'
@@ -22,7 +21,6 @@ export type HotkeyAction =
   | 'urlBar.focus';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
-  'popup.close': ['Escape'],
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
   'grpc_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
   'hotkeys.showHelp': ['CmdCtrl+Shift+/'],
@@ -38,7 +36,6 @@ const hotkeys: Record<HotkeyAction, string[]> = {
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
-  'popup.close': 'Close Dropdown',
   'environmentEditor.toggle': 'Edit Environments',
   'grpc_request.send': 'Send Message',
   'hotkeys.showHelp': 'Show Keyboard Shortcuts',
@@ -83,15 +80,30 @@ export function useHotKey(
       }
 
       const key = normalizeKey(e.key, os);
+
+      // Don't add hold keys
+      if (HOLD_KEYS.includes(key)) {
+        return;
+      }
+
       currentKeys.current.add(key);
+
+      const currentKeysWithModifiers = new Set(currentKeys.current);
+      if (e.altKey) currentKeysWithModifiers.add(normalizeKey('Alt', os));
+      if (e.ctrlKey) currentKeysWithModifiers.add(normalizeKey('Control', os));
+      if (e.metaKey) currentKeysWithModifiers.add(normalizeKey('Meta', os));
+      if (e.shiftKey) currentKeysWithModifiers.add(normalizeKey('Shift', os));
 
       for (const [hkAction, hkKeys] of Object.entries(hotkeys) as [HotkeyAction, string[]][]) {
         for (const hkKey of hkKeys) {
+          if (hkAction !== action) {
+            continue;
+          }
+
           const keys = hkKey.split('+');
           if (
-            keys.length === currentKeys.current.size &&
-            keys.every((key) => currentKeys.current.has(key)) &&
-            hkAction === action
+            keys.length === currentKeysWithModifiers.size &&
+            keys.every((key) => currentKeysWithModifiers.has(key))
           ) {
             e.preventDefault();
             e.stopPropagation();
@@ -112,7 +124,7 @@ export function useHotKey(
       // Clear all keys if no longer holding modifier
       // HACK: This is to get around the case of DOWN SHIFT -> DOWN : -> UP SHIFT -> UP ;
       //  As you see, the ":" is not removed because it turned into ";" when shift was released
-      const isHoldingModifier = HOLD_KEYS.some((k) => currentKeys.current.has(k));
+      const isHoldingModifier = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
       if (!isHoldingModifier) {
         currentKeys.current.clear();
       }

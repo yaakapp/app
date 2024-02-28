@@ -6,11 +6,11 @@ import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
 import { useActiveCookieJar } from './useActiveCookieJar';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useAlert } from './useAlert';
 
 export function useSendAnyRequest(options: { download?: boolean } = {}) {
-  const environmentId = useActiveEnvironmentId();
+  const environment = useActiveEnvironment();
   const alert = useAlert();
   const { activeCookieJar } = useActiveCookieJar();
   return useMutation<HttpResponse | null, string, string | null>({
@@ -33,7 +33,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
 
       return invoke('cmd_send_http_request', {
         requestId: id,
-        environmentId,
+        environmentId: environment?.id,
         downloadDir: downloadDir,
         cookieJarId: activeCookieJar?.id,
       });
