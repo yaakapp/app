@@ -4,33 +4,43 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use hyper::Client;
 use hyper::client::HttpConnector;
+use hyper::Client;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use log::{debug, info, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::{FileDescriptorProto, FileDescriptorSet};
 use tauri::api::process::{Command, CommandEvent};
+use tauri::AppHandle;
 use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
-use tonic::Request;
 use tonic::transport::Uri;
+use tonic::Request;
 use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
 use tonic_reflection::pb::server_reflection_request::MessageRequest;
 use tonic_reflection::pb::server_reflection_response::MessageResponse;
 use tonic_reflection::pb::ServerReflectionRequest;
 
-pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool, String> {
+pub async fn fill_pool_from_files(
+    app_handle: &AppHandle,
+    paths: Vec<PathBuf>,
+) -> Result<DescriptorPool, String> {
     let mut pool = DescriptorPool::new();
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
     let desc_path = temp_dir().join(random_file_name);
+    let global_import_dir = app_handle
+        .path_resolver()
+        .resolve_resource("protoc-vendored/include")
+        .expect("failed to resolve protoc include directory");
 
     let mut args = vec![
         "--include_imports".to_string(),
         "--include_source_info".to_string(),
+        "-I".to_string(),
+        global_import_dir.to_string_lossy().to_string(),
         "-o".to_string(),
         desc_path.to_string_lossy().to_string(),
     ];
@@ -76,10 +86,7 @@ pub async fn fill_pool_from_files(paths: Vec<PathBuf>) -> Result<DescriptorPool,
                         // success
                     }
                     Some(code) => {
-                        return Err(format!(
-                            "protoc failed with exit code: {}",
-                            code,
-                        ));
+                        return Err(format!("protoc failed with exit code: {}", code,));
                     }
                     None => {
                         return Err("protoc failed with no exit code".to_string());
