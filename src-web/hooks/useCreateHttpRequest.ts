@@ -16,7 +16,9 @@ export function useCreateHttpRequest() {
   return useMutation<
     HttpRequest,
     unknown,
-    Partial<Pick<HttpRequest, 'name' | 'sortPriority' | 'folderId' | 'bodyType' | 'method'>>
+    Partial<
+      Pick<HttpRequest, 'name' | 'sortPriority' | 'folderId' | 'bodyType' | 'method' | 'headers'>
+    >
   >({
     mutationFn: (patch) => {
       if (workspaceId === null) {

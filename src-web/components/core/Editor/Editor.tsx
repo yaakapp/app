@@ -179,7 +179,9 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
           doc: `${defaultValue ?? ''}`,
           extensions: [
             languageCompartment.of(langExt),
-            placeholderCompartment.current.of([]),
+            placeholderCompartment.current.of(
+              placeholderExt(placeholderElFromText(placeholder ?? '')),
+            ),
             wrapLinesCompartment.current.of([]),
             ...getExtensions({
               container,
