@@ -85,6 +85,5 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     [introspection],
   );
 
-  console.log('SCHEMA', introspection);
   return { schema, isLoading, error, refetch };
 }
