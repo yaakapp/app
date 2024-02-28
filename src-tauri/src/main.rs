@@ -828,11 +828,14 @@ async fn cmd_send_http_request(
         .expect("Failed to get request");
 
     let environment = match environment_id {
-        Some(id) => Some(
-            get_environment(&window, id)
-                .await
-                .expect("Failed to get environment"),
-        ),
+        Some(id) =>
+            match get_environment(&window, id).await {
+                Ok(env) => Some(env),
+                Err(e) => {
+                    warn!("Failed to find environment by id {id} {}", e);
+                    None
+                }
+            },
         None => None,
     };
 

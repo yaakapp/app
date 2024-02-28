@@ -244,13 +244,15 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     }
   };
 
-  useHotKey(
-    'popup.close',
+  useKey(
+    'Escape',
     () => {
+      if (!isOpen) return;
       if (filter !== '') setFilter('');
       else handleClose();
     },
-    { enable: isOpen },
+    {},
+    [isOpen, filter, setFilter, handleClose],
   );
 
   const handlePrev = useCallback(() => {
@@ -288,11 +290,13 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   }, [items]);
 
   useKey('ArrowUp', (e) => {
+    if (!isOpen) return;
     e.preventDefault();
     handlePrev();
   });
 
   useKey('ArrowDown', (e) => {
+    if (!isOpen) return;
     e.preventDefault();
     handleNext();
   });
