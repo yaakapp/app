@@ -1,11 +1,9 @@
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
-import { Decoration, EditorView, MatchDecorator, ViewPlugin, WidgetType } from '@codemirror/view';
+import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
+import { BetterMatchDecorator } from '../BetterMatchDecorator';
 
 class PlaceholderWidget extends WidgetType {
-  constructor(
-    readonly name: string,
-    readonly isExistingVariable: boolean,
-  ) {
+  constructor(readonly name: string, readonly isExistingVariable: boolean) {
     super();
   }
   eq(other: PlaceholderWidget) {
@@ -22,19 +20,6 @@ class PlaceholderWidget extends WidgetType {
   }
   ignoreEvent() {
     return false;
-  }
-}
-
-/**
- * This is a custom MatchDecorator that will not decorate a match if the selection is inside it
- */
-class BetterMatchDecorator extends MatchDecorator {
-  updateDeco(update: ViewUpdate, deco: DecorationSet): DecorationSet {
-    if (!update.startState.selection.eq(update.state.selection)) {
-      return super.createDeco(update.view);
-    } else {
-      return super.updateDeco(update, deco);
-    }
   }
 }
 
