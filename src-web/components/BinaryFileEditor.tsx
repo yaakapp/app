@@ -36,6 +36,8 @@ export function BinaryFileEditor({
     });
     if (path) {
       onChange({ filePath: path });
+    } else {
+      onChange({ filePath: undefined });
     }
   };
 
@@ -56,7 +58,7 @@ export function BinaryFileEditor({
           {filePath ?? 'Select File'}
         </div>
       </HStack>
-      {mimeType !== contentType && !ignoreContentType.value && (
+      {filePath != null && mimeType !== contentType && !ignoreContentType.value && (
         <Banner className="mt-3 !py-5">
           <div className="text-sm mb-4 text-center">
             <div>Set Content-Type header to</div>
