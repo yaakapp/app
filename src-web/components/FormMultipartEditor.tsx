@@ -6,7 +6,7 @@ import { PairEditor } from './core/PairEditor';
 type Props = {
   forceUpdateKey: string;
   body: HttpRequest['body'];
-  onChange: (headers: HttpRequest['body']) => void;
+  onChange: (body: HttpRequest['body']) => void;
 };
 
 export function FormMultipartEditor({ body, forceUpdateKey, onChange }: Props) {

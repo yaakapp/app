@@ -1,9 +1,8 @@
-import { NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useKeyValue } from './useKeyValue';
 
 export function protoFilesArgs(requestId: string | null) {
   return {
-    namespace: NAMESPACE_GLOBAL,
+    namespace: 'global' as const,
     key: ['proto_files', requestId ?? 'n/a'],
   };
 }

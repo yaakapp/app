@@ -65,6 +65,10 @@
     }
   }
 
+  .rtl {
+    direction: rtl;
+  }
+
   iframe {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {

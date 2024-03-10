@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
+import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useKeyValue } from './useKeyValue';
 import { useWorkspaces } from './useWorkspaces';
 
 const kvKey = () => 'recent_workspaces';
-const namespace = NAMESPACE_GLOBAL;
+const namespace = 'global';
 const fallback: string[] = [];
 
 export function useRecentWorkspaces() {

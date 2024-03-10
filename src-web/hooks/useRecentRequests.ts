@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
+import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useGrpcRequests } from './useGrpcRequests';
@@ -7,7 +7,7 @@ import { useHttpRequests } from './useHttpRequests';
 import { useKeyValue } from './useKeyValue';
 
 const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
-const namespace = NAMESPACE_GLOBAL;
+const namespace = 'global';
 const fallback: string[] = [];
 
 export function useRecentRequests() {

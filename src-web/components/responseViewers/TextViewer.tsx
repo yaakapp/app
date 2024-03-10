@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { useDebouncedState } from '../../hooks/useDebouncedState';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
-import { useResponseContentType } from '../../hooks/useResponseContentType';
+import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
 import { useToggle } from '../../hooks/useToggle';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import type { HttpResponse } from '../../lib/models';
@@ -21,7 +21,7 @@ export function TextViewer({ response, pretty }: Props) {
   const [isSearching, toggleIsSearching] = useToggle();
   const [filterText, setDebouncedFilterText, setFilterText] = useDebouncedState<string>('', 400);
 
-  const contentType = useResponseContentType(response);
+  const contentType = useContentTypeFromHeaders(response.headers);
   const rawBody = useResponseBodyText(response) ?? '';
   const formattedBody =
     pretty && contentType?.includes('json')

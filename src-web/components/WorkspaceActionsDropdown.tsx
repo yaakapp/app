@@ -167,10 +167,14 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     <Dropdown items={items}>
       <Button
         size="sm"
-        className={classNames(className, 'text-gray-800 !px-2 truncate')}
+        className={classNames(
+          className,
+          'text-gray-800 !px-2 truncate',
+          activeWorkspace === null && 'italic opacity-disabled',
+        )}
         {...buttonProps}
       >
-        {activeWorkspace?.name}
+        {activeWorkspace?.name ?? 'Workspace'}
       </Button>
     </Dropdown>
   );
