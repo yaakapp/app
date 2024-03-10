@@ -1,16 +1,19 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
+import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
 import { useDebouncedState } from '../../hooks/useDebouncedState';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
-import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
 import { useToggle } from '../../hooks/useToggle';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import type { HttpResponse } from '../../lib/models';
 import { Editor } from '../core/Editor';
+import { hyperlink } from '../core/Editor/hyperlink/extension';
 import { IconButton } from '../core/IconButton';
 import { Input } from '../core/Input';
+
+const extraExtensions = [hyperlink];
 
 interface Props {
   response: HttpResponse;
@@ -87,6 +90,7 @@ export function TextViewer({ response, pretty }: Props) {
       defaultValue={body}
       contentType={contentType}
       actions={actions}
+      extraExtensions={extraExtensions}
     />
   );
 }
