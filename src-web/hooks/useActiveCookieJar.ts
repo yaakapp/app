@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { NAMESPACE_GLOBAL } from '../lib/keyValueStore';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useCookieJars } from './useCookieJars';
 import { useKeyValue } from './useKeyValue';
@@ -9,7 +8,7 @@ export function useActiveCookieJar() {
   const cookieJars = useCookieJars();
 
   const kv = useKeyValue<string | null>({
-    namespace: NAMESPACE_GLOBAL,
+    namespace: 'global',
     key: ['activeCookieJar', workspaceId ?? 'n/a'],
     fallback: null,
   });

@@ -18,7 +18,6 @@ import { settingsQueryKey } from '../hooks/useSettings';
 import { useSyncAppearance } from '../hooks/useSyncAppearance';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
-import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
@@ -142,7 +141,7 @@ function removeById<T extends { id: string }>(model: T) {
 
 const shouldIgnoreModel = (payload: Model) => {
   if (payload.model === 'key_value') {
-    return payload.namespace === NAMESPACE_NO_SYNC;
+    return payload.namespace === 'no_sync';
   }
   return false;
 };

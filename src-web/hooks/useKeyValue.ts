@@ -20,7 +20,7 @@ export function useKeyValue<T extends Object | null>({
   key,
   fallback,
 }: {
-  namespace?: string;
+  namespace?: 'app' | 'no_sync' | 'global';
   key: string | string[];
   fallback: T;
 }) {

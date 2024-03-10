@@ -31,7 +31,6 @@ import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { NAMESPACE_NO_SYNC } from '../lib/keyValueStore';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import type { DropdownItem } from './core/Dropdown';
@@ -87,7 +86,7 @@ export function Sidebar({ className }: Props) {
   const collapsed = useKeyValue<Record<string, boolean>>({
     key: ['sidebar_collapsed', activeWorkspace?.id ?? 'n/a'],
     fallback: {},
-    namespace: NAMESPACE_NO_SYNC,
+    namespace: 'no_sync',
   });
 
   useHotKey('http_request.duplicate', async () => {

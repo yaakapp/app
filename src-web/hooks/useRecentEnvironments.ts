@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from 'react';
-import { getKeyValue, NAMESPACE_GLOBAL } from '../lib/keyValueStore';
+import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useEnvironments } from './useEnvironments';
 import { useKeyValue } from './useKeyValue';
 
 const kvKey = (workspaceId: string) => 'recent_environments::' + workspaceId;
-const namespace = NAMESPACE_GLOBAL;
+const namespace = 'global';
 const fallback: string[] = [];
 
 export function useRecentEnvironments() {

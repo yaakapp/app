@@ -6,24 +6,27 @@ import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
+import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
-  BODY_TYPE_OTHER,
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
   AUTH_TYPE_NONE,
+  BODY_TYPE_BINARY,
   BODY_TYPE_FORM_MULTIPART,
   BODY_TYPE_FORM_URLENCODED,
   BODY_TYPE_GRAPHQL,
   BODY_TYPE_JSON,
   BODY_TYPE_NONE,
+  BODY_TYPE_OTHER,
   BODY_TYPE_XML,
 } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
+import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
 import type { TabItem } from './core/Tabs/Tabs';
@@ -56,6 +59,7 @@ export const RequestPane = memo(function RequestPane({
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
+  const contentType = useContentTypeFromHeaders(activeRequest.headers);
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -68,11 +72,12 @@ export const RequestPane = memo(function RequestPane({
             { label: 'Url Encoded', value: BODY_TYPE_FORM_URLENCODED },
             { label: 'Multi-Part', value: BODY_TYPE_FORM_MULTIPART },
             { type: 'separator', label: 'Text Content' },
+            { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
             { label: 'JSON', value: BODY_TYPE_JSON },
             { label: 'XML', value: BODY_TYPE_XML },
-            { label: 'GraphQL', value: BODY_TYPE_GRAPHQL },
             { label: 'Other', value: BODY_TYPE_OTHER },
             { type: 'separator', label: 'Other' },
+            { label: 'Binary File', value: BODY_TYPE_BINARY },
             { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
           ],
           onChange: async (bodyType) => {
@@ -94,7 +99,7 @@ export const RequestPane = memo(function RequestPane({
                   []),
                 {
                   name: 'Content-Type',
-                  value: bodyType,
+                  value: bodyType === BODY_TYPE_OTHER ? 'text/plain' : bodyType,
                   enabled: true,
                 },
               ];
@@ -111,10 +116,10 @@ export const RequestPane = memo(function RequestPane({
               ];
             }
 
+            await updateRequest.mutateAsync(patch);
+
             // Force update header editor so any changed headers are reflected
             setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
-
-            updateRequest.mutate(patch);
           },
         },
       },
@@ -169,6 +174,27 @@ export const RequestPane = memo(function RequestPane({
 
   const handleBodyChange = useCallback(
     (body: HttpRequest['body']) => updateRequest.mutate({ body }),
+    [updateRequest],
+  );
+  const handleContentTypeChange = useCallback(
+    async (contentType: string | null) => {
+      const headers =
+        contentType != null
+          ? activeRequest.headers.map((h) =>
+              h.name.toLowerCase() === 'content-type' ? { ...h, value: contentType } : h,
+            )
+          : activeRequest.headers;
+      await updateRequest.mutateAsync({ headers });
+
+      // Force update header editor so any changed headers are reflected
+      setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
+    },
+    [activeRequest.headers, updateRequest],
+  );
+  const handleBinaryFileChange = useCallback(
+    (body: HttpRequest['body']) => {
+      updateRequest.mutate({ body });
+    },
     [updateRequest],
   );
   const handleBodyTextChange = useCallback(
@@ -313,6 +339,14 @@ export const RequestPane = memo(function RequestPane({
                   forceUpdateKey={forceUpdateKey}
                   body={activeRequest.body}
                   onChange={handleBodyChange}
+                />
+              ) : activeRequest.bodyType === BODY_TYPE_BINARY ? (
+                <BinaryFileEditor
+                  requestId={activeRequest.id}
+                  contentType={contentType}
+                  body={activeRequest.body}
+                  onChange={handleBinaryFileChange}
+                  onChangeContentType={handleContentTypeChange}
                 />
               ) : (
                 <EmptyStateText>No Body</EmptyStateText>

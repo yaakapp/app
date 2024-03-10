@@ -51,6 +51,7 @@
     "format-graphql": "^1.4.0",
     "framer-motion": "^9.0.4",
     "lucide-react": "^0.309.0",
+    "mime": "^4.0.1",
     "papaparse": "^5.4.1",
     "parse-color": "^1.0.0",
     "react": "^18.2.0",
