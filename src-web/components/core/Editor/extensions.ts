@@ -122,11 +122,8 @@ export const baseExtensions = [
   history(),
   dropCursor(),
   drawSelection(),
-  // TODO: Figure out how to debounce showing of autocomplete in a good way
-  // debouncedAutocompletionDisplay({ millis: 1000 }),
-  // autocompletion({ closeOnBlur: true, interactionDelay: 200, activateOnTyping: false }),
   autocompletion({
-    closeOnBlur: false, // For debugging in devtools without closing it
+    closeOnBlur: true, // Set to `false` for debugging in devtools without closing it
     compareCompletions: (a, b) => {
       // Don't sort completions at all, only on boost
       return (a.boost ?? 0) - (b.boost ?? 0);
