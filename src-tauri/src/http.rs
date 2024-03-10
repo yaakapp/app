@@ -7,15 +7,15 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use log::{error, info, warn};
-use reqwest::{multipart, Url};
 use reqwest::redirect::Policy;
+use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
 use tauri::{Manager, Window};
 use tokio::sync::oneshot;
-use tokio::sync::watch::{Receiver};
+use tokio::sync::watch::Receiver;
 
 use crate::{models, render, response_err};
 
@@ -245,12 +245,21 @@ pub async fn send_http_request(
             }
             request_builder = request_builder.form(&form_params);
         } else if body_type == "binary" && request_body.contains_key("filePath") {
-            let file_path = request_body.get("filePath").unwrap().as_str().unwrap();
-            request_builder = request_builder.body(
-                fs::read(file_path)
-                    .map_err(|e| e.to_string())
-                    .expect("Failed to read file"),
-            );
+            let file_path = request_body
+                .get("filePath")
+                .ok_or("filePath not set")?
+                .as_str()
+                .unwrap_or_default();
+
+            match fs::read(file_path).map_err(|e| e.to_string()) {
+                Ok(f) => {
+                    request_builder = request_builder.body(f);
+                }
+                Err(e) => {
+                    return response_err(response, e, window).await;
+                }
+            }
+            
         } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
             let mut multipart_form = multipart::Form::new();
             if let Some(form_definition) = request_body.get("form") {
@@ -314,11 +323,11 @@ pub async fn send_http_request(
     let start = std::time::Instant::now();
 
     let (resp_tx, resp_rx) = oneshot::channel();
-    
+
     tokio::spawn(async move {
         let _ = resp_tx.send(client.execute(sendable_req).await);
     });
-    
+
     let raw_response = tokio::select! {
         Ok(r) = resp_rx => {r}
         _ = cancel_rx.changed() => {
