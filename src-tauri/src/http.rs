@@ -244,6 +244,13 @@ pub async fn send_http_request(
                 }
             }
             request_builder = request_builder.form(&form_params);
+        } else if body_type == "binary" && request_body.contains_key("filePath") {
+            let file_path = request_body.get("filePath").unwrap().as_str().unwrap();
+            request_builder = request_builder.body(
+                fs::read(file_path)
+                    .map_err(|e| e.to_string())
+                    .expect("Failed to read file"),
+            );
         } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
             let mut multipart_form = multipart::Form::new();
             if let Some(form_definition) = request_body.get("form") {

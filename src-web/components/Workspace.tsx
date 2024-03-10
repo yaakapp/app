@@ -9,13 +9,19 @@ import type {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useImportData } from '../hooks/useImportData';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
+import { useWorkspaces } from '../hooks/useWorkspaces';
+import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { HotKeyList } from './core/HotKeyList';
+import { InlineCode } from './core/InlineCode';
+import { FeedbackLink } from './core/Link';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
@@ -34,6 +40,9 @@ const drag = { gridArea: 'drag' };
 const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
 
 export default function Workspace() {
+  const workspaces = useWorkspaces();
+  const activeWorkspace = useActiveWorkspace();
+  const activeWorkspaceId = useActiveWorkspaceId();
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const { hide, show, hidden } = useSidebarHidden();
   const activeRequest = useActiveRequest();
@@ -119,6 +128,11 @@ export default function Workspace() {
     );
   }
 
+  // We're loading still
+  if (workspaces.length === 0) {
+    return null;
+  }
+
   return (
     <div
       style={styles}
@@ -163,7 +177,15 @@ export default function Workspace() {
       <HeaderSize data-tauri-drag-region style={head}>
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
-      {activeRequest == null ? (
+      {activeWorkspace == null ? (
+        <div className="m-auto">
+          <Banner color="warning" className="max-w-[30rem]">
+            The active workspace{' '}
+            <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not found.
+            Select a workspace from the header menu or report this bug to <FeedbackLink />
+          </Banner>
+        </div>
+      ) : activeRequest == null ? (
         <HotKeyList
           hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
           bottomSlot={

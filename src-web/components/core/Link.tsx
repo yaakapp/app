@@ -33,3 +33,7 @@ export function Link({ href, children, className, ...other }: Props) {
     </RouterLink>
   );
 }
+
+export function FeedbackLink() {
+  return <Link href="https://yaak.canny.io">Feedback</Link>;
+}

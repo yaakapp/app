@@ -1,8 +1,8 @@
 import { appWindow } from '@tauri-apps/api/window';
-import { NAMESPACE_NO_SYNC, getKeyValue, setKeyValue } from './keyValueStore';
+import { getKeyValue, setKeyValue } from './keyValueStore';
 
 const key = ['window_pathname', appWindow.label];
-const namespace = NAMESPACE_NO_SYNC;
+const namespace = 'no_sync';
 const fallback = undefined;
 
 export async function setPathname(value: string) {

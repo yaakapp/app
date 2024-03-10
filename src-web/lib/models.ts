@@ -1,6 +1,7 @@
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
 export const BODY_TYPE_JSON = 'application/json';
+export const BODY_TYPE_BINARY = 'binary';
 export const BODY_TYPE_OTHER = 'other';
 export const BODY_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded';
 export const BODY_TYPE_FORM_MULTIPART = 'multipart/form-data';

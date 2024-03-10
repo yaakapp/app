@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { memo, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
-import { useResponseContentType } from '../hooks/useResponseContentType';
+import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -37,7 +37,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
   const { activeResponse, setPinnedResponse, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
-  const contentType = useResponseContentType(activeResponse);
+  const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
 
   const tabs = useMemo<TabItem[]>(
     () => [
