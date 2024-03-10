@@ -29,7 +29,7 @@
   }
 
   a,
-  a * {
+  a[href] * {
     @apply cursor-pointer !important;
   }
 
