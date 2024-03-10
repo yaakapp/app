@@ -61,8 +61,8 @@ export function BinaryFileEditor({
       {filePath != null && mimeType !== contentType && !ignoreContentType.value && (
         <Banner className="mt-3 !py-5">
           <div className="text-sm mb-4 text-center">
-            <div>Set Content-Type header to</div>
-            <InlineCode>{mimeType}</InlineCode>?
+            <div>Set Content-Type header</div>
+            <InlineCode>{mimeType}</InlineCode> for current request?
           </div>
           <HStack space={1.5} justifyContent="center">
             <Button
