@@ -25,7 +25,7 @@ export function useRecentWorkspaces() {
       return [activeWorkspaceId, ...withoutCurrent];
     }).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [activeWorkspaceId]);
 
   const onlyValidIds = useMemo(
     () => kv.value?.filter((id) => workspaces.some((w) => w.id === id)) ?? [],
