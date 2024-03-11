@@ -44,8 +44,6 @@ export function BinaryFileEditor({
   const filePath = typeof body.filePath === 'string' ? body.filePath : undefined;
   const mimeType = mime.getType(filePath ?? '') ?? 'application/octet-stream';
 
-  console.log('mimeType', mimeType, contentType);
-
   return (
     <VStack space={2}>
       <HStack space={2} alignItems="center">

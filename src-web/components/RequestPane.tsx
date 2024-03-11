@@ -82,10 +82,9 @@ export const RequestPane = memo(function RequestPane({
           ],
           onChange: async (bodyType) => {
             const patch: Partial<HttpRequest> = { bodyType };
+            let newContentType: string | null | undefined;
             if (bodyType === BODY_TYPE_NONE) {
-              patch.headers = activeRequest.headers.filter(
-                (h) => h.name.toLowerCase() !== 'content-type',
-              );
+              newContentType = null;
             } else if (
               bodyType === BODY_TYPE_FORM_URLENCODED ||
               bodyType === BODY_TYPE_FORM_MULTIPART ||
@@ -94,32 +93,17 @@ export const RequestPane = memo(function RequestPane({
               bodyType === BODY_TYPE_XML
             ) {
               patch.method = 'POST';
-              patch.headers = [
-                ...(activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
-                  []),
-                {
-                  name: 'Content-Type',
-                  value: bodyType === BODY_TYPE_OTHER ? 'text/plain' : bodyType,
-                  enabled: true,
-                },
-              ];
+              newContentType = bodyType === BODY_TYPE_OTHER ? 'text/plain' : bodyType;
             } else if (bodyType == BODY_TYPE_GRAPHQL) {
               patch.method = 'POST';
-              patch.headers = [
-                ...(activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type') ??
-                  []),
-                {
-                  name: 'Content-Type',
-                  value: 'application/json',
-                  enabled: true,
-                },
-              ];
+              newContentType = 'application/json';
             }
 
             await updateRequest.mutateAsync(patch);
 
-            // Force update header editor so any changed headers are reflected
-            setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
+            if (newContentType !== undefined) {
+              await handleContentTypeChange(newContentType);
+            }
           },
         },
       },
@@ -176,14 +160,18 @@ export const RequestPane = memo(function RequestPane({
     (body: HttpRequest['body']) => updateRequest.mutate({ body }),
     [updateRequest],
   );
+
   const handleContentTypeChange = useCallback(
     async (contentType: string | null) => {
-      const headers =
-        contentType != null
-          ? activeRequest.headers.map((h) =>
-              h.name.toLowerCase() === 'content-type' ? { ...h, value: contentType } : h,
-            )
-          : activeRequest.headers;
+      const headers = activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type');
+
+      if (contentType != null) {
+        headers.push({
+          name: 'Content-Type',
+          value: contentType,
+          enabled: true,
+        });
+      }
       await updateRequest.mutateAsync({ headers });
 
       // Force update header editor so any changed headers are reflected
