@@ -80,10 +80,14 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     setRefetchKey((k) => k + 1);
   }, []);
 
-  const schema = useMemo(
-    () => (introspection ? buildClientSchema(introspection) : undefined),
-    [introspection],
-  );
+  const schema = useMemo(() => {
+    try {
+      return introspection ? buildClientSchema(introspection) : undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      setError('message' in e ? e.message : String(e));
+    }
+  }, [introspection]);
 
   return { schema, isLoading, error, refetch };
 }
