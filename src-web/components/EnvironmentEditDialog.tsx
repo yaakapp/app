@@ -186,6 +186,7 @@ const EnvironmentEditor = function ({
         </Heading>
       </HStack>
       <PairEditor
+        className="pr-2"
         nameAutocomplete={nameAutocomplete}
         nameAutocompleteVariables={false}
         namePlaceholder="VAR_NAME"
@@ -235,7 +236,7 @@ function SidebarButton({
         className={classNames(
           className,
           'w-full grid grid-cols-[minmax(0,1fr)_auto] items-center gap-0.5',
-          'px-1', // Padding to show focus border
+          'px-2', // Padding to show focus border
         )}
       >
         <Button
