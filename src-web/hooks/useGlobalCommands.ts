@@ -1,14 +1,18 @@
-import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api';
-import { trackEvent } from '../lib/analytics';
-import type { Workspace } from '../lib/models';
 import { useAppRoutes } from './useAppRoutes';
+import { useRegisterCommand } from './useCommands';
 import { usePrompt } from './usePrompt';
 
-export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }) {
-  const routes = useAppRoutes();
+export function useGlobalCommands() {
   const prompt = usePrompt();
-  return useMutation<Workspace, unknown, Partial<Pick<Workspace, 'name'>>>({
+  const routes = useAppRoutes();
+
+  useRegisterCommand('workspace.create', {
+    name: 'New Workspace',
+    track: ['workspace', 'create'],
+    onSuccess: async (workspace) => {
+      routes.navigate('workspace', { workspaceId: workspace.id });
+    },
     mutationFn: async ({ name: patchName }) => {
       const name =
         patchName ??
@@ -22,12 +26,6 @@ export function useCreateWorkspace({ navigateAfter }: { navigateAfter: boolean }
           placeholder: 'My Workspace',
         }));
       return invoke('cmd_create_workspace', { name });
-    },
-    onSettled: () => trackEvent('workspace', 'create'),
-    onSuccess: async (workspace) => {
-      if (navigateAfter) {
-        routes.navigate('workspace', { workspaceId: workspace.id });
-      }
     },
   });
 }

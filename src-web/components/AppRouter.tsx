@@ -1,10 +1,9 @@
-import { createBrowserRouter, Navigate, Outlet, RouterProvider, useParams } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
-import { DialogProvider } from './DialogContext';
-import { GlobalHooks } from './GlobalHooks';
+import { DefaultLayout } from './DefaultLayout';
+import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 import RouteError from './RouteError';
 import Workspace from './Workspace';
-import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 
 const router = createBrowserRouter([
   {
@@ -58,7 +57,7 @@ function RedirectLegacyEnvironmentURLs() {
   }>();
   const environmentId = rawEnvironmentId === '__default__' ? undefined : rawEnvironmentId;
 
-  let to = '/';
+  let to;
   if (workspaceId != null && requestId != null) {
     to = routes.paths.request({ workspaceId, environmentId, requestId });
   } else if (workspaceId != null) {
@@ -68,13 +67,4 @@ function RedirectLegacyEnvironmentURLs() {
   }
 
   return <Navigate to={to} />;
-}
-
-function DefaultLayout() {
-  return (
-    <DialogProvider>
-      <Outlet />
-      <GlobalHooks />
-    </DialogProvider>
-  );
 }

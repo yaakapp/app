@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
+import { useCommand } from '../hooks/useCommands';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
@@ -30,7 +30,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
-  const createWorkspace = useCreateWorkspace({ navigateAfter: true });
+  const createWorkspace = useCommand('workspace.create');
   const dialog = useDialog();
   const prompt = usePrompt();
   const routes = useAppRoutes();

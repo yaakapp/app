@@ -3,6 +3,7 @@ import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
 import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
@@ -32,8 +33,8 @@ export function GlobalHooks() {
   useRecentRequests();
 
   useSyncAppearance();
-
   useSyncWindowTitle();
+  useGlobalCommands();
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
