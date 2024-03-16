@@ -24,7 +24,7 @@ export function RedirectToLatestWorkspace() {
         navigate(routes.paths.workspace({ workspaceId, environmentId }));
       }
     })();
-  }, [navigate, routes.paths, workspaces, workspaces.length]);
+  }, [navigate, recentWorkspaces, routes.paths, workspaces, workspaces.length]);
 
   return <></>;
 }
