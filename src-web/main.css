@@ -16,8 +16,9 @@
     font-variant-ligatures: none;
   }
 
-  ::selection {
-    @apply bg-selection;
+  ::selection,
+  .cm-selectionBackground {
+    @apply bg-selection !important;
   }
 
   /* Disable user selection to make it more "app-like" */
