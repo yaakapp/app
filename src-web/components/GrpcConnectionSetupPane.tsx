@@ -195,7 +195,6 @@ export function GrpcConnectionSetupPane({
               shortLabel: o.label,
             }))}
             extraItems={[
-              { type: 'separator' },
               {
                 label: 'Refresh',
                 type: 'default',

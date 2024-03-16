@@ -5,6 +5,7 @@ import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
+import { usePrompt } from '../../hooks/usePrompt';
 import { DropMarker } from '../DropMarker';
 import { Button } from './Button';
 import { Checkbox } from './Checkbox';
@@ -14,6 +15,7 @@ import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
 import { Input } from './Input';
+import { RadioDropdown } from './RadioDropdown';
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -37,6 +39,7 @@ export type Pair = {
   enabled?: boolean;
   name: string;
   value: string;
+  contentType?: string;
   isFile?: boolean;
 };
 
@@ -254,6 +257,7 @@ const FormRow = memo(function FormRow({
 }: FormRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
+  const prompt = usePrompt();
   const nameInputRef = useRef<EditorView>(null);
 
   useEffect(() => {
@@ -280,6 +284,11 @@ const FormRow = memo(function FormRow({
 
   const handleChangeValueFile = useMemo(
     () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value, isFile: true } }),
+    [onChange, id, pairContainer.pair],
+  );
+
+  const handleChangeValueContentType = useMemo(
+    () => (contentType: string) => onChange({ id, pair: { ...pairContainer.pair, contentType } }),
     [onChange, id, pairContainer.pair],
   );
 
@@ -408,34 +417,67 @@ const FormRow = memo(function FormRow({
               autocompleteVariables={valueAutocompleteVariables}
             />
           )}
-          {allowFileValues && (
-            <Dropdown
-              items={[
-                { key: 'text', label: 'Text', onSelect: () => handleChangeValueText('') },
-                { key: 'file', label: 'File', onSelect: () => handleChangeValueFile('') },
-              ]}
-            >
-              <IconButton
-                iconSize="sm"
-                size="xs"
-                icon={isLast ? 'empty' : 'chevronDown'}
-                title="Select form data type"
-              />
-            </Dropdown>
-          )}
         </div>
       </div>
-      <IconButton
-        aria-hidden={isLast}
-        disabled={isLast}
-        color="custom"
-        icon={!isLast ? 'trash' : 'empty'}
-        size="sm"
-        iconSize="sm"
-        title="Delete header"
-        onClick={!isLast ? handleDelete : undefined}
-        className="ml-0.5 opacity-0 group-hover:!opacity-100 focus-visible:!opacity-100"
-      />
+      {allowFileValues ? (
+        <RadioDropdown
+          value={pairContainer.pair.isFile ? 'file' : 'text'}
+          onChange={(v) => {
+            if (v === 'file') handleChangeValueFile('');
+            else handleChangeValueText('');
+          }}
+          items={[
+            { label: 'Text', value: 'text' },
+            { label: 'File', value: 'file' },
+          ]}
+          extraItems={[
+            {
+              key: 'mime',
+              label: 'Set Content-Type',
+              leftSlot: <Icon icon="pencil" />,
+              onSelect: async () => {
+                const v = await prompt({
+                  id: 'content-type',
+                  require: false,
+                  title: 'Override Content-Type',
+                  label: 'Content-Type',
+                  placeholder: 'text/plain',
+                  defaultValue: pairContainer.pair.contentType ?? '',
+                  name: 'content-type',
+                  confirmLabel: 'Set',
+                  description: 'Leave blank to auto-detect',
+                });
+                handleChangeValueContentType(v);
+              },
+            },
+            {
+              key: 'delete',
+              label: 'Delete',
+              onSelect: handleDelete,
+              variant: 'danger',
+              leftSlot: <Icon icon="trash" />,
+            },
+          ]}
+        >
+          <IconButton
+            iconSize="sm"
+            size="xs"
+            icon={isLast ? 'empty' : 'chevronDown'}
+            title="Select form data type"
+          />
+        </RadioDropdown>
+      ) : (
+        <Dropdown
+          items={[{ key: 'delete', label: 'Delete', onSelect: handleDelete, variant: 'danger' }]}
+        >
+          <IconButton
+            iconSize="sm"
+            size="xs"
+            icon={isLast ? 'empty' : 'chevronDown'}
+            title="Select form data type"
+          />
+        </Dropdown>
+      )}
     </div>
   );
 });

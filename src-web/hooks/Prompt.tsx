@@ -12,6 +12,7 @@ export interface PromptProps {
   name: InputProps['name'];
   defaultValue: InputProps['defaultValue'];
   placeholder: InputProps['placeholder'];
+  require?: InputProps['require'];
   confirmLabel?: string;
 }
 
@@ -22,6 +23,7 @@ export function Prompt({
   defaultValue,
   placeholder,
   onResult,
+  require = true,
   confirmLabel = 'Save',
 }: PromptProps) {
   const [value, setValue] = useState<string>(defaultValue ?? '');
@@ -41,7 +43,7 @@ export function Prompt({
     >
       <Input
         hideLabel
-        require
+        require={require}
         autoSelect
         placeholder={placeholder}
         label={label}

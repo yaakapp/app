@@ -182,7 +182,7 @@ pub async fn track_event(
 
     // Disable analytics actual sending in dev
     if is_dev() {
-        debug!("track: {} {} {:?}", event, attributes_json, params);
+        // debug!("track: {} {} {:?}", event, attributes_json, params);
         return;
     }
 
