@@ -259,7 +259,6 @@ pub async fn send_http_request(
                     return response_err(response, e, window).await;
                 }
             }
-            
         } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
             let mut multipart_form = multipart::Form::new();
             if let Some(form_definition) = request_body.get("form") {
@@ -269,12 +268,13 @@ pub async fn send_http_request(
                         .unwrap_or(empty_bool)
                         .as_bool()
                         .unwrap_or(false);
-                    let name = p
+                    let name_raw = p
                         .get("name")
                         .unwrap_or(empty_string)
                         .as_str()
                         .unwrap_or_default();
-                    if !enabled || name.is_empty() {
+
+                    if !enabled || name_raw.is_empty() {
                         continue;
                     }
 
@@ -283,24 +283,41 @@ pub async fn send_http_request(
                         .unwrap_or(empty_string)
                         .as_str()
                         .unwrap_or_default();
-                    let value = p
+                    let value_raw = p
                         .get("value")
                         .unwrap_or(empty_string)
                         .as_str()
                         .unwrap_or_default();
-                    multipart_form = multipart_form.part(
-                        render::render(name, &workspace, environment_ref),
-                        match !file.is_empty() {
-                            true => {
-                                multipart::Part::bytes(fs::read(file).map_err(|e| e.to_string())?)
+
+                    let name = render::render(name_raw, &workspace, environment_ref);
+                    let part = if file.is_empty() {
+                        multipart::Part::text(render::render(
+                            value_raw,
+                            &workspace,
+                            environment_ref,
+                        ))
+                    } else {
+                        match fs::read(file) {
+                            Ok(f) => multipart::Part::bytes(f),
+                            Err(e) => {
+                                return response_err(response, e.to_string(), window).await;
                             }
-                            false => multipart::Part::text(render::render(
-                                value,
-                                &workspace,
-                                environment_ref,
-                            )),
-                        },
-                    );
+                        }
+                    };
+
+                    let ct_raw = p
+                        .get("contentType")
+                        .unwrap_or(empty_string)
+                        .as_str()
+                        .unwrap_or_default();
+
+                    multipart_form = multipart_form.part(name, if ct_raw.is_empty() {
+                        part
+                    } else {
+                        let ct = render::render(ct_raw, &workspace, environment_ref);
+                        println!("CT: {}", ct);
+                        part.mime_str(ct.as_str()).map_err(|e| e.to_string())?
+                    });
                 }
             }
             headers.remove("Content-Type"); // reqwest will add this automatically

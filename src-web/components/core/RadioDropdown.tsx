@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { DropdownItemSeparator, DropdownProps } from './Dropdown';
+import type { DropdownItem, DropdownItemSeparator, DropdownProps } from './Dropdown';
 import { Dropdown } from './Dropdown';
 import { Icon } from './Icon';
 
@@ -42,7 +42,7 @@ export function RadioDropdown<T = string | null>({
           };
         }
       }),
-      ...(extraItems ?? []),
+      ...((extraItems ? [{ type: 'separator' }, ...extraItems] : []) as DropdownItem[]),
     ],
     [items, extraItems, value, onChange],
   );

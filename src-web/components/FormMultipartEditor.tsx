@@ -16,6 +16,7 @@ export function FormMultipartEditor({ body, forceUpdateKey, onChange }: Props) {
         enabled: p.enabled,
         name: p.name,
         value: p.file ?? p.value,
+        contentType: p.contentType,
         isFile: !!p.file,
       })),
     [body.form],
@@ -27,6 +28,7 @@ export function FormMultipartEditor({ body, forceUpdateKey, onChange }: Props) {
         form: pairs.map((p) => ({
           enabled: p.enabled,
           name: p.name,
+          contentType: p.contentType,
           file: p.isFile ? p.value : undefined,
           value: p.isFile ? undefined : p.value,
         })),
