@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import { useStateSyncDefault } from '../../hooks/useStateSyncDefault';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
@@ -69,7 +70,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   }: InputProps,
   ref,
 ) {
-  const [obscured, setObscured] = useState(type === 'password');
+  const [obscured, setObscured] = useStateSyncDefault(type === 'password');
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const [focused, setFocused] = useState(false);
 
@@ -181,9 +182,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           <IconButton
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
             size="xs"
-            className="mr-0.5"
+            className="mr-0.5 group/obscure !h-auto my-0.5"
+            iconClassName="text-gray-500 group-hover/obscure:text-gray-800"
             iconSize="sm"
-            icon={obscured ? 'eyeClosed' : 'eye'}
+            icon={obscured ? 'eye' : 'eyeClosed'}
             onClick={() => setObscured((o) => !o)}
           />
         )}
