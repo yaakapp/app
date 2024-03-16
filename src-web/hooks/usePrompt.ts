@@ -14,6 +14,7 @@ export function usePrompt() {
     defaultValue,
     placeholder,
     confirmLabel,
+    require,
   }: Pick<DialogProps, 'title' | 'description'> &
     Omit<PromptProps, 'onResult' | 'onHide'> & { id: string }) =>
     new Promise((onResult: PromptProps['onResult']) => {
@@ -24,7 +25,16 @@ export function usePrompt() {
         hideX: true,
         size: 'sm',
         render: ({ hide }) =>
-          Prompt({ onHide: hide, onResult, name, label, defaultValue, placeholder, confirmLabel }),
+          Prompt({
+            onHide: hide,
+            onResult,
+            name,
+            label,
+            defaultValue,
+            placeholder,
+            confirmLabel,
+            require,
+          }),
       });
     });
 }
