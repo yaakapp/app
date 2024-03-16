@@ -5,6 +5,7 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useDeleteEnvironment } from '../hooks/useDeleteEnvironment';
 import { useEnvironments } from '../hooks/useEnvironments';
+import { useKeyValue } from '../hooks/useKeyValue';
 import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
@@ -59,14 +60,16 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
             <SidebarButton
               active={selectedEnvironment?.id == null}
               onClick={() => setSelectedEnvironmentId(null)}
-              className="group"
               environment={null}
               rightSlot={
                 <IconButton
                   size="sm"
+                  iconSize="md"
+                  color="custom"
                   title="Add sub environment"
                   icon="plusCircle"
                   iconClassName="text-gray-500 group-hover:text-gray-700"
+                  className="group"
                   onClick={handleCreateEnvironment}
                 />
               }
@@ -113,6 +116,11 @@ const EnvironmentEditor = function ({
   workspace: Workspace;
   className?: string;
 }) {
+  const valueVisibility = useKeyValue<boolean>({
+    namespace: 'global',
+    key: 'environmentValueVisibility',
+    fallback: true,
+  });
   const environments = useEnvironments();
   const updateEnvironment = useUpdateEnvironment(environment?.id ?? null);
   const updateWorkspace = useUpdateWorkspace(workspace.id);
@@ -164,8 +172,17 @@ const EnvironmentEditor = function ({
   return (
     <VStack space={4} className={classNames(className, 'pl-4')}>
       <HStack space={2} className="justify-between">
-        <Heading className="w-full flex items-center">
+        <Heading className="w-full flex items-center gap-1">
           <div>{environment?.name ?? 'Global Variables'}</div>
+          <IconButton
+            iconClassName="text-gray-600"
+            size="sm"
+            icon={valueVisibility.value ? 'eye' : 'eyeClosed'}
+            title={valueVisibility.value ? 'Hide Values' : 'Reveal Values'}
+            onClick={() => {
+              return valueVisibility.set((v) => !v);
+            }}
+          />
         </Heading>
       </HStack>
       <PairEditor
@@ -173,6 +190,7 @@ const EnvironmentEditor = function ({
         nameAutocompleteVariables={false}
         namePlaceholder="VAR_NAME"
         nameValidate={validateName}
+        valueType={valueVisibility.value ? 'text' : 'password'}
         valueAutocompleteVariables={false}
         forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}
         pairs={variables}
@@ -216,7 +234,7 @@ function SidebarButton({
       <div
         className={classNames(
           className,
-          'w-full grid grid-cols-[minmax(0,1fr)_auto] items-center',
+          'w-full grid grid-cols-[minmax(0,1fr)_auto] items-center gap-0.5',
           'px-1', // Padding to show focus border
         )}
       >
@@ -225,7 +243,7 @@ function SidebarButton({
           size="xs"
           className={classNames(
             'w-full',
-            active ? 'text-gray-800' : 'text-gray-600 hover:text-gray-700',
+            active ? 'text-gray-800 bg-highlightSecondary' : 'text-gray-600 hover:text-gray-700',
           )}
           justify="start"
           onClick={onClick}
