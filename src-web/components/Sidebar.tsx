@@ -419,6 +419,19 @@ export function Sidebar({ className }: Props) {
     ],
   );
 
+  const [showMainContextMenu, setShowMainContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleMainContextMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowMainContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const mainContextMenuItems = useCreateDropdownItems();
+
   // Not ready to render yet
   if (tree == null || collapsed.value == null) {
     return null;
@@ -431,11 +444,17 @@ export function Sidebar({ className }: Props) {
       onFocus={handleFocus}
       onBlur={handleBlur}
       tabIndex={hidden ? -1 : 0}
+      onContextMenu={handleMainContextMenu}
       className={classNames(
         className,
         'h-full pb-3 overflow-y-scroll overflow-x-visible hide-scrollbars pt-2',
       )}
     >
+      <ContextMenu
+        show={showMainContextMenu}
+        items={mainContextMenuItems}
+        onClose={() => setShowMainContextMenu(null)}
+      />
       <SidebarItems
         treeParentMap={treeParentMap}
         selectedId={selectedId}
