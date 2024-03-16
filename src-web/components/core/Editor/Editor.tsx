@@ -9,7 +9,6 @@ import {
   cloneElement,
   forwardRef,
   isValidElement,
-  memo,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -57,7 +56,7 @@ export interface EditorProps {
   actions?: ReactNode;
 }
 
-const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
+export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
     readOnly,
     type = 'text',
@@ -294,8 +293,6 @@ const _Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
     </div>
   );
 });
-
-export const Editor = memo(_Editor);
 
 function getExtensions({
   container,

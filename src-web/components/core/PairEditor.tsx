@@ -22,6 +22,7 @@ export type PairEditorProps = {
   className?: string;
   namePlaceholder?: string;
   valuePlaceholder?: string;
+  valueType?: 'text' | 'password';
   nameAutocomplete?: GenericCompletionConfig;
   valueAutocomplete?: (name: string) => GenericCompletionConfig | undefined;
   nameAutocompleteVariables?: boolean;
@@ -51,6 +52,7 @@ export const PairEditor = memo(function PairEditor({
   nameAutocompleteVariables,
   namePlaceholder,
   nameValidate,
+  valueType,
   onChange,
   pairs: originalPairs,
   valueAutocomplete,
@@ -176,6 +178,7 @@ export const PairEditor = memo(function PairEditor({
               allowFileValues={allowFileValues}
               nameAutocompleteVariables={nameAutocompleteVariables}
               valueAutocompleteVariables={valueAutocompleteVariables}
+              valueType={valueType}
               forceFocusPairId={forceFocusPairId}
               forceUpdateKey={forceUpdateKey}
               nameAutocomplete={nameAutocomplete}
@@ -218,6 +221,7 @@ type FormRowProps = {
   | 'valueAutocomplete'
   | 'nameAutocompleteVariables'
   | 'valueAutocompleteVariables'
+  | 'valueType'
   | 'namePlaceholder'
   | 'valuePlaceholder'
   | 'nameValidate'
@@ -246,6 +250,7 @@ const FormRow = memo(function FormRow({
   valueAutocompleteVariables,
   valuePlaceholder,
   valueValidate,
+  valueType,
 }: FormRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
@@ -397,6 +402,7 @@ const FormRow = memo(function FormRow({
               name="value"
               onChange={handleChangeValueText}
               onFocus={handleFocus}
+              type={isLast ? 'text' : valueType}
               placeholder={valuePlaceholder ?? 'value'}
               autocomplete={valueAutocomplete?.(pairContainer.pair.name)}
               autocompleteVariables={valueAutocompleteVariables}
