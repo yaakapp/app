@@ -315,7 +315,6 @@ pub async fn send_http_request(
                         part
                     } else {
                         let ct = render::render(ct_raw, &workspace, environment_ref);
-                        println!("CT: {}", ct);
                         part.mime_str(ct.as_str()).map_err(|e| e.to_string())?
                     });
                 }
