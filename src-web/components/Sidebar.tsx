@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ForwardedRef, ReactNode } from 'react';
-import React, { Fragment, forwardRef, useCallback, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
@@ -15,13 +15,12 @@ import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
-import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
-import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { usePrompt } from '../hooks/usePrompt';
+import { useRequests } from '../hooks/useRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -61,9 +60,8 @@ export function Sidebar({ className }: Props) {
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const httpRequests = useHttpRequests();
-  const grpcRequests = useGrpcRequests();
   const folders = useFolders();
+  const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();
   const duplicateHttpRequest = useDuplicateHttpRequest({
     id: activeRequest?.id ?? null,
@@ -135,7 +133,7 @@ export function Sidebar({ className }: Props) {
         selectedRequest = node.item;
       }
 
-      const childItems = [...httpRequests, ...grpcRequests, ...folders].filter((f) =>
+      const childItems = [...requests, ...folders].filter((f) =>
         node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
       );
 
@@ -154,7 +152,7 @@ export function Sidebar({ className }: Props) {
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
     return { tree, treeParentMap, selectableRequests, selectedRequest };
-  }, [activeWorkspace, selectedId, httpRequests, grpcRequests, folders]);
+  }, [activeWorkspace, selectedId, requests, folders]);
 
   const deleteSelectedRequest = useDeleteRequest(selectedRequest);
 

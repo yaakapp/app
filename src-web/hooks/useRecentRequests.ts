@@ -2,18 +2,15 @@ import { useEffect, useMemo } from 'react';
 import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
-import { useGrpcRequests } from './useGrpcRequests';
-import { useHttpRequests } from './useHttpRequests';
 import { useKeyValue } from './useKeyValue';
+import { useRequests } from './useRequests';
 
 const kvKey = (workspaceId: string) => 'recent_requests::' + workspaceId;
 const namespace = 'global';
 const fallback: string[] = [];
 
 export function useRecentRequests() {
-  const httpRequests = useHttpRequests();
-  const grpcRequests = useGrpcRequests();
-  const requests = useMemo(() => [...httpRequests, ...grpcRequests], [httpRequests, grpcRequests]);
+  const requests = useRequests();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeRequestId = useActiveRequestId();
 
