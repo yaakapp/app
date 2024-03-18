@@ -1,7 +1,6 @@
 import type { GrpcRequest, HttpRequest } from '../lib/models';
 import { useActiveRequestId } from './useActiveRequestId';
-import { useGrpcRequests } from './useGrpcRequests';
-import { useHttpRequests } from './useHttpRequests';
+import { useRequests } from './useRequests';
 
 interface TypeMap {
   http_request: HttpRequest;
@@ -12,16 +11,14 @@ export function useActiveRequest<T extends keyof TypeMap>(
   model?: T | undefined,
 ): TypeMap[T] | null {
   const requestId = useActiveRequestId();
-  const httpRequests = useHttpRequests();
-  const grpcRequests = useGrpcRequests();
+  const requests = useRequests();
 
-  if (model === 'http_request') {
-    return (httpRequests.find((r) => r.id === requestId) ?? null) as TypeMap[T] | null;
-  } else if (model === 'grpc_request') {
-    return (grpcRequests.find((r) => r.id === requestId) ?? null) as TypeMap[T] | null;
-  } else {
-    return (grpcRequests.find((r) => r.id === requestId) ??
-      httpRequests.find((r) => r.id === requestId) ??
-      null) as TypeMap[T] | null;
+  for (const request of requests) {
+    const modelMatch = model == null ? true : request.model === model;
+    if (modelMatch && request.id === requestId) {
+      return request as TypeMap[T];
+    }
   }
+
+  return null;
 }
