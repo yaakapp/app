@@ -6,8 +6,12 @@ export function isRequestGroup(obj) {
   return isJSObject(obj) && obj._type === 'request_group';
 }
 
-export function isRequest(obj) {
+export function isHttpRequest(obj) {
   return isJSObject(obj) && obj._type === 'request';
+}
+
+export function isGrpcRequest(obj) {
+  return isJSObject(obj) && obj._type === 'grpc_request';
 }
 
 export function isEnvironment(obj) {

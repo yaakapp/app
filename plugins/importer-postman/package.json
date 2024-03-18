@@ -1,4 +1,7 @@
 {
   "name": "importer-postman",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "devDependencies": {
+    "vitest": "^1.4.0"
+  }
 }
