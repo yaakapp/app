@@ -6,7 +6,7 @@ import { convertSyntax } from '../helpers/variables.js';
  * @param workspaceId - The workspace ID to use for the request.
  * @param {number} sortPriority - The sort priority to use for the request.
  */
-export function importRequest(r, workspaceId, sortPriority = 0) {
+export function importHttpRequest(r, workspaceId, sortPriority = 0) {
   console.log('IMPORTING REQUEST', r._id, r.name, JSON.stringify(r, null, 2));
 
   let bodyType = null;

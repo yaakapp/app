@@ -1,17 +1,18 @@
-import { importEnvironment } from './importers/environment.js';
-import { importRequest } from './importers/request.js';
+import { importEnvironment } from './importers/environment';
+import { importHttpRequest } from './importers/httpRequest';
 import {
   isEnvironment,
   isJSObject,
-  isRequest,
+  isHttpRequest,
   isRequestGroup,
   isWorkspace,
+  isGrpcRequest,
 } from './helpers/types.js';
 import { parseVariables } from './helpers/variables.js';
 import { importFolder } from './importers/folder.js';
+import { importGrpcRequest } from './importers/grpcRequest';
 
 export function pluginHookImport(contents) {
-  console.log('RUNNING INSOMNIA');
   let parsed;
   try {
     parsed = JSON.parse(contents);
@@ -24,7 +25,8 @@ export function pluginHookImport(contents) {
 
   const resources = {
     workspaces: [],
-    requests: [],
+    httpRequests: [],
+    grpcRequests: [],
     environments: [],
     folders: [],
   };
@@ -57,8 +59,15 @@ export function pluginHookImport(contents) {
         if (isRequestGroup(child)) {
           resources.folders.push(importFolder(child, workspaceToImport._id));
           nextFolder(child._id);
-        } else if (isRequest(child)) {
-          resources.requests.push(importRequest(child, workspaceToImport._id, sortPriority++));
+        } else if (isHttpRequest(child)) {
+          resources.httpRequests.push(
+            importHttpRequest(child, workspaceToImport._id, sortPriority++),
+          );
+        } else if (isGrpcRequest(child)) {
+          console.log('GRPC', JSON.stringify(child, null, 1));
+          resources.grpcRequests.push(
+            importGrpcRequest(child, workspaceToImport._id, sortPriority++),
+          );
         }
       }
     };
@@ -68,7 +77,8 @@ export function pluginHookImport(contents) {
   }
 
   // Filter out any `null` values
-  resources.requests = resources.requests.filter(Boolean);
+  resources.httpRequests = resources.httpRequests.filter(Boolean);
+  resources.grpcRequests = resources.grpcRequests.filter(Boolean);
   resources.environments = resources.environments.filter(Boolean);
   resources.workspaces = resources.workspaces.filter(Boolean);
 

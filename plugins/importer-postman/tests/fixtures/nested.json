@@ -1,0 +1,164 @@
+{
+	"info": {
+		"_postman_id": "9e6dfada-256c-49ea-a38f-7d1b05b7ca2d",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "18798"
+	},
+	"item": [
+		{
+			"name": "New Folder",
+			"item": [
+				{
+					"name": "FOlder 2",
+					"item": [
+						{
+							"name": "Basic Auth",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": {
+										"password": "pass",
+										"username": "user"
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"url": "https://schier.co"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Form Data",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-foo",
+								"value": "bar",
+								"description": "description",
+								"type": "text"
+							},
+							{
+								"key": "Disabled",
+								"value": "tnroant",
+								"description": "ntisorantosra",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "Form",
+									"value": "Value",
+									"description": "descirption",
+									"type": "text"
+								},
+								{
+									"key": "Disabled",
+									"value": "foo",
+									"description": "bar",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/Users/gschier/Desktop/foo.json"
+								},
+								{
+									"key": "Rendered",
+									"value": "{{Foo}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "schier.co?firstkey=firstvalue&hi=there",
+							"host": [
+								"schier",
+								"co"
+							],
+							"query": [
+								{
+									"key": "disabled",
+									"value": "secondvalue",
+									"description": "this is disabled",
+									"disabled": true
+								},
+								{
+									"key": "firstkey",
+									"value": "firstvalue"
+								},
+								{
+									"key": "hi",
+									"value": "there"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Form URL",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-foo",
+						"value": "bar",
+						"description": "description",
+						"type": "text"
+					},
+					{
+						"key": "Disabled",
+						"value": "tnroant",
+						"description": "ntisorantosra",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "foo",
+							"value": "bar",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "schier.co?firstkey=firstvalue&hi=there",
+					"host": [
+						"schier",
+						"co"
+					],
+					"query": [
+						{
+							"key": "disabled",
+							"value": "secondvalue",
+							"description": "this is disabled",
+							"disabled": true
+						},
+						{
+							"key": "firstkey",
+							"value": "firstvalue"
+						},
+						{
+							"key": "hi",
+							"value": "there"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
