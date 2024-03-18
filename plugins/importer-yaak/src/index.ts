@@ -1,4 +1,4 @@
-export function pluginHookImport(contents) {
+export function pluginHookImport(contents: string) {
   let parsed;
   try {
     parsed = JSON.parse(contents);
@@ -10,23 +10,20 @@ export function pluginHookImport(contents) {
     return undefined;
   }
 
-  if (!('yaakSchema' in parsed)) {
+  const isYaakExport = 'yaakSchema' in parsed;
+  if (!isYaakExport) {
     return;
   }
 
   // Migrate v1 to v2 -- changes requests to httpRequests
-  if (parsed.yaakSchema === 1) {
+  if ('requests' in parsed.resources) {
     parsed.resources.httpRequests = parsed.resources.requests;
-    parsed.yaakSchema = 2;
+    delete parsed.resources.requests;
   }
 
-  if (parsed.yaakSchema === 2) {
-    return { resources: parsed.resources }; // Should already be in the correct format
-  }
-
-  return undefined;
+  return { resources: parsed.resources }; // Should already be in the correct format
 }
 
-export function isJSObject(obj) {
+export function isJSObject(obj: any) {
   return Object.prototype.toString.call(obj) === '[object Object]';
 }
