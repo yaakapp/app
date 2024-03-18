@@ -9,7 +9,7 @@ type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 interface ExportResources {
   workspaces: AtLeast<Workspace, 'name' | 'id' | 'model'>[];
   environments: AtLeast<Environment, 'name' | 'id' | 'model' | 'workspaceId'>[];
-  requests: AtLeast<HttpRequest, 'name' | 'id' | 'model' | 'workspaceId'>[];
+  httpRequests: AtLeast<HttpRequest, 'name' | 'id' | 'model' | 'workspaceId'>[];
   folders: AtLeast<Folder, 'name' | 'id' | 'model' | 'workspaceId'>[];
 }
 
@@ -26,7 +26,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
   const exportResources: ExportResources = {
     workspaces: [],
     environments: [],
-    requests: [],
+    httpRequests: [],
     folders: [],
   };
 
@@ -55,7 +55,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
       const r = toRecord(v.request);
       const bodyPatch = importBody(r.body);
       const authPatch = importAuth(r.auth);
-      const request: ExportResources['requests'][0] = {
+      const request: ExportResources['httpRequests'][0] = {
         model: 'http_request',
         id: generateId('rq'),
         workspaceId: workspace.id,
@@ -79,7 +79,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
           }),
         ],
       };
-      exportResources.requests.push(request);
+      exportResources.httpRequests.push(request);
     } else {
       console.log('Unknown item', v, folderId);
     }
@@ -213,7 +213,7 @@ function convertTemplateSyntax<T>(obj: T): T {
   }
 }
 
-function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
+export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let id = `${prefix}_`;
   for (let i = 0; i < 10; i++) {

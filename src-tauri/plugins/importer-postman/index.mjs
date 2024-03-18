@@ -9,7 +9,7 @@ function q(e) {
   const i = {
     workspaces: [],
     environments: [],
-    requests: [],
+    httpRequests: [],
     folders: []
   }, c = {
     model: "workspace",
@@ -53,7 +53,7 @@ function q(e) {
           }))
         ]
       };
-      i.requests.push(g);
+      i.httpRequests.push(g);
     } else
       console.log("Unknown item", r, u);
   };
@@ -156,5 +156,6 @@ function m(e) {
   return n;
 }
 export {
+  m as generateId,
   q as pluginHookImport
 };
