@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import * as app from '@tauri-apps/api/app';
-import * as path from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api';
 
 export function useAppInfo() {
   return useQuery(['appInfo'], async () => {
-    const [version, appDataDir] = await Promise.all([app.getVersion(), path.appDataDir()]);
-    return { version, appDataDir };
+    return (await invoke('cmd_metadata')) as {
+      isDev: boolean;
+      version: string;
+      name: string;
+      appDataDir: string;
+    };
   });
 }

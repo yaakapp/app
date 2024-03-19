@@ -5,8 +5,8 @@ function u(r) {
   } catch {
     return;
   }
-  if (t(e) && "yaakSchema" in e && (e.yaakSchema === 1 && (e.resources.httpRequests = e.resources.requests, e.yaakSchema = 2), e.yaakSchema === 2))
-    return { resources: e.resources };
+  if (!(!t(e) || !("yaakSchema" in e)))
+    return "requests" in e.resources && (e.resources.httpRequests = e.resources.requests, delete e.resources.requests), { resources: e.resources };
 }
 function t(r) {
   return Object.prototype.toString.call(r) === "[object Object]";
