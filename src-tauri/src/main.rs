@@ -914,16 +914,11 @@ async fn cmd_track_event(
             analytics::track_event(&window.app_handle(), resource, action, attributes).await;
         }
         (r, a) => {
-            println!(
-                "HttpRequest: {:?}",
-                serde_json::to_string(&AnalyticsResource::HttpRequest)
-            );
-            println!("Send: {:?}", serde_json::to_string(&AnalyticsAction::Send));
             error!(
                 "Invalid action/resource for track_event: {resource}.{action} = {:?}.{:?}",
                 r, a
             );
-            return Err("Invalid event".to_string());
+            return Err("Invalid analytics event".to_string());
         }
     };
     Ok(())
