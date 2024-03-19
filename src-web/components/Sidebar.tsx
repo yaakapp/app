@@ -512,7 +512,7 @@ function SidebarItems({
       className={classNames(
         tree.depth > 0 && 'border-l border-highlight',
         tree.depth === 0 && 'ml-0',
-        tree.depth >= 1 && 'ml-[1.3em]',
+        tree.depth >= 1 && 'ml-[1.2em]',
       )}
     >
       {tree.children.map((child, i) => (
@@ -770,7 +770,7 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-2 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
+            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
             editing && 'ring-1 focus-within:ring-focus',
             isActive && 'bg-highlightSecondary text-gray-800',
             !isActive &&
