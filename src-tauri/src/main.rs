@@ -42,7 +42,7 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
-use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, CookieJar, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_requests, list_responses, list_workspaces, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace, WorkspaceExportResources};
+use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, CookieJar, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace, WorkspaceExportResources};
 use crate::plugin::ImportResult;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
@@ -783,9 +783,9 @@ async fn cmd_import_data(
 async fn cmd_export_data(
     app_handle: AppHandle,
     export_path: &str,
-    workspace_id: &str,
+    workspace_ids: Vec<&str>,
 ) -> Result<(), String> {
-    let export_data = get_workspace_export_resources(&app_handle, workspace_id).await;
+    let export_data = get_workspace_export_resources(&app_handle, workspace_ids).await;
     let f = File::options()
         .create(true)
         .truncate(true)
@@ -1194,7 +1194,7 @@ async fn cmd_list_grpc_requests(workspace_id: &str, w: Window) -> Result<Vec<Grp
 
 #[tauri::command]
 async fn cmd_list_http_requests(workspace_id: &str, w: Window) -> Result<Vec<HttpRequest>, String> {
-    let requests = list_requests(&w, workspace_id)
+    let requests = list_http_requests(&w, workspace_id)
         .await
         .expect("Failed to find requests");
     // .map_err(|e| e.to_string())
