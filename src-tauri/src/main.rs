@@ -56,18 +56,6 @@ mod updates;
 mod window_ext;
 mod window_menu;
 
-#[derive(serde::Serialize)]
-pub struct CustomResponse {
-    status: u16,
-    body: String,
-    url: String,
-    method: String,
-    elapsed: u128,
-    elapsed2: u128,
-    headers: HashMap<String, String>,
-    pub status_reason: Option<&'static str>,
-}
-
 async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
     let p = app_handle
@@ -80,6 +68,26 @@ async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(
     m.run(pool).await.expect("Failed to run migrations");
     info!("Migrations complete!");
     Ok(())
+}
+
+#[derive(serde::Serialize)]
+#[serde(default, rename_all = "camelCase")]
+struct AppMetaData {
+    is_dev: bool,
+    version: String,
+    name: String,
+    app_data_dir: String,
+}
+
+#[tauri::command]
+async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
+    let p = app_handle.path_resolver();
+    return Ok(AppMetaData{
+        is_dev: is_dev(),
+        version: app_handle.package_info().version.to_string(),
+        name: app_handle.package_info().name.to_string(),
+        app_data_dir: p.app_data_dir().unwrap().to_string_lossy().to_string(),
+    })
 }
 
 #[tauri::command]
@@ -1442,26 +1450,26 @@ fn main() {
             cmd_create_grpc_request,
             cmd_create_http_request,
             cmd_create_workspace,
-            cmd_delete_all_http_responses,
             cmd_delete_all_grpc_connections,
+            cmd_delete_all_http_responses,
             cmd_delete_cookie_jar,
             cmd_delete_environment,
             cmd_delete_folder,
-            cmd_delete_grpc_request,
             cmd_delete_grpc_connection,
+            cmd_delete_grpc_request,
             cmd_delete_http_request,
             cmd_delete_http_response,
             cmd_delete_workspace,
-            cmd_duplicate_http_request,
             cmd_duplicate_grpc_request,
+            cmd_duplicate_http_request,
             cmd_export_data,
             cmd_filter_response,
             cmd_get_cookie_jar,
             cmd_get_environment,
             cmd_get_folder,
-            cmd_get_key_value,
-            cmd_get_http_request,
             cmd_get_grpc_request,
+            cmd_get_http_request,
+            cmd_get_key_value,
             cmd_get_settings,
             cmd_get_workspace,
             cmd_grpc_go,
@@ -1470,12 +1478,13 @@ fn main() {
             cmd_list_cookie_jars,
             cmd_list_environments,
             cmd_list_folders,
-            cmd_list_http_requests,
-            cmd_list_grpc_requests,
             cmd_list_grpc_connections,
             cmd_list_grpc_events,
+            cmd_list_grpc_requests,
+            cmd_list_http_requests,
             cmd_list_http_responses,
             cmd_list_workspaces,
+            cmd_metadata,
             cmd_new_window,
             cmd_send_ephemeral_request,
             cmd_send_http_request,

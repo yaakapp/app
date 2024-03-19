@@ -13,12 +13,14 @@ export type HotkeyAction =
   | 'http_request.create'
   | 'http_request.duplicate'
   | 'http_request.send'
-  | 'requestSwitcher.next'
-  | 'requestSwitcher.prev'
+  | 'request_switcher.next'
+  | 'request_switcher.prev'
+  | 'request_switcher.toggle'
   | 'settings.show'
   | 'sidebar.focus'
   | 'sidebar.toggle'
-  | 'urlBar.focus';
+  | 'urlBar.focus'
+  | 'command_palette.toggle';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
@@ -27,12 +29,14 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'http_request.create': ['CmdCtrl+n'],
   'http_request.duplicate': ['CmdCtrl+d'],
   'http_request.send': ['CmdCtrl+Enter', 'CmdCtrl+r'],
-  'requestSwitcher.next': ['Control+Shift+Tab'],
-  'requestSwitcher.prev': ['Control+Tab'],
+  'request_switcher.next': ['Control+Shift+Tab'],
+  'request_switcher.prev': ['Control+Tab'],
+  'request_switcher.toggle': ['CmdCtrl+p'],
   'settings.show': ['CmdCtrl+,'],
   'sidebar.focus': ['CmdCtrl+1'],
   'sidebar.toggle': ['CmdCtrl+b'],
   'urlBar.focus': ['CmdCtrl+l'],
+  'command_palette.toggle': ['CmdCtrl+k'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
@@ -42,12 +46,14 @@ const hotkeyLabels: Record<HotkeyAction, string> = {
   'http_request.create': 'New Request',
   'http_request.duplicate': 'Duplicate Request',
   'http_request.send': 'Send Request',
-  'requestSwitcher.next': 'Go To Previous Request',
-  'requestSwitcher.prev': 'Go To Next Request',
+  'request_switcher.next': 'Go To Previous Request',
+  'request_switcher.prev': 'Go To Next Request',
+  'request_switcher.toggle': 'Toggle Request Switcher',
   'settings.show': 'Open Settings',
   'sidebar.focus': 'Focus Sidebar',
   'sidebar.toggle': 'Toggle Sidebar',
   'urlBar.focus': 'Focus URL',
+  'command_palette.toggle': 'Toggle Command Palette',
 };
 
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
@@ -135,7 +141,7 @@ export function useHotKey(
       document.removeEventListener('keydown', down, { capture: true });
       document.removeEventListener('keyup', up, { capture: true });
     };
-  }, [options.enable, os]);
+  }, [action, options.enable, os]);
 }
 
 export function useHotKeyLabel(action: HotkeyAction): string {

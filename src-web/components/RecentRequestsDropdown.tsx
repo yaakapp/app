@@ -1,14 +1,13 @@
 import classNames from 'classnames';
 import { useMemo, useRef } from 'react';
-import { useKey, useKeyPressEvent } from 'react-use';
+import { useKeyPressEvent } from 'react-use';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useGrpcRequests } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
-import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useRequests } from '../hooks/useRequests';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -21,20 +20,10 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const activeRequest = useActiveRequest();
   const activeWorkspaceId = useActiveWorkspaceId();
   const activeEnvironment = useActiveEnvironment();
-  const httpRequests = useHttpRequests();
-  const grpcRequests = useGrpcRequests();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);
-  const requests = useMemo(() => [...httpRequests, ...grpcRequests], [httpRequests, grpcRequests]);
-
-  // Toggle the menu on Cmd+k
-  useKey('k', (e) => {
-    if (e.metaKey) {
-      e.preventDefault();
-      dropdownRef.current?.toggle();
-    }
-  });
+  const requests = useRequests();
 
   // Handle key-up
   useKeyPressEvent('Control', undefined, () => {
@@ -42,14 +31,18 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
     dropdownRef.current?.select?.();
   });
 
-  useHotKey('requestSwitcher.prev', () => {
+  useHotKey('request_switcher.prev', () => {
     if (!dropdownRef.current?.isOpen) dropdownRef.current?.open();
     dropdownRef.current?.next?.();
   });
 
-  useHotKey('requestSwitcher.next', () => {
+  useHotKey('request_switcher.next', () => {
     if (!dropdownRef.current?.isOpen) dropdownRef.current?.open();
     dropdownRef.current?.prev?.();
+  });
+
+  useHotKey('request_switcher.toggle', () => {
+    dropdownRef.current?.toggle();
   });
 
   const items = useMemo<DropdownItem[]>(() => {

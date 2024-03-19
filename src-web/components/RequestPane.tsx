@@ -61,6 +61,25 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
 
+  const handleContentTypeChange = useCallback(
+    async (contentType: string | null) => {
+      const headers = activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type');
+
+      if (contentType != null) {
+        headers.push({
+          name: 'Content-Type',
+          value: contentType,
+          enabled: true,
+        });
+      }
+      await updateRequest.mutateAsync({ headers });
+
+      // Force update header editor so any changed headers are reflected
+      setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
+    },
+    [activeRequest.headers, updateRequest],
+  );
+
   const tabs: TabItem[] = useMemo(
     () => [
       {
@@ -153,7 +172,15 @@ export const RequestPane = memo(function RequestPane({
         },
       },
     ],
-    [activeRequest, updateRequest],
+    [
+      activeRequest.authentication,
+      activeRequest.authenticationType,
+      activeRequest.bodyType,
+      activeRequest.headers,
+      activeRequest.urlParameters,
+      handleContentTypeChange,
+      updateRequest,
+    ],
   );
 
   const handleBodyChange = useCallback(
@@ -161,24 +188,6 @@ export const RequestPane = memo(function RequestPane({
     [updateRequest],
   );
 
-  const handleContentTypeChange = useCallback(
-    async (contentType: string | null) => {
-      const headers = activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type');
-
-      if (contentType != null) {
-        headers.push({
-          name: 'Content-Type',
-          value: contentType,
-          enabled: true,
-        });
-      }
-      await updateRequest.mutateAsync({ headers });
-
-      // Force update header editor so any changed headers are reflected
-      setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
-    },
-    [activeRequest.headers, updateRequest],
-  );
   const handleBinaryFileChange = useCallback(
     (body: HttpRequest['body']) => {
       updateRequest.mutate({ body });
