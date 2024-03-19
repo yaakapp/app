@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { appWindow } from '@tauri-apps/api/window';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
@@ -35,6 +36,7 @@ export function GlobalHooks() {
   useSyncAppearance();
   useSyncWindowTitle();
   useGlobalCommands();
+  useCommandPalette();
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);

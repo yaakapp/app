@@ -17,6 +17,7 @@ export interface DialogProps {
   size?: 'sm' | 'md' | 'lg' | 'full' | 'dynamic';
   hideX?: boolean;
   noPadding?: boolean;
+  noScroll?: boolean;
 }
 
 export function Dialog({
@@ -29,6 +30,7 @@ export function Dialog({
   description,
   hideX,
   noPadding,
+  noScroll,
 }: DialogProps) {
   const titleId = useMemo(() => Math.random().toString(36).slice(2), []);
   const descriptionId = useMemo(
@@ -60,7 +62,7 @@ export function Dialog({
             animate={{ top: 0, scale: 1 }}
             className={classNames(
               className,
-              'grid grid-rows-[auto_minmax(0,1fr)]',
+              'h-full grid grid-rows-[auto_auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',
               'rounded-lg',
               'dark:border border-highlight shadow shadow-black/10',
@@ -79,15 +81,20 @@ export function Dialog({
             ) : (
               <span />
             )}
-            {description && (
+
+            {description ? (
               <p className="px-6 text-gray-700" id={descriptionId}>
                 {description}
               </p>
+            ) : (
+              <span />
             )}
+
             <div
               className={classNames(
-                'h-full w-full grid grid-cols-[minmax(0,1fr)] overflow-y-auto',
+                'h-full w-full grid grid-cols-[minmax(0,1fr)]',
                 !noPadding && 'px-6 py-2',
+                !noScroll && 'overflow-y-auto',
               )}
             >
               {children}

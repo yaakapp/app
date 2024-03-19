@@ -122,7 +122,7 @@ export function GrpcConnectionSetupPane({
   const handleSend = useCallback(async () => {
     if (activeRequest == null) return;
     onSend({ message: activeRequest.message });
-  }, [activeRequest, onGo]);
+  }, [activeRequest, onSend]);
 
   const tabs: TabItem[] = useMemo(
     () => [

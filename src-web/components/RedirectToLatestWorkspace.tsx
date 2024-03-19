@@ -13,6 +13,11 @@ export function RedirectToLatestWorkspace() {
   const recentWorkspaces = useRecentWorkspaces();
 
   useEffect(() => {
+    if (workspaces.length === 0) {
+      console.log('No workspaces found to redirect to. Skipping.');
+      return;
+    }
+
     (async function () {
       const workspaceId = recentWorkspaces[0] ?? workspaces[0]?.id ?? 'n/a';
       const environmentId = (await getRecentEnvironments(workspaceId))[0];
