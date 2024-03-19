@@ -1115,7 +1115,7 @@ pub async fn upsert_http_request(
     }
 }
 
-pub async fn list_requests(
+pub async fn list_http_requests(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<HttpRequest>, sqlx::Error> {
@@ -1524,49 +1524,68 @@ pub fn generate_id(prefix: Option<&str>) -> String {
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct WorkspaceExport {
-   pub yaak_version: String,
-   pub yaak_schema: i64,
-   pub timestamp: NaiveDateTime,
-   pub resources: WorkspaceExportResources,
+    pub yaak_version: String,
+    pub yaak_schema: i64,
+    pub timestamp: NaiveDateTime,
+    pub resources: WorkspaceExportResources,
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct WorkspaceExportResources {
-   pub workspaces: Vec<Workspace>,
-   pub environments: Vec<Environment>,
-   pub folders: Vec<Folder>,
-   pub http_requests: Vec<HttpRequest>,
-   pub grpc_requests: Vec<GrpcRequest>,
+    pub workspaces: Vec<Workspace>,
+    pub environments: Vec<Environment>,
+    pub folders: Vec<Folder>,
+    pub http_requests: Vec<HttpRequest>,
+    pub grpc_requests: Vec<GrpcRequest>,
 }
 
 pub async fn get_workspace_export_resources(
     app_handle: &AppHandle,
-    workspace_id: &str,
+    workspace_ids: Vec<&str>,
 ) -> WorkspaceExport {
-    let workspace = get_workspace(app_handle, workspace_id)
-        .await
-        .expect("Failed to get workspace");
-    return WorkspaceExport {
+    let mut data = WorkspaceExport {
         yaak_version: app_handle.package_info().version.clone().to_string(),
         yaak_schema: 2,
         timestamp: chrono::Utc::now().naive_utc(),
         resources: WorkspaceExportResources {
-            workspaces: vec![workspace],
-            environments: list_environments(app_handle, workspace_id)
-                .await
-                .expect("Failed to get environments"),
-            folders: list_folders(app_handle, workspace_id)
-                .await
-                .expect("Failed to get folders"),
-            http_requests: list_requests(app_handle, workspace_id)
-                .await
-                .expect("Failed to get requests"),
-            grpc_requests: list_grpc_requests(app_handle, workspace_id)
-                .await
-                .expect("Failed to get grpc requests"),
+            workspaces: Vec::new(),
+            environments: Vec::new(),
+            folders: Vec::new(),
+            http_requests: Vec::new(),
+            grpc_requests: Vec::new(),
         },
     };
+
+    for workspace_id in workspace_ids {
+        data.resources.workspaces.push(
+            get_workspace(app_handle, workspace_id)
+                .await
+                .expect("Failed to get workspace"),
+        );
+        data.resources.environments.append(
+            &mut list_environments(app_handle, workspace_id)
+                .await
+                .expect("Failed to get environments"),
+        );
+        data.resources.folders.append(
+            &mut list_folders(app_handle, workspace_id)
+                .await
+                .expect("Failed to get folders"),
+        );
+        data.resources.http_requests.append(
+            &mut list_http_requests(app_handle, workspace_id)
+                .await
+                .expect("Failed to get http requests"),
+        );
+        data.resources.grpc_requests.append(
+            &mut list_grpc_requests(app_handle, workspace_id)
+                .await
+                .expect("Failed to get grpc requests"),
+        );
+    }
+    
+    return data;
 }
 
 fn emit_upserted_model<S: Serialize + Clone>(mgr: &impl Manager<Wry>, model: S) -> S {

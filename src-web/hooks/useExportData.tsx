@@ -1,31 +1,36 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api';
-import { save } from '@tauri-apps/api/dialog';
-import slugify from 'slugify';
+import { useDialog } from '../components/DialogContext';
+import { ExportDataDialog } from '../components/ExportDataDialog';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
+import { useWorkspaces } from './useWorkspaces';
 
 export function useExportData() {
-  const workspace = useActiveWorkspace();
+  const workspaces = useWorkspaces();
+  const activeWorkspace = useActiveWorkspace();
   const alert = useAlert();
+  const dialog = useDialog();
 
   return useMutation({
     onError: (err: string) => {
       alert({ id: 'export-failed', title: 'Export Failed', body: err });
     },
     mutationFn: async () => {
-      if (workspace == null) return;
+      if (activeWorkspace == null || workspaces.length === 0) return;
 
-      const workspaceSlug = slugify(workspace.name, { lower: true });
-      const exportPath = await save({
-        title: 'Export Data',
-        defaultPath: `yaak.${workspaceSlug}.json`,
+      dialog.show({
+        id: 'export-data',
+        title: 'Export App Data',
+        size: 'md',
+        noPadding: true,
+        render: ({ hide }) => (
+          <ExportDataDialog
+            onHide={hide}
+            workspaces={workspaces}
+            activeWorkspace={activeWorkspace}
+          />
+        ),
       });
-      if (exportPath == null) {
-        return;
-      }
-
-      await invoke('cmd_export_data', { workspaceId: workspace.id, exportPath });
     },
   });
 }

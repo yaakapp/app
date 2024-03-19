@@ -60,17 +60,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     size === 'sm' && 'h-sm px-2.5 text-sm',
     size === 'xs' && 'h-xs px-2 text-sm',
     // Solids
-    variant === 'solid' && color === 'custom' && 'ring-blue-400',
+    variant === 'solid' &&
+      color === 'custom' &&
+      'ring-blue-400 enabled:hocus:bg-highlightSecondary',
     variant === 'solid' &&
       color === 'default' &&
       'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',
     variant === 'solid' &&
       color === 'gray' &&
-      'text-gray-800 bg-highlight enabled:hocus:text-gray-1000 ring-blue-400',
-    variant === 'solid' && color === 'primary' && 'bg-blue-400 text-white ring-blue-700',
-    variant === 'solid' && color === 'secondary' && 'bg-violet-400 text-white ring-violet-700',
-    variant === 'solid' && color === 'warning' && 'bg-orange-400 text-white ring-orange-700',
-    variant === 'solid' && color === 'danger' && 'bg-red-400 text-white ring-red-700',
+      'text-gray-800 bg-gray-200/70 enabled:hocus:bg-gray-200 ring-blue-400',
+    variant === 'solid' &&
+      color === 'primary' &&
+      'bg-blue-400 text-white ring-blue-700 enabled:hocus:bg-blue-500',
+    variant === 'solid' &&
+      color === 'secondary' &&
+      'bg-violet-400 text-white ring-violet-700 enabled:hocus:bg-violet-500',
+    variant === 'solid' &&
+      color === 'warning' &&
+      'bg-orange-400 text-white ring-orange-700 enabled:hocus:bg-orange-500',
+    variant === 'solid' &&
+      color === 'danger' &&
+      'bg-red-400 text-white ring-red-700 enabled:hocus:bg-red-500',
     // Borders
     variant === 'border' && 'border',
     variant === 'border' &&
