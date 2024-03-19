@@ -11,7 +11,7 @@ export function useUpdateSettings() {
       await invoke('cmd_update_settings', { settings });
     },
     onMutate: async (settings) => {
-      queryClient.setQueryData<Settings>(settingsQueryKey(), settings);
+      queryClient.setQueryData<Settings[]>(settingsQueryKey(), [settings]);
     },
   });
 }

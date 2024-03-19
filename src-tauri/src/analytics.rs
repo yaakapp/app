@@ -26,6 +26,7 @@ pub enum AnalyticsResource {
     KeyValue,
     Sidebar,
     Workspace,
+    Setting,
 }
 
 impl AnalyticsResource {
