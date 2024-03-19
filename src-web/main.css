@@ -9,10 +9,7 @@
     @apply w-full h-full overflow-hidden text-gray-900 bg-gray-50;
   }
 
-  /* Setup default transitions for elements */
   * {
-    transition: background-color var(--transition-duration), border-color var(--transition-duration),
-      box-shadow var(--transition-duration);
     font-variant-ligatures: none;
   }
 

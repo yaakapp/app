@@ -17,6 +17,7 @@ const icons = {
   arrowUpFromDot: lucide.ArrowUpFromDotIcon,
   box: lucide.BoxIcon,
   cake: lucide.CakeIcon,
+  minus: lucide.MinusIcon,
   chat: lucide.MessageSquare,
   check: lucide.CheckIcon,
   chevronDown: lucide.ChevronDownIcon,

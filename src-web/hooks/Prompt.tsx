@@ -43,8 +43,8 @@ export function Prompt({
     >
       <Input
         hideLabel
-        require={require}
         autoSelect
+        require={require}
         placeholder={placeholder}
         label={label}
         name={name}
