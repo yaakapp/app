@@ -722,7 +722,11 @@ async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Resu
 }
 
 #[tauri::command]
-async fn cmd_import_data(w: Window, file_path: &str) -> Result<WorkspaceExportResources, String> {
+async fn cmd_import_data(
+    w: Window,
+    file_path: &str,
+    _workspace_id: &str,
+) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
@@ -745,7 +749,7 @@ async fn cmd_import_data(w: Window, file_path: &str) -> Result<WorkspaceExportRe
             let mut imported_resources = WorkspaceExportResources::default();
 
             info!("Importing resources");
-            for v in r.resources.workspaces {
+            for mut v in r.resources.workspaces {
                 let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
                 info!("Imported workspace: {}", x.name);

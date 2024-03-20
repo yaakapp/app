@@ -7,6 +7,7 @@ import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
 import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { count } from '../lib/pluralize';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
 
@@ -19,6 +20,7 @@ export function useImportData() {
   const routes = useAppRoutes();
   const dialog = useDialog();
   const alert = useAlert();
+  const activeWorkspaceId = useActiveWorkspaceId();
 
   const importData = async () => {
     const selected = await open(openArgs);
@@ -34,6 +36,7 @@ export function useImportData() {
       grpcRequests: GrpcRequest[];
     } = await invoke('cmd_import_data', {
       filePath: Array.isArray(selected) ? selected[0] : selected,
+      workspaceId: activeWorkspaceId,
     });
     const importedWorkspace = imported.workspaces[0];
 
