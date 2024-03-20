@@ -62,7 +62,7 @@ export function Dialog({
             animate={{ top: 0, scale: 1 }}
             className={classNames(
               className,
-              'h-full grid grid-rows-[auto_auto_minmax(0,1fr)]',
+              'grid grid-rows-[auto_auto_minmax(0,1fr)]',
               'relative bg-gray-50 pointer-events-auto',
               'rounded-lg',
               'dark:border border-highlight shadow shadow-black/10',
