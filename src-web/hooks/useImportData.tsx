@@ -33,7 +33,7 @@ export function useImportData() {
       httpRequests: HttpRequest[];
       grpcRequests: GrpcRequest[];
     } = await invoke('cmd_import_data', {
-      filePaths: Array.isArray(selected) ? selected : [selected],
+      filePath: Array.isArray(selected) ? selected[0] : selected,
     });
     const importedWorkspace = imported.workspaces[0];
 
@@ -76,27 +76,40 @@ export function useImportData() {
       alert({ id: 'import-failed', title: 'Import Failed', body: err });
     },
     mutationFn: async () => {
-      dialog.show({
-        id: 'import',
-        title: 'Import Data',
-        size: 'sm',
-        render: ({ hide }) => {
-          return (
-            <VStack space={3} className="pb-4">
-              <p>Insomnia or Postman Collection v2/v2.1 formats are supported</p>
-              <Button
-                size="sm"
-                color="primary"
-                onClick={async () => {
-                  await importData();
-                  hide();
-                }}
-              >
-                Select File
-              </Button>
-            </VStack>
-          );
-        },
+      return new Promise<void>((resolve, reject) => {
+        dialog.show({
+          id: 'import',
+          title: 'Import Data',
+          size: 'sm',
+          render: ({ hide }) => {
+            return (
+              <VStack space={5} className="pb-4">
+                <VStack space={1}>
+                  <p>Supported Formats:</p>
+                  <ul className="list-disc pl-5">
+                    <li>Postman Collection v2/v2.1</li>
+                    <li>Insomnia</li>
+                  </ul>
+                </VStack>
+                <Button
+                  size="sm"
+                  color="primary"
+                  onClick={async () => {
+                    try {
+                      await importData();
+                      resolve();
+                    } catch (err) {
+                      reject(err);
+                    }
+                    hide();
+                  }}
+                >
+                  Select File
+                </Button>
+              </VStack>
+            );
+          },
+        });
       });
     },
   });
