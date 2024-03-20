@@ -35,7 +35,7 @@ export function Checkbox({
           aria-hidden
           className={classNames(
             'opacity-50 appearance-none w-4 h-4 flex-shrink-0 border border-[currentColor]',
-            'rounded focus:border-focus focus:opacity-100 outline-none ring-0',
+            'rounded hocus:border-focus hocus:bg-focus/[5%] hocus:opacity-100 outline-none ring-0',
           )}
           type="checkbox"
           disabled={disabled}
@@ -45,23 +45,6 @@ export function Checkbox({
           <Icon size="sm" icon={indeterminate ? 'minus' : checked ? 'check' : 'empty'} />
         </div>
       </div>
-      {/*<button*/}
-      {/*  role="checkbox"*/}
-      {/*  aria-checked={checked ? 'true' : 'false'}*/}
-      {/*  disabled={disabled}*/}
-      {/*  onClick={handleClick}*/}
-      {/*  title={title}*/}
-      {/*  className={classNames(*/}
-      {/*    className,*/}
-      {/*    'flex-shrink-0 w-4 h-4 border border-gray-200 rounded',*/}
-      {/*    'focus:border-focus',*/}
-      {/*    'disabled:opacity-disabled',*/}
-      {/*    checked && 'bg-gray-200/10',*/}
-      {/*    // Remove focus style*/}
-      {/*    'outline-none',*/}
-      {/*  )}*/}
-      {/*>*/}
-      {/*</button>*/}
       {!hideLabel && title}
     </HStack>
   );
