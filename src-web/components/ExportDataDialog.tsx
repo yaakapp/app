@@ -50,7 +50,7 @@ export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorks
     <VStack space={3} className="w-full mb-3 px-4">
       <table className="w-full mb-auto min-w-full max-w-full divide-y">
         <thead>
-          <tr onClick={handleToggleAll}>
+          <tr>
             <th className="w-6 min-w-0 py-2 text-left pl-1">
               <Checkbox
                 checked={allSelected}
@@ -60,28 +60,28 @@ export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorks
                 onChange={handleToggleAll}
               />
             </th>
-            <th className="py-2 text-left pl-4">Workspace</th>
+            <th className="py-2 text-left pl-4" onClick={handleToggleAll}>
+              Workspace
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y">
           {workspaces.map((w) => (
-            <tr
-              key={w.id}
-              onClick={() => {
-                setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }));
-              }}
-            >
+            <tr key={w.id}>
               <td className="min-w-0 py-1 pl-1">
                 <Checkbox
                   checked={selectedWorkspaces[w.id] ?? false}
                   title={w.name}
                   hideLabel
-                  onChange={() => {
-                    setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }));
-                  }}
+                  onChange={() =>
+                    setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))
+                  }
                 />
               </td>
-              <td className="py-1 pl-4 text-gray-700 whitespace-nowrap overflow-x-auto hide-scrollbars">
+              <td
+                className="py-1 pl-4 text-gray-700 whitespace-nowrap overflow-x-auto hide-scrollbars"
+                onClick={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
+              >
                 {w.name} {w.id === activeWorkspace.id ? '(current workspace)' : ''}
               </td>
             </tr>
