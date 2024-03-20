@@ -5,14 +5,9 @@ import { Dropdown } from './core/Dropdown';
 interface Props {
   hideFolder?: boolean;
   children: DropdownProps['children'];
-  openOnHotKeyAction?: DropdownProps['openOnHotKeyAction'];
 }
 
-export function CreateDropdown({ hideFolder, children, openOnHotKeyAction }: Props) {
+export function CreateDropdown({ hideFolder, children }: Props) {
   const items = useCreateDropdownItems({ hideFolder, hideIcons: true });
-  return (
-    <Dropdown openOnHotKeyAction={openOnHotKeyAction} items={items}>
-      {children}
-    </Dropdown>
-  );
+  return <Dropdown items={items}>{children}</Dropdown>;
 }
