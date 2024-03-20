@@ -23,6 +23,8 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     return;
   }
 
+  const globalAuth = importAuth(root.auth);
+
   const exportResources: ExportResources = {
     workspaces: [],
     environments: [],
@@ -35,6 +37,10 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     id: generateId('wk'),
     name: info.name || 'Postman Import',
     description: info.description || '',
+    variables: root.variable?.map((v: any) => ({
+      name: v.key,
+      value: v.value,
+    })),
   };
   exportResources.workspaces.push(workspace);
 
@@ -54,7 +60,8 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     } else if (typeof v.name === 'string' && 'request' in v) {
       const r = toRecord(v.request);
       const bodyPatch = importBody(r.body);
-      const authPatch = importAuth(r.auth);
+      const requestAuthPath = importAuth(r.auth);
+      const authPatch = requestAuthPath.authenticationType == null ? globalAuth : requestAuthPath;
       const request: ExportResources['httpRequests'][0] = {
         model: 'http_request',
         id: generateId('rq'),
@@ -103,6 +110,14 @@ function importAuth(
       authentication: {
         username: auth.basic.username || '',
         password: auth.basic.password || '',
+      },
+    };
+  } else if ('bearer' in auth) {
+    return {
+      headers: [],
+      authenticationType: 'bearer',
+      authentication: {
+        token: auth.bearer.token || '',
       },
     };
   } else {
