@@ -60,7 +60,7 @@ export const UrlBar = memo(function UrlBar({
         hideLabel
         useTemplating
         contentType="url"
-        className="px-0 py-0.5"
+        className="pl-0 pr-1.5 py-0.5"
         name="url"
         label="Enter URL"
         forceUpdateKey={forceUpdateKey}
@@ -76,7 +76,7 @@ export const UrlBar = memo(function UrlBar({
             <RequestMethodDropdown
               method={method}
               onChange={onMethodChange}
-              className="!h-auto my-0.5 ml-0.5"
+              className="my-0.5 ml-0.5"
             />
           )
         }
@@ -87,7 +87,7 @@ export const UrlBar = memo(function UrlBar({
               iconSize="md"
               title="Send Request"
               type="submit"
-              className="w-8 !h-auto my-0.5 mr-0.5"
+              className="w-8 my-0.5 mr-0.5"
               icon={isLoading ? 'x' : submitIcon}
               hotkeyAction="http_request.send"
             />
