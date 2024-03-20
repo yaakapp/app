@@ -18,7 +18,7 @@ export function useCommandPalette() {
       hideX: true,
       noPadding: true,
       noScroll: true,
-      render: () => <CommandPalette />,
+      render: ({ hide }) => <CommandPalette onClose={hide} />,
     });
   });
 }
