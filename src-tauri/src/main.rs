@@ -23,6 +23,7 @@ use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
 use sqlx::migrate::Migrator;
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
@@ -749,7 +750,7 @@ async fn cmd_import_data(
             let mut imported_resources = WorkspaceExportResources::default();
 
             info!("Importing resources");
-            for mut v in r.resources.workspaces {
+            for v in r.resources.workspaces {
                 let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
                 info!("Imported workspace: {}", x.name);
@@ -1430,7 +1431,8 @@ fn main() {
 
             // Add DB handle
             tauri::async_runtime::block_on(async move {
-                let pool = SqlitePool::connect(p.to_str().unwrap())
+                let opts = SqliteConnectOptions::from_str(p.to_str().unwrap()).unwrap();
+                let pool = SqlitePool::connect_with(opts)
                     .await
                     .expect("Failed to connect to database");
                 let m = Mutex::new(pool.clone());
