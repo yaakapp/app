@@ -10,39 +10,54 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-use ::http::Uri;
 use ::http::uri::InvalidUri;
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, LogTarget};
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
-use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, CookieJar, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace, WorkspaceExportResources};
+use crate::models::{
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
+    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
+    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
+    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, Settings, Workspace,
+    WorkspaceExportResources,
+};
 use crate::plugin::ImportResult;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 
@@ -82,12 +97,12 @@ struct AppMetaData {
 #[tauri::command]
 async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
     let p = app_handle.path_resolver();
-    return Ok(AppMetaData{
+    return Ok(AppMetaData {
         is_dev: is_dev(),
         version: app_handle.package_info().version.to_string(),
         name: app_handle.package_info().name.to_string(),
         app_data_dir: p.app_data_dir().unwrap().to_string_lossy().to_string(),
-    })
+    });
 }
 
 #[tauri::command]
@@ -707,17 +722,11 @@ async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Resu
 }
 
 #[tauri::command]
-async fn cmd_import_data(
-    w: Window,
-    file_paths: Vec<&str>,
-) -> Result<WorkspaceExportResources, String> {
+async fn cmd_import_data(w: Window, file_path: &str) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
     for plugin_name in plugins {
-        if let Some(r) =
-            plugin::run_plugin_import(&w.app_handle(), plugin_name, file_paths.first().unwrap())
-                .await
-        {
+        if let Some(r) = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_path).await {
             analytics::track_event(
                 &w.app_handle(),
                 AnalyticsResource::App,
@@ -731,29 +740,25 @@ async fn cmd_import_data(
     }
 
     match result {
-        None => Err("No importers found for the chosen file".to_string()),
+        None => Err("No import handlers found".to_string()),
         Some(r) => {
             let mut imported_resources = WorkspaceExportResources::default();
 
             info!("Importing resources");
             for v in r.resources.workspaces {
-                let x = upsert_workspace(&w, v)
-                    .await
-                    .expect("Failed to create workspace");
+                let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
                 info!("Imported workspace: {}", x.name);
             }
 
             for v in r.resources.environments {
-                let x = upsert_environment(&w, v)
-                    .await
-                    .expect("Failed to create environment");
+                let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.environments.push(x.clone());
                 info!("Imported environment: {}", x.name);
             }
 
             for v in r.resources.folders {
-                let x = upsert_folder(&w, v).await.expect("Failed to create folder");
+                let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.folders.push(x.clone());
                 info!("Imported folder: {}", x.name);
             }
@@ -761,7 +766,7 @@ async fn cmd_import_data(
             for v in r.resources.http_requests {
                 let x = upsert_http_request(&w, v)
                     .await
-                    .expect("Failed to create HTTP request");
+                    .map_err(|e| e.to_string())?;
                 imported_resources.http_requests.push(x.clone());
                 info!("Imported request: {}", x.name);
             }
@@ -769,7 +774,7 @@ async fn cmd_import_data(
             for v in r.resources.grpc_requests {
                 let x = upsert_grpc_request(&w, &v)
                     .await
-                    .expect("Failed to create GRPC request");
+                    .map_err(|e| e.to_string())?;
                 imported_resources.grpc_requests.push(x.clone());
                 info!("Imported request: {}", x.name);
             }
@@ -822,14 +827,13 @@ async fn cmd_send_http_request(
         .expect("Failed to get request");
 
     let environment = match environment_id {
-        Some(id) =>
-            match get_environment(&window, id).await {
-                Ok(env) => Some(env),
-                Err(e) => {
-                    warn!("Failed to find environment by id {id} {}", e);
-                    None
-                }
-            },
+        Some(id) => match get_environment(&window, id).await {
+            Ok(env) => Some(env),
+            Err(e) => {
+                warn!("Failed to find environment by id {id} {}", e);
+                None
+            }
+        },
         None => None,
     };
 
