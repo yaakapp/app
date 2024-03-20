@@ -346,7 +346,7 @@ export const RequestPane = memo(function RequestPane({
                   onChangeContentType={handleContentTypeChange}
                 />
               ) : (
-                <EmptyStateText>No Body</EmptyStateText>
+                <EmptyStateText>Empty Body</EmptyStateText>
               )}
             </TabContent>
           </Tabs>
