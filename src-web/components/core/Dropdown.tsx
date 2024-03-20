@@ -55,7 +55,6 @@ export type DropdownItem = DropdownItemDefault | DropdownItemSeparator;
 export interface DropdownProps {
   children: ReactElement<HTMLAttributes<HTMLButtonElement>>;
   items: DropdownItem[];
-  openOnHotKeyAction?: HotkeyAction;
   onOpen?: () => void;
   onClose?: () => void;
 }
@@ -71,7 +70,7 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, openOnHotKeyAction, onOpen, onClose }: DropdownProps,
+  { children, items, onOpen, onClose }: DropdownProps,
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
@@ -87,11 +86,6 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
     },
     [onClose, onOpen],
   );
-
-  useHotKey(openOnHotKeyAction ?? null, () => {
-    setIsOpen(true);
-    menuRef.current?.next?.();
-  });
 
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
