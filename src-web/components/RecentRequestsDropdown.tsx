@@ -41,10 +41,6 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
     dropdownRef.current?.prev?.();
   });
 
-  useHotKey('request_switcher.toggle', () => {
-    dropdownRef.current?.toggle();
-  });
-
   const items = useMemo<DropdownItem[]>(() => {
     if (activeWorkspaceId === null) return [];
 
@@ -87,6 +83,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
       <Button
         data-tauri-drag-region
         size="sm"
+        hotkeyAction="request_switcher.toggle"
         className={classNames(
           className,
           'text-gray-800 text-sm truncate pointer-events-auto',

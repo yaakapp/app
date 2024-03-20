@@ -25,8 +25,13 @@ export const SidebarActions = memo(function SidebarActions() {
         hotkeyAction="sidebar.toggle"
         icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
       />
-      <CreateDropdown openOnHotKeyAction="http_request.create">
-        <IconButton size="sm" icon="plusCircle" title="Add Resource" />
+      <CreateDropdown>
+        <IconButton
+          size="sm"
+          icon="plusCircle"
+          title="Add Resource"
+          hotkeyAction="http_request.create"
+        />
       </CreateDropdown>
     </HStack>
   );
