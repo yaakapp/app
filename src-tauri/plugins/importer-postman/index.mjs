@@ -1,12 +1,13 @@
-const T = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", w = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", A = [w, T];
-function q(e) {
-  const t = b(e);
-  if (t == null)
+const q = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", S = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", _ = [S, q];
+function v(t) {
+  var b;
+  const e = w(t);
+  if (e == null)
     return;
-  const n = a(t.info);
-  if (!A.includes(n.schema) || !Array.isArray(t.item))
+  const n = o(e.info);
+  if (!_.includes(n.schema) || !Array.isArray(e.item))
     return;
-  const i = {
+  const A = g(e.auth), i = {
     workspaces: [],
     environments: [],
     httpRequests: [],
@@ -15,30 +16,34 @@ function q(e) {
     model: "workspace",
     id: m("wk"),
     name: n.name || "Postman Import",
-    description: n.description || ""
+    description: n.description || "",
+    variables: (b = e.variable) == null ? void 0 : b.map((r) => ({
+      name: r.key,
+      value: r.value
+    }))
   };
   i.workspaces.push(c);
   const f = (r, u = null) => {
     if (typeof r.name == "string" && Array.isArray(r.item)) {
-      const o = {
+      const a = {
         model: "folder",
         workspaceId: c.id,
         id: m("fl"),
         name: r.name,
         folderId: u
       };
-      i.folders.push(o);
+      i.folders.push(a);
       for (const s of r.item)
-        f(s, o.id);
+        f(s, a.id);
     } else if (typeof r.name == "string" && "request" in r) {
-      const o = a(r.request), s = k(o.body), d = S(o.auth), g = {
+      const a = o(r.request), s = O(a.body), T = g(a.auth), d = T.authenticationType == null ? A : T, k = {
         model: "http_request",
         id: m("rq"),
         workspaceId: c.id,
         folderId: u,
         name: r.name,
-        method: o.method || "GET",
-        url: typeof o.url == "string" ? o.url : a(o.url).raw,
+        method: a.method || "GET",
+        url: typeof a.url == "string" ? a.url : o(a.url).raw,
         body: s.body,
         bodyType: s.bodyType,
         authentication: d.authentication,
@@ -46,35 +51,41 @@ function q(e) {
         headers: [
           ...s.headers,
           ...d.headers,
-          ...y(o.header).map((p) => ({
+          ...y(a.header).map((p) => ({
             name: p.key,
             value: p.value,
             enabled: !p.disabled
           }))
         ]
       };
-      i.httpRequests.push(g);
+      i.httpRequests.push(k);
     } else
       console.log("Unknown item", r, u);
   };
-  for (const r of t.item)
+  for (const r of e.item)
     f(r);
   return { resources: h(i) };
 }
-function S(e) {
-  const t = a(e);
-  return "basic" in t ? {
+function g(t) {
+  const e = o(t);
+  return "basic" in e ? {
     headers: [],
     authenticationType: "basic",
     authentication: {
-      username: t.basic.username || "",
-      password: t.basic.password || ""
+      username: e.basic.username || "",
+      password: e.basic.password || ""
+    }
+  } : "bearer" in e ? {
+    headers: [],
+    authenticationType: "bearer",
+    authentication: {
+      token: e.bearer.token || ""
     }
   } : { headers: [], authenticationType: null, authentication: {} };
 }
-function k(e) {
-  const t = a(e);
-  return "graphql" in t ? {
+function O(t) {
+  const e = o(t);
+  return "graphql" in e ? {
     headers: [
       {
         name: "Content-Type",
@@ -85,12 +96,12 @@ function k(e) {
     bodyType: "graphql",
     body: {
       text: JSON.stringify(
-        { query: t.graphql.query, variables: b(t.graphql.variables) },
+        { query: e.graphql.query, variables: w(e.graphql.variables) },
         null,
         2
       )
     }
-  } : "urlencoded" in t ? {
+  } : "urlencoded" in e ? {
     headers: [
       {
         name: "Content-Type",
@@ -100,13 +111,13 @@ function k(e) {
     ],
     bodyType: "application/x-www-form-urlencoded",
     body: {
-      form: y(t.urlencoded).map((n) => ({
+      form: y(e.urlencoded).map((n) => ({
         enabled: !n.disabled,
         name: n.key ?? "",
         value: n.value ?? ""
       }))
     }
-  } : "formdata" in t ? {
+  } : "formdata" in e ? {
     headers: [
       {
         name: "Content-Type",
@@ -116,7 +127,7 @@ function k(e) {
     ],
     bodyType: "multipart/form-data",
     body: {
-      form: y(t.formdata).map(
+      form: y(e.formdata).map(
         (n) => n.src != null ? {
           enabled: !n.disabled,
           name: n.key ?? "",
@@ -130,32 +141,32 @@ function k(e) {
     }
   } : { headers: [], bodyType: null, body: {} };
 }
-function b(e) {
+function w(t) {
   try {
-    return a(JSON.parse(e));
+    return o(JSON.parse(t));
   } catch {
   }
   return null;
 }
-function a(e) {
-  return Object.prototype.toString.call(e) === "[object Object]" ? e : {};
+function o(t) {
+  return Object.prototype.toString.call(t) === "[object Object]" ? t : {};
 }
-function y(e) {
-  return Object.prototype.toString.call(e) === "[object Array]" ? e : [];
+function y(t) {
+  return Object.prototype.toString.call(t) === "[object Array]" ? t : [];
 }
-function h(e) {
-  return typeof e == "string" ? e.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(e) && e != null ? e.map(h) : typeof e == "object" && e != null ? Object.fromEntries(
-    Object.entries(e).map(([t, n]) => [t, h(n)])
-  ) : e;
+function h(t) {
+  return typeof t == "string" ? t.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(t) && t != null ? t.map(h) : typeof t == "object" && t != null ? Object.fromEntries(
+    Object.entries(t).map(([e, n]) => [e, h(n)])
+  ) : t;
 }
-function m(e) {
-  const t = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let n = `${e}_`;
+function m(t) {
+  const e = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let n = `${t}_`;
   for (let l = 0; l < 10; l++)
-    n += t[Math.floor(Math.random() * t.length)];
+    n += e[Math.floor(Math.random() * e.length)];
   return n;
 }
 export {
   m as generateId,
-  q as pluginHookImport
+  v as pluginHookImport
 };
