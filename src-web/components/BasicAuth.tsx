@@ -13,7 +13,7 @@ export function BasicAuth<T extends HttpRequest | GrpcRequest>({ request }: Prop
   const updateGrpcRequest = useUpdateGrpcRequest(request.id);
 
   return (
-    <VStack className="my-2" space={2}>
+    <VStack className="py-2 overflow-y-auto h-full" space={2}>
       <Input
         useTemplating
         autocompleteVariables

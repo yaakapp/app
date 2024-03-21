@@ -32,6 +32,7 @@ export type PairEditorProps = {
   allowFileValues?: boolean;
   nameValidate?: InputProps['validate'];
   valueValidate?: InputProps['validate'];
+  noScroll?: boolean;
 };
 
 export type Pair = {
@@ -57,6 +58,7 @@ export const PairEditor = memo(function PairEditor({
   nameValidate,
   valueType,
   onChange,
+  noScroll,
   pairs: originalPairs,
   valueAutocomplete,
   valueAutocompleteVariables,
@@ -95,7 +97,7 @@ export const PairEditor = memo(function PairEditor({
     [onChange],
   );
 
-  const handleMove = useCallback<FormRowProps['onMove']>(
+  const handleMove = useCallback<PairEditorRowProps['onMove']>(
     (id, side) => {
       const dragIndex = pairs.findIndex((r) => r.id === id);
       setHoveredIndex(side === 'above' ? dragIndex : dragIndex + 1);
@@ -103,7 +105,7 @@ export const PairEditor = memo(function PairEditor({
     [pairs],
   );
 
-  const handleEnd = useCallback<FormRowProps['onEnd']>(
+  const handleEnd = useCallback<PairEditorRowProps['onEnd']>(
     (id: string) => {
       if (hoveredIndex === null) return;
       setHoveredIndex(null);
@@ -162,7 +164,8 @@ export const PairEditor = memo(function PairEditor({
       className={classNames(
         className,
         '@container',
-        'pb-2 grid overflow-auto max-h-full',
+        'pb-2 mb-auto',
+        !noScroll && 'overflow-y-auto max-h-full',
         // Move over the width of the drag handle
         '-ml-3',
         // Pad to make room for the drag divider
@@ -174,7 +177,7 @@ export const PairEditor = memo(function PairEditor({
         return (
           <Fragment key={p.id}>
             {hoveredIndex === i && <DropMarker />}
-            <FormRow
+            <PairEditorRow
               pairContainer={p}
               className="py-1"
               isLast={isLast}
@@ -207,7 +210,7 @@ enum ItemTypes {
   ROW = 'pair-row',
 }
 
-type FormRowProps = {
+type PairEditorRowProps = {
   className?: string;
   pairContainer: PairContainer;
   forceFocusPairId?: string | null;
@@ -233,7 +236,7 @@ type FormRowProps = {
   | 'allowFileValues'
 >;
 
-const FormRow = memo(function FormRow({
+function PairEditorRow({
   allowFileValues,
   className,
   forceFocusPairId,
@@ -254,7 +257,7 @@ const FormRow = memo(function FormRow({
   valuePlaceholder,
   valueValidate,
   valueType,
-}: FormRowProps) {
+}: PairEditorRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
   const prompt = usePrompt();
@@ -480,7 +483,7 @@ const FormRow = memo(function FormRow({
       )}
     </div>
   );
-});
+}
 
 const newPairContainer = (initialPair?: Pair): PairContainer => {
   const id = initialPair?.id ?? uuid();
