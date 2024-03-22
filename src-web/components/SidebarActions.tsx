@@ -1,12 +1,22 @@
-import { memo } from 'react';
+import { useMemo } from 'react';
+import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
+import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { trackEvent } from '../lib/analytics';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
 
-export const SidebarActions = memo(function SidebarActions() {
-  const { hidden, show, hide } = useSidebarHidden();
+export function SidebarActions() {
+  const floating = useShouldFloatSidebar();
+  const [normalHidden, setNormalHidden] = useSidebarHidden();
+  const [floatingHidden, setFloatingHidden] = useFloatingSidebarHidden();
+
+  const hidden = floating ? floatingHidden : normalHidden;
+  const setHidden = useMemo(
+    () => (floating ? setFloatingHidden : setNormalHidden),
+    [floating, setFloatingHidden, setNormalHidden],
+  );
 
   return (
     <HStack className="h-full" alignItems="center">
@@ -14,10 +24,9 @@ export const SidebarActions = memo(function SidebarActions() {
         onClick={async () => {
           trackEvent('sidebar', 'toggle');
 
-          // NOTE: We're not using `toggle` because it may be out of sync
-          // from changes in other windows
-          if (hidden) await show();
-          else await hide();
+          // NOTE: We're not using the (h) => !h pattern here because the data
+          //  might be different if another window changed it (out of sync)
+          await setHidden(!hidden);
         }}
         className="pointer-events-auto"
         size="sm"
@@ -35,4 +44,4 @@ export const SidebarActions = memo(function SidebarActions() {
       </CreateDropdown>
     </HStack>
   );
-});
+}
