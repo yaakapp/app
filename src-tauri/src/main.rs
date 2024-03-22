@@ -23,7 +23,7 @@ use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
 use sqlx::migrate::Migrator;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+use sqlx::sqlite::{SqliteConnectOptions};
 use sqlx::types::Json;
 use sqlx::{Pool, Sqlite, SqlitePool};
 #[cfg(target_os = "macos")]

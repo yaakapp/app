@@ -15,6 +15,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const activeEnvironmentId = useActiveEnvironmentId();
   const workspaces = useWorkspaces();
   const requests = useRequests();
+  const [command, setCommand] = useState<string>('');
 
   const items = useMemo<{ label: string; onSelect: () => void; key: string }[]>(() => {
     const items = [];
@@ -47,10 +48,17 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     return items;
   }, [activeEnvironmentId, requests, routes, workspaces]);
 
-  const handleSelectAndClose = (cb: () => void) => {
-    onClose();
-    cb();
-  };
+  const filteredItems = useMemo(() => {
+    return items.filter((v) => v.label.toLowerCase().includes(command.toLowerCase()));
+  }, [command, items]);
+
+  const handleSelectAndClose = useCallback(
+    (cb: () => void) => {
+      onClose();
+      cb();
+    },
+    [onClose],
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -59,13 +67,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       } else if (e.key === 'ArrowUp') {
         setSelectedIndex((prev) => prev - 1);
       } else if (e.key === 'Enter') {
-        const item = items[selectedIndex];
+        const item = filteredItems[selectedIndex];
         if (item) {
           handleSelectAndClose(item.onSelect);
         }
       }
     },
-    [items, onClose, selectedIndex],
+    [filteredItems, handleSelectAndClose, selectedIndex],
   );
 
   return (
@@ -76,11 +84,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           name="command"
           label="Command"
           placeholder="Type a command"
+          defaultValue=""
+          onChange={setCommand}
           onKeyDown={handleKeyDown}
         />
       </div>
       <div className="h-full px-1.5 overflow-y-auto">
-        {items.map((v, i) => (
+        {filteredItems.map((v, i) => (
           <CommandPaletteItem
             active={i === selectedIndex}
             key={v.key}
