@@ -34,8 +34,8 @@ export function Checkbox({
         <input
           aria-hidden
           className={classNames(
-            'opacity-50 appearance-none w-4 h-4 flex-shrink-0 border border-[currentColor]',
-            'rounded hocus:border-focus hocus:bg-focus/[5%] hocus:opacity-100 outline-none ring-0',
+            'appearance-none w-4 h-4 flex-shrink-0 border border-highlight',
+            'rounded hocus:border-focus hocus:bg-focus/[5%] outline-none ring-0',
           )}
           type="checkbox"
           disabled={disabled}
