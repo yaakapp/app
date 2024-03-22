@@ -17,10 +17,10 @@ function v(t) {
     id: m("wk"),
     name: n.name || "Postman Import",
     description: n.description || "",
-    variables: (b = e.variable) == null ? void 0 : b.map((r) => ({
+    variables: ((b = e.variable) == null ? void 0 : b.map((r) => ({
       name: r.key,
       value: r.value
-    }))
+    }))) ?? []
   };
   i.workspaces.push(c);
   const f = (r, u = null) => {

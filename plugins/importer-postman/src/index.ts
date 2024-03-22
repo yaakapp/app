@@ -37,10 +37,11 @@ export function pluginHookImport(contents: string): { resources: ExportResources
     id: generateId('wk'),
     name: info.name || 'Postman Import',
     description: info.description || '',
-    variables: root.variable?.map((v: any) => ({
-      name: v.key,
-      value: v.value,
-    })),
+    variables:
+      root.variable?.map((v: any) => ({
+        name: v.key,
+        value: v.value,
+      })) ?? [],
   };
   exportResources.workspaces.push(workspace);
 
