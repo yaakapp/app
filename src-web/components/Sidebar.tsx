@@ -56,7 +56,7 @@ interface TreeNode {
 }
 
 export function Sidebar({ className }: Props) {
-  const { hidden, show, hide } = useSidebarHidden();
+  const [hidden, setHidden] = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
   const activeEnvironmentId = useActiveEnvironmentId();
@@ -241,16 +241,15 @@ export function Sidebar({ className }: Props) {
   useKeyPressEvent('Delete', handleDeleteKey);
 
   useHotKey('sidebar.focus', async () => {
-    console.log('sidebar.focus', { hidden, hasFocus });
     // Hide the sidebar if it's already focused
     if (!hidden && hasFocus) {
-      await hide();
+      await setHidden(true);
       return;
     }
 
     // Show the sidebar if it's hidden
     if (hidden) {
-      await show();
+      await setHidden(false);
     }
 
     // Select 0 index on focus if none selected

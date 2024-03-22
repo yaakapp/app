@@ -6,14 +6,16 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
+import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
 import { useImportData } from '../hooks/useImportData';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
+import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
 import { useWorkspaces } from '../hooks/useWorkspaces';
@@ -37,33 +39,21 @@ const head = { gridArea: 'head' };
 const body = { gridArea: 'body' };
 const drag = { gridArea: 'drag' };
 
-const WINDOW_FLOATING_SIDEBAR_WIDTH = 600;
-
 export default function Workspace() {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = useActiveWorkspaceId();
   const { setWidth, width, resetWidth } = useSidebarWidth();
-  const { hide, show, hidden } = useSidebarHidden();
+  const [sidebarHidden, setSidebarHidden] = useSidebarHidden();
+  const [floatingSidebarHidden, setFloatingSidebarHidden] = useFloatingSidebarHidden();
   const activeRequest = useActiveRequest();
   const windowSize = useWindowSize();
   const importData = useImportData();
-  const [floating, setFloating] = useState<boolean>(false);
+  const floating = useShouldFloatSidebar();
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
-
-  // float/un-float sidebar on window resize
-  useEffect(() => {
-    const shouldHide = windowSize.width <= WINDOW_FLOATING_SIDEBAR_WIDTH;
-    if (shouldHide && !floating) {
-      setFloating(true);
-      hide().catch(console.error);
-    } else if (!shouldHide && floating) {
-      setFloating(false);
-    }
-  }, [floating, hide, windowSize.width]);
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -84,10 +74,10 @@ export default function Workspace() {
           e.preventDefault(); // Prevent text selection and things
           const newWidth = startWidth + (e.clientX - mouseStartX);
           if (newWidth < 50) {
-            await hide();
+            await setSidebarHidden(true);
             resetWidth();
           } else {
-            await show();
+            await setSidebarHidden(false);
             setWidth(newWidth);
           }
         },
@@ -101,10 +91,10 @@ export default function Workspace() {
       document.documentElement.addEventListener('mouseup', moveState.current.up);
       setIsResizing(true);
     },
-    [setWidth, resetWidth, width, hide, show],
+    [width, setSidebarHidden, resetWidth, setWidth],
   );
 
-  const sideWidth = hidden ? 0 : width;
+  const sideWidth = sidebarHidden ? 0 : width;
   const styles = useMemo<CSSProperties>(
     () => ({
       gridTemplate: floating
@@ -144,7 +134,11 @@ export default function Workspace() {
       )}
     >
       {floating ? (
-        <Overlay open={!hidden} portalName="sidebar" onClose={hide}>
+        <Overlay
+          open={!floatingSidebarHidden}
+          portalName="sidebar"
+          onClose={() => setFloatingSidebarHidden(true)}
+        >
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
