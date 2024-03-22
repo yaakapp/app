@@ -55,7 +55,7 @@
     }
 
     .placeholder-widget {
-      @apply text-xs text-violet-700 dark:text-violet-700 px-1 rounded cursor-default dark:shadow;
+      @apply text-xs text-violet-700 dark:text-violet-700 px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 
       /* NOTE: Background and border are translucent so we can see text selection through it */
       @apply bg-violet-500/20 border border-violet-500/20 border-opacity-40;
@@ -131,7 +131,8 @@
 }
 
 .cm-editor .fold-gutter-icon {
-  @apply pt-[0.25em] pl-[0.4em] px-[0.4em] h-4 cursor-pointer rounded;
+  @apply pt-[0.25em] pl-[0.4em] px-[0.4em] h-4 rounded;
+  @apply cursor-default !important;
 }
 
 .cm-editor .fold-gutter-icon::after {
@@ -152,8 +153,9 @@
 }
 
 .cm-editor .cm-foldPlaceholder {
-  @apply px-2 border border-gray-400/50 bg-gray-300/50 cursor-default;
+  @apply px-2 border border-gray-400/50 bg-gray-300/50;
   @apply hover:text-gray-800 hover:border-gray-400;
+  @apply cursor-default !important;
 }
 
 .cm-editor .cm-activeLineGutter {
