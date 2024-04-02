@@ -191,6 +191,20 @@ function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'head
         ),
       },
     };
+  } else if ('raw' in body) {
+    return {
+      headers: [
+        {
+          name: 'Content-Type',
+          value: body.options?.raw?.language === 'json' ? 'application/json' : '',
+          enabled: true,
+        },
+      ],
+      bodyType: body.options?.raw?.language === 'json' ? 'application/json' : 'other',
+      body: {
+        text: body.raw ?? '',
+      },
+    };
   } else {
     // TODO: support other body types
     return { headers: [], bodyType: null, body: {} };
