@@ -1,73 +1,73 @@
 const q = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", S = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", _ = [S, q];
-function v(t) {
-  var b;
-  const e = w(t);
+function j(t) {
+  var g;
+  const e = A(t);
   if (e == null)
     return;
-  const n = o(e.info);
-  if (!_.includes(n.schema) || !Array.isArray(e.item))
+  const a = l(e.info);
+  if (!_.includes(a.schema) || !Array.isArray(e.item))
     return;
-  const A = g(e.auth), i = {
+  const c = w(e.auth), s = {
     workspaces: [],
     environments: [],
     httpRequests: [],
     folders: []
-  }, c = {
+  }, n = {
     model: "workspace",
-    id: m("wk"),
-    name: n.name || "Postman Import",
-    description: n.description || "",
-    variables: ((b = e.variable) == null ? void 0 : b.map((r) => ({
+    id: y("wk"),
+    name: a.name || "Postman Import",
+    description: a.description || "",
+    variables: ((g = e.variable) == null ? void 0 : g.map((r) => ({
       name: r.key,
       value: r.value
     }))) ?? []
   };
-  i.workspaces.push(c);
-  const f = (r, u = null) => {
+  s.workspaces.push(n);
+  const f = (r, d = null) => {
     if (typeof r.name == "string" && Array.isArray(r.item)) {
-      const a = {
+      const o = {
         model: "folder",
-        workspaceId: c.id,
-        id: m("fl"),
+        workspaceId: n.id,
+        id: y("fl"),
         name: r.name,
-        folderId: u
+        folderId: d
       };
-      i.folders.push(a);
-      for (const s of r.item)
-        f(s, a.id);
+      s.folders.push(o);
+      for (const u of r.item)
+        f(u, o.id);
     } else if (typeof r.name == "string" && "request" in r) {
-      const a = o(r.request), s = O(a.body), T = g(a.auth), d = T.authenticationType == null ? A : T, k = {
+      const o = l(r.request), u = O(o.body), T = w(o.auth), p = T.authenticationType == null ? c : T, k = {
         model: "http_request",
-        id: m("rq"),
-        workspaceId: c.id,
-        folderId: u,
+        id: y("rq"),
+        workspaceId: n.id,
+        folderId: d,
         name: r.name,
-        method: a.method || "GET",
-        url: typeof a.url == "string" ? a.url : o(a.url).raw,
-        body: s.body,
-        bodyType: s.bodyType,
-        authentication: d.authentication,
-        authenticationType: d.authenticationType,
+        method: o.method || "GET",
+        url: typeof o.url == "string" ? o.url : l(o.url).raw,
+        body: u.body,
+        bodyType: u.bodyType,
+        authentication: p.authentication,
+        authenticationType: p.authenticationType,
         headers: [
-          ...s.headers,
-          ...d.headers,
-          ...y(a.header).map((p) => ({
-            name: p.key,
-            value: p.value,
-            enabled: !p.disabled
+          ...u.headers,
+          ...p.headers,
+          ...h(o.header).map((m) => ({
+            name: m.key,
+            value: m.value,
+            enabled: !m.disabled
           }))
         ]
       };
-      i.httpRequests.push(k);
+      s.httpRequests.push(k);
     } else
-      console.log("Unknown item", r, u);
+      console.log("Unknown item", r, d);
   };
   for (const r of e.item)
     f(r);
-  return { resources: h(i) };
+  return { resources: b(s) };
 }
-function g(t) {
-  const e = o(t);
+function w(t) {
+  const e = l(t);
   return "basic" in e ? {
     headers: [],
     authenticationType: "basic",
@@ -84,7 +84,8 @@ function g(t) {
   } : { headers: [], authenticationType: null, authentication: {} };
 }
 function O(t) {
-  const e = o(t);
+  var a, i, c, s;
+  const e = l(t);
   return "graphql" in e ? {
     headers: [
       {
@@ -96,7 +97,7 @@ function O(t) {
     bodyType: "graphql",
     body: {
       text: JSON.stringify(
-        { query: e.graphql.query, variables: w(e.graphql.variables) },
+        { query: e.graphql.query, variables: A(e.graphql.variables) },
         null,
         2
       )
@@ -111,7 +112,7 @@ function O(t) {
     ],
     bodyType: "application/x-www-form-urlencoded",
     body: {
-      form: y(e.urlencoded).map((n) => ({
+      form: h(e.urlencoded).map((n) => ({
         enabled: !n.disabled,
         name: n.key ?? "",
         value: n.value ?? ""
@@ -127,7 +128,7 @@ function O(t) {
     ],
     bodyType: "multipart/form-data",
     body: {
-      form: y(e.formdata).map(
+      form: h(e.formdata).map(
         (n) => n.src != null ? {
           enabled: !n.disabled,
           name: n.key ?? "",
@@ -139,34 +140,46 @@ function O(t) {
         }
       )
     }
+  } : "raw" in e ? {
+    headers: [
+      {
+        name: "Content-Type",
+        value: ((i = (a = e.options) == null ? void 0 : a.raw) == null ? void 0 : i.language) === "json" ? "application/json" : "",
+        enabled: !0
+      }
+    ],
+    bodyType: ((s = (c = e.options) == null ? void 0 : c.raw) == null ? void 0 : s.language) === "json" ? "application/json" : "other",
+    body: {
+      text: e.raw ?? ""
+    }
   } : { headers: [], bodyType: null, body: {} };
 }
-function w(t) {
+function A(t) {
   try {
-    return o(JSON.parse(t));
+    return l(JSON.parse(t));
   } catch {
   }
   return null;
 }
-function o(t) {
+function l(t) {
   return Object.prototype.toString.call(t) === "[object Object]" ? t : {};
 }
-function y(t) {
+function h(t) {
   return Object.prototype.toString.call(t) === "[object Array]" ? t : [];
 }
-function h(t) {
-  return typeof t == "string" ? t.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(t) && t != null ? t.map(h) : typeof t == "object" && t != null ? Object.fromEntries(
-    Object.entries(t).map(([e, n]) => [e, h(n)])
+function b(t) {
+  return typeof t == "string" ? t.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(t) && t != null ? t.map(b) : typeof t == "object" && t != null ? Object.fromEntries(
+    Object.entries(t).map(([e, a]) => [e, b(a)])
   ) : t;
 }
-function m(t) {
+function y(t) {
   const e = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let n = `${t}_`;
-  for (let l = 0; l < 10; l++)
-    n += e[Math.floor(Math.random() * e.length)];
-  return n;
+  let a = `${t}_`;
+  for (let i = 0; i < 10; i++)
+    a += e[Math.floor(Math.random() * e.length)];
+  return a;
 }
 export {
-  m as generateId,
-  v as pluginHookImport
+  y as generateId,
+  j as pluginHookImport
 };
