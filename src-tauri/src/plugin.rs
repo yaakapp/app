@@ -10,7 +10,8 @@ use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
+use tauri::path::BaseDirectory;
 
 use crate::models::{WorkspaceExportResources};
 
@@ -78,8 +79,8 @@ fn run_plugin(
     js_args: &[JsValue],
 ) -> serde_json::Value {
     let plugin_dir = app_handle
-        .path_resolver()
-        .resolve_resource("plugins")
+        .path()
+        .resolve("plugins", BaseDirectory::Resource)
         .expect("failed to resolve plugin directory resource")
         .join(plugin_name);
     let plugin_index_file = plugin_dir.join("index.mjs");

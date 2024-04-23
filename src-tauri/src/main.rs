@@ -10,53 +10,56 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-use ::http::uri::InvalidUri;
 use ::http::Uri;
+use ::http::uri::InvalidUri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::migrate::Migrator;
-use sqlx::sqlite::{SqliteConnectOptions};
-use sqlx::types::Json;
 use sqlx::{Pool, Sqlite, SqlitePool};
+use sqlx::migrate::Migrator;
+use sqlx::sqlite::SqliteConnectOptions;
+use sqlx::types::Json;
+use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow, Window};
+use tauri::{Manager, WindowEvent};
+use tauri::menu::{Menu, MenuId};
+use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
-use tauri::{AppHandle, RunEvent, State, Window, WindowUrl};
-use tauri::{Manager, WindowEvent};
-use tauri_plugin_log::{fern, LogTarget};
-use tauri_plugin_window_state::{StateFlags, WindowExt};
+use tauri_plugin_log::{fern, Target, TargetKind};
+use tauri_plugin_updater::Updater;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 use window_shadows::set_shadow;
 
+use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
-    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
-    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
-    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
-    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
-    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
-    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
-    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
-    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, Settings, Workspace,
+    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
+    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
+    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
+    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
+    duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar,
+    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
+    get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue,
+    list_cookie_jars, list_environments, list_folders, list_grpc_connections,
+    list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces,
+    set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment,
+    upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace,
     WorkspaceExportResources,
 };
 use crate::plugin::ImportResult;
@@ -72,11 +75,11 @@ mod updates;
 mod window_ext;
 mod window_menu;
 
-async fn migrate_db(app_handle: AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
+async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
     let p = app_handle
-        .path_resolver()
-        .resolve_resource("migrations")
+        .path()
+        .resolve("migrations", BaseDirectory::Resource)
         .expect("failed to resolve resource");
     info!("Running migrations at {}", p.to_string_lossy());
     let mut m = Migrator::new(p).await.expect("Failed to load migrations");
@@ -97,12 +100,12 @@ struct AppMetaData {
 
 #[tauri::command]
 async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
-    let p = app_handle.path_resolver();
+    let app_data_dir = app_handle.path().app_data_dir().unwrap();
     return Ok(AppMetaData {
         is_dev: is_dev(),
         version: app_handle.package_info().version.to_string(),
         name: app_handle.package_info().name.to_string(),
-        app_data_dir: p.app_data_dir().unwrap().to_string_lossy().to_string(),
+        app_data_dir: app_data_dir.to_string_lossy().to_string(),
     });
 }
 
@@ -295,7 +298,7 @@ async fn cmd_grpc_go(
                 return;
             };
 
-            match serde_json::from_str::<IncomingMsg>(ev.payload().unwrap()) {
+            match serde_json::from_str::<IncomingMsg>(ev.payload()) {
                 Ok(IncomingMsg::Message(raw_msg)) => {
                     let w = w.clone();
                     let base_msg = base_msg.clone();
@@ -347,7 +350,7 @@ async fn cmd_grpc_go(
             }
         }
     };
-    let event_handler = w.listen_global(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
+    let event_handler = w.listen_any(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
     let grpc_listen = {
         let w = w.clone();
@@ -671,7 +674,7 @@ async fn cmd_send_ephemeral_request(
     };
 
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_global(
+    window.listen_any(
         format!("cancel_http_response_{}", response.id),
         move |_event| {
             let _ = cancel_tx.send(true);
@@ -875,7 +878,7 @@ async fn cmd_send_http_request(
     };
 
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_global(
+    window.listen_any(
         format!("cancel_http_response_{}", response.id),
         move |_event| {
             let _ = cancel_tx.send(true);
@@ -1374,9 +1377,18 @@ async fn cmd_check_for_updates(
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(
             tauri_plugin_log::Builder::default()
-                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .targets([
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::LogDir { file_name: None }),
+                    Target::new(TargetKind::Webview),
+                ])
                 .level_for("cookie_store", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
@@ -1397,8 +1409,8 @@ fn main() {
                 .build(),
         )
         .setup(|app| {
-            let app_data_dir = app.path_resolver().app_data_dir().unwrap();
-            let app_config_dir = app.path_resolver().app_config_dir().unwrap();
+            let app_data_dir = app.path().app_data_dir().unwrap();
+            let app_config_dir = app.path().app_config_dir().unwrap();
             info!(
                 "App Config Dir: {}",
                 app_config_dir.as_path().to_string_lossy(),
@@ -1441,8 +1453,8 @@ fn main() {
                     .expect("Failed to migrate database");
                 app.manage(m);
                 let h = app.handle();
-                let _ = cancel_pending_responses(&h).await;
-                let _ = cancel_pending_grpc_connections(&h).await;
+                let _ = cancel_pending_responses(h).await;
+                let _ = cancel_pending_grpc_connections(h).await;
             });
 
             Ok(())
@@ -1508,33 +1520,11 @@ fn main() {
         .expect("error while running tauri application")
         .run(|app_handle, event| {
             match event {
-                RunEvent::Updater(updater_event) => match updater_event {
-                    tauri::UpdaterEvent::Pending => {
-                        debug!("Updater pending");
-                    }
-                    tauri::UpdaterEvent::Updated => {
-                        debug!("Updater updated");
-                    }
-                    tauri::UpdaterEvent::UpdateAvailable {
-                        body,
-                        version,
-                        date: _,
-                    } => {
-                        debug!("Updater update available body={} version={}", body, version);
-                    }
-                    tauri::UpdaterEvent::Downloaded => {
-                        debug!("Updater downloaded");
-                    }
-                    tauri::UpdaterEvent::Error(e) => {
-                        warn!("Updater received error: {:?}", e);
-                    }
-                    _ => {}
-                },
                 RunEvent::Ready => {
                     let w = create_window(app_handle, None);
-                    if let Err(e) = w.restore_state(StateFlags::all()) {
-                        error!("Failed to restore window state {}", e);
-                    }
+                    // if let Err(e) = w.restore_state(StateFlags::all()) {
+                    //     error!("Failed to restore window state {}", e);
+                    // }
 
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
@@ -1577,18 +1567,18 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_window(handle: &AppHandle, url: Option<&str>) -> Window {
-    let app_menu = window_menu::os_default("Yaak".to_string().as_str());
-    let window_num = handle.windows().len();
+fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
+    // let app_menu = window_menu::os_default(handle, "Yaak".to_string().as_str());
+    let window_num = handle.webview_windows().len();
     let window_id = format!("wnd_{}", window_num);
-    let mut win_builder = tauri::WindowBuilder::new(
+    let mut win_builder = tauri::WebviewWindowBuilder::new(
         handle,
         window_id,
-        WindowUrl::App(url.unwrap_or_default().into()),
+        WebviewUrl::App(url.unwrap_or_default().into()),
     )
-    .fullscreen(false)
     .resizable(true)
-    .disable_file_drop_handler() // Required for frontend Dnd on windows
+    .fullscreen(false)
+    .disable_drag_drop_handler() // Required for frontend Dnd on windows
     .inner_size(1100.0, 600.0)
     .position(
         // Randomly offset so windows don't stack exactly
@@ -1601,7 +1591,7 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> Window {
     #[cfg(target_os = "macos")]
     {
         win_builder = win_builder
-            .menu(app_menu)
+            // .menu(app_menu)
             .hidden_title(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }
@@ -1616,12 +1606,12 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> Window {
     let win = win_builder.build().expect("failed to build window");
 
     // Tauri doesn't support shadows when hiding decorations, so we add our own
-    #[cfg(any(windows, target_os = "macos"))]
-    set_shadow(&win, true).unwrap();
+    // #[cfg(any(windows, target_os = "macos"))]
+    // set_shadow(&win, true).unwrap();
 
     let win2 = win.clone();
     let handle2 = handle.clone();
-    win.on_menu_event(move |event| match event.menu_item_id() {
+    win.on_menu_event(move |w, event| match event.id().as_ref() {
         "quit" => exit(0),
         "close" => win2.close().unwrap(),
         "zoom_reset" => win2.emit("zoom", 0).unwrap(),

@@ -4,14 +4,18 @@ import type { DependencyList } from 'react';
 import { useEffect } from 'react';
 
 /**
-  * React hook to listen to a Tauri event.
-  */
-export function useListenToTauriEvent<T>(event: string, fn: EventCallback<T>, deps: DependencyList = []) {
+ * React hook to listen to a Tauri event.
+ */
+export function useListenToTauriEvent<T>(
+  event: string,
+  fn: EventCallback<T>,
+  deps: DependencyList = [],
+) {
   useEffect(() => {
     let unMounted = false;
     let unsubFn: (() => void) | undefined = undefined;
 
-    tauriListen(event, fn).then((unsub) => {
+    tauriListen(event, fn, { target: { kind: 'Any' } }).then((unsub) => {
       if (unMounted) unsub();
       else unsubFn = unsub;
     });

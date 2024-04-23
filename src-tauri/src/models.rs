@@ -1589,12 +1589,12 @@ pub async fn get_workspace_export_resources(
 }
 
 fn emit_upserted_model<S: Serialize + Clone>(mgr: &impl Manager<Wry>, model: S) -> S {
-    mgr.emit_all("upserted_model", model.clone()).unwrap();
+    mgr.emit("upserted_model", model.clone()).unwrap();
     model
 }
 
 fn emit_deleted_model<S: Serialize + Clone, E>(mgr: &impl Manager<Wry>, model: S) -> Result<S, E> {
-    mgr.emit_all("deleted_model", model.clone()).unwrap();
+    mgr.emit("deleted_model", model.clone()).unwrap();
     Ok(model)
 }
 

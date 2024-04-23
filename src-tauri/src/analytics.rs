@@ -208,7 +208,7 @@ fn get_os() -> &'static str {
 }
 
 fn get_window_size(app_handle: &AppHandle) -> String {
-    let window = match app_handle.windows().into_values().next() {
+    let window = match app_handle.webview_windows().into_values().next() {
         Some(w) => w,
         None => return "unknown".to_string(),
     };

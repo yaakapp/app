@@ -1,0 +1,42 @@
+{
+  "$schema": "../gen/schemas/capabilities.json",
+  "identifier": "main",
+  "description": "Main permissions",
+  "local": true,
+  "windows": [
+    "*"
+  ],
+  "permissions": [
+    "os:allow-os-type",
+    "fs:allow-read-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    },
+    "shell:allow-open",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "protoc",
+          "sidecar": true,
+          "args": true
+        }
+      ]
+    },
+    "window:allow-close",
+    "window:allow-maximize",
+    "window:allow-minimize",
+    "window:allow-set-decorations",
+    "window:allow-set-title",
+    "window:allow-start-dragging",
+    "window:allow-unmaximize"
+  ]
+}

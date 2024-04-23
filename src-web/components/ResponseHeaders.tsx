@@ -1,4 +1,4 @@
-import { shell } from '@tauri-apps/api';
+import { open } from '@tauri-apps/plugin-shell';
 import type { HttpResponse } from '../lib/models';
 import { IconButton } from './core/IconButton';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
@@ -28,7 +28,7 @@ export function ResponseHeaders({ response }: Props) {
                 iconSize="sm"
                 className="inline-block w-auto ml-1 !h-auto opacity-50 hover:opacity-100"
                 icon="externalLink"
-                onClick={() => shell.open(response.url)}
+                onClick={() => open(response.url)}
                 title="Open in browser"
               />
             </div>

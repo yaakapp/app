@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 import type { Environment } from '../lib/models';
 import { getEnvironment } from '../lib/store';
 import { environmentsQueryKey } from './useEnvironments';

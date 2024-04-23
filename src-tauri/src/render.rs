@@ -1,6 +1,8 @@
 use crate::models::{Environment, Workspace};
 use std::collections::HashMap;
-use tauri::regex::Regex;
+use log::kv::Source;
+use regex::Regex;
+
 
 pub fn render(template: &str, workspace: &Workspace, environment: Option<&Environment>) -> String {
     let mut map = HashMap::new();
@@ -24,7 +26,7 @@ pub fn render(template: &str, workspace: &Workspace, environment: Option<&Enviro
 
     Regex::new(r"\$\{\[\s*([^]\s]+)\s*]}")
         .expect("Failed to create regex")
-        .replace_all(template, |caps: &tauri::regex::Captures| {
+        .replace_all(template, |caps: &regex::Captures| {
             let key = caps.get(1).unwrap().as_str();
             map.get(key).unwrap_or(&"")
         })

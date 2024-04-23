@@ -2,40 +2,51 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "Yaak",
-    "version": "2024.3.10"
+  "productName": "Yaak",
+  "version": "2024.3.10",
+  "identifier": "app.yaak.desktop",
+  "app": {
+    "withGlobalTauri": false,
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "$APPDATA/responses/*"
+        ]
+      }
+    }
   },
-  "tauri": {
-    "windows": [],
+  "plugins": {
+    "updater": {
+      "active": true,
+      "dialog": false,
+      "endpoints": [
+        "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRDJFREQ1MjExQjdGN0IKUldSN2Z4c2gxZTNTd1FHNCtmYnFXMHVVQzhuNkJOM1cwOFBodmdLall3ckhKenpKUytHSTR1MlkK"
+    },
     "allowlist": {
       "all": false,
       "os": {
-        "all": true
-      },
-      "protocol": {
-        "assetScope": [
-          "$APPDATA/responses/*"
-        ],
-        "asset": true
+        "allow-os-type": true
       },
       "fs": {
         "readFile": true,
         "scope": [
           "$RESOURCE/*",
           "$APPDATA/responses/*"
-]
+        ]
       },
       "shell": {
         "all": false,
         "open": true,
         "sidecar": true,
         "scope": [
-          { "name": "protoc", "sidecar": true,
+          {
+            "name": "protoc",
+            "sidecar": true,
             "args": true
           }
         ]
@@ -57,58 +68,45 @@
       "path": {
         "all": true
       }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "externalBin": [
+      "protoc-vendored/protoc"
+    ],
+    "icon": [
+      "icons/release/32x32.png",
+      "icons/release/128x128.png",
+      "icons/release/128x128@2x.png",
+      "icons/release/icon.icns",
+      "icons/release/icon.ico"
+    ],
+    "longDescription": "The best cross-platform visual API client",
+    "resources": [
+      "migrations/*",
+      "plugins/*",
+      "protoc-vendored/include/*"
+    ],
+    "shortDescription": "The best API client",
+    "targets": [
+      "deb",
+      "appimage",
+      "nsis",
+      "app",
+      "dmg",
+      "updater"
+    ],
+    "macOS": {
+      "exceptionDomain": "",
+      "entitlements": "macos/entitlements.plist",
+      "frameworks": []
     },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "externalBin": [
-        "protoc-vendored/protoc"
-      ],
-      "icon": [
-        "icons/release/32x32.png",
-        "icons/release/128x128.png",
-        "icons/release/128x128@2x.png",
-        "icons/release/icon.icns",
-        "icons/release/icon.ico"
-      ],
-      "identifier": "app.yaak.desktop",
-      "longDescription": "The best cross-platform visual API client",
-      "resources": [
-        "migrations/*",
-        "plugins/*",
-        "protoc-vendored/include/*"
-      ],
-      "shortDescription": "The best API client",
-      "targets": [
-        "deb",
-        "appimage",
-        "nsis",
-        "app",
-        "dmg",
-        "updater"
-      ],
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "exceptionDomain": "",
-        "entitlements": "macos/entitlements.plist",
-        "frameworks": []
-      },
-      "windows": {
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {},
-    "updater": {
-      "active": true,
-      "dialog": false,
-      "endpoints": [
-        "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRDJFREQ1MjExQjdGN0IKUldSN2Z4c2gxZTNTd1FHNCtmYnFXMHVVQzhuNkJOM1cwOFBodmdLall3ckhKenpKUytHSTR1MlkK"
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
     }
   }
 }

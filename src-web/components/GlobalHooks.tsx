@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCommandPalette } from '../hooks/useCommandPalette';
@@ -74,7 +74,7 @@ export function GlobalHooks() {
       return;
     }
 
-    if (payload.model === 'http_request' && windowLabel !== appWindow.label) {
+    if (payload.model === 'http_request' && windowLabel !== getCurrent().label) {
       wasUpdatedExternally(payload.id);
     }
 
@@ -119,8 +119,9 @@ export function GlobalHooks() {
       queryClient.setQueryData(settingsQueryKey(), undefined);
     }
   });
-  useListenToTauriEvent<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {
-    if (windowLabel !== appWindow.label) return;
+  useListenToTauriEvent<number>('zoom', ({ payload: zoomDelta, event }) => {
+    console.log('ID DELETE ME', event, getCurrent().label);
+    // if (windowLabel !== getCurrent().label) return;
     const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
     let newFontSize;

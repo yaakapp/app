@@ -401,7 +401,7 @@ pub async fn send_http_request(
 
             {
                 // Write body to FS
-                let dir = window.app_handle().path_resolver().app_data_dir().unwrap();
+                let dir = window.app_handle().path().app_data_dir().unwrap();
                 let base_dir = dir.join("responses");
                 create_dir_all(base_dir.clone()).expect("Failed to create responses dir");
                 let body_path = match response.id.is_empty() {
