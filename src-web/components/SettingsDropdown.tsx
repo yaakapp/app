@@ -1,4 +1,4 @@
-import { shell } from '@tauri-apps/api';
+import { open } from '@tauri-apps/plugin-shell';
 import { useRef, useState } from 'react';
 import { useAppInfo } from '../hooks/useAppInfo';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
@@ -26,6 +26,17 @@ export function SettingsDropdown() {
     setShowChangelog(true);
   });
 
+  const showSettings = () => {
+    dialog.show({
+      id: 'settings',
+      size: 'md',
+      title: 'Settings',
+      render: () => <SettingsDialog />,
+    });
+  };
+
+  useListenToTauriEvent('settings', showSettings);
+
   return (
     <Dropdown
       ref={dropdownRef}
@@ -36,14 +47,7 @@ export function SettingsDropdown() {
           label: 'Settings',
           hotKeyAction: 'settings.show',
           leftSlot: <Icon icon="settings" />,
-          onSelect: () => {
-            dialog.show({
-              id: 'settings',
-              size: 'md',
-              title: 'Settings',
-              render: () => <SettingsDialog />,
-            });
-          },
+          onSelect: showSettings,
         },
         {
           key: 'hotkeys',
@@ -83,7 +87,7 @@ export function SettingsDropdown() {
           label: 'Feedback',
           leftSlot: <Icon icon="chat" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => shell.open('https://yaak.canny.io'),
+          onSelect: () => open('https://yaak.canny.io'),
         },
         {
           key: 'changelog',
@@ -91,7 +95,7 @@ export function SettingsDropdown() {
           variant: showChangelog ? 'notify' : 'default',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => shell.open(`https://yaak.app/changelog/${appInfo.data?.version}`),
+          onSelect: () => open(`https://yaak.app/changelog/${appInfo.data?.version}`),
         },
       ]}
     >

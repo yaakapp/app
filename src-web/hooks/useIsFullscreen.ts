@@ -1,4 +1,4 @@
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect, useState } from 'react';
 import { useWindowSize } from 'react-use';
 
@@ -13,7 +13,7 @@ export function useIsFullscreen() {
       // for this.
       for (let i = 0; i < 100; i++) {
         await new Promise((resolve) => setTimeout(resolve, 100));
-        const newIsFullscreen = await appWindow.isFullscreen();
+        const newIsFullscreen = await getCurrent().isFullscreen();
         if (newIsFullscreen !== isFullscreen) {
           setIsFullscreen(newIsFullscreen);
           break;

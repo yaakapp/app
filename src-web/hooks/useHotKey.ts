@@ -1,4 +1,4 @@
-import type { OsType } from '@tauri-apps/api/os';
+import type { OsType } from '@tauri-apps/plugin-os';
 import { useEffect, useRef } from 'react';
 import { capitalize } from '../lib/capitalize';
 import { debounce } from '../lib/debounce';
@@ -160,7 +160,7 @@ export function useFormattedHotkey(action: HotkeyAction | null): string[] | null
   const labelParts: string[] = [];
 
   for (const p of parts) {
-    if (os === 'Darwin') {
+    if (os === 'macos') {
       if (p === 'CmdCtrl') {
         labelParts.push('⌘');
       } else if (p === 'Shift') {
@@ -183,7 +183,7 @@ export function useFormattedHotkey(action: HotkeyAction | null): string[] | null
     }
   }
 
-  if (os === 'Darwin') {
+  if (os === 'macos') {
     return labelParts;
   } else {
     return [labelParts.join('+')];
@@ -191,7 +191,7 @@ export function useFormattedHotkey(action: HotkeyAction | null): string[] | null
 }
 
 const normalizeKey = (key: string, os: OsType | null) => {
-  if (key === 'Meta' && os === 'Darwin') return 'CmdCtrl';
-  else if (key === 'Control' && os !== 'Darwin') return 'CmdCtrl';
+  if (key === 'Meta' && os === 'macos') return 'CmdCtrl';
+  else if (key === 'Control' && os !== 'macos') return 'CmdCtrl';
   else return key;
 };
