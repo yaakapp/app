@@ -1,6 +1,9 @@
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
 import React, { memo, useState } from 'react';
+import { useOsInfo } from '../hooks/useOsInfo';
 import { CookieDropdown } from './CookieDropdown';
+import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
@@ -8,9 +11,6 @@ import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
-import { useOsInfo } from '../hooks/useOsInfo';
-import { Button } from './core/Button';
-import { appWindow } from '@tauri-apps/api/window';
 
 interface Props {
   className?: string;
@@ -40,11 +40,11 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       </div>
       <div className="flex-1 flex items-center h-full justify-end pointer-events-none">
         <SettingsDropdown />
-        {(osInfo?.osType === 'Linux' || osInfo?.osType === 'Windows_NT') && (
+        {(osInfo?.osType === 'linux' || osInfo?.osType === 'windows') && (
           <HStack className="ml-4" alignItems="center">
             <Button
               className="px-4 !text-gray-600 rounded-none"
-              onClick={() => appWindow.minimize()}
+              onClick={() => getCurrent().minimize()}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                 <path fill="currentColor" d="M14 8v1H3V8z" />
@@ -53,8 +53,9 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
             <Button
               className="px-4 !text-gray-600 rounded-none"
               onClick={async () => {
-                await appWindow.toggleMaximize();
-                setMaximized(await appWindow.isMaximized());
+                const w = getCurrent();
+                await w.toggleMaximize();
+                setMaximized(await w.isMaximized());
               }}
             >
               {maximized ? (
@@ -73,7 +74,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
             <Button
               color="custom"
               className="px-4 text-gray-600 rounded-none hocus:bg-red-200 hocus:text-gray-800"
-              onClick={() => appWindow.close()}
+              onClick={() => getCurrent().close()}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                 <path

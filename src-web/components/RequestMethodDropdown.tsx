@@ -19,6 +19,7 @@ const radioItems: RadioDropdownItem<string>[] = [
   'PATCH',
   'DELETE',
   'OPTIONS',
+  'QUERY',
   'HEAD',
 ].map((m) => ({
   value: m,
@@ -33,7 +34,6 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
   const prompt = usePrompt();
   const extraItems = useMemo<DropdownItem[]>(
     () => [
-      { type: 'separator' },
       {
         key: 'custom',
         label: 'CUSTOM',

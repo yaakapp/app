@@ -1,7 +1,7 @@
 use std::env::temp_dir;
 use std::ops::Deref;
 use std::path::PathBuf;
-use std::str::FromStr;
+use std::str::{from_utf8, FromStr};
 
 use anyhow::anyhow;
 use hyper::client::HttpConnector;
@@ -11,8 +11,10 @@ use log::{debug, info, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::{FileDescriptorProto, FileDescriptorSet};
-use tauri::api::process::{Command, CommandEvent};
-use tauri::AppHandle;
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
@@ -32,8 +34,8 @@ pub async fn fill_pool_from_files(
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
     let desc_path = temp_dir().join(random_file_name);
     let global_import_dir = app_handle
-        .path_resolver()
-        .resolve_resource("protoc-vendored/include")
+        .path()
+        .resolve("protoc-vendored/include", BaseDirectory::Resource)
         .expect("failed to resolve protoc include directory");
 
     let mut args = vec![
@@ -63,7 +65,9 @@ pub async fn fill_pool_from_files(
         }
     }
 
-    let (mut rx, _child) = Command::new_sidecar("protoc")
+    let (mut rx, _child) = app_handle
+        .shell()
+        .sidecar("protoc")
         .expect("protoc not found")
         .args(args)
         .spawn()
@@ -72,10 +76,16 @@ pub async fn fill_pool_from_files(
     while let Some(event) = rx.recv().await {
         match event {
             CommandEvent::Stdout(line) => {
-                info!("protoc stdout: {}", line);
+                info!(
+                    "protoc stdout: {}",
+                    from_utf8(line.as_slice()).unwrap_or_default().to_string()
+                );
             }
             CommandEvent::Stderr(line) => {
-                info!("protoc stderr: {}", line);
+                info!(
+                    "protoc stderr: {}",
+                    from_utf8(line.as_slice()).unwrap_or_default().to_string()
+                );
             }
             CommandEvent::Error(e) => {
                 return Err(e.to_string());

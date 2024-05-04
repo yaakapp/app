@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';

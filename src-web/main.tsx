@@ -1,5 +1,5 @@
-import { type } from '@tauri-apps/api/os';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './components/App';
@@ -10,8 +10,8 @@ import { setAppearanceOnDocument } from './lib/theme/window';
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = await type();
-if (osType !== 'Darwin') {
-  await appWindow.setDecorations(false);
+if (osType !== 'macos') {
+  await getCurrent().setDecorations(false);
 }
 
 // await attachConsole();

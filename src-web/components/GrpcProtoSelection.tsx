@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcProtoFiles } from '../hooks/useGrpcProtoFiles';
 import { useGrpcRequest } from '../hooks/useGrpcRequest';
@@ -47,8 +47,10 @@ export function GrpcProtoSelection({ requestId }: Props) {
               multiple: true,
               filters: [{ name: 'Proto Files', extensions: ['proto'] }],
             });
-            if (files == null || typeof files === 'string') return;
-            const newFiles = files.filter((f) => !protoFiles.includes(f));
+            if (files == null) {
+              return;
+            }
+            const newFiles = files.map((f) => f.path).filter((p) => !protoFiles.includes(p));
             await protoFilesKv.set([...protoFiles, ...newFiles]);
             await grpc.reflect.refetch();
           }}

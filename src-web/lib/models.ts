@@ -14,6 +14,7 @@ export const AUTH_TYPE_BEARER = 'bearer';
 export type Model =
   | Settings
   | Workspace
+  | Folder
   | GrpcConnection
   | GrpcRequest
   | GrpcEvent
