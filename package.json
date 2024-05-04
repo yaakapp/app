@@ -19,6 +19,7 @@
     "build:plugin:importer-insomnia": "cd plugins/importer-insomnia && vite build --emptyOutDir",
     "build:plugin:importer-postman": "cd plugins/importer-postman && vite build --emptyOutDir",
     "build:plugin:importer-yaak": "cd plugins/importer-yaak && vite build --emptyOutDir",
+    "build:plugin:importer-curl": "cd plugins/importer-curl && vite build --emptyOutDir",
     "build:plugin:filter-jsonpath": "cd plugins/filter-jsonpath && vite build --emptyOutDir",
     "build:plugin:filter-xpath": "cd plugins/filter-xpath && vite build --emptyOutDir",
     "test": "vitest",

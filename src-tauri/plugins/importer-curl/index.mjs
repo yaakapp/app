@@ -271,7 +271,7 @@ var Dt = Ue.exports, Tt = Error, Ct = EvalError, _t = RangeError, Mt = Reference
     n[a + e.length] = t[a];
   return n;
 }, Ht = function(e, t) {
-  for (var n = [], o = t || 0, a = 0; o < e.length; o += 1, a += 1)
+  for (var n = [], o = t, a = 0; o < e.length; o += 1, a += 1)
     n[a] = e[o];
   return n;
 }, Kt = function(r, e) {

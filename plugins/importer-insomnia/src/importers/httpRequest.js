@@ -7,16 +7,36 @@ import { convertSyntax } from '../helpers/variables.js';
  * @param {number} sortPriority - The sort priority to use for the request.
  */
 export function importHttpRequest(r, workspaceId, sortPriority = 0) {
-  console.log('IMPORTING REQUEST', r._id, r.name, JSON.stringify(r, null, 2));
-
   let bodyType = null;
-  let body = null;
-  if (r.body?.mimeType === 'application/graphql') {
+  let body = {};
+  if (r.body.mimeType === 'application/octet-stream') {
+    bodyType = 'binary';
+    body = { filePath: r.body.fileName ?? '' };
+  } else if (r.body?.mimeType === 'application/x-www-form-urlencoded') {
+    bodyType = 'application/x-www-form-urlencoded';
+    body = {
+      form: (r.body.params ?? []).map((p) => ({
+        enabled: !p.disabled,
+        name: p.name ?? '',
+        value: p.value ?? '',
+      })),
+    };
+  } else if (r.body?.mimeType === 'multipart/form-data') {
+    bodyType = 'multipart/form-data';
+    body = {
+      form: (r.body.params ?? []).map((p) => ({
+        enabled: !p.disabled,
+        name: p.name,
+        value: p.value,
+        file: p.fileName ?? null,
+      })),
+    };
+  } else if (r.body?.mimeType === 'application/graphql') {
     bodyType = 'graphql';
-    body = convertSyntax(r.body.text);
+    body = { text: convertSyntax(r.body.text ?? '') };
   } else if (r.body?.mimeType === 'application/json') {
     bodyType = 'application/json';
-    body = convertSyntax(r.body.text);
+    body = { text: convertSyntax(r.body.text ?? '') };
   }
 
   let authenticationType = null;
