@@ -1,10 +1,7 @@
 use std::time::SystemTime;
 
 use log::info;
-use sqlx::__rt::rt_tokio::available;
-use sqlx::testing::TestTermination;
-use tauri::{AppHandle, Window};
-use tauri::process::restart;
+use tauri::{AppHandle};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
 

@@ -8,7 +8,12 @@
   ],
   "permissions": [
     "os:allow-os-type",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "event:allow-listen",
+    "event:allow-unlisten",
     "fs:allow-read-file",
+    "fs:allow-read-text-file",
     {
       "identifier": "fs:scope",
       "allow": [
@@ -32,6 +37,7 @@
       ]
     },
     "window:allow-close",
+    "window:allow-is-fullscreen",
     "window:allow-maximize",
     "window:allow-minimize",
     "window:allow-set-decorations",

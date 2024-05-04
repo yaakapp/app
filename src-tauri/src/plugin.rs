@@ -52,7 +52,7 @@ pub async fn run_plugin_import(
     app_handle: &AppHandle,
     plugin_name: &str,
     file_path: &str,
-) -> Option<ImportResult> {
+) -> Result<Option<ImportResult>, String> {
     let file = fs::read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
@@ -64,12 +64,12 @@ pub async fn run_plugin_import(
     );
 
     if result_json.is_null() {
-        return None;
+        return Ok(None);
     }
 
     let resources: ImportResult =
-        serde_json::from_value(result_json).expect("failed to parse result json");
-    Some(resources)
+        serde_json::from_value(result_json).map_err(|e| e.to_string())?;
+    Ok(Some(resources))
 }
 
 fn run_plugin(

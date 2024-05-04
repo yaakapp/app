@@ -26,18 +26,14 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow, Window};
+use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow};
 use tauri::{Manager, WindowEvent};
-use tauri::menu::{Menu, MenuId};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, Target, TargetKind};
-use tauri_plugin_updater::Updater;
-use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
-use window_shadows::set_shadow;
 
 use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
@@ -113,7 +109,7 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 async fn cmd_grpc_reflect(
     request_id: &str,
     proto_files: Vec<String>,
-    window: Window,
+    window: WebviewWindow,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
     let req = get_grpc_request(&window, request_id)
@@ -147,7 +143,7 @@ async fn cmd_grpc_go(
     request_id: &str,
     environment_id: Option<&str>,
     proto_files: Vec<String>,
-    w: Window,
+    w: WebviewWindow,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
     let req = get_grpc_request(&w, request_id)
@@ -652,7 +648,7 @@ async fn cmd_send_ephemeral_request(
     mut request: HttpRequest,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
-    window: Window,
+    window: WebviewWindow,
 ) -> Result<HttpResponse, String> {
     let response = HttpResponse::new();
     request.id = "".to_string();
@@ -694,7 +690,7 @@ async fn cmd_send_ephemeral_request(
 }
 
 #[tauri::command]
-async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Result<String, String> {
+async fn cmd_filter_response(w: WebviewWindow, response_id: &str, filter: &str) -> Result<String, String> {
     let response = get_http_response(&w, response_id)
         .await
         .expect("Failed to get response");
@@ -727,14 +723,18 @@ async fn cmd_filter_response(w: Window, response_id: &str, filter: &str) -> Resu
 
 #[tauri::command]
 async fn cmd_import_data(
-    w: Window,
+    w: WebviewWindow,
     file_path: &str,
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
-    let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman"];
+    let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman", "importer-curl"];
     for plugin_name in plugins {
-        if let Some(r) = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_path).await {
+        let v = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_path)
+            .await
+            .map_err(|e| e.to_string())?;
+        if let Some(r) = v {
+            info!("Imported data using {}", plugin_name);
             analytics::track_event(
                 &w.app_handle(),
                 AnalyticsResource::App,
@@ -794,11 +794,11 @@ async fn cmd_import_data(
 
 #[tauri::command]
 async fn cmd_export_data(
-    app_handle: AppHandle,
+    window: WebviewWindow,
     export_path: &str,
     workspace_ids: Vec<&str>,
 ) -> Result<(), String> {
-    let export_data = get_workspace_export_resources(&app_handle, workspace_ids).await;
+    let export_data = get_workspace_export_resources(&window, workspace_ids).await;
     let f = File::options()
         .create(true)
         .truncate(true)
@@ -812,7 +812,7 @@ async fn cmd_export_data(
     f.sync_all().expect("Failed to sync");
 
     analytics::track_event(
-        &app_handle,
+        &window.app_handle(),
         AnalyticsResource::App,
         AnalyticsAction::Export,
         None,
@@ -824,7 +824,7 @@ async fn cmd_export_data(
 
 #[tauri::command]
 async fn cmd_send_http_request(
-    window: Window,
+    window: WebviewWindow,
     request_id: &str,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
@@ -900,7 +900,7 @@ async fn cmd_send_http_request(
 async fn response_err(
     response: &HttpResponse,
     error: String,
-    w: &Window,
+    w: &WebviewWindow,
 ) -> Result<HttpResponse, String> {
     let mut response = response.clone();
     response.elapsed = -1;
@@ -913,7 +913,7 @@ async fn response_err(
 
 #[tauri::command]
 async fn cmd_track_event(
-    window: Window,
+    window: WebviewWindow,
     resource: &str,
     action: &str,
     attributes: Option<Value>,
@@ -937,14 +937,14 @@ async fn cmd_track_event(
 }
 
 #[tauri::command]
-async fn cmd_set_update_mode(update_mode: &str, w: Window) -> Result<KeyValue, String> {
+async fn cmd_set_update_mode(update_mode: &str, w: WebviewWindow) -> Result<KeyValue, String> {
     cmd_set_key_value("app", "update_mode", update_mode, w)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_key_value(namespace: &str, key: &str, w: Window) -> Result<Option<KeyValue>, ()> {
+async fn cmd_get_key_value(namespace: &str, key: &str, w: WebviewWindow) -> Result<Option<KeyValue>, ()> {
     let result = get_key_value_raw(&w, namespace, key).await;
     Ok(result)
 }
@@ -954,28 +954,28 @@ async fn cmd_set_key_value(
     namespace: &str,
     key: &str,
     value: &str,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<KeyValue, String> {
     let (key_value, _created) = set_key_value_raw(&w, namespace, key, value).await;
     Ok(key_value)
 }
 
 #[tauri::command]
-async fn cmd_create_workspace(name: &str, w: Window) -> Result<Workspace, String> {
+async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace, String> {
     upsert_workspace(&w, Workspace::new(name.to_string()))
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_update_cookie_jar(cookie_jar: CookieJar, w: Window) -> Result<CookieJar, String> {
+async fn cmd_update_cookie_jar(cookie_jar: CookieJar, w: WebviewWindow) -> Result<CookieJar, String> {
     upsert_cookie_jar(&w, &cookie_jar)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_cookie_jar(w: Window, cookie_jar_id: &str) -> Result<CookieJar, String> {
+async fn cmd_delete_cookie_jar(w: WebviewWindow, cookie_jar_id: &str) -> Result<CookieJar, String> {
     delete_cookie_jar(&w, cookie_jar_id)
         .await
         .map_err(|e| e.to_string())
@@ -985,7 +985,7 @@ async fn cmd_delete_cookie_jar(w: Window, cookie_jar_id: &str) -> Result<CookieJ
 async fn cmd_create_cookie_jar(
     workspace_id: &str,
     name: &str,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<CookieJar, String> {
     upsert_cookie_jar(
         &w,
@@ -1004,7 +1004,7 @@ async fn cmd_create_environment(
     workspace_id: &str,
     name: &str,
     variables: Vec<EnvironmentVariable>,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<Environment, String> {
     upsert_environment(
         &w,
@@ -1025,7 +1025,7 @@ async fn cmd_create_grpc_request(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<GrpcRequest, String> {
     upsert_grpc_request(
         &w,
@@ -1042,7 +1042,7 @@ async fn cmd_create_grpc_request(
 }
 
 #[tauri::command]
-async fn cmd_duplicate_grpc_request(id: &str, w: Window) -> Result<GrpcRequest, String> {
+async fn cmd_duplicate_grpc_request(id: &str, w: WebviewWindow) -> Result<GrpcRequest, String> {
     duplicate_grpc_request(&w, id)
         .await
         .map_err(|e| e.to_string())
@@ -1057,7 +1057,7 @@ async fn cmd_create_http_request(
     method: Option<&str>,
     headers: Option<Vec<HttpRequestHeader>>,
     body_type: Option<&str>,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<HttpRequest, String> {
     upsert_http_request(
         &w,
@@ -1077,14 +1077,14 @@ async fn cmd_create_http_request(
 }
 
 #[tauri::command]
-async fn cmd_duplicate_http_request(id: &str, w: Window) -> Result<HttpRequest, String> {
+async fn cmd_duplicate_http_request(id: &str, w: WebviewWindow) -> Result<HttpRequest, String> {
     duplicate_http_request(&w, id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_update_workspace(workspace: Workspace, w: Window) -> Result<Workspace, String> {
+async fn cmd_update_workspace(workspace: Workspace, w: WebviewWindow) -> Result<Workspace, String> {
     upsert_workspace(&w, workspace)
         .await
         .map_err(|e| e.to_string())
@@ -1093,7 +1093,7 @@ async fn cmd_update_workspace(workspace: Workspace, w: Window) -> Result<Workspa
 #[tauri::command]
 async fn cmd_update_environment(
     environment: Environment,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<Environment, String> {
     upsert_environment(&w, environment)
         .await
@@ -1101,7 +1101,7 @@ async fn cmd_update_environment(
 }
 
 #[tauri::command]
-async fn cmd_update_grpc_request(request: GrpcRequest, w: Window) -> Result<GrpcRequest, String> {
+async fn cmd_update_grpc_request(request: GrpcRequest, w: WebviewWindow) -> Result<GrpcRequest, String> {
     upsert_grpc_request(&w, &request)
         .await
         .map_err(|e| e.to_string())
@@ -1110,7 +1110,7 @@ async fn cmd_update_grpc_request(request: GrpcRequest, w: Window) -> Result<Grpc
 #[tauri::command]
 async fn cmd_update_http_request(
     request: HttpRequest,
-    window: Window,
+    window: WebviewWindow,
 ) -> Result<HttpRequest, String> {
     upsert_http_request(&window, request)
         .await
@@ -1118,21 +1118,21 @@ async fn cmd_update_http_request(
 }
 
 #[tauri::command]
-async fn cmd_delete_grpc_request(w: Window, request_id: &str) -> Result<GrpcRequest, String> {
+async fn cmd_delete_grpc_request(w: WebviewWindow, request_id: &str) -> Result<GrpcRequest, String> {
     delete_grpc_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_http_request(w: Window, request_id: &str) -> Result<HttpRequest, String> {
+async fn cmd_delete_http_request(w: WebviewWindow, request_id: &str) -> Result<HttpRequest, String> {
     delete_http_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_folders(workspace_id: &str, w: Window) -> Result<Vec<Folder>, String> {
+async fn cmd_list_folders(workspace_id: &str, w: WebviewWindow) -> Result<Vec<Folder>, String> {
     list_folders(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())
@@ -1144,7 +1144,7 @@ async fn cmd_create_folder(
     name: &str,
     sort_priority: f64,
     folder_id: Option<&str>,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<Folder, String> {
     upsert_folder(
         &w,
@@ -1161,19 +1161,19 @@ async fn cmd_create_folder(
 }
 
 #[tauri::command]
-async fn cmd_update_folder(folder: Folder, w: Window) -> Result<Folder, String> {
+async fn cmd_update_folder(folder: Folder, w: WebviewWindow) -> Result<Folder, String> {
     upsert_folder(&w, folder).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_folder(w: Window, folder_id: &str) -> Result<Folder, String> {
+async fn cmd_delete_folder(w: WebviewWindow, folder_id: &str) -> Result<Folder, String> {
     delete_folder(&w, folder_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_environment(w: Window, environment_id: &str) -> Result<Environment, String> {
+async fn cmd_delete_environment(w: WebviewWindow, environment_id: &str) -> Result<Environment, String> {
     delete_environment(&w, environment_id)
         .await
         .map_err(|e| e.to_string())
@@ -1182,7 +1182,7 @@ async fn cmd_delete_environment(w: Window, environment_id: &str) -> Result<Envir
 #[tauri::command]
 async fn cmd_list_grpc_connections(
     request_id: &str,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<Vec<GrpcConnection>, String> {
     list_grpc_connections(&w, request_id)
         .await
@@ -1190,14 +1190,14 @@ async fn cmd_list_grpc_connections(
 }
 
 #[tauri::command]
-async fn cmd_list_grpc_events(connection_id: &str, w: Window) -> Result<Vec<GrpcEvent>, String> {
+async fn cmd_list_grpc_events(connection_id: &str, w: WebviewWindow) -> Result<Vec<GrpcEvent>, String> {
     list_grpc_events(&w, connection_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_grpc_requests(workspace_id: &str, w: Window) -> Result<Vec<GrpcRequest>, String> {
+async fn cmd_list_grpc_requests(workspace_id: &str, w: WebviewWindow) -> Result<Vec<GrpcRequest>, String> {
     let requests = list_grpc_requests(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())?;
@@ -1205,7 +1205,7 @@ async fn cmd_list_grpc_requests(workspace_id: &str, w: Window) -> Result<Vec<Grp
 }
 
 #[tauri::command]
-async fn cmd_list_http_requests(workspace_id: &str, w: Window) -> Result<Vec<HttpRequest>, String> {
+async fn cmd_list_http_requests(workspace_id: &str, w: WebviewWindow) -> Result<Vec<HttpRequest>, String> {
     let requests = list_http_requests(&w, workspace_id)
         .await
         .expect("Failed to find requests");
@@ -1214,7 +1214,7 @@ async fn cmd_list_http_requests(workspace_id: &str, w: Window) -> Result<Vec<Htt
 }
 
 #[tauri::command]
-async fn cmd_list_environments(workspace_id: &str, w: Window) -> Result<Vec<Environment>, String> {
+async fn cmd_list_environments(workspace_id: &str, w: WebviewWindow) -> Result<Vec<Environment>, String> {
     let environments = list_environments(&w, workspace_id)
         .await
         .expect("Failed to find environments");
@@ -1223,39 +1223,39 @@ async fn cmd_list_environments(workspace_id: &str, w: Window) -> Result<Vec<Envi
 }
 
 #[tauri::command]
-async fn cmd_get_settings(w: Window) -> Result<Settings, ()> {
+async fn cmd_get_settings(w: WebviewWindow) -> Result<Settings, ()> {
     Ok(get_or_create_settings(&w).await)
 }
 
 #[tauri::command]
-async fn cmd_update_settings(settings: Settings, w: Window) -> Result<Settings, String> {
+async fn cmd_update_settings(settings: Settings, w: WebviewWindow) -> Result<Settings, String> {
     update_settings(&w, settings)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_folder(id: &str, w: Window) -> Result<Folder, String> {
+async fn cmd_get_folder(id: &str, w: WebviewWindow) -> Result<Folder, String> {
     get_folder(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_grpc_request(id: &str, w: Window) -> Result<GrpcRequest, String> {
+async fn cmd_get_grpc_request(id: &str, w: WebviewWindow) -> Result<GrpcRequest, String> {
     get_grpc_request(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_http_request(id: &str, w: Window) -> Result<HttpRequest, String> {
+async fn cmd_get_http_request(id: &str, w: WebviewWindow) -> Result<HttpRequest, String> {
     get_http_request(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_cookie_jar(id: &str, w: Window) -> Result<CookieJar, String> {
+async fn cmd_get_cookie_jar(id: &str, w: WebviewWindow) -> Result<CookieJar, String> {
     get_cookie_jar(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_cookie_jars(workspace_id: &str, w: Window) -> Result<Vec<CookieJar>, String> {
+async fn cmd_list_cookie_jars(workspace_id: &str, w: WebviewWindow) -> Result<Vec<CookieJar>, String> {
     let cookie_jars = list_cookie_jars(&w, workspace_id)
         .await
         .expect("Failed to find cookie jars");
@@ -1278,12 +1278,12 @@ async fn cmd_list_cookie_jars(workspace_id: &str, w: Window) -> Result<Vec<Cooki
 }
 
 #[tauri::command]
-async fn cmd_get_environment(id: &str, w: Window) -> Result<Environment, String> {
+async fn cmd_get_environment(id: &str, w: WebviewWindow) -> Result<Environment, String> {
     get_environment(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_workspace(id: &str, w: Window) -> Result<Workspace, String> {
+async fn cmd_get_workspace(id: &str, w: WebviewWindow) -> Result<Workspace, String> {
     get_workspace(&w, id).await.map_err(|e| e.to_string())
 }
 
@@ -1291,7 +1291,7 @@ async fn cmd_get_workspace(id: &str, w: Window) -> Result<Workspace, String> {
 async fn cmd_list_http_responses(
     request_id: &str,
     limit: Option<i64>,
-    w: Window,
+    w: WebviewWindow,
 ) -> Result<Vec<HttpResponse>, String> {
     list_responses(&w, request_id, limit)
         .await
@@ -1299,35 +1299,35 @@ async fn cmd_list_http_responses(
 }
 
 #[tauri::command]
-async fn cmd_delete_http_response(id: &str, w: Window) -> Result<HttpResponse, String> {
+async fn cmd_delete_http_response(id: &str, w: WebviewWindow) -> Result<HttpResponse, String> {
     delete_http_response(&w, id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_grpc_connection(id: &str, w: Window) -> Result<GrpcConnection, String> {
+async fn cmd_delete_grpc_connection(id: &str, w: WebviewWindow) -> Result<GrpcConnection, String> {
     delete_grpc_connection(&w, id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_all_grpc_connections(request_id: &str, w: Window) -> Result<(), String> {
+async fn cmd_delete_all_grpc_connections(request_id: &str, w: WebviewWindow) -> Result<(), String> {
     delete_all_grpc_connections(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_all_http_responses(request_id: &str, w: Window) -> Result<(), String> {
+async fn cmd_delete_all_http_responses(request_id: &str, w: WebviewWindow) -> Result<(), String> {
     delete_all_http_responses(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_workspaces(w: Window) -> Result<Vec<Workspace>, String> {
+async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String> {
     let workspaces = list_workspaces(&w)
         .await
         .expect("Failed to find workspaces");
@@ -1348,13 +1348,13 @@ async fn cmd_list_workspaces(w: Window) -> Result<Vec<Workspace>, String> {
 }
 
 #[tauri::command]
-async fn cmd_new_window(window: Window, url: &str) -> Result<(), String> {
+async fn cmd_new_window(window: WebviewWindow, url: &str) -> Result<(), String> {
     create_window(&window.app_handle(), Some(url));
     Ok(())
 }
 
 #[tauri::command]
-async fn cmd_delete_workspace(w: Window, workspace_id: &str) -> Result<Workspace, String> {
+async fn cmd_delete_workspace(w: WebviewWindow, workspace_id: &str) -> Result<Workspace, String> {
     delete_workspace(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())
@@ -1610,22 +1610,21 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     // set_shadow(&win, true).unwrap();
 
     let win2 = win.clone();
-    let handle2 = handle.clone();
     win.on_menu_event(move |w, event| match event.id().as_ref() {
         "quit" => exit(0),
-        "close" => win2.close().unwrap(),
-        "zoom_reset" => win2.emit("zoom", 0).unwrap(),
-        "zoom_in" => win2.emit("zoom", 1).unwrap(),
-        "zoom_out" => win2.emit("zoom", -1).unwrap(),
-        "toggle_sidebar" => win2.emit("toggle_sidebar", true).unwrap(),
-        "focus_url" => win2.emit("focus_url", true).unwrap(),
-        "focus_sidebar" => win2.emit("focus_sidebar", true).unwrap(),
-        "send_request" => win2.emit("send_request", true).unwrap(),
-        "new_request" => win2.emit("new_request", true).unwrap(),
-        "toggle_settings" => win2.emit("toggle_settings", true).unwrap(),
-        "duplicate_request" => win2.emit("duplicate_request", true).unwrap(),
+        "close" => w.close().unwrap(),
+        "zoom_reset" => w.emit("zoom", 0).unwrap(),
+        "zoom_in" => w.emit("zoom", 1).unwrap(),
+        "zoom_out" => w.emit("zoom", -1).unwrap(),
+        "toggle_sidebar" => w.emit("toggle_sidebar", true).unwrap(),
+        "focus_url" => w.emit("focus_url", true).unwrap(),
+        "focus_sidebar" => w.emit("focus_sidebar", true).unwrap(),
+        "send_request" => w.emit("send_request", true).unwrap(),
+        "new_request" => w.emit("new_request", true).unwrap(),
+        "toggle_settings" => w.emit("toggle_settings", true).unwrap(),
+        "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
         "refresh" => win2.eval("location.reload()").unwrap(),
-        "new_window" => _ = create_window(&handle2, None),
+        "new_window" => _ = create_window(w.app_handle(), None),
         "toggle_devtools" => {
             if win2.is_devtools_open() {
                 win2.close_devtools();

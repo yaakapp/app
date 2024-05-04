@@ -7,20 +7,20 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
+use reqwest::redirect::Policy;
 use sqlx::types::{Json, JsonValue};
-use tauri::{Manager, Window};
+use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
 
 use crate::{models, render, response_err};
 
 pub async fn send_http_request(
-    window: &Window,
+    window: &WebviewWindow,
     request: models::HttpRequest,
     response: &models::HttpResponse,
     environment: Option<models::Environment>,
@@ -112,7 +112,6 @@ pub async fn send_http_request(
     //  everything manually to know that).
     // if let Some(cookie_store) = maybe_cookie_store.clone() {
     //     let values1 = cookie_store.get_request_values(&url);
-    //     println!("COOKIE VLUAES: {:?}", values1.collect::<Vec<_>>());
     //     let raw_value = cookie_store.get_request_values(&url)
     //         .map(|(name, value)| format!("{}={}", name, value))
     //         .collect::<Vec<_>>()
