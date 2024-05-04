@@ -20,8 +20,6 @@
   },
   "plugins": {
     "updater": {
-      "active": true,
-      "dialog": false,
       "endpoints": [
         "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
       ],
@@ -73,7 +71,6 @@
   "bundle": {
     "active": true,
     "category": "DeveloperTool",
-    "copyright": "",
     "externalBin": [
       "protoc-vendored/protoc"
     ],
@@ -91,14 +88,7 @@
       "protoc-vendored/include/*"
     ],
     "shortDescription": "The best API client",
-    "targets": [
-      "deb",
-      "appimage",
-      "nsis",
-      "app",
-      "dmg",
-      "updater"
-    ],
+    "targets": "all",
     "macOS": {
       "exceptionDomain": "",
       "entitlements": "macos/entitlements.plist",
