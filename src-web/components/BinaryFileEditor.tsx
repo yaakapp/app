@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import mime from 'mime';
 import { useKeyValue } from '../hooks/useKeyValue';
 import type { HttpRequest } from '../lib/models';

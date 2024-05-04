@@ -20,4 +20,5 @@ hyper = { version = "0.14" }
 hyper-rustls = { version = "0.24.0", features = ["http2"] }
 protoc-bin-vendored = "3.0.0"
 uuid = { version = "1.7.0", features = ["v4"] }
-tauri = { version = "1.5.4", features = ["process-command-api"]}
+tauri = { version = "2.0.0-beta.16" }
+tauri-plugin-shell = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }

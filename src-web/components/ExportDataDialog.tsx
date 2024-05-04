@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api';
-import { save } from '@tauri-apps/api/dialog';
+import { invoke } from '@tauri-apps/api/core';
+import { save } from '@tauri-apps/plugin-dialog';
 import { useState } from 'react';
 import slugify from 'slugify';
 import type { Workspace } from '../lib/models';

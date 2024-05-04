@@ -43,19 +43,19 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
         return Promise.reject(new Error(response.error));
       }
 
+      const bodyText = await getResponseBodyText(response);
       if (response.status < 200 || response.status >= 300) {
-        const text = await getResponseBodyText(response);
         return Promise.reject(
-          new Error(`Request failed with status ${response.status}.\n\n${text}`),
+          new Error(`Request failed with status ${response.status}.\n\n${bodyText}`),
         );
       }
 
-      const body = await getResponseBodyText(response);
-      if (body === null) {
+      if (bodyText === null) {
         return Promise.reject(new Error('Empty body returned in response'));
       }
 
-      const { data } = JSON.parse(body);
+      const { data } = JSON.parse(bodyText);
+      console.log('Introspection response', data);
       setIntrospection(data);
     };
 

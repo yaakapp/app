@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import type { OsType } from '@tauri-apps/api/os';
-import { type } from '@tauri-apps/api/os';
+import type { OsType } from '@tauri-apps/plugin-os';
+import { type } from '@tauri-apps/plugin-os';
 
 export function useOsInfo() {
   return useQuery<{ osType: OsType }>({

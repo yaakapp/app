@@ -1,4 +1,4 @@
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect, useState } from 'react';
 
 export function useWindowFocus() {
@@ -6,7 +6,7 @@ export function useWindowFocus() {
 
   useEffect(() => {
     let unsub: undefined | (() => void) = undefined;
-    appWindow
+    getCurrent()
       .onFocusChanged((e) => {
         setVisible(e.payload);
       })

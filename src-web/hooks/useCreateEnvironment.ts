@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { Environment } from '../lib/models';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';

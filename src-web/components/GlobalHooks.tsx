@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { foldersQueryKey } from '../hooks/useFolders';
 import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
@@ -47,93 +48,110 @@ export function GlobalHooks() {
     setPathname(location.pathname).catch(console.error);
   }, [location.pathname]);
 
-  useListenToTauriEvent<Model>('upserted_model', ({ payload, windowLabel }) => {
+  interface ModelPayload {
+    model: Model;
+    windowLabel: string;
+  }
+
+  useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
+    const { model, windowLabel } = payload;
     const queryKey =
-      payload.model === 'http_request'
-        ? httpRequestsQueryKey(payload)
-        : payload.model === 'http_response'
-        ? httpResponsesQueryKey(payload)
-        : payload.model === 'grpc_connection'
-        ? grpcConnectionsQueryKey(payload)
-        : payload.model === 'grpc_event'
-        ? grpcEventsQueryKey(payload)
-        : payload.model === 'grpc_request'
-        ? grpcRequestsQueryKey(payload)
-        : payload.model === 'workspace'
-        ? workspacesQueryKey(payload)
-        : payload.model === 'key_value'
-        ? keyValueQueryKey(payload)
-        : payload.model === 'cookie_jar'
-        ? cookieJarsQueryKey(payload)
-        : payload.model === 'settings'
+      model.model === 'http_request'
+        ? httpRequestsQueryKey(model)
+        : model.model === 'http_response'
+        ? httpResponsesQueryKey(model)
+        : model.model === 'folder'
+        ? foldersQueryKey(model)
+        : model.model === 'grpc_connection'
+        ? grpcConnectionsQueryKey(model)
+        : model.model === 'grpc_event'
+        ? grpcEventsQueryKey(model)
+        : model.model === 'grpc_request'
+        ? grpcRequestsQueryKey(model)
+        : model.model === 'workspace'
+        ? workspacesQueryKey(model)
+        : model.model === 'key_value'
+        ? keyValueQueryKey(model)
+        : model.model === 'cookie_jar'
+        ? cookieJarsQueryKey(model)
+        : model.model === 'settings'
         ? settingsQueryKey()
         : null;
 
     if (queryKey === null) {
-      console.log('Unrecognized updated model:', payload);
+      console.log('Unrecognized updated model:', model);
       return;
     }
 
-    if (payload.model === 'http_request' && windowLabel !== appWindow.label) {
-      wasUpdatedExternally(payload.id);
+    if (model.model === 'http_request' && windowLabel !== getCurrent().label) {
+      wasUpdatedExternally(model.id);
     }
 
     const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
-      payload.model,
+      model.model,
     );
 
-    if (shouldIgnoreModel(payload)) return;
+    if (shouldIgnoreModel(model)) return;
 
     queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
-      const index = values.findIndex((v) => modelsEq(v, payload)) ?? -1;
+      const index = values.findIndex((v) => modelsEq(v, model)) ?? -1;
       if (index >= 0) {
         // console.log('UPDATED', payload);
-        return [...values.slice(0, index), payload, ...values.slice(index + 1)];
+        return [...values.slice(0, index), model, ...values.slice(index + 1)];
       } else {
         // console.log('CREATED', payload);
-        return pushToFront ? [payload, ...(values ?? [])] : [...(values ?? []), payload];
+        return pushToFront ? [model, ...(values ?? [])] : [...(values ?? []), model];
       }
     });
   });
 
-  useListenToTauriEvent<Model>('deleted_model', ({ payload }) => {
-    if (shouldIgnoreModel(payload)) return;
+  useListenToTauriEvent<ModelPayload>('deleted_model', ({ payload }) => {
+    const { model } = payload;
+    if (shouldIgnoreModel(model)) return;
 
-    if (payload.model === 'workspace') {
-      queryClient.setQueryData(workspacesQueryKey(), removeById(payload));
-    } else if (payload.model === 'http_request') {
-      queryClient.setQueryData(httpRequestsQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'http_response') {
-      queryClient.setQueryData(httpResponsesQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'grpc_request') {
-      queryClient.setQueryData(grpcRequestsQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'grpc_connection') {
-      queryClient.setQueryData(grpcConnectionsQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'grpc_event') {
-      queryClient.setQueryData(grpcEventsQueryKey(payload), removeById(payload));
-    } else if (payload.model === 'key_value') {
-      queryClient.setQueryData(keyValueQueryKey(payload), undefined);
-    } else if (payload.model === 'cookie_jar') {
-      queryClient.setQueryData(cookieJarsQueryKey(payload), undefined);
-    } else if (payload.model === 'settings') {
+    if (model.model === 'workspace') {
+      queryClient.setQueryData(workspacesQueryKey(), removeById(model));
+    } else if (model.model === 'http_request') {
+      queryClient.setQueryData(httpRequestsQueryKey(model), removeById(model));
+    } else if (model.model === 'http_response') {
+      queryClient.setQueryData(httpResponsesQueryKey(model), removeById(model));
+    } else if (model.model === 'folder') {
+      queryClient.setQueryData(foldersQueryKey(model), removeById(model));
+    } else if (model.model === 'grpc_request') {
+      queryClient.setQueryData(grpcRequestsQueryKey(model), removeById(model));
+    } else if (model.model === 'grpc_connection') {
+      queryClient.setQueryData(grpcConnectionsQueryKey(model), removeById(model));
+    } else if (model.model === 'grpc_event') {
+      queryClient.setQueryData(grpcEventsQueryKey(model), removeById(model));
+    } else if (model.model === 'key_value') {
+      queryClient.setQueryData(keyValueQueryKey(model), undefined);
+    } else if (model.model === 'cookie_jar') {
+      queryClient.setQueryData(cookieJarsQueryKey(model), undefined);
+    } else if (model.model === 'settings') {
       queryClient.setQueryData(settingsQueryKey(), undefined);
     }
   });
-  useListenToTauriEvent<number>('zoom', ({ payload: zoomDelta, windowLabel }) => {
-    if (windowLabel !== appWindow.label) return;
-    const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
-    let newFontSize;
-    if (zoomDelta === 0) {
-      newFontSize = DEFAULT_FONT_SIZE;
-    } else if (zoomDelta > 0) {
-      newFontSize = Math.min(fontSize * 1.1, DEFAULT_FONT_SIZE * 5);
-    } else if (zoomDelta < 0) {
-      newFontSize = Math.max(fontSize * 0.9, DEFAULT_FONT_SIZE * 0.4);
-    }
+  useListenToTauriEvent<number>(
+    'zoom',
+    ({ payload: zoomDelta }) => {
+      const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
 
-    document.documentElement.style.fontSize = `${newFontSize}px`;
-  });
+      let newFontSize;
+      if (zoomDelta === 0) {
+        newFontSize = DEFAULT_FONT_SIZE;
+      } else if (zoomDelta > 0) {
+        newFontSize = Math.min(fontSize * 1.1, DEFAULT_FONT_SIZE * 5);
+      } else if (zoomDelta < 0) {
+        newFontSize = Math.max(fontSize * 0.9, DEFAULT_FONT_SIZE * 0.4);
+      }
+
+      document.documentElement.style.fontSize = `${newFontSize}px`;
+    },
+    {
+      target: { kind: 'WebviewWindow', label: getCurrent().label },
+    },
+  );
 
   return null;
 }
