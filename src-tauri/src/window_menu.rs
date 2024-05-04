@@ -1,160 +1,142 @@
-/*
-use crate::is_dev;
-use tauri::menu::{AboutMetadata, Menu, MenuBuilder, MenuItem, Submenu, SubmenuBuilder};
-use tauri::{AppHandle, Wry};
+use tauri::menu::{
+    AboutMetadata, Menu, MenuItemBuilder, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID,
+    WINDOW_SUBMENU_ID,
+};
+pub use tauri::AppHandle;
+use tauri::Wry;
 
-pub fn os_default(app_handle: &AppHandle, #[allow(unused)] app_name: &str) -> Menu<Wry> {
-    let mut menu = MenuBuilder::new(app_handle);
-    #[cfg(target_os = "macos")]
-    {
-        menu = menu.item(SubmenuBuilder::new(
-            app_handle,
-            app_name,).item(
-            Menu::new(app_handle)
-                .add_native_item(MenuItem::About(
-                    app_name.to_string(),
-                    AboutMetadata::default(),
-                ))
-                .add_native_item(MenuItem::Separator)
-                .add_item(MenuItem::new(
-                    "toggle_settings".to_string(),
-                    "Settings",
-                    true,
-                    Some("CmdOrCtrl+,"),
-                ))
-                .add_native_item(MenuItem::Separator)
-                .add_native_item(MenuItem::Services)
-                .add_native_item(MenuItem::Separator)
-                .add_native_item(MenuItem::Hide)
-                .add_native_item(MenuItem::HideOthers)
-                .add_native_item(MenuItem::ShowAll)
-                .add_native_item(MenuItem::Separator)
-                .add_native_item(MenuItem::Quit),
-            true,
-        ));
-    }
+pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
+    let pkg_info = app_handle.package_info();
+    let config = app_handle.config();
+    let about_metadata = AboutMetadata {
+        name: Some(pkg_info.name.clone()),
+        version: Some(pkg_info.version.to_string()),
+        copyright: config.bundle.copyright.clone(),
+        authors: config.bundle.publisher.clone().map(|p| vec![p]),
+        ..Default::default()
+    };
 
-    let mut file_menu = Menu::new(app_handle);
-    file_menu = file_menu.add_native_item(MenuItem::CloseWindow);
-    #[cfg(not(target_os = "macos"))]
-    {
-        file_menu = file_menu.add_native_item(MenuItem::Quit);
-    }
-    menu = menu.add_submenu(Submenu::new("File", file_menu, true));
+    let window_menu = Submenu::with_id_and_items(
+        app_handle,
+        WINDOW_SUBMENU_ID,
+        "Window",
+        true,
+        &[
+            &PredefinedMenuItem::minimize(app_handle, None)?,
+            &PredefinedMenuItem::maximize(app_handle, None)?,
+            #[cfg(target_os = "macos")]
+            &PredefinedMenuItem::separator(app_handle)?,
+            &PredefinedMenuItem::close_window(app_handle, None)?,
+        ],
+    )?;
 
-    #[cfg(not(target_os = "linux"))]
-    let mut edit_menu = Menu::new(app_handle);
-    #[cfg(target_os = "macos")]
-    {
-        edit_menu = edit_menu.add_native_item(MenuItem::Undo);
-        edit_menu = edit_menu.add_native_item(MenuItem::Redo);
-        edit_menu = edit_menu.add_native_item(MenuItem::Separator);
-    }
-    #[cfg(not(target_os = "linux"))]
-    {
-        edit_menu = edit_menu.add_native_item(MenuItem::Cut);
-        edit_menu = edit_menu.add_native_item(MenuItem::Copy);
-        edit_menu = edit_menu.add_native_item(MenuItem::Paste);
-    }
-    #[cfg(target_os = "macos")]
-    {
-        edit_menu = edit_menu.add_native_item(MenuItem::SelectAll);
-    }
-    #[cfg(not(target_os = "linux"))]
-    {
-        menu = menu.add_submenu(Submenu::new("Edit", edit_menu, true));
-    }
-    let mut view_menu = Menu::new(app_handle);
-    #[cfg(target_os = "macos")]
-    {
-        view_menu = view_menu
-            .add_native_item(MenuItem::EnterFullScreen)
-            .add_native_item(MenuItem::Separator);
-    }
-    view_menu = view_menu
-        .add_item(MenuItem::new(
-            "zoom_reset".to_string(),
-            "Zoom to Actual Size",
-            true,
-            "CmdOrCtrl+0",
-        ))
-        .add_item(MenuItem::new(
-            "zoom_in".to_string(),
-            "Zoom In",
-            true,
-            "CmdOrCtrl+Plus",
-        ))
-        .add_item(MenuItem::new(
-            "zoom_out".to_string(),
-            "Zoom Out",
-            true,
-            "CmdOrCtrl+-",
-        ));
-    // .add_native_item(MenuItem::Separator)
-    // .add_item(
-    //     CustomMenuItem::new("toggle_sidebar".to_string(), "Toggle Sidebar")
-    //         .accelerator("CmdOrCtrl+b"),
-    // )
-    // .add_item(
-    //     CustomMenuItem::new("focus_sidebar".to_string(), "Focus Sidebar")
-    //         .accelerator("CmdOrCtrl+1"),
-    // )
-    // .add_item(
-    //     CustomMenuItem::new("toggle_settings".to_string(), "Toggle Settings")
-    //         .accelerator("CmdOrCtrl+,"),
-    // )
-    // .add_item(
-    //     CustomMenuItem::new("focus_url".to_string(), "Focus URL").accelerator("CmdOrCtrl+l"),
-    // );
-    menu = menu.add_submenu(Submenu::new("View", view_menu, true));
+    let help_menu = Submenu::with_id_and_items(
+        app_handle,
+        HELP_SUBMENU_ID,
+        "Help",
+        true,
+        &[
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::about(app_handle, None, Some(about_metadata))?,
+            #[cfg(target_os = "macos")]
+            &MenuItemBuilder::with_id("open_feedback".to_string(), "Give Feedback")
+                .build(app_handle)?,
+        ],
+    )?;
 
-    let mut window_menu = Menu::new(app_handle);
-    window_menu = window_menu.add_native_item(MenuItem::Minimize);
-    #[cfg(target_os = "macos")]
-    {
-        window_menu = window_menu.add_native_item(MenuItem::Zoom);
-        window_menu = window_menu.add_native_item(MenuItem::Separator);
-    }
-    window_menu = window_menu.add_native_item(MenuItem::CloseWindow);
-    menu = menu.add_submenu(Submenu::new("Window", window_menu, true));
+    let menu = Menu::with_items(
+        app_handle,
+        &[
+            #[cfg(target_os = "macos")]
+            &Submenu::with_items(
+                app_handle,
+                pkg_info.name.clone(),
+                true,
+                &[
+                    &PredefinedMenuItem::about(app_handle, None, Some(about_metadata))?,
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    &MenuItemBuilder::with_id("settings".to_string(), "Settings")
+                        .accelerator("CmdOrCtrl+,")
+                        .build(app_handle)?,
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    &PredefinedMenuItem::services(app_handle, None)?,
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    &PredefinedMenuItem::hide(app_handle, None)?,
+                    &PredefinedMenuItem::hide_others(app_handle, None)?,
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    &PredefinedMenuItem::quit(app_handle, None)?,
+                ],
+            )?,
+            #[cfg(not(any(
+                target_os = "linux",
+                target_os = "dragonfly",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd"
+            )))]
+            &Submenu::with_items(
+                app_handle,
+                "File",
+                true,
+                &[
+                    &PredefinedMenuItem::close_window(app_handle, None)?,
+                    #[cfg(not(target_os = "macos"))]
+                    &PredefinedMenuItem::quit(app_handle, None)?,
+                ],
+            )?,
+            &Submenu::with_items(
+                app_handle,
+                "Edit",
+                true,
+                &[
+                    &PredefinedMenuItem::undo(app_handle, None)?,
+                    &PredefinedMenuItem::redo(app_handle, None)?,
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    &PredefinedMenuItem::cut(app_handle, None)?,
+                    &PredefinedMenuItem::copy(app_handle, None)?,
+                    &PredefinedMenuItem::paste(app_handle, None)?,
+                    &PredefinedMenuItem::select_all(app_handle, None)?,
+                ],
+            )?,
+            &Submenu::with_items(
+                app_handle,
+                "View",
+                true,
+                &[
+                    #[cfg(target_os = "macos")]
+                    &PredefinedMenuItem::fullscreen(app_handle, None)?,
+                    #[cfg(target_os = "macos")]
+                    &PredefinedMenuItem::separator(app_handle)?,
+                    
+                    &MenuItemBuilder::with_id("zoom_reset".to_string(), "Zoom to Actual Size")
+                        .accelerator("CmdOrCtrl+0")
+                        .build(app_handle)?,
+                    &MenuItemBuilder::with_id("zoom_in".to_string(), "Zoom In")
+                        .accelerator("CmdOrCtrl+=")
+                        .build(app_handle)?,
+                    &MenuItemBuilder::with_id("zoom_out".to_string(), "Zoom Out")
+                        .accelerator("CmdOrCtrl+-")
+                        .build(app_handle)?,
+                ],
+            )?,
+            &window_menu,
+            &help_menu,
+            #[cfg(dev)]
+            &Submenu::with_items(
+                app_handle,
+                "Develop",
+                true,
+                &[
+                    &MenuItemBuilder::with_id("refresh".to_string(), "Refresh")
+                        .accelerator("CmdOrCtrl+Shift+r")
+                        .build(app_handle)?,
+                    &MenuItemBuilder::with_id("toggle_devtools".to_string(), "Open Devtools")
+                        .accelerator("CmdOrCtrl+Option+i")
+                        .build(app_handle)?,
+                ],
+            )?,
+        ],
+    )?;
 
-    // menu = menu.add_submenu(Submenu::new(
-    //     "Workspace",
-    //     Menu::new()
-    //         .add_item(
-    //             CustomMenuItem::new("send_request".to_string(), "Send Request")
-    //                 .accelerator("CmdOrCtrl+r"),
-    //         )
-    //         .add_item(
-    //             CustomMenuItem::new("new_request".to_string(), "New Request")
-    //                 .accelerator("CmdOrCtrl+n"),
-    //         )
-    //         .add_item(
-    //             CustomMenuItem::new("duplicate_request".to_string(), "Duplicate Request")
-    //                 .accelerator("CmdOrCtrl+d"),
-    //         ),
-    // ));
-
-    if is_dev() {
-        menu = menu.add_submenu(Submenu::new(
-            "Developer",
-            Menu::new(app_handle)
-                .add_item(MenuItem::new(
-                    "refresh".to_string(),
-                    "Refresh",
-                    true,
-                    "CmdOrCtrl + Shift + r",
-                ))
-                .add_item(MenuItem::new(
-                    "toggle_devtools".to_string(),
-                    "Open Devtools",
-                    true,
-                    "CmdOrCtrl + Option + i",
-                )),
-            true,
-        ));
-    }
-
-    menu
+    Ok(menu)
 }
-*/

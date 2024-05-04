@@ -10,56 +10,58 @@ extern crate objc;
 
 use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-use ::http::Uri;
 use ::http::uri::InvalidUri;
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
+use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, get_cookie_jar,
-    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
-    get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
-    get_workspace_export_resources, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue,
-    list_cookie_jars, list_environments, list_folders, list_grpc_connections,
-    list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces,
-    set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment,
-    upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
+    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
+    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
+    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, Settings, Workspace,
     WorkspaceExportResources,
 };
 use crate::plugin::ImportResult;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
+use crate::window_menu::app_menu;
 
 mod analytics;
 mod grpc;
@@ -690,7 +692,11 @@ async fn cmd_send_ephemeral_request(
 }
 
 #[tauri::command]
-async fn cmd_filter_response(w: WebviewWindow, response_id: &str, filter: &str) -> Result<String, String> {
+async fn cmd_filter_response(
+    w: WebviewWindow,
+    response_id: &str,
+    filter: &str,
+) -> Result<String, String> {
     let response = get_http_response(&w, response_id)
         .await
         .expect("Failed to get response");
@@ -728,7 +734,12 @@ async fn cmd_import_data(
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
-    let plugins = vec!["importer-yaak", "importer-insomnia", "importer-postman", "importer-curl"];
+    let plugins = vec![
+        "importer-yaak",
+        "importer-insomnia",
+        "importer-postman",
+        "importer-curl",
+    ];
     for plugin_name in plugins {
         let v = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_path)
             .await
@@ -944,7 +955,11 @@ async fn cmd_set_update_mode(update_mode: &str, w: WebviewWindow) -> Result<KeyV
 }
 
 #[tauri::command]
-async fn cmd_get_key_value(namespace: &str, key: &str, w: WebviewWindow) -> Result<Option<KeyValue>, ()> {
+async fn cmd_get_key_value(
+    namespace: &str,
+    key: &str,
+    w: WebviewWindow,
+) -> Result<Option<KeyValue>, ()> {
     let result = get_key_value_raw(&w, namespace, key).await;
     Ok(result)
 }
@@ -968,7 +983,10 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
-async fn cmd_update_cookie_jar(cookie_jar: CookieJar, w: WebviewWindow) -> Result<CookieJar, String> {
+async fn cmd_update_cookie_jar(
+    cookie_jar: CookieJar,
+    w: WebviewWindow,
+) -> Result<CookieJar, String> {
     upsert_cookie_jar(&w, &cookie_jar)
         .await
         .map_err(|e| e.to_string())
@@ -1101,7 +1119,10 @@ async fn cmd_update_environment(
 }
 
 #[tauri::command]
-async fn cmd_update_grpc_request(request: GrpcRequest, w: WebviewWindow) -> Result<GrpcRequest, String> {
+async fn cmd_update_grpc_request(
+    request: GrpcRequest,
+    w: WebviewWindow,
+) -> Result<GrpcRequest, String> {
     upsert_grpc_request(&w, &request)
         .await
         .map_err(|e| e.to_string())
@@ -1118,14 +1139,20 @@ async fn cmd_update_http_request(
 }
 
 #[tauri::command]
-async fn cmd_delete_grpc_request(w: WebviewWindow, request_id: &str) -> Result<GrpcRequest, String> {
+async fn cmd_delete_grpc_request(
+    w: WebviewWindow,
+    request_id: &str,
+) -> Result<GrpcRequest, String> {
     delete_grpc_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_delete_http_request(w: WebviewWindow, request_id: &str) -> Result<HttpRequest, String> {
+async fn cmd_delete_http_request(
+    w: WebviewWindow,
+    request_id: &str,
+) -> Result<HttpRequest, String> {
     delete_http_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())
@@ -1173,7 +1200,10 @@ async fn cmd_delete_folder(w: WebviewWindow, folder_id: &str) -> Result<Folder, 
 }
 
 #[tauri::command]
-async fn cmd_delete_environment(w: WebviewWindow, environment_id: &str) -> Result<Environment, String> {
+async fn cmd_delete_environment(
+    w: WebviewWindow,
+    environment_id: &str,
+) -> Result<Environment, String> {
     delete_environment(&w, environment_id)
         .await
         .map_err(|e| e.to_string())
@@ -1190,14 +1220,20 @@ async fn cmd_list_grpc_connections(
 }
 
 #[tauri::command]
-async fn cmd_list_grpc_events(connection_id: &str, w: WebviewWindow) -> Result<Vec<GrpcEvent>, String> {
+async fn cmd_list_grpc_events(
+    connection_id: &str,
+    w: WebviewWindow,
+) -> Result<Vec<GrpcEvent>, String> {
     list_grpc_events(&w, connection_id)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_list_grpc_requests(workspace_id: &str, w: WebviewWindow) -> Result<Vec<GrpcRequest>, String> {
+async fn cmd_list_grpc_requests(
+    workspace_id: &str,
+    w: WebviewWindow,
+) -> Result<Vec<GrpcRequest>, String> {
     let requests = list_grpc_requests(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())?;
@@ -1205,7 +1241,10 @@ async fn cmd_list_grpc_requests(workspace_id: &str, w: WebviewWindow) -> Result<
 }
 
 #[tauri::command]
-async fn cmd_list_http_requests(workspace_id: &str, w: WebviewWindow) -> Result<Vec<HttpRequest>, String> {
+async fn cmd_list_http_requests(
+    workspace_id: &str,
+    w: WebviewWindow,
+) -> Result<Vec<HttpRequest>, String> {
     let requests = list_http_requests(&w, workspace_id)
         .await
         .expect("Failed to find requests");
@@ -1214,7 +1253,10 @@ async fn cmd_list_http_requests(workspace_id: &str, w: WebviewWindow) -> Result<
 }
 
 #[tauri::command]
-async fn cmd_list_environments(workspace_id: &str, w: WebviewWindow) -> Result<Vec<Environment>, String> {
+async fn cmd_list_environments(
+    workspace_id: &str,
+    w: WebviewWindow,
+) -> Result<Vec<Environment>, String> {
     let environments = list_environments(&w, workspace_id)
         .await
         .expect("Failed to find environments");
@@ -1255,7 +1297,10 @@ async fn cmd_get_cookie_jar(id: &str, w: WebviewWindow) -> Result<CookieJar, Str
 }
 
 #[tauri::command]
-async fn cmd_list_cookie_jars(workspace_id: &str, w: WebviewWindow) -> Result<Vec<CookieJar>, String> {
+async fn cmd_list_cookie_jars(
+    workspace_id: &str,
+    w: WebviewWindow,
+) -> Result<Vec<CookieJar>, String> {
     let cookie_jars = list_cookie_jars(&w, workspace_id)
         .await
         .expect("Failed to find cookie jars");
@@ -1568,7 +1613,9 @@ fn is_dev() -> bool {
 }
 
 fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
-    // let app_menu = window_menu::os_default(handle, "Yaak".to_string().as_str());
+    let menu = app_menu(handle).unwrap();
+    handle.set_menu(menu).expect("Failed to set app menu");
+
     let window_num = handle.webview_windows().len();
     let window_id = format!("wnd_{}", window_num);
     let mut win_builder = tauri::WebviewWindowBuilder::new(
@@ -1610,29 +1657,35 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     // set_shadow(&win, true).unwrap();
 
     let win2 = win.clone();
-    win.on_menu_event(move |w, event| match event.id().as_ref() {
-        "quit" => exit(0),
-        "close" => w.close().unwrap(),
-        "zoom_reset" => w.emit("zoom", 0).unwrap(),
-        "zoom_in" => w.emit("zoom", 1).unwrap(),
-        "zoom_out" => w.emit("zoom", -1).unwrap(),
-        "toggle_sidebar" => w.emit("toggle_sidebar", true).unwrap(),
-        "focus_url" => w.emit("focus_url", true).unwrap(),
-        "focus_sidebar" => w.emit("focus_sidebar", true).unwrap(),
-        "send_request" => w.emit("send_request", true).unwrap(),
-        "new_request" => w.emit("new_request", true).unwrap(),
-        "toggle_settings" => w.emit("toggle_settings", true).unwrap(),
-        "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
-        "refresh" => win2.eval("location.reload()").unwrap(),
-        "new_window" => _ = create_window(w.app_handle(), None),
-        "toggle_devtools" => {
-            if win2.is_devtools_open() {
-                win2.close_devtools();
-            } else {
-                win2.open_devtools();
-            }
+    win.on_menu_event(move |w, event| {
+        if !w.is_focused().unwrap() {
+            return;
         }
-        _ => {}
+        
+        match event.id().0.as_str() {
+            "quit" => exit(0),
+            "close" => w.close().unwrap(),
+            "zoom_reset" => w.emit("zoom", 0).unwrap(),
+            "zoom_in" => w.emit("zoom", 1).unwrap(),
+            "zoom_out" => w.emit("zoom", -1).unwrap(),
+            "settings" => w.emit("settings", true).unwrap(),
+            "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
+            "refresh" => win2.eval("location.reload()").unwrap(),
+            "open_feedback" => {
+                _ = win2
+                    .app_handle()
+                    .shell()
+                    .open("https://yaak.canny.io", None)
+            }
+            "toggle_devtools" => {
+                if win2.is_devtools_open() {
+                    win2.close_devtools();
+                } else {
+                    win2.open_devtools();
+                }
+            }
+            _ => {}
+        }
     });
 
     let win3 = win.clone();

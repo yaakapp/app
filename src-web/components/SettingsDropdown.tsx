@@ -26,6 +26,17 @@ export function SettingsDropdown() {
     setShowChangelog(true);
   });
 
+  const showSettings = () => {
+    dialog.show({
+      id: 'settings',
+      size: 'md',
+      title: 'Settings',
+      render: () => <SettingsDialog />,
+    });
+  };
+
+  useListenToTauriEvent('settings', showSettings);
+
   return (
     <Dropdown
       ref={dropdownRef}
@@ -36,14 +47,7 @@ export function SettingsDropdown() {
           label: 'Settings',
           hotKeyAction: 'settings.show',
           leftSlot: <Icon icon="settings" />,
-          onSelect: () => {
-            dialog.show({
-              id: 'settings',
-              size: 'md',
-              title: 'Settings',
-              render: () => <SettingsDialog />,
-            });
-          },
+          onSelect: showSettings,
         },
         {
           key: 'hotkeys',

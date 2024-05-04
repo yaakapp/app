@@ -8,6 +8,7 @@
   ],
   "permissions": [
     "os:allow-os-type",
+    "menu:allow-create-default",
     "dialog:allow-open",
     "dialog:allow-save",
     "event:allow-listen",
