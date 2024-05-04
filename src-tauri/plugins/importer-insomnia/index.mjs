@@ -1,4 +1,4 @@
-function S(e, a) {
+function w(e, a) {
   return console.log("IMPORTING Environment", e._id, e.name, JSON.stringify(e, null, 2)), {
     id: e._id,
     createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
@@ -13,16 +13,16 @@ function S(e, a) {
     }))
   };
 }
-function w(e) {
+function S(e) {
   return c(e) && e._type === "workspace";
 }
-function I(e) {
+function b(e) {
   return c(e) && e._type === "request_group";
 }
-function b(e) {
+function h(e) {
   return c(e) && e._type === "request";
 }
-function h(e) {
+function I(e) {
   return c(e) && e._type === "grpc_request";
 }
 function y(e) {
@@ -31,10 +31,10 @@ function y(e) {
 function c(e) {
   return Object.prototype.toString.call(e) === "[object Object]";
 }
-function O(e) {
+function _(e) {
   return Object.prototype.toString.call(e) === "[object String]";
 }
-function _(e) {
+function O(e) {
   return Object.entries(e).map(([a, n]) => ({
     enabled: !0,
     name: a,
@@ -42,17 +42,16 @@ function _(e) {
   }));
 }
 function p(e) {
-  return O(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : e;
+  return _(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : e;
 }
-function R(e, a, n = 0) {
+function D(e, a, n = 0) {
   var s, r, u, m;
-  console.log("IMPORTING REQUEST", e._id, e.name, JSON.stringify(e.body, null, 2));
   let i = null, o = {};
-  e.body.mimeType === "application/octet-stream" ? (i = "binary", o = { filePath: e.body.fileName }) : ((s = e.body) == null ? void 0 : s.mimeType) === "application/x-www-form-urlencoded" ? (i = "application/x-www-form-urlencoded", o = {
+  e.body.mimeType === "application/octet-stream" ? (i = "binary", o = { filePath: e.body.fileName ?? "" }) : ((s = e.body) == null ? void 0 : s.mimeType) === "application/x-www-form-urlencoded" ? (i = "application/x-www-form-urlencoded", o = {
     form: (e.body.params ?? []).map((t) => ({
       enabled: !t.disabled,
-      name: t.name,
-      value: t.value
+      name: t.name ?? "",
+      value: t.value ?? ""
     }))
   }) : ((r = e.body) == null ? void 0 : r.mimeType) === "multipart/form-data" ? (i = "multipart/form-data", o = {
     form: (e.body.params ?? []).map((t) => ({
@@ -90,7 +89,7 @@ function R(e, a, n = 0) {
     })).filter(({ name: t, value: f }) => t !== "" || f !== "")
   };
 }
-function D(e, a) {
+function q(e, a) {
   return console.log("IMPORTING FOLDER", e._id, e.name, JSON.stringify(e, null, 2)), {
     id: e._id,
     createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
@@ -101,7 +100,7 @@ function D(e, a) {
     name: e.name
   };
 }
-function q(e, a, n = 0) {
+function R(e, a, n = 0) {
   var d;
   console.log("IMPORTING GRPC REQUEST", e._id, e.name, JSON.stringify(e, null, 2));
   const i = e.protoMethodName.split("/").filter((s) => s !== ""), o = i[0] ?? null, l = i[1] ?? null;
@@ -140,7 +139,7 @@ function v(e) {
     grpcRequests: [],
     environments: [],
     folders: []
-  }, i = a.resources.filter(w);
+  }, i = a.resources.filter(S);
   for (const o of i) {
     const l = a.resources.find(
       (r) => y(r) && r.parentId === o._id
@@ -151,22 +150,22 @@ function v(e) {
       updatedAt: new Date(i.updated ?? Date.now()).toISOString().replace("Z", ""),
       model: "workspace",
       name: o.name,
-      variables: l ? _(l.data) : []
+      variables: l ? O(l.data) : []
     });
     const d = a.resources.filter(
       (r) => y(r) && r.parentId === (l == null ? void 0 : l._id)
     );
     n.environments.push(
-      ...d.map((r) => S(r, o._id))
+      ...d.map((r) => w(r, o._id))
     );
     const s = (r) => {
       const u = a.resources.filter((t) => t.parentId === r);
       let m = 0;
       for (const t of u)
-        I(t) ? (n.folders.push(D(t, o._id)), s(t._id)) : b(t) ? n.httpRequests.push(
+        b(t) ? (n.folders.push(q(t, o._id)), s(t._id)) : h(t) ? n.httpRequests.push(
+          D(t, o._id, m++)
+        ) : I(t) && (console.log("GRPC", JSON.stringify(t, null, 1)), n.grpcRequests.push(
           R(t, o._id, m++)
-        ) : h(t) && (console.log("GRPC", JSON.stringify(t, null, 1)), n.grpcRequests.push(
-          q(t, o._id, m++)
         ));
     };
     s(o._id);

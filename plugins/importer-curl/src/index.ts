@@ -233,9 +233,16 @@ export function pluginHookImport(contents: string) {
     method = 'text' in body || 'params' in body ? 'POST' : 'GET';
   }
 
+  const workspace: ExportResources['workspaces'][0] = {
+    model: 'workspace',
+    id: generateId('wk'),
+    name: 'Curl Import',
+  };
+
   const request: ExportResources['httpRequests'][0] = {
     id: generateId('rq'),
     model: 'http_request',
+    workspaceId: workspace.id,
     name: '',
     urlParameters: parameters,
     url,
@@ -244,13 +251,17 @@ export function pluginHookImport(contents: string) {
     authentication,
     body,
     bodyType,
-    workspaceId: 'WORKSPACE_ID',
     authenticationType: null,
     folderId: null,
     sortPriority: 0,
   };
 
-  return request;
+  return {
+    resources: {
+      httpRequests: [request],
+      workspaces: [workspace],
+    },
+  };
 }
 
 /**
@@ -451,7 +462,8 @@ export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let id = `${prefix}_`;
   for (let i = 0; i < 10; i++) {
-    id += alphabet[Math.floor(Math.random() * alphabet.length)];
+    const r = Math.random();
+    id += alphabet[Math.floor(r * alphabet.length)];
   }
   return id;
 }
