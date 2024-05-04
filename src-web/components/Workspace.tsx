@@ -211,7 +211,7 @@ interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
 function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
   const platform = useOsInfo();
   const fullscreen = useIsFullscreen();
-  const stoplightsVisible = platform?.osType === 'Darwin' && !fullscreen;
+  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
   return (
     <div
       style={style}

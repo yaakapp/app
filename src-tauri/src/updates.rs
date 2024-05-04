@@ -1,8 +1,9 @@
 use std::time::SystemTime;
 
 use log::info;
-use tauri::api::dialog;
-use tauri::{updater, AppHandle, Window};
+use tauri::{AppHandle};
+use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_updater::UpdaterExt;
 
 use crate::is_dev;
 
@@ -29,7 +30,7 @@ impl YaakUpdater {
         &mut self,
         app_handle: &AppHandle,
         mode: UpdateMode,
-    ) -> Result<bool, updater::Error> {
+    ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
         let update_mode = get_update_mode_str(mode);
@@ -44,49 +45,48 @@ impl YaakUpdater {
         }
 
         match app_handle
-            .updater()
+            .updater_builder()
             .header("X-Update-Mode", update_mode)?
+            .build()?
             .check()
             .await
         {
-            Ok(update) => {
+            Ok(Some(update)) => {
                 let h = app_handle.clone();
-                dialog::ask(
-                    None::<&Window>,
-                    "Update Available",
-                    format!(
+                app_handle
+                    .dialog()
+                    .message(format!(
                         "{} is available. Would you like to download and install it now?",
-                        update.latest_version()
-                    ),
-                    |confirmed| {
+                        update.version
+                    ))
+                    .title("Update Available")
+                    .show(|confirmed| {
                         if !confirmed {
                             return;
                         }
                         tauri::async_runtime::spawn(async move {
-                            match update.download_and_install().await {
+                            match update.download_and_install(|_, _| {}, || {}).await {
                                 Ok(_) => {
-                                    if dialog::blocking::ask(
-                                        None::<&Window>,
-                                        "Update Installed",
-                                        "Would you like to restart the app?",
-                                    ) {
+                                    if h
+                                        .dialog()
+                                        .message("Would you like to restart the app?")
+                                        .title("Update Installed")
+                                        .blocking_show()
+                                    {
                                         h.restart();
                                     }
                                 }
                                 Err(e) => {
-                                    dialog::message(
-                                        None::<&Window>,
-                                        "Update Failed",
-                                        format!("The update failed to install: {}", e),
-                                    );
+                                    h
+                                        .dialog()
+                                        .message(format!("The update failed to install: {}", e));
                                 }
                             }
                         });
-                    },
-                );
+                    });
                 Ok(true)
             }
-            Err(updater::Error::UpToDate) => Ok(false),
+            Ok(None) => Ok(false),
             Err(e) => Err(e),
         }
     }
@@ -94,7 +94,7 @@ impl YaakUpdater {
         &mut self,
         app_handle: &AppHandle,
         mode: UpdateMode,
-    ) -> Result<bool, updater::Error> {
+    ) -> Result<bool, tauri_plugin_updater::Error> {
         let ignore_check =
             self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
         if ignore_check {

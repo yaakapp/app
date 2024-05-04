@@ -1,7 +1,7 @@
-import { appWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { getKeyValue, setKeyValue } from './keyValueStore';
 
-const key = ['window_pathname', appWindow.label];
+const key = ['window_pathname', getCurrent().label];
 const namespace = 'no_sync';
 const fallback = undefined;
 

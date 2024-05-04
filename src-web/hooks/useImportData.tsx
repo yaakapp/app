@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api';
-import type { OpenDialogOptions } from '@tauri-apps/api/dialog';
-import { open } from '@tauri-apps/api/dialog';
+import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../components/core/Button';
 import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
@@ -11,11 +10,6 @@ import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
 
-const openArgs: OpenDialogOptions = {
-  filters: [{ name: 'Export File', extensions: ['json', 'yaml'] }],
-  multiple: false,
-};
-
 export function useImportData() {
   const routes = useAppRoutes();
   const dialog = useDialog();
@@ -23,8 +17,11 @@ export function useImportData() {
   const activeWorkspaceId = useActiveWorkspaceId();
 
   const importData = async () => {
-    const selected = await open(openArgs);
-    if (selected == null || selected.length === 0) {
+    const selected = await open({
+      filters: [{ name: 'Export File', extensions: ['json', 'yaml'] }],
+      multiple: false,
+    });
+    if (selected == null) {
       return;
     }
 
@@ -35,7 +32,7 @@ export function useImportData() {
       httpRequests: HttpRequest[];
       grpcRequests: GrpcRequest[];
     } = await invoke('cmd_import_data', {
-      filePath: Array.isArray(selected) ? selected[0] : selected,
+      filePath: selected.path,
       workspaceId: activeWorkspaceId,
     });
     const importedWorkspace = imported.workspaces[0];

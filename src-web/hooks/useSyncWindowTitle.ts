@@ -18,6 +18,6 @@ export function useSyncWindowTitle() {
   //   }
   //
   //   // TODO: This resets the stoplight position so we can't use it yet
-  //   // appWindow.setTitle(newTitle).catch(console.error);
+  //   // getCurrent().setTitle(newTitle).catch(console.error);
   // }, [activeEnvironment, activeRequest, activeWorkspace]);
 }

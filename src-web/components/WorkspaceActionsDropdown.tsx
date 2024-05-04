@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';

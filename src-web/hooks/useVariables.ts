@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 import type { EnvironmentVariable } from '../lib/models';
 
 export function variablesQueryKey({ environmentId }: { environmentId: string }) {
