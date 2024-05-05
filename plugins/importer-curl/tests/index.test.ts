@@ -28,24 +28,6 @@ describe('importer-curl', () => {
     });
   });
 
-  test('Imports simple POST', () => {
-    expect(pluginHookImport('curl -X POST -d "data" https://yaak.app')).toEqual({
-      resources: {
-        workspaces: [baseWorkspace()],
-        httpRequests: [
-          baseRequest({
-            method: 'POST',
-            url: 'https://yaak.app',
-            bodyType: 'text/plain',
-            body: {
-              text: 'data',
-            },
-          }),
-        ],
-      },
-    });
-  });
-
   test('Imports form data', () => {
     expect(
       pluginHookImport('curl -X POST -F "a=aaa" -F b=bbb" -F f=@filepath https://yaak.app'),
@@ -63,6 +45,54 @@ describe('importer-curl', () => {
                 { enabled: true, name: 'b', value: 'bbb' },
                 { enabled: true, name: 'f', file: 'filepath' },
               ],
+            },
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports data params as form url-encoded', () => {
+    expect(pluginHookImport('curl -d a -d b -d c=ccc https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            method: 'POST',
+            url: 'https://yaak.app',
+            bodyType: 'application/x-www-form-urlencoded',
+            body: {
+              params: [
+                { name: 'a', value: '' },
+                { name: 'b', value: '' },
+                { name: 'c', value: 'ccc' },
+              ],
+            },
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports data params as text', () => {
+    expect(
+      pluginHookImport('curl -H Content-Type:text/plain -d a -d b -d c=ccc https://yaak.app'),
+    ).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            method: 'POST',
+            url: 'https://yaak.app',
+            headers: [
+              {
+                name: 'Content-Type',
+                value: 'text/plain',
+              },
+            ],
+            bodyType: 'text/plain',
+            body: {
+              text: 'a&b&c=ccc',
             },
           }),
         ],

@@ -203,10 +203,13 @@ export function pluginHookImport(contents: string) {
   let bodyType: string | null = null;
   const bodyAsGET = getPairValue(pairsByName, false, ['G', 'get']);
 
-  if (dataParameters.length !== 0 && bodyAsGET) {
+  if (dataParameters.length > 0 && bodyAsGET) {
     parameters.push(...dataParameters);
-  } else if (dataParameters && mimeType === 'application/x-www-form-urlencoded') {
-    bodyType = mimeType;
+  } else if (
+    dataParameters.length > 0 &&
+    (mimeType == null || mimeType === 'application/x-www-form-urlencoded')
+  ) {
+    bodyType = mimeType ?? 'application/x-www-form-urlencoded';
     body = {
       params: dataParameters.map((parameter) => ({
         ...parameter,
@@ -214,10 +217,15 @@ export function pluginHookImport(contents: string) {
         value: decodeURIComponent(parameter.value || ''),
       })),
     };
-  } else if (dataParameters.length !== 0) {
-    bodyType = mimeType ?? 'text/plain';
+  } else if (dataParameters.length > 0) {
+    bodyType =
+      mimeType === 'application/json' || mimeType === 'text/xml' || mimeType === 'text/plain'
+        ? mimeType
+        : 'other';
     body = {
-      text: dataParameters.map((parameter) => `${parameter.name}${parameter.value}`).join('&'),
+      text: dataParameters
+        .map(({ name, value }) => (name && value ? `${name}=${value}` : name || value))
+        .join('&'),
     };
   } else if (formDataParams.length) {
     bodyType = mimeType ?? 'multipart/form-data';
@@ -264,49 +272,14 @@ export function pluginHookImport(contents: string) {
   };
 }
 
-/**
- * cURL supported -d, and --date[suffix] flags.
- */
-const dataFlags = [
-  /**
-   * https://curl.se/docs/manpage.html#-d
-   */
-  'd',
-  'data',
+const dataFlags = ['d', 'data', 'data-raw', 'data-urlencode', 'data-binary', 'data-ascii'];
 
-  /**
-   * https://curl.se/docs/manpage.html#--data-raw
-   */
-  'data-raw',
-
-  /**
-   * https://curl.se/docs/manpage.html#--data-urlencode
-   */
-  'data-urlencode',
-
-  /**
-   * https://curl.se/docs/manpage.html#--data-binary
-   */
-  'data-binary',
-
-  /**
-   * https://curl.se/docs/manpage.html#--data-ascii
-   */
-  'data-ascii',
-];
-
-/**
- * Parses pairs supporting only flags dictated by {@link dataFlags}
- *
- * @param keyedPairs pairs with cURL flags as keys.
- */
 const pairsToDataParameters = (keyedPairs: PairsByName) => {
   let dataParameters: {
-    enabled: boolean;
     name: string;
     value: string;
     contentType?: string;
-    file?: string;
+    filePath?: string;
   }[] = [];
 
   for (const flagName of dataFlags) {
@@ -316,52 +289,32 @@ const pairsToDataParameters = (keyedPairs: PairsByName) => {
       continue;
     }
 
-    switch (flagName) {
-      case 'd':
-      case 'data':
-      case 'data-ascii':
-      case 'data-binary':
-        dataParameters = dataParameters.concat(
-          pairs.flatMap((pair) => pairToParameters(pair, true)),
-        );
-        break;
-      case 'data-raw':
-        dataParameters = dataParameters.concat(pairs.flatMap((pair) => pairToParameters(pair)));
-        break;
-      case 'data-urlencode':
-        dataParameters = dataParameters.concat(
-          pairs
-            .flatMap((pair) => pairToParameters(pair, true))
-            .map((parameter) => {
-              if (parameter.type === 'file') {
-                return parameter;
-              }
+    for (const p of pairs) {
+      if (typeof p !== 'string') continue;
 
-              return {
-                ...parameter,
-                value: encodeURIComponent(parameter.value ?? ''),
-              };
-            }),
-        );
-        break;
-      default:
-        throw new Error(`unhandled data flag ${flagName}`);
+      const [name, value] = p.split('=');
+      if (p.startsWith('@')) {
+        // Yaak doesn't support files in url-encoded data, so
+        dataParameters.push({
+          name: name ?? '',
+          value: '',
+          filePath: p.slice(1),
+        });
+      } else {
+        dataParameters.push({
+          name: name ?? '',
+          value: flagName === 'data-urlencode' ? encodeURIComponent(value ?? '') : value ?? '',
+        });
+      }
     }
   }
 
   return dataParameters;
 };
 
-/**
- * Converts pairs (that could include multiple via `&`) into {@link Parameter}s. This
- * method supports both `@filename` and `name@filename`.
- *
- * @param pair command line value
- * @param allowFiles whether to allow the `@` to support include files
- */
-const pairToParameters = (pair: Pair, allowFiles = false): Parameter[] => {
+const pairToParameters = (pair: Pair, allowFiles = false) => {
   if (typeof pair === 'boolean') {
-    return [{ name: '', value: pair.toString() }];
+    return [{ name: '', value: pair.toString(), file: '' }];
   }
 
   return pair.split('&').map((pair) => {
@@ -372,10 +325,10 @@ const pairToParameters = (pair: Pair, allowFiles = false): Parameter[] => {
 
     const [name, value] = pair.split('=');
     if (!value && !pair.includes('=')) {
-      return { name: '', value: pair };
+      return { name: '', value: pair, file: '' };
     }
 
-    return { name, value };
+    return { name, value, file: '' };
   });
 };
 
@@ -451,7 +404,7 @@ export const convert = (rawData: string) => {
   // Push the last unfinished command
   commands.push(currentCommand);
 
-  const requests: ImportRequest[] = commands
+  const requests: ExportResources['httpRequests'] = commands
     .filter((command) => command[0] === 'curl')
     .map(importCommand);
 
