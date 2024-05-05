@@ -30,8 +30,10 @@ describe('importer-curl', () => {
     });
   });
 
-  test('Imports multiple GET', () => {
-    expect(pluginHookImport('curl \\\n  https://yaak.app\ncurl example.com;curl foo.com')).toEqual({
+  test('Imports multiple requests', () => {
+    expect(
+      pluginHookImport('curl \\\n  https://yaak.app\necho "foo"\ncurl example.com;curl foo.com'),
+    ).toEqual({
       resources: {
         workspaces: [baseWorkspace()],
         httpRequests: [

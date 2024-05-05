@@ -54,14 +54,12 @@ export const pluginHookImport = (rawData: string) => {
 
   const commands: ParseEntry[][] = [];
 
-  const normalizedData = rawData.replace(/([^\\])\n/, '$1;');
-
-  // Parse the whole thing into one big tokenized list
-  const parseEntries = parse(normalizedData);
+  // Replace non-escaped newlines with semicolons to make parsing easier
+  const normalizedData = rawData.replace(/([^\\])\n/g, '$1; ');
 
   let currentCommand: ParseEntry[] = [];
 
-  for (const parseEntry of parseEntries) {
+  for (const parseEntry of parse(normalizedData)) {
     if (typeof parseEntry === 'string') {
       if (parseEntry.startsWith('$')) {
         currentCommand.push(parseEntry.slice(1));
