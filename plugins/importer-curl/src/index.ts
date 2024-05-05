@@ -21,8 +21,6 @@ export const id = 'curl';
 export const name = 'cURL';
 export const description = 'cURL command line tool';
 
-let requestCount = 1;
-
 const SUPPORTED_ARGS = [
   'url',
   'u',
@@ -49,9 +47,77 @@ type Pair = string | boolean;
 
 type PairsByName = Record<string, Pair[]>;
 
-export function pluginHookImport(contents: string) {
-  const parseEntries = parse(contents);
+export const pluginHookImport = (rawData: string) => {
+  if (!rawData.match(/^\s*curl /)) {
+    return null;
+  }
 
+  const commands: ParseEntry[][] = [];
+
+  const normalizedData = rawData.replace(/([^\\])\n/, '$1;');
+
+  // Parse the whole thing into one big tokenized list
+  const parseEntries = parse(normalizedData);
+
+  let currentCommand: ParseEntry[] = [];
+
+  for (const parseEntry of parseEntries) {
+    if (typeof parseEntry === 'string') {
+      if (parseEntry.startsWith('$')) {
+        currentCommand.push(parseEntry.slice(1));
+      } else {
+        currentCommand.push(parseEntry);
+      }
+      continue;
+    }
+
+    if ('comment' in parseEntry) {
+      continue;
+    }
+
+    const { op } = parseEntry as { op: 'glob'; pattern: string } | { op: ControlOperator };
+
+    // `;` separates commands
+    if (op === ';') {
+      commands.push(currentCommand);
+      currentCommand = [];
+      continue;
+    }
+
+    if (op?.startsWith('$')) {
+      // Handle the case where literal like -H $'Header: \'Some Quoted Thing\''
+      const str = op.slice(2, op.length - 1).replace(/\\'/g, "'");
+
+      currentCommand.push(str);
+      continue;
+    }
+
+    if (op === 'glob') {
+      currentCommand.push((parseEntry as { op: 'glob'; pattern: string }).pattern);
+    }
+  }
+
+  commands.push(currentCommand);
+
+  const workspace: ExportResources['workspaces'][0] = {
+    model: 'workspace',
+    id: generateId('wk'),
+    name: 'Curl Import',
+  };
+
+  const requests: ExportResources['httpRequests'] = commands
+    .filter((command) => command[0] === 'curl')
+    .map((v) => importCommand(v, workspace.id));
+
+  return {
+    resources: {
+      httpRequests: requests,
+      workspaces: [workspace],
+    },
+  };
+};
+
+export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   // ~~~~~~~~~~~~~~~~~~~~~ //
   // Collect all the flags //
   // ~~~~~~~~~~~~~~~~~~~~~ //
@@ -102,11 +168,11 @@ export function pluginHookImport(contents: string) {
 
   /// /////// Url & parameters //////////
   let parameters: HttpUrlParameter[] = [];
-  let url = '';
+  let url: string;
 
+  const urlArg = getPairValue(pairsByName, (singletons[0] as string) || '', ['url']);
   try {
-    const urlValue = getPairValue(pairsByName, (singletons[0] as string) || '', ['url']);
-    const { searchParams, href, search } = new URL(urlValue);
+    const { searchParams, href, search } = new URL(urlArg);
     parameters = Array.from(searchParams.entries()).map(([name, value]) => ({
       name,
       value,
@@ -114,7 +180,10 @@ export function pluginHookImport(contents: string) {
     }));
 
     url = href.replace(search, '').replace(/\/$/, '');
-  } catch (error) {}
+  } catch (error) {
+    // Failed to parse, so just fill in the URL
+    url = urlArg;
+  }
 
   /// /////// Authentication //////////
   const [username, password] = getPairValue(pairsByName, '', ['u', 'user']).split(/:(.*)$/);
@@ -241,16 +310,10 @@ export function pluginHookImport(contents: string) {
     method = 'text' in body || 'params' in body ? 'POST' : 'GET';
   }
 
-  const workspace: ExportResources['workspaces'][0] = {
-    model: 'workspace',
-    id: generateId('wk'),
-    name: 'Curl Import',
-  };
-
   const request: ExportResources['httpRequests'][0] = {
     id: generateId('rq'),
     model: 'http_request',
-    workspaceId: workspace.id,
+    workspaceId,
     name: '',
     urlParameters: parameters,
     url,
@@ -264,12 +327,7 @@ export function pluginHookImport(contents: string) {
     sortPriority: 0,
   };
 
-  return {
-    resources: {
-      httpRequests: [request],
-      workspaces: [workspace],
-    },
-  };
+  return request;
 }
 
 const dataFlags = ['d', 'data', 'data-raw', 'data-urlencode', 'data-binary', 'data-ascii'];
@@ -312,26 +370,6 @@ const pairsToDataParameters = (keyedPairs: PairsByName) => {
   return dataParameters;
 };
 
-const pairToParameters = (pair: Pair, allowFiles = false) => {
-  if (typeof pair === 'boolean') {
-    return [{ name: '', value: pair.toString(), file: '' }];
-  }
-
-  return pair.split('&').map((pair) => {
-    if (pair.includes('@') && allowFiles) {
-      const [name, file] = pair.split('@');
-      return { name, file, type: 'file' };
-    }
-
-    const [name, value] = pair.split('=');
-    if (!value && !pair.includes('=')) {
-      return { name: '', value: pair, file: '' };
-    }
-
-    return { name, value, file: '' };
-  });
-};
-
 const getPairValue = <T extends string | boolean>(
   pairsByName: PairsByName,
   defaultValue: T,
@@ -344,71 +382,6 @@ const getPairValue = <T extends string | boolean>(
   }
 
   return defaultValue;
-};
-
-export const convert = (rawData: string) => {
-  requestCount = 1;
-
-  if (!rawData.match(/^\s*curl /)) {
-    return null;
-  }
-
-  // Parse the whole thing into one big tokenized list
-  const parseEntries = parse(rawData.replace(/\n/g, ' '));
-
-  // ~~~~~~~~~~~~~~~~~~~~~~ //
-  // Aggregate the commands //
-  // ~~~~~~~~~~~~~~~~~~~~~~ //
-  const commands: ParseEntry[][] = [];
-
-  let currentCommand: ParseEntry[] = [];
-
-  for (const parseEntry of parseEntries) {
-    if (typeof parseEntry === 'string') {
-      if (parseEntry.startsWith('$')) {
-        currentCommand.push(parseEntry.slice(1, Infinity));
-      } else {
-        currentCommand.push(parseEntry);
-      }
-      continue;
-    }
-
-    if ((parseEntry as { comment: string }).comment) {
-      continue;
-    }
-
-    const { op } = parseEntry as { op: 'glob'; pattern: string } | { op: ControlOperator };
-
-    // `;` separates commands
-    if (op === ';') {
-      commands.push(currentCommand);
-      currentCommand = [];
-      continue;
-    }
-
-    if (op?.startsWith('$')) {
-      // Handle the case where literal like -H $'Header: \'Some Quoted Thing\''
-      const str = op.slice(2, op.length - 1).replace(/\\'/g, "'");
-
-      currentCommand.push(str);
-      continue;
-    }
-
-    if (op === 'glob') {
-      currentCommand.push((parseEntry as { op: 'glob'; pattern: string }).pattern);
-    }
-
-    // Not sure what else this could be, so just keep going
-  }
-
-  // Push the last unfinished command
-  commands.push(currentCommand);
-
-  const requests: ExportResources['httpRequests'] = commands
-    .filter((command) => command[0] === 'curl')
-    .map(importCommand);
-
-  return requests;
 };
 
 export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {

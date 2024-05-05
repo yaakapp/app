@@ -18,13 +18,28 @@ describe('importer-curl', () => {
   });
 
   test('Imports basic GET', () => {
-    expect(pluginHookImport('curl https://yaak.app').resources).toEqual({
-      workspaces: [baseWorkspace()],
-      httpRequests: [
-        baseRequest({
-          url: 'https://yaak.app',
-        }),
-      ],
+    expect(pluginHookImport('curl https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports multiple GET', () => {
+    expect(pluginHookImport('curl \\\n  https://yaak.app\ncurl example.com;curl foo.com')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({ url: 'https://yaak.app' }),
+          baseRequest({ url: 'example.com', id: 'rq_aG9YDmuvzI' }),
+          baseRequest({ url: 'foo.com', id: 'rq_RCemE7p5A9' }),
+        ],
+      },
     });
   });
 
