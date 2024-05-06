@@ -30,6 +30,87 @@ describe('importer-curl', () => {
     });
   });
 
+  test('Explicit URL', () => {
+    expect(pluginHookImport('curl --url https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Missing URL', () => {
+    expect(pluginHookImport('curl -X POST')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            method: 'POST',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('URL between', () => {
+    expect(pluginHookImport('curl -v https://yaak.app -X POST')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            method: 'POST',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Random flags', () => {
+    expect(pluginHookImport('curl --random -Z -Y -S --foo https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports --request method', () => {
+    expect(pluginHookImport('curl --request POST https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            method: 'POST',
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports -XPOST method', () => {
+    expect(pluginHookImport('curl -XPOST --request POST https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            method: 'POST',
+          }),
+        ],
+      },
+    });
+  });
+
   test('Imports multiple requests', () => {
     expect(
       pluginHookImport('curl \\\n  https://yaak.app\necho "foo"\ncurl example.com;curl foo.com'),
@@ -101,16 +182,80 @@ describe('importer-curl', () => {
           baseRequest({
             method: 'POST',
             url: 'https://yaak.app',
-            headers: [
-              {
-                name: 'Content-Type',
-                value: 'text/plain',
-              },
-            ],
+            headers: [{ name: 'Content-Type', value: 'text/plain' }],
             bodyType: 'text/plain',
-            body: {
-              text: 'a&b&c=ccc',
+            body: { text: 'a&b&c=ccc' },
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports multiple headers', () => {
+    expect(
+      pluginHookImport('curl -H Foo:bar --header Name -H AAA:bbb -H :ccc https://yaak.app'),
+    ).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            headers: [
+              { name: 'Name', value: '' },
+              { name: 'Foo', value: 'bar' },
+              { name: 'AAA', value: 'bbb' },
+              { name: '', value: 'ccc' },
+            ],
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports basic auth', () => {
+    expect(pluginHookImport('curl --user user:pass https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            authenticationType: 'basic',
+            authentication: {
+              username: 'user',
+              password: 'pass',
             },
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports digest auth', () => {
+    expect(pluginHookImport('curl --digest --user user:pass https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            authenticationType: 'digest',
+            authentication: {
+              username: 'user',
+              password: 'pass',
+            },
+          }),
+        ],
+      },
+    });
+  });
+
+  test('Imports cookie as header', () => {
+    expect(pluginHookImport('curl --cookie "foo=bar" https://yaak.app')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            headers: [{ name: 'Cookie', value: 'foo=bar' }],
           }),
         ],
       },

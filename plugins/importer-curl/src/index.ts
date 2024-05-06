@@ -24,7 +24,8 @@ export const description = 'cURL command line tool';
 const SUPPORTED_ARGS = [
   'url',
   'u',
-  'user',
+  'user', // Auth username:password
+  'digest', // Apply auth as digest
   'header',
   'H',
   'cookie',
@@ -59,7 +60,15 @@ export const pluginHookImport = (rawData: string) => {
 
   let currentCommand: ParseEntry[] = [];
 
-  for (const parseEntry of parse(normalizedData)) {
+  // Break up `-XPOST` into `-X POST`
+  const normalizedParseEntries = parse(normalizedData).flatMap((entry) => {
+    if (typeof entry === 'string' && entry.match(/^-\w+/) && entry.length > 2) {
+      return [entry.slice(0, 2), entry.slice(2)];
+    }
+    return entry;
+  });
+
+  for (const parseEntry of normalizedParseEntries) {
     if (typeof parseEntry === 'string') {
       if (parseEntry.startsWith('$')) {
         currentCommand.push(parseEntry.slice(1));
@@ -186,6 +195,8 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   /// /////// Authentication //////////
   const [username, password] = getPairValue(pairsByName, '', ['u', 'user']).split(/:(.*)$/);
 
+  const isDigest = getPairValue(pairsByName, false, ['digest']);
+  const authenticationType = username ? (isDigest ? 'digest' : 'basic') : null;
   const authentication = username
     ? {
         username: username.trim(),
@@ -318,9 +329,9 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     method,
     headers,
     authentication,
+    authenticationType,
     body,
     bodyType,
-    authenticationType: null,
     folderId: null,
     sortPriority: 0,
   };
