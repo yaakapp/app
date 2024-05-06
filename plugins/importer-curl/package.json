@@ -6,11 +6,7 @@
     "url": "^0.11.3"
   },
   "devDependencies": {
-    "@types/seedrandom": "^3.0.8",
     "@types/shell-quote": "^1.7.5",
-    "pseudo-random": "^0.6.0",
-    "random": "^4.1.0",
-    "random-seedable": "^1.0.8",
-    "seedrandom": "^3.0.5"
+    "random-seedable": "^1.0.8"
   }
 }
