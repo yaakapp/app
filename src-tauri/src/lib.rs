@@ -1657,7 +1657,7 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         if !w.is_focused().unwrap() {
             return;
         }
-        
+
         match event.id().0.as_str() {
             "quit" => exit(0),
             "close" => w.close().unwrap(),

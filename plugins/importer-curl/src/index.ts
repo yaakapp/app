@@ -1,5 +1,4 @@
 import { ControlOperator, parse, ParseEntry } from 'shell-quote';
-import { URL } from 'url';
 import {
   Environment,
   Folder,
@@ -21,28 +20,23 @@ export const id = 'curl';
 export const name = 'cURL';
 export const description = 'cURL command line tool';
 
+const DATA_FLAGS = ['d', 'data', 'data-raw', 'data-urlencode', 'data-binary', 'data-ascii'];
 const SUPPORTED_ARGS = [
-  'url',
-  'u',
-  'user', // Auth username:password
-  'digest', // Apply auth as digest
-  'header',
-  'H',
-  'cookie',
-  'b',
-  'get',
-  'G',
-  'd',
-  'data',
-  'data-raw',
-  'data-urlencode',
-  'data-binary',
-  'data-ascii',
-  'form',
-  'F',
-  'request',
-  'X',
-];
+  ['url'], // Specify the URL explicitly
+  ['user', 'u'], // Authentication
+  ['digest'], // Apply auth as digest
+  ['header', 'H'],
+  ['cookie', 'b'],
+  ['get', 'G'], // Put the post data in the URL
+  ['d', 'data'], // Add url encoded data
+  ['data-raw'],
+  ['data-urlencode'],
+  ['data-binary'],
+  ['data-ascii'],
+  ['form', 'F'], // Add multipart data
+  ['request', 'X'], // Request method
+  DATA_FLAGS,
+].flatMap((v) => v);
 
 type Pair = string | boolean;
 
@@ -56,13 +50,21 @@ export const pluginHookImport = (rawData: string) => {
   const commands: ParseEntry[][] = [];
 
   // Replace non-escaped newlines with semicolons to make parsing easier
+  // NOTE: This is really slow in debug build but fast in release mode
   const normalizedData = rawData.replace(/([^\\])\n/g, '$1; ');
 
   let currentCommand: ParseEntry[] = [];
 
+  const parsed = parse(normalizedData);
+
   // Break up `-XPOST` into `-X POST`
-  const normalizedParseEntries = parse(normalizedData).flatMap((entry) => {
-    if (typeof entry === 'string' && entry.match(/^-\w+/) && entry.length > 2) {
+  const normalizedParseEntries = parsed.flatMap((entry) => {
+    if (
+      typeof entry === 'string' &&
+      entry.startsWith('-') &&
+      !entry.startsWith('--') &&
+      entry.length > 2
+    ) {
       return [entry.slice(0, 2), entry.slice(2)];
     }
     return entry;
@@ -173,26 +175,22 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   // Build the request //
   // ~~~~~~~~~~~~~~~~~ //
 
-  /// /////// Url & parameters //////////
-  let parameters: HttpUrlParameter[] = [];
+  // Url & parameters
+
+  let urlParameters: HttpUrlParameter[] = [];
   let url: string;
 
   const urlArg = getPairValue(pairsByName, (singletons[0] as string) || '', ['url']);
-  try {
-    const { searchParams, href, search } = new URL(urlArg);
-    parameters = Array.from(searchParams.entries()).map(([name, value]) => ({
-      name,
-      value,
-      disabled: false,
-    }));
+  const [baseUrl, search] = splitOnce(urlArg, '?');
+  urlParameters =
+    search?.split('&').map((p) => {
+      const v = splitOnce(p, '=');
+      return { name: v[0] ?? '', value: v[1] ?? '' };
+    }) ?? [];
 
-    url = href.replace(search, '').replace(/\/$/, '');
-  } catch (error) {
-    // Failed to parse, so just fill in the URL
-    url = urlArg;
-  }
+  url = baseUrl ?? urlArg;
 
-  /// /////// Authentication //////////
+  // Authentication
   const [username, password] = getPairValue(pairsByName, '', ['u', 'user']).split(/:(.*)$/);
 
   const isDigest = getPairValue(pairsByName, false, ['digest']);
@@ -204,7 +202,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
       }
     : {};
 
-  /// /////// Headers //////////
+  // Headers
   const headers = [
     ...((pairsByName.header as string[] | undefined) || []),
     ...((pairsByName.H as string[] | undefined) || []),
@@ -223,7 +221,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     };
   });
 
-  /// /////// Cookies //////////
+  // Cookies
   const cookieHeaderValue = [
     ...((pairsByName.cookie as string[] | undefined) || []),
     ...((pairsByName.b as string[] | undefined) || []),
@@ -249,12 +247,12 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     });
   }
 
-  /// /////// Body (Text or Blob) //////////
+  ///Body (Text or Blob)
   const dataParameters = pairsToDataParameters(pairsByName);
   const contentTypeHeader = headers.find((header) => header.name.toLowerCase() === 'content-type');
   const mimeType = contentTypeHeader ? contentTypeHeader.value.split(';')[0] : null;
 
-  /// /////// Body (Multipart Form Data) //////////
+  // Body (Multipart Form Data)
   const formDataParams = [
     ...((pairsByName.form as string[] | undefined) || []),
     ...((pairsByName.F as string[] | undefined) || []),
@@ -276,13 +274,13 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     return item;
   });
 
-  /// /////// Body //////////
+  // Body
   let body = {};
   let bodyType: string | null = null;
   const bodyAsGET = getPairValue(pairsByName, false, ['G', 'get']);
 
   if (dataParameters.length > 0 && bodyAsGET) {
-    parameters.push(...dataParameters);
+    urlParameters.push(...dataParameters);
   } else if (
     dataParameters.length > 0 &&
     (mimeType == null || mimeType === 'application/x-www-form-urlencoded')
@@ -312,10 +310,10 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     };
   }
 
-  /// /////// Method //////////
-  let method = getPairValue(pairsByName, '__UNSET__', ['X', 'request']).toUpperCase();
+  // Method
+  let method = getPairValue(pairsByName, '', ['X', 'request']).toUpperCase();
 
-  if (method === '__UNSET__' && body) {
+  if (method === '' && body) {
     method = 'text' in body || 'params' in body ? 'POST' : 'GET';
   }
 
@@ -324,7 +322,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     model: 'http_request',
     workspaceId,
     name: '',
-    urlParameters: parameters,
+    urlParameters,
     url,
     method,
     headers,
@@ -339,8 +337,6 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   return request;
 }
 
-const dataFlags = ['d', 'data', 'data-raw', 'data-urlencode', 'data-binary', 'data-ascii'];
-
 const pairsToDataParameters = (keyedPairs: PairsByName) => {
   let dataParameters: {
     name: string;
@@ -349,7 +345,7 @@ const pairsToDataParameters = (keyedPairs: PairsByName) => {
     filePath?: string;
   }[] = [];
 
-  for (const flagName of dataFlags) {
+  for (const flagName of DATA_FLAGS) {
     const pairs = keyedPairs[flagName];
 
     if (!pairs || pairs.length === 0) {
@@ -393,7 +389,7 @@ const getPairValue = <T extends string | boolean>(
   return defaultValue;
 };
 
-export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
+function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let id = `${prefix}_`;
   for (let i = 0; i < 10; i++) {
@@ -401,4 +397,12 @@ export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
     id += alphabet[Math.floor(r * alphabet.length)];
   }
   return id;
+}
+
+function splitOnce(str: string, sep: string): string[] {
+  const index = str.indexOf(sep);
+  if (index > -1) {
+    return [str.slice(0, index), str.slice(index + 1)];
+  }
+  return [str];
 }

@@ -261,6 +261,23 @@ describe('importer-curl', () => {
       },
     });
   });
+
+  test('Imports query params from the URL', () => {
+    expect(pluginHookImport('curl "https://yaak.app?foo=bar&baz=a%20a"')).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            url: 'https://yaak.app',
+            urlParameters: [
+              { name: 'foo', value: 'bar' },
+              { name: 'baz', value: 'a%20a' },
+            ],
+          }),
+        ],
+      },
+    });
+  });
 });
 
 function baseRequest(mergeWith: Partial<HttpRequest>) {
