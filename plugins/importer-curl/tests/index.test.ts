@@ -1,22 +1,8 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { HttpRequest, Model, Workspace } from '../../../src-web/lib/models';
 import { pluginHookImport } from '../src';
-import { XORShift } from 'random-seedable';
-
-let originalRandom = Math.random;
 
 describe('importer-curl', () => {
-  beforeEach(() => {
-    const rand = new XORShift(123456789);
-    Math.random = vi.fn(() => {
-      return rand.float();
-    });
-  });
-
-  afterEach(() => {
-    Math.random = originalRandom;
-  });
-
   test('Imports basic GET', () => {
     expect(pluginHookImport('curl https://yaak.app')).toEqual({
       resources: {

@@ -1,19 +1,19 @@
 use std::fs;
 use std::rc::Rc;
 
-use boa_engine::{
-    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
-    property::Attribute, Source,
-};
 use boa_engine::builtins::promise::PromiseState;
+use boa_engine::{
+    js_string, module::SimpleModuleLoader, property::Attribute, Context, JsNativeError, JsValue,
+    Module, Source,
+};
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 
-use crate::models::WorkspaceExportResources;
+use crate::models::{HttpRequest, WorkspaceExportResources};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct FilterResult {
@@ -46,6 +46,23 @@ pub async fn run_plugin_filter(
     let resources: FilterResult =
         serde_json::from_value(result_json).expect("failed to parse filter plugin result json");
     Some(resources)
+}
+
+pub fn run_plugin_export_curl(
+    app_handle: &AppHandle,
+    request: &HttpRequest,
+) -> Result<String, String> {
+    let mut context = Context::default();
+    let request_json = serde_json::to_value(request).map_err(|e| e.to_string())?;
+    let result_json = run_plugin(
+        app_handle,
+        "exporter-curl",
+        "pluginHookExport",
+        &[JsValue::from_json(&request_json, &mut context).map_err(|e| e.to_string())?],
+    );
+
+    let resources: String = serde_json::from_value(result_json).map_err(|e| e.to_string())?;
+    Ok(resources)
 }
 
 pub async fn run_plugin_import(

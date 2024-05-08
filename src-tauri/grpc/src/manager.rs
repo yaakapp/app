@@ -174,7 +174,10 @@ pub struct GrpcHandle {
 impl GrpcHandle {
     pub fn new(app_handle: &AppHandle) -> Self {
         let pools = HashMap::new();
-        Self { pools, app_handle: app_handle.clone() }
+        Self {
+            pools,
+            app_handle: app_handle.clone(),
+        }
     }
 }
 

@@ -1,7 +1,67 @@
-use crate::models::{Environment, Workspace};
 use std::collections::HashMap;
-use regex::Regex;
 
+use regex::Regex;
+use sqlx::types::{Json, JsonValue};
+
+use crate::models::{Environment, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace};
+
+pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
+    let r = r.clone();
+    HttpRequest {
+        url: render(r.url.as_str(), w, e),
+        url_parameters: Json(
+            r.url_parameters
+                .0
+                .iter()
+                .map(|p| HttpUrlParameter {
+                    enabled: p.enabled,
+                    name: render(p.name.as_str(), w, e),
+                    value: render(p.value.as_str(), w, e),
+                })
+                .collect::<Vec<HttpUrlParameter>>(),
+        ),
+        headers: Json(
+            r.headers
+                .0
+                .iter()
+                .map(|p| HttpRequestHeader {
+                    enabled: p.enabled,
+                    name: render(p.name.as_str(), w, e),
+                    value: render(p.value.as_str(), w, e),
+                })
+                .collect::<Vec<HttpRequestHeader>>(),
+        ),
+        body: Json(
+            r.body
+                .0
+                .iter()
+                .map(|(k, v)| {
+                    let v = if v.is_string() {
+                        render(v.as_str().unwrap(), w, e)
+                    } else {
+                        v.to_string()
+                    };
+                    (render(k, w, e), JsonValue::from(v))
+                })
+                .collect::<HashMap<String, JsonValue>>(),
+        ),
+        authentication: Json(
+            r.authentication
+                .0
+                .iter()
+                .map(|(k, v)| {
+                    let v = if v.is_string() {
+                        render(v.as_str().unwrap(), w, e)
+                    } else {
+                        v.to_string()
+                    };
+                    (render(k, w, e), JsonValue::from(v))
+                })
+                .collect::<HashMap<String, JsonValue>>(),
+        ),
+        ..r
+    }
+}
 
 pub fn render(template: &str, workspace: &Workspace, environment: Option<&Environment>) -> String {
     let mut map = HashMap::new();
