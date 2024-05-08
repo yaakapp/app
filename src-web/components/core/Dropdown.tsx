@@ -40,6 +40,7 @@ export type DropdownItemDefault = {
   key: string;
   type?: 'default';
   label: ReactNode;
+  keepOpen?: boolean;
   hotKeyAction?: HotkeyAction;
   hotKeyLabelOnly?: boolean;
   variant?: 'default' | 'danger' | 'notify';
@@ -307,7 +308,9 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
 
   const handleSelect = useCallback(
     (i: DropdownItem) => {
-      handleClose();
+      if (i.type !== 'separator' && !i.keepOpen) {
+        handleClose();
+      }
       setSelectedIndex(null);
       if (i.type !== 'separator') {
         i.onSelect?.();
