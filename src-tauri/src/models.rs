@@ -11,31 +11,31 @@ use tauri::{AppHandle, Manager, WebviewWindow, Wry};
 use tokio::sync::Mutex;
 
 pub enum ModelType {
-    CookieJar,
-    Environment,
-    Folder,
-    GrpcConnection,
-    GrpcEvent,
-    GrpcRequest,
-    HttpRequest,
-    HttpResponse,
-    Workspace,
+    TypeCookieJar,
+    TypeEnvironment,
+    TypeFolder,
+    TypeGrpcConnection,
+    TypeGrpcEvent,
+    TypeGrpcRequest,
+    TypeHttpRequest,
+    TypeHttpResponse,
+    TypeWorkspace,
 }
 
 impl ModelType {
     pub fn id_prefix(&self) -> String {
         match self {
-            ModelType::CookieJar => "cj",
-            ModelType::Environment => "ev",
-            ModelType::Folder => "fl",
-            ModelType::GrpcConnection => "gc",
-            ModelType::GrpcEvent => "ge",
-            ModelType::GrpcRequest => "gr",
-            ModelType::HttpRequest => "rq",
-            ModelType::HttpResponse => "rs",
-            ModelType::Workspace => "wk",
+            ModelType::TypeCookieJar => "cj",
+            ModelType::TypeEnvironment => "ev",
+            ModelType::TypeFolder => "fl",
+            ModelType::TypeGrpcConnection => "gc",
+            ModelType::TypeGrpcEvent => "ge",
+            ModelType::TypeGrpcRequest => "gr",
+            ModelType::TypeHttpRequest => "rq",
+            ModelType::TypeHttpResponse => "rs",
+            ModelType::TypeWorkspace => "wk",
         }
-            .to_string()
+        .to_string()
     }
 }
 
@@ -542,7 +542,7 @@ pub async fn upsert_grpc_request(
 ) -> Result<GrpcRequest, sqlx::Error> {
     let db = get_db(window).await;
     let id = match request.id.as_str() {
-        "" => generate_model_id(ModelType::GrpcRequest),
+        "" => generate_model_id(ModelType::TypeGrpcRequest),
         _ => request.id.to_string(),
     };
     let trimmed_name = request.name.trim();
@@ -638,7 +638,7 @@ pub async fn upsert_grpc_connection(
 ) -> Result<GrpcConnection, sqlx::Error> {
     let db = get_db(window).await;
     let id = match connection.id.as_str() {
-        "" => generate_model_id(ModelType::GrpcConnection),
+        "" => generate_model_id(ModelType::TypeGrpcConnection),
         _ => connection.id.to_string(),
     };
     sqlx::query!(
@@ -727,7 +727,7 @@ pub async fn upsert_grpc_event(
 ) -> Result<GrpcEvent, sqlx::Error> {
     let db = get_db(window).await;
     let id = match event.id.as_str() {
-        "" => generate_model_id(ModelType::GrpcEvent),
+        "" => generate_model_id(ModelType::TypeGrpcEvent),
         _ => event.id.to_string(),
     };
     sqlx::query!(
@@ -808,7 +808,7 @@ pub async fn upsert_cookie_jar(
     cookie_jar: &CookieJar,
 ) -> Result<CookieJar, sqlx::Error> {
     let id = match cookie_jar.id.as_str() {
-        "" => generate_model_id(ModelType::CookieJar),
+        "" => generate_model_id(ModelType::TypeCookieJar),
         _ => cookie_jar.id.to_string(),
     };
     let trimmed_name = cookie_jar.name.trim();
@@ -940,7 +940,7 @@ pub async fn upsert_environment(
     environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
     let id = match environment.id.as_str() {
-        "" => generate_model_id(ModelType::Environment),
+        "" => generate_model_id(ModelType::TypeEnvironment),
         _ => environment.id.to_string(),
     };
     let trimmed_name = environment.name.trim();
@@ -1043,7 +1043,7 @@ pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder, s
 
 pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder, sqlx::Error> {
     let id = match r.id.as_str() {
-        "" => generate_model_id(ModelType::Folder),
+        "" => generate_model_id(ModelType::TypeFolder),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
@@ -1090,7 +1090,7 @@ pub async fn upsert_http_request(
     r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
     let id = match r.id.as_str() {
-        "" => generate_model_id(ModelType::HttpRequest),
+        "" => generate_model_id(ModelType::TypeHttpRequest),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
@@ -1229,7 +1229,7 @@ pub async fn create_http_response(
     remote_addr: Option<&str>,
 ) -> Result<HttpResponse, sqlx::Error> {
     let req = get_http_request(window, request_id).await?;
-    let id = generate_model_id(ModelType::HttpResponse);
+    let id = generate_model_id(ModelType::TypeHttpResponse);
     let headers_json = Json(headers);
     let db = get_db(window).await;
     sqlx::query!(
@@ -1307,7 +1307,7 @@ pub async fn upsert_workspace(
     workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
     let id = match workspace.id.as_str() {
-        "" => generate_model_id(ModelType::Workspace),
+        "" => generate_model_id(ModelType::TypeWorkspace),
         _ => workspace.id.to_string(),
     };
     let trimmed_name = workspace.name.trim();

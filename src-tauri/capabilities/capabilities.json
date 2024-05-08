@@ -9,6 +9,7 @@
   "permissions": [
     "os:allow-os-type",
     "menu:allow-create-default",
+    "clipboard-manager:allow-write-text",
     "dialog:allow-open",
     "dialog:allow-save",
     "event:allow-listen",
@@ -44,6 +45,7 @@
     "window:allow-set-decorations",
     "window:allow-set-title",
     "window:allow-start-dragging",
-    "window:allow-unmaximize"
+    "window:allow-unmaximize",
+    "clipboard-manager:default"
   ]
 }

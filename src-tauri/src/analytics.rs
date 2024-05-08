@@ -1,13 +1,15 @@
 use std::fmt::Display;
 
-use log::{warn};
+use log::warn;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
 use tauri::{AppHandle, Manager};
 
 use crate::is_dev;
-use crate::models::{generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string};
+use crate::models::{
+    generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string,
+};
 
 // serializable
 #[derive(Serialize, Deserialize, Debug)]

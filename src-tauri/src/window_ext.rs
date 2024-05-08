@@ -1,4 +1,4 @@
-use tauri::{WebviewWindow};
+use tauri::WebviewWindow;
 
 const TRAFFIC_LIGHT_OFFSET_X: f64 = 13.0;
 const TRAFFIC_LIGHT_OFFSET_Y: f64 = 18.0;

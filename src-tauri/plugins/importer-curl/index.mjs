@@ -114,7 +114,8 @@ const ae = "curl", se = "cURL", ie = "cURL command line tool", H = ["d", "data",
   ["request", "X"],
   // Request method
   H
-].flatMap((n) => n), oe = (n) => {
+].flatMap((n) => n);
+function oe(n) {
   if (!n.match(/^\s*curl /))
     return null;
   const s = [], e = n.replace(/([^\\])\n/g, "$1; ");
@@ -151,7 +152,7 @@ const ae = "curl", se = "cURL", ie = "cURL command line tool", H = ["d", "data",
       workspaces: [f]
     }
   };
-};
+}
 function te(n, s) {
   const e = {}, t = [];
   for (let o = 1; o < n.length; o++) {

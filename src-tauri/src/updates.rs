@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use log::info;
-use tauri::{AppHandle};
+use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
 
@@ -67,8 +67,7 @@ impl YaakUpdater {
                         tauri::async_runtime::spawn(async move {
                             match update.download_and_install(|_, _| {}, || {}).await {
                                 Ok(_) => {
-                                    if h
-                                        .dialog()
+                                    if h.dialog()
                                         .message("Would you like to restart the app?")
                                         .title("Update Installed")
                                         .blocking_show()
@@ -77,8 +76,7 @@ impl YaakUpdater {
                                     }
                                 }
                                 Err(e) => {
-                                    h
-                                        .dialog()
+                                    h.dialog()
                                         .message(format!("The update failed to install: {}", e));
                                 }
                             }
