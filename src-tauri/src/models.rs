@@ -4,11 +4,40 @@ use std::fs;
 use log::error;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::{Pool, Sqlite};
-use sqlx::types::{Json, JsonValue};
 use sqlx::types::chrono::NaiveDateTime;
+use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager, WebviewWindow, Wry};
 use tokio::sync::Mutex;
+
+pub enum ModelType {
+    CookieJar,
+    Environment,
+    Folder,
+    GrpcConnection,
+    GrpcEvent,
+    GrpcRequest,
+    HttpRequest,
+    HttpResponse,
+    Workspace,
+}
+
+impl ModelType {
+    pub fn id_prefix(&self) -> String {
+        match self {
+            ModelType::CookieJar => "cj",
+            ModelType::Environment => "ev",
+            ModelType::Folder => "fl",
+            ModelType::GrpcConnection => "gc",
+            ModelType::GrpcEvent => "ge",
+            ModelType::GrpcRequest => "gr",
+            ModelType::HttpRequest => "rq",
+            ModelType::HttpResponse => "rs",
+            ModelType::Workspace => "wk",
+        }
+            .to_string()
+    }
+}
 
 fn default_true() -> bool {
     true
@@ -481,10 +510,7 @@ pub async fn list_cookie_jars(
     .await
 }
 
-pub async fn delete_cookie_jar(
-    window: &WebviewWindow,
-    id: &str,
-) -> Result<CookieJar, sqlx::Error> {
+pub async fn delete_cookie_jar(window: &WebviewWindow, id: &str) -> Result<CookieJar, sqlx::Error> {
     let cookie_jar = get_cookie_jar(window, id).await?;
     let db = get_db(window).await;
 
@@ -516,7 +542,7 @@ pub async fn upsert_grpc_request(
 ) -> Result<GrpcRequest, sqlx::Error> {
     let db = get_db(window).await;
     let id = match request.id.as_str() {
-        "" => generate_id(Some("gr")),
+        "" => generate_model_id(ModelType::GrpcRequest),
         _ => request.id.to_string(),
     };
     let trimmed_name = request.name.trim();
@@ -612,7 +638,7 @@ pub async fn upsert_grpc_connection(
 ) -> Result<GrpcConnection, sqlx::Error> {
     let db = get_db(window).await;
     let id = match connection.id.as_str() {
-        "" => generate_id(Some("gc")),
+        "" => generate_model_id(ModelType::GrpcConnection),
         _ => connection.id.to_string(),
     };
     sqlx::query!(
@@ -701,7 +727,7 @@ pub async fn upsert_grpc_event(
 ) -> Result<GrpcEvent, sqlx::Error> {
     let db = get_db(window).await;
     let id = match event.id.as_str() {
-        "" => generate_id(Some("ge")),
+        "" => generate_model_id(ModelType::GrpcEvent),
         _ => event.id.to_string(),
     };
     sqlx::query!(
@@ -782,7 +808,7 @@ pub async fn upsert_cookie_jar(
     cookie_jar: &CookieJar,
 ) -> Result<CookieJar, sqlx::Error> {
     let id = match cookie_jar.id.as_str() {
-        "" => generate_id(Some("cj")),
+        "" => generate_model_id(ModelType::CookieJar),
         _ => cookie_jar.id.to_string(),
     };
     let trimmed_name = cookie_jar.name.trim();
@@ -914,7 +940,7 @@ pub async fn upsert_environment(
     environment: Environment,
 ) -> Result<Environment, sqlx::Error> {
     let id = match environment.id.as_str() {
-        "" => generate_id(Some("ev")),
+        "" => generate_model_id(ModelType::Environment),
         _ => environment.id.to_string(),
     };
     let trimmed_name = environment.name.trim();
@@ -1017,7 +1043,7 @@ pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder, s
 
 pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder, sqlx::Error> {
     let id = match r.id.as_str() {
-        "" => generate_id(Some("fl")),
+        "" => generate_model_id(ModelType::Folder),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
@@ -1064,7 +1090,7 @@ pub async fn upsert_http_request(
     r: HttpRequest,
 ) -> Result<HttpRequest, sqlx::Error> {
     let id = match r.id.as_str() {
-        "" => generate_id(Some("rq")),
+        "" => generate_model_id(ModelType::HttpRequest),
         _ => r.id.to_string(),
     };
     let trimmed_name = r.name.trim();
@@ -1203,7 +1229,7 @@ pub async fn create_http_response(
     remote_addr: Option<&str>,
 ) -> Result<HttpResponse, sqlx::Error> {
     let req = get_http_request(window, request_id).await?;
-    let id = generate_id(Some("rp"));
+    let id = generate_model_id(ModelType::HttpResponse);
     let headers_json = Json(headers);
     let db = get_db(window).await;
     sqlx::query!(
@@ -1281,7 +1307,7 @@ pub async fn upsert_workspace(
     workspace: Workspace,
 ) -> Result<Workspace, sqlx::Error> {
     let id = match workspace.id.as_str() {
-        "" => generate_id(Some("wk")),
+        "" => generate_model_id(ModelType::Workspace),
         _ => workspace.id.to_string(),
     };
     let trimmed_name = workspace.name.trim();
@@ -1513,12 +1539,13 @@ pub async fn delete_all_http_responses(
     Ok(())
 }
 
-pub fn generate_id(prefix: Option<&str>) -> String {
-    let id = Alphanumeric.sample_string(&mut rand::thread_rng(), 10);
-    match prefix {
-        None => id,
-        Some(p) => format!("{p}_{id}"),
-    }
+pub fn generate_model_id(model: ModelType) -> String {
+    let id = generate_id();
+    format!("{}_{}", model.id_prefix(), id)
+}
+
+pub fn generate_id() -> String {
+    Alphanumeric.sample_string(&mut rand::thread_rng(), 10)
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
@@ -1597,7 +1624,7 @@ struct ModelPayload<M: Serialize + Clone> {
 }
 
 fn emit_upserted_model<M: Serialize + Clone>(window: &WebviewWindow, model: M) -> M {
-    let payload = ModelPayload{
+    let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),
     };
@@ -1607,7 +1634,7 @@ fn emit_upserted_model<M: Serialize + Clone>(window: &WebviewWindow, model: M) -
 }
 
 fn emit_deleted_model<M: Serialize + Clone, E>(window: &WebviewWindow, model: M) -> Result<M, E> {
-    let payload = ModelPayload{
+    let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),
     };

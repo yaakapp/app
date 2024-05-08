@@ -29,8 +29,8 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 
 [dependencies]
 base64 = "0.22.0"
-boa_engine = { version = "0.17.3", features = ["annex-b"] }
-boa_runtime = { version = "0.17.3" }
+boa_engine = { version = "0.18.0", features = ["annex-b"] }
+boa_runtime = { version = "0.18.0" }
 chrono = { version = "0.4.31", features = ["serde"] }
 futures = "0.3.26"
 http = "0.2.8"

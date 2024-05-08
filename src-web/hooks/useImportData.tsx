@@ -18,7 +18,7 @@ export function useImportData() {
 
   const importData = async () => {
     const selected = await open({
-      filters: [{ name: 'Export File', extensions: ['json', 'yaml'] }],
+      filters: [{ name: 'Export File', extensions: ['json', 'yaml', 'sh', 'txt'] }],
       multiple: false,
     });
     if (selected == null) {

@@ -233,7 +233,7 @@ fn get_window_size(app_handle: &AppHandle) -> String {
 async fn get_id(app_handle: &AppHandle) -> String {
     let id = get_key_value_string(app_handle, "analytics", "id", "").await;
     if id.is_empty() {
-        let new_id = generate_id(None);
+        let new_id = generate_id();
         set_key_value_string(app_handle, "analytics", "id", new_id.as_str()).await;
         new_id
     } else {

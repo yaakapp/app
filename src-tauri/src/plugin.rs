@@ -1,11 +1,11 @@
 use std::fs;
+use std::rc::Rc;
 
 use boa_engine::{
     Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
     property::Attribute, Source,
 };
 use boa_engine::builtins::promise::PromiseState;
-use boa_engine::module::ModuleLoader;
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
@@ -13,7 +13,7 @@ use serde_json::json;
 use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
 
-use crate::models::{WorkspaceExportResources};
+use crate::models::WorkspaceExportResources;
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct FilterResult {
@@ -67,8 +67,7 @@ pub async fn run_plugin_import(
         return Ok(None);
     }
 
-    let resources: ImportResult =
-        serde_json::from_value(result_json).map_err(|e| e.to_string())?;
+    let resources: ImportResult = serde_json::from_value(result_json).map_err(|e| e.to_string())?;
     Ok(Some(resources))
 }
 
@@ -90,12 +89,9 @@ fn run_plugin(
         plugin_dir, plugin_index_file
     );
 
-    // Module loader for the specific plugin
-    let loader = &SimpleModuleLoader::new(plugin_dir).expect("failed to create module loader");
-    let dyn_loader: &dyn ModuleLoader = loader;
-
+    let loader = Rc::new(SimpleModuleLoader::new(plugin_dir).unwrap());
     let context = &mut Context::builder()
-        .module_loader(dyn_loader)
+        .module_loader(loader.clone())
         .build()
         .expect("failed to create context");
 
@@ -109,15 +105,13 @@ fn run_plugin(
     // Insert parsed entrypoint into the module loader
     loader.insert(plugin_index_file, module.clone());
 
-    let promise_result = module
-        .load_link_evaluate(context)
-        .expect("failed to evaluate module");
+    let promise_result = module.load_link_evaluate(context);
 
     // Very important to push forward the job queue after queueing promises.
     context.run_jobs();
 
     // Checking if the final promise didn't return an error.
-    match promise_result.state().expect("failed to get promise state") {
+    match promise_result.state() {
         PromiseState::Pending => {
             panic!("Promise was pending");
         }

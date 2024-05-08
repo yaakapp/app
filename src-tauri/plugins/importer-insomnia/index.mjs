@@ -1,165 +1,179 @@
-function g(e, n) {
-  return console.log("IMPORTING Environment", e._id, e.name, JSON.stringify(e, null, 2)), {
-    id: e._id,
-    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
-    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
-    workspaceId: n,
-    model: "environment",
-    name: e.name,
-    variables: Object.entries(e.data).map(([t, a]) => ({
-      enabled: !0,
-      name: t,
-      value: `${a}`
-    }))
-  };
-}
-function S(e) {
-  return m(e) && e._type === "workspace";
-}
-function I(e) {
-  return m(e) && e._type === "request_group";
-}
-function y(e) {
-  return m(e) && e._type === "request";
-}
-function h(e) {
-  return m(e) && e._type === "grpc_request";
-}
-function f(e) {
-  return m(e) && e._type === "environment";
-}
-function m(e) {
-  return Object.prototype.toString.call(e) === "[object Object]";
-}
-function w(e) {
-  return Object.prototype.toString.call(e) === "[object String]";
-}
-function O(e) {
-  return Object.entries(e).map(([n, t]) => ({
-    enabled: !0,
-    name: n,
-    value: `${t}`
-  }));
-}
-function d(e) {
-  return w(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : e;
-}
-function _(e, n, t = 0) {
-  var l, r;
-  console.log("IMPORTING REQUEST", e._id, e.name, JSON.stringify(e, null, 2));
-  let a = null, o = null;
-  ((l = e.body) == null ? void 0 : l.mimeType) === "application/graphql" ? (a = "graphql", o = d(e.body.text)) : ((r = e.body) == null ? void 0 : r.mimeType) === "application/json" && (a = "application/json", o = d(e.body.text));
-  let s = null, p = {};
-  return e.authentication.type === "bearer" ? (s = "bearer", p = {
-    token: d(e.authentication.token)
-  }) : e.authentication.type === "basic" && (s = "basic", p = {
-    username: d(e.authentication.username),
-    password: d(e.authentication.password)
-  }), {
-    id: e._id,
-    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
-    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
-    workspaceId: n,
-    folderId: e.parentId === n ? null : e.parentId,
-    model: "http_request",
-    sortPriority: t,
-    name: e.name,
-    url: d(e.url),
-    body: o,
-    bodyType: a,
-    authentication: p,
-    authenticationType: s,
-    method: e.method,
-    headers: (e.headers ?? []).map(({ name: u, value: c, disabled: i }) => ({
-      enabled: !i,
-      name: u,
-      value: c
-    })).filter(({ name: u, value: c }) => u !== "" || c !== "")
-  };
-}
-function R(e, n) {
-  return console.log("IMPORTING FOLDER", e._id, e.name, JSON.stringify(e, null, 2)), {
-    id: e._id,
-    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
-    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
-    folderId: e.parentId === n ? null : e.parentId,
-    workspaceId: n,
-    model: "folder",
-    name: e.name
-  };
-}
-function D(e, n, t = 0) {
-  var p;
-  console.log("IMPORTING GRPC REQUEST", e._id, e.name, JSON.stringify(e, null, 2));
-  const a = e.protoMethodName.split("/").filter((l) => l !== ""), o = a[0] ?? null, s = a[1] ?? null;
-  return {
-    id: e._id,
-    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
-    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
-    workspaceId: n,
-    folderId: e.parentId === n ? null : e.parentId,
-    model: "grpc_request",
-    sortPriority: t,
-    name: e.name,
-    url: d(e.url),
-    service: o,
-    method: s,
-    message: ((p = e.body) == null ? void 0 : p.text) ?? "",
-    metadata: (e.metadata ?? []).map(({ name: l, value: r, disabled: u }) => ({
-      enabled: !u,
-      name: l,
-      value: r
-    })).filter(({ name: l, value: r }) => l !== "" || r !== "")
-  };
-}
-function q(e) {
-  let n;
+function A(e) {
+  let a;
   try {
-    n = JSON.parse(e);
+    a = JSON.parse(e);
   } catch {
     return;
   }
-  if (!m(n) || !Array.isArray(n.resources))
+  if (!c(a) || !Array.isArray(a.resources))
     return;
-  const t = {
+  const n = {
     workspaces: [],
     httpRequests: [],
     grpcRequests: [],
     environments: [],
     folders: []
-  }, a = n.resources.filter(S);
-  for (const o of a) {
-    const s = n.resources.find(
-      (r) => f(r) && r.parentId === o._id
+  }, o = a.resources.filter(_);
+  for (const r of o) {
+    const l = a.resources.find(
+      (i) => w(i) && i.parentId === r._id
     );
-    t.workspaces.push({
-      id: o._id,
-      createdAt: new Date(a.created ?? Date.now()).toISOString().replace("Z", ""),
-      updatedAt: new Date(a.updated ?? Date.now()).toISOString().replace("Z", ""),
+    n.workspaces.push({
+      id: d(r._id),
+      createdAt: new Date(o.created ?? Date.now()).toISOString().replace("Z", ""),
+      updatedAt: new Date(o.updated ?? Date.now()).toISOString().replace("Z", ""),
       model: "workspace",
-      name: o.name,
-      variables: s ? O(s.data) : []
+      name: r.name,
+      variables: l ? h(l.data) : []
     });
-    const p = n.resources.filter(
-      (r) => f(r) && r.parentId === (s == null ? void 0 : s._id)
+    const p = a.resources.filter(
+      (i) => w(i) && i.parentId === (l == null ? void 0 : l._id)
     );
-    t.environments.push(
-      ...p.map((r) => g(r, o._id))
+    n.environments.push(
+      ...p.map((i) => b(i, r._id))
     );
-    const l = (r) => {
-      const u = n.resources.filter((i) => i.parentId === r);
-      let c = 0;
-      for (const i of u)
-        I(i) ? (t.folders.push(R(i, o._id)), l(i._id)) : y(i) ? t.httpRequests.push(
-          _(i, o._id, c++)
-        ) : h(i) && (console.log("GRPC", JSON.stringify(i, null, 1)), t.grpcRequests.push(
-          D(i, o._id, c++)
-        ));
+    const s = (i) => {
+      const f = a.resources.filter((t) => t.parentId === i);
+      let m = 0;
+      for (const t of f)
+        D(t) ? (n.folders.push(I(t, r._id)), s(t._id)) : v(t) ? n.httpRequests.push(
+          g(t, r._id, m++)
+        ) : q(t) && n.grpcRequests.push(
+          S(t, r._id, m++)
+        );
     };
-    l(o._id);
+    s(r._id);
   }
-  return t.httpRequests = t.httpRequests.filter(Boolean), t.grpcRequests = t.grpcRequests.filter(Boolean), t.environments = t.environments.filter(Boolean), t.workspaces = t.workspaces.filter(Boolean), { resources: t };
+  return n.httpRequests = n.httpRequests.filter(Boolean), n.grpcRequests = n.grpcRequests.filter(Boolean), n.environments = n.environments.filter(Boolean), n.workspaces = n.workspaces.filter(Boolean), { resources: n };
+}
+function b(e, a) {
+  return {
+    id: d(e._id),
+    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
+    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
+    workspaceId: d(a),
+    model: "environment",
+    name: e.name,
+    variables: Object.entries(e.data).map(([n, o]) => ({
+      enabled: !0,
+      name: n,
+      value: `${o}`
+    }))
+  };
+}
+function I(e, a) {
+  return {
+    id: d(e._id),
+    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
+    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
+    folderId: e.parentId === a ? null : d(e.parentId),
+    workspaceId: d(a),
+    model: "folder",
+    name: e.name
+  };
+}
+function S(e, a, n = 0) {
+  var p;
+  const o = e.protoMethodName.split("/").filter((s) => s !== ""), r = o[0] ?? null, l = o[1] ?? null;
+  return {
+    id: d(e._id),
+    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
+    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
+    workspaceId: d(a),
+    folderId: e.parentId === a ? null : d(e.parentId),
+    model: "grpc_request",
+    sortPriority: n,
+    name: e.name,
+    url: u(e.url),
+    service: r,
+    method: l,
+    message: ((p = e.body) == null ? void 0 : p.text) ?? "",
+    metadata: (e.metadata ?? []).map((s) => ({
+      enabled: !s.disabled,
+      name: s.name ?? "",
+      value: s.value ?? ""
+    })).filter(({ name: s, value: i }) => s !== "" || i !== "")
+  };
+}
+function g(e, a, n = 0) {
+  var s, i, f, m;
+  let o = null, r = {};
+  e.body.mimeType === "application/octet-stream" ? (o = "binary", r = { filePath: e.body.fileName ?? "" }) : ((s = e.body) == null ? void 0 : s.mimeType) === "application/x-www-form-urlencoded" ? (o = "application/x-www-form-urlencoded", r = {
+    form: (e.body.params ?? []).map((t) => ({
+      enabled: !t.disabled,
+      name: t.name ?? "",
+      value: t.value ?? ""
+    }))
+  }) : ((i = e.body) == null ? void 0 : i.mimeType) === "multipart/form-data" ? (o = "multipart/form-data", r = {
+    form: (e.body.params ?? []).map((t) => ({
+      enabled: !t.disabled,
+      name: t.name ?? "",
+      value: t.value ?? "",
+      file: t.fileName ?? null
+    }))
+  }) : ((f = e.body) == null ? void 0 : f.mimeType) === "application/graphql" ? (o = "graphql", r = { text: u(e.body.text ?? "") }) : ((m = e.body) == null ? void 0 : m.mimeType) === "application/json" && (o = "application/json", r = { text: u(e.body.text ?? "") });
+  let l = null, p = {};
+  return e.authentication.type === "bearer" ? (l = "bearer", p = {
+    token: u(e.authentication.token)
+  }) : e.authentication.type === "basic" && (l = "basic", p = {
+    username: u(e.authentication.username),
+    password: u(e.authentication.password)
+  }), {
+    id: d(e._id),
+    createdAt: new Date(e.created ?? Date.now()).toISOString().replace("Z", ""),
+    updatedAt: new Date(e.updated ?? Date.now()).toISOString().replace("Z", ""),
+    workspaceId: d(a),
+    folderId: e.parentId === a ? null : d(e.parentId),
+    model: "http_request",
+    sortPriority: n,
+    name: e.name,
+    url: u(e.url),
+    body: r,
+    bodyType: o,
+    authentication: p,
+    authenticationType: l,
+    method: e.method,
+    headers: (e.headers ?? []).map((t) => ({
+      enabled: !t.disabled,
+      name: t.name ?? "",
+      value: t.value ?? ""
+    })).filter(({ name: t, value: y }) => t !== "" || y !== "")
+  };
+}
+function h(e) {
+  return Object.entries(e).map(([a, n]) => ({
+    enabled: !0,
+    name: a,
+    value: `${n}`
+  }));
+}
+function u(e) {
+  return O(e) ? e.replaceAll(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : e;
+}
+function _(e) {
+  return c(e) && e._type === "workspace";
+}
+function D(e) {
+  return c(e) && e._type === "request_group";
+}
+function v(e) {
+  return c(e) && e._type === "request";
+}
+function q(e) {
+  return c(e) && e._type === "grpc_request";
+}
+function w(e) {
+  return c(e) && e._type === "environment";
+}
+function c(e) {
+  return Object.prototype.toString.call(e) === "[object Object]";
+}
+function O(e) {
+  return Object.prototype.toString.call(e) === "[object String]";
+}
+function d(e) {
+  return e.startsWith("GENERATE_ID::") ? e : `GENERATE_ID::${e}`;
 }
 export {
-  q as pluginHookImport
+  A as pluginHookImport
 };
