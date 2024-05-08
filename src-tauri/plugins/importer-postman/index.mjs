@@ -1,92 +1,92 @@
-const q = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", S = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", _ = [S, q];
-function j(t) {
+const S = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json", _ = "https://schema.getpostman.com/json/collection/v2.0.0/collection.json", O = [_, S];
+function v(e) {
   var g;
-  const e = A(t);
-  if (e == null)
+  const t = k(e);
+  if (t == null)
     return;
-  const a = l(e.info);
-  if (!_.includes(a.schema) || !Array.isArray(e.item))
+  const o = i(t.info);
+  if (!O.includes(o.schema) || !Array.isArray(t.item))
     return;
-  const c = w(e.auth), s = {
+  const u = A(t.auth), s = {
     workspaces: [],
     environments: [],
     httpRequests: [],
     folders: []
   }, n = {
     model: "workspace",
-    id: y("wk"),
-    name: a.name || "Postman Import",
-    description: a.description || "",
-    variables: ((g = e.variable) == null ? void 0 : g.map((r) => ({
+    id: h("workspace"),
+    name: o.name || "Postman Import",
+    description: o.description || "",
+    variables: ((g = t.variable) == null ? void 0 : g.map((r) => ({
       name: r.key,
       value: r.value
     }))) ?? []
   };
   s.workspaces.push(n);
-  const f = (r, d = null) => {
+  const T = (r, p = null) => {
     if (typeof r.name == "string" && Array.isArray(r.item)) {
-      const o = {
+      const a = {
         model: "folder",
         workspaceId: n.id,
-        id: y("fl"),
+        id: h("folder"),
         name: r.name,
-        folderId: d
+        folderId: p
       };
-      s.folders.push(o);
-      for (const u of r.item)
-        f(u, o.id);
+      s.folders.push(a);
+      for (const l of r.item)
+        T(l, a.id);
     } else if (typeof r.name == "string" && "request" in r) {
-      const o = l(r.request), u = O(o.body), T = w(o.auth), p = T.authenticationType == null ? c : T, k = {
+      const a = i(r.request), l = j(a.body), w = A(a.auth), d = w.authenticationType == null ? u : w, q = {
         model: "http_request",
-        id: y("rq"),
+        id: h("http_request"),
         workspaceId: n.id,
-        folderId: d,
+        folderId: p,
         name: r.name,
-        method: o.method || "GET",
-        url: typeof o.url == "string" ? o.url : l(o.url).raw,
-        body: u.body,
-        bodyType: u.bodyType,
-        authentication: p.authentication,
-        authenticationType: p.authenticationType,
+        method: a.method || "GET",
+        url: typeof a.url == "string" ? a.url : i(a.url).raw,
+        body: l.body,
+        bodyType: l.bodyType,
+        authentication: d.authentication,
+        authenticationType: d.authenticationType,
         headers: [
-          ...u.headers,
-          ...p.headers,
-          ...h(o.header).map((m) => ({
+          ...l.headers,
+          ...d.headers,
+          ...b(a.header).map((m) => ({
             name: m.key,
             value: m.value,
             enabled: !m.disabled
           }))
         ]
       };
-      s.httpRequests.push(k);
+      s.httpRequests.push(q);
     } else
-      console.log("Unknown item", r, d);
+      console.log("Unknown item", r, p);
   };
-  for (const r of e.item)
-    f(r);
-  return { resources: b(s) };
+  for (const r of t.item)
+    T(r);
+  return { resources: f(s) };
 }
-function w(t) {
-  const e = l(t);
-  return "basic" in e ? {
+function A(e) {
+  const t = i(e);
+  return "basic" in t ? {
     headers: [],
     authenticationType: "basic",
     authentication: {
-      username: e.basic.username || "",
-      password: e.basic.password || ""
+      username: t.basic.username || "",
+      password: t.basic.password || ""
     }
-  } : "bearer" in e ? {
+  } : "bearer" in t ? {
     headers: [],
     authenticationType: "bearer",
     authentication: {
-      token: e.bearer.token || ""
+      token: t.bearer.token || ""
     }
   } : { headers: [], authenticationType: null, authentication: {} };
 }
-function O(t) {
-  var a, i, c, s;
-  const e = l(t);
-  return "graphql" in e ? {
+function j(e) {
+  var o, c, u, s;
+  const t = i(e);
+  return "graphql" in t ? {
     headers: [
       {
         name: "Content-Type",
@@ -97,12 +97,12 @@ function O(t) {
     bodyType: "graphql",
     body: {
       text: JSON.stringify(
-        { query: e.graphql.query, variables: A(e.graphql.variables) },
+        { query: t.graphql.query, variables: k(t.graphql.variables) },
         null,
         2
       )
     }
-  } : "urlencoded" in e ? {
+  } : "urlencoded" in t ? {
     headers: [
       {
         name: "Content-Type",
@@ -112,13 +112,13 @@ function O(t) {
     ],
     bodyType: "application/x-www-form-urlencoded",
     body: {
-      form: h(e.urlencoded).map((n) => ({
+      form: b(t.urlencoded).map((n) => ({
         enabled: !n.disabled,
         name: n.key ?? "",
         value: n.value ?? ""
       }))
     }
-  } : "formdata" in e ? {
+  } : "formdata" in t ? {
     headers: [
       {
         name: "Content-Type",
@@ -128,7 +128,7 @@ function O(t) {
     ],
     bodyType: "multipart/form-data",
     body: {
-      form: h(e.formdata).map(
+      form: b(t.formdata).map(
         (n) => n.src != null ? {
           enabled: !n.disabled,
           name: n.key ?? "",
@@ -140,46 +140,42 @@ function O(t) {
         }
       )
     }
-  } : "raw" in e ? {
+  } : "raw" in t ? {
     headers: [
       {
         name: "Content-Type",
-        value: ((i = (a = e.options) == null ? void 0 : a.raw) == null ? void 0 : i.language) === "json" ? "application/json" : "",
+        value: ((c = (o = t.options) == null ? void 0 : o.raw) == null ? void 0 : c.language) === "json" ? "application/json" : "",
         enabled: !0
       }
     ],
-    bodyType: ((s = (c = e.options) == null ? void 0 : c.raw) == null ? void 0 : s.language) === "json" ? "application/json" : "other",
+    bodyType: ((s = (u = t.options) == null ? void 0 : u.raw) == null ? void 0 : s.language) === "json" ? "application/json" : "other",
     body: {
-      text: e.raw ?? ""
+      text: t.raw ?? ""
     }
   } : { headers: [], bodyType: null, body: {} };
 }
-function A(t) {
+function k(e) {
   try {
-    return l(JSON.parse(t));
+    return i(JSON.parse(e));
   } catch {
   }
   return null;
 }
-function l(t) {
-  return Object.prototype.toString.call(t) === "[object Object]" ? t : {};
+function i(e) {
+  return Object.prototype.toString.call(e) === "[object Object]" ? e : {};
 }
-function h(t) {
-  return Object.prototype.toString.call(t) === "[object Array]" ? t : [];
+function b(e) {
+  return Object.prototype.toString.call(e) === "[object Array]" ? e : [];
 }
-function b(t) {
-  return typeof t == "string" ? t.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(t) && t != null ? t.map(b) : typeof t == "object" && t != null ? Object.fromEntries(
-    Object.entries(t).map(([e, a]) => [e, b(a)])
-  ) : t;
+function f(e) {
+  return typeof e == "string" ? e.replace(/{{\s*(_\.)?([^}]+)\s*}}/g, "${[$2]}") : Array.isArray(e) && e != null ? e.map(f) : typeof e == "object" && e != null ? Object.fromEntries(
+    Object.entries(e).map(([t, o]) => [t, f(o)])
+  ) : e;
 }
-function y(t) {
-  const e = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let a = `${t}_`;
-  for (let i = 0; i < 10; i++)
-    a += e[Math.floor(Math.random() * e.length)];
-  return a;
+const y = {};
+function h(e) {
+  return y[e] = (y[e] ?? -1) + 1, `GENERATE_ID::${e.toUpperCase()}_${y[e]}`;
 }
 export {
-  y as generateId,
-  j as pluginHookImport
+  v as pluginHookImport
 };
