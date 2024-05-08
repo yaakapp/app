@@ -1,0 +1,12 @@
+{
+  "name": "importer-curl",
+  "version": "0.0.1",
+  "dependencies": {
+    "shell-quote": "^1.8.1",
+    "url": "^0.11.3"
+  },
+  "devDependencies": {
+    "@types/shell-quote": "^1.7.5",
+    "random-seedable": "^1.0.8"
+  }
+}

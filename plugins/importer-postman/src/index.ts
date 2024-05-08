@@ -1,4 +1,4 @@
-import { Environment, Folder, HttpRequest, Workspace } from '../../../src-web/lib/models';
+import { Environment, Folder, HttpRequest, Model, Workspace } from '../../../src-web/lib/models';
 
 const POSTMAN_2_1_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json';
 const POSTMAN_2_0_0_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.0.0/collection.json';
@@ -34,7 +34,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
 
   const workspace: ExportResources['workspaces'][0] = {
     model: 'workspace',
-    id: generateId('wk'),
+    id: generateId('workspace'),
     name: info.name || 'Postman Import',
     description: info.description || '',
     variables:
@@ -50,7 +50,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
       const folder: ExportResources['folders'][0] = {
         model: 'folder',
         workspaceId: workspace.id,
-        id: generateId('fl'),
+        id: generateId('folder'),
         name: v.name,
         folderId,
       };
@@ -65,7 +65,7 @@ export function pluginHookImport(contents: string): { resources: ExportResources
       const authPatch = requestAuthPath.authenticationType == null ? globalAuth : requestAuthPath;
       const request: ExportResources['httpRequests'][0] = {
         model: 'http_request',
-        id: generateId('rq'),
+        id: generateId('http_request'),
         workspaceId: workspace.id,
         folderId,
         name: v.name,
@@ -243,11 +243,8 @@ function convertTemplateSyntax<T>(obj: T): T {
   }
 }
 
-export function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
-  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let id = `${prefix}_`;
-  for (let i = 0; i < 10; i++) {
-    id += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return id;
+const idCount: Partial<Record<Model['model'], number>> = {};
+function generateId(model: Model['model']): string {
+  idCount[model] = (idCount[model] ?? -1) + 1;
+  return `GENERATE_ID::${model.toUpperCase()}_${idCount[model]}`;
 }
