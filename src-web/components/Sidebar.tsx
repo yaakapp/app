@@ -608,7 +608,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const deleteRequest = useDeleteRequest(activeRequest ?? null);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
-  const copyAsCurl = useCopyAsCurl(itemId);
+  const [isCopied, copyAsCurl] = useCopyAsCurl(itemId);
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestHttpResponse = useLatestHttpResponse(itemId);
@@ -739,10 +739,13 @@ const SidebarItem = forwardRef(function SidebarItem(
                         {
                           key: 'copyCurl',
                           label: 'Copy as Curl',
-                          leftSlot: <Icon icon="copy" />,
-                          onSelect: async () => {
-                            await copyAsCurl.mutateAsync();
-                          },
+                          leftSlot: (
+                            <Icon
+                              className={isCopied ? 'text-green-500' : undefined}
+                              icon={isCopied ? 'check' : 'copy'}
+                            />
+                          ),
+                          onSelect: copyAsCurl,
                         },
                         { type: 'separator' },
                       ]
