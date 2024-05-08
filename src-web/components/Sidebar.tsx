@@ -748,6 +748,31 @@ const SidebarItem = forwardRef(function SidebarItem(
                       ]
                     : []) as DropdownItem[]),
                   {
+                    key: 'renameRequest',
+                    label: 'Rename',
+                    leftSlot: <Icon icon="pencil" />,
+                    onSelect: async () => {
+                      const name = await prompt({
+                        id: 'rename-request',
+                        title: 'Rename Request',
+                        description: (
+                          <>
+                            Enter a new name for <InlineCode>{itemName}</InlineCode>
+                          </>
+                        ),
+                        name: 'name',
+                        label: 'Name',
+                        placeholder: 'New Name',
+                        defaultValue: itemName,
+                      });
+                      if (itemModel === 'http_request') {
+                        updateHttpRequest.mutate((r) => ({ ...r, name }));
+                      } else {
+                        updateGrpcRequest.mutate((r) => ({ ...r, name }));
+                      }
+                    },
+                  },
+                  {
                     key: 'duplicateRequest',
                     label: 'Duplicate',
                     hotKeyAction: 'http_request.duplicate',
