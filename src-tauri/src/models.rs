@@ -23,20 +23,6 @@ pub enum ModelType {
 }
 
 impl ModelType {
-    pub fn model(&self) -> String {
-        match self {
-            ModelType::CookieJar => "cookie_jar",
-            ModelType::Environment => "environment",
-            ModelType::Folder => "folder",
-            ModelType::GrpcConnection => "grpc_connection",
-            ModelType::GrpcEvent => "grpc_event",
-            ModelType::GrpcRequest => "grpc_request",
-            ModelType::HttpRequest => "http_request",
-            ModelType::HttpResponse => "http_request",
-            ModelType::Workspace => "workspace",
-        }
-            .to_string()
-    }
     pub fn id_prefix(&self) -> String {
         match self {
             ModelType::CookieJar => "cj",
