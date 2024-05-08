@@ -4,6 +4,7 @@ import {
   Folder,
   HttpRequest,
   HttpUrlParameter,
+  Model,
   Workspace,
 } from '../../../src-web/lib/models';
 
@@ -110,7 +111,7 @@ export const pluginHookImport = (rawData: string) => {
 
   const workspace: ExportResources['workspaces'][0] = {
     model: 'workspace',
-    id: generateId('wk'),
+    id: generateId('workspace'),
     name: 'Curl Import',
   };
 
@@ -177,7 +178,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
 
   // Url & parameters
 
-  let urlParameters: HttpUrlParameter[] = [];
+  let urlParameters: HttpUrlParameter[];
   let url: string;
 
   const urlArg = getPairValue(pairsByName, (singletons[0] as string) || '', ['url']);
@@ -318,7 +319,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   }
 
   const request: ExportResources['httpRequests'][0] = {
-    id: generateId('rq'),
+    id: generateId('http_request'),
     model: 'http_request',
     workspaceId,
     name: '',
@@ -389,20 +390,16 @@ const getPairValue = <T extends string | boolean>(
   return defaultValue;
 };
 
-function generateId(prefix: 'wk' | 'rq' | 'fl'): string {
-  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let id = `${prefix}_`;
-  for (let i = 0; i < 10; i++) {
-    const r = Math.random();
-    id += alphabet[Math.floor(r * alphabet.length)];
-  }
-  return id;
-}
-
 function splitOnce(str: string, sep: string): string[] {
   const index = str.indexOf(sep);
   if (index > -1) {
     return [str.slice(0, index), str.slice(index + 1)];
   }
   return [str];
+}
+
+const idCount: Partial<Record<Model['model'], number>> = {};
+function generateId(model: Model['model']): string {
+  idCount[model] = (idCount[model] ?? -1) + 1;
+  return `GENERATE_ID::${model.toUpperCase()}_${idCount[model]}`;
 }

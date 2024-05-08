@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { HttpRequest, Workspace } from '../../../src-web/lib/models';
+import { HttpRequest, Model, Workspace } from '../../../src-web/lib/models';
 import { pluginHookImport } from '../src';
 import { XORShift } from 'random-seedable';
 
@@ -119,8 +119,8 @@ describe('importer-curl', () => {
         workspaces: [baseWorkspace()],
         httpRequests: [
           baseRequest({ url: 'https://yaak.app' }),
-          baseRequest({ url: 'example.com', id: 'rq_aG9YDmuvzI' }),
-          baseRequest({ url: 'foo.com', id: 'rq_RCemE7p5A9' }),
+          baseRequest({ url: 'example.com' }),
+          baseRequest({ url: 'foo.com' }),
         ],
       },
     });
@@ -280,9 +280,12 @@ describe('importer-curl', () => {
   });
 });
 
+const idCount: Partial<Record<Model['model'], number>> = {};
+
 function baseRequest(mergeWith: Partial<HttpRequest>) {
+  idCount.http_request = (idCount.http_request ?? -1) + 1;
   return {
-    id: 'rq_ehhfr4FaEw',
+    id: `GENERATE_ID::HTTP_REQUEST_${idCount.http_request}`,
     model: 'http_request',
     authentication: {},
     authenticationType: null,
@@ -295,14 +298,15 @@ function baseRequest(mergeWith: Partial<HttpRequest>) {
     sortPriority: 0,
     url: '',
     urlParameters: [],
-    workspaceId: 'wk_DwiTJRJQZM',
+    workspaceId: `GENERATE_ID::WORKSPACE_${idCount.workspace}`,
     ...mergeWith,
   };
 }
 
 function baseWorkspace(mergeWith: Partial<Workspace> = {}) {
+  idCount.workspace = (idCount.workspace ?? -1) + 1;
   return {
-    id: 'wk_DwiTJRJQZM',
+    id: `GENERATE_ID::WORKSPACE_${idCount.workspace}`,
     model: 'workspace',
     name: 'Curl Import',
     ...mergeWith,

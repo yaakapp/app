@@ -9,90 +9,90 @@ var j = "(?:" + [
   ">\\&",
   "<\\&",
   "[&;()|<>]"
-].join("|") + ")", k = new RegExp("^" + j + "$"), U = "|&;()<> \\t", B = '"((\\\\"|[^"])*?)"', N = "'((\\\\'|[^'])*?)'", Q = /^#$/, q = "'", G = '"', S = "$", R = "", V = 4294967296;
+].join("|") + ")", D = new RegExp("^" + j + "$"), q = "|&;()<> \\t", M = '"((\\\\"|[^"])*?)"', Q = "'((\\\\'|[^'])*?)'", V = /^#$/, _ = "'", G = '"', U = "$", R = "", z = 4294967296;
 for (var L = 0; L < 4; L++)
-  R += (V * Math.random()).toString(16);
-var z = new RegExp("^" + R);
-function J(r, a) {
-  for (var e = a.lastIndex, t = [], c; c = a.exec(r); )
-    t.push(c), a.lastIndex === c.index && (a.lastIndex += 1);
-  return a.lastIndex = e, t;
+  R += (z * Math.random()).toString(16);
+var J = new RegExp("^" + R);
+function X(n, s) {
+  for (var e = s.lastIndex, t = [], c; c = s.exec(n); )
+    t.push(c), s.lastIndex === c.index && (s.lastIndex += 1);
+  return s.lastIndex = e, t;
 }
-function X(r, a, e) {
-  var t = typeof r == "function" ? r(e) : r[e];
-  return typeof t > "u" && e != "" ? t = "" : typeof t > "u" && (t = "$"), typeof t == "object" ? a + R + JSON.stringify(t) + R : a + t;
+function F(n, s, e) {
+  var t = typeof n == "function" ? n(e) : n[e];
+  return typeof t > "u" && e != "" ? t = "" : typeof t > "u" && (t = "$"), typeof t == "object" ? s + R + JSON.stringify(t) + R : s + t;
 }
-function F(r, a, e) {
+function K(n, s, e) {
   e || (e = {});
-  var t = e.escape || "\\", c = "(\\" + t + `['"` + U + `]|[^\\s'"` + U + "])+", m = new RegExp([
+  var t = e.escape || "\\", c = "(\\" + t + `['"` + q + `]|[^\\s'"` + q + "])+", m = new RegExp([
     "(" + j + ")",
     // control chars
-    "(" + c + "|" + B + "|" + N + ")+"
-  ].join("|"), "g"), f = J(r, m);
+    "(" + c + "|" + M + "|" + Q + ")+"
+  ].join("|"), "g"), f = X(n, m);
   if (f.length === 0)
     return [];
-  a || (a = {});
+  s || (s = {});
   var w = !1;
-  return f.map(function(n) {
-    var s = n[0];
-    if (!s || w)
+  return f.map(function(r) {
+    var a = r[0];
+    if (!a || w)
       return;
-    if (k.test(s))
-      return { op: s };
-    var x = !1, O = !1, p = "", A = !1, o;
-    function $() {
-      o += 1;
-      var v, d, T = s.charAt(o);
+    if (D.test(a))
+      return { op: a };
+    var x = !1, O = !1, p = "", A = !1, i;
+    function b() {
+      i += 1;
+      var v, d, T = a.charAt(i);
       if (T === "{") {
-        if (o += 1, s.charAt(o) === "}")
-          throw new Error("Bad substitution: " + s.slice(o - 2, o + 1));
-        if (v = s.indexOf("}", o), v < 0)
-          throw new Error("Bad substitution: " + s.slice(o));
-        d = s.slice(o, v), o = v;
+        if (i += 1, a.charAt(i) === "}")
+          throw new Error("Bad substitution: " + a.slice(i - 2, i + 1));
+        if (v = a.indexOf("}", i), v < 0)
+          throw new Error("Bad substitution: " + a.slice(i));
+        d = a.slice(i, v), i = v;
       } else if (/[*@#?$!_-]/.test(T))
-        d = T, o += 1;
+        d = T, i += 1;
       else {
-        var g = s.slice(o);
-        v = g.match(/[^\w\d_]/), v ? (d = g.slice(0, v.index), o += v.index - 1) : (d = g, o = s.length);
+        var g = a.slice(i);
+        v = g.match(/[^\w\d_]/), v ? (d = g.slice(0, v.index), i += v.index - 1) : (d = g, i = a.length);
       }
-      return X(a, "", d);
+      return F(s, "", d);
     }
-    for (o = 0; o < s.length; o++) {
-      var u = s.charAt(o);
+    for (i = 0; i < a.length; i++) {
+      var u = a.charAt(i);
       if (A = A || !x && (u === "*" || u === "?"), O)
         p += u, O = !1;
       else if (x)
-        u === x ? x = !1 : x == q ? p += u : u === t ? (o += 1, u = s.charAt(o), u === G || u === t || u === S ? p += u : p += t + u) : u === S ? p += $() : p += u;
-      else if (u === G || u === q)
+        u === x ? x = !1 : x == _ ? p += u : u === t ? (i += 1, u = a.charAt(i), u === G || u === t || u === U ? p += u : p += t + u) : u === U ? p += b() : p += u;
+      else if (u === G || u === _)
         x = u;
       else {
-        if (k.test(u))
-          return { op: s };
-        if (Q.test(u)) {
+        if (D.test(u))
+          return { op: a };
+        if (V.test(u)) {
           w = !0;
-          var E = { comment: r.slice(n.index + o + 1) };
+          var E = { comment: n.slice(r.index + i + 1) };
           return p.length ? [p, E] : [E];
         } else
-          u === t ? O = !0 : u === S ? p += $() : p += u;
+          u === t ? O = !0 : u === U ? p += b() : p += u;
       }
     }
     return A ? { op: "glob", pattern: p } : p;
-  }).reduce(function(n, s) {
-    return typeof s > "u" ? n : n.concat(s);
+  }).reduce(function(r, a) {
+    return typeof a > "u" ? r : r.concat(a);
   }, []);
 }
-var K = function(a, e, t) {
-  var c = F(a, e, t);
+var Y = function(s, e, t) {
+  var c = K(s, e, t);
   return typeof e != "function" ? c : c.reduce(function(m, f) {
     if (typeof f == "object")
       return m.concat(f);
     var w = f.split(RegExp("(" + R + ".*?" + R + ")", "g"));
-    return w.length === 1 ? m.concat(w[0]) : m.concat(w.filter(Boolean).map(function(n) {
-      return z.test(n) ? JSON.parse(n.split(R)[1]) : n;
+    return w.length === 1 ? m.concat(w[0]) : m.concat(w.filter(Boolean).map(function(r) {
+      return J.test(r) ? JSON.parse(r.split(R)[1]) : r;
     }));
   }, []);
-}, Y = K;
-const re = "curl", ae = "cURL", se = "cURL command line tool", _ = ["d", "data", "data-raw", "data-urlencode", "data-binary", "data-ascii"], Z = [
+}, Z = Y;
+const ae = "curl", se = "cURL", ie = "cURL command line tool", H = ["d", "data", "data-raw", "data-urlencode", "data-binary", "data-ascii"], ee = [
   ["url"],
   // Specify the URL explicitly
   ["user", "u"],
@@ -113,179 +113,171 @@ const re = "curl", ae = "cURL", se = "cURL command line tool", _ = ["d", "data",
   // Add multipart data
   ["request", "X"],
   // Request method
-  _
-].flatMap((r) => r), oe = (r) => {
-  if (!r.match(/^\s*curl /))
+  H
+].flatMap((n) => n), oe = (n) => {
+  if (!n.match(/^\s*curl /))
     return null;
-  const a = [];
-  console.log(1, Date.now());
-  const e = r.replace(/\\\n/g, " ").replace(/\n/, "; ");
-  console.log(2, Date.now());
+  const s = [], e = n.replace(/([^\\])\n/g, "$1; ");
   let t = [];
-  const m = Y(e).flatMap((n) => typeof n == "string" && n.startsWith("-") && !n.startsWith("--") && n.length > 2 ? [n.slice(0, 2), n.slice(2)] : n);
-  for (const n of m) {
-    if (typeof n == "string") {
-      n.startsWith("$") ? t.push(n.slice(1)) : t.push(n);
+  const m = Z(e).flatMap((r) => typeof r == "string" && r.startsWith("-") && !r.startsWith("--") && r.length > 2 ? [r.slice(0, 2), r.slice(2)] : r);
+  for (const r of m) {
+    if (typeof r == "string") {
+      r.startsWith("$") ? t.push(r.slice(1)) : t.push(r);
       continue;
     }
-    if ("comment" in n)
+    if ("comment" in r)
       continue;
-    const { op: s } = n;
-    if (s === ";") {
-      a.push(t), t = [];
+    const { op: a } = r;
+    if (a === ";") {
+      s.push(t), t = [];
       continue;
     }
-    if (s != null && s.startsWith("$")) {
-      const x = s.slice(2, s.length - 1).replace(/\\'/g, "'");
+    if (a != null && a.startsWith("$")) {
+      const x = a.slice(2, a.length - 1).replace(/\\'/g, "'");
       t.push(x);
       continue;
     }
-    s === "glob" && t.push(n.pattern);
+    a === "glob" && t.push(r.pattern);
   }
-  a.push(t);
+  s.push(t);
   const f = {
     model: "workspace",
-    id: H("wk"),
+    id: N("workspace"),
     name: "Curl Import"
   };
   return {
     resources: {
-      httpRequests: a.filter((n) => n[0] === "curl").map((n) => ee(n, f.id)),
+      httpRequests: s.filter((r) => r[0] === "curl").map((r) => te(r, f.id)),
       workspaces: [f]
     }
   };
 };
-function ee(r, a) {
+function te(n, s) {
   const e = {}, t = [];
-  for (let i = 1; i < r.length; i++) {
-    let l = r[i];
+  for (let o = 1; o < n.length; o++) {
+    let l = n[o];
     if (typeof l == "string" && (l = l.trim()), typeof l == "string" && l.match(/^-{1,2}[\w-]+/)) {
-      const y = l[0] === "-" && l[1] !== "-";
+      const $ = l[0] === "-" && l[1] !== "-";
       let h = l.replace(/^-{1,2}/, "");
-      if (!Z.includes(h))
+      if (!ee.includes(h))
         continue;
-      let b;
-      const P = r[i + 1];
-      y && h.length > 1 ? (b = h.slice(1), h = h.slice(0, 1)) : typeof P == "string" && !P.startsWith("-") ? (b = P, i++) : b = !0, e[h] = e[h] || [], e[h].push(b);
+      let y;
+      const S = n[o + 1];
+      $ && h.length > 1 ? (y = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? (y = S, o++) : y = !0, e[h] = e[h] || [], e[h].push(y);
     } else
       l && t.push(l);
   }
-  let c = [], m;
-  const f = C(e, t[0] || "", ["url"]), [w, n] = W(f, "?");
-  c = (n == null ? void 0 : n.split("&").map((i) => {
-    const l = W(i, "=");
+  let c, m;
+  const f = C(e, t[0] || "", ["url"]), [w, r] = W(f, "?");
+  c = (r == null ? void 0 : r.split("&").map((o) => {
+    const l = W(o, "=");
     return { name: l[0] ?? "", value: l[1] ?? "" };
   })) ?? [], m = w ?? f;
-  const [s, x] = C(e, "", ["u", "user"]).split(/:(.*)$/), O = C(e, !1, ["digest"]), p = s ? O ? "digest" : "basic" : null, A = s ? {
-    username: s.trim(),
+  const [a, x] = C(e, "", ["u", "user"]).split(/:(.*)$/), O = C(e, !1, ["digest"]), p = a ? O ? "digest" : "basic" : null, A = a ? {
+    username: a.trim(),
     password: (x ?? "").trim()
-  } : {}, o = [
+  } : {}, i = [
     ...e.header || [],
     ...e.H || []
-  ].map((i) => {
-    const [l, y] = i.split(/:(.*)$/);
-    return y ? {
+  ].map((o) => {
+    const [l, $] = o.split(/:(.*)$/);
+    return $ ? {
       name: (l ?? "").trim(),
-      value: y.trim()
+      value: $.trim()
     } : {
       name: (l ?? "").trim().replace(/;$/, ""),
       value: ""
     };
-  }), $ = [
+  }), b = [
     ...e.cookie || [],
     ...e.b || []
-  ].map((i) => {
-    const l = i.split("=", 1)[0], y = i.replace(`${l}=`, "");
-    return `${l}=${y}`;
-  }).join("; "), u = o.find((i) => i.name.toLowerCase() === "cookie");
-  $ && u ? u.value += `; ${$}` : $ && o.push({
+  ].map((o) => {
+    const l = o.split("=", 1)[0], $ = o.replace(`${l}=`, "");
+    return `${l}=${$}`;
+  }).join("; "), u = i.find((o) => o.name.toLowerCase() === "cookie");
+  b && u ? u.value += `; ${b}` : b && i.push({
     name: "Cookie",
-    value: $
+    value: b
   });
-  const E = te(e), v = o.find((i) => i.name.toLowerCase() === "content-type"), d = v ? v.value.split(";")[0] : null, T = [
+  const E = ne(e), v = i.find((o) => o.name.toLowerCase() === "content-type"), d = v ? v.value.split(";")[0] : null, T = [
     ...e.form || [],
     ...e.F || []
-  ].map((i) => {
-    const l = i.split("="), y = l[0] ?? "", h = l[1] ?? "", b = {
-      name: y,
+  ].map((o) => {
+    const l = o.split("="), $ = l[0] ?? "", h = l[1] ?? "", y = {
+      name: $,
       enabled: !0
     };
-    return h.indexOf("@") === 0 ? b.file = h.slice(1) : b.value = h, b;
+    return h.indexOf("@") === 0 ? y.file = h.slice(1) : y.value = h, y;
   });
-  let g = {}, D = null;
-  const M = C(e, !1, ["G", "get"]);
-  E.length > 0 && M ? c.push(...E) : E.length > 0 && (d == null || d === "application/x-www-form-urlencoded") ? (D = d ?? "application/x-www-form-urlencoded", g = {
-    params: E.map((i) => ({
-      ...i,
-      name: decodeURIComponent(i.name || ""),
-      value: decodeURIComponent(i.value || "")
+  let g = {}, I = null;
+  const B = C(e, !1, ["G", "get"]);
+  E.length > 0 && B ? c.push(...E) : E.length > 0 && (d == null || d === "application/x-www-form-urlencoded") ? (I = d ?? "application/x-www-form-urlencoded", g = {
+    params: E.map((o) => ({
+      ...o,
+      name: decodeURIComponent(o.name || ""),
+      value: decodeURIComponent(o.value || "")
     }))
-  }) : E.length > 0 ? (D = d === "application/json" || d === "text/xml" || d === "text/plain" ? d : "other", g = {
-    text: E.map(({ name: i, value: l }) => i && l ? `${i}=${l}` : i || l).join("&")
-  }) : T.length && (D = d ?? "multipart/form-data", g = {
+  }) : E.length > 0 ? (I = d === "application/json" || d === "text/xml" || d === "text/plain" ? d : "other", g = {
+    text: E.map(({ name: o, value: l }) => o && l ? `${o}=${l}` : o || l).join("&")
+  }) : T.length && (I = d ?? "multipart/form-data", g = {
     form: T
   });
-  let I = C(e, "", ["X", "request"]).toUpperCase();
-  return I === "" && g && (I = "text" in g || "params" in g ? "POST" : "GET"), {
-    id: H("rq"),
+  let P = C(e, "", ["X", "request"]).toUpperCase();
+  return P === "" && g && (P = "text" in g || "params" in g ? "POST" : "GET"), {
+    id: N("http_request"),
     model: "http_request",
-    workspaceId: a,
+    workspaceId: s,
     name: "",
     urlParameters: c,
     url: m,
-    method: I,
-    headers: o,
+    method: P,
+    headers: i,
     authentication: A,
     authenticationType: p,
     body: g,
-    bodyType: D,
+    bodyType: I,
     folderId: null,
     sortPriority: 0
   };
 }
-const te = (r) => {
-  let a = [];
-  for (const e of _) {
-    const t = r[e];
+const ne = (n) => {
+  let s = [];
+  for (const e of H) {
+    const t = n[e];
     if (!(!t || t.length === 0))
       for (const c of t) {
         if (typeof c != "string")
           continue;
         const [m, f] = c.split("=");
-        c.startsWith("@") ? a.push({
+        c.startsWith("@") ? s.push({
           name: m ?? "",
           value: "",
           filePath: c.slice(1)
-        }) : a.push({
+        }) : s.push({
           name: m ?? "",
           value: e === "data-urlencode" ? encodeURIComponent(f ?? "") : f ?? ""
         });
       }
   }
-  return a;
-}, C = (r, a, e) => {
+  return s;
+}, C = (n, s, e) => {
   for (const t of e)
-    if (r[t] && r[t].length)
-      return r[t][0];
-  return a;
+    if (n[t] && n[t].length)
+      return n[t][0];
+  return s;
 };
-function H(r) {
-  const a = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let e = `${r}_`;
-  for (let t = 0; t < 10; t++) {
-    const c = Math.random();
-    e += a[Math.floor(c * a.length)];
-  }
-  return e;
+function W(n, s) {
+  const e = n.indexOf(s);
+  return e > -1 ? [n.slice(0, e), n.slice(e + 1)] : [n];
 }
-function W(r, a) {
-  const e = r.indexOf(a);
-  return e > -1 ? [r.slice(0, e), r.slice(e + 1)] : [r];
+const k = {};
+function N(n) {
+  return k[n] = (k[n] ?? -1) + 1, `GENERATE_ID::${n.toUpperCase()}_${k[n]}`;
 }
 export {
-  se as description,
-  re as id,
-  ee as importCommand,
-  ae as name,
+  ie as description,
+  ae as id,
+  te as importCommand,
+  se as name,
   oe as pluginHookImport
 };
