@@ -38,8 +38,24 @@ use window_ext::TrafficLightWindowExt;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http::send_http_request;
-use crate::models::{cancel_pending_grpc_connections, cancel_pending_responses, create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, Settings, Workspace, WorkspaceExportResources, generate_model_id, ModelType};
-use crate::plugin::ImportResult;
+use crate::models::{
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
+    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
+    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
+    list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
+    list_http_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse, KeyValue, ModelType, Settings,
+    Workspace, WorkspaceExportResources,
+};
+use crate::plugin::{run_plugin_export_curl, ImportResult};
+use crate::render::render_request;
 use crate::updates::{update_mode_from_str, UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 
@@ -744,57 +760,73 @@ async fn cmd_import_data(
             let mut imported_resources = WorkspaceExportResources::default();
             let mut id_map: HashMap<String, String> = HashMap::new();
 
-            let maybe_gen_id = |id: &str, model: ModelType, ids: &mut HashMap<String, String>| -> String {
-                if !id.starts_with("GENERATE_ID::") {
-                    return id.to_string();
-                }
+            let maybe_gen_id =
+                |id: &str, model: ModelType, ids: &mut HashMap<String, String>| -> String {
+                    if !id.starts_with("GENERATE_ID::") {
+                        return id.to_string();
+                    }
 
-                let unique_key = id.replace("GENERATE_ID", "");
-                if let Some(existing) = ids.get(unique_key.as_str()) {
-                    existing.to_string()
-                } else {
-                    let new_id = generate_model_id(model);
-                    ids.insert(unique_key, new_id.clone());
-                    new_id
-                }
-            };
+                    let unique_key = id.replace("GENERATE_ID", "");
+                    if let Some(existing) = ids.get(unique_key.as_str()) {
+                        existing.to_string()
+                    } else {
+                        let new_id = generate_model_id(model);
+                        ids.insert(unique_key, new_id.clone());
+                        new_id
+                    }
+                };
 
-            let maybe_gen_id_opt = |id: Option<String>, model: ModelType, ids: &mut HashMap<String, String>| -> Option<String> {
-              match id {
-                  Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
-                  None => None,
-              }
+            let maybe_gen_id_opt = |id: Option<String>,
+                                    model: ModelType,
+                                    ids: &mut HashMap<String, String>|
+             -> Option<String> {
+                match id {
+                    Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
+                    None => None,
+                }
             };
 
             info!("Importing resources");
             for mut v in r.resources.workspaces {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::Workspace, &mut id_map);
+                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
                 let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
                 info!("Imported workspace: {}", x.name);
             }
 
             for mut v in r.resources.environments {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::Environment, &mut id_map);
-                v.workspace_id = maybe_gen_id(v.workspace_id.as_str(), ModelType::Workspace, &mut id_map);
+                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
+                v.workspace_id = maybe_gen_id(
+                    v.workspace_id.as_str(),
+                    ModelType::TypeWorkspace,
+                    &mut id_map,
+                );
                 let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.environments.push(x.clone());
                 info!("Imported environment: {}", x.name);
             }
 
             for mut v in r.resources.folders {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::Folder, &mut id_map);
-                v.workspace_id = maybe_gen_id(v.workspace_id.as_str(), ModelType::Workspace, &mut id_map);
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::Folder, &mut id_map);
+                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
+                v.workspace_id = maybe_gen_id(
+                    v.workspace_id.as_str(),
+                    ModelType::TypeWorkspace,
+                    &mut id_map,
+                );
+                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
                 let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.folders.push(x.clone());
                 info!("Imported folder: {}", x.name);
             }
 
             for mut v in r.resources.http_requests {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::HttpRequest, &mut id_map);
-                v.workspace_id = maybe_gen_id(v.workspace_id.as_str(), ModelType::Workspace, &mut id_map);
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::Folder, &mut id_map);
+                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
+                v.workspace_id = maybe_gen_id(
+                    v.workspace_id.as_str(),
+                    ModelType::TypeWorkspace,
+                    &mut id_map,
+                );
+                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
                 let x = upsert_http_request(&w, v)
                     .await
                     .map_err(|e| e.to_string())?;
@@ -803,9 +835,13 @@ async fn cmd_import_data(
             }
 
             for mut v in r.resources.grpc_requests {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::GrpcRequest, &mut id_map);
-                v.workspace_id = maybe_gen_id(v.workspace_id.as_str(), ModelType::Workspace, &mut id_map);
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::Folder, &mut id_map);
+                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
+                v.workspace_id = maybe_gen_id(
+                    v.workspace_id.as_str(),
+                    ModelType::TypeWorkspace,
+                    &mut id_map,
+                );
+                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
                 let x = upsert_grpc_request(&w, &v)
                     .await
                     .map_err(|e| e.to_string())?;
@@ -816,6 +852,26 @@ async fn cmd_import_data(
             Ok(imported_resources)
         }
     }
+}
+
+#[tauri::command]
+async fn cmd_request_to_curl(
+    app: AppHandle,
+    request_id: &str,
+    environment_id: Option<&str>,
+) -> Result<String, String> {
+    let request = get_http_request(&app, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let environment = match environment_id {
+        Some(id) => Some(get_environment(&app, id).await.map_err(|e| e.to_string())?),
+        None => None,
+    };
+    let workspace = get_workspace(&app, &request.workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let rendered = render_request(&request, &workspace, environment.as_ref());
+    Ok(run_plugin_export_curl(&app, &rendered)?)
 }
 
 #[tauri::command]
@@ -1437,6 +1493,7 @@ async fn cmd_check_for_updates(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1564,6 +1621,7 @@ pub fn run() {
             cmd_list_workspaces,
             cmd_metadata,
             cmd_new_window,
+            cmd_request_to_curl,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
             cmd_set_key_value,

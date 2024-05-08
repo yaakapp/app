@@ -43,7 +43,7 @@ type Pair = string | boolean;
 
 type PairsByName = Record<string, Pair[]>;
 
-export const pluginHookImport = (rawData: string) => {
+export function pluginHookImport(rawData: string) {
   if (!rawData.match(/^\s*curl /)) {
     return null;
   }
@@ -125,7 +125,7 @@ export const pluginHookImport = (rawData: string) => {
       workspaces: [workspace],
     },
   };
-};
+}
 
 export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   // ~~~~~~~~~~~~~~~~~~~~~ //

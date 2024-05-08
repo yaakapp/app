@@ -1,0 +1,7 @@
+{
+  "name": "exporter-curl",
+  "version": "0.0.1",
+  "devDependencies": {
+    "vitest": "^1.4.0"
+  }
+}

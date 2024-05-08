@@ -107,7 +107,6 @@ pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
                     &PredefinedMenuItem::fullscreen(app_handle, None)?,
                     #[cfg(target_os = "macos")]
                     &PredefinedMenuItem::separator(app_handle)?,
-                    
                     &MenuItemBuilder::with_id("zoom_reset".to_string(), "Zoom to Actual Size")
                         .accelerator("CmdOrCtrl+0")
                         .build(app_handle)?,
