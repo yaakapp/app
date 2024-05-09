@@ -6,6 +6,7 @@ export interface ConfirmProps {
   onHide: () => void;
   onResult: (result: boolean) => void;
   variant?: 'delete' | 'confirm';
+  confirmText?: string;
 }
 
 const colors: Record<NonNullable<ConfirmProps['variant']>, ButtonProps['color']> = {
@@ -18,7 +19,7 @@ const confirmButtonTexts: Record<NonNullable<ConfirmProps['variant']>, string> =
   confirm: 'Confirm',
 };
 
-export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps) {
+export function Confirm({ onHide, onResult, confirmText, variant = 'confirm' }: ConfirmProps) {
   const handleHide = () => {
     onResult(false);
     onHide();
@@ -32,7 +33,7 @@ export function Confirm({ onHide, onResult, variant = 'confirm' }: ConfirmProps)
   return (
     <HStack space={2} justifyContent="start" className="mt-2 mb-4 flex-row-reverse">
       <Button className="focus" color={colors[variant]} onClick={handleSuccess}>
-        {confirmButtonTexts[variant]}
+        {confirmText ?? confirmButtonTexts[variant]}
       </Button>
       <Button className="focus" color="gray" onClick={handleHide}>
         Cancel

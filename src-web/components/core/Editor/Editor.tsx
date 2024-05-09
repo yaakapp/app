@@ -44,6 +44,7 @@ export interface EditorProps {
   tooltipContainer?: HTMLElement;
   useTemplating?: boolean;
   onChange?: (value: string) => void;
+  onPaste?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   onKeyDown?: (e: KeyboardEvent) => void;
@@ -69,6 +70,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     defaultValue,
     forceUpdateKey,
     onChange,
+    onPaste,
     onFocus,
     onBlur,
     onKeyDown,
@@ -91,25 +93,31 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);
 
-  // Use ref so we can update the onChange handler without re-initializing the editor
+  // Use ref so we can update the handler without re-initializing the editor
   const handleChange = useRef<EditorProps['onChange']>(onChange);
   useEffect(() => {
     handleChange.current = onChange;
   }, [onChange]);
 
-  // Use ref so we can update the onChange handler without re-initializing the editor
+  // Use ref so we can update the handler without re-initializing the editor
+  const handlePaste = useRef<EditorProps['onPaste']>(onPaste);
+  useEffect(() => {
+    handlePaste.current = onPaste;
+  }, [onPaste]);
+
+  // Use ref so we can update the handler without re-initializing the editor
   const handleFocus = useRef<EditorProps['onFocus']>(onFocus);
   useEffect(() => {
     handleFocus.current = onFocus;
   }, [onFocus]);
 
-  // Use ref so we can update the onChange handler without re-initializing the editor
+  // Use ref so we can update the handler without re-initializing the editor
   const handleBlur = useRef<EditorProps['onBlur']>(onBlur);
   useEffect(() => {
     handleBlur.current = onBlur;
   }, [onBlur]);
 
-  // Use ref so we can update the onChange handler without re-initializing the editor
+  // Use ref so we can update the handler without re-initializing the editor
   const handleKeyDown = useRef<EditorProps['onKeyDown']>(onKeyDown);
   useEffect(() => {
     handleKeyDown.current = onKeyDown;
@@ -187,6 +195,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
               readOnly,
               singleLine,
               onChange: handleChange,
+              onPaste: handlePaste,
               onFocus: handleFocus,
               onBlur: handleBlur,
               onKeyDown: handleKeyDown,
@@ -299,12 +308,14 @@ function getExtensions({
   readOnly,
   singleLine,
   onChange,
+  onPaste,
   onFocus,
   onBlur,
   onKeyDown,
 }: Pick<EditorProps, 'singleLine' | 'readOnly'> & {
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
+  onPaste: MutableRefObject<EditorProps['onPaste']>;
   onFocus: MutableRefObject<EditorProps['onFocus']>;
   onBlur: MutableRefObject<EditorProps['onBlur']>;
   onKeyDown: MutableRefObject<EditorProps['onKeyDown']>;
@@ -321,6 +332,7 @@ function getExtensions({
       focus: () => onFocus.current?.(),
       blur: () => onBlur.current?.(),
       keydown: (e) => onKeyDown.current?.(e),
+      paste: (e) => onPaste.current?.(e.clipboardData?.getData('text/plain') ?? ''),
     }),
     tooltips({ parent }),
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),

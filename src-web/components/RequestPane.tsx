@@ -38,6 +38,8 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
+import { useCurlToRequest } from '../hooks/useCurlToRequest';
+import { useConfirm } from '../hooks/useConfirm';
 
 interface Props {
   style: CSSProperties;
@@ -227,6 +229,9 @@ export const RequestPane = memo(function RequestPane({
     [updateRequest],
   );
 
+  const importCurl = useCurlToRequest();
+  const confirm = useConfirm();
+
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
 
@@ -241,6 +246,22 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
+            onPaste={async (command) => {
+              if (!command.startsWith('curl ')) {
+                return;
+              }
+              if (
+                await confirm({
+                  id: 'paste-curl',
+                  title: 'Import from Curl?',
+                  description:
+                    'Do you want to overwrite the current request with the Curl command?',
+                  confirmText: 'Overwrite',
+                })
+              ) {
+                importCurl.mutate({ requestId: activeRequestId, command });
+              }
+            }}
             onSend={handleSend}
             onCancel={handleCancel}
             onMethodChange={handleMethodChange}

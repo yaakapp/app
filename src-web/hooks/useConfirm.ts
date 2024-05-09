@@ -10,11 +10,13 @@ export function useConfirm() {
     title,
     description,
     variant,
+    confirmText,
   }: {
     id: string;
     title: DialogProps['title'];
     description?: DialogProps['description'];
-    variant: ConfirmProps['variant'];
+    variant?: ConfirmProps['variant'];
+    confirmText?: ConfirmProps['confirmText'];
   }) =>
     new Promise((onResult: ConfirmProps['onResult']) => {
       dialog.show({
@@ -23,7 +25,7 @@ export function useConfirm() {
         description,
         hideX: true,
         size: 'sm',
-        render: ({ hide }) => Confirm({ onHide: hide, variant, onResult }),
+        render: ({ hide }) => Confirm({ onHide: hide, variant, onResult, confirmText }),
       });
     });
 }
