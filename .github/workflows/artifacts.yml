@@ -71,4 +71,4 @@ jobs:
           releaseBody: 'https://yaak.app/changelog/__VERSION__'
           releaseDraft: true
           prerelease: false
-          args: '--target ${{ matrix.target }}'
+          args: ${{ matrix.args }}
