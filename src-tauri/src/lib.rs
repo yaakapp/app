@@ -259,7 +259,7 @@ async fn cmd_grpc_go(
 
     let method_desc = connection
         .method(&service, &method)
-        .expect("Service not found");
+        .map_err(|e| e.to_string())?;
 
     #[derive(serde::Deserialize)]
     enum IncomingMsg {

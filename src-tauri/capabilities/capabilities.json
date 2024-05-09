@@ -8,7 +8,7 @@
   ],
   "permissions": [
     "os:allow-os-type",
-    "menu:allow-create-default",
+    "event:allow-emit",
     "clipboard-manager:allow-write-text",
     "dialog:allow-open",
     "dialog:allow-save",
