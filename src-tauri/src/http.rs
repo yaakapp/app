@@ -7,11 +7,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::header::{ACCEPT, USER_AGENT};
 use log::{error, info, warn};
-use reqwest::redirect::Policy;
 use reqwest::{multipart, Url};
+use reqwest::redirect::Policy;
 use sqlx::types::{Json, JsonValue};
 use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
@@ -35,6 +35,7 @@ pub async fn send_http_request(
 
     let mut url_string = render::render(&request.url, &workspace, environment.as_ref());
 
+    url_string = ensure_proto(&url_string);
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);
     }
@@ -464,4 +465,27 @@ pub async fn send_http_request(
         }
         Err(e) => response_err(response, e.to_string(), window).await,
     }
+}
+
+fn ensure_proto(url_str: &str) -> String {
+    if url_str.starts_with("http://") || url_str.starts_with("https://") {
+        return url_str.to_string();
+    }
+
+    // Url::from_str will fail without a proto, so add one
+    let parseable_url = format!("http://{}", url_str);
+    if let Ok(u) = Url::from_str(parseable_url.as_str()) {
+        match u.host() {
+            Some(host) => {
+                let h = host.to_string();
+                // These TLDs force HTTPS
+                if h.ends_with(".app") || h.ends_with(".dev") || h.ends_with(".page") {
+                    return format!("https://{url_str}");
+                }
+            }
+            None => {}
+        }
+    }
+
+    format!("http://{url_str}")
 }
