@@ -10,7 +10,7 @@ import { HStack } from './Stacks';
 
 export type InputProps = Omit<
   HTMLAttributes<HTMLInputElement>,
-  'onChange' | 'onFocus' | 'onKeyDown'
+  'onChange' | 'onFocus' | 'onKeyDown' | 'onPaste'
 > &
   Pick<
     EditorProps,
@@ -33,6 +33,7 @@ export type InputProps = Omit<
     onChange?: (value: string) => void;
     onFocus?: () => void;
     onBlur?: () => void;
+    onPaste?: (value: string) => void;
     defaultValue?: string;
     leftSlot?: ReactNode;
     rightSlot?: ReactNode;
@@ -59,6 +60,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     onBlur,
     onChange,
     onFocus,
+    onPaste,
     placeholder,
     require,
     rightSlot,
@@ -172,6 +174,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             forceUpdateKey={forceUpdateKey}
             placeholder={placeholder}
             onChange={handleChange}
+            onPaste={onPaste}
             className={editorClassName}
             onFocus={handleFocus}
             onBlur={handleBlur}
