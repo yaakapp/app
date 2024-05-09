@@ -88,7 +88,14 @@
       "protoc-vendored/include/*"
     ],
     "shortDescription": "The best API client",
-    "targets": "all",
+    "targets": [
+      "deb",
+      "appimage",
+      "nsis",
+      "app",
+      "dmg",
+      "updater"
+    ],
     "macOS": {
       "exceptionDomain": "",
       "entitlements": "macos/entitlements.plist",
