@@ -14,6 +14,7 @@ type Props = Pick<HttpRequest, 'url'> & {
   placeholder: string;
   onSend: () => void;
   onUrlChange: (url: string) => void;
+  onPaste?: (v: string) => void;
   onCancel: () => void;
   submitIcon?: IconProps['icon'] | null;
   onMethodChange?: (method: string) => void;
@@ -31,6 +32,7 @@ export const UrlBar = memo(function UrlBar({
   onSend,
   onCancel,
   onMethodChange,
+  onPaste,
   submitIcon = 'sendHorizontal',
   isLoading,
 }: Props) {
@@ -66,6 +68,7 @@ export const UrlBar = memo(function UrlBar({
         forceUpdateKey={forceUpdateKey}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        onPaste={onPaste}
         containerClassName="shadow shadow-gray-100 dark:shadow-gray-50"
         onChange={onUrlChange}
         defaultValue={url}

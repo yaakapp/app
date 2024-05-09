@@ -1,17 +1,16 @@
-use std::fs;
 use std::rc::Rc;
 
-use boa_engine::builtins::promise::PromiseState;
 use boa_engine::{
-    js_string, module::SimpleModuleLoader, property::Attribute, Context, JsNativeError, JsValue,
-    Module, Source,
+    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
+    property::Attribute, Source,
 };
+use boa_engine::builtins::promise::PromiseState;
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
+use tauri::path::BaseDirectory;
 
 use crate::models::{HttpRequest, WorkspaceExportResources};
 
@@ -68,11 +67,8 @@ pub fn run_plugin_export_curl(
 pub async fn run_plugin_import(
     app_handle: &AppHandle,
     plugin_name: &str,
-    file_path: &str,
+    file_contents: &str,
 ) -> Result<Option<ImportResult>, String> {
-    let file = fs::read_to_string(file_path)
-        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
-    let file_contents = file.as_str();
     let result_json = run_plugin(
         app_handle,
         plugin_name,
