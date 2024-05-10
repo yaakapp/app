@@ -329,10 +329,18 @@ function getExtensions({
   return [
     // NOTE: These *must* be anonymous functions so the references update properly
     EditorView.domEventHandlers({
-      focus: () => onFocus.current?.(),
-      blur: () => onBlur.current?.(),
-      keydown: (e) => onKeyDown.current?.(e),
-      paste: (e) => onPaste.current?.(e.clipboardData?.getData('text/plain') ?? ''),
+      focus: () => {
+        onFocus.current?.();
+      },
+      blur: () => {
+        onBlur.current?.();
+      },
+      keydown: (e) => {
+        onKeyDown.current?.(e);
+      },
+      paste: (e) => {
+        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
+      },
     }),
     tooltips({ parent }),
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
