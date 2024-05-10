@@ -60,9 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     size === 'sm' && 'h-sm px-2.5 text-sm',
     size === 'xs' && 'h-xs px-2 text-sm',
     // Solids
-    variant === 'solid' &&
-      color === 'custom' &&
-      'ring-blue-400 enabled:hocus:bg-highlightSecondary',
+    variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color === 'default' &&
       'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',

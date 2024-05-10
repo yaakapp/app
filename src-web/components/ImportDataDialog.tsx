@@ -13,8 +13,8 @@ export function ImportDataDialog({ importData }: Props) {
       <VStack space={1}>
         <p>Supported Formats:</p>
         <ul className="list-disc pl-5">
-          <li>Postman Collection v2/v2.1</li>
-          <li>Insomnia</li>
+          <li>Postman Collection v2+</li>
+          <li>Insomnia v4+</li>
           <li>Curl command(s)</li>
         </ul>
       </VStack>
