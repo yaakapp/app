@@ -1,4 +1,7 @@
 {
   "name": "importer-insomnia",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "dependencies": {
+    "yaml": "^2.4.2"
+  }
 }

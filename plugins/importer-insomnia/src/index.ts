@@ -5,6 +5,7 @@ import {
   HttpRequest,
   Workspace,
 } from '../../../src-web/lib/models';
+import { parse as parseYaml } from 'yaml';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -17,12 +18,15 @@ export interface ExportResources {
 }
 
 export function pluginHookImport(contents: string) {
-  let parsed;
+  let parsed: any;
+
   try {
     parsed = JSON.parse(contents);
-  } catch (e) {
-    return;
-  }
+  } catch (e) {}
+
+  try {
+    parsed = parseYaml(contents);
+  } catch (e) {}
 
   if (!isJSObject(parsed)) return;
   if (!Array.isArray(parsed.resources)) return;

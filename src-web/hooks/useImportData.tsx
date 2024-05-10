@@ -9,6 +9,7 @@ import { count } from '../lib/pluralize';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
+import { ImportDataDialog } from '../components/ImportDataDialog';
 
 export function useImportData() {
   const routes = useAppRoutes();
@@ -35,6 +36,7 @@ export function useImportData() {
       filePath: selected.path,
       workspaceId: activeWorkspaceId,
     });
+
     const importedWorkspace = imported.workspaces[0];
 
     dialog.show({
@@ -82,32 +84,16 @@ export function useImportData() {
           title: 'Import Data',
           size: 'sm',
           render: ({ hide }) => {
-            return (
-              <VStack space={5} className="pb-4">
-                <VStack space={1}>
-                  <p>Supported Formats:</p>
-                  <ul className="list-disc pl-5">
-                    <li>Postman Collection v2/v2.1</li>
-                    <li>Insomnia</li>
-                  </ul>
-                </VStack>
-                <Button
-                  size="sm"
-                  color="primary"
-                  onClick={async () => {
-                    try {
-                      await importData();
-                      resolve();
-                    } catch (err) {
-                      reject(err);
-                    }
-                    hide();
-                  }}
-                >
-                  Select File
-                </Button>
-              </VStack>
-            );
+            const importAndHide = async () => {
+              try {
+                await importData();
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+              hide();
+            };
+            return <ImportDataDialog importData={importAndHide} />;
           },
         });
       });
