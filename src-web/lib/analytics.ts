@@ -14,6 +14,7 @@ export type TrackResource =
   | 'key_value'
   | 'setting'
   | 'sidebar'
+  | 'toast'
   | 'workspace';
 
 export type TrackAction =

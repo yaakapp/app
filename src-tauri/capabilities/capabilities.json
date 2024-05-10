@@ -10,6 +10,7 @@
     "os:allow-os-type",
     "event:allow-emit",
     "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-text",
     "dialog:allow-open",
     "dialog:allow-save",
     "event:allow-listen",

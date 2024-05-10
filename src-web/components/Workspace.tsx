@@ -33,6 +33,8 @@ import { ResizeHandle } from './ResizeHandle';
 import { Sidebar } from './Sidebar';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceHeader } from './WorkspaceHeader';
+import { useClipboardText } from '../hooks/useClipboardText';
+import { Portal } from './Portal';
 
 const side = { gridArea: 'side' };
 const head = { gridArea: 'head' };
@@ -54,6 +56,7 @@ export default function Workspace() {
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
+  const isCurlInClipboard = !!useClipboardText()?.startsWith('curl ');
 
   const unsub = () => {
     if (moveState.current !== null) {
@@ -124,83 +127,88 @@ export default function Workspace() {
   }
 
   return (
-    <div
-      style={styles}
-      className={classNames(
-        'grid w-full h-full',
-        // Animate sidebar width changes but only when not resizing
-        // because it's too slow to animate on mouse move
-        !isResizing && 'transition-all',
-      )}
-    >
-      {floating ? (
-        <Overlay
-          open={!floatingSidebarHidden}
-          portalName="sidebar"
-          onClose={() => setFloatingSidebarHidden(true)}
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className={classNames(
-              'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
-              'grid grid-rows-[auto_1fr]',
-            )}
+    <>
+      <Portal name="toast">
+        {isCurlInClipboard && <div className="static right-0 left-0 w-32 h-10">Import</div>}
+      </Portal>
+      <div
+        style={styles}
+        className={classNames(
+          'grid w-full h-full',
+          // Animate sidebar width changes but only when not resizing
+          // because it's too slow to animate on mouse move
+          !isResizing && 'transition-all',
+        )}
+      >
+        {floating ? (
+          <Overlay
+            open={!floatingSidebarHidden}
+            portalName="sidebar"
+            onClose={() => setFloatingSidebarHidden(true)}
           >
-            <HeaderSize className="border-transparent">
-              <SidebarActions />
-            </HeaderSize>
-            <Sidebar />
-          </motion.div>
-        </Overlay>
-      ) : (
-        <>
-          <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
-            <Sidebar className="border-r border-highlight" />
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={classNames(
+                'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
+                'grid grid-rows-[auto_1fr]',
+              )}
+            >
+              <HeaderSize className="border-transparent">
+                <SidebarActions />
+              </HeaderSize>
+              <Sidebar />
+            </motion.div>
+          </Overlay>
+        ) : (
+          <>
+            <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
+              <Sidebar className="border-r border-highlight" />
+            </div>
+            <ResizeHandle
+              className="-translate-x-3"
+              justify="end"
+              side="right"
+              isResizing={isResizing}
+              onResizeStart={handleResizeStart}
+              onReset={resetWidth}
+            />
+          </>
+        )}
+        <HeaderSize data-tauri-drag-region style={head}>
+          <WorkspaceHeader className="pointer-events-none" />
+        </HeaderSize>
+        {activeWorkspace == null ? (
+          <div className="m-auto">
+            <Banner color="warning" className="max-w-[30rem]">
+              The active workspace{' '}
+              <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not
+              found. Select a workspace from the header menu or report this bug to <FeedbackLink />
+            </Banner>
           </div>
-          <ResizeHandle
-            className="-translate-x-3"
-            justify="end"
-            side="right"
-            isResizing={isResizing}
-            onResizeStart={handleResizeStart}
-            onReset={resetWidth}
-          />
-        </>
-      )}
-      <HeaderSize data-tauri-drag-region style={head}>
-        <WorkspaceHeader className="pointer-events-none" />
-      </HeaderSize>
-      {activeWorkspace == null ? (
-        <div className="m-auto">
-          <Banner color="warning" className="max-w-[30rem]">
-            The active workspace{' '}
-            <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not found.
-            Select a workspace from the header menu or report this bug to <FeedbackLink />
-          </Banner>
-        </div>
-      ) : activeRequest == null ? (
-        <HotKeyList
-          hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
-          bottomSlot={
-            <HStack space={1} justifyContent="center" className="mt-3">
-              <Button variant="border" size="sm" onClick={() => importData.mutate()}>
-                Import
-              </Button>
-              <CreateDropdown hideFolder>
-                <Button variant="border" forDropdown size="sm">
-                  New Request
+        ) : activeRequest == null ? (
+          <HotKeyList
+            hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
+            bottomSlot={
+              <HStack space={1} justifyContent="center" className="mt-3">
+                <Button variant="border" size="sm" onClick={() => importData.mutate()}>
+                  Import
                 </Button>
-              </CreateDropdown>
-            </HStack>
-          }
-        />
-      ) : activeRequest.model === 'grpc_request' ? (
-        <GrpcConnectionLayout style={body} />
-      ) : (
-        <HttpRequestLayout activeRequest={activeRequest} style={body} />
-      )}
-    </div>
+                <CreateDropdown hideFolder>
+                  <Button variant="border" forDropdown size="sm">
+                    New Request
+                  </Button>
+                </CreateDropdown>
+              </HStack>
+            }
+          />
+        ) : activeRequest.model === 'grpc_request' ? (
+          <GrpcConnectionLayout style={body} />
+        ) : (
+          <HttpRequestLayout activeRequest={activeRequest} style={body} />
+        )}
+      </div>
+    </>
   );
 }
 

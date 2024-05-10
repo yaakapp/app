@@ -9,7 +9,6 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -41,6 +40,7 @@ import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
+import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 
 interface Props {
   className?: string;
@@ -608,7 +608,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const deleteRequest = useDeleteRequest(activeRequest ?? null);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
-  const [isCopied, copyAsCurl] = useCopyAsCurl(itemId);
+  const [copyAsCurl] = useCopyAsCurl(itemId);
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestHttpResponse = useLatestHttpResponse(itemId);
@@ -739,12 +739,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                         {
                           key: 'copyCurl',
                           label: 'Copy as Curl',
-                          leftSlot: (
-                            <Icon
-                              className={isCopied ? 'text-green-500' : undefined}
-                              icon={isCopied ? 'check' : 'copy'}
-                            />
-                          ),
+                          leftSlot: <Icon icon="copy" />,
                           onSelect: copyAsCurl,
                         },
                         { type: 'separator' },
