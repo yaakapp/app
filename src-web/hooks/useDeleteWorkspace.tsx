@@ -44,7 +44,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
 
       // Also clean up other things that may have been deleted
       queryClient.setQueryData(httpRequestsQueryKey({ workspaceId }), []);
-      await queryClient.invalidateQueries(httpRequestsQueryKey({ workspaceId }));
+      await queryClient.invalidateQueries({ queryKey: httpRequestsQueryKey({ workspaceId }) });
     },
   });
 }

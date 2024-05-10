@@ -71,7 +71,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
         {!serverReflection && services != null && services.length > 0 && (
           <Banner className="flex flex-col gap-2">
             <p>
-              Found services
+              Found services{' '}
               {services?.slice(0, 5).map((s, i) => {
                 return (
                   <span key={i}>
@@ -124,7 +124,6 @@ export function GrpcProtoSelection({ requestId }: Props) {
                       className="ml-auto opacity-30 transition-opacity group-hover:opacity-100"
                       onClick={async () => {
                         await protoFilesKv.set(protoFiles.filter((p) => p !== f));
-                        grpc.reflect.remove();
                       }}
                     />
                   </td>
