@@ -7,7 +7,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 
 const queryClient = new QueryClient({
-  logger: undefined,
   defaultOptions: {
     queries: {
       retry: false,

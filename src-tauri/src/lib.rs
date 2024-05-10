@@ -91,16 +91,19 @@ struct AppMetaData {
     version: String,
     name: String,
     app_data_dir: String,
+    app_log_dir: String,
 }
 
 #[tauri::command]
 async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
+    let app_log_dir = app_handle.path().app_log_dir().unwrap();
     return Ok(AppMetaData {
         is_dev: is_dev(),
         version: app_handle.package_info().version.to_string(),
         name: app_handle.package_info().name.to_string(),
         app_data_dir: app_data_dir.to_string_lossy().to_string(),
+        app_log_dir: app_log_dir.to_string_lossy().to_string(),
     });
 }
 

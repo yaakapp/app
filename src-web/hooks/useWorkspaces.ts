@@ -9,8 +9,12 @@ export function workspacesQueryKey(_?: {}) {
 
 export function useWorkspaces() {
   return (
-    useQuery(workspacesQueryKey(), async () => {
-      return (await invoke('cmd_list_workspaces')) as Workspace[];
+    useQuery({
+      queryKey: workspacesQueryKey(),
+      queryFn: async () => {
+        const workspaces = await invoke('cmd_list_workspaces');
+        return workspaces as Workspace[];
+      },
     }).data ?? []
   );
 }

@@ -4,7 +4,7 @@ import { internalIpV4 } from 'internal-ip';
 import svgr from 'vite-plugin-svgr';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
-const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM);
+const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM ?? '');
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
