@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
@@ -39,7 +39,8 @@ import { HeadersEditor } from './HeadersEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 import { useCurlToRequest } from '../hooks/useCurlToRequest';
-import { useConfirm } from '../hooks/useConfirm';
+import { useToast } from './ToastContext';
+import { Icon } from './core/Icon';
 
 interface Props {
   style: CSSProperties;
@@ -230,7 +231,7 @@ export const RequestPane = memo(function RequestPane({
   );
 
   const importCurl = useCurlToRequest();
-  const confirm = useConfirm();
+  const toast = useToast();
 
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
@@ -250,15 +251,15 @@ export const RequestPane = memo(function RequestPane({
               if (!command.startsWith('curl ')) {
                 return;
               }
-              const confirmed = await confirm({
-                id: 'paste-curl',
-                title: 'Import from Curl?',
-                description: 'Do you want to overwrite the current request with the Curl command?',
-                confirmText: 'Overwrite',
+              importCurl.mutate({ requestId: activeRequestId, command });
+              toast.show({
+                render: () => [
+                  <>
+                    <Icon icon="info" />
+                    <span>Curl command imported</span>
+                  </>,
+                ],
               });
-              if (confirmed) {
-                importCurl.mutate({ requestId: activeRequestId, command });
-              }
             }}
             onSend={handleSend}
             onCancel={handleCancel}
