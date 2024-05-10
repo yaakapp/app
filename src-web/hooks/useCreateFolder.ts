@@ -35,7 +35,9 @@ export function useCreateFolder() {
     },
     onSettled: () => trackEvent('folder', 'create'),
     onSuccess: async (request) => {
-      await queryClient.invalidateQueries(foldersQueryKey({ workspaceId: request.workspaceId }));
+      await queryClient.invalidateQueries({
+        queryKey: foldersQueryKey({ workspaceId: request.workspaceId }),
+      });
     },
   });
 }

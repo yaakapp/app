@@ -81,7 +81,7 @@ export const SettingsDialog = () => {
           size="sm"
           title="Check for updates"
           icon="refresh"
-          spin={checkForUpdates.isLoading}
+          spin={checkForUpdates.isPending}
           onClick={() => checkForUpdates.mutateAsync()}
         />
       </div>
@@ -135,6 +135,7 @@ export const SettingsDialog = () => {
       <KeyValueRows>
         <KeyValueRow label="Version" value={appInfo.data?.version} />
         <KeyValueRow label="Data Directory" value={appInfo.data?.appDataDir} />
+        <KeyValueRow label="Logs Directory" value={appInfo.data?.appLogDir} />
       </KeyValueRows>
     </VStack>
   );

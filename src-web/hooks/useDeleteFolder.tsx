@@ -36,8 +36,8 @@ export function useDeleteFolder(id: string | null) {
       const { workspaceId } = folder;
 
       // Nesting makes it hard to clean things up, so just clear everything that could have been deleted
-      await queryClient.invalidateQueries(httpRequestsQueryKey({ workspaceId }));
-      await queryClient.invalidateQueries(foldersQueryKey({ workspaceId }));
+      await queryClient.invalidateQueries({ queryKey: httpRequestsQueryKey({ workspaceId }) });
+      await queryClient.invalidateQueries({ queryKey: foldersQueryKey({ workspaceId }) });
     },
   });
 }

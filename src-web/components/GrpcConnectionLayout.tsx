@@ -94,7 +94,7 @@ export function GrpcConnectionLayout({ style }: Props) {
         />
       )}
       secondSlot={({ style }) =>
-        !grpc.go.isLoading && (
+        !grpc.go.isPending && (
           <div
             style={style}
             className={classNames(
