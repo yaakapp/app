@@ -1,6 +1,8 @@
 import { VStack } from './core/Stacks';
 import { Button } from './core/Button';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Banner } from './core/Banner';
+import { Icon } from './core/Icon';
 
 interface Props {
   importData: () => Promise<void>;
@@ -11,15 +13,17 @@ export function ImportDataDialog({ importData }: Props) {
   return (
     <VStack space={5} className="pb-4">
       <VStack space={1}>
-        <p>Supported Formats:</p>
         <ul className="list-disc pl-5">
           <li>Postman Collection v2+</li>
           <li>Insomnia v4+</li>
-          <li>Curl command(s)</li>
+          <li>Curl commands</li>
         </ul>
+        <Banner className="mt-3 flex items-center gap-2">
+          <Icon icon="magicWand" />
+          Paste any Curl command into URL bar
+        </Banner>
       </VStack>
       <Button
-        size="sm"
         color="primary"
         isLoading={isLoading}
         onClick={async () => {

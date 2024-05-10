@@ -17,13 +17,13 @@ export function useImportData() {
   const alert = useAlert();
   const activeWorkspaceId = useActiveWorkspaceId();
 
-  const importData = async () => {
+  const importData = async (): Promise<boolean> => {
     const selected = await open({
       filters: [{ name: 'Export File', extensions: ['json', 'yaml', 'sh', 'txt'] }],
       multiple: false,
     });
     if (selected == null) {
-      return;
+      return false;
     }
 
     const imported: {
@@ -71,6 +71,8 @@ export function useImportData() {
         environmentId: imported.environments[0]?.id,
       });
     }
+
+    return true;
   };
 
   return useMutation({
@@ -86,12 +88,16 @@ export function useImportData() {
           render: ({ hide }) => {
             const importAndHide = async () => {
               try {
-                await importData();
+                const didImport = await importData();
+                if (!didImport) {
+                  return;
+                }
                 resolve();
               } catch (err) {
                 reject(err);
+              } finally {
+                hide();
               }
-              hide();
             };
             return <ImportDataDialog importData={importAndHide} />;
           },
