@@ -250,15 +250,13 @@ export const RequestPane = memo(function RequestPane({
               if (!command.startsWith('curl ')) {
                 return;
               }
-              if (
-                await confirm({
-                  id: 'paste-curl',
-                  title: 'Import from Curl?',
-                  description:
-                    'Do you want to overwrite the current request with the Curl command?',
-                  confirmText: 'Overwrite',
-                })
-              ) {
+              const confirmed = await confirm({
+                id: 'paste-curl',
+                title: 'Import from Curl?',
+                description: 'Do you want to overwrite the current request with the Curl command?',
+                confirmText: 'Overwrite',
+              });
+              if (confirmed) {
                 importCurl.mutate({ requestId: activeRequestId, command });
               }
             }}
