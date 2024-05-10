@@ -118,13 +118,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={buttonRef}
       type={type}
       className={classes}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       onClick={onClick}
       title={fullTitle}
       {...props}
     >
       {isLoading ? (
-        <Icon icon="update" size={size} className="animate-spin mr-1" />
+        <Icon icon="refresh" size={size} className="animate-spin mr-1" />
       ) : leftSlot ? (
         <div className="mr-1">{leftSlot}</div>
       ) : null}
