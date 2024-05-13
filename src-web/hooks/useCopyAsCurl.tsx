@@ -1,8 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useToast } from '../components/ToastContext';
-import { Icon } from '../components/core/Icon';
 
 export function useCopyAsCurl(requestId: string) {
   const [checked, setChecked] = useState<boolean>(false);
@@ -15,12 +14,8 @@ export function useCopyAsCurl(requestId: string) {
       setChecked(true);
       setTimeout(() => setChecked(false), 800);
       toast.show({
-        render: () => [
-          <>
-            <Icon icon="copyCheck" />
-            <span>Command copied to clipboard</span>
-          </>,
-        ],
+        variant: 'copied',
+        message: 'Curl copied to clipboard',
       });
       return cmd;
     },

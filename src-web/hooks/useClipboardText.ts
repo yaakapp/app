@@ -1,9 +1,18 @@
-import { useQuery } from '@tanstack/react-query';
-import { readText } from '@tauri-apps/plugin-clipboard-manager';
+import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { useCallback, useEffect, useState } from 'react';
+import { useWindowFocus } from './useWindowFocus';
 
 export function useClipboardText() {
-  return useQuery({
-    queryKey: [],
-    queryFn: () => readText(),
-  }).data;
+  const [value, setValue] = useState<string>('');
+  const focused = useWindowFocus();
+
+  useEffect(() => {
+    readText().then(setValue);
+  }, [focused]);
+
+  const setText = useCallback((text: string) => {
+    writeText(text).catch(console.error);
+  }, []);
+
+  return [value, setText] as const;
 }

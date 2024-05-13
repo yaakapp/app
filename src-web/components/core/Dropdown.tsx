@@ -312,8 +312,8 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
         handleClose();
       }
       setSelectedIndex(null);
-      if (i.type !== 'separator') {
-        i.onSelect?.();
+      if (i.type !== 'separator' && typeof i.onSelect === 'function') {
+        i.onSelect();
       }
     },
     [handleClose],
@@ -506,7 +506,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
   return (
     <Button
       ref={initRef}
-      size="xs"
+      size="sm"
       tabIndex={-1}
       onMouseEnter={(e) => e.currentTarget.focus()}
       onMouseLeave={(e) => e.currentTarget.blur()}
@@ -518,6 +518,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
       className={classNames(
         className,
+        'h-xs', // More compact
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
         'focus:bg-highlight focus:text-gray-800 rounded',
         item.variant === 'danger' && 'text-red-600',

@@ -38,9 +38,7 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
-import { useCurlToRequest } from '../hooks/useCurlToRequest';
-import { useToast } from './ToastContext';
-import { Icon } from './core/Icon';
+import { useImportCurl } from '../hooks/useImportCurl';
 
 interface Props {
   style: CSSProperties;
@@ -230,11 +228,9 @@ export const RequestPane = memo(function RequestPane({
     [updateRequest],
   );
 
-  const importCurl = useCurlToRequest();
-  const toast = useToast();
-
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
+  const importCurl = useImportCurl();
 
   return (
     <div
@@ -244,6 +240,7 @@ export const RequestPane = memo(function RequestPane({
       {activeRequest && (
         <>
           <UrlBar
+            key={forceUpdateKey}
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
@@ -252,14 +249,6 @@ export const RequestPane = memo(function RequestPane({
                 return;
               }
               importCurl.mutate({ requestId: activeRequestId, command });
-              toast.show({
-                render: () => [
-                  <>
-                    <Icon icon="info" />
-                    <span>Curl command imported</span>
-                  </>,
-                ],
-              });
             }}
             onSend={handleSend}
             onCancel={handleCancel}
@@ -326,17 +315,6 @@ export const RequestPane = memo(function RequestPane({
                   contentType="text/xml"
                   onChange={handleBodyTextChange}
                 />
-              ) : activeRequest.bodyType === BODY_TYPE_OTHER ? (
-                <Editor
-                  forceUpdateKey={forceUpdateKey}
-                  useTemplating
-                  autocompleteVariables
-                  placeholder="..."
-                  className="!bg-gray-50"
-                  heightMode={fullHeight ? 'full' : 'auto'}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  onChange={handleBodyTextChange}
-                />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
                 <GraphQLEditor
                   forceUpdateKey={forceUpdateKey}
@@ -364,6 +342,17 @@ export const RequestPane = memo(function RequestPane({
                   body={activeRequest.body}
                   onChange={handleBinaryFileChange}
                   onChangeContentType={handleContentTypeChange}
+                />
+              ) : typeof activeRequest.bodyType === 'string' ? (
+                <Editor
+                  forceUpdateKey={forceUpdateKey}
+                  useTemplating
+                  autocompleteVariables
+                  placeholder="..."
+                  className="!bg-gray-50"
+                  heightMode={fullHeight ? 'full' : 'auto'}
+                  defaultValue={`${activeRequest.body?.text ?? ''}`}
+                  onChange={handleBodyTextChange}
                 />
               ) : (
                 <EmptyStateText>Empty Body</EmptyStateText>

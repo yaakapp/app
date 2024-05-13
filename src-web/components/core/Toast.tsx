@@ -1,23 +1,37 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useKey } from 'react-use';
-import { Heading } from './Heading';
 import { IconButton } from './IconButton';
+import type { IconProps } from './Icon';
+import { Icon } from './Icon';
 
 export interface ToastProps {
   children: ReactNode;
   open: boolean;
   onClose: () => void;
-  title?: ReactNode;
   className?: string;
   timeout: number;
+  variant?: 'copied' | 'success' | 'info' | 'warning' | 'error';
 }
 
-export function Toast({ children, className, open, onClose, title, timeout }: ToastProps) {
-  const titleId = useMemo(() => Math.random().toString(36).slice(2), []);
+const ICONS: Record<NonNullable<ToastProps['variant']>, IconProps['icon']> = {
+  copied: 'copyCheck',
+  warning: 'alert',
+  error: 'alert',
+  info: 'info',
+  success: 'checkCircle',
+};
 
+export function Toast({
+  children,
+  className,
+  open,
+  onClose,
+  timeout,
+  variant = 'info',
+}: ToastProps) {
   useKey(
     'Escape',
     () => {
@@ -46,13 +60,16 @@ export function Toast({ children, className, open, onClose, title, timeout }: To
         'text-gray-700',
       )}
     >
-      <div className="px-3 py-2">
-        {title && (
-          <Heading size={3} id={titleId}>
-            {title}
-          </Heading>
-        )}
-
+      <div className="px-3 py-2 flex items-center gap-2">
+        <Icon
+          icon={ICONS[variant]}
+          className={classNames(
+            variant === 'success' && 'text-green-500',
+            variant === 'warning' && 'text-orange-500',
+            variant === 'error' && 'text-red-500',
+            variant === 'copied' && 'text-violet-500',
+          )}
+        />
         <div className="flex items-center gap-2">{children}</div>
       </div>
 
