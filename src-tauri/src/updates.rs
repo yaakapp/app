@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::time::SystemTime;
 
 use log::info;
@@ -20,6 +21,25 @@ pub enum UpdateMode {
     Beta,
 }
 
+impl Display for UpdateMode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            UpdateMode::Stable => "stable",
+            UpdateMode::Beta => "beta",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+impl UpdateMode {
+    pub fn new(mode: &str) -> UpdateMode {
+        match mode {
+            "beta" => UpdateMode::Beta,
+            _ => UpdateMode::Stable,
+        }
+    }
+}
+
 impl YaakUpdater {
     pub fn new() -> Self {
         Self {
@@ -33,11 +53,10 @@ impl YaakUpdater {
     ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
-        let update_mode = get_update_mode_str(mode);
         let enabled = !is_dev();
         info!(
             "Checking for updates mode={} enabled={}",
-            update_mode, enabled
+            mode, enabled
         );
 
         if !enabled {
@@ -46,7 +65,7 @@ impl YaakUpdater {
 
         match app_handle
             .updater_builder()
-            .header("X-Update-Mode", update_mode)?
+            .header("X-Update-Mode", mode.to_string())?
             .build()?
             .check()
             .await
@@ -100,19 +119,5 @@ impl YaakUpdater {
         }
 
         self.force_check(app_handle, mode).await
-    }
-}
-
-pub fn update_mode_from_str(mode: &str) -> UpdateMode {
-    match mode {
-        "beta" => UpdateMode::Beta,
-        _ => UpdateMode::Stable,
-    }
-}
-
-fn get_update_mode_str(mode: UpdateMode) -> &'static str {
-    match mode {
-        UpdateMode::Stable => "stable",
-        UpdateMode::Beta => "beta",
     }
 }
