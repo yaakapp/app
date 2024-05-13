@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
-import { useStateSyncDefault } from '../../hooks/useStateSyncDefault';
+import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { EditorProps } from './Editor';
 import { Editor } from './Editor';
 import { IconButton } from './IconButton';
@@ -72,7 +72,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   }: InputProps,
   ref,
 ) {
-  const [obscured, setObscured] = useStateSyncDefault(type === 'password');
+  const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const [focused, setFocused] = useState(false);
 

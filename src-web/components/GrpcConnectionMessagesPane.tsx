@@ -10,9 +10,11 @@ import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
-import { HStack } from './core/Stacks';
+import { HStack, VStack } from './core/Stacks';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentConnectionsDropdown } from './RecentConnectionsDropdown';
+import { Button } from './core/Button';
+import { useStateWithDeps } from '../hooks/useStateWithDeps';
 
 interface Props {
   style?: CSSProperties;
@@ -32,6 +34,8 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
   const connections = useGrpcConnections(activeRequest.id ?? null);
   const activeConnection = connections[0] ?? null;
   const events = useGrpcEvents(activeConnection?.id ?? null);
+  const [showLarge, setShowLarge] = useStateWithDeps<boolean>(false, [activeRequest.id]);
+  const [showingLarge, setShowingLarge] = useState<boolean>(false);
 
   const activeEvent = useMemo(
     () => events.find((m) => m.id === activeEventId) ?? null,
@@ -102,7 +106,30 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                   <div className="mb-2 select-text cursor-text font-semibold">
                     Message {activeEvent.eventType === 'client_message' ? 'Sent' : 'Received'}
                   </div>
-                  <JsonAttributeTree attrValue={JSON.parse(activeEvent?.content ?? '{}')} />
+                  {!showLarge && activeEvent.content.length > 1000 * 1000 ? (
+                    <VStack space={2} className="text-sm italic text-gray-500">
+                      Message previews larger than 1MB are hidden
+                      <div>
+                        <Button
+                          onClick={() => {
+                            setShowingLarge(true);
+                            setTimeout(() => {
+                              setShowLarge(true);
+                              setShowingLarge(false);
+                            }, 500);
+                          }}
+                          isLoading={showingLarge}
+                          color="gray"
+                          variant="border"
+                          size="xs"
+                        >
+                          Try Showing
+                        </Button>
+                      </div>
+                    </VStack>
+                  ) : (
+                    <JsonAttributeTree attrValue={JSON.parse(activeEvent?.content ?? '{}')} />
+                  )}
                 </>
               ) : (
                 <div className="h-full grid grid-rows-[auto_minmax(0,1fr)]">
@@ -111,7 +138,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                       {activeEvent.content}
                     </div>
                     {activeEvent.error && (
-                      <div className="text-xs font-mono py-1 text-orange-700">
+                      <div className="select-text cursor-text text-xs font-mono py-1 text-orange-700">
                         {activeEvent.error}
                       </div>
                     )}
@@ -196,12 +223,8 @@ function EventRow({
           }
         />
         <div className={classNames('w-full truncate text-2xs')}>
-          {content}
-          {error && (
-            <>
-              <span className="text-orange-600"> ({error})</span>
-            </>
-          )}
+          {content.slice(0, 1000)}
+          {error && <span className="text-orange-600"> ({error})</span>}
         </div>
         <div className={classNames('opacity-50 text-2xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
