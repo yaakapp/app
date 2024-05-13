@@ -42,15 +42,15 @@ export function GrpcProtoSelection({ requestId }: Props) {
           color="primary"
           size="sm"
           onClick={async () => {
-            const files = await open({
+            const selected = await open({
               title: 'Select Proto Files',
               multiple: true,
               filters: [{ name: 'Proto Files', extensions: ['proto'] }],
             });
-            if (files == null) {
+            if (selected == null) {
               return;
             }
-            const newFiles = files.map((f) => f.path).filter((p) => !protoFiles.includes(p));
+            const newFiles = selected.map((f) => f.path).filter((p) => !protoFiles.includes(p));
             await protoFilesKv.set([...protoFiles, ...newFiles]);
             await grpc.reflect.refetch();
           }}

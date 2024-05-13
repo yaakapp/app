@@ -392,11 +392,15 @@ function PairEditorRow({
               className="font-mono text-xs"
               onClick={async (e) => {
                 e.preventDefault();
-                const file = await open({
+                const selected = await open({
                   title: 'Select file',
                   multiple: false,
                 });
-                handleChangeValueFile((Array.isArray(file) ? file[0] : file) ?? '');
+                if (selected == null) {
+                  return;
+                }
+
+                handleChangeValueFile(selected.path);
               }}
             >
               {getFileName(pairContainer.pair.value) || 'Select File'}
@@ -491,7 +495,8 @@ const newPairContainer = (initialPair?: Pair): PairContainer => {
   return { id, pair };
 };
 
-const getFileName = (path: string): string => {
-  const parts = path.split(/[\\/]/);
+const getFileName = (path: string | null | undefined): string => {
+  console.log('PATH', path);
+  const parts = String(path).split(/[\\/]/);
   return parts[parts.length - 1] ?? '';
 };

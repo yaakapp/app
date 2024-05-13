@@ -137,8 +137,6 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   // Start at 1 so we can skip the ^curl part
   for (let i = 1; i < parseEntries.length; i++) {
     let parseEntry = parseEntries[i];
-    // trim leading spaces between parsed entries
-    // regex won't match otherwise (e.g.    -H 'Content-Type: application/json')
     if (typeof parseEntry === 'string') {
       parseEntry = parseEntry.trim();
     }

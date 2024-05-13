@@ -10,7 +10,7 @@ export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
   color?: 'custom' | 'default' | 'gray' | 'primary' | 'secondary' | 'warning' | 'danger';
   variant?: 'border' | 'solid';
   isLoading?: boolean;
-  size?: 'sm' | 'md' | 'xs';
+  size?: 'xs' | 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   forDropdown?: boolean;

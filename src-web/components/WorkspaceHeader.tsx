@@ -11,6 +11,7 @@ import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
+import { ImportCurlButton } from './ImportCurlButton';
 
 interface Props {
   className?: string;
@@ -19,6 +20,7 @@ interface Props {
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const osInfo = useOsInfo();
   const [maximized, setMaximized] = useState<boolean>(false);
+
   return (
     <HStack
       space={2}
@@ -39,6 +41,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex items-center h-full justify-end pointer-events-none">
+        <ImportCurlButton />
         <SettingsDropdown />
         {(osInfo?.osType === 'linux' || osInfo?.osType === 'windows') && (
           <HStack className="ml-4" alignItems="center">
