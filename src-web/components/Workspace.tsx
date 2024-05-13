@@ -6,7 +6,7 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
@@ -33,8 +33,6 @@ import { ResizeHandle } from './ResizeHandle';
 import { Sidebar } from './Sidebar';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceHeader } from './WorkspaceHeader';
-import { useClipboardText } from '../hooks/useClipboardText';
-import { useToast } from './ToastContext';
 
 const side = { gridArea: 'side' };
 const head = { gridArea: 'head' };
@@ -56,24 +54,6 @@ export default function Workspace() {
   const moveState = useRef<{ move: (e: MouseEvent) => void; up: (e: MouseEvent) => void } | null>(
     null,
   );
-  const clipboardText = useClipboardText();
-  const toast = useToast();
-
-  useEffect(() => {
-    const isCurlInClipboard = clipboardText?.startsWith('curl ');
-    if (!isCurlInClipboard) {
-      return;
-    }
-
-    toast.show({
-      render: () => (
-        <div>
-          <p>Curl command detected?</p>
-          <Button color="primary">Import</Button>
-        </div>
-      ),
-    });
-  }, [clipboardText, toast]);
 
   const unsub = () => {
     if (moveState.current !== null) {

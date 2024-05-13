@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
 import type { ToastProps } from './core/Toast';
 import { Toast } from './core/Toast';
@@ -6,7 +7,7 @@ import { Portal } from './Portal';
 import { AnimatePresence } from 'framer-motion';
 
 type ToastEntry = {
-  render: ({ hide }: { hide: () => void }) => React.ReactNode;
+  message: ReactNode;
   timeout?: number;
 } & Omit<ToastProps, 'onClose' | 'open' | 'children' | 'timeout'>;
 
@@ -66,12 +67,11 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-function ToastInstance({ id, render, timeout, ...props }: PrivateToastEntry) {
+function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
   const { actions } = useContext(ToastContext);
-  const children = render({ hide: () => actions.hide(id) });
   return (
     <Toast open timeout={timeout} onClose={() => actions.hide(id)} {...props}>
-      {children}
+      {message}
     </Toast>
   );
 }

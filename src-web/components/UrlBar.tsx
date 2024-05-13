@@ -1,5 +1,5 @@
 import type { EditorView } from 'codemirror';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import { memo, useRef, useState } from 'react';
 import { useHotKey } from '../hooks/useHotKey';
 import type { HttpRequest } from '../lib/models';
@@ -20,6 +20,7 @@ type Props = Pick<HttpRequest, 'url'> & {
   onMethodChange?: (method: string) => void;
   isLoading: boolean;
   forceUpdateKey: string;
+  rightSlot?: ReactNode;
 };
 
 export const UrlBar = memo(function UrlBar({
@@ -34,6 +35,7 @@ export const UrlBar = memo(function UrlBar({
   onMethodChange,
   onPaste,
   submitIcon = 'sendHorizontal',
+  rightSlot,
   isLoading,
 }: Props) {
   const inputRef = useRef<EditorView>(null);
@@ -84,17 +86,20 @@ export const UrlBar = memo(function UrlBar({
           )
         }
         rightSlot={
-          submitIcon !== null && (
-            <IconButton
-              size="xs"
-              iconSize="md"
-              title="Send Request"
-              type="submit"
-              className="w-8 my-0.5 mr-0.5"
-              icon={isLoading ? 'x' : submitIcon}
-              hotkeyAction="http_request.send"
-            />
-          )
+          <>
+            {rightSlot}
+            {submitIcon !== null && (
+              <IconButton
+                size="xs"
+                iconSize="md"
+                title="Send Request"
+                type="submit"
+                className="w-8 my-0.5 mr-0.5"
+                icon={isLoading ? 'x' : submitIcon}
+                hotkeyAction="http_request.send"
+              />
+            )}
+          </>
         }
       />
     </form>

@@ -30,15 +30,14 @@ export function BinaryFileEditor({
 
   const handleClick = async () => {
     await ignoreContentType.set(false);
-    const path = await open({
+    const selected = await open({
       title: 'Select File',
       multiple: false,
     });
-    if (path) {
-      onChange({ filePath: path });
-    } else {
-      onChange({ filePath: undefined });
+    if (selected == null) {
+      return;
     }
+    onChange({ filePath: selected.path });
   };
 
   const filePath = typeof body.filePath === 'string' ? body.filePath : undefined;
