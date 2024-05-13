@@ -30,7 +30,7 @@ boa_runtime = { version = "0.18.0" }
 chrono = { version = "0.4.31", features = ["serde"] }
 http = "0.2.10"
 rand = "0.8.5"
-reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "brotli", "deflate"] }
+reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "brotli", "deflate", "json"] }
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }

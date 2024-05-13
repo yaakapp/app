@@ -1,6 +1,6 @@
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
-import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
@@ -24,12 +24,12 @@ import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
+import { useNotificationToast } from '../hooks/useNotificationToast';
 
 const DEFAULT_FONT_SIZE = 16;
 
 export function GlobalHooks() {
-  // Include here so they always update, even
-  // if no component references them
+  // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
@@ -38,6 +38,7 @@ export function GlobalHooks() {
   useSyncWindowTitle();
   useGlobalCommands();
   useCommandPalette();
+  useNotificationToast();
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
