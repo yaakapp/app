@@ -12,7 +12,8 @@ export interface ToastProps {
   open: boolean;
   onClose: () => void;
   className?: string;
-  timeout: number;
+  timeout: number | null;
+  action?: ReactNode;
   variant?: 'copied' | 'success' | 'info' | 'warning' | 'error';
 }
 
@@ -30,7 +31,8 @@ export function Toast({
   open,
   onClose,
   timeout,
-  variant = 'info',
+  action,
+  variant,
 }: ToastProps) {
   useKey(
     'Escape',
@@ -61,16 +63,21 @@ export function Toast({
       )}
     >
       <div className="px-3 py-2 flex items-center gap-2">
-        <Icon
-          icon={ICONS[variant]}
-          className={classNames(
-            variant === 'success' && 'text-green-500',
-            variant === 'warning' && 'text-orange-500',
-            variant === 'error' && 'text-red-500',
-            variant === 'copied' && 'text-violet-500',
-          )}
-        />
-        <div className="flex items-center gap-2">{children}</div>
+        {variant != null && (
+          <Icon
+            icon={ICONS[variant]}
+            className={classNames(
+              variant === 'success' && 'text-green-500',
+              variant === 'warning' && 'text-orange-500',
+              variant === 'error' && 'text-red-500',
+              variant === 'copied' && 'text-violet-500',
+            )}
+          />
+        )}
+        <div className="flex flex-col gap-1 w-full">
+          <div>{children}</div>
+          {action}
+        </div>
       </div>
 
       <IconButton
@@ -80,14 +87,17 @@ export function Toast({
         icon="x"
         onClick={onClose}
       />
-      <div className="w-full absolute bottom-0 left-0 right-0">
-        <motion.div
-          className="bg-highlight h-0.5"
-          initial={{ width: '100%' }}
-          animate={{ width: '0%', opacity: 0.2 }}
-          transition={{ duration: timeout / 1000, ease: 'linear' }}
-        />
-      </div>
+
+      {timeout != null && (
+        <div className="w-full absolute bottom-0 left-0 right-0">
+          <motion.div
+            className="bg-highlight h-0.5"
+            initial={{ width: '100%' }}
+            animate={{ width: '0%', opacity: 0.2 }}
+            transition={{ duration: timeout / 1000, ease: 'linear' }}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }

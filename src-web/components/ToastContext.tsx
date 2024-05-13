@@ -7,13 +7,15 @@ import { Portal } from './Portal';
 import { AnimatePresence } from 'framer-motion';
 
 type ToastEntry = {
+  id?: string;
   message: ReactNode;
-  timeout?: number;
+  timeout?: number | null;
+  onClose?: ToastProps['onClose'];
 } & Omit<ToastProps, 'onClose' | 'open' | 'children' | 'timeout'>;
 
 type PrivateToastEntry = ToastEntry & {
   id: string;
-  timeout: number;
+  timeout: number | null;
 };
 
 interface State {
@@ -34,16 +36,26 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const actions = useMemo<Actions>(
     () => ({
-      show({ timeout = 4000, ...props }: ToastEntry) {
-        const id = generateId();
-        timeoutRef.current = setTimeout(() => {
-          this.hide(id);
-        }, timeout);
-        setToasts((a) => [...a.filter((d) => d.id !== id), { id, timeout, ...props }]);
+      show({ id, timeout = 4000, ...props }: ToastEntry) {
+        id = id ?? generateId();
+        if (timeout != null) {
+          timeoutRef.current = setTimeout(() => this.hide(id), timeout);
+        }
+        setToasts((a) => {
+          if (a.some((v) => v.id === id)) {
+            // It's already visible with this id
+            return a;
+          }
+          return [...a, { id, timeout, ...props }];
+        });
         return id;
       },
       hide: (id: string) => {
-        setToasts((a) => a.filter((d) => d.id !== id));
+        setToasts((all) => {
+          const t = all.find((t) => t.id === id);
+          t?.onClose?.();
+          return all.filter((t) => t.id !== id);
+        });
       },
     }),
     [],
@@ -70,7 +82,14 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
 function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
   const { actions } = useContext(ToastContext);
   return (
-    <Toast open timeout={timeout} onClose={() => actions.hide(id)} {...props}>
+    <Toast
+      open
+      timeout={timeout}
+      {...props}
+      // We call onClose inside actions.hide instead of passing to toast so that
+      // it gets called from external close calls as well
+      onClose={() => actions.hide(id)}
+    >
       {message}
     </Toast>
   );
