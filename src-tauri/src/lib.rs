@@ -10,6 +10,7 @@ use std::fs::{create_dir_all, File, read_to_string};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
+use std::time::Duration;
 
 use ::http::Uri;
 use ::http::uri::InvalidUri;
@@ -30,7 +31,6 @@ use tauri::TitleBarStyle;
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
-use tokio::time::sleep;
 
 use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
@@ -55,6 +55,7 @@ use crate::models::{
     upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
     Workspace, WorkspaceExportResources,
 };
+use crate::notifications::YaakNotifier;
 use crate::plugin::{ImportResult, run_plugin_export_curl, run_plugin_import};
 use crate::render::render_request;
 use crate::updates::{UpdateMode, YaakUpdater};
@@ -64,6 +65,7 @@ mod analytics;
 mod grpc;
 mod http;
 mod models;
+mod notifications;
 mod plugin;
 mod render;
 mod updates;
@@ -105,6 +107,16 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
         app_data_dir: app_data_dir.to_string_lossy().to_string(),
         app_log_dir: app_log_dir.to_string_lossy().to_string(),
     });
+}
+
+#[tauri::command]
+async fn cmd_dismiss_notification(
+    app: AppHandle,
+    notification_id: &str,
+    yaak_notifier: State<'_, Mutex<YaakNotifier>>,
+) -> Result<(), String> {
+    info!("SEEN? {notification_id}");
+    yaak_notifier.lock().await.seen(&app, notification_id).await
 }
 
 #[tauri::command]
@@ -218,8 +230,8 @@ async fn cmd_grpc_go(
                 ..Default::default()
             },
         )
-            .await
-            .map_err(|e| e.to_string())?
+        .await
+        .map_err(|e| e.to_string())?
     };
     let conn_id = conn.id.clone();
 
@@ -316,8 +328,8 @@ async fn cmd_grpc_go(
                                         ..base_msg.clone()
                                     },
                                 )
-                                    .await
-                                    .unwrap();
+                                .await
+                                .unwrap();
                             });
                             return;
                         }
@@ -332,8 +344,8 @@ async fn cmd_grpc_go(
                                 ..base_msg.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     });
                 }
                 Ok(IncomingMsg::Commit) => {
@@ -372,8 +384,8 @@ async fn cmd_grpc_go(
                 ..base_event.clone()
             },
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
 
         async move {
             let (maybe_stream, maybe_msg) = match (
@@ -419,8 +431,8 @@ async fn cmd_grpc_go(
                         ..base_event.clone()
                     },
                 )
-                    .await
-                    .unwrap();
+                .await
+                .unwrap();
             }
 
             match maybe_msg {
@@ -434,13 +446,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                                .to_string(),
+                            .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -449,8 +461,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -460,8 +472,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                 }
                 Some(Err(e)) => {
                     upsert_grpc_event(
@@ -484,8 +496,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                 }
                 None => {
                     // Server streaming doesn't return initial message
@@ -503,13 +515,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                                .to_string(),
+                            .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     stream.into_inner()
                 }
                 Some(Err(e)) => {
@@ -533,8 +545,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     return;
                 }
                 None => return,
@@ -552,8 +564,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     }
                     Ok(None) => {
                         let trailers = stream
@@ -571,8 +583,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                         break;
                     }
                     Err(status) => {
@@ -586,8 +598,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     }
                 }
             }
@@ -688,7 +700,7 @@ async fn cmd_send_ephemeral_request(
         None,
         &mut cancel_rx,
     )
-        .await
+    .await
 }
 
 #[tauri::command]
@@ -755,7 +767,7 @@ async fn cmd_import_data(
                 AnalyticsAction::Import,
                 Some(json!({ "plugin": plugin_name })),
             )
-                .await;
+            .await;
             result = Some(r);
             break;
         }
@@ -786,7 +798,7 @@ async fn cmd_import_data(
             let maybe_gen_id_opt = |id: Option<String>,
                                     model: ModelType,
                                     ids: &mut HashMap<String, String>|
-                                    -> Option<String> {
+             -> Option<String> {
                 match id {
                     Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
                     None => None,
@@ -932,7 +944,7 @@ async fn cmd_export_data(
         AnalyticsAction::Export,
         None,
     )
-        .await;
+    .await;
 
     Ok(())
 }
@@ -983,8 +995,8 @@ async fn cmd_send_http_request(
         None,
         None,
     )
-        .await
-        .expect("Failed to create response");
+    .await
+    .expect("Failed to create response");
 
     let download_path = if let Some(p) = download_dir {
         Some(std::path::Path::new(p).to_path_buf())
@@ -1009,7 +1021,7 @@ async fn cmd_send_http_request(
         download_path,
         &mut cancel_rx,
     )
-        .await
+    .await
 }
 
 async fn response_err(
@@ -1117,8 +1129,8 @@ async fn cmd_create_cookie_jar(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1137,8 +1149,8 @@ async fn cmd_create_environment(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1159,8 +1171,8 @@ async fn cmd_create_grpc_request(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1194,8 +1206,8 @@ async fn cmd_create_http_request(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1287,8 +1299,8 @@ async fn cmd_create_folder(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1418,8 +1430,8 @@ async fn cmd_list_cookie_jars(
                 ..Default::default()
             },
         )
-            .await
-            .expect("Failed to create CookieJar");
+        .await
+        .expect("Failed to create CookieJar");
         Ok(vec![cookie_jar])
     } else {
         Ok(cookie_jars)
@@ -1488,8 +1500,8 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
                 ..Default::default()
             },
         )
-            .await
-            .expect("Failed to create Workspace");
+        .await
+        .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -1588,6 +1600,10 @@ pub fn run() {
             let yaak_updater = YaakUpdater::new();
             app.manage(Mutex::new(yaak_updater));
 
+            // Add notifier
+            let yaak_notifier = YaakNotifier::new();
+            app.manage(Mutex::new(yaak_notifier));
+
             // Add GRPC manager
             let grpc_handle = GrpcHandle::new(&app.app_handle());
             app.manage(Mutex::new(grpc_handle));
@@ -1656,6 +1672,7 @@ pub fn run() {
             cmd_metadata,
             cmd_new_window,
             cmd_request_to_curl,
+            cmd_dismiss_notification,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
             cmd_set_key_value,
@@ -1674,21 +1691,11 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    let w = create_window(app_handle, None);
-                    // if let Err(e) = w.restore_state(StateFlags::all()) {
-                    //     error!("Failed to restore window state {}", e);
-                    // }
-
+                    create_window(app_handle, None);
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&h).await;
                         debug!("Launched Yaak {:?}", info);
-
-                        // Wait for window render and give a chance for the user to notice
-                        if info.launched_after_update && info.num_launches > 1 {
-                            sleep(std::time::Duration::from_secs(5)).await;
-                            let _ = w.emit("show_changelog", true);
-                        }
                     });
                 }
                 RunEvent::WindowEvent {
@@ -1702,6 +1709,16 @@ pub fn run() {
                         let val: State<'_, Mutex<YaakUpdater>> = h.state();
                         let update_mode = get_update_mode(&h).await;
                         _ = val.lock().await.check(&h, update_mode).await;
+                    });
+
+                    let h = app_handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        tokio::time::sleep(Duration::from_millis(4000)).await;
+                        let val: State<'_, Mutex<YaakNotifier>> = h.state();
+                        let mut n = val.lock().await;
+                        if let Err(e) = n.check(&h).await {
+                            warn!("Failed to check for notifications {}", e)
+                        }
                     });
                 }
                 _ => {}
@@ -1731,16 +1748,16 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         window_id,
         WebviewUrl::App(url.unwrap_or_default().into()),
     )
-        .resizable(true)
-        .fullscreen(false)
-        .disable_drag_drop_handler() // Required for frontend Dnd on windows
-        .inner_size(1100.0, 600.0)
-        .position(
-            // Randomly offset so windows don't stack exactly
-            100.0 + random::<f64>() * 30.0,
-            100.0 + random::<f64>() * 30.0,
-        )
-        .title(handle.package_info().name.to_string());
+    .resizable(true)
+    .fullscreen(false)
+    .disable_drag_drop_handler() // Required for frontend Dnd on windows
+    .inner_size(1100.0, 600.0)
+    .position(
+        // Randomly offset so windows don't stack exactly
+        100.0 + random::<f64>() * 30.0,
+        100.0 + random::<f64>() * 30.0,
+    )
+    .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]

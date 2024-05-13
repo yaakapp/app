@@ -1,5 +1,5 @@
 import { open } from '@tauri-apps/plugin-shell';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useAppInfo } from '../hooks/useAppInfo';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
@@ -20,11 +20,6 @@ export function SettingsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
   const checkForUpdates = useCheckForUpdates();
-  const [showChangelog, setShowChangelog] = useState<boolean>(false);
-
-  useListenToTauriEvent('show_changelog', () => {
-    setShowChangelog(true);
-  });
 
   const showSettings = () => {
     dialog.show({
@@ -40,7 +35,6 @@ export function SettingsDropdown() {
   return (
     <Dropdown
       ref={dropdownRef}
-      onClose={() => setShowChangelog(false)}
       items={[
         {
           key: 'settings',
@@ -92,20 +86,13 @@ export function SettingsDropdown() {
         {
           key: 'changelog',
           label: 'Changelog',
-          variant: showChangelog ? 'notify' : 'default',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
           onSelect: () => open(`https://yaak.app/changelog/${appInfo.data?.version}`),
         },
       ]}
     >
-      <IconButton
-        size="sm"
-        title="Main Menu"
-        icon="settings"
-        className="pointer-events-auto"
-        showBadge={showChangelog}
-      />
+      <IconButton size="sm" title="Main Menu" icon="settings" className="pointer-events-auto" />
     </Dropdown>
   );
 }
