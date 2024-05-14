@@ -9,10 +9,10 @@ var j = "(?:" + [
   ">\\&",
   "<\\&",
   "[&;()|<>]"
-].join("|") + ")", D = new RegExp("^" + j + "$"), q = "|&;()<> \\t", M = '"((\\\\"|[^"])*?)"', Q = "'((\\\\'|[^'])*?)'", V = /^#$/, _ = "'", G = '"', U = "$", R = "", z = 4294967296;
+].join("|") + ")", D = new RegExp("^" + j + "$"), q = "|&;()<> \\t", M = '"((\\\\"|[^"])*?)"', Q = "'((\\\\'|[^'])*?)'", V = /^#$/, _ = "'", G = '"', U = "$", $ = "", z = 4294967296;
 for (var L = 0; L < 4; L++)
-  R += (z * Math.random()).toString(16);
-var J = new RegExp("^" + R);
+  $ += (z * Math.random()).toString(16);
+var J = new RegExp("^" + $);
 function X(n, s) {
   for (var e = s.lastIndex, t = [], c; c = s.exec(n); )
     t.push(c), s.lastIndex === c.index && (s.lastIndex += 1);
@@ -20,7 +20,7 @@ function X(n, s) {
 }
 function F(n, s, e) {
   var t = typeof n == "function" ? n(e) : n[e];
-  return typeof t > "u" && e != "" ? t = "" : typeof t > "u" && (t = "$"), typeof t == "object" ? s + R + JSON.stringify(t) + R : s + t;
+  return typeof t > "u" && e != "" ? t = "" : typeof t > "u" && (t = "$"), typeof t == "object" ? s + $ + JSON.stringify(t) + $ : s + t;
 }
 function K(n, s, e) {
   e || (e = {});
@@ -39,30 +39,30 @@ function K(n, s, e) {
       return;
     if (D.test(a))
       return { op: a };
-    var x = !1, O = !1, p = "", A = !1, i;
-    function $() {
+    var x = !1, C = !1, d = "", O = !1, i;
+    function T() {
       i += 1;
-      var v, d, T = a.charAt(i);
-      if (T === "{") {
+      var v, p, R = a.charAt(i);
+      if (R === "{") {
         if (i += 1, a.charAt(i) === "}")
           throw new Error("Bad substitution: " + a.slice(i - 2, i + 1));
         if (v = a.indexOf("}", i), v < 0)
           throw new Error("Bad substitution: " + a.slice(i));
-        d = a.slice(i, v), i = v;
-      } else if (/[*@#?$!_-]/.test(T))
-        d = T, i += 1;
+        p = a.slice(i, v), i = v;
+      } else if (/[*@#?$!_-]/.test(R))
+        p = R, i += 1;
       else {
         var g = a.slice(i);
-        v = g.match(/[^\w\d_]/), v ? (d = g.slice(0, v.index), i += v.index - 1) : (d = g, i = a.length);
+        v = g.match(/[^\w\d_]/), v ? (p = g.slice(0, v.index), i += v.index - 1) : (p = g, i = a.length);
       }
-      return F(s, "", d);
+      return F(s, "", p);
     }
     for (i = 0; i < a.length; i++) {
       var u = a.charAt(i);
-      if (A = A || !x && (u === "*" || u === "?"), O)
-        p += u, O = !1;
+      if (O = O || !x && (u === "*" || u === "?"), C)
+        d += u, C = !1;
       else if (x)
-        u === x ? x = !1 : x == _ ? p += u : u === t ? (i += 1, u = a.charAt(i), u === G || u === t || u === U ? p += u : p += t + u) : u === U ? p += $() : p += u;
+        u === x ? x = !1 : x == _ ? d += u : u === t ? (i += 1, u = a.charAt(i), u === G || u === t || u === U ? d += u : d += t + u) : u === U ? d += T() : d += u;
       else if (u === G || u === _)
         x = u;
       else {
@@ -70,13 +70,13 @@ function K(n, s, e) {
           return { op: a };
         if (V.test(u)) {
           w = !0;
-          var E = { comment: n.slice(r.index + i + 1) };
-          return p.length ? [p, E] : [E];
+          var b = { comment: n.slice(r.index + i + 1) };
+          return d.length ? [d, b] : [b];
         } else
-          u === t ? O = !0 : u === U ? p += $() : p += u;
+          u === t ? C = !0 : u === U ? d += T() : d += u;
       }
     }
-    return A ? { op: "glob", pattern: p } : p;
+    return O ? { op: "glob", pattern: d } : d;
   }).reduce(function(r, a) {
     return typeof a > "u" ? r : r.concat(a);
   }, []);
@@ -86,9 +86,9 @@ var Y = function(s, e, t) {
   return typeof e != "function" ? c : c.reduce(function(m, f) {
     if (typeof f == "object")
       return m.concat(f);
-    var w = f.split(RegExp("(" + R + ".*?" + R + ")", "g"));
+    var w = f.split(RegExp("(" + $ + ".*?" + $ + ")", "g"));
     return w.length === 1 ? m.concat(w[0]) : m.concat(w.filter(Boolean).map(function(r) {
-      return J.test(r) ? JSON.parse(r.split(R)[1]) : r;
+      return J.test(r) ? JSON.parse(r.split($)[1]) : r;
     }));
   }, []);
 }, Z = Y;
@@ -158,72 +158,83 @@ function te(n, s) {
   for (let o = 1; o < n.length; o++) {
     let l = n[o];
     if (typeof l == "string" && (l = l.trim()), typeof l == "string" && l.match(/^-{1,2}[\w-]+/)) {
-      const b = l[0] === "-" && l[1] !== "-";
+      const E = l[0] === "-" && l[1] !== "-";
       let h = l.replace(/^-{1,2}/, "");
       if (!ee.includes(h))
         continue;
       let y;
       const S = n[o + 1];
-      b && h.length > 1 ? (y = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? (y = S, o++) : y = !0, e[h] = e[h] || [], e[h].push(y);
+      E && h.length > 1 ? (y = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? (y = S, o++) : y = !0, e[h] = e[h] || [], e[h].push(y);
     } else
       l && t.push(l);
   }
   let c, m;
-  const f = C(e, t[0] || "", ["url"]), [w, r] = W(f, "?");
+  const f = A(e, t[0] || "", ["url"]), [w, r] = W(f, "?");
   c = (r == null ? void 0 : r.split("&").map((o) => {
     const l = W(o, "=");
     return { name: l[0] ?? "", value: l[1] ?? "", enabled: !0 };
   })) ?? [], m = w ?? f;
-  const [a, x] = C(e, "", ["u", "user"]).split(/:(.*)$/), O = C(e, !1, ["digest"]), p = a ? O ? "digest" : "basic" : null, A = a ? {
+  const [a, x] = A(e, "", ["u", "user"]).split(/:(.*)$/), C = A(e, !1, ["digest"]), d = a ? C ? "digest" : "basic" : null, O = a ? {
     username: a.trim(),
     password: (x ?? "").trim()
   } : {}, i = [
     ...e.header || [],
     ...e.H || []
   ].map((o) => {
-    const [l, b] = o.split(/:(.*)$/);
-    return b ? {
+    const [l, E] = o.split(/:(.*)$/);
+    return E ? {
       name: (l ?? "").trim(),
-      value: b.trim()
+      value: E.trim(),
+      enabled: !0
     } : {
       name: (l ?? "").trim().replace(/;$/, ""),
-      value: ""
+      value: "",
+      enabled: !0
     };
-  }), $ = [
+  }), T = [
     ...e.cookie || [],
     ...e.b || []
   ].map((o) => {
-    const l = o.split("=", 1)[0], b = o.replace(`${l}=`, "");
-    return `${l}=${b}`;
+    const l = o.split("=", 1)[0], E = o.replace(`${l}=`, "");
+    return `${l}=${E}`;
   }).join("; "), u = i.find((o) => o.name.toLowerCase() === "cookie");
-  $ && u ? u.value += `; ${$}` : $ && i.push({
+  T && u ? u.value += `; ${T}` : T && i.push({
     name: "Cookie",
-    value: $
+    value: T,
+    enabled: !0
   });
-  const E = ne(e), v = i.find((o) => o.name.toLowerCase() === "content-type"), d = v ? v.value.split(";")[0] : null, T = [
+  const b = ne(e), v = i.find((o) => o.name.toLowerCase() === "content-type"), p = v ? v.value.split(";")[0] : null, R = [
     ...e.form || [],
     ...e.F || []
   ].map((o) => {
-    const l = o.split("="), b = l[0] ?? "", h = l[1] ?? "", y = {
-      name: b,
+    const l = o.split("="), E = l[0] ?? "", h = l[1] ?? "", y = {
+      name: E,
       enabled: !0
     };
     return h.indexOf("@") === 0 ? y.file = h.slice(1) : y.value = h, y;
   });
   let g = {}, I = null;
-  const B = C(e, !1, ["G", "get"]);
-  E.length > 0 && B ? c.push(...E) : E.length > 0 && (d == null || d === "application/x-www-form-urlencoded") ? (I = d ?? "application/x-www-form-urlencoded", g = {
-    form: E.map((o) => ({
+  const B = A(e, !1, ["G", "get"]);
+  b.length > 0 && B ? c.push(...b) : b.length > 0 && (p == null || p === "application/x-www-form-urlencoded") ? (I = p ?? "application/x-www-form-urlencoded", g = {
+    form: b.map((o) => ({
       ...o,
       name: decodeURIComponent(o.name || ""),
       value: decodeURIComponent(o.value || "")
     }))
-  }) : E.length > 0 ? (I = d === "application/json" || d === "text/xml" || d === "text/plain" ? d : "other", g = {
-    text: E.map(({ name: o, value: l }) => o && l ? `${o}=${l}` : o || l).join("&")
-  }) : T.length && (I = d ?? "multipart/form-data", g = {
-    form: T
-  });
-  let P = C(e, "", ["X", "request"]).toUpperCase();
+  }, i.push({
+    name: "Content-Type",
+    value: "application/x-www-form-urlencoded",
+    enabled: !0
+  })) : b.length > 0 ? (I = p === "application/json" || p === "text/xml" || p === "text/plain" ? p : "other", g = {
+    text: b.map(({ name: o, value: l }) => o && l ? `${o}=${l}` : o || l).join("&")
+  }) : R.length && (I = p ?? "multipart/form-data", g = {
+    form: R
+  }, p == null && i.push({
+    name: "Content-Type",
+    value: "multipart/form-data",
+    enabled: !0
+  }));
+  let P = A(e, "", ["X", "request"]).toUpperCase();
   return P === "" && g && (P = "text" in g || "form" in g ? "POST" : "GET"), {
     id: N("http_request"),
     model: "http_request",
@@ -233,8 +244,8 @@ function te(n, s) {
     url: m,
     method: P,
     headers: i,
-    authentication: A,
-    authenticationType: p,
+    authentication: O,
+    authenticationType: d,
     body: g,
     bodyType: I,
     folderId: null,
@@ -263,7 +274,7 @@ const ne = (n) => {
       }
   }
   return s;
-}, C = (n, s, e) => {
+}, A = (n, s, e) => {
   for (const t of e)
     if (n[t] && n[t].length)
       return n[t][0];
