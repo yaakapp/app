@@ -40,7 +40,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       <div className="pointer-events-none">
         <RecentRequestsDropdown />
       </div>
-      <div className="flex-1 flex items-center h-full justify-end pointer-events-none">
+      <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none">
         <ImportCurlButton />
         <SettingsDropdown />
         {(osInfo?.osType === 'linux' || osInfo?.osType === 'windows') && (
