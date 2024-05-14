@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Build Desktop" type="ShConfigurationType">
-    <option name="SCRIPT_TEXT" value="npm run tauri build -- --target universal-apple-darwin" />
+    <option name="SCRIPT_TEXT" value="npm run tauri build" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
@@ -9,12 +9,9 @@
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
     <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />
-    <option name="EXECUTE_IN_TERMINAL" value="true" />
+    <option name="EXECUTE_IN_TERMINAL" value="false" />
     <option name="EXECUTE_SCRIPT_FILE" value="false" />
-    <envs>
-      <env name="TAURI_KEY_PASSWORD" value="fishhook-upstream-wash-assured" />
-      <env name="TAURI_PRIVATE_KEY" value="dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5OGxWaytTa3dIa2xXVUltQzRGUXIzd2lYQ2NpV0ZhQURSbWJWZ1NrK0tnY0FBQkFBQUFBQUFBQUFBQUlBQUFBQUV2M1VKdVRyVHpHSzhQdGc2ZVFtOVNsMU5tNEVSN280cFNrbXhncW9tdjNXaFJZUTJqUzQ5Q01zWTJWRVhaY1pGNHNjR1NFR3JmcWFRN09NdWdGMXpZVXhzejR4V3lDV1JpZHlnbW5LNS9vMFFtRlZjbUl4YjZSNzhlMmk3ait5SExYcG5QZUkxOFE9Cg==" />
-    </envs>
+    <envs />
     <method v="2" />
   </configuration>
 </component>
