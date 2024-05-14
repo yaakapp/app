@@ -5,6 +5,7 @@ import { useHotKey } from '../hooks/useHotKey';
 import type { HttpRequest } from '../lib/models';
 import type { IconProps } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import type { InputProps } from './core/Input';
 import { Input } from './core/Input';
 import { RequestMethodDropdown } from './RequestMethodDropdown';
 
@@ -21,6 +22,7 @@ type Props = Pick<HttpRequest, 'url'> & {
   isLoading: boolean;
   forceUpdateKey: string;
   rightSlot?: ReactNode;
+  autocomplete?: InputProps['autocomplete'];
 };
 
 export const UrlBar = memo(function UrlBar({
@@ -35,6 +37,7 @@ export const UrlBar = memo(function UrlBar({
   onMethodChange,
   onPaste,
   submitIcon = 'sendHorizontal',
+  autocomplete,
   rightSlot,
   isLoading,
 }: Props) {
@@ -67,6 +70,7 @@ export const UrlBar = memo(function UrlBar({
         className="pl-0 pr-1.5 py-0.5"
         name="url"
         label="Enter URL"
+        autocomplete={autocomplete}
         forceUpdateKey={forceUpdateKey}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

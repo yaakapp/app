@@ -17,9 +17,12 @@ export interface GenericCompletionConfig {
   options: GenericCompletionOption[];
 }
 
+/**
+ * Complete options, always matching until the start of the line
+ */
 export function genericCompletion({ options, minMatch = 1 }: GenericCompletionConfig) {
   return function completions(context: CompletionContext) {
-    const toMatch = context.matchBefore(/\w*/);
+    const toMatch = context.matchBefore(/.*/);
 
     // Only match if we're at the start of the line
     if (toMatch === null || toMatch.from > 0) return null;
