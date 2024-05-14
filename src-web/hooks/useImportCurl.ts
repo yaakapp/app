@@ -5,13 +5,15 @@ import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
 import { useToast } from '../components/ToastContext';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
+import { useClipboardText } from './useClipboardText';
 
-export function useImportCurl() {
+export function useImportCurl({ clearClipboard }: { clearClipboard?: boolean } = {}) {
   const workspaceId = useActiveWorkspaceId();
   const updateRequest = useUpdateAnyHttpRequest();
   const createRequest = useCreateHttpRequest();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
   const toast = useToast();
+  const [, setClipboardText] = useClipboardText();
 
   return useMutation({
     mutationFn: async ({ requestId, command }: { requestId: string | null; command: string }) => {
@@ -21,16 +23,24 @@ export function useImportCurl() {
       });
       delete request.id;
 
-      const id = requestId ?? (await createRequest.mutateAsync({})).id;
-      await updateRequest.mutateAsync({ id, update: request });
+      let verb;
+      if (requestId == null) {
+        verb = 'Created';
+        await createRequest.mutateAsync(request);
+      } else {
+        verb = 'Updated';
+        await updateRequest.mutateAsync({ id: requestId, update: request });
+        setTimeout(() => wasUpdatedExternally(requestId), 100);
+      }
 
-      const verb = requestId ? 'updated' : 'created';
       toast.show({
         variant: 'success',
-        message: `Request ${verb} from Curl`,
+        message: `${verb} request from Curl`,
       });
 
-      wasUpdatedExternally(id);
+      if (clearClipboard) {
+        setClipboardText('');
+      }
     },
   });
 }

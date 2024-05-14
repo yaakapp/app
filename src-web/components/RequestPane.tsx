@@ -230,7 +230,7 @@ export const RequestPane = memo(function RequestPane({
 
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
-  const importCurl = useImportCurl();
+  const importCurl = useImportCurl({ clearClipboard: true });
 
   return (
     <div

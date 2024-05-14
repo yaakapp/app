@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 
 export function ImportCurlButton() {
   const [clipboardText] = useClipboardText();
-  const [lastImportedCmd, setLastImportedCmd] = useState<string>('');
-  const importCurl = useImportCurl();
+  const importCurl = useImportCurl({ clearClipboard: true });
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (!clipboardText?.trim().startsWith('curl ') || lastImportedCmd === clipboardText) {
+  if (!clipboardText?.trim().startsWith('curl ')) {
     return null;
   }
 
@@ -25,13 +25,15 @@ export function ImportCurlButton() {
         variant="border"
         color="secondary"
         leftSlot={<Icon icon="paste" size="sm" />}
+        isLoading={isLoading}
         onClick={() => {
-          importCurl.mutate({
-            requestId: null, // Create request
-            command: clipboardText,
-          });
-          // setClipboardText('');
-          setLastImportedCmd(clipboardText);
+          setIsLoading(true);
+          importCurl
+            .mutateAsync({
+              requestId: null, // Create request
+              command: clipboardText,
+            })
+            .finally(() => setIsLoading(false));
         }}
       >
         Import Curl
