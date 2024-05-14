@@ -53,22 +53,21 @@ impl YaakUpdater {
     ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
-        let enabled = !is_dev();
-        info!(
-            "Checking for updates mode={} enabled={}",
-            mode, enabled
-        );
+        let enabled = is_dev();
+        info!("Checking for updates mode={} enabled={}", mode, enabled);
 
         if !enabled {
             return Ok(false);
         }
-
-        match app_handle
+        
+        let update_check_result = app_handle
             .updater_builder()
             .header("X-Update-Mode", mode.to_string())?
             .build()?
             .check()
-            .await
+            .await;
+
+        match update_check_result
         {
             Ok(Some(update)) => {
                 let h = app_handle.clone();
@@ -78,6 +77,8 @@ impl YaakUpdater {
                         "{} is available. Would you like to download and install it now?",
                         update.version
                     ))
+                    .ok_button_label("Download")
+                    .cancel_button_label("Later")
                     .title("Update Available")
                     .show(|confirmed| {
                         if !confirmed {
@@ -89,6 +90,8 @@ impl YaakUpdater {
                                     if h.dialog()
                                         .message("Would you like to restart the app?")
                                         .title("Update Installed")
+                                        .ok_button_label("Restart")
+                                        .cancel_button_label("Later")
                                         .blocking_show()
                                     {
                                         h.restart();
