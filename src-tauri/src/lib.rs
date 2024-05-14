@@ -1721,6 +1721,9 @@ fn is_dev() -> bool {
 
 fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     let menu = app_menu(handle).unwrap();
+
+    // This causes the window to not be clickable (in AppImage), so disable on Linux
+    #[cfg(not(target_os = "linux"))]
     handle.set_menu(menu).expect("Failed to set app menu");
 
     let window_num = handle.webview_windows().len();
