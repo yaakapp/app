@@ -48,7 +48,7 @@ use crate::models::{
     get_cookie_jar, get_environment, get_folder, get_grpc_connection,
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
     get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
-    GrpcEventType, GrpcRequest, HttpRequest, HttpRequestHeader, HttpResponse,
+    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse,
     KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections,
     list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces,
     ModelType, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar,
@@ -1184,30 +1184,12 @@ async fn cmd_duplicate_grpc_request(id: &str, w: WebviewWindow) -> Result<GrpcRe
 
 #[tauri::command]
 async fn cmd_create_http_request(
-    workspace_id: &str,
-    name: &str,
-    sort_priority: f64,
-    folder_id: Option<&str>,
-    method: Option<&str>,
-    headers: Option<Vec<HttpRequestHeader>>,
-    body_type: Option<&str>,
+    request: HttpRequest,
     w: WebviewWindow,
 ) -> Result<HttpRequest, String> {
-    upsert_http_request(
-        &w,
-        HttpRequest {
-            workspace_id: workspace_id.to_string(),
-            name: name.to_string(),
-            folder_id: folder_id.map(|s| s.to_string()),
-            body_type: body_type.map(|s| s.to_string()),
-            method: method.map(|s| s.to_string()).unwrap_or("GET".to_string()),
-            headers: Json(headers.unwrap_or_default()),
-            sort_priority,
-            ..Default::default()
-        },
-    )
-    .await
-    .map_err(|e| e.to_string())
+    upsert_http_request(&w, request)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

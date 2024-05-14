@@ -12,9 +12,12 @@
     "withGlobalTauri": false,
     "security": {
       "assetProtocol": {
-        "scope": [
-          "$APPDATA/responses/*"
-        ]
+        "enable": true,
+        "scope": {
+          "allow": [
+            "$APPDATA/responses/*"
+          ]
+        }
       }
     }
   },
@@ -24,48 +27,6 @@
         "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxRDJFREQ1MjExQjdGN0IKUldSN2Z4c2gxZTNTd1FHNCtmYnFXMHVVQzhuNkJOM1cwOFBodmdLall3ckhKenpKUytHSTR1MlkK"
-    },
-    "allowlist": {
-      "all": false,
-      "os": {
-        "allow-os-type": true
-      },
-      "fs": {
-        "readFile": true,
-        "scope": [
-          "$RESOURCE/*",
-          "$APPDATA/responses/*"
-        ]
-      },
-      "shell": {
-        "all": false,
-        "open": true,
-        "sidecar": true,
-        "scope": [
-          {
-            "name": "protoc",
-            "sidecar": true,
-            "args": true
-          }
-        ]
-      },
-      "window": {
-        "close": true,
-        "maximize": true,
-        "minimize": true,
-        "setDecorations": true,
-        "setTitle": true,
-        "startDragging": true,
-        "unmaximize": true
-      },
-      "dialog": {
-        "all": false,
-        "open": true,
-        "save": true
-      },
-      "path": {
-        "all": true
-      }
     }
   },
   "bundle": {
