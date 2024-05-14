@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import slugify from 'slugify';
 import type { Workspace } from '../lib/models';
 import { count } from '../lib/pluralize';
@@ -10,16 +10,26 @@ import { HStack, VStack } from './core/Stacks';
 
 interface Props {
   onHide: () => void;
+  onSuccess: (path: string) => void;
   activeWorkspace: Workspace;
   workspaces: Workspace[];
 }
 
-export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorkspaces }: Props) {
+export function ExportDataDialog({
+  onHide,
+  onSuccess,
+  activeWorkspace,
+  workspaces: allWorkspaces,
+}: Props) {
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Record<string, boolean>>({
     [activeWorkspace.id]: true,
   });
 
-  const workspaces = [activeWorkspace, ...allWorkspaces.filter((w) => w.id !== activeWorkspace.id)];
+  // Put active workspace first
+  const workspaces = useMemo(
+    () => [activeWorkspace, ...allWorkspaces.filter((w) => w.id !== activeWorkspace.id)],
+    [activeWorkspace, allWorkspaces],
+  );
 
   const handleToggleAll = () => {
     setSelectedWorkspaces(
@@ -27,7 +37,7 @@ export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorks
     );
   };
 
-  const handleExport = async () => {
+  const handleExport = useCallback(async () => {
     const ids = Object.keys(selectedWorkspaces).filter((k) => selectedWorkspaces[k]);
     const workspace = ids.length === 1 ? workspaces.find((w) => w.id === ids[0]) : undefined;
     const slug = workspace ? slugify(workspace.name, { lower: true }) : 'workspaces';
@@ -41,7 +51,8 @@ export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorks
 
     await invoke('cmd_export_data', { workspaceIds: ids, exportPath });
     onHide();
-  };
+    onSuccess(exportPath);
+  }, [onHide, onSuccess, selectedWorkspaces, workspaces]);
 
   const allSelected = workspaces.every((w) => selectedWorkspaces[w.id]);
   const numSelected = Object.values(selectedWorkspaces).filter(Boolean).length;
@@ -97,7 +108,7 @@ export function ExportDataDialog({ onHide, activeWorkspace, workspaces: allWorks
           className="focus"
           color="primary"
           disabled={noneSelected}
-          onClick={handleExport}
+          onClick={() => handleExport()}
         >
           Export {count('Workspace', numSelected, { omitSingle: true, noneWord: 'Nothing' })}
         </Button>
