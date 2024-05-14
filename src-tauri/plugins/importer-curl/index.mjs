@@ -118,7 +118,7 @@ const ae = "curl", se = "cURL", ie = "cURL command line tool", H = ["d", "data",
 function oe(n) {
   if (!n.match(/^\s*curl /))
     return null;
-  const s = [], e = n.replace(/([^\\])\n/g, "$1; ");
+  const s = [], e = n.replace(/\ncurl/g, "; curl");
   let t = [];
   const m = Z(e).flatMap((r) => typeof r == "string" && r.startsWith("-") && !r.startsWith("--") && r.length > 2 ? [r.slice(0, 2), r.slice(2)] : r);
   for (const r of m) {
@@ -158,13 +158,13 @@ function te(n, s) {
   for (let o = 1; o < n.length; o++) {
     let l = n[o];
     if (typeof l == "string" && (l = l.trim()), typeof l == "string" && l.match(/^-{1,2}[\w-]+/)) {
-      const $ = l[0] === "-" && l[1] !== "-";
+      const y = l[0] === "-" && l[1] !== "-";
       let h = l.replace(/^-{1,2}/, "");
       if (!ee.includes(h))
         continue;
-      let y;
+      let $;
       const S = n[o + 1];
-      $ && h.length > 1 ? (y = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? (y = S, o++) : y = !0, e[h] = e[h] || [], e[h].push(y);
+      y && h.length > 1 ? ($ = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? ($ = S, o++) : $ = !0, e[h] = e[h] || [], e[h].push($);
     } else
       l && t.push(l);
   }
@@ -181,10 +181,10 @@ function te(n, s) {
     ...e.header || [],
     ...e.H || []
   ].map((o) => {
-    const [l, $] = o.split(/:(.*)$/);
-    return $ ? {
+    const [l, y] = o.split(/:(.*)$/);
+    return y ? {
       name: (l ?? "").trim(),
-      value: $.trim()
+      value: y.trim()
     } : {
       name: (l ?? "").trim().replace(/;$/, ""),
       value: ""
@@ -193,8 +193,8 @@ function te(n, s) {
     ...e.cookie || [],
     ...e.b || []
   ].map((o) => {
-    const l = o.split("=", 1)[0], $ = o.replace(`${l}=`, "");
-    return `${l}=${$}`;
+    const l = o.split("=", 1)[0], y = o.replace(`${l}=`, "");
+    return `${l}=${y}`;
   }).join("; "), u = i.find((o) => o.name.toLowerCase() === "cookie");
   b && u ? u.value += `; ${b}` : b && i.push({
     name: "Cookie",
@@ -204,11 +204,11 @@ function te(n, s) {
     ...e.form || [],
     ...e.F || []
   ].map((o) => {
-    const l = o.split("="), $ = l[0] ?? "", h = l[1] ?? "", y = {
-      name: $,
+    const l = o.split("="), y = l[0] ?? "", h = l[1] ?? "", $ = {
+      name: y,
       enabled: !0
     };
-    return h.indexOf("@") === 0 ? y.file = h.slice(1) : y.value = h, y;
+    return h.indexOf("@") === 0 ? $.file = h.slice(1) : $.value = h, $;
   });
   let g = {}, I = null;
   const B = C(e, !1, ["G", "get"]);
