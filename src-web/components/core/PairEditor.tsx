@@ -496,7 +496,7 @@ const newPairContainer = (initialPair?: Pair): PairContainer => {
 };
 
 const getFileName = (path: string | null | undefined): string => {
-  console.log('PATH', path);
-  const parts = String(path).split(/[\\/]/);
+  if (typeof path !== 'string') return '';
+  const parts = path.split(/[\\/]/);
   return parts[parts.length - 1] ?? '';
 };
