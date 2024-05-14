@@ -34,13 +34,8 @@ export function SidebarActions() {
         hotkeyAction="sidebar.toggle"
         icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
       />
-      <CreateDropdown>
-        <IconButton
-          size="sm"
-          icon="plusCircle"
-          title="Add Resource"
-          hotkeyAction="http_request.create"
-        />
+      <CreateDropdown hotKeyAction="http_request.create">
+        <IconButton size="sm" icon="plusCircle" title="Add Resource" />
       </CreateDropdown>
     </HStack>
   );

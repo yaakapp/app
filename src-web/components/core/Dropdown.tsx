@@ -30,6 +30,7 @@ import { HotKey } from './HotKey';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
 import { Icon } from './Icon';
+import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -58,6 +59,7 @@ export interface DropdownProps {
   items: DropdownItem[];
   onOpen?: () => void;
   onClose?: () => void;
+  hotKeyAction?: HotkeyAction;
 }
 
 export interface DropdownRef {
@@ -71,7 +73,7 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, onOpen, onClose }: DropdownProps,
+  { children, items, onOpen, onClose, hotKeyAction }: DropdownProps,
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
@@ -88,17 +90,32 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
     [onClose, onOpen],
   );
 
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    buttonRef.current?.focus();
+    // Reset so it triggers a render if opening sets to 0, for example
+    setDefaultSelectedIndex(undefined);
+  }, [setIsOpen]);
+
   useImperativeHandle(ref, () => ({
     ...menuRef.current,
     isOpen: isOpen,
     toggle() {
       if (!isOpen) this.open();
-      else setIsOpen(false);
+      else this.close();
     },
     open() {
       setIsOpen(true);
     },
+    close() {
+      handleClose();
+    },
   }));
+
+  useHotKey(hotKeyAction ?? null, () => {
+    setDefaultSelectedIndex(0);
+    setIsOpen(true);
+  });
 
   const child = useMemo(() => {
     const existingChild = Children.only(children);
@@ -118,11 +135,6 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
     };
     return cloneElement(existingChild, props);
   }, [children, setIsOpen]);
-
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-    buttonRef.current?.focus();
-  }, [setIsOpen]);
 
   useEffect(() => {
     buttonRef.current?.setAttribute('aria-expanded', isOpen.toString());
@@ -206,7 +218,10 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   }: MenuProps,
   ref,
 ) {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(defaultSelectedIndex ?? null);
+  const [selectedIndex, setSelectedIndex] = useStateWithDeps<number | null>(
+    defaultSelectedIndex ?? null,
+    [defaultSelectedIndex],
+  );
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
   const [filter, setFilter] = useState<string>('');
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -223,7 +238,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     onClose();
     setSelectedIndex(null);
     setFilter('');
-  }, [onClose]);
+  }, [onClose, setSelectedIndex]);
 
   // Close menu on space bar
   const handleMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -265,7 +280,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       }
       return nextIndex;
     });
-  }, [items]);
+  }, [items, setSelectedIndex]);
 
   const handleNext = useCallback(() => {
     setSelectedIndex((currIndex) => {
@@ -282,7 +297,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       }
       return nextIndex;
     });
-  }, [items]);
+  }, [items, setSelectedIndex]);
 
   useKey(
     'ArrowUp',
@@ -316,7 +331,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
         i.onSelect();
       }
     },
-    [handleClose],
+    [handleClose, setSelectedIndex],
   );
 
   useImperativeHandle(
@@ -377,7 +392,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       const index = filteredItems.findIndex((item) => item === i) ?? null;
       setSelectedIndex(index);
     },
-    [filteredItems],
+    [filteredItems, setSelectedIndex],
   );
 
   if (items.length === 0) return null;
