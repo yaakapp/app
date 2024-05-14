@@ -6,6 +6,7 @@ use log::debug;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+use crate::analytics::get_num_launches;
 use crate::models::{get_key_value_raw, set_key_value_raw};
 
 // Check for updates every hour
@@ -60,10 +61,14 @@ impl YaakNotifier {
 
         self.last_check = SystemTime::now();
 
+        let num_launches = get_num_launches(app).await;
         let info = app.package_info().clone();
         let req = reqwest::Client::default()
             .request(Method::GET, "https://notify.yaak.app/notifications")
-            .query(&[("version", info.version)]);
+            .query(&[
+                ("version", info.version.to_string()),
+                ("launches", num_launches.to_string()),
+            ]);
         let resp = req.send().await.map_err(|e| e.to_string())?;
         let notification = resp
             .json::<YaakNotification>()
