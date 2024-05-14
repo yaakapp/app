@@ -21,12 +21,20 @@ export function twig(
   const completions = twigCompletion({ options: variables });
 
   const language = mixLanguage(base);
+  const completion = language.data.of({ autocomplete: completions });
   const completionBase = base.language.data.of({ autocomplete: completions });
   const additionalCompletion = autocomplete
     ? [base.language.data.of({ autocomplete: genericCompletion(autocomplete) })]
     : [];
 
-  return [language, completionBase, base.support, placeholders(variables), ...additionalCompletion];
+  return [
+    language,
+    completion,
+    completionBase,
+    base.support,
+    placeholders(variables),
+    ...additionalCompletion,
+  ];
 }
 
 function mixLanguage(base: LanguageSupport): LRLanguage {
