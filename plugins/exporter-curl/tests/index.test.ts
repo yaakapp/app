@@ -80,6 +80,26 @@ describe('exporter-curl', () => {
     );
   });
 
+  test('Exports multi-line JSON body', () => {
+    expect(
+      pluginHookExport({
+        url: 'https://yaak.app',
+        method: 'POST',
+        bodyType: 'application/json',
+        body: {
+          text: `{"foo":"bar",\n"baz":"qux"}`,
+        },
+        headers: [{ name: 'Content-Type', value: 'application/json' }],
+      }),
+    ).toEqual(
+      [
+        `curl -X POST 'https://yaak.app'`,
+        `--header 'Content-Type: application/json'`,
+        `--data-raw $'{"foo":"bar",\n"baz":"qux"}'`,
+      ].join(` \\\n  `),
+    );
+  });
+
   test('Exports headers', () => {
     expect(
       pluginHookExport({

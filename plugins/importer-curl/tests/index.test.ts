@@ -177,6 +177,27 @@ describe('importer-curl', () => {
     });
   });
 
+  test('Imports multi-line JSON', () => {
+    expect(
+      pluginHookImport(
+        `curl -H Content-Type:application/json -d $'{\n  "foo":"bar"\n}' https://yaak.app`,
+      ),
+    ).toEqual({
+      resources: {
+        workspaces: [baseWorkspace()],
+        httpRequests: [
+          baseRequest({
+            method: 'POST',
+            url: 'https://yaak.app',
+            headers: [{ name: 'Content-Type', value: 'application/json' }],
+            bodyType: 'application/json',
+            body: { text: '{\n  "foo":"bar"\n}' },
+          }),
+        ],
+      },
+    });
+  });
+
   test('Imports multiple headers', () => {
     expect(
       pluginHookImport('curl -H Foo:bar --header Name -H AAA:bbb -H :ccc https://yaak.app'),
