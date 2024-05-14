@@ -6,7 +6,7 @@
     "frontendDist": "../dist"
   },
   "productName": "Yaak",
-  "version": "2024.4.1",
+  "version": "2024.4.2",
   "identifier": "app.yaak.desktop",
   "app": {
     "withGlobalTauri": false,
