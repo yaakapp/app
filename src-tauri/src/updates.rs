@@ -53,7 +53,7 @@ impl YaakUpdater {
     ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
-        let enabled = is_dev();
+        let enabled = !is_dev();
         info!("Checking for updates mode={} enabled={}", mode, enabled);
 
         if !enabled {
