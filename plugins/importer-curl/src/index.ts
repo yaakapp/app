@@ -52,7 +52,7 @@ export function pluginHookImport(rawData: string) {
 
   // Replace non-escaped newlines with semicolons to make parsing easier
   // NOTE: This is really slow in debug build but fast in release mode
-  const normalizedData = rawData.replace(/([^\\])\n/g, '$1; ');
+  const normalizedData = rawData.replace(/\ncurl/g, '; curl');
 
   let currentCommand: ParseEntry[] = [];
 
