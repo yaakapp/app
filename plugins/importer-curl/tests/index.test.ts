@@ -122,6 +122,13 @@ describe('importer-curl', () => {
           baseRequest({
             method: 'POST',
             url: 'https://yaak.app',
+            headers: [
+              {
+                name: 'Content-Type',
+                value: 'multipart/form-data',
+                enabled: true,
+              },
+            ],
             bodyType: 'multipart/form-data',
             body: {
               form: [
@@ -145,11 +152,18 @@ describe('importer-curl', () => {
             method: 'POST',
             url: 'https://yaak.app',
             bodyType: 'application/x-www-form-urlencoded',
+            headers: [
+              {
+                name: 'Content-Type',
+                value: 'application/x-www-form-urlencoded',
+                enabled: true,
+              },
+            ],
             body: {
-              params: [
-                { name: 'a', value: '' },
-                { name: 'b', value: '' },
-                { name: 'c', value: 'ccc' },
+              form: [
+                { name: 'a', value: '', enabled: true },
+                { name: 'b', value: '', enabled: true },
+                { name: 'c', value: 'ccc', enabled: true },
               ],
             },
           }),
@@ -168,7 +182,7 @@ describe('importer-curl', () => {
           baseRequest({
             method: 'POST',
             url: 'https://yaak.app',
-            headers: [{ name: 'Content-Type', value: 'text/plain' }],
+            headers: [{ name: 'Content-Type', value: 'text/plain', enabled: true }],
             bodyType: 'text/plain',
             body: { text: 'a&b&c=ccc' },
           }),
@@ -189,7 +203,7 @@ describe('importer-curl', () => {
           baseRequest({
             method: 'POST',
             url: 'https://yaak.app',
-            headers: [{ name: 'Content-Type', value: 'application/json' }],
+            headers: [{ name: 'Content-Type', value: 'application/json', enabled: true }],
             bodyType: 'application/json',
             body: { text: '{\n  "foo":"bar"\n}' },
           }),
@@ -208,10 +222,10 @@ describe('importer-curl', () => {
           baseRequest({
             url: 'https://yaak.app',
             headers: [
-              { name: 'Name', value: '' },
-              { name: 'Foo', value: 'bar' },
-              { name: 'AAA', value: 'bbb' },
-              { name: '', value: 'ccc' },
+              { name: 'Name', value: '', enabled: true },
+              { name: 'Foo', value: 'bar', enabled: true },
+              { name: 'AAA', value: 'bbb', enabled: true },
+              { name: '', value: 'ccc', enabled: true },
             ],
           }),
         ],
@@ -262,7 +276,7 @@ describe('importer-curl', () => {
         httpRequests: [
           baseRequest({
             url: 'https://yaak.app',
-            headers: [{ name: 'Cookie', value: 'foo=bar' }],
+            headers: [{ name: 'Cookie', value: 'foo=bar', enabled: true }],
           }),
         ],
       },
@@ -277,8 +291,8 @@ describe('importer-curl', () => {
           baseRequest({
             url: 'https://yaak.app',
             urlParameters: [
-              { name: 'foo', value: 'bar' },
-              { name: 'baz', value: 'a%20a' },
+              { name: 'foo', value: 'bar', enabled: true },
+              { name: 'baz', value: 'a%20a', enabled: true },
             ],
           }),
         ],

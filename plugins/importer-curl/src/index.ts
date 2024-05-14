@@ -184,7 +184,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   urlParameters =
     search?.split('&').map((p) => {
       const v = splitOnce(p, '=');
-      return { name: v[0] ?? '', value: v[1] ?? '' };
+      return { name: v[0] ?? '', value: v[1] ?? '', enabled: true };
     }) ?? [];
 
   url = baseUrl ?? urlArg;
@@ -212,11 +212,13 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
       return {
         name: (name ?? '').trim().replace(/;$/, ''),
         value: '',
+        enabled: true,
       };
     }
     return {
       name: (name ?? '').trim(),
       value: value.trim(),
+      enabled: true,
     };
   });
 
@@ -243,6 +245,7 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     headers.push({
       name: 'Cookie',
       value: cookieHeaderValue,
+      enabled: true,
     });
   }
 
@@ -286,12 +289,17 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
   ) {
     bodyType = mimeType ?? 'application/x-www-form-urlencoded';
     body = {
-      params: dataParameters.map((parameter) => ({
+      form: dataParameters.map((parameter) => ({
         ...parameter,
         name: decodeURIComponent(parameter.name || ''),
         value: decodeURIComponent(parameter.value || ''),
       })),
     };
+    headers.push({
+      name: 'Content-Type',
+      value: 'application/x-www-form-urlencoded',
+      enabled: true,
+    });
   } else if (dataParameters.length > 0) {
     bodyType =
       mimeType === 'application/json' || mimeType === 'text/xml' || mimeType === 'text/plain'
@@ -307,13 +315,20 @@ export function importCommand(parseEntries: ParseEntry[], workspaceId: string) {
     body = {
       form: formDataParams,
     };
+    if (mimeType == null) {
+      headers.push({
+        name: 'Content-Type',
+        value: 'multipart/form-data',
+        enabled: true,
+      });
+    }
   }
 
   // Method
   let method = getPairValue(pairsByName, '', ['X', 'request']).toUpperCase();
 
   if (method === '' && body) {
-    method = 'text' in body || 'params' in body ? 'POST' : 'GET';
+    method = 'text' in body || 'form' in body ? 'POST' : 'GET';
   }
 
   const request: ExportResources['httpRequests'][0] = {
@@ -342,6 +357,7 @@ const pairsToDataParameters = (keyedPairs: PairsByName) => {
     value: string;
     contentType?: string;
     filePath?: string;
+    enabled?: boolean;
   }[] = [];
 
   for (const flagName of DATA_FLAGS) {
@@ -361,11 +377,13 @@ const pairsToDataParameters = (keyedPairs: PairsByName) => {
           name: name ?? '',
           value: '',
           filePath: p.slice(1),
+          enabled: true,
         });
       } else {
         dataParameters.push({
           name: name ?? '',
           value: flagName === 'data-urlencode' ? encodeURIComponent(value ?? '') : value ?? '',
+          enabled: true,
         });
       }
     }

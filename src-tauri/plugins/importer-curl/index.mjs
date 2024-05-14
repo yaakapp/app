@@ -40,7 +40,7 @@ function K(n, s, e) {
     if (D.test(a))
       return { op: a };
     var x = !1, O = !1, p = "", A = !1, i;
-    function b() {
+    function $() {
       i += 1;
       var v, d, T = a.charAt(i);
       if (T === "{") {
@@ -62,7 +62,7 @@ function K(n, s, e) {
       if (A = A || !x && (u === "*" || u === "?"), O)
         p += u, O = !1;
       else if (x)
-        u === x ? x = !1 : x == _ ? p += u : u === t ? (i += 1, u = a.charAt(i), u === G || u === t || u === U ? p += u : p += t + u) : u === U ? p += b() : p += u;
+        u === x ? x = !1 : x == _ ? p += u : u === t ? (i += 1, u = a.charAt(i), u === G || u === t || u === U ? p += u : p += t + u) : u === U ? p += $() : p += u;
       else if (u === G || u === _)
         x = u;
       else {
@@ -73,7 +73,7 @@ function K(n, s, e) {
           var E = { comment: n.slice(r.index + i + 1) };
           return p.length ? [p, E] : [E];
         } else
-          u === t ? O = !0 : u === U ? p += b() : p += u;
+          u === t ? O = !0 : u === U ? p += $() : p += u;
       }
     }
     return A ? { op: "glob", pattern: p } : p;
@@ -158,13 +158,13 @@ function te(n, s) {
   for (let o = 1; o < n.length; o++) {
     let l = n[o];
     if (typeof l == "string" && (l = l.trim()), typeof l == "string" && l.match(/^-{1,2}[\w-]+/)) {
-      const y = l[0] === "-" && l[1] !== "-";
+      const b = l[0] === "-" && l[1] !== "-";
       let h = l.replace(/^-{1,2}/, "");
       if (!ee.includes(h))
         continue;
-      let $;
+      let y;
       const S = n[o + 1];
-      y && h.length > 1 ? ($ = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? ($ = S, o++) : $ = !0, e[h] = e[h] || [], e[h].push($);
+      b && h.length > 1 ? (y = h.slice(1), h = h.slice(0, 1)) : typeof S == "string" && !S.startsWith("-") ? (y = S, o++) : y = !0, e[h] = e[h] || [], e[h].push(y);
     } else
       l && t.push(l);
   }
@@ -172,7 +172,7 @@ function te(n, s) {
   const f = C(e, t[0] || "", ["url"]), [w, r] = W(f, "?");
   c = (r == null ? void 0 : r.split("&").map((o) => {
     const l = W(o, "=");
-    return { name: l[0] ?? "", value: l[1] ?? "" };
+    return { name: l[0] ?? "", value: l[1] ?? "", enabled: !0 };
   })) ?? [], m = w ?? f;
   const [a, x] = C(e, "", ["u", "user"]).split(/:(.*)$/), O = C(e, !1, ["digest"]), p = a ? O ? "digest" : "basic" : null, A = a ? {
     username: a.trim(),
@@ -181,39 +181,39 @@ function te(n, s) {
     ...e.header || [],
     ...e.H || []
   ].map((o) => {
-    const [l, y] = o.split(/:(.*)$/);
-    return y ? {
+    const [l, b] = o.split(/:(.*)$/);
+    return b ? {
       name: (l ?? "").trim(),
-      value: y.trim()
+      value: b.trim()
     } : {
       name: (l ?? "").trim().replace(/;$/, ""),
       value: ""
     };
-  }), b = [
+  }), $ = [
     ...e.cookie || [],
     ...e.b || []
   ].map((o) => {
-    const l = o.split("=", 1)[0], y = o.replace(`${l}=`, "");
-    return `${l}=${y}`;
+    const l = o.split("=", 1)[0], b = o.replace(`${l}=`, "");
+    return `${l}=${b}`;
   }).join("; "), u = i.find((o) => o.name.toLowerCase() === "cookie");
-  b && u ? u.value += `; ${b}` : b && i.push({
+  $ && u ? u.value += `; ${$}` : $ && i.push({
     name: "Cookie",
-    value: b
+    value: $
   });
   const E = ne(e), v = i.find((o) => o.name.toLowerCase() === "content-type"), d = v ? v.value.split(";")[0] : null, T = [
     ...e.form || [],
     ...e.F || []
   ].map((o) => {
-    const l = o.split("="), y = l[0] ?? "", h = l[1] ?? "", $ = {
-      name: y,
+    const l = o.split("="), b = l[0] ?? "", h = l[1] ?? "", y = {
+      name: b,
       enabled: !0
     };
-    return h.indexOf("@") === 0 ? $.file = h.slice(1) : $.value = h, $;
+    return h.indexOf("@") === 0 ? y.file = h.slice(1) : y.value = h, y;
   });
   let g = {}, I = null;
   const B = C(e, !1, ["G", "get"]);
   E.length > 0 && B ? c.push(...E) : E.length > 0 && (d == null || d === "application/x-www-form-urlencoded") ? (I = d ?? "application/x-www-form-urlencoded", g = {
-    params: E.map((o) => ({
+    form: E.map((o) => ({
       ...o,
       name: decodeURIComponent(o.name || ""),
       value: decodeURIComponent(o.value || "")
@@ -224,7 +224,7 @@ function te(n, s) {
     form: T
   });
   let P = C(e, "", ["X", "request"]).toUpperCase();
-  return P === "" && g && (P = "text" in g || "params" in g ? "POST" : "GET"), {
+  return P === "" && g && (P = "text" in g || "form" in g ? "POST" : "GET"), {
     id: N("http_request"),
     model: "http_request",
     workspaceId: s,
@@ -253,10 +253,12 @@ const ne = (n) => {
         c.startsWith("@") ? s.push({
           name: m ?? "",
           value: "",
-          filePath: c.slice(1)
+          filePath: c.slice(1),
+          enabled: !0
         }) : s.push({
           name: m ?? "",
-          value: e === "data-urlencode" ? encodeURIComponent(f ?? "") : f ?? ""
+          value: e === "data-urlencode" ? encodeURIComponent(f ?? "") : f ?? "",
+          enabled: !0
         });
       }
   }
