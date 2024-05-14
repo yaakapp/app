@@ -4,12 +4,14 @@ import { ExportDataDialog } from '../components/ExportDataDialog';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
 import { useWorkspaces } from './useWorkspaces';
+import { useToast } from '../components/ToastContext';
 
 export function useExportData() {
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const alert = useAlert();
   const dialog = useDialog();
+  const toast = useToast();
 
   return useMutation({
     onError: (err: string) => {
@@ -28,6 +30,12 @@ export function useExportData() {
             onHide={hide}
             workspaces={workspaces}
             activeWorkspace={activeWorkspace}
+            onSuccess={() => {
+              toast.show({
+                variant: 'success',
+                message: 'Data export successful',
+              });
+            }}
           />
         ),
       });
