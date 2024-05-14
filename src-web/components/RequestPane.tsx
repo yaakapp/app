@@ -39,6 +39,8 @@ import { HeadersEditor } from './HeadersEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 import { useImportCurl } from '../hooks/useImportCurl';
+import { useRequests } from '../hooks/useRequests';
+import type { GenericCompletionOption } from './core/Editor/genericCompletion';
 
 interface Props {
   style: CSSProperties;
@@ -55,6 +57,7 @@ export const RequestPane = memo(function RequestPane({
   className,
   activeRequest,
 }: Props) {
+  const requests = useRequests();
   const activeRequestId = activeRequest.id;
   const updateRequest = useUpdateHttpRequest(activeRequestId);
   const [activeTab, setActiveTab] = useActiveTab();
@@ -249,6 +252,24 @@ export const RequestPane = memo(function RequestPane({
                 return;
               }
               importCurl.mutate({ requestId: activeRequestId, command });
+            }}
+            autocomplete={{
+              minMatch: 3,
+              options:
+                requests.length > 0
+                  ? [
+                      ...requests.map(
+                        (r) =>
+                          ({
+                            type: 'constant',
+                            label: r.url,
+                          } as GenericCompletionOption),
+                      ),
+                    ]
+                  : [
+                      { label: 'http://', type: 'constant' },
+                      { label: 'https://', type: 'constant' },
+                    ],
             }}
             onSend={handleSend}
             onCancel={handleCancel}
