@@ -11,6 +11,9 @@ use crate::models::{
     generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string,
 };
 
+const NAMESPACE: &str = "analytics";
+const NUM_LAUNCHES_KEY: &str = "num_launches";
+
 // serializable
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -93,20 +96,19 @@ pub struct LaunchEventInfo {
     pub num_launches: i32,
 }
 
-pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
-    let namespace = "analytics";
+pub async fn track_launch_event(app: &AppHandle) -> LaunchEventInfo {
     let last_tracked_version_key = "last_tracked_version";
 
     let mut info = LaunchEventInfo::default();
 
-    info.num_launches = get_key_value_int(app_handle, namespace, "num_launches", 0).await + 1;
+    info.num_launches = get_num_launches(app).await + 1;
     info.previous_version =
-        get_key_value_string(app_handle, namespace, last_tracked_version_key, "").await;
-    info.current_version = app_handle.package_info().version.to_string();
+        get_key_value_string(app, NAMESPACE, last_tracked_version_key, "").await;
+    info.current_version = app.package_info().version.to_string();
 
     if info.previous_version.is_empty() {
         track_event(
-            app_handle,
+            app,
             AnalyticsResource::App,
             AnalyticsAction::LaunchFirst,
             None,
@@ -116,10 +118,10 @@ pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
         info.launched_after_update = info.current_version != info.previous_version;
         if info.launched_after_update {
             track_event(
-                app_handle,
+                app,
                 AnalyticsResource::App,
                 AnalyticsAction::LaunchUpdate,
-                Some(json!({ "num_launches": info.num_launches })),
+                Some(json!({ NUM_LAUNCHES_KEY: info.num_launches })),
             )
             .await;
         }
@@ -127,23 +129,23 @@ pub async fn track_launch_event(app_handle: &AppHandle) -> LaunchEventInfo {
 
     // Track a launch event in all cases
     track_event(
-        app_handle,
+        app,
         AnalyticsResource::App,
         AnalyticsAction::Launch,
-        Some(json!({ "num_launches": info.num_launches })),
+        Some(json!({ NUM_LAUNCHES_KEY: info.num_launches })),
     )
     .await;
 
     // Update key values
 
     set_key_value_string(
-        app_handle,
-        namespace,
+        app,
+        NAMESPACE,
         last_tracked_version_key,
         info.current_version.as_str(),
     )
     .await;
-    set_key_value_int(app_handle, namespace, "num_launches", info.num_launches).await;
+    set_key_value_int(app, NAMESPACE, NUM_LAUNCHES_KEY, info.num_launches).await;
 
     info
 }
@@ -241,4 +243,8 @@ async fn get_id(app_handle: &AppHandle) -> String {
     } else {
         id
     }
+}
+
+pub async fn get_num_launches(app: &AppHandle) -> i32 {
+    get_key_value_int(app, NAMESPACE, NUM_LAUNCHES_KEY, 0).await
 }
