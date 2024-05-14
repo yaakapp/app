@@ -43,6 +43,7 @@
     "window:allow-is-fullscreen",
     "window:allow-maximize",
     "window:allow-minimize",
+    "window:allow-toggle-maximize",
     "window:allow-set-decorations",
     "window:allow-set-title",
     "window:allow-start-dragging",
