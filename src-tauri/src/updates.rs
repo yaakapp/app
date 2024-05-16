@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::time::SystemTime;
 
-use log::info;
+use log::{debug, info};
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
@@ -53,13 +53,8 @@ impl YaakUpdater {
     ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
-        let enabled = !is_dev();
-        info!("Checking for updates mode={} enabled={}", mode, enabled);
+        info!("Checking for updates mode={}", mode);
 
-        if !enabled {
-            return Ok(false);
-        }
-        
         let update_check_result = app_handle
             .updater_builder()
             .header("X-Update-Mode", mode.to_string())?
@@ -118,6 +113,12 @@ impl YaakUpdater {
         let ignore_check =
             self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
         if ignore_check {
+            return Ok(false);
+        }
+
+        // Don't check if dev
+        if is_dev() {
+            debug!("Not checking for updates in dev");
             return Ok(false);
         }
 
