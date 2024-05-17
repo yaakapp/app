@@ -7,5 +7,5 @@ interface Props {
 
 export function HotKeyLabel({ action }: Props) {
   const label = useHotKeyLabel(action);
-  return <span>{label}</span>;
+  return <span className="text-fg-subtle">{label}</span>;
 }

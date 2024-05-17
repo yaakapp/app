@@ -77,6 +77,15 @@ module.exports = {
       pink: color('pink'),
       violet: color('violet'),
       gray: color('gray'),
+
+      // New theme values
+
+      'background': 'hsl(var(--background))',
+      'background-highlight': 'hsl(var(--background-highlight))',
+      'border': 'hsl(var(--border))',
+      'fg': 'hsl(var(--fg))',
+      'fg-subtle': 'hsl(var(--fg-subtle))',
+      'fg-subtler': 'hsl(var(--fg-subtler))',
     },
   },
   plugins: [

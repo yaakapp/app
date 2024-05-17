@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import React from 'react';
 import { useKey } from 'react-use';
-import { IconButton } from './IconButton';
 import type { IconProps } from './Icon';
 import { Icon } from './Icon';
+import { IconButton } from './IconButton';
 
 export interface ToastProps {
   children: ReactNode;
@@ -59,7 +59,7 @@ export function Toast({
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
-        'text-gray-700',
+        'text-fg-subtle',
       )}
     >
       <div className="px-3 py-2 flex items-center gap-2">

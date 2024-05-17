@@ -7,7 +7,6 @@ const DEFAULT_APPEARANCE: Appearance = 'system';
 
 enum Theme {
   yaak = 'yaak',
-  catppuccin = 'catppuccin',
 }
 
 const themes: Record<Theme, AppThemeColors> = {
@@ -20,16 +19,6 @@ const themes: Record<Theme, AppThemeColors> = {
     blue: 'hsl(206, 100%, 56%)',
     pink: 'hsl(300, 100%, 71%)',
     violet: 'hsl(266, 100%, 73%)',
-  },
-  catppuccin: {
-    gray: 'hsl(240, 23%, 47%)',
-    red: 'hsl(343, 91%, 74%)',
-    orange: 'hsl(23, 92%, 74%)',
-    yellow: 'hsl(41, 86%, 72%)',
-    green: 'hsl(115, 54%, 65%)',
-    blue: 'hsl(217, 92%, 65%)',
-    pink: 'hsl(316, 72%, 75%)',
-    violet: 'hsl(267, 84%, 70%)',
   },
 };
 
@@ -63,6 +52,37 @@ const lightTheme: AppTheme = {
   },
 };
 
+const newTheme = `
+--background: var(--color-violet-100);
+--background-highlight: var(--color-violet-1000) / 0.08;
+
+--border: var(--color-gray-500) / 0.3;
+
+--fg: var(--color-red-1000) / 0.9;
+--fg-subtle: var(--color-gray-1000) / 0.7;
+--fg-subtler: var(--color-gray-1000) / 0.4;
+
+[data-theme-component="sidebar"] {
+  --background: var(--color-red-100);
+  --border: var(--color-red-500) / 0.3;
+}
+
+[data-theme-component="response-pane"] {
+  --background: var(--color-blue-100);
+  --border: var(--color-blue-500) / 0.3;
+}
+
+[data-theme-component="app-header"] {
+  --background: var(--color-pink-100);
+  --border: var(--color-pink-200) / 0.3;
+}
+
+[data-theme-component="url-bar"] {
+  --background: var(--color-yellow-100);
+  --border: var(--color-yellow-500) / 0.3;
+}
+`;
+
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
   const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;
   const theme = resolvedAppearance === 'dark' ? darkTheme : lightTheme;
@@ -81,10 +101,12 @@ export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARA
     `/* ${darkTheme.name} */`,
     `[data-resolved-appearance="dark"] {`,
     ...generateCSS(darkTheme).map(toTailwindVariable),
+    newTheme,
     '}',
     `/* ${lightTheme.name} */`,
     `[data-resolved-appearance="light"] {`,
     ...generateCSS(lightTheme).map(toTailwindVariable),
+    newTheme,
     '}',
   ].join('\n');
   existingStyleEl.setAttribute('data-theme-definition', '');

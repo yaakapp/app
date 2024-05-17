@@ -9,6 +9,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -40,7 +41,6 @@ import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 
 interface Props {
   className?: string;
@@ -510,7 +510,7 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-highlight',
+        tree.depth > 0 && 'border-l border-border',
         tree.depth === 0 && 'ml-0',
         tree.depth >= 1 && 'ml-[1.2em]',
       )}
@@ -802,11 +802,10 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
+            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-highlightSecondary text-gray-800',
-            !isActive &&
-              'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
+            isActive && 'bg-highlightSecondary text-fg',
+            !isActive && 'text-fg-subtle group-hover/item:text-fg active:bg-highlightSecondary',
             selected && useProminentStyles && '!bg-violet-400/20',
           )}
         >
@@ -815,7 +814,8 @@ const SidebarItem = forwardRef(function SidebarItem(
               size="sm"
               icon="chevronRight"
               className={classNames(
-                'transition-transform opacity-50',
+                'text-fg-subtler',
+                'transition-transform',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
@@ -837,13 +837,13 @@ const SidebarItem = forwardRef(function SidebarItem(
           {latestGrpcConnection ? (
             <div className="ml-auto">
               {latestGrpcConnection.elapsed === 0 && (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="update" className="text-fg-subtler" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
               ) : (
                 <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
               )}

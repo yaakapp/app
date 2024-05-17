@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
-import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
+import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -71,10 +71,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
   return (
     <div
       style={style}
+      data-theme-component="response-pane"
       className={classNames(
         className,
         'max-h-full h-full',
-        'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
+        'bg-background rounded-md border border-border',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >
@@ -91,7 +92,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           <HStack
             alignItems="center"
             className={classNames(
-              'text-gray-700 text-sm w-full flex-shrink-0',
+              'text-fg-subtle text-sm w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
               '-mb-1.5',
             )}
@@ -150,9 +151,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                 ) : contentType?.startsWith('image') ? (
                   <ImageViewer className="pb-2" response={activeResponse} />
                 ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
-                  <div className="text-sm italic text-gray-500">
-                    Cannot preview text responses larger than 2MB
-                  </div>
+                  <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>
                 ) : viewMode === 'pretty' && contentType?.includes('html') ? (
                   <WebPageViewer response={activeResponse} />
                 ) : contentType?.match(/csv|tab-separated/) ? (

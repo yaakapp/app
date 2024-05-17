@@ -58,7 +58,7 @@ export const UrlBar = memo(function UrlBar({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form data-theme-component="url-bar" onSubmit={handleSubmit} className={className}>
       <Input
         autocompleteVariables
         ref={inputRef}
@@ -75,7 +75,7 @@ export const UrlBar = memo(function UrlBar({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onPaste={onPaste}
-        containerClassName="shadow shadow-gray-100 dark:shadow-gray-50"
+        containerClassName="shadow shadow-gray-100 dark:shadow-gray-50 bg-background border !border-border"
         onChange={onUrlChange}
         defaultValue={url}
         placeholder={placeholder}

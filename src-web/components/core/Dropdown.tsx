@@ -23,14 +23,14 @@ import React, {
 import { useKey, useWindowSize } from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
+import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
+import { Icon } from './Icon';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
-import { Icon } from './Icon';
-import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -450,12 +450,14 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                       alignItems="center"
                       className="pb-0.5 px-1.5 mb-2 text-xs border border-highlight mx-2 rounded font-mono h-2xs"
                     >
-                      <Icon icon="search" size="xs" className="text-gray-700" />
-                      <div className="text-gray-800">{filter}</div>
+                      <Icon icon="search" size="xs" className="text-fg-subtle" />
+                      <div className="text-fg">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
-                    <span className="text-gray-500 text-sm text-center px-2 py-1">No matches</span>
+                    <span className="text-fg-subtler text-sm text-center px-2 py-1">
+                      No matches
+                    </span>
                   )}
                   {filteredItems.map((item, i) => {
                     if (item.type === 'separator') {
@@ -534,8 +536,8 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
-        'focus:bg-highlight focus:text-gray-800 rounded',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg-subtle whitespace-nowrap',
+        'focus:bg-highlight focus:text-fg rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}

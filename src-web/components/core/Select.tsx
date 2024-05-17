@@ -40,7 +40,7 @@ export function Select<T extends string>({
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-sm text-gray-900 whitespace-nowrap',
+          'text-sm text-fg whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >

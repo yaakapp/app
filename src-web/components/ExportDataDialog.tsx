@@ -90,7 +90,7 @@ export function ExportDataDialog({
                 />
               </td>
               <td
-                className="py-1 pl-4 text-gray-700 whitespace-nowrap overflow-x-auto hide-scrollbars"
+                className="py-1 pl-4 text-fg-subtle whitespace-nowrap overflow-x-auto hide-scrollbars"
                 onClick={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
               >
                 {w.name} {w.id === activeWorkspace.id ? '(current workspace)' : ''}

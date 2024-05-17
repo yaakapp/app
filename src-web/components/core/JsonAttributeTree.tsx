@@ -41,7 +41,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           : null,
         isExpandable: Object.keys(attrValue).length > 0,
         label: isExpanded ? `{${Object.keys(attrValue).length || ' '}}` : `{⋯}`,
-        labelClassName: 'text-gray-600',
+        labelClassName: 'text-fg-subtler',
       };
     } else if (jsonType === '[object Array]') {
       return {
@@ -59,7 +59,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           : null,
         isExpandable: attrValue.length > 0,
         label: isExpanded ? `[${attrValue.length || ' '}]` : `[⋯]`,
-        labelClassName: 'text-gray-600',
+        labelClassName: 'text-subtler',
       };
     } else {
       return {
@@ -77,9 +77,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
   }, [attrValue, attrKeyJsonPath, isExpanded, depth]);
 
   const labelEl = (
-    <span className={classNames(labelClassName, 'select-text group-hover:text-gray-800')}>
-      {label}
-    </span>
+    <span className={classNames(labelClassName, 'select-text group-hover:text-fg')}>{label}</span>
   );
   return (
     <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-2xs')}>
@@ -91,7 +89,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               icon="chevronRight"
               className={classNames(
                 'left-0 absolute transition-transform flex items-center',
-                'text-gray-600 group-hover:text-gray-900',
+                'text-fg-subtler group-hover:text-fg-subtle',
                 isExpanded ? 'rotate-90' : '',
               )}
             />

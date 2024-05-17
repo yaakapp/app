@@ -42,13 +42,13 @@
       "icons/release/icon.icns",
       "icons/release/icon.ico"
     ],
-    "longDescription": "The best cross-platform visual API client",
+    "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
     "resources": [
       "migrations/*",
       "plugins/*",
       "protoc-vendored/include/*"
     ],
-    "shortDescription": "The best API client",
+    "shortDescription": "Desktop API client",
     "targets": [
       "deb",
       "appimage",

@@ -42,12 +42,12 @@ import { url } from './url/extension';
 export const myHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
-    color: 'hsl(var(--color-gray-600))',
+    color: 'hsl(var(--fg-subtler))',
     fontStyle: 'italic',
   },
   {
     tag: [t.paren],
-    color: 'hsl(var(--color-gray-900))',
+    color: 'hsl(var(--fg))',
   },
   {
     tag: [t.name, t.tagName, t.angleBracket, t.docString, t.number],

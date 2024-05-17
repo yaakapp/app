@@ -140,10 +140,11 @@ export default function Workspace() {
           onClose={() => setFloatingSidebarHidden(true)}
         >
           <motion.div
+            data-theme-component="sidebar"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
-              'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
+              'absolute top-0 left-0 bottom-0 bg-background border-r border-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
           >
@@ -155,7 +156,11 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
+          <div
+            data-theme-component="sidebar"
+            style={side}
+            className={classNames('overflow-hidden bg-background')}
+          >
             <Sidebar className="border-r border-highlight" />
           </div>
           <ResizeHandle
@@ -168,9 +173,11 @@ export default function Workspace() {
           />
         </>
       )}
-      <HeaderSize data-tauri-drag-region style={head}>
-        <WorkspaceHeader className="pointer-events-none" />
-      </HeaderSize>
+      <div data-theme-component="app-header" className="bg-background" style={head}>
+        <HeaderSize data-tauri-drag-region>
+          <WorkspaceHeader className="pointer-events-none" />
+        </HeaderSize>
+      </div>
       {activeWorkspace == null ? (
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
@@ -214,10 +221,11 @@ function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
   const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
   return (
     <div
+      data-tauri-drag-region
       style={style}
       className={classNames(
         className,
-        'h-md pt-[1px] w-full border-b min-w-0',
+        'h-md pt-[1px] w-full border-b border-border min-w-0',
         stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
       )}
     >

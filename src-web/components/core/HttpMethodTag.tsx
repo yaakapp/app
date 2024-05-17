@@ -27,7 +27,7 @@ export function HttpMethodTag({ request, className }: Props) {
 
   const m = method.toLowerCase();
   return (
-    <span className={classNames(className, 'text-2xs font-mono opacity-50')}>
+    <span className={classNames(className, 'text-2xs font-mono text-fg-subtler')}>
       {methodMap[m] ?? m.slice(0, 3).toUpperCase()}
     </span>
   );

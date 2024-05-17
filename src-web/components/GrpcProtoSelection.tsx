@@ -106,7 +106,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
           <table className="w-full divide-y">
             <thead>
               <tr>
-                <th className="text-gray-600">
+                <th className="text-fg-subtler">
                   <span className="font-mono text-sm">*.proto</span> Files
                 </th>
                 <th></th>

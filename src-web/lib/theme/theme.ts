@@ -49,7 +49,7 @@ export interface AppThemeLayerStyle {
 }
 
 interface ThemeColorObj {
-  name: AppThemeColor;
+  name: string;
   variant: AppThemeColorVariant;
   cssColor: string;
 }

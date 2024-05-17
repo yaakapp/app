@@ -68,7 +68,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
                   color="custom"
                   title="Add sub environment"
                   icon="plusCircle"
-                  iconClassName="text-gray-500 group-hover:text-gray-700"
+                  iconClassName="text-fg-subtler group-hover:text-fg-subtle"
                   className="group"
                   onClick={handleCreateEnvironment}
                 />
@@ -175,7 +175,7 @@ const EnvironmentEditor = function ({
         <Heading className="w-full flex items-center gap-1">
           <div>{environment?.name ?? 'Global Variables'}</div>
           <IconButton
-            iconClassName="text-gray-600"
+            iconClassName="text-fg-subtler"
             size="sm"
             icon={valueVisibility.value ? 'eye' : 'eyeClosed'}
             title={valueVisibility.value ? 'Hide Values' : 'Reveal Values'}
@@ -244,7 +244,9 @@ function SidebarButton({
           size="xs"
           className={classNames(
             'w-full',
-            active ? 'text-gray-800 bg-highlightSecondary' : 'text-gray-600 hover:text-gray-700',
+            active
+              ? 'text-fg-subtle bg-highlightSecondary'
+              : 'text-fg-subtler hover:text-fg-subtle',
           )}
           justify="start"
           onClick={onClick}

@@ -11,7 +11,7 @@ export function EmptyStateText({ children, className }: Props) {
     <div
       className={classNames(
         className,
-        'rounded-lg border border-dashed border-highlight h-full py-2 text-gray-400 flex items-center justify-center',
+        'rounded-lg border border-dashed border-highlight h-full py-2 text-fg-subtler flex items-center justify-center',
       )}
     >
       {children}

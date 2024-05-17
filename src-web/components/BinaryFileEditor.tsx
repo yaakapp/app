@@ -49,7 +49,7 @@ export function BinaryFileEditor({
         <Button variant="border" color="gray" size="sm" onClick={handleClick}>
           Choose File
         </Button>
-        <div className="text-xs font-mono truncate rtl pr-3 text-gray-800">
+        <div className="text-xs font-mono truncate rtl pr-3 text-fg">
           {/* Special character to insert ltr text in rtl element without making things wonky */}
           &#x200E;
           {filePath ?? 'Select File'}

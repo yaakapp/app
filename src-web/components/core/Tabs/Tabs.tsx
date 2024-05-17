@@ -82,7 +82,7 @@ export function Tabs({
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classNames(
-              isActive ? 'text-gray-800' : 'text-gray-600 hover:text-gray-700',
+              isActive ? 'text-fg' : 'text-fg-subtler hover:text-fg-subtle',
               '!px-2 ml-[1px]',
             );
 
@@ -108,7 +108,7 @@ export function Tabs({
                         icon="chevronDown"
                         className={classNames(
                           '-mr-1.5 mt-0.5',
-                          isActive ? 'opacity-100' : 'opacity-20',
+                          isActive ? 'text-fg-subtler' : 'opacity-50',
                         )}
                       />
                     }

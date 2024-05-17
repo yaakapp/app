@@ -71,8 +71,8 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         size="sm"
         className={classNames(
           className,
-          'text-gray-800 !px-2 truncate',
-          activeEnvironment == null && 'text-opacity-disabled italic',
+          'text-fg-subtler !px-2 truncate',
+          activeEnvironment == null && 'italic',
         )}
         {...buttonProps}
       >

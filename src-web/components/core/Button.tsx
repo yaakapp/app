@@ -63,10 +63,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color === 'default' &&
-      'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',
+      'enabled:hocus:bg-gray-700/10 enabled:hocus:text-fg ring-blue-400',
     variant === 'solid' &&
       color === 'gray' &&
-      'text-gray-800 bg-gray-200/70 enabled:hocus:bg-gray-200 ring-blue-400',
+      'text-fg-subtle bg-gray-200/70 enabled:hocus:bg-gray-200 ring-blue-400',
     variant === 'solid' &&
       color === 'primary' &&
       'bg-blue-400 text-white ring-blue-700 enabled:hocus:bg-blue-500',
@@ -83,10 +83,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'border' && 'border',
     variant === 'border' &&
       color === 'default' &&
-      'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-800 ring-blue-500/50',
+      'border-highlight text-fg-subtle enabled:hocus:border-focus enabled:hocus:text-fg ring-blue-500/50',
     variant === 'border' &&
       color === 'gray' &&
-      'border-gray-500/70 text-gray-700 enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-800 ring-blue-500/50',
+      'border-gray-500/70 text-fg-subtle enabled:hocus:bg-gray-500/20 enabled:hocus:text-fg ring-blue-500/50',
     variant === 'border' &&
       color === 'primary' &&
       'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',

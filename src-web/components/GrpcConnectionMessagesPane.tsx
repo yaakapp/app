@@ -4,7 +4,9 @@ import type { CSSProperties } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
+import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import type { GrpcEvent, GrpcRequest } from '../lib/models';
+import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
@@ -13,8 +15,6 @@ import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentConnectionsDropdown } from './RecentConnectionsDropdown';
-import { Button } from './core/Button';
-import { useStateWithDeps } from '../hooks/useStateWithDeps';
 
 interface Props {
   style?: CSSProperties;
@@ -65,7 +65,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               <HStack alignItems="center" space={2}>
                 <span>{events.length} messages</span>
                 {activeConnection.elapsed === 0 && (
-                  <Icon icon="refresh" size="sm" spin className="text-gray-600" />
+                  <Icon icon="refresh" size="sm" spin className="text-fg-subtler" />
                 )}
               </HStack>
               <RecentConnectionsDropdown
@@ -107,7 +107,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                     Message {activeEvent.eventType === 'client_message' ? 'Sent' : 'Received'}
                   </div>
                   {!showLarge && activeEvent.content.length > 1000 * 1000 ? (
-                    <VStack space={2} className="text-sm italic text-gray-500">
+                    <VStack space={2} className="text-sm italic text-fg-subtler">
                       Message previews larger than 1MB are hidden
                       <div>
                         <Button
@@ -183,8 +183,8 @@ function EventRow({
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
           'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-highlight text-gray-900',
-          'text-gray-800 hover:text-gray-900',
+          isActive && '!bg-highlight text-fg',
+          'text-fg-subtle hover:text-fg',
         )}
       >
         <Icon
@@ -197,7 +197,7 @@ function EventRow({
               ? 'text-orange-600'
               : eventType === 'connection_end'
               ? 'text-green-600'
-              : 'text-gray-700'
+              : 'text-fg-subtle'
           }
           title={
             eventType === 'server_message'

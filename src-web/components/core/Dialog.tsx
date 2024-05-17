@@ -83,7 +83,7 @@ export function Dialog({
             )}
 
             {description ? (
-              <p className="px-6 text-gray-700" id={descriptionId}>
+              <p className="px-6 text-fg-subtle" id={descriptionId}>
                 {description}
               </p>
             ) : (
