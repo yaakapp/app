@@ -15,12 +15,7 @@ interface Props {
   workspaces: Workspace[];
 }
 
-export function ExportDataDialog({
-  onHide,
-  onSuccess,
-  activeWorkspace,
-  workspaces: allWorkspaces,
-}: Props) {
+export function ExportDataDialog({ onHide, onSuccess, activeWorkspace, workspaces: allWorkspaces }: Props) {
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Record<string, boolean>>({
     [activeWorkspace.id]: true,
   });
@@ -32,9 +27,7 @@ export function ExportDataDialog({
   );
 
   const handleToggleAll = () => {
-    setSelectedWorkspaces(
-      allSelected ? {} : workspaces.reduce((acc, w) => ({ ...acc, [w.id]: true }), {}),
-    );
+    setSelectedWorkspaces(allSelected ? {} : workspaces.reduce((acc, w) => ({ ...acc, [w.id]: true }), {}));
   };
 
   const handleExport = useCallback(async () => {
@@ -84,13 +77,11 @@ export function ExportDataDialog({
                   checked={selectedWorkspaces[w.id] ?? false}
                   title={w.name}
                   hideLabel
-                  onChange={() =>
-                    setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))
-                  }
+                  onChange={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
                 />
               </td>
               <td
-                className="py-1 pl-4 text-fg-subtle whitespace-nowrap overflow-x-auto hide-scrollbars"
+                className="py-1 pl-4 text-fg whitespace-nowrap overflow-x-auto hide-scrollbars"
                 onClick={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
               >
                 {w.name} {w.id === activeWorkspace.id ? '(current workspace)' : ''}
@@ -103,13 +94,7 @@ export function ExportDataDialog({
         <Button className="focus" color="gray" onClick={onHide}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          className="focus"
-          color="primary"
-          disabled={noneSelected}
-          onClick={() => handleExport()}
-        >
+        <Button type="submit" className="focus" color="primary" disabled={noneSelected} onClick={() => handleExport()}>
           Export {count('Workspace', numSelected, { omitSingle: true, noneWord: 'Nothing' })}
         </Button>
       </HStack>

@@ -97,8 +97,8 @@ export function GrpcConnectionLayout({ style }: Props) {
         !grpc.go.isPending && (
           <div
             style={style}
-            data-theme-component="response-pane"
             className={classNames(
+              'x-theme-response-pane',
               'max-h-full h-full grid grid-rows-[minmax(0,1fr)] grid-cols-1',
               'bg-background rounded-md border border-highlight',
               'shadow shadow-gray-100 dark:shadow-gray-0 relative',

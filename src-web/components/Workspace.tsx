@@ -140,10 +140,10 @@ export default function Workspace() {
           onClose={() => setFloatingSidebarHidden(true)}
         >
           <motion.div
-            data-theme-component="sidebar"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
+              'x-theme-sidebar',
               'absolute top-0 left-0 bottom-0 bg-background border-r border-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
@@ -157,9 +157,8 @@ export default function Workspace() {
       ) : (
         <>
           <div
-            data-theme-component="sidebar"
             style={side}
-            className={classNames('overflow-hidden bg-background')}
+            className={classNames('x-theme-sidebar', 'overflow-hidden bg-background')}
           >
             <Sidebar className="border-r border-highlight" />
           </div>
@@ -173,11 +172,9 @@ export default function Workspace() {
           />
         </>
       )}
-      <div data-theme-component="app-header" className="bg-background" style={head}>
-        <HeaderSize data-tauri-drag-region>
-          <WorkspaceHeader className="pointer-events-none" />
-        </HeaderSize>
-      </div>
+      <HeaderSize data-tauri-drag-region className="x-theme-app-header bg-background" style={head}>
+        <WorkspaceHeader className="pointer-events-none" />
+      </HeaderSize>
       {activeWorkspace == null ? (
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">

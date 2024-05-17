@@ -123,6 +123,7 @@ export const baseExtensions = [
   dropCursor(),
   drawSelection(),
   autocompletion({
+    tooltipClass: () => 'x-theme-dialog',
     closeOnBlur: true, // Set to `false` for debugging in devtools without closing it
     compareCompletions: (a, b) => {
       // Don't sort completions at all, only on boost

@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent, ReactNode } from 'react';
 import { memo, useRef, useState } from 'react';
@@ -58,7 +59,7 @@ export const UrlBar = memo(function UrlBar({
   };
 
   return (
-    <form data-theme-component="url-bar" onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={classNames('x-theme-url-bar', className)}>
       <Input
         autocompleteVariables
         ref={inputRef}

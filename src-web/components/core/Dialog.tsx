@@ -50,7 +50,7 @@ export function Dialog({
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="x-theme-dialog absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
           role="dialog"
           aria-labelledby={titleId}
@@ -63,7 +63,7 @@ export function Dialog({
             className={classNames(
               className,
               'grid grid-rows-[auto_auto_minmax(0,1fr)]',
-              'relative bg-gray-50 pointer-events-auto',
+              'relative bg-background pointer-events-auto',
               'rounded-lg',
               'dark:border border-highlight shadow shadow-black/10',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',

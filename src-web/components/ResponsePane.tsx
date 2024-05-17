@@ -71,9 +71,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
   return (
     <div
       style={style}
-      data-theme-component="response-pane"
       className={classNames(
         className,
+        'x-theme-response-pane',
         'max-h-full h-full',
         'bg-background rounded-md border border-border',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',

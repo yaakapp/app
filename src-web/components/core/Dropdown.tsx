@@ -413,7 +413,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       )}
       {isOpen && (
         <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
-          <div>
+          <div className="x-theme-dialog">
             <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
               tabIndex={0}
@@ -431,7 +431,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+                  className="bg-background absolute rotate-45 border-gray-200 border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -440,7 +440,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   style={menuStyles}
                   className={classNames(
                     className,
-                    'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
+                    'h-auto bg-background rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
                     'border-gray-200 overflow-auto mb-1 mx-0.5',
                   )}
                 >
@@ -536,7 +536,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg-subtle whitespace-nowrap',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg whitespace-nowrap',
         'focus:bg-highlight focus:text-fg rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',

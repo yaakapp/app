@@ -187,7 +187,7 @@
 }
 
 .cm-tooltip.cm-tooltip-hover {
-  @apply shadow-lg bg-gray-100 rounded text-fg-subtle border border-gray-500 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-gray-500 z-50 pointer-events-auto text-xs;
   @apply px-2 py-1;
 
   a {
@@ -210,7 +210,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-gray-100 rounded text-fg-subtle border border-gray-300 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-gray-300 z-50 pointer-events-auto text-xs;
 
   .cm-completionIcon {
     @apply italic font-mono;

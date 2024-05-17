@@ -53,34 +53,69 @@ const lightTheme: AppTheme = {
 };
 
 const newTheme = `
---background: var(--color-violet-100);
---background-highlight: var(--color-violet-1000) / 0.08;
+--background: var(--color-gray-50);
+--background-highlight: var(--color-gray-1000) / 0.08;
 
 --border: var(--color-gray-500) / 0.3;
 
---fg: var(--color-red-1000) / 0.9;
---fg-subtle: var(--color-gray-1000) / 0.7;
---fg-subtler: var(--color-gray-1000) / 0.4;
+--fg: var(--color-gray-800);
+--fg-subtle: var(--color-gray-600);
+--fg-subtler: var(--color-gray-600) / 0.7;
 
-[data-theme-component="sidebar"] {
-  --background: var(--color-red-100);
-  --border: var(--color-red-500) / 0.3;
-}
+/*.x-theme-dialog {
+  --background: var(--color-orange-50);
+  --border: var(--color-orange-500) / 0.3;
+}*/
 
-[data-theme-component="response-pane"] {
-  --background: var(--color-blue-100);
+/*.x-theme-sidebar {
+  --background: var(--color-blue-50);
   --border: var(--color-blue-500) / 0.3;
-}
+}*/
 
-[data-theme-component="app-header"] {
-  --background: var(--color-pink-100);
+/*.x-theme-response-pane {
+  --background: var(--color-green-50);
+  --border: var(--color-green-500) / 0.3;
+}*/
+
+/*.x-theme-app-header {
+  --background: var(--color-pink-50);
   --border: var(--color-pink-200) / 0.3;
+  --fg: var(--color-pink-800);
+  --fg-subtle: var(--color-pink-600);
+  --fg-subtler: var(--color-pink-600) / 0.7;
+}*/
+
+/*.x-theme-url-bar {
+  --background: var(--color-yellow-50);
+  --border: var(--color-yellow-500) / 0.3;
+}*/
+
+.x-theme-button {
+  --background: var(--color-transparent);
+  --background-highlight: var(--color-gray-200);
+  --fg: var(--color-gray-1000);
+}
+.x-theme-button--primary {
+  --background: var(--color-blue-400);
+  --background-highlight: var(--color-blue-500);
+}
+.x-theme-button--secondary {
+  --background: var(--color-violet-400);
+  --background-highlight: var(--color-violet-500);
+}
+.x-theme-button--warning {
+  --background: var(--color-orange-400);
+  --background-highlight: var(--color-orange-500);
+}
+.x-theme-button--danger {
+  --background: var(--color-red-400);
+  --background-highlight: var(--color-red-500);
+}
+.x-theme-button--gray {
+  --background: var(--color-gray-300);
+  --background-highlight: var(--color-gray-400);
 }
 
-[data-theme-component="url-bar"] {
-  --background: var(--color-yellow-100);
-  --border: var(--color-yellow-500) / 0.3;
-}
 `;
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
