@@ -118,7 +118,7 @@ function CommandPaletteItem({
       onClick={onClick}
       className={classNames(
         'w-full h-xs flex items-center rounded px-1.5 text-fg-subtle',
-        active && 'bg-highlightSecondary text-fg',
+        active && 'bg-background-highlight-secondary text-fg',
       )}
     >
       {children}

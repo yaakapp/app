@@ -8,19 +8,13 @@ interface Props {
   children?: ReactNode;
 }
 
-export function Separator({
-  className,
-  variant = 'primary',
-  orientation = 'horizontal',
-  children,
-}: Props) {
+export function Separator({ className, orientation = 'horizontal', children }: Props) {
   return (
     <div role="separator" className={classNames(className, 'flex items-center')}>
       {children && <div className="text-xs text-fg-subtler mr-2 whitespace-nowrap">{children}</div>}
       <div
         className={classNames(
-          variant === 'primary' && 'bg-highlight',
-          variant === 'secondary' && 'bg-highlightSecondary',
+          'bg-background-highlight',
           orientation === 'horizontal' && 'w-full h-[1px]',
           orientation === 'vertical' && 'h-full w-[1px]',
         )}

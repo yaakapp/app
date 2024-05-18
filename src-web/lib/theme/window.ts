@@ -56,6 +56,7 @@ const lightTheme: AppTheme = {
 interface ThemeComponent {
   background?: Color;
   backgroundHighlight?: Color;
+  backgroundHighlightSecondary?: Color;
   backgroundActive?: Color;
   foreground?: Color;
   foregroundSubtle?: Color;
@@ -91,8 +92,9 @@ const yaakThemes = {
     dark: true,
 
     background: new Color('hsl(245, 23%, 12.6%)'),
-    backgroundHighlight: new Color('hsl(245, 23%, 20%)'),
-    backgroundActive: new Color('hsl(266, 35%, 26%)'),
+    backgroundHighlight: new Color('hsl(245, 23%, 12.6%)').lighten(0.11),
+    backgroundHighlightSecondary: new Color('hsl(245, 23%, 12.6%)').lighten(0.08),
+    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)'),
 
     foreground: new Color('hsl(245, 23%, 78%)'),
     foregroundSubtle: new Color('hsl(245, 23%, 56%)'),
@@ -107,9 +109,13 @@ const yaakThemes = {
     components: {
       sidebar: {
         background: new Color('hsl(245, 23%, 15.6%)'),
+        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)').lighten(0.1),
+        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)').lighten(0.08),
       },
       responsePane: {
         background: new Color('hsl(245, 23%, 15.6%)'),
+        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)').lighten(0.1),
+        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)').lighten(0.08),
       },
     },
   } as YaakTheme,
@@ -123,6 +129,8 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
   if (theme?.background) vars['--background'] = theme.background.toCSS();
   if (theme?.backgroundHighlight)
     vars['--background-highlight'] = theme.backgroundHighlight.toCSS();
+  if (theme?.backgroundHighlightSecondary)
+    vars['--background-highlight-secondary'] = theme.backgroundHighlightSecondary.toCSS();
   if (theme?.backgroundActive) vars['--background-active'] = theme.backgroundActive.toCSS();
   if (theme?.foreground) vars['--fg'] = theme.foreground.toCSS();
   if (theme?.foregroundSubtle) vars['--fg-subtle'] = theme.foregroundSubtle.toCSS();

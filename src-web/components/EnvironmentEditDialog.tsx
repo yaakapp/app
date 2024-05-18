@@ -97,7 +97,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       secondSlot={() =>
         activeWorkspace != null && (
           <EnvironmentEditor
-            className="pt-2 border-l border-highlight"
+            className="pt-2 border-l border-background-highlight-secondary"
             environment={selectedEnvironment}
             workspace={activeWorkspace}
           />
@@ -245,7 +245,7 @@ function SidebarButton({
           className={classNames(
             'w-full',
             active
-              ? 'text-fg-subtle bg-highlightSecondary'
+              ? 'text-fg-subtle bg-background-highlight-secondary'
               : 'text-fg-subtler hover:text-fg-subtle',
           )}
           justify="start"

@@ -46,7 +46,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         {(osInfo?.osType === 'linux' || osInfo?.osType === 'windows') && (
           <HStack className="ml-4" alignItems="center">
             <Button
-              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
+              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
               color="custom"
               onClick={() => getCurrent().minimize()}
             >
@@ -55,7 +55,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
               </svg>
             </Button>
             <Button
-              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
+              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
               color="custom"
               onClick={async () => {
                 const w = getCurrent();

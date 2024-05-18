@@ -541,7 +541,7 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-highlight',
+        tree.depth > 0 && 'border-l border-background-highlight-secondary',
         tree.depth === 0 && 'ml-0',
         tree.depth >= 1 && 'ml-[1.2em]',
       )}
@@ -838,8 +838,9 @@ const SidebarItem = forwardRef(function SidebarItem(
           className={classNames(
             'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-highlightSecondary text-fg',
-            !isActive && 'text-fg-subtle group-hover/item:text-fg active:bg-highlightSecondary',
+            isActive && 'bg-background-highlight-secondary text-fg',
+            !isActive &&
+              'text-fg-subtle group-hover/item:text-fg active:bg-background-highlight-secondary',
             selected && useProminentStyles && '!bg-background-active',
           )}
         >

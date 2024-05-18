@@ -448,7 +448,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     <HStack
                       space={2}
                       alignItems="center"
-                      className="pb-0.5 px-1.5 mb-2 text-xs border border-highlight mx-2 rounded font-mono h-2xs"
+                      className="pb-0.5 px-1.5 mb-2 text-xs border border-background-highlight-secondary mx-2 rounded font-mono h-2xs"
                     >
                       <Icon icon="search" size="xs" className="text-fg-subtle" />
                       <div className="text-fg">{filter}</div>
@@ -537,7 +537,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         className,
         'h-xs', // More compact
         'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg whitespace-nowrap',
-        'focus:bg-highlight focus:text-fg rounded',
+        'focus:bg-background-highlight-secondary focus:text-fg rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}

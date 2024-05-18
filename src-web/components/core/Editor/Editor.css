@@ -290,7 +290,7 @@
     }
 
     & > ul > li[aria-selected] {
-      @apply bg-highlight text-fg;
+      @apply bg-background-highlight-secondary text-fg;
     }
 
     .cm-completionIcon {

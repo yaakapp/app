@@ -55,11 +55,11 @@ export function Toast({
         'pointer-events-auto',
         'relative bg-gray-50 dark:bg-gray-100 pointer-events-auto',
         'rounded-lg',
-        'border border-highlightSecondary dark:border-highlight shadow-xl',
+        'border border-background-highlight dark:border-background-highlight-secondaryshadow-xl',
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
-        'text-fg-subtle',
+        'text-fg',
       )}
     >
       <div className="px-3 py-2 flex items-center gap-2">
@@ -82,7 +82,7 @@ export function Toast({
 
       <IconButton
         color="custom"
-        className="opacity-50"
+        className="opacity-60"
         title="Dismiss"
         icon="x"
         onClick={onClose}
@@ -91,7 +91,7 @@ export function Toast({
       {timeout != null && (
         <div className="w-full absolute bottom-0 left-0 right-0">
           <motion.div
-            className="bg-highlight h-0.5"
+            className="bg-background-highlight h-0.5"
             initial={{ width: '100%' }}
             animate={{ width: '0%', opacity: 0.2 }}
             transition={{ duration: timeout / 1000, ease: 'linear' }}

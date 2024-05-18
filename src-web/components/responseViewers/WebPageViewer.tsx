@@ -24,7 +24,7 @@ export function WebPageViewer({ response }: Props) {
         title="Response preview"
         srcDoc={contentForIframe}
         sandbox="allow-scripts allow-same-origin"
-        className="h-full w-full rounded border border-highlightSecondary"
+        className="h-full w-full rounded border border-background-highlight-secondary"
       />
     </div>
   );

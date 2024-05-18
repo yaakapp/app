@@ -242,6 +242,10 @@ export class Color {
 
   toCSS(): string {
     // If opacity is 1, allow for Tailwind modification
-    return `hsla(${this.h}, ${this.s}%, ${this.l}%, ${this.a})`;
+    const h = Math.round(this.h);
+    const s = Math.round(this.s);
+    const l = Math.round(this.l);
+    const a = Math.round(this.a * 100) / 100;
+    return `hsla(${h}, ${s}%, ${l}%, ${a})`;
   }
 }

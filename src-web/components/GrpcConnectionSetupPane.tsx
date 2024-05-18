@@ -221,14 +221,14 @@ export function GrpcConnectionSetupPane({
               {isStreaming && (
                 <>
                   <IconButton
-                    className="border border-highlight"
+                    className="border border-background-highlight-secondary"
                     size="sm"
                     title="Cancel"
                     onClick={onCancel}
                     icon="x"
                   />
                   <IconButton
-                    className="border border-highlight"
+                    className="border border-background-highlight-secondary"
                     size="sm"
                     title="Commit"
                     onClick={onCommit}
@@ -237,7 +237,7 @@ export function GrpcConnectionSetupPane({
                 </>
               )}
               <IconButton
-                className="border border-highlight"
+                className="border border-background-highlight-secondary"
                 size="sm"
                 title={isStreaming ? 'Connect' : 'Send'}
                 hotkeyAction="grpc_request.send"
@@ -247,7 +247,7 @@ export function GrpcConnectionSetupPane({
             </>
           ) : (
             <IconButton
-              className="border border-highlight"
+              className="border border-background-highlight-secondary"
               size="sm"
               title={methodType === 'unary' ? 'Send' : 'Connect'}
               hotkeyAction="grpc_request.send"

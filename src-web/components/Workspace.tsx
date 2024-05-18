@@ -144,7 +144,7 @@ export default function Workspace() {
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
               'x-theme-sidebar',
-              'absolute top-0 left-0 bottom-0 bg-background border-r border-highlight w-[14rem]',
+              'absolute top-0 left-0 bottom-0 bg-background border-r border-background-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
           >
@@ -160,7 +160,7 @@ export default function Workspace() {
             style={side}
             className={classNames('x-theme-sidebar', 'overflow-hidden bg-background')}
           >
-            <Sidebar className="border-r border-highlight" />
+            <Sidebar className="border-r border-background-highlight" />
           </div>
           <ResizeHandle
             className="-translate-x-3"
@@ -222,7 +222,7 @@ function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
       style={style}
       className={classNames(
         className,
-        'h-md pt-[1px] w-full border-b border-highlight min-w-0',
+        'h-md pt-[1px] w-full border-b border-background-highlight min-w-0',
         stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
       )}
     >

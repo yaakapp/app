@@ -86,6 +86,7 @@ module.exports = {
       'background': 'var(--background)',
       'background-active': 'var(--background-active)',
       'background-highlight': 'var(--background-highlight)',
+      'background-highlight-secondary': 'var(--background-highlight-secondary)',
     },
   },
   plugins: [
