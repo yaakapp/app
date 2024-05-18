@@ -171,11 +171,77 @@ export function toTailwindVariable({ name, variant, cssColor }: ThemeColorObj): 
   return `--color-${name}-${variant}: ${hsl[0]} ${hsl[1]}% ${hsl[2]}%;`;
 }
 
-export function lighten(color: string, mod: number): [number, number, number] {
+export function lighten(color: string, mod: number): [number, number, number, number] {
   const whitePoint = 1;
   const blackPoint = 0;
-  const { hsl } = parseColor(color || '');
+  const { hsla } = parseColor(color || '');
   const newL =
-    mod > 0 ? hsl[2] + (100 * whitePoint - hsl[2]) * mod : hsl[2] + hsl[2] * (1 - blackPoint) * mod;
-  return [hsl[0], hsl[1], newL];
+    mod > 0
+      ? hsla[2] + (100 * whitePoint - hsla[2]) * mod
+      : hsla[2] + hsla[2] * (1 - blackPoint) * mod;
+  return [hsla[0], hsla[1], newL, hsla[3]];
+}
+
+export function opacity(color: string, mod: number): [number, number, number, number] {
+  const { hsla } = parseColor(color || '');
+  const newO = mod > 0 ? hsla[3] + (100 - hsla[3]) * mod : hsla[3] + hsla[3] * mod;
+  return [hsla[0], hsla[1], hsla[2], newO];
+}
+
+export class Color {
+  private h: number = 0;
+  private s: number = 0;
+  private l: number = 0;
+  private a: number = 1;
+
+  constructor(cssColor?: string) {
+    if (cssColor == null) return;
+    try {
+      const { hsla } = parseColor(cssColor || '');
+      console.log('PARSE', cssColor, hsla);
+      this.h = hsla[0];
+      this.s = hsla[1];
+      this.l = hsla[2];
+      this.a = hsla[3] ?? 1;
+    } catch (err) {
+      console.log('Failed to parse CSS color', cssColor, err);
+    }
+  }
+
+  static transparent(): Color {
+    return new Color('rgba(0, 0, 0, 0.1)');
+  }
+
+  private clone(): Color {
+    const c = new Color();
+    c.h = this.h;
+    c.s = this.s;
+    c.l = this.l;
+    c.a = this.a;
+    return c;
+  }
+
+  lighten(mod: number): Color {
+    const c = this.clone();
+    const whitePoint = 1;
+    const blackPoint = 0;
+    c.l =
+      mod > 0
+        ? this.l + (100 * whitePoint - this.l) * mod
+        : this.l + this.l * (1 - blackPoint) * mod;
+
+    console.log('C', c, c.toCSS());
+    return c;
+  }
+
+  translucify(mod: number): Color {
+    const c = this.clone();
+    c.a = c.a - c.a * mod;
+    return c;
+  }
+
+  toCSS(): string {
+    // If opacity is 1, allow for Tailwind modification
+    return `hsla(${this.h}, ${this.s}%, ${this.l}%, ${this.a})`;
+  }
 }

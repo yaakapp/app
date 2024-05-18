@@ -80,12 +80,12 @@ module.exports = {
 
       // New theme values
 
-      'fg': 'hsl(var(--fg))',
-      'fg-subtle': 'hsl(var(--fg-subtle))',
-      'fg-subtler': 'hsl(var(--fg-subtler))',
-      'background': 'hsl(var(--background))',
-      'background-active': 'hsl(var(--background-active))',
-      'background-highlight': 'hsl(var(--background-highlight))',
+      'fg': 'var(--fg)',
+      'fg-subtle': 'var(--fg-subtle)',
+      'fg-subtler': 'var(--fg-subtler)',
+      'background': 'var(--background)',
+      'background-active': 'var(--background-active)',
+      'background-highlight': 'var(--background-highlight)',
     },
   },
   plugins: [

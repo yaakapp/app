@@ -1,7 +1,6 @@
-import parseColor from 'parse-color';
 import { indent } from '../indent';
 import type { AppTheme, AppThemeColors } from './theme';
-import { generateCSS, lighten, toTailwindVariable } from './theme';
+import { Color, generateCSS, toTailwindVariable } from './theme';
 
 export type Appearance = 'dark' | 'light' | 'system';
 
@@ -55,16 +54,18 @@ const lightTheme: AppTheme = {
 };
 
 interface ThemeComponent {
-  background?: string;
-  backgroundHighlight?: string;
-  backgroundActive?: string;
-  foreground?: string;
-  foregroundSubtle?: string;
-  foregroundSubtler?: string;
+  background?: Color;
+  backgroundHighlight?: Color;
+  backgroundActive?: Color;
+  foreground?: Color;
+  foregroundSubtle?: Color;
+  foregroundSubtler?: Color;
   colors?: RootColors;
 }
 
 interface YaakTheme extends ThemeComponent {
+  name: string;
+  dark?: boolean;
   components?: {
     dialog?: ThemeComponent;
     sidebar?: ThemeComponent;
@@ -74,84 +75,78 @@ interface YaakTheme extends ThemeComponent {
 }
 
 interface RootColors {
-  primary: string;
-  secondary: string;
-  warning: string;
-  danger: string;
-  gray: string;
+  primary: Color;
+  secondary: Color;
+  warning: Color;
+  danger: Color;
+  gray: Color;
 }
 
 type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
 
-const theme: YaakTheme = {
-  background: '245 23% 12.6%',
-  backgroundHighlight: '245 23% 20%',
-  backgroundActive: '266 35% 26%',
+const yaakThemes = {
+  yaakDark: {
+    name: 'Yaak',
+    dark: true,
 
-  foreground: '245 23% 78%',
-  foregroundSubtle: '245 23% 56%',
-  foregroundSubtler: '245 23% 56% / 0.7',
-  colors: {
-    primary: 'hsl(270, 80%, 55%)',
-    secondary: 'hsl(220, 80%, 50%)',
-    warning: 'hsl(30, 80%, 50%)',
-    danger: 'hsl(10, 80%, 50%)',
-    gray: 'hsl(120, 2%, 30%)',
-  },
-  components: {
-    sidebar: {
-      background: '245 23% 15.6%',
+    background: new Color('hsl(245, 23%, 12.6%)'),
+    backgroundHighlight: new Color('hsl(245, 23%, 20%)'),
+    backgroundActive: new Color('hsl(266, 35%, 26%)'),
+
+    foreground: new Color('hsl(245, 23%, 78%)'),
+    foregroundSubtle: new Color('hsl(245, 23%, 56%)'),
+    foregroundSubtler: new Color('hsla(245, 23%, 56%, 0.7)'),
+    colors: {
+      primary: new Color('hsl(270, 80%, 55%)'),
+      secondary: new Color('hsl(220, 80%, 50%)'),
+      warning: new Color('hsl(30, 80%, 50%)'),
+      danger: new Color('hsl(10, 80%, 50%)'),
+      gray: new Color('hsl(120, 2%, 30%)'),
     },
-    responsePane: {
-      background: '245 23% 15.6%',
+    components: {
+      sidebar: {
+        background: new Color('hsl(245, 23%, 15.6%)'),
+      },
+      responsePane: {
+        background: new Color('hsl(245, 23%, 15.6%)'),
+      },
     },
-  },
-};
+  } as YaakTheme,
+} as const;
 
 type CSSVariables = Record<string, string | undefined>;
 
-function themeVariables(theme?: YaakTheme, base?: CSSVariables): CSSVariables | null {
+function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariables | null {
   const vars: CSSVariables = { ...base };
 
-  if (theme?.background) vars['--background'] = theme.background;
-  if (theme?.backgroundHighlight) vars['--background-highlight'] = theme.backgroundHighlight;
-  if (theme?.backgroundActive) vars['--background-active'] = theme.backgroundActive;
-  if (theme?.foreground) vars['--fg'] = theme.foreground;
-  if (theme?.foregroundSubtle) vars['--fg-subtle'] = theme.foregroundSubtle;
-  if (theme?.foregroundSubtler) vars['--fg-subtler'] = theme.foregroundSubtler;
+  if (theme?.background) vars['--background'] = theme.background.toCSS();
+  if (theme?.backgroundHighlight)
+    vars['--background-highlight'] = theme.backgroundHighlight.toCSS();
+  if (theme?.backgroundActive) vars['--background-active'] = theme.backgroundActive.toCSS();
+  if (theme?.foreground) vars['--fg'] = theme.foreground.toCSS();
+  if (theme?.foregroundSubtle) vars['--fg-subtle'] = theme.foregroundSubtle.toCSS();
+  if (theme?.foregroundSubtler) vars['--fg-subtler'] = theme.foregroundSubtler.toCSS();
 
   return vars;
 }
 
-function buttonSolidColorVariables(color: string): CSSVariables | null {
-  const vars: CSSVariables = {};
-
-  try {
-    const { hsl } = parseColor(color);
-    vars['--fg'] = '0 0% 100%';
-    vars['--background'] = `${hsl[0]} ${hsl[1]}% ${hsl[2]}%`;
-    vars['--background-highlight'] = `${hsl[0]} ${hsl[1]}% ${hsl[2] * 1.2}%`;
-  } catch (err) {
-    console.log('Failed to parse CSS color', color);
-    return null;
-  }
-  return vars;
+function buttonSolidColorVariables(color: Color): CSSVariables {
+  return {
+    '--fg': new Color('white').toCSS(),
+    '--background': color.toCSS(),
+    '--background-highlight': color.lighten(0.2).toCSS(),
+  };
 }
 
-function buttonBorderColorVariables(color: string): CSSVariables | null {
-  const vars: CSSVariables = {};
-
-  try {
-    const fg = lighten(color, 0.6);
-    const fgSubtle = lighten(color, 0.4);
-    vars['--fg'] = `${fg[0]} ${fg[1]}% ${fg[2]}%`;
-    vars['--fg-subtle'] = `${fgSubtle[0]} ${fgSubtle[1]}% ${fgSubtle[2]}%`;
-  } catch (err) {
-    console.log('Failed to parse CSS color', color);
-    return null;
-  }
-  return vars;
+function buttonBorderColorVariables(color: Color): CSSVariables {
+  return {
+    '--fg': color.lighten(0.6).toCSS(),
+    '--fg-subtle': color.lighten(0.4).toCSS(),
+    '--fg-subtler': color.lighten(0.4).translucify(0.6).toCSS(),
+    '--background': Color.transparent().toCSS(),
+    '--background-highlight': color.translucify(0.8).toCSS(),
+  };
 }
 
 function variablesToCSS(selector: string | null, vars: CSSVariables | null): string | null {
@@ -191,6 +186,7 @@ function buttonThemeCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
+const theme = yaakThemes.yaakDark;
 const baseCss = variablesToCSS(null, themeVariables(theme));
 const componentCssBlocks = Object.keys(theme.components ?? {}).map((key) =>
   componentThemeCSS(key as ComponentName, theme.components),

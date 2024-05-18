@@ -77,17 +77,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       color !== 'default' &&
       'bg-background enabled:hocus:bg-background-highlight ring-background',
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
-    variant === 'solid' && color === 'default' && 'enabled:hocus:bg-highlight   ring-blue-400',
+    variant === 'solid' && color === 'default' && 'enabled:hocus:bg-highlight ring-blue-400',
 
     // Borders
     variant === 'border' && 'border',
     variant === 'border' &&
       color !== 'custom' &&
       color !== 'default' &&
-      'border-fg-subtle text-fg-subtle enabled:hocus:border-fg enabled:hocus:bg-fg/10 enabled:hocus:text-fg ring-fg-subtle',
+      'border-fg-subtler text-fg-subtle enabled:hocus:border-fg-subtle enabled:hocus:bg-background-highlight enabled:hocus:text-fg ring-fg-subtle',
     variant === 'border' &&
       color === 'default' &&
-      'border-fg-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-highlight/10',
+      'border-fg-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-highlightSecondary',
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);
