@@ -48,8 +48,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
   const classes = classNames(
     className,
-    'text-fg',
     'x-theme-button',
+    'text-fg',
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects
     'whitespace-nowrap outline-none',
@@ -63,25 +63,31 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     size === 'xs' && 'h-xs px-2 text-sm',
 
     // Common
-    color === 'default' && 'x-theme-button--default ring-blue-500/50',
-    color === 'gray' && 'x-theme-button--gray ring-blue-500/50',
-    color === 'primary' && 'x-theme-button--primary ring-blue-500/50',
-    color === 'secondary' && 'x-theme-button--secondary ring-violet-500/50',
-    color === 'warning' && 'x-theme-button--warning ring-orange-500/50',
-    color === 'danger' && 'x-theme-button--danger text-fg ring-red-500/50',
-    color === 'custom' && 'x-theme-button--custom text-fg ring-red-500/50',
+    color === 'default' && `x-theme-button--${variant}--default`,
+    color === 'gray' && `x-theme-button--${variant}--gray`,
+    color === 'primary' && `x-theme-button--${variant}--primary`,
+    color === 'secondary' && `x-theme-button--${variant}--secondary`,
+    color === 'warning' && `x-theme-button--${variant}--warning`,
+    color === 'danger' && `x-theme-button--${variant}--danger`,
+    color === 'custom' && `x-theme-button--${variant}--custom`,
 
     // Solids
     variant === 'solid' &&
       color !== 'custom' &&
-      'bg-background enabled:hocus:bg-background-highlight',
+      color !== 'default' &&
+      'bg-background enabled:hocus:bg-background-highlight ring-background',
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
+    variant === 'solid' && color === 'default' && 'enabled:hocus:bg-highlight   ring-blue-400',
 
     // Borders
     variant === 'border' && 'border',
     variant === 'border' &&
       color !== 'custom' &&
-      'border-highlight text-fg enabled:hocus:border-background enabled:hocus:bg-background/20',
+      color !== 'default' &&
+      'border-fg-subtle text-fg-subtle enabled:hocus:border-fg enabled:hocus:bg-fg/10 enabled:hocus:text-fg ring-fg-subtle',
+    variant === 'border' &&
+      color === 'default' &&
+      'border-fg-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-highlight/10',
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);

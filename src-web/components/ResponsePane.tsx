@@ -73,9 +73,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
       style={style}
       className={classNames(
         className,
-        'x-theme-response-pane',
+        'x-theme-responsePane',
         'max-h-full h-full',
-        'bg-background rounded-md border border-border',
+        'bg-background rounded-md border border-highlight',
         'shadow shadow-gray-100 dark:shadow-gray-0 relative',
       )}
     >

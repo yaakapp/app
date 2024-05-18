@@ -80,11 +80,11 @@ module.exports = {
 
       // New theme values
 
-      'border': 'hsl(var(--border))',
       'fg': 'hsl(var(--fg))',
       'fg-subtle': 'hsl(var(--fg-subtle))',
       'fg-subtler': 'hsl(var(--fg-subtler))',
       'background': 'hsl(var(--background))',
+      'background-active': 'hsl(var(--background-active))',
       'background-highlight': 'hsl(var(--background-highlight))',
     },
   },

@@ -170,3 +170,12 @@ export function toTailwindVariable({ name, variant, cssColor }: ThemeColorObj): 
   const { hsl } = parseColor(cssColor || '');
   return `--color-${name}-${variant}: ${hsl[0]} ${hsl[1]}% ${hsl[2]}%;`;
 }
+
+export function lighten(color: string, mod: number): [number, number, number] {
+  const whitePoint = 1;
+  const blackPoint = 0;
+  const { hsl } = parseColor(color || '');
+  const newL =
+    mod > 0 ? hsl[2] + (100 * whitePoint - hsl[2]) * mod : hsl[2] + hsl[2] * (1 - blackPoint) * mod;
+  return [hsl[0], hsl[1], newL];
+}

@@ -33,7 +33,6 @@ import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
-import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
@@ -469,46 +468,6 @@ export function Sidebar({ className }: Props) {
         handleEnd={handleEnd}
         handleDragStart={handleDragStart}
       />
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-wrap gap-1">
-          <Button color="primary">Primary</Button>
-          <Button color="secondary">Secondary</Button>
-          <Button color="gray">Gray</Button>
-          <Button color="warning">Warning</Button>
-          <Button color="danger">Danger</Button>
-          <Button color="default">Default</Button>
-          <Button color="custom" className="bg-red-100 text-blue-500 hover:bg-yellow-500">
-            Custom
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          <Button variant="border" color="primary">
-            Primary
-          </Button>
-          <Button variant="border" color="secondary">
-            Secondary
-          </Button>
-          <Button variant="border" color="gray">
-            Gray
-          </Button>
-          <Button variant="border" color="warning">
-            Warning
-          </Button>
-          <Button variant="border" color="danger">
-            Danger
-          </Button>
-          <Button variant="border" color="default">
-            Default
-          </Button>
-          <Button
-            variant="border"
-            color="custom"
-            className="bg-red-100 text-blue-500 hover:bg-yellow-500"
-          >
-            Custom
-          </Button>
-        </div>
-      </div>
     </aside>
   );
 }
@@ -551,7 +510,7 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-border',
+        tree.depth > 0 && 'border-l border-highlight',
         tree.depth === 0 && 'ml-0',
         tree.depth >= 1 && 'ml-[1.2em]',
       )}
@@ -572,7 +531,10 @@ function SidebarItems({
             itemModel={child.item.model}
             itemPrefix={
               (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
-                <HttpMethodTag request={child.item} />
+                <HttpMethodTag
+                  request={child.item}
+                  className={classNames(selectedId !== child.item.id && 'text-fg-subtler')}
+                />
               )
             }
             onMove={handleMove}
@@ -847,7 +809,7 @@ const SidebarItem = forwardRef(function SidebarItem(
             editing && 'ring-1 focus-within:ring-focus',
             isActive && 'bg-highlightSecondary text-fg',
             !isActive && 'text-fg-subtle group-hover/item:text-fg active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-400/20',
+            selected && useProminentStyles && '!bg-background-active',
           )}
         >
           {itemModel === 'folder' && (

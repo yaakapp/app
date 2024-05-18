@@ -32,12 +32,10 @@ export function Confirm({ onHide, onResult, confirmText, variant = 'confirm' }: 
 
   return (
     <HStack space={2} justifyContent="start" className="mt-2 mb-4 flex-row-reverse">
-      <Button className="focus" color={colors[variant]} onClick={handleSuccess}>
+      <Button color={colors[variant]} onClick={handleSuccess}>
         {confirmText ?? confirmButtonTexts[variant]}
       </Button>
-      <Button className="focus" color="gray" onClick={handleHide}>
-        Cancel
-      </Button>
+      <Button onClick={handleHide}>Cancel</Button>
     </HStack>
   );
 }
