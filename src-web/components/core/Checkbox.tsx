@@ -35,7 +35,7 @@ export function Checkbox({
           aria-hidden
           className={classNames(
             'appearance-none w-4 h-4 flex-shrink-0 border border-background-highlight-secondary',
-            'rounded hocus:border-focus hocus:bg-focus/[5%] outline-none ring-0',
+            'rounded hocus:border-border-focus hocus:bg-focus/[5%] outline-none ring-0',
           )}
           type="checkbox"
           disabled={disabled}

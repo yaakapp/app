@@ -88,6 +88,39 @@ type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
 
 const yaakThemes = {
+  yaakLight: {
+    name: 'Yaak (Light)',
+    dark: false,
+
+    background: new Color('hsl(220, 24%, 95.9%)').lighten(1),
+    backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
+    backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.05),
+    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)'),
+
+    foreground: new Color('hsl(220, 24%, 11.8%)'),
+    foregroundSubtle: new Color('hsl(220, 24%, 11.8%)').lighten(0.3),
+    foregroundSubtler: new Color('hsl(220, 24%, 11.8%)').lighten(0.3).translucify(0.3),
+    colors: {
+      primary: new Color('#ac6cff'),
+      secondary: new Color('#7f8fb0'),
+      info: new Color('#0090ff'),
+      success: new Color('#00d365'),
+      warning: new Color('#ff8000'),
+      danger: new Color('#ec3f87'),
+    },
+    components: {
+      sidebar: {
+        background: new Color('hsl(220, 24%, 95.9%)'),
+        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
+        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.06),
+      },
+      responsePane: {
+        background: new Color('hsl(220, 24%, 95.9%)'),
+        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.1),
+        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
+      },
+    },
+  } as YaakTheme,
   yaakDark: {
     name: 'Yaak',
     dark: true,
@@ -98,15 +131,15 @@ const yaakThemes = {
     backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)'),
 
     foreground: new Color('hsl(245, 23%, 78%)'),
-    foregroundSubtle: new Color('hsl(245, 23%, 56%)'),
-    foregroundSubtler: new Color('hsla(245, 23%, 56%, 0.7)'),
+    foregroundSubtle: new Color('hsl(245, 23%, 56%)').darken(0.3),
+    foregroundSubtler: new Color('hsl(245, 23%, 56%)').darken(0.3).translucify(0.3),
     colors: {
       primary: new Color('hsl(266, 100%, 66%)'),
       secondary: new Color('hsl(245, 23%, 50%)'),
       info: new Color('hsl(206, 100%, 45%)'),
-      success: new Color('hsl(146, 100%, 33%)'),
+      success: new Color('hsl(150, 100%, 33%)'),
       warning: new Color('hsl(28, 100%, 45%)'),
-      danger: new Color('hsl(342, 100%, 53%)'),
+      danger: new Color('hsl(342, 100%, 55%)'),
     },
     components: {
       sidebar: {
@@ -131,9 +164,11 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
     '--background-highlight': theme?.backgroundHighlight?.toCSS(),
     '--background-highlight-secondary': theme?.backgroundHighlightSecondary?.toCSS(),
     '--background-active': theme?.backgroundActive?.toCSS(),
+    '--background-backdrop': theme?.background?.darken(0.1).translucify(0.4).toCSS(),
     '--fg': theme?.foreground?.toCSS(),
     '--fg-subtle': theme?.foregroundSubtle?.toCSS(),
     '--fg-subtler': theme?.foregroundSubtler?.toCSS(),
+    '--border-focus': theme?.colors?.info.toCSS(),
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
@@ -148,6 +183,17 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
   }
 
   return vars;
+}
+
+function placeholderColorVariables(color: Color): CSSVariables {
+  return {
+    '--fg': color.lighten(0.7).toCSS(),
+    '--fg-subtle': color.lighten(0.6).toCSS(),
+    '--fg-subtler': color.toCSS(),
+    '--background': color.translucify(0.8).toCSS(),
+    '--background-highlight': color.lighten(0.3).translucify(0.4).toCSS(),
+    '--background-highlight-secondary': color.lighten(0.3).translucify(0.6).toCSS(),
+  };
 }
 
 function bannerColorVariables(color: Color): CSSVariables {
@@ -165,7 +211,8 @@ function buttonSolidColorVariables(color: Color): CSSVariables {
   return {
     '--fg': new Color('white').toCSS(),
     '--background': color.toCSS(),
-    '--background-highlight': color.lighten(0.1).toCSS(),
+    '--background-highlight': color.lighten(0.15).toCSS(),
+    '--background-highlight-secondary': color.translucify(0.4).toCSS(),
   };
 }
 
@@ -192,7 +239,7 @@ function variablesToCSS(selector: string | null, vars: CSSVariables | null): str
   return selector == null ? css : `${selector} {\n${indent(css)}\n}`;
 }
 
-function componentThemeCSS(
+function componentCSS(
   component: ComponentName,
   components?: YaakTheme['components'],
 ): string | null {
@@ -204,7 +251,7 @@ function componentThemeCSS(
   return variablesToCSS(`.x-theme-${component}`, themeVars);
 }
 
-function buttonThemeCSS(color: ColorName, colors?: RootColors): string | null {
+function buttonCSS(color: ColorName, colors?: RootColors): string | null {
   const cssColor = colors?.[color];
   if (cssColor == null) {
     return null;
@@ -216,7 +263,7 @@ function buttonThemeCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
-function bannerThemeCSS(color: ColorName, colors?: RootColors): string | null {
+function bannerCSS(color: ColorName, colors?: RootColors): string | null {
   const cssColor = colors?.[color];
   if (cssColor == null) {
     return null;
@@ -225,20 +272,29 @@ function bannerThemeCSS(color: ColorName, colors?: RootColors): string | null {
   return [variablesToCSS(`.x-theme-banner--${color}`, bannerColorVariables(cssColor))].join('\n\n');
 }
 
-const theme = yaakThemes.yaakDark;
+function placeholderCSS(color: ColorName, colors?: RootColors): string | null {
+  const cssColor = colors?.[color];
+  if (cssColor == null) {
+    return null;
+  }
+
+  return [
+    variablesToCSS(`.x-theme-placeholder-widget--${color}`, placeholderColorVariables(cssColor)),
+  ].join('\n\n');
+}
+
+const theme = yaakThemes.yaakLight;
 const baseCss = variablesToCSS(null, themeVariables(theme));
-const componentCssBlocks = Object.keys(theme.components ?? {}).map((key) =>
-  componentThemeCSS(key as ComponentName, theme.components),
-);
-const buttonCssBlocks = Object.keys(theme.colors ?? {}).map((key) =>
-  buttonThemeCSS(key as ColorName, theme.colors),
-);
-const bannerCssBlocks = Object.keys(theme.colors ?? {}).map((key) =>
-  bannerThemeCSS(key as ColorName, theme.colors),
-);
-const newTheme = [baseCss, ...componentCssBlocks, ...buttonCssBlocks, ...bannerCssBlocks].join(
-  '\n\n',
-);
+const { components, colors } = theme;
+const newTheme = [
+  baseCss,
+  ...Object.keys(components ?? {}).map((key) =>
+    componentCSS(key as ComponentName, theme.components),
+  ),
+  ...Object.keys(colors ?? {}).map((key) => buttonCSS(key as ColorName, colors)),
+  ...Object.keys(colors ?? {}).map((key) => bannerCSS(key as ColorName, colors)),
+  ...Object.keys(colors ?? {}).map((key) => placeholderCSS(key as ColorName, colors)),
+].join('\n\n');
 console.log('THEME', newTheme);
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {

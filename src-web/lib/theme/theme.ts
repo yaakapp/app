@@ -226,6 +226,12 @@ export class Color {
     return c;
   }
 
+  darken(mod: number): Color {
+    const c = this.clone();
+    c.l = this.l - this.l * mod;
+    return c;
+  }
+
   translucify(mod: number): Color {
     const c = this.clone();
     c.a = c.a - c.a * mod;

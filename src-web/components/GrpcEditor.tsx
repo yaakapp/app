@@ -133,12 +133,12 @@ export function GrpcEditor({
           size="xs"
           color={
             reflectionLoading
-              ? 'gray'
-              : reflectionUnavailable
               ? 'secondary'
+              : reflectionUnavailable
+              ? 'info'
               : reflectionError
               ? 'danger'
-              : 'gray'
+              : 'secondary'
           }
           isLoading={reflectionLoading}
           onClick={() => {

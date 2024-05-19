@@ -147,7 +147,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
           containerClassName,
           'relative w-full rounded-md text-fg',
           'border',
-          focused ? 'border-focus' : 'border-background-highlight',
+          focused ? 'border-border-focus' : 'border-background-highlight',
           !isValid && '!border-invalid',
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',

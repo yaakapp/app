@@ -43,7 +43,7 @@ export function Overlay({
               onClick={onClose}
               className={classNames(
                 'absolute inset-0',
-                variant === 'default' && 'bg-gray-600/30 dark:bg-black/30 backdrop-blur-sm',
+                variant === 'default' && 'bg-background-backdrop backdrop-blur-sm',
               )}
             />
             <div className="bg-red-100">{children}</div>

@@ -5,7 +5,9 @@
     @apply w-full block text-base;
 
     .cm-cursor {
-      @apply border-gray-800 !important;
+      @apply border-fg !important;
+      /* Widen the cursor */
+      @apply border-l-2;
     }
 
     &.cm-focused {
@@ -21,7 +23,7 @@
     }
 
     .cm-placeholder {
-      @apply text-fg-subtler;
+      @apply text-placeholder;
     }
 
     .cm-scroller {
@@ -55,19 +57,13 @@
     }
 
     .placeholder-widget {
-      @apply text-xs text-violet-700 dark:text-violet-700 px-1 mx-[0.5px] rounded cursor-default dark:shadow;
+      /* Colors */
+      @apply bg-background text-fg-subtle border-background-highlight-secondary;
+      @apply hover:border-background-highlight hover:text-fg;
 
-      /* NOTE: Background and border are translucent so we can see text selection through it */
-      @apply bg-violet-500/20 border border-violet-500/20 border-opacity-40;
-
-      /* Bring above on hover */
-      @apply hover:z-10 relative;
+      @apply border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 
       -webkit-text-security: none;
-
-      &.placeholder-widget-error {
-        @apply text-red-700 dark:text-red-800 bg-red-300/30 border-red-300/80 border-opacity-40 hover:border-red-300 hover:bg-red-300/40;
-      }
     }
 
     .hyperlink-widget {
@@ -137,7 +133,7 @@
 
 .cm-editor .fold-gutter-icon::after {
   @apply block w-1.5 h-1.5 border-transparent -rotate-45
-    border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
+  border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
 }
 
 .cm-editor .fold-gutter-icon[data-open] {
@@ -149,12 +145,12 @@
 }
 
 .cm-editor .fold-gutter-icon:hover {
-  @apply text-fg bg-gray-300/50;
+  @apply text-fg bg-background-highlight;
 }
 
 .cm-editor .cm-foldPlaceholder {
-  @apply px-2 border border-gray-400/50 bg-gray-300/50;
-  @apply hover:text-fg hover:border-gray-400;
+  @apply px-2 border border-fg-subtler bg-background-highlight;
+  @apply hover:text-fg hover:border-fg-subtle;
   @apply cursor-default !important;
 }
 
@@ -166,9 +162,11 @@
   &.cm-focused .cm-activeLineGutter {
     @apply text-fg-subtle;
   }
+}
 
+.cm-wrapper.cm-readonly .cm-editor {
   .cm-cursor {
-    @apply border-l-2 border-gray-800;
+    @apply border-fg-danger !important;
   }
 }
 
@@ -187,7 +185,7 @@
 }
 
 .cm-tooltip.cm-tooltip-hover {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-gray-500 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-fg-subtler z-50 pointer-events-auto text-xs;
   @apply px-2 py-1;
 
   a {
@@ -198,7 +196,7 @@
     }
 
     &::after {
-      @apply text-fg bg-gray-800 h-3 w-3 ml-1;
+      @apply text-fg bg-fg-secondary h-3 w-3 ml-1;
       content: '';
       -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
       -webkit-mask-size: contain;
@@ -210,7 +208,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-gray-300 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-xs;
 
   .cm-completionIcon {
     @apply italic font-mono;
@@ -308,7 +306,7 @@
 }
 
 .cm-editor .cm-panels {
-  @apply bg-gray-100 backdrop-blur-sm p-1 mb-1 text-fg z-20 rounded-md;
+  @apply bg-background-highlight-secondary backdrop-blur-sm p-1 mb-1 text-fg z-20 rounded-md;
 
   input,
   button {
@@ -316,7 +314,8 @@
   }
 
   button {
-    @apply appearance-none bg-none bg-gray-200 hocus:bg-gray-300 hocus:text-fg border-0 text-fg-subtle cursor-default;
+    @apply border-fg-subtler bg-background-highlight text-fg hover:border-fg-info;
+    @apply appearance-none bg-none cursor-default;
   }
 
   button[name='close'] {
@@ -324,7 +323,8 @@
   }
 
   input {
-    @apply bg-gray-50 border border-gray-500/50 focus:border-focus outline-none;
+    @apply bg-background border-background-highlight focus:border-border-focus;
+    @apply border outline-none cursor-text;
   }
 
   label {

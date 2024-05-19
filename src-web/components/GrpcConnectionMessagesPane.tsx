@@ -183,20 +183,20 @@ function EventRow({
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
           'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-background-highlight-secondary text-fg',
+          isActive && '!bg-background-highlight-secondary !text-fg',
           'text-fg-subtle hover:text-fg',
         )}
       >
         <Icon
           className={
             eventType === 'server_message'
-              ? 'text-blue-600'
+              ? 'text-fg-info'
               : eventType === 'client_message'
-              ? 'text-violet-600'
+              ? 'text-fg-primary'
               : eventType === 'error' || (status != null && status > 0)
-              ? 'text-orange-600'
+              ? 'text-fg-danger'
               : eventType === 'connection_end'
-              ? 'text-green-600'
+              ? 'text-fg-success'
               : 'text-fg-subtle'
           }
           title={

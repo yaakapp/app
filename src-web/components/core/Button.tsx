@@ -76,11 +76,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'solid' &&
       color !== 'custom' &&
       color !== 'default' &&
-      'bg-background enabled:hocus:bg-background-highlight ring-background',
+      'bg-background enabled:hocus:bg-background-highlight ring-background-highlight-secondary',
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color === 'default' &&
-      'enabled:hocus:bg-background-highlight ring-blue-400',
+      'enabled:hocus:bg-background-highlight ring-fg-info',
 
     // Borders
     variant === 'border' && 'border',

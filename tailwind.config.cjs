@@ -61,25 +61,25 @@ module.exports = {
     },
     colors: {
       selection: 'hsl(var(--color-violet-500) / 0.3)',
-      focus: 'hsl(var(--color-blue-500) / 0.7)',
-      invalid: 'hsl(var(--color-red-500))',
-      highlight: 'hsl(var(--color-gray-500) / 0.3)',
-      highlightSecondary: 'hsl(var(--color-gray-500) / 0.15)',
+      // invalid: 'hsl(var(--color-red-500))',
+      // highlight: 'hsl(var(--color-gray-500) / 0.3)',
+      // highlightSecondary: 'hsl(var(--color-gray-500) / 0.15)',
       transparent: 'transparent',
-      white: 'hsl(0 100% 100% / <alpha-value>)',
-      black: 'hsl(0 100% 0% / <alpha-value>)',
-      placeholder: 'hsl(var(--color-gray-400) / <alpha-value>)',
-      red: color('red'),
-      orange: color('orange'),
-      yellow: color('yellow'),
-      blue: color('blue'),
-      green: color('green'),
-      pink: color('pink'),
-      violet: color('violet'),
-      gray: color('gray'),
+      // white: 'hsl(0 100% 100% / <alpha-value>)',
+      // black: 'hsl(0 100% 0% / <alpha-value>)',
+      placeholder: 'var(--fg-subtler)',
+      // red: color('red'),
+      // orange: color('orange'),
+      // yellow: color('yellow'),
+      // blue: color('blue'),
+      // green: color('green'),
+      // pink: color('pink'),
+      // violet: color('violet'),
+      // gray: color('gray'),
 
       // New theme values
 
+      'border-focus': 'var(--border-focus)',
       'fg': 'var(--fg)',
       'fg-subtle': 'var(--fg-subtle)',
       'fg-subtler': 'var(--fg-subtler)',
@@ -93,11 +93,12 @@ module.exports = {
       'background-active': 'var(--background-active)',
       'background-highlight': 'var(--background-highlight)',
       'background-highlight-secondary': 'var(--background-highlight-secondary)',
+      'background-backdrop': 'var(--background-backdrop)',
     },
   },
   plugins: [
     require('@tailwindcss/container-queries'),
-    plugin(function ({ addVariant }) {
+    plugin(function ({addVariant}) {
       addVariant('hocus', ['&:hover', '&:focus-visible', '&.focus:focus']);
       addVariant('focus-visible-or-class', ['&:focus-visible']);
     }),

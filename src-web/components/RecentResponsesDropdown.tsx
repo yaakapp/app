@@ -1,12 +1,12 @@
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import type { HttpResponse } from '../lib/models';
-import { Dropdown } from './core/Dropdown';
 import { pluralize } from '../lib/pluralize';
-import { HStack } from './core/Stacks';
-import { StatusTag } from './core/StatusTag';
+import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
+import { HStack } from './core/Stacks';
+import { StatusTag } from './core/StatusTag';
 
 interface Props {
   responses: HttpResponse[];
@@ -44,7 +44,8 @@ export const RecentResponsesDropdown = function ResponsePane({
           label: (
             <HStack space={2} alignItems="center">
               <StatusTag className="text-xs" response={r} />
-              <span>&bull;</span> <span className="font-mono text-xs">{r.elapsed}ms</span>
+              <span>&rarr;</span>{' '}
+              <span className="font-mono text-xs">{r.elapsed >= 0 ? `${r.elapsed}ms` : 'n/a'}</span>
             </HStack>
           ),
           leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
