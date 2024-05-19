@@ -88,7 +88,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
                   <Button
                     key="introspection"
                     size="xs"
-                    color={error ? 'danger' : 'gray'}
+                    color={error ? 'danger' : 'secondary'}
                     isLoading={isLoading}
                     onClick={() => {
                       dialog.show({
@@ -105,7 +105,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
                                   refetch();
                                 }}
                                 className="ml-auto"
-                                color="secondary"
+                                color="info"
                                 size="sm"
                               >
                                 Try Again

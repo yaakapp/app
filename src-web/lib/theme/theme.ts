@@ -198,7 +198,6 @@ export class Color {
     if (cssColor == null) return;
     try {
       const { hsla } = parseColor(cssColor || '');
-      console.log('PARSE', cssColor, hsla);
       this.h = hsla[0];
       this.s = hsla[1];
       this.l = hsla[2];
@@ -223,14 +222,7 @@ export class Color {
 
   lighten(mod: number): Color {
     const c = this.clone();
-    const whitePoint = 1;
-    const blackPoint = 0;
-    c.l =
-      mod > 0
-        ? this.l + (100 * whitePoint - this.l) * mod
-        : this.l + this.l * (1 - blackPoint) * mod;
-
-    console.log('C', c, c.toCSS());
+    c.l = this.l + (100 - this.l) * mod;
     return c;
   }
 

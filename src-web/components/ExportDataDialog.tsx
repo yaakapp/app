@@ -15,7 +15,12 @@ interface Props {
   workspaces: Workspace[];
 }
 
-export function ExportDataDialog({ onHide, onSuccess, activeWorkspace, workspaces: allWorkspaces }: Props) {
+export function ExportDataDialog({
+  onHide,
+  onSuccess,
+  activeWorkspace,
+  workspaces: allWorkspaces,
+}: Props) {
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<Record<string, boolean>>({
     [activeWorkspace.id]: true,
   });
@@ -27,7 +32,9 @@ export function ExportDataDialog({ onHide, onSuccess, activeWorkspace, workspace
   );
 
   const handleToggleAll = () => {
-    setSelectedWorkspaces(allSelected ? {} : workspaces.reduce((acc, w) => ({ ...acc, [w.id]: true }), {}));
+    setSelectedWorkspaces(
+      allSelected ? {} : workspaces.reduce((acc, w) => ({ ...acc, [w.id]: true }), {}),
+    );
   };
 
   const handleExport = useCallback(async () => {
@@ -77,7 +84,9 @@ export function ExportDataDialog({ onHide, onSuccess, activeWorkspace, workspace
                   checked={selectedWorkspaces[w.id] ?? false}
                   title={w.name}
                   hideLabel
-                  onChange={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
+                  onChange={() =>
+                    setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))
+                  }
                 />
               </td>
               <td
@@ -91,10 +100,16 @@ export function ExportDataDialog({ onHide, onSuccess, activeWorkspace, workspace
         </tbody>
       </table>
       <HStack space={2} justifyContent="end">
-        <Button className="focus" color="gray" onClick={onHide}>
+        <Button className="focus" variant="border" onClick={onHide}>
           Cancel
         </Button>
-        <Button type="submit" className="focus" color="primary" disabled={noneSelected} onClick={() => handleExport()}>
+        <Button
+          type="submit"
+          className="focus"
+          color="primary"
+          disabled={noneSelected}
+          onClick={() => handleExport()}
+        >
           Export {count('Workspace', numSelected, { omitSingle: true, noneWord: 'Nothing' })}
         </Button>
       </HStack>

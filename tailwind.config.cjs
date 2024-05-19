@@ -83,6 +83,12 @@ module.exports = {
       'fg': 'var(--fg)',
       'fg-subtle': 'var(--fg-subtle)',
       'fg-subtler': 'var(--fg-subtler)',
+      'fg-primary': 'var(--fg-primary)',
+      'fg-secondary': 'var(--fg-secondary)',
+      'fg-success': 'var(--fg-success)',
+      'fg-info': 'var(--fg-info)',
+      'fg-warning': 'var(--fg-warning)',
+      'fg-danger': 'var(--fg-danger)',
       'background': 'var(--background)',
       'background-active': 'var(--background-active)',
       'background-highlight': 'var(--background-highlight)',
@@ -93,7 +99,7 @@ module.exports = {
     require('@tailwindcss/container-queries'),
     plugin(function ({ addVariant }) {
       addVariant('hocus', ['&:hover', '&:focus-visible', '&.focus:focus']);
-      addVariant('focus-visible-or-class', ['&:focus-visible', '&.focus:focus']);
+      addVariant('focus-visible-or-class', ['&:focus-visible']);
     }),
   ],
 };

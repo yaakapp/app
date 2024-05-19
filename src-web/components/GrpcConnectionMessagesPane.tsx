@@ -119,7 +119,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                             }, 500);
                           }}
                           isLoading={showingLarge}
-                          color="gray"
+                          color="secondary"
                           variant="border"
                           size="xs"
                         >

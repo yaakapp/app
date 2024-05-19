@@ -46,7 +46,7 @@ export function BinaryFileEditor({
   return (
     <VStack space={2}>
       <HStack space={2} alignItems="center">
-        <Button variant="border" color="gray" size="sm" onClick={handleClick}>
+        <Button variant="border" color="secondary" size="sm" onClick={handleClick}>
           Choose File
         </Button>
         <div className="text-xs font-mono truncate rtl pr-3 text-fg">
@@ -64,7 +64,7 @@ export function BinaryFileEditor({
           <HStack space={1.5} justifyContent="center">
             <Button
               variant="solid"
-              color="gray"
+              color="secondary"
               size="xs"
               onClick={() => onChangeContentType(mimeType)}
             >

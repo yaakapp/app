@@ -60,7 +60,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
         <Button
           isLoading={grpc.reflect.isFetching}
           disabled={grpc.reflect.isFetching}
-          color="gray"
+          color="secondary"
           size="sm"
           onClick={() => grpc.reflect.refetch()}
         >

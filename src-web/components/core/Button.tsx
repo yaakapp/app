@@ -7,7 +7,15 @@ import { Icon } from './Icon';
 
 export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
   innerClassName?: string;
-  color?: 'custom' | 'default' | 'gray' | 'primary' | 'secondary' | 'warning' | 'danger';
+  color?:
+    | 'custom'
+    | 'default'
+    | 'secondary'
+    | 'primary'
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'danger';
   variant?: 'border' | 'solid';
   isLoading?: boolean;
   size?: 'xs' | 'sm' | 'md';
@@ -49,6 +57,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const classes = classNames(
     className,
     'x-theme-button',
+    `x-theme-button--${variant}--${color}`,
+    `x-theme-button--${variant}`,
     'text-fg',
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects
@@ -62,15 +72,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     size === 'sm' && 'h-sm px-2.5 text-sm',
     size === 'xs' && 'h-xs px-2 text-sm',
 
-    // Common
-    color === 'default' && `x-theme-button--${variant}--default`,
-    color === 'gray' && `x-theme-button--${variant}--gray`,
-    color === 'primary' && `x-theme-button--${variant}--primary`,
-    color === 'secondary' && `x-theme-button--${variant}--secondary`,
-    color === 'warning' && `x-theme-button--${variant}--warning`,
-    color === 'danger' && `x-theme-button--${variant}--danger`,
-    color === 'custom' && `x-theme-button--${variant}--custom`,
-
     // Solids
     variant === 'solid' &&
       color !== 'custom' &&
@@ -79,7 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color === 'default' &&
-      'enabled:hocus:bg-background-highlight-secondary ring-blue-400',
+      'enabled:hocus:bg-background-highlight ring-blue-400',
 
     // Borders
     variant === 'border' && 'border',

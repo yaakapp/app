@@ -186,7 +186,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
             size="xs"
             className="mr-0.5 group/obscure !h-auto my-0.5"
-            iconClassName="text-fg-subtler group-hover/obscure:text-fg"
+            iconClassName="text-fg-subtle group-hover/obscure:text-fg"
             iconSize="sm"
             icon={obscured ? 'eye' : 'eyeClosed'}
             onClick={() => setObscured((o) => !o)}

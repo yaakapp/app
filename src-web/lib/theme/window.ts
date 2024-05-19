@@ -78,9 +78,10 @@ interface YaakTheme extends ThemeComponent {
 interface RootColors {
   primary: Color;
   secondary: Color;
+  info: Color;
+  success: Color;
   warning: Color;
   danger: Color;
-  gray: Color;
 }
 
 type ColorName = keyof RootColors;
@@ -100,11 +101,12 @@ const yaakThemes = {
     foregroundSubtle: new Color('hsl(245, 23%, 56%)'),
     foregroundSubtler: new Color('hsla(245, 23%, 56%, 0.7)'),
     colors: {
-      primary: new Color('hsl(270, 80%, 55%)'),
-      secondary: new Color('hsl(220, 80%, 50%)'),
-      warning: new Color('hsl(30, 80%, 50%)'),
-      danger: new Color('hsl(10, 80%, 50%)'),
-      gray: new Color('hsl(120, 2%, 30%)'),
+      primary: new Color('hsl(266, 100%, 66%)'),
+      secondary: new Color('hsl(245, 23%, 50%)'),
+      info: new Color('hsl(206, 100%, 45%)'),
+      success: new Color('hsl(146, 100%, 33%)'),
+      warning: new Color('hsl(28, 100%, 45%)'),
+      danger: new Color('hsl(342, 100%, 53%)'),
     },
     components: {
       sidebar: {
@@ -124,26 +126,46 @@ const yaakThemes = {
 type CSSVariables = Record<string, string | undefined>;
 
 function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariables | null {
-  const vars: CSSVariables = { ...base };
+  const vars: CSSVariables = {
+    '--background': theme?.background?.toCSS(),
+    '--background-highlight': theme?.backgroundHighlight?.toCSS(),
+    '--background-highlight-secondary': theme?.backgroundHighlightSecondary?.toCSS(),
+    '--background-active': theme?.backgroundActive?.toCSS(),
+    '--fg': theme?.foreground?.toCSS(),
+    '--fg-subtle': theme?.foregroundSubtle?.toCSS(),
+    '--fg-subtler': theme?.foregroundSubtler?.toCSS(),
+  };
 
-  if (theme?.background) vars['--background'] = theme.background.toCSS();
-  if (theme?.backgroundHighlight)
-    vars['--background-highlight'] = theme.backgroundHighlight.toCSS();
-  if (theme?.backgroundHighlightSecondary)
-    vars['--background-highlight-secondary'] = theme.backgroundHighlightSecondary.toCSS();
-  if (theme?.backgroundActive) vars['--background-active'] = theme.backgroundActive.toCSS();
-  if (theme?.foreground) vars['--fg'] = theme.foreground.toCSS();
-  if (theme?.foregroundSubtle) vars['--fg-subtle'] = theme.foregroundSubtle.toCSS();
-  if (theme?.foregroundSubtler) vars['--fg-subtler'] = theme.foregroundSubtler.toCSS();
+  for (const [color, value] of Object.entries(theme?.colors ?? {})) {
+    vars[`--fg-${color}`] = value.lighten(0.4).toCSS();
+  }
+
+  // Extend with base
+  for (const [k, v] of Object.entries(vars)) {
+    if (!v && base?.[k]) {
+      vars[k] = base[k];
+    }
+  }
 
   return vars;
+}
+
+function bannerColorVariables(color: Color): CSSVariables {
+  return {
+    '--fg': color.lighten(0.8).toCSS(),
+    '--fg-subtle': color.translucify(0.3).toCSS(),
+    '--fg-subtler': color.toCSS(),
+    '--background': color.toCSS(),
+    '--background-highlight': color.lighten(0.3).translucify(0.4).toCSS(),
+    '--background-highlight-secondary': color.translucify(0.9).toCSS(),
+  };
 }
 
 function buttonSolidColorVariables(color: Color): CSSVariables {
   return {
     '--fg': new Color('white').toCSS(),
     '--background': color.toCSS(),
-    '--background-highlight': color.lighten(0.2).toCSS(),
+    '--background-highlight': color.lighten(0.1).toCSS(),
   };
 }
 
@@ -194,6 +216,15 @@ function buttonThemeCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
+function bannerThemeCSS(color: ColorName, colors?: RootColors): string | null {
+  const cssColor = colors?.[color];
+  if (cssColor == null) {
+    return null;
+  }
+
+  return [variablesToCSS(`.x-theme-banner--${color}`, bannerColorVariables(cssColor))].join('\n\n');
+}
+
 const theme = yaakThemes.yaakDark;
 const baseCss = variablesToCSS(null, themeVariables(theme));
 const componentCssBlocks = Object.keys(theme.components ?? {}).map((key) =>
@@ -202,7 +233,12 @@ const componentCssBlocks = Object.keys(theme.components ?? {}).map((key) =>
 const buttonCssBlocks = Object.keys(theme.colors ?? {}).map((key) =>
   buttonThemeCSS(key as ColorName, theme.colors),
 );
-const newTheme = [baseCss, ...componentCssBlocks, ...buttonCssBlocks].join('\n\n');
+const bannerCssBlocks = Object.keys(theme.colors ?? {}).map((key) =>
+  bannerThemeCSS(key as ColorName, theme.colors),
+);
+const newTheme = [baseCss, ...componentCssBlocks, ...buttonCssBlocks, ...bannerCssBlocks].join(
+  '\n\n',
+);
 console.log('THEME', newTheme);
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {

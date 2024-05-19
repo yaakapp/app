@@ -533,6 +533,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       justify="start"
       leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
+      innerClassName="!text-left"
       className={classNames(
         className,
         'h-xs', // More compact
@@ -541,7 +542,6 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}
-      innerClassName="!text-left"
       {...props}
     >
       <div

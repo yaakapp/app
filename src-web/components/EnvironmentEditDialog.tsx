@@ -244,9 +244,7 @@ function SidebarButton({
           size="xs"
           className={classNames(
             'w-full',
-            active
-              ? 'text-fg-subtle bg-background-highlight-secondary'
-              : 'text-fg-subtler hover:text-fg-subtle',
+            active ? 'text-fg bg-background-active' : 'text-fg-subtle hover:text-fg',
           )}
           justify="start"
           onClick={onClick}

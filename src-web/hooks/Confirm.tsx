@@ -35,7 +35,9 @@ export function Confirm({ onHide, onResult, confirmText, variant = 'confirm' }: 
       <Button color={colors[variant]} onClick={handleSuccess}>
         {confirmText ?? confirmButtonTexts[variant]}
       </Button>
-      <Button onClick={handleHide}>Cancel</Button>
+      <Button onClick={handleHide} variant="border">
+        Cancel
+      </Button>
     </HStack>
   );
 }

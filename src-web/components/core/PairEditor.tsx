@@ -388,7 +388,7 @@ function PairEditorRow({
           {pairContainer.pair.isFile ? (
             <Button
               size="xs"
-              color="gray"
+              color="secondary"
               className="font-mono text-xs"
               onClick={async (e) => {
                 e.preventDefault();
