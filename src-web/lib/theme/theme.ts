@@ -189,61 +189,66 @@ export function opacity(color: string, mod: number): [number, number, number, nu
 }
 
 export class Color {
-  private h: number = 0;
-  private s: number = 0;
-  private l: number = 0;
-  private a: number = 1;
+  private theme: 'dark' | 'light' = 'light';
 
-  constructor(cssColor?: string) {
-    if (cssColor == null) return;
+  private hue: number = 0;
+  private saturation: number = 0;
+  private lightness: number = 0;
+  private alpha: number = 1;
+
+  constructor(cssColor: string, theme: 'dark' | 'light') {
     try {
       const { hsla } = parseColor(cssColor || '');
-      this.h = hsla[0];
-      this.s = hsla[1];
-      this.l = hsla[2];
-      this.a = hsla[3] ?? 1;
+      this.hue = hsla[0];
+      this.saturation = hsla[1];
+      this.lightness = hsla[2];
+      this.alpha = hsla[3] ?? 1;
+      this.theme = theme;
     } catch (err) {
       console.log('Failed to parse CSS color', cssColor, err);
     }
   }
 
   static transparent(): Color {
-    return new Color('rgba(0, 0, 0, 0.1)');
+    return new Color('rgba(0, 0, 0, 0.1)', 'light');
   }
 
   private clone(): Color {
-    const c = new Color();
-    c.h = this.h;
-    c.s = this.s;
-    c.l = this.l;
-    c.a = this.a;
-    return c;
+    return new Color(this.css(), this.theme);
   }
 
-  lighten(mod: number): Color {
-    const c = this.clone();
-    c.l = this.l + (100 - this.l) * mod;
-    return c;
+  raise(mod: number): Color {
+    return this.theme === 'dark' ? this._darken(mod) : this._lighten(mod);
   }
 
-  darken(mod: number): Color {
-    const c = this.clone();
-    c.l = this.l - this.l * mod;
-    return c;
+  lower(mod: number): Color {
+    return this.theme === 'dark' ? this._lighten(mod) : this._darken(mod);
   }
 
   translucify(mod: number): Color {
     const c = this.clone();
-    c.a = c.a - c.a * mod;
+    c.alpha = c.alpha - c.alpha * mod;
     return c;
   }
 
-  toCSS(): string {
+  css(): string {
     // If opacity is 1, allow for Tailwind modification
-    const h = Math.round(this.h);
-    const s = Math.round(this.s);
-    const l = Math.round(this.l);
-    const a = Math.round(this.a * 100) / 100;
+    const h = Math.round(this.hue);
+    const s = Math.round(this.saturation);
+    const l = Math.round(this.lightness);
+    const a = Math.round(this.alpha * 100) / 100;
     return `hsla(${h}, ${s}%, ${l}%, ${a})`;
+  }
+
+  private _lighten(mod: number): Color {
+    const c = this.clone();
+    c.lightness = this.lightness + (100 - this.lightness) * mod;
+    return c;
+  }
+
+  private _darken(mod: number): Color {
+    const c = this.clone();
+    c.lightness = this.lightness - this.lightness * mod;
+    return c;
   }
 }

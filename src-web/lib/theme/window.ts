@@ -86,38 +86,39 @@ interface RootColors {
 
 type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
+console.log('HELLO');
 
 const yaakThemes = {
   yaakLight: {
     name: 'Yaak (Light)',
     dark: false,
 
-    background: new Color('hsl(220, 24%, 95.9%)').lighten(1),
-    backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
-    backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.05),
-    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)'),
+    background: new Color('hsl(220, 24%, 95.9%)', 'light').raise(1),
+    backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
+    backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.05),
+    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)', 'light'),
 
-    foreground: new Color('hsl(220, 24%, 11.8%)'),
-    foregroundSubtle: new Color('hsl(220, 24%, 11.8%)').lighten(0.3),
-    foregroundSubtler: new Color('hsl(220, 24%, 11.8%)').lighten(0.3).translucify(0.3),
+    foreground: new Color('hsl(220, 24%, 11.8%)', 'light'),
+    foregroundSubtle: new Color('hsl(220, 24%, 11.8%)', 'light').raise(0.3),
+    foregroundSubtler: new Color('hsl(220, 24%, 11.8%)', 'light').raise(0.3).translucify(0.3),
     colors: {
-      primary: new Color('#ac6cff'),
-      secondary: new Color('#7f8fb0'),
-      info: new Color('#0090ff'),
-      success: new Color('#00d365'),
-      warning: new Color('#ff8000'),
-      danger: new Color('#ec3f87'),
+      primary: new Color('#ac6cff', 'light'),
+      secondary: new Color('#7f8fb0', 'light'),
+      info: new Color('#0090ff', 'light'),
+      success: new Color('#00d365', 'light'),
+      warning: new Color('#ff8000', 'light'),
+      danger: new Color('#ec3f87', 'light'),
     },
     components: {
       sidebar: {
-        background: new Color('hsl(220, 24%, 95.9%)'),
-        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
-        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.06),
+        background: new Color('hsl(220, 24%, 95.9%)', 'light'),
+        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
+        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.06),
       },
       responsePane: {
-        background: new Color('hsl(220, 24%, 95.9%)'),
-        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)').darken(0.1),
-        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)').darken(0.08),
+        background: new Color('hsl(220, 24%, 95.9%)', 'light'),
+        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.1),
+        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
       },
     },
   } as YaakTheme,
@@ -125,54 +126,55 @@ const yaakThemes = {
     name: 'Yaak',
     dark: true,
 
-    background: new Color('hsl(245, 23%, 12.6%)'),
-    backgroundHighlight: new Color('hsl(245, 23%, 12.6%)').lighten(0.11),
-    backgroundHighlightSecondary: new Color('hsl(245, 23%, 12.6%)').lighten(0.08),
-    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)'),
+    background: new Color('hsl(245, 23%, 12.6%)', 'dark'),
+    backgroundHighlight: new Color('hsl(245, 23%, 12.6%)', 'dark').lower(0.11),
+    backgroundHighlightSecondary: new Color('hsl(245, 23%, 12.6%)', 'dark').lower(0.08),
+    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)', 'dark'),
 
-    foreground: new Color('hsl(245, 23%, 78%)'),
-    foregroundSubtle: new Color('hsl(245, 23%, 56%)').darken(0.3),
-    foregroundSubtler: new Color('hsl(245, 23%, 56%)').darken(0.3).translucify(0.3),
+    foreground: new Color('hsl(245, 23%, 78%)', 'dark'),
+    foregroundSubtle: new Color('hsl(245, 23%, 56%)', 'dark').lower(0.3),
+    foregroundSubtler: new Color('hsl(245, 23%, 56%)', 'dark').lower(0.3).translucify(0.3),
     colors: {
-      primary: new Color('hsl(266, 100%, 66%)'),
-      secondary: new Color('hsl(245, 23%, 50%)'),
-      info: new Color('hsl(206, 100%, 45%)'),
-      success: new Color('hsl(150, 100%, 33%)'),
-      warning: new Color('hsl(28, 100%, 45%)'),
-      danger: new Color('hsl(342, 100%, 55%)'),
+      primary: new Color('hsl(266, 100%, 66%)', 'dark'),
+      secondary: new Color('hsl(245, 23%, 50%)', 'dark'),
+      info: new Color('hsl(206, 100%, 45%)', 'dark'),
+      success: new Color('hsl(150, 100%, 33%)', 'dark'),
+      warning: new Color('hsl(28, 100%, 45%)', 'dark'),
+      danger: new Color('hsl(342, 100%, 55%)', 'dark'),
     },
     components: {
       sidebar: {
-        background: new Color('hsl(245, 23%, 15.6%)'),
-        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)').lighten(0.1),
-        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)').lighten(0.08),
+        background: new Color('hsl(245, 23%, 15.6%)', 'dark'),
+        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.1),
+        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.08),
       },
       responsePane: {
-        background: new Color('hsl(245, 23%, 15.6%)'),
-        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)').lighten(0.1),
-        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)').lighten(0.08),
+        background: new Color('hsl(245, 23%, 15.6%)', 'dark'),
+        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.1),
+        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.08),
       },
     },
   } as YaakTheme,
 } as const;
+console.log('WORLD');
 
 type CSSVariables = Record<string, string | undefined>;
 
 function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariables | null {
   const vars: CSSVariables = {
-    '--background': theme?.background?.toCSS(),
-    '--background-highlight': theme?.backgroundHighlight?.toCSS(),
-    '--background-highlight-secondary': theme?.backgroundHighlightSecondary?.toCSS(),
-    '--background-active': theme?.backgroundActive?.toCSS(),
-    '--background-backdrop': theme?.background?.darken(0.1).translucify(0.4).toCSS(),
-    '--fg': theme?.foreground?.toCSS(),
-    '--fg-subtle': theme?.foregroundSubtle?.toCSS(),
-    '--fg-subtler': theme?.foregroundSubtler?.toCSS(),
-    '--border-focus': theme?.colors?.info.toCSS(),
+    '--background': theme?.background?.css(),
+    '--background-highlight': theme?.backgroundHighlight?.css(),
+    '--background-highlight-secondary': theme?.backgroundHighlightSecondary?.css(),
+    '--background-active': theme?.backgroundActive?.css(),
+    '--background-backdrop': theme?.background?.lower(0.1).translucify(0.4).css(),
+    '--fg': theme?.foreground?.css(),
+    '--fg-subtle': theme?.foregroundSubtle?.css(),
+    '--fg-subtler': theme?.foregroundSubtler?.css(),
+    '--border-focus': theme?.colors?.info.css(),
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
-    vars[`--fg-${color}`] = value.lighten(0.4).toCSS();
+    vars[`--fg-${color}`] = (value as Color).lower(0.4).css();
   }
 
   // Extend with base
@@ -187,42 +189,42 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
 
 function placeholderColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lighten(0.7).toCSS(),
-    '--fg-subtle': color.lighten(0.6).toCSS(),
-    '--fg-subtler': color.toCSS(),
-    '--background': color.translucify(0.8).toCSS(),
-    '--background-highlight': color.lighten(0.3).translucify(0.4).toCSS(),
-    '--background-highlight-secondary': color.lighten(0.3).translucify(0.6).toCSS(),
+    '--fg': color.lower(0.7).css(),
+    '--fg-subtle': color.lower(0.6).css(),
+    '--fg-subtler': color.css(),
+    '--background': color.translucify(0.8).css(),
+    '--background-highlight': color.lower(0.3).translucify(0.4).css(),
+    '--background-highlight-secondary': color.lower(0.3).translucify(0.6).css(),
   };
 }
 
 function bannerColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lighten(0.8).toCSS(),
-    '--fg-subtle': color.translucify(0.3).toCSS(),
-    '--fg-subtler': color.toCSS(),
-    '--background': color.toCSS(),
-    '--background-highlight': color.lighten(0.3).translucify(0.4).toCSS(),
-    '--background-highlight-secondary': color.translucify(0.9).toCSS(),
+    '--fg': color.lower(0.8).css(),
+    '--fg-subtle': color.translucify(0.3).css(),
+    '--fg-subtler': color.css(),
+    '--background': color.css(),
+    '--background-highlight': color.lower(0.3).translucify(0.4).css(),
+    '--background-highlight-secondary': color.translucify(0.9).css(),
   };
 }
 
 function buttonSolidColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': new Color('white').toCSS(),
-    '--background': color.toCSS(),
-    '--background-highlight': color.lighten(0.15).toCSS(),
-    '--background-highlight-secondary': color.translucify(0.4).toCSS(),
+    '--fg': new Color('white', 'dark').css(),
+    '--background': color.css(),
+    '--background-highlight': color.lower(0.15).css(),
+    '--background-highlight-secondary': color.translucify(0.4).css(),
   };
 }
 
 function buttonBorderColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lighten(0.6).toCSS(),
-    '--fg-subtle': color.lighten(0.4).toCSS(),
-    '--fg-subtler': color.lighten(0.4).translucify(0.6).toCSS(),
-    '--background': Color.transparent().toCSS(),
-    '--background-highlight': color.translucify(0.8).toCSS(),
+    '--fg': color.lower(0.6).css(),
+    '--fg-subtle': color.lower(0.4).css(),
+    '--fg-subtler': color.lower(0.4).translucify(0.6).css(),
+    '--background': Color.transparent().css(),
+    '--background-highlight': color.translucify(0.8).css(),
   };
 }
 
@@ -283,7 +285,7 @@ function placeholderCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
-const theme = yaakThemes.yaakLight;
+const theme = yaakThemes.yaakDark;
 const baseCss = variablesToCSS(null, themeVariables(theme));
 const { components, colors } = theme;
 const newTheme = [
