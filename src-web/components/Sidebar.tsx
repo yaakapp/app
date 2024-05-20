@@ -33,8 +33,6 @@ import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
-import { Banner } from './core/Banner';
-import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
@@ -470,47 +468,47 @@ export function Sidebar({ className }: Props) {
         handleEnd={handleEnd}
         handleDragStart={handleDragStart}
       />
-      <div className="p-2 flex flex-col gap-1">
-        <div className="flex flex-wrap gap-1">
-          <Button color="primary">Primary</Button>
-          <Button color="secondary">Secondary</Button>
-          <Button color="info">Info</Button>
-          <Button color="success">Success</Button>
-          <Button color="warning">Warning</Button>
-          <Button color="danger">Danger</Button>
-          <Button color="default">Default</Button>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          <Button variant="border" color="primary">
-            Primary
-          </Button>
-          <Button variant="border" color="secondary">
-            Secondary
-          </Button>
-          <Button variant="border" color="info">
-            Info
-          </Button>
-          <Button variant="border" color="success">
-            Success
-          </Button>
-          <Button variant="border" color="warning">
-            Warning
-          </Button>
-          <Button variant="border" color="danger">
-            Danger
-          </Button>
-          <Button variant="border" color="default">
-            Default
-          </Button>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Banner color="primary">Primary banner</Banner>
-          <Banner color="secondary">Secondary banner</Banner>
-          <Banner color="danger">Danger banner</Banner>
-          <Banner color="warning">Warning banner</Banner>
-          <Banner color="success">Success banner</Banner>
-        </div>
-      </div>
+      {/*<div className="p-2 flex flex-col gap-1">*/}
+      {/*  <div className="flex flex-wrap gap-1">*/}
+      {/*    <Button color="primary">Primary</Button>*/}
+      {/*    <Button color="secondary">Secondary</Button>*/}
+      {/*    <Button color="info">Info</Button>*/}
+      {/*    <Button color="success">Success</Button>*/}
+      {/*    <Button color="warning">Warning</Button>*/}
+      {/*    <Button color="danger">Danger</Button>*/}
+      {/*    <Button color="default">Default</Button>*/}
+      {/*  </div>*/}
+      {/*  <div className="flex flex-wrap gap-1">*/}
+      {/*    <Button variant="border" color="primary">*/}
+      {/*      Primary*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="secondary">*/}
+      {/*      Secondary*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="info">*/}
+      {/*      Info*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="success">*/}
+      {/*      Success*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="warning">*/}
+      {/*      Warning*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="danger">*/}
+      {/*      Danger*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="default">*/}
+      {/*      Default*/}
+      {/*    </Button>*/}
+      {/*  </div>*/}
+      {/*  <div className="flex flex-col gap-1">*/}
+      {/*    <Banner color="primary">Primary banner</Banner>*/}
+      {/*    <Banner color="secondary">Secondary banner</Banner>*/}
+      {/*    <Banner color="danger">Danger banner</Banner>*/}
+      {/*    <Banner color="warning">Warning banner</Banner>*/}
+      {/*    <Banner color="success">Success banner</Banner>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </aside>
   );
 }
