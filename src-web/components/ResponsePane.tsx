@@ -141,7 +141,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               onChangeValue={setActiveTab}
               label="Response"
               tabs={tabs}
-              className="ml-3 mr-1"
+              className="ml-3 mr-3 mb-3"
               tabListClassName="mt-1.5"
             >
               <TabContent value="headers">
@@ -149,7 +149,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               </TabContent>
               <TabContent value="body">
                 {!activeResponse.contentLength ? (
-                  <EmptyStateText>Empty Body</EmptyStateText>
+                  <div className="pb-2 h-full">
+                    <EmptyStateText>No Body</EmptyStateText>
+                  </div>
                 ) : contentType?.startsWith('image') ? (
                   <ImageViewer className="pb-2" response={activeResponse} />
                 ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
