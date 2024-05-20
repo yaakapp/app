@@ -66,7 +66,6 @@ interface ThemeComponent {
 
 interface YaakTheme extends ThemeComponent {
   name: string;
-  dark?: boolean;
   components?: {
     dialog?: ThemeComponent;
     sidebar?: ThemeComponent;
@@ -86,78 +85,71 @@ interface RootColors {
 
 type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
-console.log('HELLO');
 
 const yaakThemes = {
   yaakLight: {
     name: 'Yaak (Light)',
-    dark: false,
 
-    background: new Color('hsl(220, 24%, 95.9%)', 'light').raise(1),
-    backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
-    backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.05),
-    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)', 'light'),
+    background: new Color('#f2f4f7', 'light').raise(1),
+    backgroundHighlight: new Color('#f2f4f7', 'light').lower(0.08),
+    backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lower(0.05),
+    backgroundActive: new Color('#7639c6', 'light').translucify(0.7),
 
-    foreground: new Color('hsl(220, 24%, 11.8%)', 'light'),
-    foregroundSubtle: new Color('hsl(220, 24%, 11.8%)', 'light').raise(0.3),
-    foregroundSubtler: new Color('hsl(220, 24%, 11.8%)', 'light').raise(0.3).translucify(0.3),
+    foreground: new Color('#171c25', 'light'),
+    foregroundSubtle: new Color('#171c25', 'light').raise(0.3),
+    foregroundSubtler: new Color('#171c25', 'light').raise(0.3).translucify(0.3),
     colors: {
       primary: new Color('#ac6cff', 'light'),
       secondary: new Color('#7f8fb0', 'light'),
       info: new Color('#0090ff', 'light'),
-      success: new Color('#00d365', 'light'),
+      success: new Color('#00bd6e', 'light'),
       warning: new Color('#ff8000', 'light'),
       danger: new Color('#ec3f87', 'light'),
     },
     components: {
       sidebar: {
-        background: new Color('hsl(220, 24%, 95.9%)', 'light'),
-        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
-        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.06),
+        background: new Color('#f2f4f7', 'light'),
+        backgroundHighlight: new Color('#f2f4f7', 'light').lower(0.08),
+        backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lower(0.06),
       },
-      // Response pane has no bg in light mode (should it?)
-      // responsePane: {
-      //   background: new Color('hsl(220, 24%, 95.9%)', 'light'),
-      //   backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.1),
-      //   backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
-      // },
     },
   } as YaakTheme,
+
   yaakDark: {
     name: 'Yaak',
-    dark: true,
 
-    background: new Color('hsl(245, 23%, 12.6%)', 'dark'),
-    backgroundHighlight: new Color('hsl(245, 23%, 12.6%)', 'dark').lower(0.11),
-    backgroundHighlightSecondary: new Color('hsl(245, 23%, 12.6%)', 'dark').lower(0.08),
-    backgroundActive: new Color('hsla(266, 55%, 50%, 0.3)', 'dark'),
+    background: new Color('#1a1928', 'dark'),
+    backgroundHighlight: new Color('#1a1928', 'dark').lower(0.11),
+    backgroundHighlightSecondary: new Color('#1a1928', 'dark').lower(0.08),
+    backgroundActive: new Color('#7639c6', 'dark').translucify(0.7),
 
-    foreground: new Color('hsl(245, 23%, 78%)', 'dark'),
-    foregroundSubtle: new Color('hsl(245, 23%, 56%)', 'dark').lower(0.3),
-    foregroundSubtler: new Color('hsl(245, 23%, 56%)', 'dark').lower(0.3).translucify(0.3),
+    foreground: new Color('#bcbad4', 'dark'),
+    foregroundSubtle: new Color('#7975a9', 'dark').lower(0.3),
+    foregroundSubtler: new Color('#7975a9', 'dark').lower(0.3).translucify(0.3),
+
     colors: {
-      primary: new Color('hsl(266, 100%, 66%)', 'dark'),
-      secondary: new Color('hsl(245, 23%, 50%)', 'dark'),
-      info: new Color('hsl(206, 100%, 45%)', 'dark'),
-      success: new Color('hsl(150, 100%, 33%)', 'dark'),
-      warning: new Color('hsl(28, 100%, 45%)', 'dark'),
-      danger: new Color('hsl(342, 100%, 55%)', 'dark'),
+      primary: new Color('#9d52ff', 'dark'),
+      secondary: new Color('#67629d', 'dark'),
+      info: new Color('#0082e6', 'dark'),
+      success: new Color('#00a854', 'dark'),
+      warning: new Color('#e66b00', 'dark'),
+      danger: new Color('#ff1a5e', 'dark'),
     },
+
     components: {
       sidebar: {
-        background: new Color('hsl(245, 23%, 15.6%)', 'dark'),
-        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.1),
-        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.08),
+        background: new Color('#201f31', 'dark'),
+        backgroundHighlight: new Color('#201f31', 'dark').lower(0.1),
+        backgroundHighlightSecondary: new Color('#201f31', 'dark').lower(0.08),
       },
       responsePane: {
-        background: new Color('hsl(245, 23%, 15.6%)', 'dark'),
-        backgroundHighlight: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.1),
-        backgroundHighlightSecondary: new Color('hsl(245, 23%, 15.6%)', 'dark').lower(0.08),
+        background: new Color('#201f31', 'dark'),
+        backgroundHighlight: new Color('#201f31', 'dark').lower(0.1),
+        backgroundHighlightSecondary: new Color('#201f31', 'dark').lower(0.08),
       },
     },
   } as YaakTheme,
 } as const;
-console.log('WORLD');
 
 type CSSVariables = Record<string, string | undefined>;
 
@@ -175,7 +167,7 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
-    vars[`--fg-${color}`] = (value as Color).lower(0.4).css();
+    vars[`--fg-${color}`] = (value as Color).css();
   }
 
   // Extend with base
@@ -298,7 +290,6 @@ const newTheme = [
   ...Object.keys(colors ?? {}).map((key) => bannerCSS(key as ColorName, colors)),
   ...Object.keys(colors ?? {}).map((key) => placeholderCSS(key as ColorName, colors)),
 ].join('\n\n');
-console.log('THEME', newTheme);
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
   const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;

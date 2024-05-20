@@ -87,7 +87,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'border' &&
       color !== 'custom' &&
       color !== 'default' &&
-      'border-fg-subtler text-fg-subtle enabled:hocus:border-fg-subtle enabled:hocus:bg-background-highlight enabled:hocus:text-fg ring-fg-subtle',
+      'border-fg-subtler text-fg-subtle enabled:hocus:border-fg-subtle enabled:hocus:bg-background-highlight enabled:hocus:text-fg ring-fg-subtler',
     variant === 'border' &&
       color === 'default' &&
       'border-background-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-background-highlight-secondary',

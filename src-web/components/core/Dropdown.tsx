@@ -431,7 +431,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-background absolute rotate-45 border-gray-200 border-t border-l"
+                  className="bg-background absolute rotate-45 border-background-highlight border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -441,7 +441,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   className={classNames(
                     className,
                     'h-auto bg-background rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-                    'border-gray-200 overflow-auto mb-1 mx-0.5',
+                    'border-background-highlight overflow-auto mb-1 mx-0.5',
                   )}
                 >
                   {filter && (
