@@ -115,11 +115,12 @@ const yaakThemes = {
         backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
         backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.06),
       },
-      responsePane: {
-        background: new Color('hsl(220, 24%, 95.9%)', 'light'),
-        backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.1),
-        backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
-      },
+      // Response pane has no bg in light mode (should it?)
+      // responsePane: {
+      //   background: new Color('hsl(220, 24%, 95.9%)', 'light'),
+      //   backgroundHighlight: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.1),
+      //   backgroundHighlightSecondary: new Color('hsl(220, 24%, 95.9%)', 'light').lower(0.08),
+      // },
     },
   } as YaakTheme,
   yaakDark: {
@@ -285,7 +286,7 @@ function placeholderCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
-const theme = yaakThemes.yaakDark;
+const theme = yaakThemes.yaakLight;
 const baseCss = variablesToCSS(null, themeVariables(theme));
 const { components, colors } = theme;
 const newTheme = [
