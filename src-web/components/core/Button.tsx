@@ -57,8 +57,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const classes = classNames(
     className,
     'x-theme-button',
-    `x-theme-button--${variant}--${color}`,
     `x-theme-button--${variant}`,
+    `x-theme-button--${variant}--${color}`,
     'text-fg',
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects

@@ -440,7 +440,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   style={menuStyles}
                   className={classNames(
                     className,
-                    'h-auto bg-background rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
+                    'h-auto bg-background rounded-md shadow-lg py-1.5 border',
                     'border-background-highlight overflow-auto mb-1 mx-0.5',
                   )}
                 >

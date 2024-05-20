@@ -59,7 +59,7 @@
     .placeholder-widget {
       /* Colors */
       @apply bg-background text-fg-subtle border-background-highlight-secondary;
-      @apply hover:border-background-highlight hover:text-fg;
+      @apply hover:border-background-highlight hover:text-fg hover:bg-background-highlight-secondary;
 
       @apply border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 

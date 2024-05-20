@@ -101,7 +101,7 @@ export function GrpcConnectionLayout({ style }: Props) {
               'x-theme-responsePane',
               'max-h-full h-full grid grid-rows-[minmax(0,1fr)] grid-cols-1',
               'bg-background rounded-md border border-background-highlight',
-              'shadow shadow-gray-100 dark:shadow-gray-0 relative',
+              'shadow relative',
             )}
           >
             {grpc.go.error ? (

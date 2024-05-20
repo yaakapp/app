@@ -76,7 +76,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         'x-theme-responsePane',
         'max-h-full h-full',
         'bg-background rounded-md border border-background-highlight',
-        'shadow shadow-gray-100 dark:shadow-gray-0 relative',
+        'shadow relative',
       )}
     >
       {activeResponse == null ? (

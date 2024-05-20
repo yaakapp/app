@@ -61,7 +61,7 @@ interface ThemeComponent {
   foreground?: Color;
   foregroundSubtle?: Color;
   foregroundSubtler?: Color;
-  colors?: RootColors;
+  colors?: Partial<RootColors>;
 }
 
 interface YaakTheme extends ThemeComponent {
@@ -71,6 +71,9 @@ interface YaakTheme extends ThemeComponent {
     sidebar?: ThemeComponent;
     responsePane?: ThemeComponent;
     appHeader?: ThemeComponent;
+    button?: ThemeComponent;
+    banner?: ThemeComponent;
+    placeholder?: ThemeComponent;
   };
 }
 
@@ -86,84 +89,128 @@ interface RootColors {
 type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
 
-const yaakThemes = {
+const yaakThemes: Record<string, YaakTheme> = {
   yaakLight: {
     name: 'Yaak (Light)',
 
-    background: new Color('#f2f4f7', 'light').raise(1),
-    backgroundHighlight: new Color('#f2f4f7', 'light').lower(0.08),
-    backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lower(0.05),
-    backgroundActive: new Color('#7639c6', 'light').translucify(0.7),
+    background: new Color('#f2f4f7', 'light').lower(1),
+    // backgroundHighlight: new Color('#f2f4f7', 'light').lift(0.08),
+    // backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lift(0.05),
+    // backgroundActive: new Color('#7639c6', 'light').translucify(0.7),
 
-    foreground: new Color('#171c25', 'light'),
-    foregroundSubtle: new Color('#171c25', 'light').raise(0.3),
-    foregroundSubtler: new Color('#171c25', 'light').raise(0.3).translucify(0.3),
+    foreground: new Color('hsl(219,23%,15%)', 'light'),
+    // foregroundSubtle: new Color('#171c25', 'light').lower(0.3),
+    // foregroundSubtler: new Color('#171c25', 'light').lower(0.3).translucify(0.3),
     colors: {
-      primary: new Color('#ac6cff', 'light'),
-      secondary: new Color('#7f8fb0', 'light'),
-      info: new Color('#0090ff', 'light'),
-      success: new Color('#00bd6e', 'light'),
-      warning: new Color('#ff8000', 'light'),
-      danger: new Color('#ec3f87', 'light'),
+      primary: new Color('hsl(266,100%,70%)', 'light'),
+      secondary: new Color('hsl(220,24%,59%)', 'light'),
+      info: new Color('hsl(206,100%,48%)', 'light'),
+      success: new Color('hsl(155,95%,33%)', 'light'),
+      warning: new Color('hsl(30,100%,45%)', 'light'),
+      danger: new Color('hsl(335,82%,58%)', 'light'),
     },
     components: {
       sidebar: {
         background: new Color('#f2f4f7', 'light'),
-        backgroundHighlight: new Color('#f2f4f7', 'light').lower(0.08),
-        backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lower(0.06),
+        // backgroundHighlight: new Color('#f2f4f7', 'light').lift(0.08),
+        // backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lift(0.06),
       },
     },
   } as YaakTheme,
 
   yaakDark: {
-    name: 'Yaak',
+    name: 'Yaak Dark',
 
     background: new Color('#1a1928', 'dark'),
-    backgroundHighlight: new Color('#1a1928', 'dark').lower(0.11),
-    backgroundHighlightSecondary: new Color('#1a1928', 'dark').lower(0.08),
-    backgroundActive: new Color('#7639c6', 'dark').translucify(0.7),
+    // backgroundHighlight: new Color('#1a1928', 'dark').lift(0.11),
+    // backgroundHighlightSecondary: new Color('#1a1928', 'dark').lift(0.08),
+    // backgroundActive: new Color('#7639c6', 'dark').translucify(0.7),
 
     foreground: new Color('#bcbad4', 'dark'),
-    foregroundSubtle: new Color('#7975a9', 'dark').lower(0.3),
-    foregroundSubtler: new Color('#7975a9', 'dark').lower(0.3).translucify(0.3),
+    // foregroundSubtle: new Color('#7975a9', 'dark').lift(0.3),
+    // foregroundSubtler: new Color('#7975a9', 'dark').lift(0.3).translucify(0.3),
 
     colors: {
-      primary: new Color('#9d52ff', 'dark'),
-      secondary: new Color('#67629d', 'dark'),
-      info: new Color('#0082e6', 'dark'),
-      success: new Color('#00a854', 'dark'),
-      warning: new Color('#e66b00', 'dark'),
-      danger: new Color('#ff1a5e', 'dark'),
+      primary: new Color('hsl(266,100%,75%)', 'dark'),
+      secondary: new Color('hsl(245,23%,60%)', 'dark'),
+      info: new Color('hsl(206,100%,58%)', 'dark'),
+      success: new Color('hsl(150,100%,37%)', 'dark'),
+      warning: new Color('hsl(28,100%,58%)', 'dark'),
+      danger: new Color('hsl(342,90%,65%)', 'dark'),
     },
 
     components: {
       sidebar: {
         background: new Color('#201f31', 'dark'),
-        backgroundHighlight: new Color('#201f31', 'dark').lower(0.1),
-        backgroundHighlightSecondary: new Color('#201f31', 'dark').lower(0.08),
+        // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
+        // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
       responsePane: {
         background: new Color('#201f31', 'dark'),
-        backgroundHighlight: new Color('#201f31', 'dark').lower(0.1),
-        backgroundHighlightSecondary: new Color('#201f31', 'dark').lower(0.08),
+        // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
+        // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
     },
-  } as YaakTheme,
-} as const;
+  },
+  catppuccin: {
+    name: 'Catppuccin',
+    background: new Color('#181825', 'dark'),
+    foreground: new Color('#cdd6f4', 'dark'),
+    foregroundSubtle: new Color('#cdd6f4', 'dark').lower(0.1).translucify(0.3),
+    foregroundSubtler: new Color('#cdd6f4', 'dark').lower(0.1).translucify(0.55),
+    colors: {
+      primary: new Color('#cba6f7', 'dark'),
+      secondary: new Color('#bac2de', 'dark'),
+      info: new Color('#89b4fa', 'dark'),
+      success: new Color('#89b4fa', 'dark'),
+      warning: new Color('#fab387', 'dark'),
+      danger: new Color('#f38ba8', 'dark'),
+    },
+    components: {
+      dialog: {
+        background: new Color('#181825', 'dark'),
+      },
+      sidebar: {
+        background: new Color('#1e1e2e', 'dark'),
+      },
+      appHeader: {
+        background: new Color('#11111b', 'dark'),
+      },
+      responsePane: {
+        background: new Color('#1e1e2e', 'dark'),
+      },
+      button: {
+        colors: {
+          primary: new Color('#cba6f7', 'dark').lower(0.2),
+          secondary: new Color('#bac2de', 'dark').lower(0.2),
+          info: new Color('#89b4fa', 'dark').lower(0.2),
+          success: new Color('#89b4fa', 'dark').lower(0.2),
+          warning: new Color('#fab387', 'dark').lower(0.2),
+          danger: new Color('#f38ba8', 'dark').lower(0.2),
+        },
+      },
+    },
+  },
+};
 
 type CSSVariables = Record<string, string | undefined>;
 
 function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariables | null {
   const vars: CSSVariables = {
     '--background': theme?.background?.css(),
-    '--background-highlight': theme?.backgroundHighlight?.css(),
-    '--background-highlight-secondary': theme?.backgroundHighlightSecondary?.css(),
-    '--background-active': theme?.backgroundActive?.css(),
-    '--background-backdrop': theme?.background?.lower(0.1).translucify(0.4).css(),
+    '--background-highlight':
+      theme?.backgroundHighlight?.css() ?? theme?.background?.lift(0.11).css(),
+    '--background-highlight-secondary':
+      theme?.backgroundHighlightSecondary?.css() ?? theme?.background?.lift(0.06).css(),
+    '--background-active':
+      theme?.backgroundActive?.css() ?? theme?.colors?.primary?.translucify(0.8).css(),
+    '--background-backdrop': theme?.background?.lower(0.2).translucify(0.2).css(),
     '--fg': theme?.foreground?.css(),
-    '--fg-subtle': theme?.foregroundSubtle?.css(),
-    '--fg-subtler': theme?.foregroundSubtler?.css(),
-    '--border-focus': theme?.colors?.info.css(),
+    '--fg-subtle':
+      theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.1).desaturate(0.1).css(),
+    '--fg-subtler':
+      theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.2).desaturate(0.2).css(),
+    '--border-focus': theme?.colors?.info?.css(),
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
@@ -182,22 +229,22 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
 
 function placeholderColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lower(0.7).css(),
-    '--fg-subtle': color.lower(0.6).css(),
+    '--fg': color.lift(0.7).css(),
+    '--fg-subtle': color.lift(0.6).css(),
     '--fg-subtler': color.css(),
     '--background': color.translucify(0.8).css(),
-    '--background-highlight': color.lower(0.3).translucify(0.4).css(),
-    '--background-highlight-secondary': color.lower(0.3).translucify(0.6).css(),
+    '--background-highlight': color.translucify(0.4).css(),
+    '--background-highlight-secondary': color.translucify(0.7).css(),
   };
 }
 
 function bannerColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lower(0.8).css(),
+    '--fg': color.lift(0.8).css(),
     '--fg-subtle': color.translucify(0.3).css(),
     '--fg-subtler': color.css(),
     '--background': color.css(),
-    '--background-highlight': color.lower(0.3).translucify(0.4).css(),
+    '--background-highlight': color.lift(0.3).translucify(0.4).css(),
     '--background-highlight-secondary': color.translucify(0.9).css(),
   };
 }
@@ -205,17 +252,17 @@ function bannerColorVariables(color: Color): CSSVariables {
 function buttonSolidColorVariables(color: Color): CSSVariables {
   return {
     '--fg': new Color('white', 'dark').css(),
-    '--background': color.css(),
-    '--background-highlight': color.lower(0.15).css(),
-    '--background-highlight-secondary': color.translucify(0.4).css(),
+    '--background': color.lower(0.12).css(),
+    '--background-highlight': color.css(),
+    '--background-highlight-secondary': color.lower(0.3).css(),
   };
 }
 
 function buttonBorderColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lower(0.6).css(),
-    '--fg-subtle': color.lower(0.4).css(),
-    '--fg-subtler': color.lower(0.4).translucify(0.6).css(),
+    '--fg': color.lift(0.6).css(),
+    '--fg-subtle': color.lift(0.4).css(),
+    '--fg-subtler': color.lift(0.4).translucify(0.6).css(),
     '--background': Color.transparent().css(),
     '--background-highlight': color.translucify(0.8).css(),
   };
@@ -246,7 +293,7 @@ function componentCSS(
   return variablesToCSS(`.x-theme-${component}`, themeVars);
 }
 
-function buttonCSS(color: ColorName, colors?: RootColors): string | null {
+function buttonCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
   const cssColor = colors?.[color];
   if (cssColor == null) {
     return null;
@@ -258,7 +305,7 @@ function buttonCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
-function bannerCSS(color: ColorName, colors?: RootColors): string | null {
+function bannerCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
   const cssColor = colors?.[color];
   if (cssColor == null) {
     return null;
@@ -267,7 +314,7 @@ function bannerCSS(color: ColorName, colors?: RootColors): string | null {
   return [variablesToCSS(`.x-theme-banner--${color}`, bannerColorVariables(cssColor))].join('\n\n');
 }
 
-function placeholderCSS(color: ColorName, colors?: RootColors): string | null {
+function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
   const cssColor = colors?.[color];
   if (cssColor == null) {
     return null;
@@ -278,18 +325,30 @@ function placeholderCSS(color: ColorName, colors?: RootColors): string | null {
   ].join('\n\n');
 }
 
-const theme = yaakThemes.yaakLight;
-const baseCss = variablesToCSS(null, themeVariables(theme));
-const { components, colors } = theme;
-const newTheme = [
-  baseCss,
-  ...Object.keys(components ?? {}).map((key) =>
-    componentCSS(key as ComponentName, theme.components),
-  ),
-  ...Object.keys(colors ?? {}).map((key) => buttonCSS(key as ColorName, colors)),
-  ...Object.keys(colors ?? {}).map((key) => bannerCSS(key as ColorName, colors)),
-  ...Object.keys(colors ?? {}).map((key) => placeholderCSS(key as ColorName, colors)),
-].join('\n\n');
+let themeCSS = '';
+try {
+  const theme = yaakThemes.yaakDark!;
+  const baseCss = variablesToCSS(null, themeVariables(theme));
+  const { components, colors } = theme;
+  themeCSS = [
+    baseCss,
+    ...Object.keys(components ?? {}).map((key) =>
+      componentCSS(key as ComponentName, theme.components),
+    ),
+    ...Object.keys(colors ?? {}).map((key) =>
+      buttonCSS(key as ColorName, theme.components?.button?.colors ?? colors),
+    ),
+    ...Object.keys(colors ?? {}).map((key) =>
+      bannerCSS(key as ColorName, theme.components?.banner?.colors ?? colors),
+    ),
+    ...Object.keys(colors ?? {}).map((key) =>
+      placeholderCSS(key as ColorName, theme.components?.placeholder?.colors ?? colors),
+    ),
+  ].join('\n\n');
+  console.log('THEME ------------\n', themeCSS);
+} catch (err) {
+  console.error(err);
+}
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
   const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;
@@ -309,12 +368,12 @@ export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARA
     `/* ${darkTheme.name} */`,
     `[data-resolved-appearance="dark"] {`,
     ...generateCSS(darkTheme).map(toTailwindVariable),
-    newTheme,
+    themeCSS,
     '}',
     `/* ${lightTheme.name} */`,
     `[data-resolved-appearance="light"] {`,
     ...generateCSS(lightTheme).map(toTailwindVariable),
-    newTheme,
+    themeCSS,
     '}',
   ].join('\n');
   existingStyleEl.setAttribute('data-theme-definition', '');

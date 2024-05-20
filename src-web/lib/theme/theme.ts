@@ -217,17 +217,29 @@ export class Color {
     return new Color(this.css(), this.theme);
   }
 
-  raise(mod: number): Color {
+  lower(mod: number): Color {
     return this.theme === 'dark' ? this._darken(mod) : this._lighten(mod);
   }
 
-  lower(mod: number): Color {
+  lift(mod: number): Color {
     return this.theme === 'dark' ? this._lighten(mod) : this._darken(mod);
   }
 
   translucify(mod: number): Color {
     const c = this.clone();
     c.alpha = c.alpha - c.alpha * mod;
+    return c;
+  }
+
+  desaturate(mod: number): Color {
+    const c = this.clone();
+    c.saturation = c.saturation - c.saturation * mod;
+    return c;
+  }
+
+  saturate(mod: number): Color {
+    const c = this.clone();
+    c.saturation = this.saturation + (100 - this.saturation) * mod;
     return c;
   }
 
