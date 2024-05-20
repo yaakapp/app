@@ -131,12 +131,12 @@ const yaakThemes: Record<string, YaakTheme> = {
     // foregroundSubtler: new Color('#7975a9', 'dark').lift(0.3).translucify(0.3),
 
     colors: {
-      primary: new Color('hsl(266,100%,75%)', 'dark'),
+      primary: new Color('hsl(266,100%,79%)', 'dark'),
       secondary: new Color('hsl(245,23%,60%)', 'dark'),
-      info: new Color('hsl(206,100%,58%)', 'dark'),
+      info: new Color('hsl(206,100%,63%)', 'dark'),
       success: new Color('hsl(150,100%,37%)', 'dark'),
-      warning: new Color('hsl(28,100%,58%)', 'dark'),
-      danger: new Color('hsl(342,90%,65%)', 'dark'),
+      warning: new Color('hsl(28,100%,61%)', 'dark'),
+      danger: new Color('hsl(342,90%,68%)', 'dark'),
     },
 
     components: {
