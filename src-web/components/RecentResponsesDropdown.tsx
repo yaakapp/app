@@ -12,12 +12,14 @@ interface Props {
   responses: HttpResponse[];
   activeResponse: HttpResponse;
   onPinnedResponse: (r: HttpResponse) => void;
+  className?: string;
 }
 
 export const RecentResponsesDropdown = function ResponsePane({
   activeResponse,
   responses,
   onPinnedResponse,
+  className,
 }: Props) {
   const deleteResponse = useDeleteHttpResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
@@ -56,7 +58,7 @@ export const RecentResponsesDropdown = function ResponsePane({
       <IconButton
         title="Show response history"
         icon="chevronDown"
-        className="ml-auto"
+        className={className}
         size="sm"
         iconSize="md"
       />

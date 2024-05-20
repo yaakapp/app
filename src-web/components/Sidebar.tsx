@@ -556,58 +556,61 @@ function SidebarItems({
         tree.depth >= 1 && 'ml-[1.2em]',
       )}
     >
-      {tree.children.map((child, i) => (
-        <Fragment key={child.item.id}>
-          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
-          <DraggableSidebarItem
-            draggable
-            selected={selectedId === child.item.id}
-            itemId={child.item.id}
-            itemName={child.item.name}
-            itemFallbackName={
-              child.item.model === 'http_request' || child.item.model === 'grpc_request'
-                ? fallbackRequestName(child.item)
-                : 'New Folder'
-            }
-            itemModel={child.item.model}
-            itemPrefix={
-              (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
-                <HttpMethodTag
-                  request={child.item}
-                  className={classNames(selectedId !== child.item.id && 'text-fg-subtler')}
-                />
-              )
-            }
-            onMove={handleMove}
-            onEnd={handleEnd}
-            onSelect={onSelect}
-            onDragStart={handleDragStart}
-            useProminentStyles={focused}
-            isCollapsed={isCollapsed}
-            child={child}
-          >
-            {child.item.model === 'folder' &&
-              !isCollapsed(child.item.id) &&
-              draggingId !== child.item.id && (
-                <SidebarItems
-                  treeParentMap={treeParentMap}
-                  tree={child}
-                  isCollapsed={isCollapsed}
-                  draggingId={draggingId}
-                  hoveredTree={hoveredTree}
-                  hoveredIndex={hoveredIndex}
-                  focused={focused}
-                  selectedId={selectedId}
-                  selectedTree={selectedTree}
-                  onSelect={onSelect}
-                  handleMove={handleMove}
-                  handleEnd={handleEnd}
-                  handleDragStart={handleDragStart}
-                />
-              )}
-          </DraggableSidebarItem>
-        </Fragment>
-      ))}
+      {tree.children.map((child, i) => {
+        const selected = selectedId === child.item.id;
+        return (
+          <Fragment key={child.item.id}>
+            {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
+            <DraggableSidebarItem
+              draggable
+              selected={selected}
+              itemId={child.item.id}
+              itemName={child.item.name}
+              itemFallbackName={
+                child.item.model === 'http_request' || child.item.model === 'grpc_request'
+                  ? fallbackRequestName(child.item)
+                  : 'New Folder'
+              }
+              itemModel={child.item.model}
+              itemPrefix={
+                (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
+                  <HttpMethodTag
+                    request={child.item}
+                    className={classNames(!selected && 'text-fg-subtler')}
+                  />
+                )
+              }
+              onMove={handleMove}
+              onEnd={handleEnd}
+              onSelect={onSelect}
+              onDragStart={handleDragStart}
+              useProminentStyles={focused}
+              isCollapsed={isCollapsed}
+              child={child}
+            >
+              {child.item.model === 'folder' &&
+                !isCollapsed(child.item.id) &&
+                draggingId !== child.item.id && (
+                  <SidebarItems
+                    treeParentMap={treeParentMap}
+                    tree={child}
+                    isCollapsed={isCollapsed}
+                    draggingId={draggingId}
+                    hoveredTree={hoveredTree}
+                    hoveredIndex={hoveredIndex}
+                    focused={focused}
+                    selectedId={selectedId}
+                    selectedTree={selectedTree}
+                    onSelect={onSelect}
+                    handleMove={handleMove}
+                    handleEnd={handleEnd}
+                    handleDragStart={handleDragStart}
+                  />
+                )}
+            </DraggableSidebarItem>
+          </Fragment>
+        );
+      })}
       {hoveredIndex === tree.children.length && hoveredTree?.item.id === tree.item.id && (
         <DropMarker />
       )}

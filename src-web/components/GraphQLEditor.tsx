@@ -105,7 +105,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
                                   refetch();
                                 }}
                                 className="ml-auto"
-                                color="info"
+                                color="primary"
                                 size="sm"
                               >
                                 Try Again

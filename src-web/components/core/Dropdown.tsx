@@ -534,11 +534,12 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
       innerClassName="!text-left"
+      color="custom"
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg whitespace-nowrap',
-        'focus:bg-background-highlight-secondary focus:text-fg rounded',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg-subtle whitespace-nowrap',
+        'focus:bg-background-highlight focus:text-fg rounded',
         item.variant === 'danger' && 'text-red-600',
         item.variant === 'notify' && 'text-pink-600',
       )}

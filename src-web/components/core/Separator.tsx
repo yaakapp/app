@@ -11,7 +11,7 @@ interface Props {
 export function Separator({ className, orientation = 'horizontal', children }: Props) {
   return (
     <div role="separator" className={classNames(className, 'flex items-center')}>
-      {children && <div className="text-xs text-fg-subtle mr-2 whitespace-nowrap">{children}</div>}
+      {children && <div className="text-xs text-fg-subtler mr-2 whitespace-nowrap">{children}</div>}
       <div
         className={classNames(
           'bg-background-highlight',

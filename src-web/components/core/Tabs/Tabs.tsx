@@ -108,7 +108,7 @@ export function Tabs({
                         icon="chevronDown"
                         className={classNames(
                           '-mr-1.5 mt-0.5',
-                          isActive ? 'text-fg-subtler' : 'opacity-50',
+                          isActive ? 'text-fg-subtle' : 'opacity-50',
                         )}
                       />
                     }

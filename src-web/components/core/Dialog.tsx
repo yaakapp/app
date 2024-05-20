@@ -65,7 +65,7 @@ export function Dialog({
               'grid grid-rows-[auto_auto_minmax(0,1fr)]',
               'relative bg-background pointer-events-auto',
               'rounded-lg',
-              'dark:border border-background-highlight-secondary shadow shadow-[rgba(0,0,0,0.1)]',
+              'border border-background-highlight shadow-lg shadow-[rgba(0,0,0,0.1)]',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',

@@ -98,33 +98,35 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             )}
           >
             {activeResponse && (
-              <HStack alignItems="center" className="w-full">
-                <div className="whitespace-nowrap px-3">
-                  <HStack space={2}>
-                    <StatusTag showReason response={activeResponse} />
-                    {activeResponse.elapsed > 0 && (
-                      <>
-                        <span>&bull;</span>
-                        <DurationTag
-                          headers={activeResponse.elapsedHeaders}
-                          total={activeResponse.elapsed}
-                        />
-                      </>
-                    )}
-                    {!!activeResponse.contentLength && (
-                      <>
-                        <span>&bull;</span>
-                        <SizeTag contentLength={activeResponse.contentLength} />
-                      </>
-                    )}
-                  </HStack>
-                </div>
+              <HStack
+                space={2}
+                alignItems="center"
+                className="whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm"
+              >
+                <StatusTag showReason response={activeResponse} />
+                {activeResponse.elapsed > 0 && (
+                  <>
+                    <span>&bull;</span>
+                    <DurationTag
+                      headers={activeResponse.elapsedHeaders}
+                      total={activeResponse.elapsed}
+                    />
+                  </>
+                )}
+                {!!activeResponse.contentLength && (
+                  <>
+                    <span>&bull;</span>
+                    <SizeTag contentLength={activeResponse.contentLength} />
+                  </>
+                )}
 
-                <RecentResponsesDropdown
-                  responses={responses}
-                  activeResponse={activeResponse}
-                  onPinnedResponse={setPinnedResponse}
-                />
+                <div className="ml-auto">
+                  <RecentResponsesDropdown
+                    responses={responses}
+                    activeResponse={activeResponse}
+                    onPinnedResponse={setPinnedResponse}
+                  />
+                </div>
               </HStack>
             )}
           </HStack>

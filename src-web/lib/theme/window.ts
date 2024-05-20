@@ -1,57 +1,9 @@
 import { indent } from '../indent';
-import type { AppTheme, AppThemeColors } from './theme';
-import { Color, generateCSS, toTailwindVariable } from './theme';
+import { Color } from './color';
 
 export type Appearance = 'dark' | 'light' | 'system';
 
 const DEFAULT_APPEARANCE: Appearance = 'system';
-
-enum Theme {
-  yaak = 'yaak',
-}
-
-const themes: Record<Theme, AppThemeColors> = {
-  yaak: {
-    gray: 'hsl(245, 23%, 45%)',
-    red: 'hsl(342,100%, 63%)',
-    orange: 'hsl(32, 98%, 54%)',
-    yellow: 'hsl(52, 79%, 58%)',
-    green: 'hsl(136, 62%, 54%)',
-    blue: 'hsl(206, 100%, 56%)',
-    pink: 'hsl(300, 100%, 71%)',
-    violet: 'hsl(266, 100%, 73%)',
-  },
-};
-
-const darkTheme: AppTheme = {
-  name: 'Default Dark',
-  appearance: 'dark',
-  layers: {
-    root: {
-      blackPoint: 0.2,
-      colors: themes.yaak,
-    },
-  },
-};
-
-const lightTheme: AppTheme = {
-  name: 'Default Light',
-  appearance: 'light',
-  layers: {
-    root: {
-      colors: {
-        gray: '#7f8fb0',
-        red: '#ec3f87',
-        orange: '#ff8000',
-        yellow: '#e7cf24',
-        green: '#00d365',
-        blue: '#0090ff',
-        pink: '#ea6cea',
-        violet: '#ac6cff',
-      },
-    },
-  },
-};
 
 interface ThemeComponent {
   background?: Color;
@@ -121,7 +73,7 @@ const yaakThemes: Record<string, YaakTheme> = {
   yaakDark: {
     name: 'Yaak Dark',
 
-    background: new Color('#1a1928', 'dark'),
+    background: new Color('hsl(244,23%,12%)', 'dark'),
     // backgroundHighlight: new Color('#1a1928', 'dark').lift(0.11),
     // backgroundHighlightSecondary: new Color('#1a1928', 'dark').lift(0.08),
     // backgroundActive: new Color('#7639c6', 'dark').translucify(0.7),
@@ -141,12 +93,12 @@ const yaakThemes: Record<string, YaakTheme> = {
 
     components: {
       sidebar: {
-        background: new Color('#201f31', 'dark'),
+        background: new Color('hsl(243,23%,15%)', 'dark'),
         // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
         // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
       responsePane: {
-        background: new Color('#201f31', 'dark'),
+        background: new Color('hsl(243,23%,15%)', 'dark'),
         // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
         // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
@@ -203,13 +155,11 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
     '--background-highlight-secondary':
       theme?.backgroundHighlightSecondary?.css() ?? theme?.background?.lift(0.06).css(),
     '--background-active':
-      theme?.backgroundActive?.css() ?? theme?.colors?.primary?.translucify(0.8).css(),
+      theme?.backgroundActive?.css() ?? theme?.colors?.primary?.lower(0.2).translucify(0.8).css(),
     '--background-backdrop': theme?.background?.lower(0.2).translucify(0.2).css(),
     '--fg': theme?.foreground?.css(),
-    '--fg-subtle':
-      theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.1).desaturate(0.1).css(),
-    '--fg-subtler':
-      theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.2).desaturate(0.2).css(),
+    '--fg-subtle': theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.2).css(),
+    '--fg-subtler': theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.3).css(),
     '--border-focus': theme?.colors?.info?.css(),
   };
 
@@ -325,41 +275,53 @@ function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string 
   ].join('\n\n');
 }
 
-let themeCSS = '';
-try {
-  // const theme = yaakThemes.catppuccin!;
-  // const theme = yaakThemes.yaakDark!;
-  const theme = yaakThemes.yaakLight!;
-  const baseCss = variablesToCSS(null, themeVariables(theme));
-  const { components, colors } = theme;
-  themeCSS = [
-    baseCss,
-    ...Object.keys(components ?? {}).map((key) =>
-      componentCSS(key as ComponentName, theme.components),
-    ),
-    ...Object.keys(colors ?? {}).map((key) =>
-      buttonCSS(key as ColorName, theme.components?.button?.colors ?? colors),
-    ),
-    ...Object.keys(colors ?? {}).map((key) =>
-      bannerCSS(key as ColorName, theme.components?.banner?.colors ?? colors),
-    ),
-    ...Object.keys(colors ?? {}).map((key) =>
-      placeholderCSS(key as ColorName, theme.components?.placeholder?.colors ?? colors),
-    ),
-  ].join('\n\n');
-  console.log('THEME ------------\n', themeCSS);
-} catch (err) {
-  console.error(err);
+function isThemeDark(theme: YaakTheme): boolean {
+  if (theme.background && theme.foreground) {
+    return theme.foreground.lighterThan(theme.background);
+  }
+
+  return false;
+}
+
+setThemeOnDocument(yaakThemes.yaakLight!);
+setThemeOnDocument(yaakThemes.yaakDark!);
+
+export function getThemeCSS(theme: YaakTheme): string {
+  let themeCSS = '';
+  try {
+    const baseCss = variablesToCSS(null, themeVariables(theme));
+    const { components, colors } = theme;
+    themeCSS = [
+      baseCss,
+      ...Object.keys(components ?? {}).map((key) =>
+        componentCSS(key as ComponentName, theme.components),
+      ),
+      ...Object.keys(colors ?? {}).map((key) =>
+        buttonCSS(key as ColorName, theme.components?.button?.colors ?? colors),
+      ),
+      ...Object.keys(colors ?? {}).map((key) =>
+        bannerCSS(key as ColorName, theme.components?.banner?.colors ?? colors),
+      ),
+      ...Object.keys(colors ?? {}).map((key) =>
+        placeholderCSS(key as ColorName, theme.components?.placeholder?.colors ?? colors),
+      ),
+    ].join('\n\n');
+  } catch (err) {
+    console.error(err);
+  }
+  return themeCSS;
 }
 
 export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
   const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;
-  const theme = resolvedAppearance === 'dark' ? darkTheme : lightTheme;
-
   document.documentElement.setAttribute('data-resolved-appearance', resolvedAppearance);
+}
+
+export function setThemeOnDocument(theme: YaakTheme) {
   document.documentElement.setAttribute('data-theme', theme.name);
 
-  let existingStyleEl = document.head.querySelector(`style[data-theme-definition]`);
+  const darkOrLight = isThemeDark(theme) ? 'dark' : 'light';
+  let existingStyleEl = document.head.querySelector(`style[data-theme-definition=${darkOrLight}]`);
   if (!existingStyleEl) {
     const styleEl = document.createElement('style');
     document.head.appendChild(styleEl);
@@ -367,18 +329,12 @@ export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARA
   }
 
   existingStyleEl.textContent = [
-    `/* ${darkTheme.name} */`,
-    `[data-resolved-appearance="dark"] {`,
-    ...generateCSS(darkTheme).map(toTailwindVariable),
-    themeCSS,
-    '}',
-    `/* ${lightTheme.name} */`,
-    `[data-resolved-appearance="light"] {`,
-    ...generateCSS(lightTheme).map(toTailwindVariable),
-    themeCSS,
+    `/* ${theme.name} */`,
+    `[data-resolved-appearance="${isThemeDark(theme) ? 'dark' : 'light'}"] {`,
+    getThemeCSS(theme),
     '}',
   ].join('\n');
-  existingStyleEl.setAttribute('data-theme-definition', '');
+  existingStyleEl.setAttribute('data-theme-definition', darkOrLight);
 }
 
 export function getPreferredAppearance(): Appearance {
