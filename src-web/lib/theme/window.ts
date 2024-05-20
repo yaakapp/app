@@ -162,7 +162,7 @@ const yaakThemes: Record<string, YaakTheme> = {
       primary: new Color('#cba6f7', 'dark'),
       secondary: new Color('#bac2de', 'dark'),
       info: new Color('#89b4fa', 'dark'),
-      success: new Color('#89b4fa', 'dark'),
+      success: new Color('#a6e3a1', 'dark'),
       warning: new Color('#fab387', 'dark'),
       danger: new Color('#f38ba8', 'dark'),
     },
@@ -184,7 +184,7 @@ const yaakThemes: Record<string, YaakTheme> = {
           primary: new Color('#cba6f7', 'dark').lower(0.2),
           secondary: new Color('#bac2de', 'dark').lower(0.2),
           info: new Color('#89b4fa', 'dark').lower(0.2),
-          success: new Color('#89b4fa', 'dark').lower(0.2),
+          success: new Color('#a6e3a1', 'dark').lower(0.2),
           warning: new Color('#fab387', 'dark').lower(0.2),
           danger: new Color('#f38ba8', 'dark').lower(0.2),
         },
@@ -229,12 +229,12 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
 
 function placeholderColorVariables(color: Color): CSSVariables {
   return {
-    '--fg': color.lift(0.7).css(),
-    '--fg-subtle': color.lift(0.6).css(),
+    '--fg': color.lift(0.6).css(),
+    '--fg-subtle': color.lift(0.4).css(),
     '--fg-subtler': color.css(),
-    '--background': color.translucify(0.8).css(),
-    '--background-highlight': color.translucify(0.4).css(),
-    '--background-highlight-secondary': color.translucify(0.7).css(),
+    '--background': color.lower(0.2).translucify(0.8).css(),
+    '--background-highlight': color.lower(0.2).translucify(0.2).css(),
+    '--background-highlight-secondary': color.lower(0.1).translucify(0.7).css(),
   };
 }
 
@@ -327,7 +327,9 @@ function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string 
 
 let themeCSS = '';
 try {
-  const theme = yaakThemes.yaakDark!;
+  // const theme = yaakThemes.catppuccin!;
+  // const theme = yaakThemes.yaakDark!;
+  const theme = yaakThemes.yaakLight!;
   const baseCss = variablesToCSS(null, themeVariables(theme));
   const { components, colors } = theme;
   themeCSS = [

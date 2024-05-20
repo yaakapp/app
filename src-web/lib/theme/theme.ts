@@ -221,8 +221,20 @@ export class Color {
     return this.theme === 'dark' ? this._darken(mod) : this._lighten(mod);
   }
 
+  lowerTo(value: number): Color {
+    return this.theme === 'dark'
+      ? this._darken(1)._lighten(value)
+      : this._lighten(1)._darken(1 - value);
+  }
+
   lift(mod: number): Color {
     return this.theme === 'dark' ? this._lighten(mod) : this._darken(mod);
+  }
+
+  liftTo(value: number): Color {
+    return this.theme === 'dark'
+      ? this._lighten(1)._darken(1 - value)
+      : this._darken(1)._lighten(value);
   }
 
   translucify(mod: number): Color {
