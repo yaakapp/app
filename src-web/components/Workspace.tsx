@@ -143,7 +143,8 @@ export default function Workspace() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
-              'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
+              'x-theme-sidebar',
+              'absolute top-0 left-0 bottom-0 bg-background border-r border-background-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
           >
@@ -155,8 +156,11 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
-            <Sidebar className="border-r border-highlight" />
+          <div
+            style={side}
+            className={classNames('x-theme-sidebar', 'overflow-hidden bg-background')}
+          >
+            <Sidebar className="border-r border-background-highlight" />
           </div>
           <ResizeHandle
             className="-translate-x-3"
@@ -168,14 +172,14 @@ export default function Workspace() {
           />
         </>
       )}
-      <HeaderSize data-tauri-drag-region style={head}>
+      <HeaderSize data-tauri-drag-region className="x-theme-appHeader bg-background" style={head}>
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
       {activeWorkspace == null ? (
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
             The active workspace{' '}
-            <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not found.
+            <InlineCode className="text-fg-warning">{activeWorkspaceId}</InlineCode> was not found.
             Select a workspace from the header menu or report this bug to <FeedbackLink />
           </Banner>
         </div>
@@ -214,10 +218,11 @@ function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
   const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
   return (
     <div
+      data-tauri-drag-region
       style={style}
       className={classNames(
         className,
-        'h-md pt-[1px] w-full border-b min-w-0',
+        'h-md pt-[1px] w-full border-b border-background-highlight min-w-0',
         stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
       )}
     >

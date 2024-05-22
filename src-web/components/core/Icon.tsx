@@ -1,5 +1,5 @@
-import * as lucide from 'lucide-react';
 import classNames from 'classnames';
+import * as lucide from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { memo } from 'react';
 
@@ -44,6 +44,7 @@ const icons = {
   moreVertical: lucide.MoreVerticalIcon,
   paste: lucide.ClipboardPasteIcon,
   pencil: lucide.PencilIcon,
+  pin: lucide.PinIcon,
   plug: lucide.Plug,
   plus: lucide.PlusIcon,
   plusCircle: lucide.PlusCircleIcon,

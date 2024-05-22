@@ -7,11 +7,11 @@ import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
+import { ImportCurlButton } from './ImportCurlButton';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
-import { ImportCurlButton } from './ImportCurlButton';
 
 interface Props {
   className?: string;
@@ -33,7 +33,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <CookieDropdown />
         <HStack alignItems="center">
           <WorkspaceActionsDropdown />
-          <Icon icon="chevronRight" className="text-gray-900 text-opacity-disabled" />
+          <Icon icon="chevronRight" className="text-fg-subtle" />
           <EnvironmentActionsDropdown className="w-auto pointer-events-auto" />
         </HStack>
       </HStack>
@@ -46,7 +46,8 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         {(osInfo?.osType === 'linux' || osInfo?.osType === 'windows') && (
           <HStack className="ml-4" alignItems="center">
             <Button
-              className="px-4 !text-gray-600 rounded-none"
+              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
+              color="custom"
               onClick={() => getCurrent().minimize()}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
@@ -54,7 +55,8 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
               </svg>
             </Button>
             <Button
-              className="px-4 !text-gray-600 rounded-none"
+              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
+              color="custom"
               onClick={async () => {
                 const w = getCurrent();
                 await w.toggleMaximize();
@@ -76,7 +78,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
             </Button>
             <Button
               color="custom"
-              className="px-4 text-gray-600 rounded-none hocus:bg-red-200 hocus:text-gray-800"
+              className="px-4 text-fg-subtle rounded-none hocus:bg-fg-danger hocus:text-fg"
               onClick={() => getCurrent().close()}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">

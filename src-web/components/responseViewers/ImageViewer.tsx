@@ -2,6 +2,7 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import classNames from 'classnames';
 import { useState } from 'react';
 import type { HttpResponse } from '../../lib/models';
+import { Button } from '../core/Button';
 
 interface Props {
   response: HttpResponse;
@@ -20,15 +21,15 @@ export function ImageViewer({ response, className }: Props) {
   if (!show) {
     return (
       <>
-        <div className="text-sm italic text-gray-500">
+        <div className="text-sm italic text-fg-subtler">
           Response body is too large to preview.{' '}
-          <button
-            className="cursor-pointer underline hover:text-gray-800"
-            color="gray"
+          <Button
+            className="cursor-pointer underline hover:text-fg"
+            color="secondary"
             onClick={() => setShow(true)}
           >
             Show anyway
-          </button>
+          </Button>
         </div>
       </>
     );

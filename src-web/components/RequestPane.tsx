@@ -3,10 +3,12 @@ import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
+import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
+import { useImportCurl } from '../hooks/useImportCurl';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
+import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useSendRequest } from '../hooks/useSendRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
@@ -29,6 +31,7 @@ import { BearerAuth } from './BearerAuth';
 import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
+import type { GenericCompletionOption } from './core/Editor/genericCompletion';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
@@ -38,9 +41,6 @@ import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
-import { useImportCurl } from '../hooks/useImportCurl';
-import { useRequests } from '../hooks/useRequests';
-import type { GenericCompletionOption } from './core/Editor/genericCompletion';
 
 interface Props {
   style: CSSProperties;
@@ -317,7 +317,6 @@ export const RequestPane = memo(function RequestPane({
                   useTemplating
                   autocompleteVariables
                   placeholder="..."
-                  className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   contentType="application/json"
@@ -330,7 +329,6 @@ export const RequestPane = memo(function RequestPane({
                   useTemplating
                   autocompleteVariables
                   placeholder="..."
-                  className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   contentType="text/xml"
@@ -340,7 +338,6 @@ export const RequestPane = memo(function RequestPane({
                 <GraphQLEditor
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
-                  className="!bg-gray-50"
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   onChange={handleBodyTextChange}
                 />
@@ -370,7 +367,6 @@ export const RequestPane = memo(function RequestPane({
                   useTemplating
                   autocompleteVariables
                   placeholder="..."
-                  className="!bg-gray-50"
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
                   onChange={handleBodyTextChange}

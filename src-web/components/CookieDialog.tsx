@@ -42,7 +42,7 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
               <td className="py-2 select-text cursor-text font-mono font-semibold max-w-0">
                 {cookieDomain(c)}
               </td>
-              <td className="py-2 pl-4 select-text cursor-text font-mono text-gray-700 whitespace-nowrap overflow-x-auto max-w-[200px] hide-scrollbars">
+              <td className="py-2 pl-4 select-text cursor-text font-mono text-fg-subtle whitespace-nowrap overflow-x-auto max-w-[200px] hide-scrollbars">
                 {c.raw_cookie}
               </td>
               <td className="max-w-0 w-10">

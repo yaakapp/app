@@ -98,9 +98,10 @@ export function GrpcConnectionLayout({ style }: Props) {
           <div
             style={style}
             className={classNames(
+              'x-theme-responsePane',
               'max-h-full h-full grid grid-rows-[minmax(0,1fr)] grid-cols-1',
-              'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
-              'shadow shadow-gray-100 dark:shadow-gray-0 relative',
+              'bg-background rounded-md border border-background-highlight',
+              'shadow relative',
             )}
           >
             {grpc.go.error ? (

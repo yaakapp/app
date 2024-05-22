@@ -9,6 +9,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -40,7 +41,6 @@ import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 
 interface Props {
   className?: string;
@@ -468,6 +468,47 @@ export function Sidebar({ className }: Props) {
         handleEnd={handleEnd}
         handleDragStart={handleDragStart}
       />
+      {/*<div className="p-2 flex flex-col gap-1">*/}
+      {/*  <div className="flex flex-wrap gap-1">*/}
+      {/*    <Button color="primary">Primary</Button>*/}
+      {/*    <Button color="secondary">Secondary</Button>*/}
+      {/*    <Button color="info">Info</Button>*/}
+      {/*    <Button color="success">Success</Button>*/}
+      {/*    <Button color="warning">Warning</Button>*/}
+      {/*    <Button color="danger">Danger</Button>*/}
+      {/*    <Button color="default">Default</Button>*/}
+      {/*  </div>*/}
+      {/*  <div className="flex flex-wrap gap-1">*/}
+      {/*    <Button variant="border" color="primary">*/}
+      {/*      Primary*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="secondary">*/}
+      {/*      Secondary*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="info">*/}
+      {/*      Info*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="success">*/}
+      {/*      Success*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="warning">*/}
+      {/*      Warning*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="danger">*/}
+      {/*      Danger*/}
+      {/*    </Button>*/}
+      {/*    <Button variant="border" color="default">*/}
+      {/*      Default*/}
+      {/*    </Button>*/}
+      {/*  </div>*/}
+      {/*  <div className="flex flex-col gap-1">*/}
+      {/*    <Banner color="primary">Primary banner</Banner>*/}
+      {/*    <Banner color="secondary">Secondary banner</Banner>*/}
+      {/*    <Banner color="danger">Danger banner</Banner>*/}
+      {/*    <Banner color="warning">Warning banner</Banner>*/}
+      {/*    <Banner color="success">Success banner</Banner>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </aside>
   );
 }
@@ -510,60 +551,66 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-highlight',
+        tree.depth > 0 && 'border-l border-background-highlight-secondary',
         tree.depth === 0 && 'ml-0',
         tree.depth >= 1 && 'ml-[1.2em]',
       )}
     >
-      {tree.children.map((child, i) => (
-        <Fragment key={child.item.id}>
-          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
-          <DraggableSidebarItem
-            draggable
-            selected={selectedId === child.item.id}
-            itemId={child.item.id}
-            itemName={child.item.name}
-            itemFallbackName={
-              child.item.model === 'http_request' || child.item.model === 'grpc_request'
-                ? fallbackRequestName(child.item)
-                : 'New Folder'
-            }
-            itemModel={child.item.model}
-            itemPrefix={
-              (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
-                <HttpMethodTag request={child.item} />
-              )
-            }
-            onMove={handleMove}
-            onEnd={handleEnd}
-            onSelect={onSelect}
-            onDragStart={handleDragStart}
-            useProminentStyles={focused}
-            isCollapsed={isCollapsed}
-            child={child}
-          >
-            {child.item.model === 'folder' &&
-              !isCollapsed(child.item.id) &&
-              draggingId !== child.item.id && (
-                <SidebarItems
-                  treeParentMap={treeParentMap}
-                  tree={child}
-                  isCollapsed={isCollapsed}
-                  draggingId={draggingId}
-                  hoveredTree={hoveredTree}
-                  hoveredIndex={hoveredIndex}
-                  focused={focused}
-                  selectedId={selectedId}
-                  selectedTree={selectedTree}
-                  onSelect={onSelect}
-                  handleMove={handleMove}
-                  handleEnd={handleEnd}
-                  handleDragStart={handleDragStart}
-                />
-              )}
-          </DraggableSidebarItem>
-        </Fragment>
-      ))}
+      {tree.children.map((child, i) => {
+        const selected = selectedId === child.item.id;
+        return (
+          <Fragment key={child.item.id}>
+            {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
+            <DraggableSidebarItem
+              draggable
+              selected={selected}
+              itemId={child.item.id}
+              itemName={child.item.name}
+              itemFallbackName={
+                child.item.model === 'http_request' || child.item.model === 'grpc_request'
+                  ? fallbackRequestName(child.item)
+                  : 'New Folder'
+              }
+              itemModel={child.item.model}
+              itemPrefix={
+                (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
+                  <HttpMethodTag
+                    request={child.item}
+                    className={classNames(!selected && 'text-fg-subtler')}
+                  />
+                )
+              }
+              onMove={handleMove}
+              onEnd={handleEnd}
+              onSelect={onSelect}
+              onDragStart={handleDragStart}
+              useProminentStyles={focused}
+              isCollapsed={isCollapsed}
+              child={child}
+            >
+              {child.item.model === 'folder' &&
+                !isCollapsed(child.item.id) &&
+                draggingId !== child.item.id && (
+                  <SidebarItems
+                    treeParentMap={treeParentMap}
+                    tree={child}
+                    isCollapsed={isCollapsed}
+                    draggingId={draggingId}
+                    hoveredTree={hoveredTree}
+                    hoveredIndex={hoveredIndex}
+                    focused={focused}
+                    selectedId={selectedId}
+                    selectedTree={selectedTree}
+                    onSelect={onSelect}
+                    handleMove={handleMove}
+                    handleEnd={handleEnd}
+                    handleDragStart={handleDragStart}
+                  />
+                )}
+            </DraggableSidebarItem>
+          </Fragment>
+        );
+      })}
       {hoveredIndex === tree.children.length && hoveredTree?.item.id === tree.item.id && (
         <DropMarker />
       )}
@@ -802,12 +849,12 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
+            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-highlightSecondary text-gray-800',
+            isActive && 'bg-background-highlight-secondary text-fg',
             !isActive &&
-              'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-400/20',
+              'text-fg-subtle group-hover/item:text-fg active:bg-background-highlight-secondary',
+            selected && useProminentStyles && '!bg-background-active',
           )}
         >
           {itemModel === 'folder' && (
@@ -815,7 +862,8 @@ const SidebarItem = forwardRef(function SidebarItem(
               size="sm"
               icon="chevronRight"
               className={classNames(
-                'transition-transform opacity-50',
+                'text-fg-subtler',
+                'transition-transform',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
@@ -837,13 +885,13 @@ const SidebarItem = forwardRef(function SidebarItem(
           {latestGrpcConnection ? (
             <div className="ml-auto">
               {latestGrpcConnection.elapsed === 0 && (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="update" className="text-fg-subtler" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
               ) : (
                 <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
               )}

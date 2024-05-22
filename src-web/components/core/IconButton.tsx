@@ -52,7 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       size={size}
       className={classNames(
         className,
-        'relative flex-shrink-0 text-gray-700 hover:text-gray-1000',
+        'group/button relative flex-shrink-0 text-fg-subtle',
         '!px-0',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-8',
@@ -71,6 +71,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         spin={spin}
         className={classNames(
           iconClassName,
+          'group-hover/button:text-fg',
           props.disabled && 'opacity-70',
           confirmed && 'text-green-600',
         )}

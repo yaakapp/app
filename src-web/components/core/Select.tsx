@@ -40,7 +40,7 @@ export function Select<T extends string>({
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-sm text-gray-900 whitespace-nowrap',
+          'text-sm text-fg whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
@@ -52,7 +52,7 @@ export function Select<T extends string>({
         onChange={(e) => onChange(e.target.value as T)}
         className={classNames(
           'font-mono text-xs border w-full outline-none bg-transparent pl-2 pr-7',
-          'border-highlight focus:border-focus',
+          'bg-background-highlight-secondary border-background-highlight focus:border-border-focus',
           size === 'xs' && 'h-xs',
           size === 'sm' && 'h-sm',
           size === 'md' && 'h-md',

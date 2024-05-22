@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import type { FormEvent, ReactNode } from 'react';
 import { memo, useRef, useState } from 'react';
@@ -58,7 +59,7 @@ export const UrlBar = memo(function UrlBar({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={classNames(className)}>
       <Input
         autocompleteVariables
         ref={inputRef}
@@ -75,7 +76,7 @@ export const UrlBar = memo(function UrlBar({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onPaste={onPaste}
-        containerClassName="shadow shadow-gray-100 dark:shadow-gray-50"
+        containerClassName="shadow bg-background border"
         onChange={onUrlChange}
         defaultValue={url}
         placeholder={placeholder}

@@ -85,7 +85,6 @@ export function TextViewer({ response, pretty }: Props) {
   return (
     <Editor
       readOnly
-      className="bg-gray-50 dark:!bg-gray-100"
       forceUpdateKey={body}
       defaultValue={body}
       contentType={contentType}

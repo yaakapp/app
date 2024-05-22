@@ -28,14 +28,14 @@ export function Checkbox({
       as="label"
       space={2}
       alignItems="center"
-      className={classNames(className, 'text-gray-900 text-sm', disabled && 'opacity-disabled')}
+      className={classNames(className, 'text-fg text-sm', disabled && 'opacity-disabled')}
     >
       <div className={classNames(inputWrapperClassName, 'relative flex')}>
         <input
           aria-hidden
           className={classNames(
-            'appearance-none w-4 h-4 flex-shrink-0 border border-highlight',
-            'rounded hocus:border-focus hocus:bg-focus/[5%] outline-none ring-0',
+            'appearance-none w-4 h-4 flex-shrink-0 border border-background-highlight',
+            'rounded hocus:border-border-focus hocus:bg-focus/[5%] outline-none ring-0',
           )}
           type="checkbox"
           disabled={disabled}

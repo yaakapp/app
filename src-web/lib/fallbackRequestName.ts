@@ -7,12 +7,14 @@ export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string
     return r.name;
   }
 
-  const withoutVariables = r.url.replace(/\$\{\[[^\]]+]}/g, '');
+  const withoutVariables = r.url.replace(/\$\{\[\s*([^\]]+)\s*]}/g, '$1');
   if (withoutVariables.trim() === '') {
     return r.model === 'http_request' ? 'New HTTP Request' : 'new gRPC Request';
   }
 
-  const fixedUrl = r.url.match(/^https?:\/\//) ? r.url : 'http://' + r.url;
+  const fixedUrl = withoutVariables.match(/^https?:\/\//)
+    ? withoutVariables
+    : 'http://' + withoutVariables;
 
   if (r.model === 'grpc_request' && r.service != null && r.method != null) {
     const shortService = r.service.split('.').pop();
@@ -21,6 +23,7 @@ export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string
     try {
       const url = new URL(fixedUrl);
       const pathname = url.pathname === '/' ? '' : url.pathname;
+      console.log('hello', fixedUrl);
       return `${url.host}${pathname}`;
     } catch (_) {
       // Nothing
