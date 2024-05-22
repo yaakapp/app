@@ -10,7 +10,7 @@ export function FormattedError({ children }: Props) {
     <pre
       className={classNames(
         'w-full text-sm select-auto cursor-text bg-gray-100 p-3 rounded',
-        'whitespace-pre-wrap border border-red-500 border-dashed overflow-x-auto',
+        'whitespace-pre-wrap border border-fg-danger border-dashed overflow-x-auto',
       )}
     >
       {children}

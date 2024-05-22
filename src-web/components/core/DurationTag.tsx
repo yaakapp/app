@@ -5,7 +5,10 @@ interface Props {
 
 export function DurationTag({ total, headers }: Props) {
   return (
-    <span title={`HEADER: ${formatMillis(headers)}\nTOTAL: ${formatMillis(total)}`}>
+    <span
+      className="font-mono"
+      title={`HEADER: ${formatMillis(headers)}\nTOTAL: ${formatMillis(total)}`}
+    >
       {formatMillis(total)}
     </span>
   );

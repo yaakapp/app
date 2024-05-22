@@ -90,7 +90,7 @@ export const SettingsDialog = () => {
 
       <Heading size={2}>
         Workspace{' '}
-        <div className="inline-block ml-1 bg-gray-500 dark:bg-gray-300 px-2 py-0.5 text-sm rounded text-white dark:text-gray-900">
+        <div className="inline-block ml-1 bg-background-highlight px-2 py-0.5 text-sm rounded text-fg">
           {workspace.name}
         </div>
       </Heading>

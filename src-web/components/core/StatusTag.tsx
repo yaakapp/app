@@ -10,17 +10,18 @@ interface Props {
 export function StatusTag({ response, className, showReason }: Props) {
   const { status } = response;
   const label = status < 100 ? 'ERR' : status;
+  const category = `${status}`[0];
   return (
     <span
       className={classNames(
         className,
         'font-mono',
-        status >= 0 && status < 100 && 'text-red-600',
-        status >= 100 && status < 200 && 'text-green-600',
-        status >= 200 && status < 300 && 'text-green-600',
-        status >= 300 && status < 400 && 'text-pink-600',
-        status >= 400 && status < 500 && 'text-orange-600',
-        status >= 500 && 'text-red-600',
+        category === '0' && 'text-fg-danger',
+        category === '1' && 'text-fg-info',
+        category === '2' && 'text-fg-success',
+        category === '3' && 'text-fg-primary',
+        category === '4' && 'text-fg-warning',
+        category === '5' && 'text-fg-danger',
       )}
     >
       {label} {showReason && response.statusReason && response.statusReason}

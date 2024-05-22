@@ -1,28 +1,19 @@
-import { useCallback, useEffect } from 'react';
-import { createGlobalState } from 'react-use';
 import type { HttpRequest, HttpResponse } from '../lib/models';
 import { useHttpResponses } from './useHttpResponses';
+import { useKeyValue } from './useKeyValue';
 import { useLatestHttpResponse } from './useLatestHttpResponse';
 
-const usePinnedResponseIdState = createGlobalState<string | null>(null);
-
 export function usePinnedHttpResponse(activeRequest: HttpRequest) {
-  const [pinnedResponseId, setPinnedResponseId] = usePinnedResponseIdState();
   const latestResponse = useLatestHttpResponse(activeRequest.id);
+  const { set: setPinnedResponseId, value: pinnedResponseId } = useKeyValue<string | null>({
+    // Key on latest response instead of activeRequest because responses change out of band of active request
+    key: ['pinned_http_response_id', latestResponse?.id ?? 'n/a'],
+    fallback: null,
+    namespace: 'global',
+  });
   const responses = useHttpResponses(activeRequest.id);
-  const activeResponse: HttpResponse | null = pinnedResponseId
-    ? responses.find((r) => r.id === pinnedResponseId) ?? null
-    : latestResponse ?? null;
+  const activeResponse: HttpResponse | null =
+    responses.find((r) => r.id === pinnedResponseId) ?? latestResponse;
 
-  // Unset pinned response when a new one comes in
-  useEffect(() => setPinnedResponseId(null), [responses.length, setPinnedResponseId]);
-
-  const setPinnedResponse = useCallback(
-    (r: HttpResponse) => {
-      setPinnedResponseId(r.id);
-    },
-    [setPinnedResponseId],
-  );
-
-  return { activeResponse, setPinnedResponse, pinnedResponseId, responses } as const;
+  return { activeResponse, setPinnedResponseId, pinnedResponseId, responses } as const;
 }

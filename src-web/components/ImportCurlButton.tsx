@@ -1,9 +1,9 @@
+import { motion } from 'framer-motion';
 import React, { useState } from 'react';
-import { Button } from './core/Button';
 import { useClipboardText } from '../hooks/useClipboardText';
 import { useImportCurl } from '../hooks/useImportCurl';
+import { Button } from './core/Button';
 import { Icon } from './core/Icon';
-import { motion } from 'framer-motion';
 
 export function ImportCurlButton() {
   const [clipboardText] = useClipboardText();
@@ -23,7 +23,7 @@ export function ImportCurlButton() {
       <Button
         size="xs"
         variant="border"
-        color="secondary"
+        color="primary"
         leftSlot={<Icon icon="paste" size="sm" />}
         isLoading={isLoading}
         onClick={() => {

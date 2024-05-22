@@ -23,14 +23,14 @@ import React, {
 import { useKey, useWindowSize } from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
+import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
+import { Icon } from './Icon';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
-import { Icon } from './Icon';
-import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -413,7 +413,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       )}
       {isOpen && (
         <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
-          <div>
+          <div className="x-theme-dialog">
             <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
               tabIndex={0}
@@ -431,7 +431,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+                  className="bg-background absolute rotate-45 border-background-highlight border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -440,22 +440,24 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   style={menuStyles}
                   className={classNames(
                     className,
-                    'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-                    'border-gray-200 overflow-auto mb-1 mx-0.5',
+                    'h-auto bg-background rounded-md shadow-lg py-1.5 border',
+                    'border-background-highlight overflow-auto mb-1 mx-0.5',
                   )}
                 >
                   {filter && (
                     <HStack
                       space={2}
                       alignItems="center"
-                      className="pb-0.5 px-1.5 mb-2 text-xs border border-highlight mx-2 rounded font-mono h-2xs"
+                      className="pb-0.5 px-1.5 mb-2 text-xs border border-background-highlight-secondary mx-2 rounded font-mono h-2xs"
                     >
-                      <Icon icon="search" size="xs" className="text-gray-700" />
-                      <div className="text-gray-800">{filter}</div>
+                      <Icon icon="search" size="xs" className="text-fg-subtle" />
+                      <div className="text-fg">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
-                    <span className="text-gray-500 text-sm text-center px-2 py-1">No matches</span>
+                    <span className="text-fg-subtler text-sm text-center px-2 py-1">
+                      No matches
+                    </span>
                   )}
                   {filteredItems.map((item, i) => {
                     if (item.type === 'separator') {
@@ -531,15 +533,17 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       justify="start"
       leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
+      innerClassName="!text-left"
+      color="custom"
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
-        'focus:bg-highlight focus:text-gray-800 rounded',
-        item.variant === 'danger' && 'text-red-600',
-        item.variant === 'notify' && 'text-pink-600',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm whitespace-nowrap',
+        'focus:bg-background-highlight focus:text-fg rounded',
+        item.variant === 'default' && 'text-fg-subtle',
+        item.variant === 'danger' && 'text-fg-danger',
+        item.variant === 'notify' && 'text-fg-primary',
       )}
-      innerClassName="!text-left"
       {...props}
     >
       <div

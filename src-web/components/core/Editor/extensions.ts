@@ -42,23 +42,23 @@ import { url } from './url/extension';
 export const myHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
-    color: 'hsl(var(--color-gray-600))',
+    color: 'var(--fg-subtler)',
     fontStyle: 'italic',
   },
   {
     tag: [t.paren],
-    color: 'hsl(var(--color-gray-900))',
+    color: 'var(--fg)',
   },
   {
     tag: [t.name, t.tagName, t.angleBracket, t.docString, t.number],
-    color: 'hsl(var(--color-blue-600))',
+    color: 'var(--fg-info)',
   },
-  { tag: [t.variableName], color: 'hsl(var(--color-green-600))' },
-  { tag: [t.bool], color: 'hsl(var(--color-pink-600))' },
-  { tag: [t.attributeName, t.propertyName], color: 'hsl(var(--color-violet-600))' },
-  { tag: [t.attributeValue], color: 'hsl(var(--color-orange-600))' },
-  { tag: [t.string], color: 'hsl(var(--color-yellow-600))' },
-  { tag: [t.keyword, t.meta, t.operator], color: 'hsl(var(--color-red-600))' },
+  { tag: [t.variableName], color: 'var(--fg-success)' },
+  { tag: [t.bool], color: 'var(--fg-info)' }, // TODO: Should be pink
+  { tag: [t.attributeName, t.propertyName], color: 'var(--fg-primary)' },
+  { tag: [t.attributeValue], color: 'var(--fg-warning)' },
+  { tag: [t.string], color: 'var(--fg-warning)' }, // TODO: Should be yellow
+  { tag: [t.keyword, t.meta, t.operator], color: 'var(--fg-danger)' },
 ]);
 
 const myTheme = EditorView.theme({}, { dark: true });
@@ -123,6 +123,7 @@ export const baseExtensions = [
   dropCursor(),
   drawSelection(),
   autocompletion({
+    tooltipClass: () => 'x-theme-dialog',
     closeOnBlur: true, // Set to `false` for debugging in devtools without closing it
     compareCompletions: (a, b) => {
       // Don't sort completions at all, only on boost

@@ -6,7 +6,7 @@
   html,
   body,
   #root {
-    @apply w-full h-full overflow-hidden text-gray-900 bg-gray-50;
+    @apply w-full h-full overflow-hidden text-fg bg-background;
   }
 
   * {
@@ -58,7 +58,7 @@
     &:hover {
       &.scrollbar-thumb,
       &::-webkit-scrollbar-thumb {
-        @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
+        @apply bg-background-highlight-secondary hover:bg-fg-subtler rounded-full;
       }
     }
   }
@@ -70,7 +70,7 @@
   iframe {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-      @apply bg-gray-100;
+      @apply bg-background-highlight-secondary !important;
     }
   }
 

@@ -199,14 +199,14 @@ export function GrpcConnectionSetupPane({
                 label: 'Refresh',
                 type: 'default',
                 key: 'custom',
-                leftSlot: <Icon className="text-gray-600" size="sm" icon="refresh" />,
+                leftSlot: <Icon className="text-fg-subtler" size="sm" icon="refresh" />,
               },
             ]}
           >
             <Button
               size="sm"
               variant="border"
-              rightSlot={<Icon className="text-gray-600" size="sm" icon="chevronDown" />}
+              rightSlot={<Icon className="text-fg-subtler" size="sm" icon="chevronDown" />}
               disabled={isStreaming || services == null}
               className={classNames(
                 'font-mono text-xs min-w-[5rem] !ring-0',
@@ -221,14 +221,14 @@ export function GrpcConnectionSetupPane({
               {isStreaming && (
                 <>
                   <IconButton
-                    className="border border-highlight"
+                    className="border border-background-highlight-secondary"
                     size="sm"
                     title="Cancel"
                     onClick={onCancel}
                     icon="x"
                   />
                   <IconButton
-                    className="border border-highlight"
+                    className="border border-background-highlight-secondary"
                     size="sm"
                     title="Commit"
                     onClick={onCommit}
@@ -237,7 +237,7 @@ export function GrpcConnectionSetupPane({
                 </>
               )}
               <IconButton
-                className="border border-highlight"
+                className="border border-background-highlight-secondary"
                 size="sm"
                 title={isStreaming ? 'Connect' : 'Send'}
                 hotkeyAction="grpc_request.send"
@@ -247,7 +247,7 @@ export function GrpcConnectionSetupPane({
             </>
           ) : (
             <IconButton
-              className="border border-highlight"
+              className="border border-background-highlight-secondary"
               size="sm"
               title={methodType === 'unary' ? 'Send' : 'Connect'}
               hotkeyAction="grpc_request.send"
@@ -275,7 +275,6 @@ export function GrpcConnectionSetupPane({
           <GrpcEditor
             onChange={handleChangeMessage}
             services={services}
-            className="bg-gray-50"
             reflectionError={reflectionError}
             reflectionLoading={reflectionLoading}
             request={activeRequest}

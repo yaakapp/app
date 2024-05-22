@@ -22,7 +22,7 @@ export function HotKey({ action, className, variant }: Props) {
       className={classNames(
         className,
         variant === 'with-bg' && 'rounded border',
-        'text-gray-1000 text-opacity-disabled',
+        'text-fg-subtler',
       )}
     >
       {labelParts.map((char, index) => (

@@ -60,7 +60,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
               >
                 <Button
                   className="focus"
-                  color="gray"
+                  color="primary"
                   onClick={async () => {
                     hide();
                     const environmentId = (await getRecentEnvironments(w.id))[0];
@@ -76,7 +76,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                 </Button>
                 <Button
                   className="focus"
-                  color="gray"
+                  color="secondary"
                   rightSlot={<Icon icon="externalLink" />}
                   onClick={async () => {
                     hide();
@@ -169,7 +169,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         size="sm"
         className={classNames(
           className,
-          'text-gray-800 !px-2 truncate',
+          'text-fg !px-2 truncate',
           activeWorkspace === null && 'italic opacity-disabled',
         )}
         {...buttonProps}

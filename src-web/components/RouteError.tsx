@@ -26,7 +26,7 @@ export default function RouteError() {
           >
             Go Home
           </Button>
-          <Button color="secondary" onClick={() => window.location.reload()}>
+          <Button color="info" onClick={() => window.location.reload()}>
             Refresh
           </Button>
         </VStack>

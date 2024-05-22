@@ -206,7 +206,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
         view = new EditorView({ state, parent: container });
         cm.current = { view, languageCompartment };
-        syncGutterBg({ parent: container, bgClassList });
         if (autoFocus) {
           view.focus();
         }
@@ -270,7 +269,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       ref={initEditorRef}
       className={classNames(
         className,
-        'cm-wrapper text-base bg-gray-50',
+        'cm-wrapper text-base',
         type === 'password' && 'cm-obscure-text',
         heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
@@ -360,19 +359,6 @@ function getExtensions({
     ...baseExtensions,
   ];
 }
-
-const syncGutterBg = ({
-  parent,
-  bgClassList,
-}: {
-  parent: HTMLDivElement;
-  bgClassList: string[];
-}) => {
-  const gutterEl = parent.querySelector<HTMLDivElement>('.cm-gutters');
-  if (gutterEl) {
-    gutterEl?.classList.add(...bgClassList);
-  }
-};
 
 const placeholderElFromText = (text: string) => {
   const el = document.createElement('div');
