@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
@@ -13,6 +13,7 @@ import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useNotificationToast } from '../hooks/useNotificationToast';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
@@ -24,7 +25,6 @@ import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { setPathname } from '../lib/persistPathname';
-import { useNotificationToast } from '../hooks/useNotificationToast';
 
 const DEFAULT_FONT_SIZE = 16;
 
@@ -34,6 +34,7 @@ export function GlobalHooks() {
   useRecentEnvironments();
   useRecentRequests();
 
+  // Other useful things
   useSyncAppearance();
   useSyncWindowTitle();
   useGlobalCommands();

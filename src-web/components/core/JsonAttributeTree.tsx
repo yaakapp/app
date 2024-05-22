@@ -67,10 +67,10 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
         isExpandable: false,
         label: jsonType === '[object String]' ? `"${attrValue}"` : `${attrValue}`,
         labelClassName: classNames(
-          jsonType === '[object Boolean]' && 'text-pink-600',
-          jsonType === '[object Number]' && 'text-blue-600',
-          jsonType === '[object String]' && 'text-yellow-600',
-          jsonType === '[object Null]' && 'text-red-600',
+          jsonType === '[object Boolean]' && 'text-fg-primary',
+          jsonType === '[object Number]' && 'text-fg-info',
+          jsonType === '[object String]' && 'text-fg-notice',
+          jsonType === '[object Null]' && 'text-fg-danger',
         ),
       };
     }
@@ -93,14 +93,14 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
                 isExpanded ? 'rotate-90' : '',
               )}
             />
-            <span className="text-violet-600 group-hover:text-violet-700 mr-1.5 whitespace-nowrap">
+            <span className="text-fg-primary group-hover:text-fg-primary mr-1.5 whitespace-nowrap">
               {attrKey === undefined ? '$' : attrKey}:
             </span>
             {labelEl}
           </button>
         ) : (
           <>
-            <span className="text-violet-600 mr-1.5 pl-4 whitespace-nowrap select-text">
+            <span className="text-fg-primary mr-1.5 pl-4 whitespace-nowrap select-text">
               {attrKey}:
             </span>
             {labelEl}

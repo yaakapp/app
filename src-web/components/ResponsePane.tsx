@@ -34,7 +34,7 @@ interface Props {
 const useActiveTab = createGlobalState<string>('body');
 
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
-  const { activeResponse, setPinnedResponse, responses } = usePinnedHttpResponse(activeRequest);
+  const { activeResponse, setPinnedResponseId, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
@@ -124,7 +124,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <RecentResponsesDropdown
                     responses={responses}
                     activeResponse={activeResponse}
-                    onPinnedResponse={setPinnedResponse}
+                    onPinnedResponseId={setPinnedResponseId}
                   />
                 </div>
               </HStack>
@@ -150,7 +150,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               <TabContent value="body">
                 {!activeResponse.contentLength ? (
                   <div className="pb-2 h-full">
-                    <EmptyStateText>No Body</EmptyStateText>
+                    <EmptyStateText>Empty Body</EmptyStateText>
                   </div>
                 ) : contentType?.startsWith('image') ? (
                   <ImageViewer className="pb-2" response={activeResponse} />

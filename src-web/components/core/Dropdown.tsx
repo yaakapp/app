@@ -538,10 +538,11 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-fg-subtle whitespace-nowrap',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm whitespace-nowrap',
         'focus:bg-background-highlight focus:text-fg rounded',
-        item.variant === 'danger' && 'text-red-600',
-        item.variant === 'notify' && 'text-pink-600',
+        item.variant === 'default' && 'text-fg-subtle',
+        item.variant === 'danger' && 'text-fg-danger',
+        item.variant === 'notify' && 'text-fg-primary',
       )}
       {...props}
     >

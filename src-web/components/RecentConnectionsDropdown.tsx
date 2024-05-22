@@ -11,12 +11,17 @@ import { HStack } from './core/Stacks';
 interface Props {
   connections: GrpcConnection[];
   activeConnection: GrpcConnection;
-  onPinned: (r: GrpcConnection) => void;
+  onPinnedConnectionId: (id: string) => void;
 }
 
-export function RecentConnectionsDropdown({ activeConnection, connections, onPinned }: Props) {
+export function RecentConnectionsDropdown({
+  activeConnection,
+  connections,
+  onPinnedConnectionId,
+}: Props) {
   const deleteConnection = useDeleteGrpcConnection(activeConnection?.id ?? null);
   const deleteAllConnections = useDeleteGrpcConnections(activeConnection?.requestId);
+  const latestConnectionId = connections[0]?.id ?? 'n/a';
 
   return (
     <Dropdown
@@ -44,13 +49,13 @@ export function RecentConnectionsDropdown({ activeConnection, connections, onPin
             </HStack>
           ),
           leftSlot: activeConnection?.id === c.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-          onSelect: () => onPinned(c),
+          onSelect: () => onPinnedConnectionId(c.id),
         })),
       ]}
     >
       <IconButton
         title="Show connection history"
-        icon="chevronDown"
+        icon={activeConnection?.id === latestConnectionId ? 'chevronDown' : 'pin'}
         className="ml-auto"
         size="sm"
         iconSize="md"

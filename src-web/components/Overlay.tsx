@@ -46,7 +46,7 @@ export function Overlay({
                 variant === 'default' && 'bg-background-backdrop backdrop-blur-sm',
               )}
             />
-            <div className="bg-red-100">{children}</div>
+            {children}
           </motion.div>
         </FocusTrap>
       )}

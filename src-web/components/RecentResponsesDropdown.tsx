@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import type { HttpResponse } from '../lib/models';
@@ -11,18 +12,19 @@ import { StatusTag } from './core/StatusTag';
 interface Props {
   responses: HttpResponse[];
   activeResponse: HttpResponse;
-  onPinnedResponse: (r: HttpResponse) => void;
+  onPinnedResponseId: (id: string) => void;
   className?: string;
 }
 
 export const RecentResponsesDropdown = function ResponsePane({
   activeResponse,
   responses,
-  onPinnedResponse,
+  onPinnedResponseId,
   className,
 }: Props) {
   const deleteResponse = useDeleteHttpResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
+  const latestResponseId = responses[0]?.id ?? 'n/a';
 
   return (
     <Dropdown
@@ -51,14 +53,14 @@ export const RecentResponsesDropdown = function ResponsePane({
             </HStack>
           ),
           leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-          onSelect: () => onPinnedResponse(r),
+          onSelect: () => onPinnedResponseId(r.id),
         })),
       ]}
     >
       <IconButton
         title="Show response history"
-        icon="chevronDown"
-        className={className}
+        icon={activeResponse?.id === latestResponseId ? 'chevronDown' : 'pin'}
+        className={classNames(className, 'm-0.5')}
         size="sm"
         iconSize="md"
       />

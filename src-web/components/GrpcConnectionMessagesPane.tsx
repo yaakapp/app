@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
+import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import type { GrpcEvent, GrpcRequest } from '../lib/models';
 import { Button } from './core/Button';
@@ -31,11 +31,11 @@ interface Props {
 
 export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }: Props) {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const connections = useGrpcConnections(activeRequest.id ?? null);
-  const activeConnection = connections[0] ?? null;
-  const events = useGrpcEvents(activeConnection?.id ?? null);
   const [showLarge, setShowLarge] = useStateWithDeps<boolean>(false, [activeRequest.id]);
   const [showingLarge, setShowingLarge] = useState<boolean>(false);
+  const { activeConnection, connections, setPinnedConnectionId } =
+    usePinnedGrpcConnection(activeRequest);
+  const events = useGrpcEvents(activeConnection?.id ?? null);
 
   const activeEvent = useMemo(
     () => events.find((m) => m.id === activeEventId) ?? null,
@@ -71,9 +71,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               <RecentConnectionsDropdown
                 connections={connections}
                 activeConnection={activeConnection}
-                onPinned={() => {
-                  // todo
-                }}
+                onPinnedConnectionId={setPinnedConnectionId}
               />
             </HStack>
             <div className="overflow-y-auto h-full">
@@ -138,7 +136,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                       {activeEvent.content}
                     </div>
                     {activeEvent.error && (
-                      <div className="select-text cursor-text text-xs font-mono py-1 text-orange-700">
+                      <div className="select-text cursor-text text-xs font-mono py-1 text-fg-warning">
                         {activeEvent.error}
                       </div>
                     )}
@@ -224,7 +222,7 @@ function EventRow({
         />
         <div className={classNames('w-full truncate text-2xs')}>
           {content.slice(0, 1000)}
-          {error && <span className="text-orange-600"> ({error})</span>}
+          {error && <span className="text-fg-warning"> ({error})</span>}
         </div>
         <div className={classNames('opacity-50 text-2xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}

@@ -55,7 +55,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
               </svg>
             </Button>
             <Button
-              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
+              className="px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
               color="custom"
               onClick={async () => {
                 const w = getCurrent();
@@ -78,7 +78,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
             </Button>
             <Button
               color="custom"
-              className="px-4 text-fg-subtle rounded-none hocus:bg-red-200 hocus:text-fg"
+              className="px-4 text-fg-subtle rounded-none hocus:bg-fg-danger hocus:text-fg"
               onClick={() => getCurrent().close()}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">

@@ -34,6 +34,7 @@ interface RootColors {
   secondary: Color;
   info: Color;
   success: Color;
+  notice: Color;
   warning: Color;
   danger: Color;
 }
@@ -44,49 +45,35 @@ type ComponentName = keyof NonNullable<YaakTheme['components']>;
 const yaakThemes: Record<string, YaakTheme> = {
   yaakLight: {
     name: 'Yaak (Light)',
-
     background: new Color('#f2f4f7', 'light').lower(1),
-    // backgroundHighlight: new Color('#f2f4f7', 'light').lift(0.08),
-    // backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lift(0.05),
-    // backgroundActive: new Color('#7639c6', 'light').translucify(0.7),
-
     foreground: new Color('hsl(219,23%,15%)', 'light'),
-    // foregroundSubtle: new Color('#171c25', 'light').lower(0.3),
-    // foregroundSubtler: new Color('#171c25', 'light').lower(0.3).translucify(0.3),
     colors: {
       primary: new Color('hsl(266,100%,70%)', 'light'),
       secondary: new Color('hsl(220,24%,59%)', 'light'),
       info: new Color('hsl(206,100%,48%)', 'light'),
       success: new Color('hsl(155,95%,33%)', 'light'),
-      warning: new Color('hsl(30,100%,45%)', 'light'),
-      danger: new Color('hsl(335,82%,58%)', 'light'),
+      notice: new Color('hsl(45,100%,41%)', 'light'),
+      warning: new Color('hsl(30,100%,43%)', 'light'),
+      danger: new Color('hsl(335,75%,57%)', 'light'),
     },
     components: {
       sidebar: {
         background: new Color('#f2f4f7', 'light'),
-        // backgroundHighlight: new Color('#f2f4f7', 'light').lift(0.08),
-        // backgroundHighlightSecondary: new Color('#f2f4f7', 'light').lift(0.06),
       },
     },
   } as YaakTheme,
 
   yaakDark: {
     name: 'Yaak Dark',
-
     background: new Color('hsl(244,23%,12%)', 'dark'),
-    // backgroundHighlight: new Color('#1a1928', 'dark').lift(0.11),
-    // backgroundHighlightSecondary: new Color('#1a1928', 'dark').lift(0.08),
-    // backgroundActive: new Color('#7639c6', 'dark').translucify(0.7),
-
     foreground: new Color('#bcbad4', 'dark'),
-    // foregroundSubtle: new Color('#7975a9', 'dark').lift(0.3),
-    // foregroundSubtler: new Color('#7975a9', 'dark').lift(0.3).translucify(0.3),
 
     colors: {
       primary: new Color('hsl(266,100%,79%)', 'dark'),
       secondary: new Color('hsl(245,23%,60%)', 'dark'),
       info: new Color('hsl(206,100%,63%)', 'dark'),
       success: new Color('hsl(150,100%,37%)', 'dark'),
+      notice: new Color('hsl(48,80%,63%)', 'dark'),
       warning: new Color('hsl(28,100%,61%)', 'dark'),
       danger: new Color('hsl(342,90%,68%)', 'dark'),
     },
@@ -94,13 +81,9 @@ const yaakThemes: Record<string, YaakTheme> = {
     components: {
       sidebar: {
         background: new Color('hsl(243,23%,15%)', 'dark'),
-        // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
-        // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
       responsePane: {
         background: new Color('hsl(243,23%,15%)', 'dark'),
-        // backgroundHighlight: new Color('#201f31', 'dark').lift(0.1),
-        // backgroundHighlightSecondary: new Color('#201f31', 'dark').lift(0.08),
       },
     },
   },
@@ -115,6 +98,7 @@ const yaakThemes: Record<string, YaakTheme> = {
       secondary: new Color('#bac2de', 'dark'),
       info: new Color('#89b4fa', 'dark'),
       success: new Color('#a6e3a1', 'dark'),
+      notice: new Color('#f9e2af', 'dark'),
       warning: new Color('#fab387', 'dark'),
       danger: new Color('#f38ba8', 'dark'),
     },
@@ -137,6 +121,7 @@ const yaakThemes: Record<string, YaakTheme> = {
           secondary: new Color('#bac2de', 'dark').lower(0.2),
           info: new Color('#89b4fa', 'dark').lower(0.2),
           success: new Color('#a6e3a1', 'dark').lower(0.2),
+          notice: new Color('#f9e2af', 'dark').lower(0.2),
           warning: new Color('#fab387', 'dark').lower(0.2),
           danger: new Color('#f38ba8', 'dark').lower(0.2),
         },
@@ -157,6 +142,7 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
     '--background-active':
       theme?.backgroundActive?.css() ?? theme?.colors?.primary?.lower(0.2).translucify(0.8).css(),
     '--background-backdrop': theme?.background?.lower(0.2).translucify(0.2).css(),
+    '--background-selection': theme?.colors?.primary?.lower(0.1).translucify(0.7).css(),
     '--fg': theme?.foreground?.css(),
     '--fg-subtle': theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.2).css(),
     '--fg-subtler': theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.3).css(),
@@ -202,7 +188,7 @@ function bannerColorVariables(color: Color): CSSVariables {
 function buttonSolidColorVariables(color: Color): CSSVariables {
   return {
     '--fg': new Color('white', 'dark').css(),
-    '--background': color.lower(0.12).css(),
+    '--background': color.lower(0.15).css(),
     '--background-highlight': color.css(),
     '--background-highlight-secondary': color.lower(0.3).css(),
   };

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { buildKeyValueKey, getKeyValue, setKeyValue } from '../lib/keyValueStore';
 
-const DEFAULT_NAMESPACE = 'app';
+const DEFAULT_NAMESPACE = 'global';
 
 export function keyValueQueryKey({
   namespace = DEFAULT_NAMESPACE,
@@ -20,7 +20,7 @@ export function useKeyValue<T extends Object | null>({
   key,
   fallback,
 }: {
-  namespace?: 'app' | 'no_sync' | 'global';
+  namespace?: 'global' | 'no_sync';
   key: string | string[];
   fallback: T;
 }) {
@@ -51,7 +51,8 @@ export function useKeyValue<T extends Object | null>({
         await mutate.mutateAsync(value);
       }
     },
-    [fallback, key, mutate, namespace],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fallback, key, namespace],
   );
 
   const reset = useCallback(async () => mutate.mutateAsync(fallback), [mutate, fallback]);

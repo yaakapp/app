@@ -179,7 +179,7 @@ export default function Workspace() {
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
             The active workspace{' '}
-            <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not found.
+            <InlineCode className="text-fg-warning">{activeWorkspaceId}</InlineCode> was not found.
             Select a workspace from the header menu or report this bug to <FeedbackLink />
           </Banner>
         </div>

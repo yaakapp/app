@@ -52,10 +52,11 @@ export function Toast({
       transition={{ duration: 0.2 }}
       className={classNames(
         className,
+        'x-theme-dialog',
         'pointer-events-auto',
-        'relative bg-gray-50 dark:bg-gray-100 pointer-events-auto',
+        'relative bg-background pointer-events-auto',
         'rounded-lg',
-        'border border-background-highlight dark:border-background-highlight-secondaryshadow-xl',
+        'border border-background-highlight dark:border-background-highlight-secondary shadow-xl',
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
@@ -67,10 +68,10 @@ export function Toast({
           <Icon
             icon={ICONS[variant]}
             className={classNames(
-              variant === 'success' && 'text-green-500',
-              variant === 'warning' && 'text-orange-500',
-              variant === 'error' && 'text-red-500',
-              variant === 'copied' && 'text-violet-500',
+              variant === 'success' && 'text-fg-success',
+              variant === 'warning' && 'text-fg-warning',
+              variant === 'error' && 'text-fg-danger',
+              variant === 'copied' && 'text-fg-primary',
             )}
           />
         )}
