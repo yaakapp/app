@@ -86,7 +86,7 @@ export function Tabs({
               'h-full flex items-center text-sm rounded',
               '!px-2 ml-[1px]',
               addBorders && 'border',
-              isActive ? 'text-fg' : 'text-fg-subtler hover:text-fg-subtle',
+              isActive ? 'text-fg' : 'text-fg-subtle hover:text-fg',
               isActive && addBorders ? 'border-background-highlight' : 'border-transparent',
             );
 

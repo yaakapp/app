@@ -4,8 +4,12 @@ import type { YaakTheme } from './window';
 export const yaakLight: YaakTheme = {
   id: 'yaak-light',
   name: 'Yaak',
-  background: new Color('#f2f4f7', 'light').lower(1),
+  background: new Color('hsl(216,24%,100%)', 'light'),
+  backgroundHighlight: new Color('hsl(216,24%,93%)', 'light'),
+  backgroundHighlightSecondary: new Color('hsl(216,24%,87%)', 'light'),
   foreground: new Color('hsl(219,23%,15%)', 'light'),
+  foregroundSubtle: new Color('hsl(219,23%,15%)', 'light').lower(0.3),
+  foregroundSubtler: new Color('hsl(219,23%,15%)', 'light').lower(0.5),
   colors: {
     primary: new Color('hsl(266,100%,70%)', 'light'),
     secondary: new Color('hsl(220,24%,59%)', 'light'),
@@ -17,7 +21,9 @@ export const yaakLight: YaakTheme = {
   },
   components: {
     sidebar: {
-      background: new Color('#f2f4f7', 'light').lower(1),
+      background: new Color('hsl(216,24%,97%)', 'light'),
+      backgroundHighlight: new Color('hsl(216,24%,93%)', 'light'),
+      backgroundHighlightSecondary: new Color('hsl(216,24%,90%)', 'light'),
     },
   },
 };
@@ -25,10 +31,12 @@ export const yaakLight: YaakTheme = {
 export const yaakDark: YaakTheme = {
   id: 'yaak-dark',
   name: 'Yaak',
-  background: new Color('hsl(244,23%,12%)', 'dark'),
-  backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.17),
-  backgroundHighlightSecondary: new Color('hsl(244,23%,12%)', 'dark').lift(0.1),
+  background: new Color('hsl(244,23%,13%)', 'dark'),
+  backgroundHighlight: new Color('hsl(244,23%,13%)', 'dark').lift(0.17),
+  backgroundHighlightSecondary: new Color('hsl(244,23%,13%)', 'dark').lift(0.1),
   foreground: new Color('#bcbad4', 'dark'),
+  foregroundSubtle: new Color('#bcbad4', 'dark').lower(0.25),
+  foregroundSubtler: new Color('#bcbad4', 'dark').lower(0.4),
 
   colors: {
     primary: new Color('hsl(266,100%,79%)', 'dark'),
@@ -59,12 +67,12 @@ export const yaakDark: YaakTheme = {
       backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.11),
     },
     sidebar: {
-      background: new Color('hsl(243,23%,15%)', 'dark'),
-      backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.09),
+      background: new Color('hsl(243,23%,16%)', 'dark'),
+      backgroundHighlight: new Color('hsl(244,23%,16%)', 'dark').lift(0.08),
     },
     responsePane: {
-      background: new Color('hsl(243,23%,15%)', 'dark'),
-      backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.09),
+      background: new Color('hsl(243,23%,16%)', 'dark'),
+      backgroundHighlight: new Color('hsl(244,23%,16%)', 'dark').lift(0.08),
     },
     appHeader: {
       background: new Color('hsl(244,23%,12%)', 'dark'),
