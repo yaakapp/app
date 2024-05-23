@@ -65,7 +65,11 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
     '--fg-subtle': theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.2).css(),
     '--fg-subtler': theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.3).css(),
     '--border-focus': theme?.colors?.info?.css(),
-    '--shadow': theme?.shadow?.css() ?? Color.black().translucify(0.7).css(),
+    '--shadow':
+      theme?.shadow?.css() ??
+      Color.black()
+        .translucify(isThemeDark(theme ?? {}) ? 0.7 : 0.93)
+        .css(),
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
@@ -180,7 +184,7 @@ function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string 
   ].join('\n\n');
 }
 
-export function isThemeDark(theme: YaakTheme): boolean {
+export function isThemeDark(theme: ThemeComponent): boolean {
   if (theme.background && theme.foreground) {
     return theme.foreground.lighterThan(theme.background);
   }

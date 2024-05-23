@@ -28,7 +28,7 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
 
   return (
     <div className="pb-2">
-      <table className="w-full text-xs mb-auto min-w-full max-w-full divide-y">
+      <table className="w-full text-xs mb-auto min-w-full max-w-full divide-y divide-background-highlight">
         <thead>
           <tr>
             <th className="py-2 text-left">Domain</th>
@@ -53,11 +53,6 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
                   title="Delete"
                   className="ml-auto"
                   onClick={async () => {
-                    console.log(
-                      'DELETE COOKIE',
-                      c,
-                      cookieJar.cookies.filter((c2) => c2 !== c).length,
-                    );
                     await updateCookieJar.mutateAsync({
                       ...cookieJar,
                       cookies: cookieJar.cookies.filter((c2) => c2 !== c),
