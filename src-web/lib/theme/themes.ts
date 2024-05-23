@@ -32,11 +32,11 @@ export const yaakDark: YaakTheme = {
   id: 'yaak-dark',
   name: 'Yaak',
   background: new Color('hsl(244,23%,13%)', 'dark'),
-  backgroundHighlight: new Color('hsl(244,23%,13%)', 'dark').lift(0.17),
-  backgroundHighlightSecondary: new Color('hsl(244,23%,13%)', 'dark').lift(0.1),
-  foreground: new Color('#bcbad4', 'dark'),
-  foregroundSubtle: new Color('#bcbad4', 'dark').lower(0.25),
-  foregroundSubtler: new Color('#bcbad4', 'dark').lower(0.4),
+  backgroundHighlight: new Color('hsl(244,23%,23%)', 'dark'),
+  backgroundHighlightSecondary: new Color('hsl(244,23%,20%)', 'dark'),
+  foreground: new Color('hsl(245,23%,86%)', 'dark'),
+  foregroundSubtle: new Color('hsl(245,20%,65%)', 'dark'),
+  foregroundSubtler: new Color('hsl(245,18%,50%)', 'dark'),
 
   colors: {
     primary: new Color('hsl(266,100%,79%)', 'dark'),
@@ -61,14 +61,14 @@ export const yaakDark: YaakTheme = {
       },
     },
     input: {
-      backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.18),
+      backgroundHighlight: new Color('hsl(244,23%,24%)', 'dark'),
     },
     dialog: {
-      backgroundHighlight: new Color('hsl(244,23%,12%)', 'dark').lift(0.11),
+      backgroundHighlight: new Color('hsl(244,23%,24%)', 'dark'),
     },
     sidebar: {
       background: new Color('hsl(243,23%,16%)', 'dark'),
-      backgroundHighlight: new Color('hsl(244,23%,16%)', 'dark').lift(0.08),
+      backgroundHighlight: new Color('hsl(244,23%,22%)', 'dark'),
     },
     responsePane: {
       background: new Color('hsl(243,23%,16%)', 'dark'),
