@@ -209,10 +209,10 @@ export default function Workspace() {
 }
 
 interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
-function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
+export function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
   const platform = useOsInfo();
   const fullscreen = useIsFullscreen();
   const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;

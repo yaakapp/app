@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core';
 import React from 'react';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useResolvedAppearance } from '../../hooks/useResolvedAppearance';
@@ -8,8 +9,10 @@ import { useUpdateSettings } from '../../hooks/useUpdateSettings';
 import { trackEvent } from '../../lib/analytics';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
+import { Button } from '../core/Button';
 import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
+import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
 import type { SelectOption } from '../core/Select';
 import { Select } from '../core/Select';
@@ -116,7 +119,7 @@ export function SettingsAppearance() {
       </div>
       <VStack
         space={3}
-        className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded"
+        className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
       >
         <div className="text-sm text-fg font-bold">
           Theme Preview <span className="text-fg-subtle">({appearance})</span>
@@ -157,6 +160,18 @@ export function SettingsAppearance() {
           contentType="application/javascript"
         />
       </VStack>
+      <Button
+        color="secondary"
+        variant="border"
+        size="sm"
+        className="mr-auto"
+        rightSlot={<Icon icon="externalLink" />}
+        onClick={async () => {
+          await invoke('cmd_new_window', { url: window.location.pathname });
+        }}
+      >
+        Open Preview Window
+      </Button>
     </VStack>
   );
 }
