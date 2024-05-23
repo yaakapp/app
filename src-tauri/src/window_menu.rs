@@ -1,8 +1,8 @@
+pub use tauri::AppHandle;
 use tauri::menu::{
-    AboutMetadata, Menu, MenuItemBuilder, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID,
+    AboutMetadata, HELP_SUBMENU_ID, Menu, MenuItemBuilder, PredefinedMenuItem, Submenu,
     WINDOW_SUBMENU_ID,
 };
-pub use tauri::AppHandle;
 use tauri::Wry;
 
 pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
@@ -107,15 +107,15 @@ pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
                     &PredefinedMenuItem::fullscreen(app_handle, None)?,
                     #[cfg(target_os = "macos")]
                     &PredefinedMenuItem::separator(app_handle)?,
-                    &MenuItemBuilder::with_id("zoom_reset".to_string(), "Zoom to Actual Size")
-                        .accelerator("CmdOrCtrl+0")
-                        .build(app_handle)?,
-                    &MenuItemBuilder::with_id("zoom_in".to_string(), "Zoom In")
-                        .accelerator("CmdOrCtrl+=")
-                        .build(app_handle)?,
-                    &MenuItemBuilder::with_id("zoom_out".to_string(), "Zoom Out")
-                        .accelerator("CmdOrCtrl+-")
-                        .build(app_handle)?,
+                    // &MenuItemBuilder::with_id("zoom_reset".to_string(), "Zoom to Actual Size")
+                    //     .accelerator("CmdOrCtrl+0")
+                    //     .build(app_handle)?,
+                    // &MenuItemBuilder::with_id("zoom_in".to_string(), "Zoom In")
+                    //     .accelerator("CmdOrCtrl+=")
+                    //     .build(app_handle)?,
+                    // &MenuItemBuilder::with_id("zoom_out".to_string(), "Zoom Out")
+                    //     .accelerator("CmdOrCtrl+-")
+                    //     .build(app_handle)?,
                 ],
             )?,
             &window_menu,
