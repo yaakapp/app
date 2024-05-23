@@ -14,9 +14,31 @@ const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
 
 #[cfg(target_os = "macos")]
+fn update_window_title(window: &WebviewWindow, title: String) {
+    use cocoa::{
+        appkit::NSWindow,
+        base::nil,
+        foundation::NSString,
+    };
+
+    unsafe {
+        let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
+
+        let _ = window.run_on_main_thread(move || {
+            let win_title = NSString::alloc(nil).init_str(&title);
+            let handle = window_handle;
+            NSWindow::setTitle_(handle.0 as cocoa::base::id, win_title);
+            set_window_controls_pos(handle.0 as cocoa::base::id);
+        });
+    }
+}
+
+#[cfg(target_os = "macos")]
 fn update_window_theme(window: &WebviewWindow, color: HexColor) {
-    use cocoa::appkit::{
-        NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
+    use cocoa::{
+        appkit::{NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow},
+        base::nil,
+        foundation::NSString,
     };
 
     let brightness = (color.r as u64 + color.g as u64 + color.b as u64) / 3;
@@ -33,18 +55,16 @@ fn update_window_theme(window: &WebviewWindow, color: HexColor) {
                 NSAppearance(NSAppearanceNameVibrantDark)
             };
 
+            let title = NSString::alloc(nil).init_str("My Title");
+            NSWindow::setTitle_(handle.0 as cocoa::base::id, title);
             NSWindow::setAppearance(handle.0 as cocoa::base::id, selected_appearance);
-            set_window_controls_pos(
-                handle.0 as cocoa::base::id,
-                WINDOW_CONTROL_PAD_X,
-                WINDOW_CONTROL_PAD_Y,
-            );
+            set_window_controls_pos(handle.0 as cocoa::base::id);
         });
     }
 }
 
 #[cfg(target_os = "macos")]
-fn set_window_controls_pos(window: cocoa::base::id, x: f64, y: f64) {
+fn set_window_controls_pos(window: cocoa::base::id) {
     use cocoa::{
         appkit::{NSView, NSWindow, NSWindowButton},
         foundation::NSRect,
@@ -60,7 +80,7 @@ fn set_window_controls_pos(window: cocoa::base::id, x: f64, y: f64) {
         let close_rect: NSRect = msg_send![close, frame];
         let button_height = close_rect.size.height;
 
-        let title_bar_frame_height = button_height + y;
+        let title_bar_frame_height = button_height + WINDOW_CONTROL_PAD_Y;
         let mut title_bar_rect = NSView::frame(title_bar_container_view);
         title_bar_rect.size.height = title_bar_frame_height;
         title_bar_rect.origin.y = NSView::frame(window).size.height - title_bar_frame_height;
@@ -71,7 +91,7 @@ fn set_window_controls_pos(window: cocoa::base::id, x: f64, y: f64) {
 
         for (i, button) in window_buttons.into_iter().enumerate() {
             let mut rect: NSRect = NSView::frame(button);
-            rect.origin.x = x + (i as f64 * space_between);
+            rect.origin.x = WINDOW_CONTROL_PAD_X + (i as f64 * space_between);
             button.setFrameOrigin(rect.origin);
         }
     }
@@ -122,7 +142,7 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
                 with_app_state(&*this, |state| {
                     let id = state.window.ns_window().unwrap() as id;
 
-                    set_window_controls_pos(id, WINDOW_CONTROL_PAD_X, WINDOW_CONTROL_PAD_Y);
+                    set_window_controls_pos(id);
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
@@ -228,7 +248,7 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
                     state.window.emit("did-exit-fullscreen", ()).unwrap();
 
                     let id = state.window.ns_window().unwrap() as id;
-                    set_window_controls_pos(id, WINDOW_CONTROL_PAD_X, WINDOW_CONTROL_PAD_Y);
+                    set_window_controls_pos(id);
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
@@ -304,7 +324,7 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
         let w = window.clone();
         let app_state = AppState { window: w };
         let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
-        set_window_controls_pos(ns_win, WINDOW_CONTROL_PAD_X, WINDOW_CONTROL_PAD_Y);
+        set_window_controls_pos(ns_win);
 
         ns_win.setDelegate_(delegate!("MainWindowDelegate", {
             window: id = ns_win,
@@ -339,10 +359,9 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
 
     let app = window.app_handle();
     let window = window.clone();
-    update_window_theme(&window, HexColor::WHITE);
 
     // Control window theme based on app update_window
-    let window = window.clone();
+    let window_for_theme = window.clone();
     app.listen_any("yaak_bg_changed", move |ev| {
         let payload = serde_json::from_str::<&str>(ev.payload())
             .unwrap()
@@ -350,6 +369,14 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
 
         let color = HexColor::parse_rgb(payload).unwrap();
 
-        update_window_theme(&window, color);
+        update_window_theme(&window_for_theme, color);
+    });
+
+    let window_for_title = window.clone();
+    app.listen_any("yaak_title_changed", move |ev| {
+        let title = serde_json::from_str::<&str>(ev.payload())
+            .unwrap()
+            .trim();
+        update_window_title(&window_for_title, title.to_string());
     });
 }
