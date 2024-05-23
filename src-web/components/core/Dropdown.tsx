@@ -413,7 +413,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       )}
       {isOpen && (
         <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
-          <div className="x-theme-dialog">
+          <div className="x-theme-menu">
             <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
               tabIndex={0}

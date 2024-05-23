@@ -7,7 +7,7 @@
     .cm-cursor {
       @apply border-fg !important;
       /* Widen the cursor */
-      @apply border-l-2;
+      @apply border-l-[2px];
     }
 
     &.cm-focused {

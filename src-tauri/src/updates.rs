@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::time::SystemTime;
 
-use log::{debug, info};
+use log::info;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
@@ -118,7 +118,6 @@ impl YaakUpdater {
 
         // Don't check if dev
         if is_dev() {
-            debug!("Not checking for updates in dev");
             return Ok(false);
         }
 

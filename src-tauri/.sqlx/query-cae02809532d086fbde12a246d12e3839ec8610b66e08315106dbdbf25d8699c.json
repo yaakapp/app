@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, created_at, updated_at, theme, appearance, update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "query": "\n            SELECT\n                id, model, created_at, updated_at, theme, appearance,\n                theme_dark, theme_light, update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
   "describe": {
     "columns": [
       {
@@ -34,8 +34,18 @@
         "type_info": "Text"
       },
       {
-        "name": "update_channel",
+        "name": "theme_dark",
         "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "theme_light",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "update_channel",
+        "ordinal": 8,
         "type_info": "Text"
       }
     ],
@@ -49,8 +59,10 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ]
   },
-  "hash": "b32994b09ae7a06eb0f031069d327e55127a5bce60cbb499b83d1701386a23cb"
+  "hash": "cae02809532d086fbde12a246d12e3839ec8610b66e08315106dbdbf25d8699c"
 }

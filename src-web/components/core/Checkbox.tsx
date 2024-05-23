@@ -30,7 +30,7 @@ export function Checkbox({
       alignItems="center"
       className={classNames(className, 'text-fg text-sm', disabled && 'opacity-disabled')}
     >
-      <div className={classNames(inputWrapperClassName, 'relative flex')}>
+      <div className={classNames(inputWrapperClassName, 'x-theme-input', 'relative flex')}>
         <input
           aria-hidden
           className={classNames(

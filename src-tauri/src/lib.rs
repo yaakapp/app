@@ -34,7 +34,6 @@ use tokio::sync::Mutex;
 
 use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use window_ext::TrafficLightWindowExt;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
@@ -69,8 +68,11 @@ mod notifications;
 mod plugin;
 mod render;
 mod updates;
-mod window_ext;
 mod window_menu;
+#[cfg(target_os = "macos")]
+mod mac;
+#[cfg(target_os = "windows")]
+mod win;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -230,8 +232,8 @@ async fn cmd_grpc_go(
                 ..Default::default()
             },
         )
-        .await
-        .map_err(|e| e.to_string())?
+            .await
+            .map_err(|e| e.to_string())?
     };
     let conn_id = conn.id.clone();
 
@@ -328,8 +330,8 @@ async fn cmd_grpc_go(
                                         ..base_msg.clone()
                                     },
                                 )
-                                .await
-                                .unwrap();
+                                    .await
+                                    .unwrap();
                             });
                             return;
                         }
@@ -344,8 +346,8 @@ async fn cmd_grpc_go(
                                 ..base_msg.clone()
                             },
                         )
-                        .await
-                        .unwrap();
+                            .await
+                            .unwrap();
                     });
                 }
                 Ok(IncomingMsg::Commit) => {
@@ -384,8 +386,8 @@ async fn cmd_grpc_go(
                 ..base_event.clone()
             },
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
 
         async move {
             let (maybe_stream, maybe_msg) = match (
@@ -431,8 +433,8 @@ async fn cmd_grpc_go(
                         ..base_event.clone()
                     },
                 )
-                .await
-                .unwrap();
+                    .await
+                    .unwrap();
             }
 
             match maybe_msg {
@@ -446,13 +448,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                            .to_string(),
+                                .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -461,8 +463,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -472,8 +474,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                 }
                 Some(Err(e)) => {
                     upsert_grpc_event(
@@ -496,8 +498,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                 }
                 None => {
                     // Server streaming doesn't return initial message
@@ -515,13 +517,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                            .to_string(),
+                                .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                     stream.into_inner()
                 }
                 Some(Err(e)) => {
@@ -545,8 +547,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                     return;
                 }
                 None => return,
@@ -564,8 +566,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                        .await
-                        .unwrap();
+                            .await
+                            .unwrap();
                     }
                     Ok(None) => {
                         let trailers = stream
@@ -583,8 +585,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                        .await
-                        .unwrap();
+                            .await
+                            .unwrap();
                         break;
                     }
                     Err(status) => {
@@ -598,8 +600,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                        .await
-                        .unwrap();
+                            .await
+                            .unwrap();
                     }
                 }
             }
@@ -700,7 +702,7 @@ async fn cmd_send_ephemeral_request(
         None,
         &mut cancel_rx,
     )
-    .await
+        .await
 }
 
 #[tauri::command]
@@ -767,7 +769,7 @@ async fn cmd_import_data(
                 AnalyticsAction::Import,
                 Some(json!({ "plugin": plugin_name })),
             )
-            .await;
+                .await;
             result = Some(r);
             break;
         }
@@ -798,7 +800,7 @@ async fn cmd_import_data(
             let maybe_gen_id_opt = |id: Option<String>,
                                     model: ModelType,
                                     ids: &mut HashMap<String, String>|
-             -> Option<String> {
+                                    -> Option<String> {
                 match id {
                     Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
                     None => None,
@@ -944,7 +946,7 @@ async fn cmd_export_data(
         AnalyticsAction::Export,
         None,
     )
-    .await;
+        .await;
 
     Ok(())
 }
@@ -995,8 +997,8 @@ async fn cmd_send_http_request(
         None,
         None,
     )
-    .await
-    .expect("Failed to create response");
+        .await
+        .expect("Failed to create response");
 
     let download_path = if let Some(p) = download_dir {
         Some(std::path::Path::new(p).to_path_buf())
@@ -1021,7 +1023,7 @@ async fn cmd_send_http_request(
         download_path,
         &mut cancel_rx,
     )
-    .await
+        .await
 }
 
 async fn response_err(
@@ -1129,8 +1131,8 @@ async fn cmd_create_cookie_jar(
             ..Default::default()
         },
     )
-    .await
-    .map_err(|e| e.to_string())
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1149,8 +1151,8 @@ async fn cmd_create_environment(
             ..Default::default()
         },
     )
-    .await
-    .map_err(|e| e.to_string())
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1171,8 +1173,8 @@ async fn cmd_create_grpc_request(
             ..Default::default()
         },
     )
-    .await
-    .map_err(|e| e.to_string())
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1281,8 +1283,8 @@ async fn cmd_create_folder(
             ..Default::default()
         },
     )
-    .await
-    .map_err(|e| e.to_string())
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1412,8 +1414,8 @@ async fn cmd_list_cookie_jars(
                 ..Default::default()
             },
         )
-        .await
-        .expect("Failed to create CookieJar");
+            .await
+            .expect("Failed to create CookieJar");
         Ok(vec![cookie_jar])
     } else {
         Ok(cookie_jars)
@@ -1482,8 +1484,8 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
                 ..Default::default()
             },
         )
-        .await
-        .expect("Failed to create Workspace");
+            .await
+            .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -1733,16 +1735,16 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         window_id,
         WebviewUrl::App(url.unwrap_or_default().into()),
     )
-    .resizable(true)
-    .fullscreen(false)
-    .disable_drag_drop_handler() // Required for frontend Dnd on windows
-    .inner_size(1100.0, 600.0)
-    .position(
-        // Randomly offset so windows don't stack exactly
-        100.0 + random::<f64>() * 30.0,
-        100.0 + random::<f64>() * 30.0,
-    )
-    .title(handle.package_info().name.to_string());
+        .resizable(true)
+        .fullscreen(false)
+        .disable_drag_drop_handler() // Required for frontend Dnd on windows
+        .inner_size(1100.0, 600.0)
+        .position(
+            // Randomly offset so windows don't stack exactly
+            100.0 + random::<f64>() * 30.0,
+            100.0 + random::<f64>() * 30.0,
+        )
+        .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1798,25 +1800,19 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         }
     });
 
-    let win3 = win.clone();
-    win.on_window_event(move |e| {
-        let apply_offset = || {
-            win3.position_traffic_lights();
-        };
+    #[cfg(target_os = "macos")]
+    {
+        use mac::setup_mac_window;
+        let mut m_win = win.clone();
+        setup_mac_window(&mut m_win);
+    };
+    #[cfg(target_os = "windows")]
+    {
+        use win::setup_win_window;
+        let mut m_win = win.clone();
+        setup_win_window(&mut m_win);
+    }
 
-        match e {
-            WindowEvent::Resized(..) => apply_offset(),
-            WindowEvent::ThemeChanged(..) => apply_offset(),
-            WindowEvent::Focused(..) => apply_offset(),
-            WindowEvent::ScaleFactorChanged { .. } => apply_offset(),
-            WindowEvent::CloseRequested { .. } => {
-                // api.prevent_close();
-            }
-            _ => {}
-        }
-    });
-
-    win.position_traffic_lights();
     win
 }
 

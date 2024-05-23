@@ -59,6 +59,10 @@ module.exports = {
       '4xl': '2.5rem',
       '5xl': '3rem',
     },
+    boxShadow: {
+      DEFAULT: '0 1px 3px 0 var(--shadow);',
+      lg: '0 10px 15px -3px var(--shadow)',
+    },
     colors: {
       'transparent': 'transparent',
       'placeholder': 'var(--fg-subtler)',
@@ -88,7 +92,7 @@ module.exports = {
     require('@tailwindcss/container-queries'),
     plugin(function ({addVariant}) {
       addVariant('hocus', ['&:hover', '&:focus-visible', '&.focus:focus']);
-      addVariant('focus-visible-or-class', ['&:focus-visible']);
+      addVariant('focus-visible-or-class', ['&:focus-visible', '&.focus:focus']);
     }),
   ],
 };

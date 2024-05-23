@@ -94,7 +94,7 @@ export function Dialog({
               className={classNames(
                 'h-full w-full grid grid-cols-[minmax(0,1fr)]',
                 !noPadding && 'px-6 py-2',
-                !noScroll && 'overflow-y-auto',
+                !noScroll && 'overflow-y-auto overflow-x-hidden',
               )}
             >
               {children}

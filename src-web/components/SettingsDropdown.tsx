@@ -11,7 +11,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { useDialog } from './DialogContext';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
-import { SettingsDialog } from './SettingsDialog';
+import { SettingsDialog } from './Settings/SettingsDialog';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -24,8 +24,9 @@ export function SettingsDropdown() {
   const showSettings = () => {
     dialog.show({
       id: 'settings',
-      size: 'md',
-      title: 'Settings',
+      size: 'dynamic',
+      noScroll: true,
+      noPadding: true,
       render: () => <SettingsDialog />,
     });
   };
@@ -69,7 +70,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="folderOutput" />,
           onSelect: () => exportData.mutate(),
         },
-        { type: 'separator', label: `Yaak v${appInfo.data?.version}` },
+        { type: 'separator', label: `Yaak v${appInfo?.version}` },
         {
           key: 'update-check',
           label: 'Check for Updates',
@@ -88,7 +89,7 @@ export function SettingsDropdown() {
           label: 'Changelog',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => open(`https://yaak.app/changelog/${appInfo.data?.version}`),
+          onSelect: () => open(`https://yaak.app/changelog/${appInfo?.version}`),
         },
       ]}
     >

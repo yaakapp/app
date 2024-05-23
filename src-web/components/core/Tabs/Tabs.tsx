@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
-import { Button } from '../Button';
 import { Icon } from '../Icon';
 import type { RadioDropdownProps } from '../RadioDropdown';
 import { RadioDropdown } from '../RadioDropdown';
@@ -25,6 +24,7 @@ interface Props {
   tabListClassName?: string;
   className?: string;
   children: ReactNode;
+  addBorders?: boolean;
 }
 
 export function Tabs({
@@ -35,6 +35,7 @@ export function Tabs({
   tabs,
   className,
   tabListClassName,
+  addBorders,
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -78,12 +79,15 @@ export function Tabs({
           '-ml-5 pl-3 pr-1 py-1',
         )}
       >
-        <HStack space={2} className="flex-shrink-0">
+        <HStack space={2} className="h-full flex-shrink-0">
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classNames(
-              isActive ? 'text-fg' : 'text-fg-subtler hover:text-fg-subtle',
+              'h-full flex items-center text-sm rounded',
               '!px-2 ml-[1px]',
+              addBorders && 'border',
+              isActive ? 'text-fg' : 'text-fg-subtler hover:text-fg-subtle',
+              isActive && addBorders ? 'border-background-highlight' : 'border-transparent',
             );
 
             if ('options' in t) {
@@ -97,39 +101,34 @@ export function Tabs({
                   value={t.options.value}
                   onChange={t.options.onChange}
                 >
-                  <Button
+                  <button
                     color="custom"
-                    size="sm"
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={btnClassName}
-                    rightSlot={
-                      <Icon
-                        size="sm"
-                        icon="chevronDown"
-                        className={classNames(
-                          '-mr-1.5 mt-0.5',
-                          isActive ? 'text-fg-subtle' : 'opacity-50',
-                        )}
-                      />
-                    }
                   >
                     {option && 'shortLabel' in option
                       ? option.shortLabel
                       : option?.label ?? 'Unknown'}
-                  </Button>
+                    <TabAccent enabled isActive={isActive} />
+                    <Icon
+                      size="sm"
+                      icon="chevronDown"
+                      className={classNames('ml-1', isActive ? 'text-fg-subtle' : 'opacity-50')}
+                    />
+                  </button>
                 </RadioDropdown>
               );
             } else {
               return (
-                <Button
+                <button
                   key={t.value}
                   color="custom"
-                  size="sm"
                   onClick={() => handleTabChange(t.value)}
                   className={btnClassName}
                 >
                   {t.label}
-                </Button>
+                  <TabAccent enabled isActive={isActive} />
+                </button>
               );
             }
           })}
@@ -161,3 +160,14 @@ export const TabContent = memo(function TabContent({
     </div>
   );
 });
+
+function TabAccent({ isActive, enabled }: { isActive: boolean; enabled: boolean }) {
+  return (
+    <div
+      className={classNames(
+        'w-full opacity-40 border-b-2',
+        isActive && enabled ? 'border-b-background-highlight' : 'border-b-transparent',
+      )}
+    />
+  );
+}

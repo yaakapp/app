@@ -14,11 +14,12 @@ export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
     | 'primary'
     | 'info'
     | 'success'
+    | 'notice'
     | 'warning'
     | 'danger';
   variant?: 'border' | 'solid';
   isLoading?: boolean;
-  size?: 'xs' | 'sm' | 'md';
+  size?: '2xs' | 'xs' | 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   forDropdown?: boolean;
@@ -60,24 +61,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     `x-theme-button--${variant}`,
     `x-theme-button--${variant}--${color}`,
     'text-fg',
+    'border', // They all have borders to ensure the same width
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects
     'whitespace-nowrap outline-none',
     'flex-shrink-0 flex items-center',
-    'focus-visible-or-class:ring rounded-md',
+    'focus-visible-or-class:ring',
     disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
     justify === 'start' && 'justify-start',
     justify === 'center' && 'justify-center',
-    size === 'md' && 'h-md px-3',
-    size === 'sm' && 'h-sm px-2.5 text-sm',
-    size === 'xs' && 'h-xs px-2 text-sm',
+    size === 'md' && 'h-md px-3 rounded-md',
+    size === 'sm' && 'h-sm px-2.5 text-sm rounded-md',
+    size === 'xs' && 'h-xs px-2 text-sm rounded-md',
+    size === '2xs' && 'h-5 px-1 text-xs rounded',
 
     // Solids
+    variant === 'solid' && 'border-transparent',
+    variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color !== 'custom' &&
       color !== 'default' &&
       'bg-background enabled:hocus:bg-background-highlight ring-background-highlight-secondary',
-    variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
       color === 'default' &&
       'enabled:hocus:bg-background-highlight ring-fg-info',

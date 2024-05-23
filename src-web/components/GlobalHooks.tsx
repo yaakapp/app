@@ -1,7 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { foldersQueryKey } from '../hooks/useFolders';
@@ -19,12 +17,11 @@ import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsQueryKey } from '../hooks/useSettings';
-import { useSyncAppearance } from '../hooks/useSyncAppearance';
+import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
-import { setPathname } from '../lib/persistPathname';
 
 const DEFAULT_FONT_SIZE = 16;
 
@@ -35,7 +32,7 @@ export function GlobalHooks() {
   useRecentRequests();
 
   // Other useful things
-  useSyncAppearance();
+  useSyncThemeToDocument();
   useSyncWindowTitle();
   useGlobalCommands();
   useCommandPalette();
@@ -43,12 +40,6 @@ export function GlobalHooks() {
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
-
-  // Listen for location changes and update the pathname
-  const location = useLocation();
-  useEffect(() => {
-    setPathname(location.pathname).catch(console.error);
-  }, [location.pathname]);
 
   interface ModelPayload {
     model: Model;

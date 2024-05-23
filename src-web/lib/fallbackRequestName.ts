@@ -23,7 +23,6 @@ export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string
     try {
       const url = new URL(fixedUrl);
       const pathname = url.pathname === '/' ? '' : url.pathname;
-      console.log('hello', fixedUrl);
       return `${url.host}${pathname}`;
     } catch (_) {
       // Nothing

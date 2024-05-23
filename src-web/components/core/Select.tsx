@@ -7,10 +7,15 @@ interface Props<T extends string> {
   labelClassName?: string;
   hideLabel?: boolean;
   value: T;
-  options: { label: string; value: T }[];
+  options: SelectOption<T>[];
   onChange: (value: T) => void;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
+}
+
+export interface SelectOption<T extends string> {
+  label: string;
+  value: T;
 }
 
 export function Select<T extends string>({
@@ -30,6 +35,7 @@ export function Select<T extends string>({
     <div
       className={classNames(
         className,
+        'x-theme-input',
         'w-full',
         'pointer-events-auto', // Just in case we're placing in disabled parent
         labelPosition === 'left' && 'flex items-center gap-2',

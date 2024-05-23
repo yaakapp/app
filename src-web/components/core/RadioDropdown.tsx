@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import type { DropdownItem, DropdownItemSeparator, DropdownProps } from './Dropdown';
 import { Dropdown } from './Dropdown';
@@ -9,6 +10,7 @@ export type RadioDropdownItem<T = string | null> =
       label: string;
       shortLabel?: string;
       value: T;
+      rightSlot?: ReactNode;
     }
   | DropdownItemSeparator;
 
@@ -37,9 +39,10 @@ export function RadioDropdown<T = string | null>({
             key: item.label,
             label: item.label,
             shortLabel: item.shortLabel,
+            rightSlot: item.rightSlot,
             onSelect: () => onChange(item.value),
             leftSlot: <Icon icon={value === item.value ? 'check' : 'empty'} />,
-          };
+          } as DropdownProps['items'][0];
         }
       }),
       ...((extraItems ? [{ type: 'separator' }, ...extraItems] : []) as DropdownItem[]),
