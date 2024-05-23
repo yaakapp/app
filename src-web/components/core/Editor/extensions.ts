@@ -46,44 +46,22 @@ export const myHighlightStyle = HighlightStyle.define([
     fontStyle: 'italic',
   },
   {
-    tag: [t.paren],
+    tag: [t.paren, t.bracket, t.brace],
     color: 'var(--fg)',
   },
   {
-    tag: [t.name, t.tagName, t.angleBracket, t.docString, t.number],
+    tag: [t.link, t.name, t.tagName, t.angleBracket, t.docString, t.number],
     color: 'var(--fg-info)',
   },
   { tag: [t.variableName], color: 'var(--fg-success)' },
-  { tag: [t.bool], color: 'var(--fg-info)' }, // TODO: Should be pink
+  { tag: [t.bool], color: 'var(--fg-warning)' },
   { tag: [t.attributeName, t.propertyName], color: 'var(--fg-primary)' },
   { tag: [t.attributeValue], color: 'var(--fg-warning)' },
-  { tag: [t.string], color: 'var(--fg-warning)' }, // TODO: Should be yellow
-  { tag: [t.keyword, t.meta, t.operator], color: 'var(--fg-danger)' },
+  { tag: [t.string], color: 'var(--fg-notice)' },
+  { tag: [t.atom, t.meta, t.operator, t.bool, t.null, t.keyword], color: 'var(--fg-danger)' },
 ]);
 
 const myTheme = EditorView.theme({}, { dark: true });
-
-// export const defaultHighlightStyle = HighlightStyle.define([
-//   { tag: t.meta, color: '#404740' },
-//   { tag: t.link, textDecoration: 'underline' },
-//   { tag: t.heading, textDecoration: 'underline', fontWeight: 'bold' },
-//   { tag: t.emphasis, fontStyle: 'italic' },
-//   { tag: t.strong, fontWeight: 'bold' },
-//   { tag: t.strikethrough, textDecoration: 'line-through' },
-//   { tag: t.keyword, color: '#708' },
-//   { tag: [t.atom, t.bool, t.url, t.contentSeparator, t.labelName], color: '#219' },
-//   { tag: [t.literal, t.inserted], color: '#164' },
-//   { tag: [t.string, t.deleted], color: '#a11' },
-//   { tag: [t.regexp, t.escape, t.special(t.string)], color: '#e40' },
-//   { tag: t.definition(t.variableName), color: '#00f' },
-//   { tag: t.local(t.variableName), color: '#30a' },
-//   { tag: [t.typeName, t.namespace], color: '#085' },
-//   { tag: t.className, color: '#167' },
-//   { tag: [t.special(t.variableName), t.macroName], color: '#256' },
-//   { tag: t.definition(t.propertyName), color: '#00c' },
-//   { tag: t.comment, color: '#940' },
-//   { tag: t.invalid, color: '#f00' },
-// ]);
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
   'application/graphql': graphqlLanguageSupport(),

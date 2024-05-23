@@ -283,7 +283,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }
 
   return (
-    <div className="group relative h-full w-full">
+    <div className="group relative h-full w-full x-theme-editor bg-background">
       {cmContainer}
       {decoratedActions && (
         <HStack

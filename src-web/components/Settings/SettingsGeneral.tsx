@@ -1,20 +1,20 @@
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useAppInfo } from '../hooks/useAppInfo';
-import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
-import { useSettings } from '../hooks/useSettings';
-import { useUpdateSettings } from '../hooks/useUpdateSettings';
-import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
-import { trackEvent } from '../lib/analytics';
-import { Checkbox } from './core/Checkbox';
-import { Heading } from './core/Heading';
-import { IconButton } from './core/IconButton';
-import { Input } from './core/Input';
-import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
-import { Select } from './core/Select';
-import { Separator } from './core/Separator';
-import { VStack } from './core/Stacks';
+import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
+import { useAppInfo } from '../../hooks/useAppInfo';
+import { useCheckForUpdates } from '../../hooks/useCheckForUpdates';
+import { useSettings } from '../../hooks/useSettings';
+import { useUpdateSettings } from '../../hooks/useUpdateSettings';
+import { useUpdateWorkspace } from '../../hooks/useUpdateWorkspace';
+import { trackEvent } from '../../lib/analytics';
+import { Checkbox } from '../core/Checkbox';
+import { Heading } from '../core/Heading';
+import { IconButton } from '../core/IconButton';
+import { Input } from '../core/Input';
+import { KeyValueRow, KeyValueRows } from '../core/KeyValueRow';
+import { Select } from '../core/Select';
+import { Separator } from '../core/Separator';
+import { VStack } from '../core/Stacks';
 
-export const SettingsDialog = () => {
+export function SettingsGeneral() {
   const workspace = useActiveWorkspace();
   const updateWorkspace = useUpdateWorkspace(workspace?.id ?? null);
   const settings = useSettings();
@@ -28,32 +28,6 @@ export const SettingsDialog = () => {
 
   return (
     <VStack space={2} className="mb-4">
-      <Select
-        name="appearance"
-        label="Appearance"
-        labelPosition="left"
-        size="sm"
-        value={settings.appearance}
-        onChange={async (appearance) => {
-          await updateSettings.mutateAsync({ ...settings, appearance });
-          trackEvent('setting', 'update', { appearance });
-        }}
-        options={[
-          {
-            label: 'System',
-            value: 'system',
-          },
-          {
-            label: 'Light',
-            value: 'light',
-          },
-          {
-            label: 'Dark',
-            value: 'dark',
-          },
-        ]}
-      />
-
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
         <Select
           name="updateChannel"
@@ -133,10 +107,10 @@ export const SettingsDialog = () => {
 
       <Heading size={2}>App Info</Heading>
       <KeyValueRows>
-        <KeyValueRow label="Version" value={appInfo.data?.version} />
-        <KeyValueRow label="Data Directory" value={appInfo.data?.appDataDir} />
-        <KeyValueRow label="Logs Directory" value={appInfo.data?.appLogDir} />
+        <KeyValueRow label="Version" value={appInfo?.version} />
+        <KeyValueRow label="Data Directory" value={appInfo?.appDataDir} />
+        <KeyValueRow label="Logs Directory" value={appInfo?.appLogDir} />
       </KeyValueRows>
     </VStack>
   );
-};
+}

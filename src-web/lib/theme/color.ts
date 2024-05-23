@@ -22,7 +22,15 @@ export class Color {
   }
 
   static transparent(): Color {
-    return new Color('rgba(0, 0, 0, 0.1)', 'light');
+    return new Color('rgb(0,0,0)', 'light').translucify(1);
+  }
+
+  static white(): Color {
+    return new Color('rgb(0,0,0)', 'light').lower(1);
+  }
+
+  static black(): Color {
+    return new Color('rgb(0,0,0)', 'light').lift(1);
   }
 
   private clone(): Color {
@@ -78,6 +86,10 @@ export class Color {
     const l = Math.round(this.lightness);
     const a = Math.round(this.alpha * 100) / 100;
     return `hsla(${h}, ${s}%, ${l}%, ${a})`;
+  }
+
+  hex(): string {
+    return parseColor(this.css()).hex;
   }
 
   private _lighten(mod: number): Color {

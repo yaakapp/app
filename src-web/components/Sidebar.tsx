@@ -468,47 +468,6 @@ export function Sidebar({ className }: Props) {
         handleEnd={handleEnd}
         handleDragStart={handleDragStart}
       />
-      {/*<div className="p-2 flex flex-col gap-1">*/}
-      {/*  <div className="flex flex-wrap gap-1">*/}
-      {/*    <Button color="primary">Primary</Button>*/}
-      {/*    <Button color="secondary">Secondary</Button>*/}
-      {/*    <Button color="info">Info</Button>*/}
-      {/*    <Button color="success">Success</Button>*/}
-      {/*    <Button color="warning">Warning</Button>*/}
-      {/*    <Button color="danger">Danger</Button>*/}
-      {/*    <Button color="default">Default</Button>*/}
-      {/*  </div>*/}
-      {/*  <div className="flex flex-wrap gap-1">*/}
-      {/*    <Button variant="border" color="primary">*/}
-      {/*      Primary*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="secondary">*/}
-      {/*      Secondary*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="info">*/}
-      {/*      Info*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="success">*/}
-      {/*      Success*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="warning">*/}
-      {/*      Warning*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="danger">*/}
-      {/*      Danger*/}
-      {/*    </Button>*/}
-      {/*    <Button variant="border" color="default">*/}
-      {/*      Default*/}
-      {/*    </Button>*/}
-      {/*  </div>*/}
-      {/*  <div className="flex flex-col gap-1">*/}
-      {/*    <Banner color="primary">Primary banner</Banner>*/}
-      {/*    <Banner color="secondary">Secondary banner</Banner>*/}
-      {/*    <Banner color="danger">Danger banner</Banner>*/}
-      {/*    <Banner color="warning">Warning banner</Banner>*/}
-      {/*    <Banner color="success">Success banner</Banner>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
     </aside>
   );
 }
@@ -800,11 +759,14 @@ const SidebarItem = forwardRef(function SidebarItem(
                       const name = await prompt({
                         id: 'rename-request',
                         title: 'Rename Request',
-                        description: (
-                          <>
-                            Enter a new name for <InlineCode>{itemName}</InlineCode>
-                          </>
-                        ),
+                        description:
+                          itemName === '' ? (
+                            'Enter a new name'
+                          ) : (
+                            <>
+                              Enter a new name for <InlineCode>{itemName}</InlineCode>
+                            </>
+                          ),
                         name: 'name',
                         label: 'Name',
                         placeholder: 'New Name',
@@ -893,7 +855,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               {isResponseLoading(latestHttpResponse) ? (
                 <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
               ) : (
-                <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
+                <StatusTag className="text-2xs" response={latestHttpResponse} />
               )}
             </div>
           ) : null}

@@ -20,9 +20,11 @@ import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
+import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { TextViewer } from './responseViewers/TextViewer';
+import { VideoViewer } from './responseViewers/VideoViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
 
 interface Props {
@@ -76,7 +78,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         'x-theme-responsePane',
         'max-h-full h-full',
         'bg-background rounded-md border border-background-highlight',
-        'shadow relative',
+        'relative',
       )}
     >
       {activeResponse == null ? (
@@ -154,6 +156,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   </div>
                 ) : contentType?.startsWith('image') ? (
                   <ImageViewer className="pb-2" response={activeResponse} />
+                ) : contentType?.startsWith('audio') ? (
+                  <AudioViewer response={activeResponse} />
+                ) : contentType?.startsWith('video') ? (
+                  <VideoViewer response={activeResponse} />
                 ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
                   <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>
                 ) : viewMode === 'pretty' && contentType?.includes('html') ? (
@@ -161,7 +167,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
                 ) : (
-                  <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
+                  <TextViewer
+                    className="-mr-2" // Pull to the right
+                    response={activeResponse}
+                    pretty={viewMode === 'pretty'}
+                  />
                 )}
               </TabContent>
             </Tabs>

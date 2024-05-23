@@ -18,9 +18,10 @@ const extraExtensions = [hyperlink];
 interface Props {
   response: HttpResponse;
   pretty: boolean;
+  className?: string;
 }
 
-export function TextViewer({ response, pretty }: Props) {
+export function TextViewer({ response, pretty, className }: Props) {
   const [isSearching, toggleIsSearching] = useToggle();
   const [filterText, setDebouncedFilterText, setFilterText] = useDebouncedState<string>('', 400);
 
@@ -85,6 +86,7 @@ export function TextViewer({ response, pretty }: Props) {
   return (
     <Editor
       readOnly
+      className={className}
       forceUpdateKey={body}
       defaultValue={body}
       contentType={contentType}

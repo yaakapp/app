@@ -145,6 +145,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         alignItems="stretch"
         className={classNames(
           containerClassName,
+          'x-theme-input',
           'relative w-full rounded-md text-fg',
           'border',
           focused ? 'border-border-focus' : 'border-background-highlight',

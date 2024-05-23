@@ -2,11 +2,9 @@ import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { attachConsole } from 'tauri-plugin-log-api';
 import { App } from './components/App';
 import './main.css';
-import { getSettings } from './lib/store';
-import type { Appearance } from './lib/theme/window';
-import { setAppearanceOnDocument } from './lib/theme/window';
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = await type();
@@ -14,11 +12,7 @@ if (osType !== 'macos') {
   await getCurrent().setDecorations(false);
 }
 
-// await attachConsole();
-// await maybeRestorePathname();
-
-const settings = await getSettings();
-setAppearanceOnDocument(settings.appearance as Appearance);
+await attachConsole();
 
 window.addEventListener('keydown', (e) => {
   // Hack to not go back in history on backspace. Check for document body

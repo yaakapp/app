@@ -66,7 +66,7 @@ const icons = {
 export interface IconProps {
   icon: keyof typeof icons;
   className?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: '2xs' | 'xs' | 'sm' | 'md' | 'lg';
   spin?: boolean;
   title?: string;
 }
@@ -83,6 +83,7 @@ export const Icon = memo(function Icon({ icon, spin, size = 'md', className, tit
         size === 'md' && 'h-4 w-4',
         size === 'sm' && 'h-3.5 w-3.5',
         size === 'xs' && 'h-3 w-3',
+        size === '2xs' && 'h-2.5 w-2.5',
         spin && 'animate-spin',
       )}
     />

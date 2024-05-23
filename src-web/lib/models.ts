@@ -34,6 +34,8 @@ export interface Settings extends BaseModel {
   readonly model: 'settings';
   theme: string;
   appearance: string;
+  themeLight: string;
+  themeDark: string;
   updateChannel: string;
 }
 

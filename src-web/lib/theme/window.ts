@@ -1,9 +1,8 @@
+import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { indent } from '../indent';
 import { Color } from './color';
 
 export type Appearance = 'dark' | 'light' | 'system';
-
-const DEFAULT_APPEARANCE: Appearance = 'system';
 
 interface ThemeComponent {
   background?: Color;
@@ -13,19 +12,26 @@ interface ThemeComponent {
   foreground?: Color;
   foregroundSubtle?: Color;
   foregroundSubtler?: Color;
+  shadow?: Color;
   colors?: Partial<RootColors>;
 }
 
-interface YaakTheme extends ThemeComponent {
+export interface YaakTheme extends ThemeComponent {
+  id: string;
   name: string;
   components?: {
     dialog?: ThemeComponent;
+    menu?: ThemeComponent;
+    toast?: ThemeComponent;
     sidebar?: ThemeComponent;
     responsePane?: ThemeComponent;
     appHeader?: ThemeComponent;
     button?: ThemeComponent;
     banner?: ThemeComponent;
     placeholder?: ThemeComponent;
+    urlBar?: ThemeComponent;
+    editor?: ThemeComponent;
+    input?: ThemeComponent;
   };
 }
 
@@ -41,94 +47,6 @@ interface RootColors {
 
 type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
-
-const yaakThemes: Record<string, YaakTheme> = {
-  yaakLight: {
-    name: 'Yaak (Light)',
-    background: new Color('#f2f4f7', 'light').lower(1),
-    foreground: new Color('hsl(219,23%,15%)', 'light'),
-    colors: {
-      primary: new Color('hsl(266,100%,70%)', 'light'),
-      secondary: new Color('hsl(220,24%,59%)', 'light'),
-      info: new Color('hsl(206,100%,48%)', 'light'),
-      success: new Color('hsl(155,95%,33%)', 'light'),
-      notice: new Color('hsl(45,100%,41%)', 'light'),
-      warning: new Color('hsl(30,100%,43%)', 'light'),
-      danger: new Color('hsl(335,75%,57%)', 'light'),
-    },
-    components: {
-      sidebar: {
-        background: new Color('#f2f4f7', 'light'),
-      },
-    },
-  } as YaakTheme,
-
-  yaakDark: {
-    name: 'Yaak Dark',
-    background: new Color('hsl(244,23%,12%)', 'dark'),
-    foreground: new Color('#bcbad4', 'dark'),
-
-    colors: {
-      primary: new Color('hsl(266,100%,79%)', 'dark'),
-      secondary: new Color('hsl(245,23%,60%)', 'dark'),
-      info: new Color('hsl(206,100%,63%)', 'dark'),
-      success: new Color('hsl(150,100%,37%)', 'dark'),
-      notice: new Color('hsl(48,80%,63%)', 'dark'),
-      warning: new Color('hsl(28,100%,61%)', 'dark'),
-      danger: new Color('hsl(342,90%,68%)', 'dark'),
-    },
-
-    components: {
-      sidebar: {
-        background: new Color('hsl(243,23%,15%)', 'dark'),
-      },
-      responsePane: {
-        background: new Color('hsl(243,23%,15%)', 'dark'),
-      },
-    },
-  },
-  catppuccin: {
-    name: 'Catppuccin',
-    background: new Color('#181825', 'dark'),
-    foreground: new Color('#cdd6f4', 'dark'),
-    foregroundSubtle: new Color('#cdd6f4', 'dark').lower(0.1).translucify(0.3),
-    foregroundSubtler: new Color('#cdd6f4', 'dark').lower(0.1).translucify(0.55),
-    colors: {
-      primary: new Color('#cba6f7', 'dark'),
-      secondary: new Color('#bac2de', 'dark'),
-      info: new Color('#89b4fa', 'dark'),
-      success: new Color('#a6e3a1', 'dark'),
-      notice: new Color('#f9e2af', 'dark'),
-      warning: new Color('#fab387', 'dark'),
-      danger: new Color('#f38ba8', 'dark'),
-    },
-    components: {
-      dialog: {
-        background: new Color('#181825', 'dark'),
-      },
-      sidebar: {
-        background: new Color('#1e1e2e', 'dark'),
-      },
-      appHeader: {
-        background: new Color('#11111b', 'dark'),
-      },
-      responsePane: {
-        background: new Color('#1e1e2e', 'dark'),
-      },
-      button: {
-        colors: {
-          primary: new Color('#cba6f7', 'dark').lower(0.2),
-          secondary: new Color('#bac2de', 'dark').lower(0.2),
-          info: new Color('#89b4fa', 'dark').lower(0.2),
-          success: new Color('#a6e3a1', 'dark').lower(0.2),
-          notice: new Color('#f9e2af', 'dark').lower(0.2),
-          warning: new Color('#fab387', 'dark').lower(0.2),
-          danger: new Color('#f38ba8', 'dark').lower(0.2),
-        },
-      },
-    },
-  },
-};
 
 type CSSVariables = Record<string, string | undefined>;
 
@@ -147,6 +65,7 @@ function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariabl
     '--fg-subtle': theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.2).css(),
     '--fg-subtler': theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.3).css(),
     '--border-focus': theme?.colors?.info?.css(),
+    '--shadow': theme?.shadow?.css() ?? Color.black().translucify(0.7).css(),
   };
 
   for (const [color, value] of Object.entries(theme?.colors ?? {})) {
@@ -261,7 +180,7 @@ function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string 
   ].join('\n\n');
 }
 
-function isThemeDark(theme: YaakTheme): boolean {
+export function isThemeDark(theme: YaakTheme): boolean {
   if (theme.background && theme.foreground) {
     return theme.foreground.lighterThan(theme.background);
   }
@@ -269,10 +188,11 @@ function isThemeDark(theme: YaakTheme): boolean {
   return false;
 }
 
-setThemeOnDocument(yaakThemes.yaakLight!);
-setThemeOnDocument(yaakThemes.yaakDark!);
-
 export function getThemeCSS(theme: YaakTheme): string {
+  theme.components = theme.components ?? {};
+  // Toast defaults to menu styles
+  theme.components.toast = theme.components.toast ?? theme.components.menu;
+
   let themeCSS = '';
   try {
     const baseCss = variablesToCSS(null, themeVariables(theme));
@@ -298,29 +218,24 @@ export function getThemeCSS(theme: YaakTheme): string {
   return themeCSS;
 }
 
-export function setAppearanceOnDocument(appearance: Appearance = DEFAULT_APPEARANCE) {
-  const resolvedAppearance = appearance === 'system' ? getPreferredAppearance() : appearance;
-  document.documentElement.setAttribute('data-resolved-appearance', resolvedAppearance);
-}
-
-export function setThemeOnDocument(theme: YaakTheme) {
-  document.documentElement.setAttribute('data-theme', theme.name);
-
-  const darkOrLight = isThemeDark(theme) ? 'dark' : 'light';
-  let existingStyleEl = document.head.querySelector(`style[data-theme-definition=${darkOrLight}]`);
-  if (!existingStyleEl) {
-    const styleEl = document.createElement('style');
+export function addThemeStylesToDocument(theme: YaakTheme) {
+  let styleEl = document.head.querySelector(`style[data-theme]`);
+  if (!styleEl) {
+    styleEl = document.createElement('style');
     document.head.appendChild(styleEl);
-    existingStyleEl = styleEl;
   }
 
-  existingStyleEl.textContent = [
+  styleEl.setAttribute('data-theme', theme.id);
+  styleEl.textContent = [
     `/* ${theme.name} */`,
-    `[data-resolved-appearance="${isThemeDark(theme) ? 'dark' : 'light'}"] {`,
+    `[data-theme="${theme.id}"] {`,
     getThemeCSS(theme),
     '}',
   ].join('\n');
-  existingStyleEl.setAttribute('data-theme-definition', darkOrLight);
+}
+
+export function setThemeOnDocument(theme: YaakTheme) {
+  document.documentElement.setAttribute('data-theme', theme.id);
 }
 
 export function getPreferredAppearance(): Appearance {
@@ -330,8 +245,13 @@ export function getPreferredAppearance(): Appearance {
 export function subscribeToPreferredAppearanceChange(
   cb: (appearance: Appearance) => void,
 ): () => void {
-  const listener = (e: MediaQueryListEvent) => cb(e.matches ? 'dark' : 'light');
-  const m = window.matchMedia('(prefers-color-scheme: dark)');
-  m.addEventListener('change', listener);
-  return () => m.removeEventListener('change', listener);
+  const container = { unsubscribe: () => {} };
+
+  getCurrent()
+    .onThemeChanged((t) => cb(t.payload))
+    .then((l) => {
+      container.unsubscribe = l;
+    });
+
+  return () => container.unsubscribe();
 }

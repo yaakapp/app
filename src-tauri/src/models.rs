@@ -4,9 +4,9 @@ use std::fs;
 use log::error;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDateTime;
-use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
+use sqlx::types::{Json, JsonValue};
+use sqlx::types::chrono::NaiveDateTime;
 use tauri::{AppHandle, Manager, WebviewWindow, Wry};
 use tokio::sync::Mutex;
 
@@ -52,6 +52,8 @@ pub struct Settings {
     pub updated_at: NaiveDateTime,
     pub theme: String,
     pub appearance: String,
+    pub theme_dark: String,
+    pub theme_light: String,
     pub update_channel: String,
 }
 
@@ -883,7 +885,8 @@ async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings, sqlx::Error> 
         Settings,
         r#"
             SELECT
-                id, model, created_at, updated_at, theme, appearance, update_channel
+                id, model, created_at, updated_at, theme, appearance,
+                theme_dark, theme_light, update_channel
             FROM settings
             WHERE id = 'default'
         "#,
@@ -919,11 +922,13 @@ pub async fn update_settings(
     sqlx::query!(
         r#"
             UPDATE settings SET (
-                theme, appearance, update_channel
-            ) = (?, ?, ?) WHERE id = 'default';
+                theme, appearance, theme_dark, theme_light, update_channel
+            ) = (?, ?, ?, ?, ?) WHERE id = 'default';
         "#,
         settings.theme,
         settings.appearance,
+        settings.theme_dark,
+        settings.theme_light,
         settings.update_channel
     )
     .execute(&db)

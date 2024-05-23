@@ -52,11 +52,11 @@ export function Toast({
       transition={{ duration: 0.2 }}
       className={classNames(
         className,
-        'x-theme-dialog',
+        'x-theme-toast',
         'pointer-events-auto',
         'relative bg-background pointer-events-auto',
         'rounded-lg',
-        'border border-background-highlight dark:border-background-highlight-secondary shadow-xl',
+        'border border-background-highlight shadow-lg',
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
