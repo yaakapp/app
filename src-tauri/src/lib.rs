@@ -1293,6 +1293,15 @@ async fn cmd_update_folder(folder: Folder, w: WebviewWindow) -> Result<Folder, S
 }
 
 #[tauri::command]
+async fn cmd_write_file_dev(w: WebviewWindow, pathname: &str, contents: &str) -> Result<(), String> {
+    if !is_dev() {
+        panic!("Cannot write arbitrary files when not in dev mode");
+    }
+
+    fs::write(pathname, contents).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_delete_folder(w: WebviewWindow, folder_id: &str) -> Result<Folder, String> {
     delete_folder(&w, folder_id)
         .await
@@ -1669,6 +1678,7 @@ pub fn run() {
             cmd_update_http_request,
             cmd_update_settings,
             cmd_update_workspace,
+            cmd_write_file_dev,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

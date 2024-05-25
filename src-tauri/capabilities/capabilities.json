@@ -48,6 +48,7 @@
     "window:allow-set-title",
     "window:allow-start-dragging",
     "window:allow-unmaximize",
+    "window:allow-theme",
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text"
   ]

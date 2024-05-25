@@ -1,7 +1,7 @@
 import { Color } from '../color';
 import type { YaakTheme } from '../window';
 
-const rosePineClassic: YaakTheme = {
+export const rosePineDefault: YaakTheme = {
   id: 'rose-pine',
   name: 'Rosé Pine',
   background: new Color('#191724', 'dark'),
@@ -105,4 +105,4 @@ const rosePineDawn: YaakTheme = {
   },
 };
 
-export const rosePine = [rosePineClassic, rosePineDawn, rosePineMoon];
+export const rosePine = [rosePineDefault, rosePineDawn, rosePineMoon];

@@ -11,10 +11,8 @@ class PlaceholderWidget extends WidgetType {
   }
   toDOM() {
     const elt = document.createElement('span');
-    elt.className = `x-theme-placeholder-widget placeholder-widget ${
-      this.isExistingVariable
-        ? 'x-theme-placeholder-widget--primary'
-        : 'x-theme-placeholder-widget--danger'
+    elt.className = `x-theme-placeholder placeholder ${
+      this.isExistingVariable ? 'x-theme-placeholder--primary' : 'x-theme-placeholder--danger'
     }`;
     elt.title = !this.isExistingVariable ? 'Variable not found in active environment' : '';
     elt.textContent = this.name;

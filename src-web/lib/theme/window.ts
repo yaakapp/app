@@ -180,7 +180,7 @@ function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string 
   }
 
   return [
-    variablesToCSS(`.x-theme-placeholder-widget--${color}`, placeholderColorVariables(cssColor)),
+    variablesToCSS(`.x-theme-placeholder--${color}`, placeholderColorVariables(cssColor)),
   ].join('\n\n');
 }
 
@@ -219,7 +219,8 @@ export function getThemeCSS(theme: YaakTheme): string {
   } catch (err) {
     console.error(err);
   }
-  return themeCSS;
+
+  return [`/* ${theme.name} */`, `[data-theme="${theme.id}"] {`, themeCSS, '}'].join('\n');
 }
 
 export function addThemeStylesToDocument(theme: YaakTheme) {
@@ -230,20 +231,16 @@ export function addThemeStylesToDocument(theme: YaakTheme) {
   }
 
   styleEl.setAttribute('data-theme', theme.id);
-  styleEl.textContent = [
-    `/* ${theme.name} */`,
-    `[data-theme="${theme.id}"] {`,
-    getThemeCSS(theme),
-    '}',
-  ].join('\n');
+  styleEl.textContent = getThemeCSS(theme);
 }
 
 export function setThemeOnDocument(theme: YaakTheme) {
   document.documentElement.setAttribute('data-theme', theme.id);
 }
 
-export function getPreferredAppearance(): Appearance {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+export async function getPreferredAppearance(): Promise<Appearance> {
+  const a = await getCurrent().theme();
+  return a ?? 'light';
 }
 
 export function subscribeToPreferredAppearanceChange(
@@ -252,7 +249,10 @@ export function subscribeToPreferredAppearanceChange(
   const container = { unsubscribe: () => {} };
 
   getCurrent()
-    .onThemeChanged((t) => cb(t.payload))
+    .onThemeChanged((t) => {
+      console.log('THEME CHANGED', t);
+      cb(t.payload);
+    })
     .then((l) => {
       container.unsubscribe = l;
     });

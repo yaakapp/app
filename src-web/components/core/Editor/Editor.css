@@ -56,7 +56,7 @@
       }
     }
 
-    .placeholder-widget {
+    .placeholder {
       /* Colors */
       @apply bg-background text-fg-subtle border-background-highlight-secondary;
       @apply hover:border-background-highlight hover:text-fg hover:bg-background-highlight-secondary;
@@ -150,7 +150,7 @@
 
 .cm-editor .cm-foldPlaceholder {
   @apply px-2 border border-fg-subtler bg-background-highlight;
-  @apply hover:text-fg hover:border-fg-subtle;
+  @apply hover:text-fg hover:border-fg-subtle text-fg;
   @apply cursor-default !important;
 }
 
