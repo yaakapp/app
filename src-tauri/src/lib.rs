@@ -1293,7 +1293,7 @@ async fn cmd_update_folder(folder: Folder, w: WebviewWindow) -> Result<Folder, S
 }
 
 #[tauri::command]
-async fn cmd_write_file_dev(w: WebviewWindow, pathname: &str, contents: &str) -> Result<(), String> {
+async fn cmd_write_file_dev(pathname: &str, contents: &str) -> Result<(), String> {
     if !is_dev() {
         panic!("Cannot write arbitrary files when not in dev mode");
     }

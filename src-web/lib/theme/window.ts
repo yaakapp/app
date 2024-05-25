@@ -220,7 +220,7 @@ export function getThemeCSS(theme: YaakTheme): string {
     console.error(err);
   }
 
-  return [`/* ${theme.name} */`, `[data-theme="${theme.id}"] {`, themeCSS, '}'].join('\n');
+  return [`/* ${theme.name} */`, `[data-theme="${theme.id}"] {`, indent(themeCSS), '}'].join('\n');
 }
 
 export function addThemeStylesToDocument(theme: YaakTheme) {

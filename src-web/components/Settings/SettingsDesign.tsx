@@ -1,13 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useThemes } from '../../hooks/useThemes';
 import { capitalize } from '../../lib/capitalize';
-import { catppuccinMacchiato } from '../../lib/theme/themes/catppuccin';
-import { githubLight } from '../../lib/theme/themes/github';
-import { monokaiProDefault } from '../../lib/theme/themes/monokai-pro';
-import { rosePineDefault } from '../../lib/theme/themes/rose-pine';
 import { yaakDark } from '../../lib/theme/themes/yaak';
 import { getThemeCSS } from '../../lib/theme/window';
 import { Banner } from '../core/Banner';
@@ -53,30 +49,28 @@ export function SettingsDesign() {
   const themes = useThemes();
 
   const [exportDir, setExportDir] = useLocalStorage<string | null>('theme_export_dir', null);
+  const [loadingExport, setLoadingExport] = useState<boolean>(false);
 
-  const saveThemes = async () => {
-    const dir = await open({ directory: true });
-    if (!dir) return;
+  const saveThemes = () => {
+    setLoadingExport(true);
+    setTimeout(async () => {
+      const allThemesCSS = themes.themes.map(getThemeCSS).join('\n\n');
+      const coreThemeCSS = [yaakDark].map(getThemeCSS).join('\n\n');
 
-    const allThemesCSS = themes.themes.map(getThemeCSS).join('\n\n');
-    const coreThemeCSS = [
-      yaakDark,
-      catppuccinMacchiato,
-      rosePineDefault,
-      monokaiProDefault,
-      githubLight,
-    ]
-      .map(getThemeCSS)
-      .join('\n\n');
-
-    await invoke('cmd_write_file_dev', {
-      pathname: dir + '/themes-all.css',
-      contents: coreThemeCSS,
-    });
-    await invoke('cmd_write_file_dev', {
-      pathname: dir + '/themes-slim.css',
-      contents: allThemesCSS,
-    });
+      try {
+        await invoke('cmd_write_file_dev', {
+          pathname: exportDir + '/themes-all.css',
+          contents: allThemesCSS,
+        });
+        await invoke('cmd_write_file_dev', {
+          pathname: exportDir + '/themes-slim.css',
+          contents: coreThemeCSS,
+        });
+      } catch (err) {
+        console.log('FAILED', err);
+      }
+      setLoadingExport(false);
+    }, 500);
   };
 
   return (
@@ -96,6 +90,7 @@ export function SettingsDesign() {
           </Button>
           <Button
             disabled={exportDir == null}
+            isLoading={loadingExport}
             size="sm"
             color="primary"
             variant="border"
