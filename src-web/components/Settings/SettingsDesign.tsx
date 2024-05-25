@@ -1,12 +1,25 @@
+import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import React from 'react';
+import { useLocalStorage } from 'react-use';
+import { useThemes } from '../../hooks/useThemes';
 import { capitalize } from '../../lib/capitalize';
+import { catppuccinMacchiato } from '../../lib/theme/themes/catppuccin';
+import { githubLight } from '../../lib/theme/themes/github';
+import { monokaiProDefault } from '../../lib/theme/themes/monokai-pro';
+import { rosePineDefault } from '../../lib/theme/themes/rose-pine';
+import { yaakDark } from '../../lib/theme/themes/yaak';
+import { getThemeCSS } from '../../lib/theme/window';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
+import { InlineCode } from '../core/InlineCode';
 import { Input } from '../core/Input';
+import { Separator } from '../core/Separator';
+import { HStack, VStack } from '../core/Stacks';
 
 const buttonColors = [
   'primary',
@@ -37,8 +50,62 @@ const icons: IconProps['icon'][] = [
 ];
 
 export function SettingsDesign() {
+  const themes = useThemes();
+
+  const [exportDir, setExportDir] = useLocalStorage<string | null>('theme_export_dir', null);
+
+  const saveThemes = async () => {
+    const dir = await open({ directory: true });
+    if (!dir) return;
+
+    const allThemesCSS = themes.themes.map(getThemeCSS).join('\n\n');
+    const coreThemeCSS = [
+      yaakDark,
+      catppuccinMacchiato,
+      rosePineDefault,
+      monokaiProDefault,
+      githubLight,
+    ]
+      .map(getThemeCSS)
+      .join('\n\n');
+
+    await invoke('cmd_write_file_dev', {
+      pathname: dir + '/themes-all.css',
+      contents: coreThemeCSS,
+    });
+    await invoke('cmd_write_file_dev', {
+      pathname: dir + '/themes-slim.css',
+      contents: allThemesCSS,
+    });
+  };
+
   return (
     <div className="p-2 flex flex-col gap-3">
+      <VStack space={2}>
+        <InlineCode>{exportDir}</InlineCode>
+        <HStack space={2}>
+          <Button
+            size="sm"
+            color="secondary"
+            variant="border"
+            onClick={() => {
+              open({ directory: true }).then(setExportDir);
+            }}
+          >
+            Change Export Dir
+          </Button>
+          <Button
+            disabled={exportDir == null}
+            size="sm"
+            color="primary"
+            variant="border"
+            onClick={saveThemes}
+          >
+            Export CSS
+          </Button>
+        </HStack>
+      </VStack>
+      <Separator className="my-6" />
       <Input
         label="Field Label"
         name="demo"

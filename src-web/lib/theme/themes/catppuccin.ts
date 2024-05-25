@@ -1,9 +1,9 @@
 import { Color } from '../color';
 import type { YaakTheme } from '../window';
 
-const catppuccinLatte: YaakTheme = {
+export const catppuccinLatte: YaakTheme = {
   name: 'Catppuccin Latte',
-  id: 'catppuccin-light',
+  id: 'catppuccin-latte',
   background: new Color('#eff1f5', 'light'),
   foreground: new Color('#4c4f69', 'dark'),
   foregroundSubtle: new Color('#6c6f85', 'light'),
@@ -31,9 +31,9 @@ const catppuccinLatte: YaakTheme = {
   },
 };
 
-const catppuccinMacchiato: YaakTheme = {
+export const catppuccinMacchiato: YaakTheme = {
   name: 'Catppuccin Macchiato',
-  id: 'catppuccin-Macchiato',
+  id: 'catppuccin-macchiato',
   background: new Color('#1e2030', 'dark'),
   foreground: new Color('#cad3f5', 'dark'),
   foregroundSubtle: new Color('#a5adcb', 'dark'),
@@ -77,7 +77,7 @@ const catppuccinMacchiato: YaakTheme = {
   },
 };
 
-const catppuccinFrappe: YaakTheme = {
+export const catppuccinFrappe: YaakTheme = {
   name: 'Catppuccin Frappé',
   id: 'catppuccin-frappe',
   background: new Color('#292c3c', 'dark'),

@@ -30,7 +30,6 @@ export const SettingsDialog = () => {
         value={tab}
         addBorders
         label="Settings"
-        tabListClassName="h-md !-ml-1 mt-2"
         onChangeValue={setTab}
         tabs={tabs
           .filter((t) => t !== Tab.Design || isDev)

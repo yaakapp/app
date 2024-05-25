@@ -1,7 +1,7 @@
 import { Color } from '../color';
 import type { YaakTheme } from '../window';
 
-const monokaiProDefault: YaakTheme = {
+export const monokaiProDefault: YaakTheme = {
   id: 'monokai-pro',
   name: 'Monokai Pro',
   background: new Color('#2d2a2e', 'dark'),

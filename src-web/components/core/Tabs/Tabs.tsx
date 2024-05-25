@@ -74,6 +74,7 @@ export function Tabs({
         aria-label={label}
         className={classNames(
           tabListClassName,
+          addBorders && '!-ml-1 h-md mt-2',
           'flex items-center overflow-x-auto overflow-y-visible hide-scrollbars mt-1 mb-2',
           // Give space for button focus states within overflow boundary.
           '-ml-5 pl-3 pr-1 py-1',
@@ -109,7 +110,6 @@ export function Tabs({
                     {option && 'shortLabel' in option
                       ? option.shortLabel
                       : option?.label ?? 'Unknown'}
-                    <TabAccent enabled isActive={isActive} />
                     <Icon
                       size="sm"
                       icon="chevronDown"
@@ -127,7 +127,6 @@ export function Tabs({
                   className={btnClassName}
                 >
                   {t.label}
-                  <TabAccent enabled isActive={isActive} />
                 </button>
               );
             }
@@ -160,14 +159,3 @@ export const TabContent = memo(function TabContent({
     </div>
   );
 });
-
-function TabAccent({ isActive, enabled }: { isActive: boolean; enabled: boolean }) {
-  return (
-    <div
-      className={classNames(
-        'w-full opacity-40 border-b-2',
-        isActive && enabled ? 'border-b-background-highlight' : 'border-b-transparent',
-      )}
-    />
-  );
-}

@@ -34,22 +34,22 @@ const githubDark: YaakTheme = {
   },
 };
 
-const githubLight: YaakTheme = {
+export const githubLight: YaakTheme = {
   id: 'github-light',
   name: 'GitHub',
   background: new Color('#ffffff', 'light'),
-  backgroundHighlight: new Color('#e8ebee', 'light'),
-  backgroundHighlightSecondary: new Color('#f6f8fa', 'light'),
+  backgroundHighlight: new Color('hsl(210,15%,92%)', 'light'),
+  backgroundHighlightSecondary: new Color('hsl(210,29%,94%)', 'light'),
   foreground: new Color('#1f2328', 'light'),
   foregroundSubtle: new Color('#636c76', 'light'),
   foregroundSubtler: new Color('#828d94', 'light'),
   colors: {
     primary: new Color('#8250df', 'light'),
     secondary: new Color('#6e7781', 'light'),
-    info: new Color('#0969da', 'light'),
-    success: new Color('#1a7f37', 'light'),
-    notice: new Color('#9a6700', 'light'),
-    warning: new Color('#bc4c00', 'light'),
+    info: new Color('hsl(212,92%,48%)', 'light'),
+    success: new Color('hsl(137,66%,32%)', 'light'),
+    notice: new Color('hsl(40,100%,40%)', 'light'),
+    warning: new Color('hsl(24,100%,44%)', 'light'),
     danger: new Color('#d1242f', 'light'),
   },
 };
