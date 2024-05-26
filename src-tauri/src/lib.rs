@@ -37,7 +37,7 @@ use ::grpc::manager::{DynamicMessage, GrpcHandle};
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
-use crate::http::send_http_request;
+use crate::http_request::send_http_request;
 use crate::models::{
     cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
     create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
@@ -62,7 +62,7 @@ use crate::window_menu::app_menu;
 
 mod analytics;
 mod grpc;
-mod http;
+mod http_request;
 mod models;
 mod notifications;
 mod plugin;
@@ -1680,6 +1680,12 @@ pub fn run() {
             cmd_update_workspace,
             cmd_write_file_dev,
         ])
+        .register_uri_scheme_protocol("yaak", |_app, _req| {
+            debug!("Testing yaak protocol");
+            tauri::http::Response::builder()
+                .body("Success".as_bytes().to_vec())
+                .unwrap()
+        })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| {
