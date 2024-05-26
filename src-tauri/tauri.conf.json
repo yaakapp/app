@@ -22,6 +22,14 @@
     }
   },
   "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": [
+          "yaak"
+        ]
+      }
+    },
     "updater": {
       "endpoints": [
         "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"

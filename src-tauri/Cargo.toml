@@ -50,6 +50,7 @@ tauri-plugin-os = { git = "https://github.com/tauri-apps/plugins-workspace", bra
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-fs = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tokio = { version = "1.36.0", features = ["sync"] }
 uuid = "1.7.0"
 log = "0.4.21"
