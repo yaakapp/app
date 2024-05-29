@@ -448,16 +448,14 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     <HStack
                       space={2}
                       alignItems="center"
-                      className="pb-0.5 px-1.5 mb-2 text-xs border border-background-highlight-secondary mx-2 rounded font-mono h-2xs"
+                      className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-2xs"
                     >
                       <Icon icon="search" size="xs" className="text-fg-subtle" />
                       <div className="text-fg">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
-                    <span className="text-fg-subtler text-sm text-center px-2 py-1">
-                      No matches
-                    </span>
+                    <span className="text-fg-subtler text-center px-2 py-1">No matches</span>
                   )}
                   {filteredItems.map((item, i) => {
                     if (item.type === 'separator') {
@@ -531,14 +529,18 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onFocus={handleFocus}
       onClick={handleClick}
       justify="start"
-      leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
+      leftSlot={
+        item.leftSlot && (
+          <div className="pr-2 flex justify-start text-fg-subtle">{item.leftSlot}</div>
+        )
+      }
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
       innerClassName="!text-left"
       color="custom"
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm whitespace-nowrap',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
         'focus:bg-background-highlight focus:text-fg rounded',
         item.variant === 'default' && 'text-fg-subtle',
         item.variant === 'danger' && 'text-fg-danger',

@@ -1,10 +1,10 @@
 const plugin = require('tailwindcss/plugin');
 
 const height = {
-  '2xs': '1.5rem',
-  xs: '1.75rem',
-  sm: '2.0rem',
-  md: '2.5rem',
+  '2xs': '1.6rem',
+  xs: '1.8rem',
+  sm: '2.2rem',
+  md: '2.7rem',
 };
 
 /** @type {import("tailwindcss").Config} */
@@ -27,11 +27,14 @@ module.exports = {
         sm: 'calc(2.0rem - 2px)',
         md: 'calc(2.5rem - 2px)',
       },
+      transitionProperty: {
+        grid: 'grid',
+      },
     },
     fontFamily: {
       mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       sans: [
-        'Inter',
+        'Inter UI',
         '-apple-system',
         'BlinkMacSystemFont',
         'Segoe UI',
@@ -58,6 +61,8 @@ module.exports = {
       '3xl': '2rem',
       '4xl': '2.5rem',
       '5xl': '3rem',
+      'editor': 'var(--editor-font-size)',
+      'shrink': '0.8em',
     },
     boxShadow: {
       DEFAULT: '0 1px 3px 0 var(--shadow);',

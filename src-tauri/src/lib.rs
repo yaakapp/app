@@ -1793,9 +1793,9 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         match event.id().0.as_str() {
             "quit" => exit(0),
             "close" => w.close().unwrap(),
-            "zoom_reset" => w.emit("zoom", 0).unwrap(),
-            "zoom_in" => w.emit("zoom", 1).unwrap(),
-            "zoom_out" => w.emit("zoom", -1).unwrap(),
+            "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
+            "zoom_in" => w.emit("zoom_in", true).unwrap(),
+            "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
             "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
             "refresh" => win2.eval("location.reload()").unwrap(),

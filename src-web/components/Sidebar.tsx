@@ -512,7 +512,7 @@ function SidebarItems({
       className={classNames(
         tree.depth > 0 && 'border-l border-background-highlight-secondary',
         tree.depth === 0 && 'ml-0',
-        tree.depth >= 1 && 'ml-[1.2em]',
+        tree.depth >= 1 && 'ml-[1.2rem]',
       )}
     >
       {tree.children.map((child, i) => {
@@ -811,7 +811,7 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md',
+            'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
             isActive && 'bg-background-highlight-secondary text-fg',
             !isActive &&
@@ -855,7 +855,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               {isResponseLoading(latestHttpResponse) ? (
                 <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
               ) : (
-                <StatusTag className="text-2xs" response={latestHttpResponse} />
+                <StatusTag className="text-xs" response={latestHttpResponse} />
               )}
             </div>
           ) : null}

@@ -80,7 +80,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
     <span className={classNames(labelClassName, 'select-text group-hover:text-fg')}>{label}</span>
   );
   return (
-    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-2xs')}>
+    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-xs')}>
       <div className="flex items-center">
         {isExpandable ? (
           <button className="group relative flex items-center pl-4 w-full" onClick={toggleExpanded}>

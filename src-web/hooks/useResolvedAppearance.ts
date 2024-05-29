@@ -10,7 +10,5 @@ export function useResolvedAppearance() {
       ? preferredAppearance
       : settings.appearance;
 
-  console.log('HELLO', settings?.appearance, preferredAppearance);
-
   return appearance;
 }

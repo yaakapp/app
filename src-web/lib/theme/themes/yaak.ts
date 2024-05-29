@@ -31,10 +31,10 @@ export const yaakLight: YaakTheme = {
 export const yaakDark: YaakTheme = {
   id: 'yaak-dark',
   name: 'Yaak',
-  background: new Color('hsl(244,23%,13%)', 'dark'),
+  background: new Color('hsl(244,23%,14%)', 'dark'),
   backgroundHighlight: new Color('hsl(244,23%,23%)', 'dark'),
   backgroundHighlightSecondary: new Color('hsl(244,23%,20%)', 'dark'),
-  foreground: new Color('hsl(245,23%,86%)', 'dark'),
+  foreground: new Color('hsl(245,23%,80%)', 'dark'),
   foregroundSubtle: new Color('hsl(245,20%,65%)', 'dark'),
   foregroundSubtler: new Color('hsl(245,18%,50%)', 'dark'),
 

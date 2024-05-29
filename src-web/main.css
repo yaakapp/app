@@ -38,7 +38,7 @@
   .hide-scrollbars {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-      display: none !important;
+      display: NONE !important;
     }
   }
 

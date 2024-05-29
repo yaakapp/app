@@ -7,6 +7,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { useThemes } from '../../hooks/useThemes';
 import { useUpdateSettings } from '../../hooks/useUpdateSettings';
 import { trackEvent } from '../../lib/analytics';
+import { clamp } from '../../lib/clamp';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
 import { Button } from '../core/Button';
@@ -14,8 +15,10 @@ import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
+import { PlainInput } from '../core/PlainInput';
 import type { SelectOption } from '../core/Select';
 import { Select } from '../core/Select';
+import { Separator } from '../core/Separator';
 import { HStack, VStack } from '../core/Stacks';
 
 const buttonColors: ButtonProps['color'][] = [
@@ -75,6 +78,41 @@ export function SettingsAppearance() {
 
   return (
     <VStack space={2} className="mb-4">
+      <PlainInput
+        size="sm"
+        name="interfaceFontSize"
+        label="Font Size"
+        placeholder="16"
+        type="number"
+        labelPosition="left"
+        defaultValue={`${settings.interfaceFontSize}`}
+        validate={(value) => parseInt(value) >= 8 && parseInt(value) <= 30}
+        onChange={(v) =>
+          updateSettings.mutate({
+            ...settings,
+            interfaceFontSize: clamp(parseInt(v) || 16, 8, 30),
+          })
+        }
+      />
+      <PlainInput
+        size="sm"
+        name="editorFontSize"
+        label="Editor Font Size"
+        placeholder="14"
+        type="number"
+        labelPosition="left"
+        defaultValue={`${settings.editorFontSize}`}
+        validate={(value) => parseInt(value) >= 8 && parseInt(value) <= 30}
+        onChange={(v) =>
+          updateSettings.mutate({
+            ...settings,
+            editorFontSize: clamp(parseInt(v) || 14, 8, 30),
+          })
+        }
+      />
+
+      <Separator className="my-4" />
+
       <Select
         name="appearance"
         label="Appearance"
@@ -91,37 +129,35 @@ export function SettingsAppearance() {
           { label: 'Dark', value: 'dark' },
         ]}
       />
-      <div className="grid grid-cols-2 gap-3">
-        <Select
-          name="lightTheme"
-          label={'Light Theme' + (appearance !== 'dark' ? ' (active)' : '')}
-          labelPosition="top"
-          size="sm"
-          value={activeTheme.light.id}
-          options={lightThemes}
-          onChange={async (themeLight) => {
-            await updateSettings.mutateAsync({ ...settings, themeLight });
-            trackEvent('setting', 'update', { themeLight });
-          }}
-        />
-        <Select
-          name="darkTheme"
-          label={'Dark Theme' + (appearance === 'dark' ? ' (active)' : '')}
-          labelPosition="top"
-          size="sm"
-          value={activeTheme.dark.id}
-          options={darkThemes}
-          onChange={async (themeDark) => {
-            await updateSettings.mutateAsync({ ...settings, themeDark });
-            trackEvent('setting', 'update', { themeDark });
-          }}
-        />
-      </div>
+      <Select
+        name="lightTheme"
+        label="Light Theme"
+        labelPosition="left"
+        size="sm"
+        value={activeTheme.light.id}
+        options={lightThemes}
+        onChange={async (themeLight) => {
+          await updateSettings.mutateAsync({ ...settings, themeLight });
+          trackEvent('setting', 'update', { themeLight });
+        }}
+      />
+      <Select
+        name="darkTheme"
+        label="Dark Theme"
+        labelPosition="left"
+        size="sm"
+        value={activeTheme.dark.id}
+        options={darkThemes}
+        onChange={async (themeDark) => {
+          await updateSettings.mutateAsync({ ...settings, themeDark });
+          trackEvent('setting', 'update', { themeDark });
+        }}
+      />
       <VStack
         space={3}
         className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
       >
-        <div className="text-sm text-fg font-bold">
+        <div className="text-fg font-bold">
           Theme Preview <span className="text-fg-subtle">({appearance})</span>
         </div>
         <HStack space={1.5} alignItems="center" className="w-full">

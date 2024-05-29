@@ -39,6 +39,7 @@
         }
       ]
     },
+    "webview:allow-set-webview-zoom",
     "window:allow-close",
     "window:allow-is-fullscreen",
     "window:allow-maximize",

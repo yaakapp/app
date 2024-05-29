@@ -389,7 +389,7 @@ function PairEditorRow({
             <Button
               size="xs"
               color="secondary"
-              className="font-mono text-xs"
+              className="font-mono text-sm"
               onClick={async (e) => {
                 e.preventDefault();
                 const selected = await open({

@@ -105,7 +105,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                     Message {activeEvent.eventType === 'client_message' ? 'Sent' : 'Received'}
                   </div>
                   {!showLarge && activeEvent.content.length > 1000 * 1000 ? (
-                    <VStack space={2} className="text-sm italic text-fg-subtler">
+                    <VStack space={2} className="italic text-fg-subtler">
                       Message previews larger than 1MB are hidden
                       <div>
                         <Button
@@ -136,7 +136,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                       {activeEvent.content}
                     </div>
                     {activeEvent.error && (
-                      <div className="select-text cursor-text text-xs font-mono py-1 text-fg-warning">
+                      <div className="select-text cursor-text text-sm font-mono py-1 text-fg-warning">
                         {activeEvent.error}
                       </div>
                     )}
@@ -220,11 +220,11 @@ function EventRow({
               : 'info'
           }
         />
-        <div className={classNames('w-full truncate text-2xs')}>
+        <div className={classNames('w-full truncate text-xs')}>
           {content.slice(0, 1000)}
           {error && <span className="text-fg-warning"> ({error})</span>}
         </div>
-        <div className={classNames('opacity-50 text-2xs')}>
+        <div className={classNames('opacity-50 text-xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
         </div>
       </button>

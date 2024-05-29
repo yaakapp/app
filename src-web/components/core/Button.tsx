@@ -71,7 +71,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     justify === 'start' && 'justify-start',
     justify === 'center' && 'justify-center',
     size === 'md' && 'h-md px-3 rounded-md',
-    size === 'sm' && 'h-sm px-2.5 text-sm rounded-md',
+    size === 'sm' && 'h-sm px-2.5 rounded-md',
     size === 'xs' && 'h-xs px-2 text-sm rounded-md',
     size === '2xs' && 'h-5 px-1 text-xs rounded',
 

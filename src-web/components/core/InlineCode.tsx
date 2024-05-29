@@ -6,8 +6,8 @@ export function InlineCode({ className, ...props }: HTMLAttributes<HTMLSpanEleme
     <code
       className={classNames(
         className,
-        'font-mono text-xs bg-background-highlight-secondary border border-background-highlight',
-        'px-1.5 py-0.5 rounded text-fg-info shadow-inner',
+        'font-mono text-shrink bg-background-highlight-secondary border border-background-highlight',
+        'px-1.5 py-0.5 rounded text-fg shadow-inner',
       )}
       {...props}
     />
