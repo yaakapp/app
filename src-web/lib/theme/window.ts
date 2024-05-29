@@ -1,5 +1,3 @@
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
-import { indent } from '../indent';
 import { Color } from './color';
 
 export type Appearance = 'dark' | 'light' | 'system';
@@ -238,24 +236,9 @@ export function setThemeOnDocument(theme: YaakTheme) {
   document.documentElement.setAttribute('data-theme', theme.id);
 }
 
-export async function getPreferredAppearance(): Promise<Appearance> {
-  const a = await getCurrent().theme();
-  return a ?? 'light';
-}
-
-export function subscribeToPreferredAppearanceChange(
-  cb: (appearance: Appearance) => void,
-): () => void {
-  const container = { unsubscribe: () => {} };
-
-  getCurrent()
-    .onThemeChanged((t) => {
-      console.log('THEME CHANGED', t);
-      cb(t.payload);
-    })
-    .then((l) => {
-      container.unsubscribe = l;
-    });
-
-  return () => container.unsubscribe();
+export function indent(text: string, space = '    '): string {
+  return text
+    .split('\n')
+    .map((line) => space + line)
+    .join('\n');
 }

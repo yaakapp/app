@@ -53,7 +53,7 @@ export function SettingsDropdown() {
             dialog.show({
               id: 'hotkey',
               title: 'Keyboard Shortcuts',
-              size: 'sm',
+              size: 'dynamic',
               render: () => <KeyboardShortcutsDialog />,
             });
           },

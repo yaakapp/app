@@ -84,7 +84,7 @@ export function Tabs({
           {tabs.map((t) => {
             const isActive = t.value === value;
             const btnClassName = classNames(
-              'h-full flex items-center text-sm rounded',
+              'h-full flex items-center rounded',
               '!px-2 ml-[1px]',
               addBorders && 'border',
               isActive ? 'text-fg' : 'text-fg-subtle hover:text-fg',

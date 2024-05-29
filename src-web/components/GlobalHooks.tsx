@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { useEffect } from 'react';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { foldersQueryKey } from '../hooks/useFolders';
@@ -7,6 +8,7 @@ import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
 import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
+import { useHotKey } from '../hooks/useHotKey';
 import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
@@ -16,14 +18,14 @@ import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { settingsQueryKey } from '../hooks/useSettings';
+import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
+import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
+import { useZoom } from '../hooks/useZoom';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
-
-const DEFAULT_FONT_SIZE = 16;
 
 export function GlobalHooks() {
   // Include here so they always update, even if no component references them
@@ -125,26 +127,43 @@ export function GlobalHooks() {
     }
   });
 
-  useListenToTauriEvent<number>(
-    'zoom',
-    ({ payload: zoomDelta }) => {
-      const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+  const settings = useSettings();
+  useEffect(() => {
+    if (settings == null) {
+      return;
+    }
 
-      let newFontSize;
-      if (zoomDelta === 0) {
-        newFontSize = DEFAULT_FONT_SIZE;
-      } else if (zoomDelta > 0) {
-        newFontSize = Math.min(fontSize * 1.1, DEFAULT_FONT_SIZE * 5);
-      } else if (zoomDelta < 0) {
-        newFontSize = Math.max(fontSize * 0.9, DEFAULT_FONT_SIZE * 0.4);
-      }
+    const { interfaceScale, interfaceFontSize, editorFontSize } = settings;
+    getCurrent().setZoom(interfaceScale).catch(console.error);
+    document.documentElement.style.cssText = [
+      `font-size: ${interfaceFontSize}px`,
+      `--editor-font-size: ${editorFontSize}px`,
+    ].join('; ');
+  }, [settings]);
+  const updateSettings = useUpdateSettings();
 
-      document.documentElement.style.fontSize = `${newFontSize}px`;
-    },
-    {
-      target: { kind: 'WebviewWindow', label: getCurrent().label },
-    },
-  );
+  // Handle Zoom. Note, Mac handles it in app menu, so need to also handle keyboard
+  // shortcuts for Windows/Linux
+  const zoom = useZoom();
+  useHotKey('app.zoom_in', () => zoom.zoomIn);
+  useListenToTauriEvent('zoom_in', () => zoom.zoomIn);
+  useHotKey('app.zoom_out', () => zoom.zoomOut);
+  useListenToTauriEvent('zoom_out', () => zoom.zoomOut);
+  useHotKey('app.zoom_out', () => zoom.zoomReset);
+  useListenToTauriEvent('zoom_out', () => zoom.zoomReset);
+
+  useHotKey('app.zoom_out', () => {
+    if (!settings) return;
+    updateSettings.mutate({
+      ...settings,
+      interfaceScale: Math.max(0.4, settings.interfaceScale * 0.9),
+    });
+  });
+
+  useHotKey('app.zoom_reset', () => {
+    if (!settings) return;
+    updateSettings.mutate({ ...settings, interfaceScale: 1 });
+  });
 
   return null;
 }

@@ -86,7 +86,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
         hotkeyAction="request_switcher.toggle"
         className={classNames(
           className,
-          'text-fg text-sm truncate pointer-events-auto',
+          'text-fg truncate pointer-events-auto',
           activeRequest === null && 'text-fg-subtler italic',
         )}
       >

@@ -1,51 +1,15 @@
 import classNames from 'classnames';
-import type { EditorView } from 'codemirror';
-import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
-import type { EditorProps } from './Editor';
-import { Editor } from './Editor';
 import { IconButton } from './IconButton';
+import type { InputProps } from './Input';
 import { HStack } from './Stacks';
 
-export type InputProps = Omit<
-  HTMLAttributes<HTMLInputElement>,
-  'onChange' | 'onFocus' | 'onKeyDown' | 'onPaste'
-> &
-  Pick<
-    EditorProps,
-    | 'contentType'
-    | 'useTemplating'
-    | 'autocomplete'
-    | 'forceUpdateKey'
-    | 'autoFocus'
-    | 'autoSelect'
-    | 'autocompleteVariables'
-    | 'onKeyDown'
-  > & {
-    name: string;
-    type?: 'text' | 'password';
-    label: string;
-    hideLabel?: boolean;
-    labelPosition?: 'top' | 'left';
-    labelClassName?: string;
-    containerClassName?: string;
-    onChange?: (value: string) => void;
-    onFocus?: () => void;
-    onBlur?: () => void;
-    onPaste?: (value: string) => void;
-    defaultValue?: string;
-    leftSlot?: ReactNode;
-    rightSlot?: ReactNode;
-    size?: 'xs' | 'sm' | 'md' | 'auto';
-    className?: string;
-    placeholder: string;
-    validate?: (v: string) => boolean;
-    require?: boolean;
-    wrapLines?: boolean;
-  };
+export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type'> & {
+  type: 'text' | 'password' | 'number';
+};
 
-export const Input = forwardRef<EditorView | undefined, InputProps>(function Input(
+export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function Input(
   {
     className,
     containerClassName,
@@ -64,12 +28,11 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     placeholder,
     require,
     rightSlot,
-    wrapLines,
     size = 'md',
     type = 'text',
     validate,
     ...props
-  }: InputProps,
+  }: PlainInputProps,
   ref,
 ) {
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
@@ -87,9 +50,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   }, [onBlur]);
 
   const id = `input-${name}`;
-  const editorClassName = classNames(
+  const inputClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
+    'px-1.5 text-xs font-mono',
   );
 
   const isValid = useMemo(() => {
@@ -107,19 +71,6 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   );
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // Submit nearest form on Enter key press
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key !== 'Enter') return;
-
-      const form = wrapperRef.current?.closest('form');
-      if (!isValid || form == null) return;
-
-      form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-    },
-    [isValid],
-  );
 
   return (
     <div
@@ -160,19 +111,16 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             rightSlot && 'pr-0.5 -mr-2',
           )}
         >
-          <Editor
+          <input
             ref={ref}
+            key={forceUpdateKey}
             id={id}
-            singleLine
-            wrapLines={wrapLines}
-            onKeyDown={handleKeyDown}
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
-            forceUpdateKey={forceUpdateKey}
             placeholder={placeholder}
-            onChange={handleChange}
-            onPaste={onPaste}
-            className={editorClassName}
+            onChange={(e) => handleChange(e.target.value)}
+            onPaste={(e) => onPaste?.(e.clipboardData.getData('Text'))}
+            className={inputClassName}
             onFocus={handleFocus}
             onBlur={handleBlur}
             {...props}

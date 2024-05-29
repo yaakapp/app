@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
-  type Appearance,
-  getPreferredAppearance,
-  subscribeToPreferredAppearanceChange,
-} from '../lib/theme/window';
+  getCSSAppearance,
+  getWindowAppearance,
+  subscribeToWindowAppearanceChange,
+} from '../lib/theme/appearance';
+import { type Appearance } from '../lib/theme/window';
 
 export function usePreferredAppearance() {
-  const [preferredAppearance, setPreferredAppearance] = useState<Appearance>();
+  const [preferredAppearance, setPreferredAppearance] = useState<Appearance>(getCSSAppearance());
 
-  // Set appearance when preferred theme changes
   useEffect(() => {
-    getPreferredAppearance().then(setPreferredAppearance);
-    return subscribeToPreferredAppearanceChange(setPreferredAppearance);
+    getWindowAppearance().then(setPreferredAppearance);
+    return subscribeToWindowAppearanceChange(setPreferredAppearance);
   }, []);
 
   return preferredAppearance;

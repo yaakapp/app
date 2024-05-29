@@ -104,8 +104,7 @@
     }
 
     .cm-scroller {
-      @apply font-mono text-[0.75rem];
-
+      @apply font-mono text-editor;
       /*
                                * Round corners or they'll stick out of the editor bounds of editor is rounded.
                                * Could potentially be pushed up from the editor like we do with bg color but this
@@ -185,7 +184,7 @@
 }
 
 .cm-tooltip.cm-tooltip-hover {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-fg-subtler z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-fg-subtler z-50 pointer-events-auto text-sm;
   @apply px-2 py-1;
 
   a {
@@ -208,7 +207,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-sm;
 
   .cm-completionIcon {
     @apply italic font-mono;
@@ -267,7 +266,7 @@
   }
 
   &.cm-completionInfo-right {
-    @apply ml-1 -mt-0.5 text-sm;
+    @apply ml-1 -mt-0.5;
   }
 
   &.cm-completionInfo-right-narrow {
@@ -279,12 +278,14 @@
   }
 
   &.cm-tooltip-autocomplete {
+    @apply font-mono text-editor;
+
     & > ul {
       @apply p-1 max-h-[40vh];
     }
 
     & > ul > li {
-      @apply cursor-default px-2 rounded-sm text-fg-subtle h-7 flex items-center;
+      @apply cursor-default px-2 py-1.5 rounded-sm text-fg-subtle flex items-center;
     }
 
     & > ul > li[aria-selected] {
@@ -292,7 +293,7 @@
     }
 
     .cm-completionIcon {
-      @apply text-xs flex items-center pb-0.5 flex-shrink-0;
+      @apply text-sm flex items-center pb-0.5 flex-shrink-0;
     }
 
     .cm-completionLabel {

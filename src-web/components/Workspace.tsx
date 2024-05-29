@@ -130,7 +130,7 @@ export default function Workspace() {
         'grid w-full h-full',
         // Animate sidebar width changes but only when not resizing
         // because it's too slow to animate on mouse move
-        !isResizing && 'transition-all',
+        !isResizing && 'transition-grid',
       )}
     >
       {floating ? (

@@ -45,11 +45,7 @@ export function Select<T extends string>({
     >
       <label
         htmlFor={id}
-        className={classNames(
-          labelClassName,
-          'text-sm text-fg whitespace-nowrap',
-          hideLabel && 'sr-only',
-        )}
+        className={classNames(labelClassName, 'text-fg whitespace-nowrap', hideLabel && 'sr-only')}
       >
         {label}
       </label>
@@ -58,7 +54,7 @@ export function Select<T extends string>({
         style={selectBackgroundStyles}
         onChange={(e) => onChange(e.target.value as T)}
         className={classNames(
-          'font-mono text-xs border w-full outline-none bg-transparent pl-2 pr-7',
+          'font-mono text-sm border w-full outline-none bg-transparent pl-2 pr-7',
           'bg-background-highlight-secondary border-background-highlight focus:border-border-focus',
           size === 'xs' && 'h-xs',
           size === 'sm' && 'h-sm',

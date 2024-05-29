@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT\n                id, model, created_at, updated_at, theme, appearance,\n                theme_dark, theme_light, update_channel\n            FROM settings\n            WHERE id = 'default'\n        ",
+  "query": "\n            SELECT\n                id, model, created_at, updated_at, theme, appearance,\n                theme_dark, theme_light, update_channel,\n                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap\n            FROM settings\n            WHERE id = 'default'\n        ",
   "describe": {
     "columns": [
       {
@@ -47,6 +47,26 @@
         "name": "update_channel",
         "ordinal": 8,
         "type_info": "Text"
+      },
+      {
+        "name": "interface_font_size",
+        "ordinal": 9,
+        "type_info": "Int64"
+      },
+      {
+        "name": "interface_scale",
+        "ordinal": 10,
+        "type_info": "Int64"
+      },
+      {
+        "name": "editor_font_size",
+        "ordinal": 11,
+        "type_info": "Int64"
+      },
+      {
+        "name": "editor_soft_wrap",
+        "ordinal": 12,
+        "type_info": "Bool"
       }
     ],
     "parameters": {
@@ -61,8 +81,12 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
       false
     ]
   },
-  "hash": "cae02809532d086fbde12a246d12e3839ec8610b66e08315106dbdbf25d8699c"
+  "hash": "ca3485d87b060cd77c4114d2af544adf18f6f15341d9d5db40865e92a80da4e2"
 }

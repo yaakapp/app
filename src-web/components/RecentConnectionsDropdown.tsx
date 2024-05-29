@@ -45,7 +45,7 @@ export function RecentConnectionsDropdown({
           label: (
             <HStack space={2} alignItems="center">
               {formatDistanceToNowStrict(c.createdAt + 'Z')} ago &bull;{' '}
-              <span className="font-mono text-xs">{c.elapsed}ms</span>
+              <span className="font-mono text-sm">{c.elapsed}ms</span>
             </HStack>
           ),
           leftSlot: activeConnection?.id === c.id ? <Icon icon="check" /> : <Icon icon="empty" />,

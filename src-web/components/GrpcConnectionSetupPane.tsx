@@ -209,7 +209,7 @@ export function GrpcConnectionSetupPane({
               rightSlot={<Icon className="text-fg-subtler" size="sm" icon="chevronDown" />}
               disabled={isStreaming || services == null}
               className={classNames(
-                'font-mono text-xs min-w-[5rem] !ring-0',
+                'font-mono text-sm min-w-[5rem] !ring-0',
                 paneSize < 400 && 'flex-1',
               )}
             >

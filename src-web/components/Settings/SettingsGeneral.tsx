@@ -1,3 +1,4 @@
+import React from 'react';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useAppInfo } from '../../hooks/useAppInfo';
 import { useCheckForUpdates } from '../../hooks/useCheckForUpdates';
@@ -35,19 +36,13 @@ export function SettingsGeneral() {
           labelPosition="left"
           size="sm"
           value={settings.updateChannel}
-          onChange={async (updateChannel) => {
+          onChange={(updateChannel) => {
             trackEvent('setting', 'update', { update_channel: updateChannel });
-            await updateSettings.mutateAsync({ ...settings, updateChannel });
+            updateSettings.mutate({ ...settings, updateChannel });
           }}
           options={[
-            {
-              label: 'Release',
-              value: 'stable',
-            },
-            {
-              label: 'Early Bird (Beta)',
-              value: 'beta',
-            },
+            { label: 'Release', value: 'stable' },
+            { label: 'Early Bird (Beta)', value: 'beta' },
           ]}
         />
         <IconButton
@@ -59,12 +54,11 @@ export function SettingsGeneral() {
           onClick={() => checkForUpdates.mutateAsync()}
         />
       </div>
-
       <Separator className="my-4" />
 
       <Heading size={2}>
         Workspace{' '}
-        <div className="inline-block ml-1 bg-background-highlight px-2 py-0.5 text-sm rounded text-fg">
+        <div className="inline-block ml-1 bg-background-highlight px-2 py-0.5 rounded text-fg text-shrink">
           {workspace.name}
         </div>
       </Heading>
@@ -77,28 +71,28 @@ export function SettingsGeneral() {
           labelPosition="left"
           defaultValue={`${workspace.settingRequestTimeout}`}
           validate={(value) => parseInt(value) >= 0}
-          onChange={(v) => updateWorkspace.mutateAsync({ settingRequestTimeout: parseInt(v) || 0 })}
+          onChange={(v) => updateWorkspace.mutate({ settingRequestTimeout: parseInt(v) || 0 })}
         />
 
         <Checkbox
           checked={workspace.settingValidateCertificates}
           title="Validate TLS Certificates"
-          onChange={async (settingValidateCertificates) => {
+          onChange={(settingValidateCertificates) => {
             trackEvent('workspace', 'update', {
               validate_certificates: JSON.stringify(settingValidateCertificates),
             });
-            await updateWorkspace.mutateAsync({ settingValidateCertificates });
+            updateWorkspace.mutate({ settingValidateCertificates });
           }}
         />
 
         <Checkbox
           checked={workspace.settingFollowRedirects}
           title="Follow Redirects"
-          onChange={async (settingFollowRedirects) => {
+          onChange={(settingFollowRedirects) => {
             trackEvent('workspace', 'update', {
               follow_redirects: JSON.stringify(settingFollowRedirects),
             });
-            await updateWorkspace.mutateAsync({ settingFollowRedirects });
+            updateWorkspace.mutate({ settingFollowRedirects });
           }}
         />
       </VStack>

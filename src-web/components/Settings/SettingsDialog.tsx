@@ -16,8 +16,7 @@ enum Tab {
 }
 
 const tabs = [Tab.General, Tab.Appearance, Tab.Design];
-
-const useTabState = createGlobalState<string>(Tab.Appearance);
+const useTabState = createGlobalState<string>(tabs[0]!);
 
 export const SettingsDialog = () => {
   const [tab, setTab] = useTabState();

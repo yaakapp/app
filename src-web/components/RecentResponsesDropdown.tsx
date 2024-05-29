@@ -43,13 +43,13 @@ export const RecentResponsesDropdown = function ResponsePane({
           disabled: responses.length === 0,
         },
         { type: 'separator', label: 'History' },
-        ...responses.slice(0, 20).map((r) => ({
+        ...responses.slice(0, 20).map((r: HttpResponse) => ({
           key: r.id,
           label: (
             <HStack space={2} alignItems="center">
-              <StatusTag className="text-xs" response={r} />
+              <StatusTag className="text-sm" response={r} />
               <span>&rarr;</span>{' '}
-              <span className="font-mono text-xs">{r.elapsed >= 0 ? `${r.elapsed}ms` : 'n/a'}</span>
+              <span className="font-mono text-sm">{r.elapsed >= 0 ? `${r.elapsed}ms` : 'n/a'}</span>
             </HStack>
           ),
           leftSlot: activeResponse?.id === r.id ? <Icon icon="check" /> : <Icon icon="empty" />,
