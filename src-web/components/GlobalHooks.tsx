@@ -132,10 +132,8 @@ export function GlobalHooks() {
 
     const { interfaceScale, interfaceFontSize, editorFontSize } = settings;
     getCurrent().setZoom(interfaceScale).catch(console.error);
-    document.documentElement.style.cssText = [
-      `font-size: ${interfaceFontSize}px`,
-      `--editor-font-size: ${editorFontSize}px`,
-    ].join('; ');
+    document.documentElement.style.setProperty('font-size', `${interfaceFontSize}px`);
+    document.documentElement.style.setProperty('--editor-font-size', `${editorFontSize}px`);
   }, [settings]);
 
   // Handle Zoom. Note, Mac handles it in app menu, so need to also handle keyboard

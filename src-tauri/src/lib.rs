@@ -6,56 +6,56 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 use std::time::Duration;
 
-use ::http::Uri;
 use ::http::uri::InvalidUri;
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, generate_model_id,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
-    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse,
-    KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections,
-    list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces,
-    ModelType, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar,
-    upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
-    Workspace, WorkspaceExportResources,
+    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
+    list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
+    list_http_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+    WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
-use crate::plugin::{ImportResult, run_plugin_export_curl, run_plugin_import};
+use crate::plugin::{run_plugin_export_curl, run_plugin_import, ImportResult};
 use crate::render::render_request;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
@@ -67,15 +67,15 @@ mod models;
 mod notifications;
 mod plugin;
 mod render;
-mod updates;
-mod window_menu;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
 #[cfg(target_os = "windows")]
 mod tauri_plugin_windows_window;
+mod updates;
+mod window_menu;
 
-const DEFAULT_WINDOW_WIDTH: i32 = 1100;
-const DEFAULT_WINDOW_HEIGHT: i32 = 600;
+const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
+const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -235,8 +235,8 @@ async fn cmd_grpc_go(
                 ..Default::default()
             },
         )
-            .await
-            .map_err(|e| e.to_string())?
+        .await
+        .map_err(|e| e.to_string())?
     };
     let conn_id = conn.id.clone();
 
@@ -333,8 +333,8 @@ async fn cmd_grpc_go(
                                         ..base_msg.clone()
                                     },
                                 )
-                                    .await
-                                    .unwrap();
+                                .await
+                                .unwrap();
                             });
                             return;
                         }
@@ -349,8 +349,8 @@ async fn cmd_grpc_go(
                                 ..base_msg.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     });
                 }
                 Ok(IncomingMsg::Commit) => {
@@ -389,8 +389,8 @@ async fn cmd_grpc_go(
                 ..base_event.clone()
             },
         )
-            .await
-            .unwrap();
+        .await
+        .unwrap();
 
         async move {
             let (maybe_stream, maybe_msg) = match (
@@ -436,8 +436,8 @@ async fn cmd_grpc_go(
                         ..base_event.clone()
                     },
                 )
-                    .await
-                    .unwrap();
+                .await
+                .unwrap();
             }
 
             match maybe_msg {
@@ -451,13 +451,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                                .to_string(),
+                            .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -466,8 +466,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
@@ -477,8 +477,8 @@ async fn cmd_grpc_go(
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                 }
                 Some(Err(e)) => {
                     upsert_grpc_event(
@@ -501,8 +501,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                 }
                 None => {
                     // Server streaming doesn't return initial message
@@ -520,13 +520,13 @@ async fn cmd_grpc_go(
                             } else {
                                 "Received response with metadata"
                             }
-                                .to_string(),
+                            .to_string(),
                             event_type: GrpcEventType::Info,
                             ..base_event.clone()
                         },
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     stream.into_inner()
                 }
                 Some(Err(e)) => {
@@ -550,8 +550,8 @@ async fn cmd_grpc_go(
                             },
                         }),
                     )
-                        .await
-                        .unwrap();
+                    .await
+                    .unwrap();
                     return;
                 }
                 None => return,
@@ -569,8 +569,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     }
                     Ok(None) => {
                         let trailers = stream
@@ -588,8 +588,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                         break;
                     }
                     Err(status) => {
@@ -603,8 +603,8 @@ async fn cmd_grpc_go(
                                 ..base_event.clone()
                             },
                         )
-                            .await
-                            .unwrap();
+                        .await
+                        .unwrap();
                     }
                 }
             }
@@ -705,7 +705,7 @@ async fn cmd_send_ephemeral_request(
         None,
         &mut cancel_rx,
     )
-        .await
+    .await
 }
 
 #[tauri::command]
@@ -772,7 +772,7 @@ async fn cmd_import_data(
                 AnalyticsAction::Import,
                 Some(json!({ "plugin": plugin_name })),
             )
-                .await;
+            .await;
             result = Some(r);
             break;
         }
@@ -803,7 +803,7 @@ async fn cmd_import_data(
             let maybe_gen_id_opt = |id: Option<String>,
                                     model: ModelType,
                                     ids: &mut HashMap<String, String>|
-                                    -> Option<String> {
+             -> Option<String> {
                 match id {
                     Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
                     None => None,
@@ -949,7 +949,7 @@ async fn cmd_export_data(
         AnalyticsAction::Export,
         None,
     )
-        .await;
+    .await;
 
     Ok(())
 }
@@ -1000,8 +1000,8 @@ async fn cmd_send_http_request(
         None,
         None,
     )
-        .await
-        .expect("Failed to create response");
+    .await
+    .expect("Failed to create response");
 
     let download_path = if let Some(p) = download_dir {
         Some(std::path::Path::new(p).to_path_buf())
@@ -1026,7 +1026,7 @@ async fn cmd_send_http_request(
         download_path,
         &mut cancel_rx,
     )
-        .await
+    .await
 }
 
 async fn response_err(
@@ -1134,8 +1134,8 @@ async fn cmd_create_cookie_jar(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1154,8 +1154,8 @@ async fn cmd_create_environment(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1176,8 +1176,8 @@ async fn cmd_create_grpc_request(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1286,8 +1286,8 @@ async fn cmd_create_folder(
             ..Default::default()
         },
     )
-        .await
-        .map_err(|e| e.to_string())
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1426,8 +1426,8 @@ async fn cmd_list_cookie_jars(
                 ..Default::default()
             },
         )
-            .await
-            .expect("Failed to create CookieJar");
+        .await
+        .expect("Failed to create CookieJar");
         Ok(vec![cookie_jar])
     } else {
         Ok(cookie_jars)
@@ -1496,8 +1496,8 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
                 ..Default::default()
             },
         )
-            .await
-            .expect("Failed to create Workspace");
+        .await
+        .expect("Failed to create Workspace");
         Ok(vec![workspace])
     } else {
         Ok(workspaces)
@@ -1511,7 +1511,12 @@ async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> 
 }
 
 #[tauri::command]
-async fn cmd_new_nested_window(window: WebviewWindow, url: &str, label: &str, title: &str) -> Result<(), String> {
+async fn cmd_new_nested_window(
+    window: WebviewWindow,
+    url: &str,
+    label: &str,
+    title: &str,
+) -> Result<(), String> {
     create_nested_window(&window, label, url, title);
     Ok(())
 }
@@ -1548,40 +1553,43 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init());
 
-    #[cfg(target_os = "windows")] {
+    #[cfg(target_os = "windows")]
+    {
         builder = builder.plugin(tauri_plugin_windows_window::init());
     }
 
-    #[cfg(target_os = "macos")] {
+    #[cfg(target_os = "macos")]
+    {
         builder = builder.plugin(tauri_plugin_mac_window::init());
     }
 
-    builder.plugin(
-        tauri_plugin_log::Builder::default()
-            .targets([
-                Target::new(TargetKind::Stdout),
-                Target::new(TargetKind::LogDir { file_name: None }),
-                Target::new(TargetKind::Webview),
-            ])
-            .level_for("cookie_store", log::LevelFilter::Info)
-            .level_for("h2", log::LevelFilter::Info)
-            .level_for("hyper", log::LevelFilter::Info)
-            .level_for("hyper_rustls", log::LevelFilter::Info)
-            .level_for("reqwest", log::LevelFilter::Info)
-            .level_for("sqlx", log::LevelFilter::Warn)
-            .level_for("tao", log::LevelFilter::Info)
-            .level_for("tokio_util", log::LevelFilter::Info)
-            .level_for("tonic", log::LevelFilter::Info)
-            .level_for("tower", log::LevelFilter::Info)
-            .level_for("tracing", log::LevelFilter::Info)
-            .with_colors(ColoredLevelConfig::default())
-            .level(if is_dev() {
-                log::LevelFilter::Trace
-            } else {
-                log::LevelFilter::Info
-            })
-            .build(),
-    )
+    builder
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::LogDir { file_name: None }),
+                    Target::new(TargetKind::Webview),
+                ])
+                .level_for("cookie_store", log::LevelFilter::Info)
+                .level_for("h2", log::LevelFilter::Info)
+                .level_for("hyper", log::LevelFilter::Info)
+                .level_for("hyper_rustls", log::LevelFilter::Info)
+                .level_for("reqwest", log::LevelFilter::Info)
+                .level_for("sqlx", log::LevelFilter::Warn)
+                .level_for("tao", log::LevelFilter::Info)
+                .level_for("tokio_util", log::LevelFilter::Info)
+                .level_for("tonic", log::LevelFilter::Info)
+                .level_for("tower", log::LevelFilter::Info)
+                .level_for("tracing", log::LevelFilter::Info)
+                .with_colors(ColoredLevelConfig::default())
+                .level(if is_dev() {
+                    log::LevelFilter::Trace
+                } else {
+                    log::LevelFilter::Info
+                })
+                .build(),
+        )
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
             let app_config_dir = app.path().app_config_dir().unwrap();
@@ -1756,20 +1764,25 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_nested_window(window: &WebviewWindow, label: &str, url: &str, title: &str) -> WebviewWindow {
+fn create_nested_window(
+    window: &WebviewWindow,
+    label: &str,
+    url: &str,
+    title: &str,
+) -> WebviewWindow {
     info!("Create new nested window label={label}");
     let mut win_builder = tauri::WebviewWindowBuilder::new(
         window,
         format!("nested_{}_{}", window.label(), label),
         WebviewUrl::App(url.into()),
     )
-        .resizable(true)
-        .fullscreen(false)
-        .disable_drag_drop_handler() // Required for frontend Dnd on windows
-        .title(title)
-        .parent(&window)
-        .unwrap()
-        .inner_size(700.0f64, 600.0f64);
+    .resizable(true)
+    .fullscreen(false)
+    .disable_drag_drop_handler() // Required for frontend Dnd on windows
+    .title(title)
+    .parent(&window)
+    .unwrap()
+    .inner_size(DEFAULT_WINDOW_WIDTH * 0.5, DEFAULT_WINDOW_HEIGHT * 0.75);
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1800,21 +1813,18 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     let window_num = handle.webview_windows().len();
     let label = format!("main_{}", window_num);
     info!("Create new window label={label}");
-    let mut win_builder = tauri::WebviewWindowBuilder::new(
-        handle,
-        label,
-        WebviewUrl::App(url.into()),
-    )
-        .resizable(true)
-        .fullscreen(false)
-        .disable_drag_drop_handler() // Required for frontend Dnd on windows
-        .inner_size(DEFAULT_WINDOW_WIDTH as f64, DEFAULT_WINDOW_HEIGHT as f64)
-        .position(
-            // Randomly offset so windows don't stack exactly
-            100.0 + random::<f64>() * 30.0,
-            100.0 + random::<f64>() * 30.0,
-        )
-        .title(handle.package_info().name.to_string());
+    let mut win_builder =
+        tauri::WebviewWindowBuilder::new(handle, label, WebviewUrl::App(url.into()))
+            .resizable(true)
+            .fullscreen(false)
+            .disable_drag_drop_handler() // Required for frontend Dnd on windows
+            .inner_size(DEFAULT_WINDOW_WIDTH as f64, DEFAULT_WINDOW_HEIGHT as f64)
+            .position(
+                // Randomly offset so windows don't stack exactly
+                100.0 + random::<f64>() * 30.0,
+                100.0 + random::<f64>() * 30.0,
+            )
+            .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1855,7 +1865,12 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             }
 
             // Commands for development
-            "dev.reset_size" => webview_window.set_size(LogicalSize::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)).unwrap(),
+            "dev.reset_size" => webview_window
+                .set_size(LogicalSize::new(
+                    DEFAULT_WINDOW_WIDTH,
+                    DEFAULT_WINDOW_HEIGHT,
+                ))
+                .unwrap(),
             "dev.refresh" => webview_window.eval("location.reload()").unwrap(),
             "dev.toggle_devtools" => {
                 if webview_window.is_devtools_open() {
