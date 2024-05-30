@@ -14,7 +14,6 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { useDialog } from './DialogContext';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
-import { SettingsDialog } from './Settings/SettingsDialog';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -26,13 +25,12 @@ export function SettingsDropdown() {
   const routes = useAppRoutes();
   const workspaceId = useActiveWorkspaceId();
 
-  const showSettings = () => {
-    dialog.show({
-      id: 'settings',
-      size: 'dynamic',
-      noScroll: true,
-      noPadding: true,
-      render: () => <SettingsDialog />,
+  const showSettings = async () => {
+    if (!workspaceId) return;
+    await invoke('cmd_new_nested_window', {
+      url: routes.paths.workspaceSettings({ workspaceId }),
+      label: 'settings',
+      title: 'Yaak Settings',
     });
   };
 
@@ -60,20 +58,6 @@ export function SettingsDropdown() {
               title: 'Keyboard Shortcuts',
               size: 'dynamic',
               render: () => <KeyboardShortcutsDialog />,
-            });
-          },
-        },
-        {
-          key: 'foo',
-          label: 'Foo',
-          hotKeyAction: 'hotkeys.showHelp',
-          leftSlot: <Icon icon="keyboard" />,
-          onSelect: async () => {
-            if (!workspaceId) return;
-            await invoke('cmd_new_nested_window', {
-              url: routes.paths.workspaceSettings({ workspaceId }),
-              label: 'settings',
-              title: 'Yaak Settings',
             });
           },
         },

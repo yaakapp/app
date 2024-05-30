@@ -5,6 +5,7 @@ import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useOsInfo } from './useOsInfo';
+import { emit } from '@tauri-apps/api/event';
 
 export function useSyncWindowTitle() {
   const activeRequest = useActiveRequest();
@@ -26,13 +27,12 @@ export function useSyncWindowTitle() {
       newTitle += ` – ${fallbackRequestName(activeRequest)}`;
     }
 
-    // TODO: This resets the stoplight position so we can't use it on macOS yet. Perhaps
-    //  we can
+    // TODO: This resets the stoplight position so we can't use it on macOS yet. So we send
+    //   a custom command instead
     if (osInfo?.osType !== 'macos') {
-      console.log('DO IT', osInfo?.osType);
       getCurrent().setTitle(newTitle).catch(console.error);
     } else {
-      // emit('yaak_title_changed', newTitle).catch(console.error);
+      emit('yaak_title_changed', newTitle).catch(console.error);
     }
   }, [activeEnvironment, activeRequest, activeWorkspace, osInfo?.osType]);
 }

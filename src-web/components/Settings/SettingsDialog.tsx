@@ -32,7 +32,7 @@ export const SettingsDialog = ({ fullscreen }: Props) => {
       {fullscreen && (
         <div
           data-tauri-drag-region
-          className="h-[38px] bg-background-highlight-secondary flex items-center justify-center border-b border-background-highlight"
+          className="h-[27px] bg-background-highlight-secondary flex items-center justify-center border-b border-background-highlight"
         >
           Settings
         </div>
