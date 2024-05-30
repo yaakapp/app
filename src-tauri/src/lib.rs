@@ -69,10 +69,7 @@ mod plugin;
 mod render;
 mod updates;
 mod window_menu;
-#[cfg(target_os = "macos")]
-mod mac;
-#[cfg(target_os = "windows")]
-mod win;
+mod tauri_plugin_traffic_light;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -1502,8 +1499,14 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_new_window(window: WebviewWindow, url: &str) -> Result<(), String> {
-    create_window(&window.app_handle(), Some(url));
+async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
+    create_window(&app_handle, url);
+    Ok(())
+}
+
+#[tauri::command]
+async fn cmd_new_nested_window(window: WebviewWindow, url: &str, label: &str, title: &str) -> Result<(), String> {
+    create_nested_window(&window, label, url, title);
     Ok(())
 }
 
@@ -1532,12 +1535,13 @@ async fn cmd_check_for_updates(
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_window_state::Builder::default().with_denylist(&["settings"]).build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_traffic_light::init())
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([
@@ -1663,6 +1667,7 @@ pub fn run() {
             cmd_list_http_responses,
             cmd_list_workspaces,
             cmd_metadata,
+            cmd_new_nested_window,
             cmd_new_window,
             cmd_request_to_curl,
             cmd_dismiss_notification,
@@ -1691,7 +1696,7 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    create_window(app_handle, None);
+                    create_window(app_handle, "/");
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&h).await;
@@ -1737,7 +1742,84 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
+fn create_nested_window(window: &WebviewWindow, label: &str, url: &str, title: &str) -> WebviewWindow {
+    info!("Create new nested window label={label}");
+    let pos = window.outer_position().unwrap();
+    let mut win_builder = tauri::WebviewWindowBuilder::new(
+        window,
+        label,
+        WebviewUrl::App(url.into()),
+    )
+        .resizable(true)
+        .fullscreen(false)
+        .disable_drag_drop_handler() // Required for frontend Dnd on windows
+        .title(title)
+        .parent(&window)
+        .unwrap()
+        .position(
+            (pos.x + 20) as f64,
+            (pos.y + 20) as f64,
+        )
+        .inner_size(
+            500.0f64,
+            300.0f64,
+        );
+
+    // Add macOS-only things
+    #[cfg(target_os = "macos")]
+    {
+        win_builder = win_builder
+            .hidden_title(true)
+            .title_bar_style(TitleBarStyle::Overlay);
+    }
+
+    // Add non-MacOS things
+    #[cfg(not(target_os = "macos"))]
+    {
+        win_builder = win_builder.decorations(false);
+    }
+
+    let win = win_builder.build().expect("failed to build window");
+
+    // Tauri doesn't support shadows when hiding decorations, so we add our own
+    // #[cfg(any(windows, target_os = "macos"))]
+    // set_shadow(&win, true).unwrap();
+
+    let win2 = win.clone();
+    win.on_menu_event(move |w, event| {
+        if !w.is_focused().unwrap() {
+            return;
+        }
+
+        match event.id().0.as_str() {
+            "quit" => exit(0),
+            "close" => _ = w.close(),
+            "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
+            "zoom_in" => w.emit("zoom_in", true).unwrap(),
+            "zoom_out" => w.emit("zoom_out", true).unwrap(),
+            "settings" => w.emit("settings", true).unwrap(),
+            "refresh" => win2.eval("location.reload()").unwrap(),
+            "open_feedback" => {
+                _ = win2
+                    .app_handle()
+                    .shell()
+                    .open("https://yaak.canny.io", None)
+            }
+            "toggle_devtools" => {
+                if win2.is_devtools_open() {
+                    win2.close_devtools();
+                } else {
+                    win2.open_devtools();
+                }
+            }
+            _ => {}
+        }
+    });
+
+    win
+}
+
+fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     let menu = app_menu(handle).unwrap();
 
     // This causes the window to not be clickable (in AppImage), so disable on Linux
@@ -1745,11 +1827,12 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     handle.set_menu(menu).expect("Failed to set app menu");
 
     let window_num = handle.webview_windows().len();
-    let window_id = format!("wnd_{}", window_num);
+    let label = format!("wnd_{}", window_num);
+    info!("Create new window label={label}");
     let mut win_builder = tauri::WebviewWindowBuilder::new(
         handle,
-        window_id,
-        WebviewUrl::App(url.unwrap_or_default().into()),
+        label,
+        WebviewUrl::App(url.into()),
     )
         .resizable(true)
         .fullscreen(false)
@@ -1774,15 +1857,11 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     // Add non-MacOS things
     #[cfg(not(target_os = "macos"))]
     {
-        // Doesn't seem to work from Rust, here, so we do it in JS
-        win_builder = win_builder.decorations(false);
+        // Doesn't seem to work from Rust, here, so we do it in main.tsx
+        // win_builder = win_builder.decorations(false);
     }
 
     let win = win_builder.build().expect("failed to build window");
-
-    // Tauri doesn't support shadows when hiding decorations, so we add our own
-    // #[cfg(any(windows, target_os = "macos"))]
-    // set_shadow(&win, true).unwrap();
 
     let win2 = win.clone();
     win.on_menu_event(move |w, event| {
@@ -1792,12 +1871,11 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
 
         match event.id().0.as_str() {
             "quit" => exit(0),
-            "close" => w.close().unwrap(),
+            "close" => _ = w.close(),
             "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
             "zoom_in" => w.emit("zoom_in", true).unwrap(),
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
-            "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
             "refresh" => win2.eval("location.reload()").unwrap(),
             "open_feedback" => {
                 _ = win2
@@ -1815,19 +1893,6 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
             _ => {}
         }
     });
-
-    #[cfg(target_os = "macos")]
-    {
-        use mac::setup_mac_window;
-        let mut m_win = win.clone();
-        setup_mac_window(&mut m_win);
-    };
-    #[cfg(target_os = "windows")]
-    {
-        use win::setup_win_window;
-        let mut m_win = win.clone();
-        setup_win_window(&mut m_win);
-    }
 
     win
 }

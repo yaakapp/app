@@ -21,7 +21,6 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
-import { useUpdateSettings } from '../hooks/useUpdateSettings';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import type { Model } from '../lib/models';
@@ -140,7 +139,6 @@ export function GlobalHooks() {
       `--editor-font-size: ${editorFontSize}px`,
     ].join('; ');
   }, [settings]);
-  const updateSettings = useUpdateSettings();
 
   // Handle Zoom. Note, Mac handles it in app menu, so need to also handle keyboard
   // shortcuts for Windows/Linux
@@ -149,21 +147,8 @@ export function GlobalHooks() {
   useListenToTauriEvent('zoom_in', () => zoom.zoomIn);
   useHotKey('app.zoom_out', () => zoom.zoomOut);
   useListenToTauriEvent('zoom_out', () => zoom.zoomOut);
-  useHotKey('app.zoom_out', () => zoom.zoomReset);
-  useListenToTauriEvent('zoom_out', () => zoom.zoomReset);
-
-  useHotKey('app.zoom_out', () => {
-    if (!settings) return;
-    updateSettings.mutate({
-      ...settings,
-      interfaceScale: Math.max(0.4, settings.interfaceScale * 0.9),
-    });
-  });
-
-  useHotKey('app.zoom_reset', () => {
-    if (!settings) return;
-    updateSettings.mutate({ ...settings, interfaceScale: 1 });
-  });
+  useHotKey('app.zoom_reset', () => zoom.zoomReset);
+  useListenToTauriEvent('zoom_reset', () => zoom.zoomReset);
 
   return null;
 }

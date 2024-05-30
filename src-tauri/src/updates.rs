@@ -19,6 +19,7 @@ pub struct YaakUpdater {
 pub enum UpdateMode {
     Stable,
     Beta,
+    Alpha,
 }
 
 impl Display for UpdateMode {
@@ -26,6 +27,7 @@ impl Display for UpdateMode {
         let s = match self {
             UpdateMode::Stable => "stable",
             UpdateMode::Beta => "beta",
+            UpdateMode::Alpha => "alpha",
         };
         write!(f, "{}", s)
     }
@@ -35,6 +37,7 @@ impl UpdateMode {
     pub fn new(mode: &str) -> UpdateMode {
         match mode {
             "beta" => UpdateMode::Beta,
+            "alpha" => UpdateMode::Alpha,
             _ => UpdateMode::Stable,
         }
     }

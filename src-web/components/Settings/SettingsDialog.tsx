@@ -18,13 +18,25 @@ enum Tab {
 const tabs = [Tab.General, Tab.Appearance, Tab.Design];
 const useTabState = createGlobalState<string>(tabs[0]!);
 
-export const SettingsDialog = () => {
+interface Props {
+  fullscreen?: true;
+}
+
+export const SettingsDialog = ({ fullscreen }: Props) => {
   const [tab, setTab] = useTabState();
   const appInfo = useAppInfo();
   const isDev = appInfo?.isDev ?? false;
 
   return (
-    <div className={classNames('w-[70vw] max-w-[40rem]', 'h-[80vh]')}>
+    <div className={classNames(!fullscreen && 'w-[70vw] max-w-[40rem] h-[80vh]')}>
+      {fullscreen && (
+        <div
+          data-tauri-drag-region
+          className="h-[38px] bg-background-highlight-secondary flex items-center justify-center border-b border-background-highlight"
+        >
+          Settings
+        </div>
+      )}
       <Tabs
         value={tab}
         addBorders

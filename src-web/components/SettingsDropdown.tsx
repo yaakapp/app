@@ -1,6 +1,9 @@
+import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { useRef } from 'react';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppInfo } from '../hooks/useAppInfo';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
@@ -20,6 +23,8 @@ export function SettingsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
   const checkForUpdates = useCheckForUpdates();
+  const routes = useAppRoutes();
+  const workspaceId = useActiveWorkspaceId();
 
   const showSettings = () => {
     dialog.show({
@@ -55,6 +60,20 @@ export function SettingsDropdown() {
               title: 'Keyboard Shortcuts',
               size: 'dynamic',
               render: () => <KeyboardShortcutsDialog />,
+            });
+          },
+        },
+        {
+          key: 'foo',
+          label: 'Foo',
+          hotKeyAction: 'hotkeys.showHelp',
+          leftSlot: <Icon icon="keyboard" />,
+          onSelect: async () => {
+            if (!workspaceId) return;
+            await invoke('cmd_new_nested_window', {
+              url: routes.paths.workspaceSettings({ workspaceId }),
+              label: 'settings',
+              title: 'Yaak Settings',
             });
           },
         },

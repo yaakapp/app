@@ -3,7 +3,7 @@ import type { YaakTheme } from '../window';
 
 const githubDark: YaakTheme = {
   id: 'github-dark',
-  name: 'GitHub',
+  name: 'GitHub Dark',
   background: new Color('#0d1218', 'dark'),
   backgroundHighlight: new Color('#171c23', 'dark'),
   backgroundHighlightSecondary: new Color('#1c2127', 'dark'),
@@ -36,7 +36,7 @@ const githubDark: YaakTheme = {
 
 export const githubLight: YaakTheme = {
   id: 'github-light',
-  name: 'GitHub',
+  name: 'GitHub Light',
   background: new Color('#ffffff', 'light'),
   backgroundHighlight: new Color('hsl(210,15%,92%)', 'light'),
   backgroundHighlightSecondary: new Color('hsl(210,29%,94%)', 'light'),

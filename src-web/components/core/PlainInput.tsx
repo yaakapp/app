@@ -7,6 +7,7 @@ import { HStack } from './Stacks';
 
 export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type'> & {
   type: 'text' | 'password' | 'number';
+  step?: number;
 };
 
 export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function Input(

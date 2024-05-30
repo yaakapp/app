@@ -12,6 +12,7 @@ export function useSettings() {
       queryKey: settingsQueryKey(),
       queryFn: async () => {
         const settings = (await invoke('cmd_get_settings')) as Settings;
+        console.log('SETTINGS', settings);
         return [settings];
       },
     }).data?.[0] ?? undefined
