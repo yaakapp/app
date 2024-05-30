@@ -5,6 +5,7 @@ import { useResolvedTheme } from '../../hooks/useResolvedTheme';
 import { useSettings } from '../../hooks/useSettings';
 import { useThemes } from '../../hooks/useThemes';
 import { useUpdateSettings } from '../../hooks/useUpdateSettings';
+import { trackEvent } from '../../lib/analytics';
 import { clamp } from '../../lib/clamp';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
@@ -112,6 +113,7 @@ export function SettingsAppearance() {
         size="sm"
         value={settings.appearance}
         onChange={(appearance) => {
+          trackEvent('appearance', 'update', { appearance });
           updateSettings.mutateAsync({ appearance });
         }}
         options={[
@@ -130,7 +132,10 @@ export function SettingsAppearance() {
             size="sm"
             value={activeTheme.light.id}
             options={lightThemes}
-            onChange={(themeLight) => updateSettings.mutateAsync({ ...settings, themeLight })}
+            onChange={(themeLight) => {
+              trackEvent('theme', 'update', { theme: themeLight, appearance: 'light' });
+              updateSettings.mutateAsync({ ...settings, themeLight });
+            }}
           />
         )}
         {(settings.appearance === 'system' || settings.appearance === 'dark') && (
@@ -142,7 +147,10 @@ export function SettingsAppearance() {
             size="sm"
             value={activeTheme.dark.id}
             options={darkThemes}
-            onChange={(themeDark) => updateSettings.mutateAsync({ ...settings, themeDark })}
+            onChange={(themeDark) => {
+              trackEvent('theme', 'update', { theme: themeDark, appearance: 'dark' });
+              updateSettings.mutateAsync({ ...settings, themeDark });
+            }}
           />
         )}
       </HStack>
