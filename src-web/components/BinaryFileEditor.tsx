@@ -62,16 +62,16 @@ export function BinaryFileEditor({
             <InlineCode>{mimeType}</InlineCode> for current request?
           </div>
           <HStack space={1.5} justifyContent="center">
+            <Button size="sm" variant="border" onClick={() => ignoreContentType.set(true)}>
+              Ignore
+            </Button>
             <Button
               variant="solid"
-              color="secondary"
+              color="primary"
               size="sm"
               onClick={() => onChangeContentType(mimeType)}
             >
               Set Header
-            </Button>
-            <Button size="sm" variant="border" onClick={() => ignoreContentType.set(true)}>
-              Ignore
             </Button>
           </HStack>
         </Banner>

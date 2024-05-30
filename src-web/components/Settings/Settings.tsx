@@ -24,7 +24,7 @@ export const Settings = () => {
     <>
       <div
         data-tauri-drag-region
-        className="h-[27px] bg-background-highlight-secondary flex items-center justify-center border-b border-background-highlight"
+        className="x-theme-appHeader h-[27px] bg-background text-fg-subtle flex items-center justify-center border-b border-background-highlight text-sm font-semibold"
       >
         Settings
       </div>

@@ -60,7 +60,7 @@ export function Select<T extends string>({
         className={classNames(
           'w-full rounded-md text-fg text-sm font-mono',
           'pl-2',
-          'bg-background-highlight-secondary border',
+          'border',
           focused ? 'border-border-focus' : 'border-background-highlight',
           size === 'xs' && 'h-xs',
           size === 'sm' && 'h-sm',
