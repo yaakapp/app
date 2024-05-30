@@ -1,7 +1,7 @@
 use hex_color::HexColor;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
-use tauri::{Manager, plugin::{Builder, TauriPlugin}, Runtime, Window};
+use tauri::{Manager, plugin::{Builder, TauriPlugin}, Runtime, Window, WindowEvent};
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
@@ -20,7 +20,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 let h = window.app_handle();
 
                 let window_for_theme = window.clone();
-                h.listen("yaak_bg_changed", move |ev| {
+                let id1 = h.listen("yaak_bg_changed", move |ev| {
                     let payload = serde_json::from_str::<&str>(ev.payload())
                         .unwrap()
                         .trim();
@@ -29,11 +29,22 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 });
 
                 let window_for_title = window.clone();
-                h.listen("yaak_title_changed", move |ev| {
+                let id2 = h.listen("yaak_title_changed", move |ev| {
                     let payload = serde_json::from_str::<&str>(ev.payload())
                         .unwrap()
                         .trim();
                     update_window_title(window_for_title.clone(), payload.to_string());
+                });
+
+                let h = h.clone();
+                window.on_window_event(move |e| {
+                    match e {
+                        WindowEvent::Destroyed => {
+                            h.unlisten(id1);
+                            h.unlisten(id2);
+                        }
+                        _ => {}
+                    };
                 });
             }
             return;
@@ -78,7 +89,6 @@ fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
 
     unsafe {
         let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
-
         let window2 = window.clone();
         let _ = window.run_on_main_thread(move || {
             let handle = window_handle;

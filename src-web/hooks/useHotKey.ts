@@ -123,6 +123,7 @@ export function useHotKey(
             e.preventDefault();
             e.stopPropagation();
             callbackRef.current(e);
+            currentKeys.current.clear();
           }
         }
       }
