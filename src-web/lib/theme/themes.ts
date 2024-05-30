@@ -1,4 +1,5 @@
 import { catppuccin } from './themes/catppuccin';
+import { dracula } from './themes/dracula';
 import { github } from './themes/github';
 import { hotdogStand } from './themes/hotdog-stand';
 import { monokaiPro } from './themes/monokai-pro';
@@ -16,5 +17,6 @@ export const yaakThemes = [
   ...monokaiPro,
   ...github,
   ...moonlight,
+  ...dracula,
   ...hotdogStand,
 ];
