@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
 import React from 'react';
 import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useResolvedAppearance } from '../../hooks/useResolvedAppearance';
@@ -10,10 +9,8 @@ import { trackEvent } from '../../lib/analytics';
 import { clamp } from '../../lib/clamp';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
-import { Button } from '../core/Button';
 import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
-import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
 import { PlainInput } from '../core/PlainInput';
 import type { SelectOption } from '../core/Select';
@@ -83,6 +80,7 @@ export function SettingsAppearance() {
         name="interfaceFontSize"
         label="Font Size"
         placeholder="16"
+        step={0.5}
         type="number"
         labelPosition="left"
         defaultValue={`${settings.interfaceFontSize}`}
@@ -99,6 +97,7 @@ export function SettingsAppearance() {
         name="editorFontSize"
         label="Editor Font Size"
         placeholder="14"
+        step={0.5}
         type="number"
         labelPosition="left"
         defaultValue={`${settings.editorFontSize}`}
@@ -124,35 +123,40 @@ export function SettingsAppearance() {
           trackEvent('setting', 'update', { appearance });
         }}
         options={[
-          { label: 'Sync with OS', value: 'system' },
+          { label: 'Automatic', value: 'system' },
           { label: 'Light', value: 'light' },
           { label: 'Dark', value: 'dark' },
         ]}
       />
-      <Select
-        name="lightTheme"
-        label="Light Theme"
-        labelPosition="left"
-        size="sm"
-        value={activeTheme.light.id}
-        options={lightThemes}
-        onChange={async (themeLight) => {
-          await updateSettings.mutateAsync({ ...settings, themeLight });
-          trackEvent('setting', 'update', { themeLight });
-        }}
-      />
-      <Select
-        name="darkTheme"
-        label="Dark Theme"
-        labelPosition="left"
-        size="sm"
-        value={activeTheme.dark.id}
-        options={darkThemes}
-        onChange={async (themeDark) => {
-          await updateSettings.mutateAsync({ ...settings, themeDark });
-          trackEvent('setting', 'update', { themeDark });
-        }}
-      />
+      {(settings.appearance === 'system' || settings.appearance === 'light') && (
+        <Select
+          name="lightTheme"
+          label={settings.appearance === 'system' ? 'Light Theme' : 'Theme'}
+          labelPosition="left"
+          size="sm"
+          value={activeTheme.light.id}
+          options={lightThemes}
+          onChange={async (themeLight) => {
+            await updateSettings.mutateAsync({ ...settings, themeLight });
+            trackEvent('setting', 'update', { themeLight });
+          }}
+        />
+      )}
+      {(settings.appearance === 'system' || settings.appearance === 'dark') && (
+        <Select
+          name="darkTheme"
+          label={settings.appearance === 'system' ? 'Dark Theme' : 'Theme'}
+          labelPosition="left"
+          size="sm"
+          value={activeTheme.dark.id}
+          options={darkThemes}
+          onChange={async (themeDark) => {
+            await updateSettings.mutateAsync({ ...settings, themeDark });
+            trackEvent('setting', 'update', { themeDark });
+          }}
+        />
+      )}
+
       <VStack
         space={3}
         className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
@@ -196,18 +200,6 @@ export function SettingsAppearance() {
           contentType="application/javascript"
         />
       </VStack>
-      <Button
-        color="secondary"
-        variant="border"
-        size="sm"
-        className="mr-auto"
-        rightSlot={<Icon icon="externalLink" />}
-        onClick={async () => {
-          await invoke('cmd_new_window', { url: window.location.pathname });
-        }}
-      >
-        Open Preview Window
-      </Button>
     </VStack>
   );
 }

@@ -1,89 +1,44 @@
-// Borrowed from our friends at Hoppscotch
-//   https://github.com/hoppscotch/hoppscotch/blob/286fcd2bb08a84f027b10308d1e18da368f95ebf/packages/hoppscotch-selfhost-desktop/src-tauri/src/mac/window.rs
-
-use hex_color::HexColor;
-use tauri::{Manager, WebviewWindow};
-
-struct UnsafeWindowHandle(*mut std::ffi::c_void);
-
-unsafe impl Send for UnsafeWindowHandle {}
-
-unsafe impl Sync for UnsafeWindowHandle {}
+use objc::{msg_send, sel, sel_impl};
+use rand::{distributions::Alphanumeric, Rng};
+use tauri::{Manager, plugin::{Builder, TauriPlugin}, Runtime, Window};
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
 
-#[cfg(target_os = "macos")]
-fn update_window_title(window: &WebviewWindow, title: String) {
-    use cocoa::{
-        appkit::NSWindow,
-        base::nil,
-        foundation::NSString,
-    };
+struct UnsafeWindowHandle(*mut std::ffi::c_void);
+unsafe impl Send for UnsafeWindowHandle {}
+unsafe impl Sync for UnsafeWindowHandle {}
 
-    unsafe {
-        let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
-
-        let _ = window.run_on_main_thread(move || {
-            let win_title = NSString::alloc(nil).init_str(&title);
-            let handle = window_handle;
-            NSWindow::setTitle_(handle.0 as cocoa::base::id, win_title);
-            set_window_controls_pos(handle.0 as cocoa::base::id);
-        });
-    }
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::new("traffic_light_positioner")
+        .on_window_ready(|window| {
+            #[cfg(target_os = "macos")]
+            setup_traffic_light_positioner(window);
+            return;
+        })
+        .build()
 }
 
 #[cfg(target_os = "macos")]
-fn update_window_theme(window: &WebviewWindow, color: HexColor) {
-    use cocoa::{
-        appkit::{NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow},
-        base::nil,
-        foundation::NSString,
-    };
-
-    let brightness = (color.r as u64 + color.g as u64 + color.b as u64) / 3;
-
+fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64) {
+    use cocoa::appkit::{NSView, NSWindow, NSWindowButton};
+    use cocoa::foundation::NSRect;
+    let ns_window = ns_window_handle.0 as cocoa::base::id;
     unsafe {
-        let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
-
-        let _ = window.run_on_main_thread(move || {
-            let handle = window_handle;
-
-            let selected_appearance = if brightness >= 128 {
-                NSAppearance(NSAppearanceNameVibrantLight)
-            } else {
-                NSAppearance(NSAppearanceNameVibrantDark)
-            };
-
-            let title = NSString::alloc(nil).init_str("My Title");
-            NSWindow::setTitle_(handle.0 as cocoa::base::id, title);
-            NSWindow::setAppearance(handle.0 as cocoa::base::id, selected_appearance);
-            set_window_controls_pos(handle.0 as cocoa::base::id);
-        });
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn set_window_controls_pos(window: cocoa::base::id) {
-    use cocoa::{
-        appkit::{NSView, NSWindow, NSWindowButton},
-        foundation::NSRect,
-    };
-
-    unsafe {
-        let close = window.standardWindowButton_(NSWindowButton::NSWindowCloseButton);
-        let miniaturize = window.standardWindowButton_(NSWindowButton::NSWindowMiniaturizeButton);
-        let zoom = window.standardWindowButton_(NSWindowButton::NSWindowZoomButton);
+        let close = ns_window.standardWindowButton_(NSWindowButton::NSWindowCloseButton);
+        let miniaturize =
+            ns_window.standardWindowButton_(NSWindowButton::NSWindowMiniaturizeButton);
+        let zoom = ns_window.standardWindowButton_(NSWindowButton::NSWindowZoomButton);
 
         let title_bar_container_view = close.superview().superview();
 
         let close_rect: NSRect = msg_send![close, frame];
         let button_height = close_rect.size.height;
 
-        let title_bar_frame_height = button_height + WINDOW_CONTROL_PAD_Y;
+        let title_bar_frame_height = button_height + y;
         let mut title_bar_rect = NSView::frame(title_bar_container_view);
         title_bar_rect.size.height = title_bar_frame_height;
-        title_bar_rect.origin.y = NSView::frame(window).size.height - title_bar_frame_height;
+        title_bar_rect.origin.y = NSView::frame(ns_window).size.height - title_bar_frame_height;
         let _: () = msg_send![title_bar_container_view, setFrame: title_bar_rect];
 
         let window_buttons = vec![close, miniaturize, zoom];
@@ -91,7 +46,7 @@ fn set_window_controls_pos(window: cocoa::base::id) {
 
         for (i, button) in window_buttons.into_iter().enumerate() {
             let mut rect: NSRect = NSView::frame(button);
-            rect.origin.x = WINDOW_CONTROL_PAD_X + (i as f64 * space_between);
+            rect.origin.x = x + (i as f64 * space_between);
             button.setFrameOrigin(rect.origin);
         }
     }
@@ -99,12 +54,12 @@ fn set_window_controls_pos(window: cocoa::base::id) {
 
 #[cfg(target_os = "macos")]
 #[derive(Debug)]
-struct AppState {
-    window: WebviewWindow,
+struct WindowState<R: Runtime> {
+    window: Window<R>,
 }
 
 #[cfg(target_os = "macos")]
-pub fn setup_mac_window(window: &mut WebviewWindow) {
+pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
     use cocoa::delegate;
     use cocoa::appkit::NSWindow;
     use cocoa::base::{BOOL, id};
@@ -112,16 +67,30 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
     use objc::runtime::{Object, Sel};
     use std::ffi::c_void;
 
-    fn with_app_state<F: FnOnce(&mut AppState) -> T, T>(this: &Object, func: F) {
+    // Do the initial positioning
+    position_traffic_lights(
+        UnsafeWindowHandle(window.ns_window().expect("Failed to create window handle")),
+        WINDOW_CONTROL_PAD_X,
+        WINDOW_CONTROL_PAD_Y,
+    );
+
+    // Ensure they stay in place while resizing the window.
+    fn with_window_state<R: Runtime, F: FnOnce(&mut WindowState<R>) -> T, T>(
+        this: &Object,
+        func: F,
+    ) {
         let ptr = unsafe {
-            let x: *mut c_void = *this.get_ivar("yaakApp");
-            &mut *(x as *mut AppState)
+            let x: *mut c_void = *this.get_ivar("app_box");
+            &mut *(x as *mut WindowState<R>)
         };
         func(ptr);
     }
 
     unsafe {
-        let ns_win = window.ns_window().unwrap() as id;
+        let ns_win = window
+            .ns_window()
+            .expect("NS Window should exist to mount traffic light delegate.")
+            as id;
 
         let current_delegate: id = ns_win.delegate();
 
@@ -137,12 +106,21 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
                 let _: () = msg_send![super_del, windowWillClose: notification];
             }
         }
-        extern "C" fn on_window_did_resize(this: &Object, _cmd: Sel, notification: id) {
+        extern "C" fn on_window_did_resize<R: Runtime>(this: &Object, _cmd: Sel, notification: id) {
             unsafe {
-                with_app_state(&*this, |state| {
-                    let id = state.window.ns_window().unwrap() as id;
+                with_window_state(&*this, |state: &mut WindowState<R>| {
+                    let id = state
+                        .window
+                        .ns_window()
+                        .expect("NS window should exist on state to handle resize")
+                        as id;
 
-                    set_window_controls_pos(id);
+                    #[cfg(target_os = "macos")]
+                    position_traffic_lights(
+                        UnsafeWindowHandle(id as *mut std::ffi::c_void),
+                        WINDOW_CONTROL_PAD_X,
+                        WINDOW_CONTROL_PAD_Y,
+                    );
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
@@ -222,43 +200,75 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
                 msg_send![super_del, window: window willUseFullScreenPresentationOptions: proposed_options]
             }
         }
-        extern "C" fn on_window_did_enter_full_screen(this: &Object, _cmd: Sel, notification: id) {
+        extern "C" fn on_window_did_enter_full_screen<R: Runtime>(
+            this: &Object,
+            _cmd: Sel,
+            notification: id,
+        ) {
             unsafe {
-                with_app_state(&*this, |state| {
-                    state.window.emit("did-enter-fullscreen", ()).unwrap();
+                with_window_state(&*this, |state: &mut WindowState<R>| {
+                    state
+                        .window
+                        .emit("did-enter-fullscreen", ())
+                        .expect("Failed to emit event");
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
                 let _: () = msg_send![super_del, windowDidEnterFullScreen: notification];
             }
         }
-        extern "C" fn on_window_will_enter_full_screen(this: &Object, _cmd: Sel, notification: id) {
+        extern "C" fn on_window_will_enter_full_screen<R: Runtime>(
+            this: &Object,
+            _cmd: Sel,
+            notification: id,
+        ) {
             unsafe {
-                with_app_state(&*this, |state| {
-                    state.window.emit("will-enter-fullscreen", ()).unwrap();
+                with_window_state(&*this, |state: &mut WindowState<R>| {
+                    state
+                        .window
+                        .emit("will-enter-fullscreen", ())
+                        .expect("Failed to emit event");
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
                 let _: () = msg_send![super_del, windowWillEnterFullScreen: notification];
             }
         }
-        extern "C" fn on_window_did_exit_full_screen(this: &Object, _cmd: Sel, notification: id) {
+        extern "C" fn on_window_did_exit_full_screen<R: Runtime>(
+            this: &Object,
+            _cmd: Sel,
+            notification: id,
+        ) {
             unsafe {
-                with_app_state(&*this, |state| {
-                    state.window.emit("did-exit-fullscreen", ()).unwrap();
+                with_window_state(&*this, |state: &mut WindowState<R>| {
+                    state
+                        .window
+                        .emit("did-exit-fullscreen", ())
+                        .expect("Failed to emit event");
 
-                    let id = state.window.ns_window().unwrap() as id;
-                    set_window_controls_pos(id);
+                    let id = state.window.ns_window().expect("Failed to emit event") as id;
+                    position_traffic_lights(
+                        UnsafeWindowHandle(id as *mut std::ffi::c_void),
+                        WINDOW_CONTROL_PAD_X,
+                        WINDOW_CONTROL_PAD_Y,
+                    );
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
                 let _: () = msg_send![super_del, windowDidExitFullScreen: notification];
             }
         }
-        extern "C" fn on_window_will_exit_full_screen(this: &Object, _cmd: Sel, notification: id) {
+        extern "C" fn on_window_will_exit_full_screen<R: Runtime>(
+            this: &Object,
+            _cmd: Sel,
+            notification: id,
+        ) {
             unsafe {
-                with_app_state(&*this, |state| {
-                    state.window.emit("will-exit-fullscreen", ()).unwrap();
+                with_window_state(&*this, |state: &mut WindowState<R>| {
+                    state
+                        .window
+                        .emit("will-exit-fullscreen", ())
+                        .expect("Failed to emit event");
                 });
 
                 let super_del: id = *this.get_ivar("super_delegate");
@@ -299,44 +309,29 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
             }
         }
 
-        // extern fn on_dealloc(this: &Object, cmd: Sel) {
-        //   unsafe {
-        //     let super_del: id = *this.get_ivar("super_delegate");
-        //     let _: () = msg_send![super_del, dealloc];
-        //   }
-        // }
-
-        // extern fn on_mark_is_checking_zoomed_in(this: &Object, cmd: Sel) {
-        //   unsafe {
-        //     let super_del: id = *this.get_ivar("super_delegate");
-        //     let _: () = msg_send![super_del, markIsCheckingZoomedIn];
-        //   }
-        // }
-
-        // extern fn on_clear_is_checking_zoomed_in(this: &Object, cmd: Sel) {
-        //   unsafe {
-        //     let super_del: id = *this.get_ivar("super_delegate");
-        //     let _: () = msg_send![super_del, clearIsCheckingZoomedIn];
-        //   }
-        // }
-
         // Are we deallocing this properly ? (I miss safe Rust :(  )
-        let w = window.clone();
-        let app_state = AppState { window: w };
-        let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
-        set_window_controls_pos(ns_win);
+        let window_label = window.label().to_string();
 
-        ns_win.setDelegate_(delegate!("MainWindowDelegate", {
+        let app_state = WindowState { window };
+        let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
+        let random_str: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(20)
+            .map(char::from)
+            .collect();
+
+        // We need to ensure we have a unique delegate name, otherwise we will panic while trying to create a duplicate
+        // delegate with the same name.
+        let delegate_name = format!("windowDelegate_{}_{}", window_label, random_str);
+
+        ns_win.setDelegate_(delegate!(&delegate_name, {
             window: id = ns_win,
-            yaakApp: *mut c_void = app_box,
+            app_box: *mut c_void = app_box,
             toolbar: id = cocoa::base::nil,
             super_delegate: id = current_delegate,
-            // (dealloc) => on_dealloc as extern fn(&Object, Sel),
-            // (markIsCheckingZoomedIn) => on_mark_is_checking_zoomed_in as extern fn(&Object, Sel),
-            // (clearIsCheckingZoomedIn) => on_clear_is_checking_zoomed_in as extern fn(&Object, Sel),
             (windowShouldClose:) => on_window_should_close as extern fn(&Object, Sel, id) -> BOOL,
             (windowWillClose:) => on_window_will_close as extern fn(&Object, Sel, id),
-            (windowDidResize:) => on_window_did_resize as extern fn(&Object, Sel, id),
+            (windowDidResize:) => on_window_did_resize::<R> as extern fn(&Object, Sel, id),
             (windowDidMove:) => on_window_did_move as extern fn(&Object, Sel, id),
             (windowDidChangeBackingProperties:) => on_window_did_change_backing_properties as extern fn(&Object, Sel, id),
             (windowDidBecomeKey:) => on_window_did_become_key as extern fn(&Object, Sel, id),
@@ -347,36 +342,13 @@ pub fn setup_mac_window(window: &mut WebviewWindow) {
             (concludeDragOperation:) => on_conclude_drag_operation as extern fn(&Object, Sel, id),
             (draggingExited:) => on_dragging_exited as extern fn(&Object, Sel, id),
             (window:willUseFullScreenPresentationOptions:) => on_window_will_use_full_screen_presentation_options as extern fn(&Object, Sel, id, NSUInteger) -> NSUInteger,
-            (windowDidEnterFullScreen:) => on_window_did_enter_full_screen as extern fn(&Object, Sel, id),
-            (windowWillEnterFullScreen:) => on_window_will_enter_full_screen as extern fn(&Object, Sel, id),
-            (windowDidExitFullScreen:) => on_window_did_exit_full_screen as extern fn(&Object, Sel, id),
-            (windowWillExitFullScreen:) => on_window_will_exit_full_screen as extern fn(&Object, Sel, id),
+            (windowDidEnterFullScreen:) => on_window_did_enter_full_screen::<R> as extern fn(&Object, Sel, id),
+            (windowWillEnterFullScreen:) => on_window_will_enter_full_screen::<R> as extern fn(&Object, Sel, id),
+            (windowDidExitFullScreen:) => on_window_did_exit_full_screen::<R> as extern fn(&Object, Sel, id),
+            (windowWillExitFullScreen:) => on_window_will_exit_full_screen::<R> as extern fn(&Object, Sel, id),
             (windowDidFailToEnterFullScreen:) => on_window_did_fail_to_enter_full_screen as extern fn(&Object, Sel, id),
             (effectiveAppearanceDidChange:) => on_effective_appearance_did_change as extern fn(&Object, Sel, id),
             (effectiveAppearanceDidChangedOnMainThread:) => on_effective_appearance_did_changed_on_main_thread as extern fn(&Object, Sel, id)
         }))
     }
-
-    let app = window.app_handle();
-    let window = window.clone();
-
-    // Control window theme based on app update_window
-    let window_for_theme = window.clone();
-    app.listen_any("yaak_bg_changed", move |ev| {
-        let payload = serde_json::from_str::<&str>(ev.payload())
-            .unwrap()
-            .trim();
-
-        let color = HexColor::parse_rgb(payload).unwrap();
-
-        update_window_theme(&window_for_theme, color);
-    });
-
-    let window_for_title = window.clone();
-    app.listen_any("yaak_title_changed", move |ev| {
-        let title = serde_json::from_str::<&str>(ev.payload())
-            .unwrap()
-            .trim();
-        update_window_title(&window_for_title, title.to_string());
-    });
 }

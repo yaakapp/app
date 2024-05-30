@@ -1,4 +1,3 @@
-import { emit } from '@tauri-apps/api/event';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
@@ -12,7 +11,12 @@ export function useSyncWindowTitle() {
   const activeWorkspace = useActiveWorkspace();
   const activeEnvironment = useActiveEnvironment();
   const osInfo = useOsInfo();
+
   useEffect(() => {
+    if (osInfo?.osType == null) {
+      return;
+    }
+
     let newTitle = activeWorkspace ? activeWorkspace.name : 'Yaak';
     if (activeEnvironment) {
       newTitle += ` [${activeEnvironment.name}]`;
@@ -25,9 +29,10 @@ export function useSyncWindowTitle() {
     // TODO: This resets the stoplight position so we can't use it on macOS yet. Perhaps
     //  we can
     if (osInfo?.osType !== 'macos') {
+      console.log('DO IT', osInfo?.osType);
       getCurrent().setTitle(newTitle).catch(console.error);
     } else {
-      emit('yaak_title_changed', newTitle).catch(console.error);
+      // emit('yaak_title_changed', newTitle).catch(console.error);
     }
   }, [activeEnvironment, activeRequest, activeWorkspace, osInfo?.osType]);
 }

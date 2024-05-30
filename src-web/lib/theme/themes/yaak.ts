@@ -3,7 +3,7 @@ import type { YaakTheme } from '../window';
 
 export const yaakLight: YaakTheme = {
   id: 'yaak-light',
-  name: 'Yaak',
+  name: 'Yaak Light',
   background: new Color('hsl(216,24%,100%)', 'light'),
   backgroundHighlight: new Color('hsl(216,24%,93%)', 'light'),
   backgroundHighlightSecondary: new Color('hsl(216,24%,87%)', 'light'),
@@ -30,7 +30,7 @@ export const yaakLight: YaakTheme = {
 
 export const yaakDark: YaakTheme = {
   id: 'yaak-dark',
-  name: 'Yaak',
+  name: 'Yaak Dark',
   background: new Color('hsl(244,23%,14%)', 'dark'),
   backgroundHighlight: new Color('hsl(244,23%,23%)', 'dark'),
   backgroundHighlightSecondary: new Color('hsl(244,23%,20%)', 'dark'),
