@@ -7,7 +7,7 @@ import { useActiveWorkspace } from './useActiveWorkspace';
 import { useOsInfo } from './useOsInfo';
 import { emit } from '@tauri-apps/api/event';
 
-export function useSyncWindowTitle() {
+export function useSyncWorkspaceRequestTitle() {
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
   const activeEnvironment = useActiveEnvironment();

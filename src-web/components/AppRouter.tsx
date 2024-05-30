@@ -3,7 +3,7 @@ import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
 import { DefaultLayout } from './DefaultLayout';
 import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 import RouteError from './RouteError';
-import { SettingsDialog } from './Settings/SettingsDialog';
+import { Settings } from './Settings/Settings';
 import Workspace from './Workspace';
 
 const router = createBrowserRouter([
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
         path: routePaths.workspaceSettings({
           workspaceId: ':workspaceId',
         }),
-        element: <SettingsDialog fullscreen />,
+        element: <Settings />,
       },
     ],
   },

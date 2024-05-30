@@ -5,18 +5,22 @@ import { useResolvedTheme } from '../../hooks/useResolvedTheme';
 import { useSettings } from '../../hooks/useSettings';
 import { useThemes } from '../../hooks/useThemes';
 import { useUpdateSettings } from '../../hooks/useUpdateSettings';
-import { trackEvent } from '../../lib/analytics';
 import { clamp } from '../../lib/clamp';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
+import { Checkbox } from '../core/Checkbox';
 import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
+import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
-import { PlainInput } from '../core/PlainInput';
 import type { SelectOption } from '../core/Select';
 import { Select } from '../core/Select';
 import { Separator } from '../core/Separator';
 import { HStack, VStack } from '../core/Stacks';
+
+const fontSizes = [
+  8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+].map((n) => ({ label: `${n}`, value: `${n}` }));
 
 const buttonColors: ButtonProps['color'][] = [
   'primary',
@@ -75,39 +79,28 @@ export function SettingsAppearance() {
 
   return (
     <VStack space={2} className="mb-4">
-      <PlainInput
+      <Select
         size="sm"
         name="interfaceFontSize"
         label="Font Size"
-        placeholder="16"
-        step={0.5}
-        type="number"
         labelPosition="left"
-        defaultValue={`${settings.interfaceFontSize}`}
-        validate={(value) => parseInt(value) >= 8 && parseInt(value) <= 30}
-        onChange={(v) =>
-          updateSettings.mutate({
-            ...settings,
-            interfaceFontSize: clamp(parseInt(v) || 16, 8, 30),
-          })
-        }
+        value={`${settings.interfaceFontSize}`}
+        options={fontSizes}
+        onChange={(v) => updateSettings.mutate({ interfaceFontSize: parseInt(v) })}
       />
-      <PlainInput
+      <Select
         size="sm"
         name="editorFontSize"
         label="Editor Font Size"
-        placeholder="14"
-        step={0.5}
-        type="number"
         labelPosition="left"
-        defaultValue={`${settings.editorFontSize}`}
-        validate={(value) => parseInt(value) >= 8 && parseInt(value) <= 30}
-        onChange={(v) =>
-          updateSettings.mutate({
-            ...settings,
-            editorFontSize: clamp(parseInt(v) || 14, 8, 30),
-          })
-        }
+        value={`${settings.editorFontSize}`}
+        options={fontSizes}
+        onChange={(v) => updateSettings.mutate({ editorFontSize: clamp(parseInt(v) || 14, 8, 30) })}
+      />
+      <Checkbox
+        checked={settings.editorSoftWrap}
+        title="Wrap Editor Lines"
+        onChange={(editorSoftWrap) => updateSettings.mutate({ editorSoftWrap })}
       />
 
       <Separator className="my-4" />
@@ -118,9 +111,8 @@ export function SettingsAppearance() {
         labelPosition="left"
         size="sm"
         value={settings.appearance}
-        onChange={async (appearance) => {
-          await updateSettings.mutateAsync({ ...settings, appearance });
-          trackEvent('setting', 'update', { appearance });
+        onChange={(appearance) => {
+          updateSettings.mutateAsync({ appearance });
         }}
         options={[
           { label: 'Automatic', value: 'system' },
@@ -128,42 +120,41 @@ export function SettingsAppearance() {
           { label: 'Dark', value: 'dark' },
         ]}
       />
-      {(settings.appearance === 'system' || settings.appearance === 'light') && (
-        <Select
-          name="lightTheme"
-          label={settings.appearance === 'system' ? 'Light Theme' : 'Theme'}
-          labelPosition="left"
-          size="sm"
-          value={activeTheme.light.id}
-          options={lightThemes}
-          onChange={async (themeLight) => {
-            await updateSettings.mutateAsync({ ...settings, themeLight });
-            trackEvent('setting', 'update', { themeLight });
-          }}
-        />
-      )}
-      {(settings.appearance === 'system' || settings.appearance === 'dark') && (
-        <Select
-          name="darkTheme"
-          label={settings.appearance === 'system' ? 'Dark Theme' : 'Theme'}
-          labelPosition="left"
-          size="sm"
-          value={activeTheme.dark.id}
-          options={darkThemes}
-          onChange={async (themeDark) => {
-            await updateSettings.mutateAsync({ ...settings, themeDark });
-            trackEvent('setting', 'update', { themeDark });
-          }}
-        />
-      )}
+      <HStack space={2}>
+        {(settings.appearance === 'system' || settings.appearance === 'light') && (
+          <Select
+            hideLabel
+            leftSlot={<Icon icon="sun" />}
+            name="lightTheme"
+            label="Light Theme"
+            size="sm"
+            value={activeTheme.light.id}
+            options={lightThemes}
+            onChange={(themeLight) => updateSettings.mutateAsync({ ...settings, themeLight })}
+          />
+        )}
+        {(settings.appearance === 'system' || settings.appearance === 'dark') && (
+          <Select
+            hideLabel
+            name="darkTheme"
+            label="Dark Theme"
+            leftSlot={<Icon icon="moon" />}
+            size="sm"
+            value={activeTheme.dark.id}
+            options={darkThemes}
+            onChange={(themeDark) => updateSettings.mutateAsync({ ...settings, themeDark })}
+          />
+        )}
+      </HStack>
 
       <VStack
         space={3}
         className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
       >
-        <div className="text-fg font-bold">
-          Theme Preview <span className="text-fg-subtle">({appearance})</span>
-        </div>
+        <HStack className="text-fg font-bold" alignItems="center" space={2}>
+          Theme Preview{' '}
+          <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} className="text-fg-subtle" />
+        </HStack>
         <HStack space={1.5} alignItems="center" className="w-full">
           {buttonColors.map((c, i) => (
             <IconButton

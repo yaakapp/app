@@ -20,7 +20,6 @@ import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
-import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import type { Model } from '../lib/models';
@@ -34,7 +33,6 @@ export function GlobalHooks() {
 
   // Other useful things
   useSyncThemeToDocument();
-  useSyncWindowTitle();
   useGlobalCommands();
   useCommandPalette();
   useNotificationToast();

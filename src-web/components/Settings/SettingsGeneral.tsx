@@ -5,7 +5,6 @@ import { useCheckForUpdates } from '../../hooks/useCheckForUpdates';
 import { useSettings } from '../../hooks/useSettings';
 import { useUpdateSettings } from '../../hooks/useUpdateSettings';
 import { useUpdateWorkspace } from '../../hooks/useUpdateWorkspace';
-import { trackEvent } from '../../lib/analytics';
 import { Checkbox } from '../core/Checkbox';
 import { Heading } from '../core/Heading';
 import { IconButton } from '../core/IconButton';
@@ -36,10 +35,7 @@ export function SettingsGeneral() {
           labelPosition="left"
           size="sm"
           value={settings.updateChannel}
-          onChange={(updateChannel) => {
-            trackEvent('setting', 'update', { update_channel: updateChannel });
-            updateSettings.mutate({ ...settings, updateChannel });
-          }}
+          onChange={(updateChannel) => updateSettings.mutate({ updateChannel })}
           options={[
             { label: 'Release', value: 'stable' },
             { label: 'Early Bird (Beta)', value: 'beta' },
@@ -77,23 +73,15 @@ export function SettingsGeneral() {
         <Checkbox
           checked={workspace.settingValidateCertificates}
           title="Validate TLS Certificates"
-          onChange={(settingValidateCertificates) => {
-            trackEvent('workspace', 'update', {
-              validate_certificates: JSON.stringify(settingValidateCertificates),
-            });
-            updateWorkspace.mutate({ settingValidateCertificates });
-          }}
+          onChange={(settingValidateCertificates) =>
+            updateWorkspace.mutate({ settingValidateCertificates })
+          }
         />
 
         <Checkbox
           checked={workspace.settingFollowRedirects}
           title="Follow Redirects"
-          onChange={(settingFollowRedirects) => {
-            trackEvent('workspace', 'update', {
-              follow_redirects: JSON.stringify(settingFollowRedirects),
-            });
-            updateWorkspace.mutate({ settingFollowRedirects });
-          }}
+          onChange={(settingFollowRedirects) => updateWorkspace.mutate({ settingFollowRedirects })}
         />
       </VStack>
 

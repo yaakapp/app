@@ -40,7 +40,7 @@ export interface Settings extends BaseModel {
   interfaceFontSize: number;
   interfaceScale: number;
   editorFontSize: number;
-  editorSoftWrap: number;
+  editorSoftWrap: boolean;
 }
 
 export interface Workspace extends BaseModel {

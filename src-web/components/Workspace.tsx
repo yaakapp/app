@@ -18,6 +18,7 @@ import { useOsInfo } from '../hooks/useOsInfo';
 import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
+import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
@@ -40,6 +41,7 @@ const body = { gridArea: 'body' };
 const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
+  useSyncWorkspaceRequestTitle();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = useActiveWorkspaceId();
