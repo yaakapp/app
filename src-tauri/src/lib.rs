@@ -69,7 +69,10 @@ mod plugin;
 mod render;
 mod updates;
 mod window_menu;
-mod tauri_plugin_traffic_light;
+#[cfg(target_os = "macos")]
+mod tauri_plugin_mac_window;
+#[cfg(target_os = "windows")]
+mod tauri_plugin_windows_window;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -1533,41 +1536,49 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_window_state::Builder::default().with_denylist(&["settings"]).build())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_traffic_light::init())
-        .plugin(
-            tauri_plugin_log::Builder::default()
-                .targets([
-                    Target::new(TargetKind::Stdout),
-                    Target::new(TargetKind::LogDir { file_name: None }),
-                    Target::new(TargetKind::Webview),
-                ])
-                .level_for("cookie_store", log::LevelFilter::Info)
-                .level_for("h2", log::LevelFilter::Info)
-                .level_for("hyper", log::LevelFilter::Info)
-                .level_for("hyper_rustls", log::LevelFilter::Info)
-                .level_for("reqwest", log::LevelFilter::Info)
-                .level_for("sqlx", log::LevelFilter::Warn)
-                .level_for("tao", log::LevelFilter::Info)
-                .level_for("tokio_util", log::LevelFilter::Info)
-                .level_for("tonic", log::LevelFilter::Info)
-                .level_for("tower", log::LevelFilter::Info)
-                .level_for("tracing", log::LevelFilter::Info)
-                .with_colors(ColoredLevelConfig::default())
-                .level(if is_dev() {
-                    log::LevelFilter::Trace
-                } else {
-                    log::LevelFilter::Info
-                })
-                .build(),
-        )
+        .plugin(tauri_plugin_fs::init());
+
+    #[cfg(target_os = "windows")] {
+        builder = builder.plugin(tauri_plugin_windows_window::init());
+    }
+
+    #[cfg(target_os = "macos")] {
+        builder = builder.plugin(tauri_plugin_mac_window::init());
+    }
+
+    builder.plugin(
+        tauri_plugin_log::Builder::default()
+            .targets([
+                Target::new(TargetKind::Stdout),
+                Target::new(TargetKind::LogDir { file_name: None }),
+                Target::new(TargetKind::Webview),
+            ])
+            .level_for("cookie_store", log::LevelFilter::Info)
+            .level_for("h2", log::LevelFilter::Info)
+            .level_for("hyper", log::LevelFilter::Info)
+            .level_for("hyper_rustls", log::LevelFilter::Info)
+            .level_for("reqwest", log::LevelFilter::Info)
+            .level_for("sqlx", log::LevelFilter::Warn)
+            .level_for("tao", log::LevelFilter::Info)
+            .level_for("tokio_util", log::LevelFilter::Info)
+            .level_for("tonic", log::LevelFilter::Info)
+            .level_for("tower", log::LevelFilter::Info)
+            .level_for("tracing", log::LevelFilter::Info)
+            .with_colors(ColoredLevelConfig::default())
+            .level(if is_dev() {
+                log::LevelFilter::Trace
+            } else {
+                log::LevelFilter::Info
+            })
+            .build(),
+    )
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
             let app_config_dir = app.path().app_config_dir().unwrap();
@@ -1744,10 +1755,9 @@ fn is_dev() -> bool {
 
 fn create_nested_window(window: &WebviewWindow, label: &str, url: &str, title: &str) -> WebviewWindow {
     info!("Create new nested window label={label}");
-    let pos = window.outer_position().unwrap();
     let mut win_builder = tauri::WebviewWindowBuilder::new(
         window,
-        label,
+        format!("nested_{}_{}", window.label(), label),
         WebviewUrl::App(url.into()),
     )
         .resizable(true)
@@ -1756,14 +1766,7 @@ fn create_nested_window(window: &WebviewWindow, label: &str, url: &str, title: &
         .title(title)
         .parent(&window)
         .unwrap()
-        .position(
-            (pos.x + 20) as f64,
-            (pos.y + 20) as f64,
-        )
-        .inner_size(
-            500.0f64,
-            300.0f64,
-        );
+        .inner_size(700.0f64, 600.0f64);
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1827,7 +1830,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     handle.set_menu(menu).expect("Failed to set app menu");
 
     let window_num = handle.webview_windows().len();
-    let label = format!("wnd_{}", window_num);
+    let label = format!("main_{}", window_num);
     info!("Create new window label={label}");
     let mut win_builder = tauri::WebviewWindowBuilder::new(
         handle,

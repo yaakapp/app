@@ -1,3 +1,4 @@
+use hex_color::HexColor;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
 use tauri::{Manager, plugin::{Builder, TauriPlugin}, Runtime, Window};
@@ -6,23 +7,108 @@ const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
 
 struct UnsafeWindowHandle(*mut std::ffi::c_void);
+
 unsafe impl Send for UnsafeWindowHandle {}
+
 unsafe impl Sync for UnsafeWindowHandle {}
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("traffic_light_positioner")
+    Builder::new("mac_window")
         .on_window_ready(|window| {
-            #[cfg(target_os = "macos")]
-            setup_traffic_light_positioner(window);
+            #[cfg(target_os = "macos")] {
+                setup_traffic_light_positioner(&window);
+                let h = window.app_handle();
+
+                let window_for_theme = window.clone();
+                h.listen("yaak_bg_changed", move |ev| {
+                    let payload = serde_json::from_str::<&str>(ev.payload())
+                        .unwrap()
+                        .trim();
+                    let color = HexColor::parse_rgb(payload).unwrap();
+                    update_window_theme(window_for_theme.clone(), color);
+                });
+
+                let window_for_title = window.clone();
+                h.listen("yaak_title_changed", move |ev| {
+                    let payload = serde_json::from_str::<&str>(ev.payload())
+                        .unwrap()
+                        .trim();
+                    update_window_title(window_for_title.clone(), payload.to_string());
+                });
+            }
             return;
         })
         .build()
 }
 
 #[cfg(target_os = "macos")]
-fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64) {
+fn update_window_title<R: Runtime>(window: Window<R>, title: String) {
+    use cocoa::{
+        appkit::NSWindow,
+        base::nil,
+        foundation::NSString,
+    };
+
+    unsafe {
+        let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
+
+        let window2 = window.clone();
+        let label = window.label().to_string();
+        let _ = window.run_on_main_thread(move || {
+            let win_title = NSString::alloc(nil).init_str(&title);
+            let handle = window_handle;
+            NSWindow::setTitle_(handle.0 as cocoa::base::id, win_title);
+            position_traffic_lights(
+                UnsafeWindowHandle(window2.ns_window().expect("Failed to create window handle")),
+                WINDOW_CONTROL_PAD_X,
+                WINDOW_CONTROL_PAD_Y,
+                label,
+            );
+        });
+    }}
+
+#[cfg(target_os = "macos")]
+fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
+    use cocoa::appkit::{
+        NSAppearance, NSAppearanceNameVibrantDark, NSAppearanceNameVibrantLight, NSWindow,
+    };
+
+    let brightness = (color.r as u64 + color.g as u64 + color.b as u64) / 3;
+    let label = window.label().to_string();
+
+    unsafe {
+        let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
+
+        let window2 = window.clone();
+        let _ = window.run_on_main_thread(move || {
+            let handle = window_handle;
+
+            let selected_appearance = if brightness >= 128 {
+                NSAppearance(NSAppearanceNameVibrantLight)
+            } else {
+                NSAppearance(NSAppearanceNameVibrantDark)
+            };
+
+            NSWindow::setAppearance(handle.0 as cocoa::base::id, selected_appearance);
+            position_traffic_lights(
+                UnsafeWindowHandle(window2.ns_window().expect("Failed to create window handle")),
+                WINDOW_CONTROL_PAD_X,
+                WINDOW_CONTROL_PAD_Y,
+                label,
+            );
+        });
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64, label: String) {
+    if label.starts_with("nested_") {
+        return;
+    }
+
     use cocoa::appkit::{NSView, NSWindow, NSWindowButton};
     use cocoa::foundation::NSRect;
+
     let ns_window = ns_window_handle.0 as cocoa::base::id;
     unsafe {
         let close = ns_window.standardWindowButton_(NSWindowButton::NSWindowCloseButton);
@@ -59,7 +145,7 @@ struct WindowState<R: Runtime> {
 }
 
 #[cfg(target_os = "macos")]
-pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
+pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
     use cocoa::delegate;
     use cocoa::appkit::NSWindow;
     use cocoa::base::{BOOL, id};
@@ -67,11 +153,11 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
     use objc::runtime::{Object, Sel};
     use std::ffi::c_void;
 
-    // Do the initial positioning
     position_traffic_lights(
         UnsafeWindowHandle(window.ns_window().expect("Failed to create window handle")),
         WINDOW_CONTROL_PAD_X,
         WINDOW_CONTROL_PAD_Y,
+        window.label().to_string(),
     );
 
     // Ensure they stay in place while resizing the window.
@@ -85,6 +171,7 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
         };
         func(ptr);
     }
+
 
     unsafe {
         let ns_win = window
@@ -115,11 +202,11 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
                         .expect("NS window should exist on state to handle resize")
                         as id;
 
-                    #[cfg(target_os = "macos")]
                     position_traffic_lights(
-                        UnsafeWindowHandle(id as *mut std::ffi::c_void),
+                        UnsafeWindowHandle(id as *mut c_void),
                         WINDOW_CONTROL_PAD_X,
                         WINDOW_CONTROL_PAD_Y,
+                        state.window.label().to_string(),
                     );
                 });
 
@@ -248,9 +335,10 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
 
                     let id = state.window.ns_window().expect("Failed to emit event") as id;
                     position_traffic_lights(
-                        UnsafeWindowHandle(id as *mut std::ffi::c_void),
+                        UnsafeWindowHandle(id as *mut c_void),
                         WINDOW_CONTROL_PAD_X,
                         WINDOW_CONTROL_PAD_Y,
+                        state.window.label().to_string(),
                     );
                 });
 
@@ -309,10 +397,10 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: Window<R>) {
             }
         }
 
-        // Are we deallocing this properly ? (I miss safe Rust :(  )
+        // Are we de-allocing this properly ? (I miss safe Rust :(  )
         let window_label = window.label().to_string();
 
-        let app_state = WindowState { window };
+        let app_state = WindowState { window: window.clone() };
         let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
         let random_str: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
