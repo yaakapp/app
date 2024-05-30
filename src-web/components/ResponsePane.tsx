@@ -92,7 +92,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
       ) : (
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
-            alignItems="center"
             className={classNames(
               'text-fg-subtle w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
@@ -102,7 +101,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             {activeResponse && (
               <HStack
                 space={2}
-                alignItems="center"
                 className="whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm"
               >
                 <StatusTag showReason response={activeResponse} />

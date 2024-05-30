@@ -1,11 +1,6 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
-import type {
-  CSSProperties,
-  HTMLAttributes,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-} from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
@@ -13,8 +8,6 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
 import { useImportData } from '../hooks/useImportData';
-import { useIsFullscreen } from '../hooks/useIsFullscreen';
-import { useOsInfo } from '../hooks/useOsInfo';
 import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
@@ -28,6 +21,7 @@ import { FeedbackLink } from './core/Link';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
+import { HeaderSize } from './HeaderSize';
 import { HttpRequestLayout } from './HttpRequestLayout';
 import { Overlay } from './Overlay';
 import { ResizeHandle } from './ResizeHandle';
@@ -150,7 +144,7 @@ export default function Workspace() {
               'grid grid-rows-[auto_1fr]',
             )}
           >
-            <HeaderSize className="border-transparent">
+            <HeaderSize size="lg" className="border-transparent">
               <SidebarActions />
             </HeaderSize>
             <Sidebar />
@@ -174,7 +168,12 @@ export default function Workspace() {
           />
         </>
       )}
-      <HeaderSize data-tauri-drag-region className="x-theme-appHeader bg-background" style={head}>
+      <HeaderSize
+        data-tauri-drag-region
+        size="lg"
+        className="x-theme-appHeader bg-background"
+        style={head}
+      >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
       {activeWorkspace == null ? (
@@ -206,30 +205,6 @@ export default function Workspace() {
       ) : (
         <HttpRequestLayout activeRequest={activeRequest} style={body} />
       )}
-    </div>
-  );
-}
-
-interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
-  children?: ReactNode;
-}
-
-export function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
-  const platform = useOsInfo();
-  const fullscreen = useIsFullscreen();
-  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
-  return (
-    <div
-      data-tauri-drag-region
-      style={style}
-      className={classNames(
-        className,
-        'h-md pt-[1px] w-full border-b border-background-highlight min-w-0',
-        stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
-      )}
-    >
-      {/* NOTE: This needs display:grid or else the element shrinks (even though scrollable) */}
-      <div className="h-full w-full overflow-x-auto hide-scrollbars grid" {...props} />
     </div>
   );
 }

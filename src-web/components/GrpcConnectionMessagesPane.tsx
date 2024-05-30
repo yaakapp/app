@@ -61,8 +61,8 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
       firstSlot={() =>
         activeConnection && (
           <div className="w-full grid grid-rows-[auto_minmax(0,1fr)] items-center">
-            <HStack className="pl-3 mb-1 font-mono" alignItems="center">
-              <HStack alignItems="center" space={2}>
+            <HStack className="pl-3 mb-1 font-mono">
+              <HStack space={2}>
                 <span>{events.length} messages</span>
                 {activeConnection.elapsed === 0 && (
                   <Icon icon="refresh" size="sm" spin className="text-fg-subtler" />

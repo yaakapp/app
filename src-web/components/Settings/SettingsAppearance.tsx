@@ -123,6 +123,7 @@ export function SettingsAppearance() {
         ]}
       />
       <HStack space={2}>
+        <div>Theme</div>
         {(settings.appearance === 'system' || settings.appearance === 'light') && (
           <Select
             hideLabel
@@ -131,7 +132,7 @@ export function SettingsAppearance() {
             label="Light Theme"
             size="sm"
             value={activeTheme.light.id}
-            options={lightThemes}
+            options={[{ label: 'Light Mode Themes', options: lightThemes }]}
             onChange={(themeLight) => {
               trackEvent('theme', 'update', { theme: themeLight, appearance: 'light' });
               updateSettings.mutateAsync({ ...settings, themeLight });
@@ -146,7 +147,7 @@ export function SettingsAppearance() {
             leftSlot={<Icon icon="moon" />}
             size="sm"
             value={activeTheme.dark.id}
-            options={darkThemes}
+            options={[{ label: 'Dark Mode Themes', options: darkThemes }]}
             onChange={(themeDark) => {
               trackEvent('theme', 'update', { theme: themeDark, appearance: 'dark' });
               updateSettings.mutateAsync({ ...settings, themeDark });
@@ -159,11 +160,11 @@ export function SettingsAppearance() {
         space={3}
         className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
       >
-        <HStack className="text-fg font-bold" alignItems="center" space={2}>
+        <HStack className="text-fg font-bold" space={2}>
           Theme Preview{' '}
           <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} className="text-fg-subtle" />
         </HStack>
-        <HStack space={1.5} alignItems="center" className="w-full">
+        <HStack space={1.5} className="w-full">
           {buttonColors.map((c, i) => (
             <IconButton
               key={c}

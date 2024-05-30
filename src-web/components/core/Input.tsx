@@ -153,7 +153,6 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
       >
         {leftSlot}
         <HStack
-          alignItems="center"
           className={classNames(
             'w-full min-w-0',
             leftSlot && 'pl-0.5 -ml-2',

@@ -27,7 +27,6 @@ export function Checkbox({
     <HStack
       as="label"
       space={2}
-      alignItems="center"
       className={classNames(className, 'text-fg', disabled && 'opacity-disabled')}
     >
       <div className={classNames(inputWrapperClassName, 'x-theme-input', 'relative flex')}>

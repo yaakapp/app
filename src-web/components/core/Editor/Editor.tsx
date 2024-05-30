@@ -294,7 +294,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       {decoratedActions && (
         <HStack
           space={1}
-          alignItems="center"
           justifyContent="end"
           className={classNames(
             'absolute bottom-2 left-0 right-0',

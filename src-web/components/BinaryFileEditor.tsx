@@ -45,7 +45,7 @@ export function BinaryFileEditor({
 
   return (
     <VStack space={2}>
-      <HStack space={2} alignItems="center">
+      <HStack space={2}>
         <Button variant="border" color="secondary" size="sm" onClick={handleClick}>
           Choose File
         </Button>

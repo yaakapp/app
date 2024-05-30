@@ -43,7 +43,7 @@ export function RecentConnectionsDropdown({
         ...connections.slice(0, 20).map((c) => ({
           key: c.id,
           label: (
-            <HStack space={2} alignItems="center">
+            <HStack space={2}>
               {formatDistanceToNowStrict(c.createdAt + 'Z')} ago &bull;{' '}
               <span className="font-mono text-sm">{c.elapsed}ms</span>
             </HStack>
