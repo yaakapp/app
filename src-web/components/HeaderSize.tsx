@@ -6,12 +6,19 @@ import { useOsInfo } from '../hooks/useOsInfo';
 interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   size: 'md' | 'lg';
+  ignoreStoplights?: boolean;
 }
 
-export function HeaderSize({ className, style, size, ...props }: HeaderSizeProps) {
+export function HeaderSize({
+  className,
+  style,
+  size,
+  ignoreStoplights,
+  ...props
+}: HeaderSizeProps) {
   const platform = useOsInfo();
   const fullscreen = useIsFullscreen();
-  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
+  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen && !ignoreStoplights;
   return (
     <div
       data-tauri-drag-region

@@ -28,13 +28,14 @@ export const Settings = () => {
     <>
       <HeaderSize
         data-tauri-drag-region
+        ignoreStoplights
         size="md"
         className="x-theme-appHeader bg-background text-fg-subtle flex items-center justify-center border-b border-background-highlight text-sm font-semibold"
       >
         <HStack
           space={2}
           justifyContent="center"
-          className="w-full h-full grid grid-cols-[1fr_auto]"
+          className="w-full h-full grid grid-cols-[1fr_auto] pointer-events-none"
         >
           <div className="text-center">Settings</div>
           <WindowControls className="ml-auto" />
