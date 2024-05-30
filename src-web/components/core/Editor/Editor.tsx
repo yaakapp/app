@@ -17,6 +17,7 @@ import {
 } from 'react';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
+import { useSettings } from '../../../hooks/useSettings';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
@@ -85,10 +86,15 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }: EditorProps,
   ref,
 ) {
+  const s = useSettings();
   const e = useActiveEnvironment();
   const w = useActiveWorkspace();
   const environment = autocompleteVariables ? e : null;
   const workspace = autocompleteVariables ? w : null;
+
+  if (s && wrapLines === undefined) {
+    wrapLines = s.editorSoftWrap;
+  }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);

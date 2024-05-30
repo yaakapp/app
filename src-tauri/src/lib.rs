@@ -23,7 +23,7 @@ use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
 use tauri::{Manager, WindowEvent};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
@@ -73,6 +73,9 @@ mod window_menu;
 mod tauri_plugin_mac_window;
 #[cfg(target_os = "windows")]
 mod tauri_plugin_windows_window;
+
+const DEFAULT_WINDOW_WIDTH: i32 = 1100;
+const DEFAULT_WINDOW_HEIGHT: i32 = 600;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -1784,41 +1787,6 @@ fn create_nested_window(window: &WebviewWindow, label: &str, url: &str, title: &
 
     let win = win_builder.build().expect("failed to build window");
 
-    // Tauri doesn't support shadows when hiding decorations, so we add our own
-    // #[cfg(any(windows, target_os = "macos"))]
-    // set_shadow(&win, true).unwrap();
-
-    let win2 = win.clone();
-    win.on_menu_event(move |w, event| {
-        if !w.is_focused().unwrap() {
-            return;
-        }
-
-        match event.id().0.as_str() {
-            "quit" => exit(0),
-            "close" => _ = w.close(),
-            "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
-            "zoom_in" => w.emit("zoom_in", true).unwrap(),
-            "zoom_out" => w.emit("zoom_out", true).unwrap(),
-            "settings" => w.emit("settings", true).unwrap(),
-            "refresh" => win2.eval("location.reload()").unwrap(),
-            "open_feedback" => {
-                _ = win2
-                    .app_handle()
-                    .shell()
-                    .open("https://yaak.canny.io", None)
-            }
-            "toggle_devtools" => {
-                if win2.is_devtools_open() {
-                    win2.close_devtools();
-                } else {
-                    win2.open_devtools();
-                }
-            }
-            _ => {}
-        }
-    });
-
     win
 }
 
@@ -1840,7 +1808,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
         .resizable(true)
         .fullscreen(false)
         .disable_drag_drop_handler() // Required for frontend Dnd on windows
-        .inner_size(1100.0, 600.0)
+        .inner_size(DEFAULT_WINDOW_WIDTH as f64, DEFAULT_WINDOW_HEIGHT as f64)
         .position(
             // Randomly offset so windows don't stack exactly
             100.0 + random::<f64>() * 30.0,
@@ -1866,7 +1834,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
 
     let win = win_builder.build().expect("failed to build window");
 
-    let win2 = win.clone();
+    let webview_window = win.clone();
     win.on_menu_event(move |w, event| {
         if !w.is_focused().unwrap() {
             return;
@@ -1874,23 +1842,26 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
 
         match event.id().0.as_str() {
             "quit" => exit(0),
-            "close" => _ = w.close(),
+            "close" => w.close().unwrap(),
             "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
             "zoom_in" => w.emit("zoom_in", true).unwrap(),
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
-            "refresh" => win2.eval("location.reload()").unwrap(),
             "open_feedback" => {
-                _ = win2
+                _ = webview_window
                     .app_handle()
                     .shell()
                     .open("https://yaak.canny.io", None)
             }
-            "toggle_devtools" => {
-                if win2.is_devtools_open() {
-                    win2.close_devtools();
+
+            // Commands for development
+            "dev.reset_size" => webview_window.set_size(LogicalSize::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)).unwrap(),
+            "dev.refresh" => webview_window.eval("location.reload()").unwrap(),
+            "dev.toggle_devtools" => {
+                if webview_window.is_devtools_open() {
+                    webview_window.close_devtools();
                 } else {
-                    win2.open_devtools();
+                    webview_window.open_devtools();
                 }
             }
             _ => {}

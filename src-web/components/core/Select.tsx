@@ -1,5 +1,7 @@
 import classNames from 'classnames';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { useState } from 'react';
+import { HStack } from './Stacks';
 
 interface Props<T extends string> {
   name: string;
@@ -8,6 +10,7 @@ interface Props<T extends string> {
   labelClassName?: string;
   hideLabel?: boolean;
   value: T;
+  leftSlot?: ReactNode;
   options: SelectOption<T>[];
   onChange: (value: T) => void;
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -27,10 +30,12 @@ export function Select<T extends string>({
   label,
   value,
   options,
+  leftSlot,
   onChange,
   className,
   size = 'md',
 }: Props<T>) {
+  const [focused, setFocused] = useState<boolean>(false);
   const id = `input-${name}`;
   return (
     <div
@@ -49,25 +54,36 @@ export function Select<T extends string>({
       >
         {label}
       </label>
-      <select
-        value={value}
-        style={selectBackgroundStyles}
-        onChange={(e) => onChange(e.target.value as T)}
+      <HStack
+        space={2}
+        alignItems="center"
         className={classNames(
-          'font-mono text-sm border w-full outline-none bg-transparent pl-2 pr-7',
-          'bg-background-highlight-secondary border-background-highlight focus:border-border-focus',
+          'w-full rounded-md text-fg text-sm font-mono',
+          'pl-2',
+          'bg-background-highlight-secondary border',
+          focused ? 'border-border-focus' : 'border-background-highlight',
           size === 'xs' && 'h-xs',
           size === 'sm' && 'h-sm',
           size === 'md' && 'h-md',
           size === 'lg' && 'h-lg',
         )}
       >
-        {options.map(({ label, value }) => (
-          <option key={label} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
+        {leftSlot && <div>{leftSlot}</div>}
+        <select
+          value={value}
+          style={selectBackgroundStyles}
+          onChange={(e) => onChange(e.target.value as T)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className={classNames('pr-7 w-full outline-none bg-transparent')}
+        >
+          {options.map(({ label, value }) => (
+            <option key={label} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </HStack>
     </div>
   );
 }

@@ -373,7 +373,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       bottom: upsideDown ? docRect.height - top : undefined,
       right: onRight ? docRect.width - triggerShape?.right : undefined,
       left: !onRight ? triggerShape?.left : undefined,
-      width: containerWidth ?? 'auto',
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
@@ -448,7 +447,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     <HStack
                       space={2}
                       alignItems="center"
-                      className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-2xs"
+                      className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-xs"
                     >
                       <Icon icon="search" size="xs" className="text-fg-subtle" />
                       <div className="text-fg">{filter}</div>

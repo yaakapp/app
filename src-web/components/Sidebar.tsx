@@ -133,27 +133,31 @@ export function Sidebar({ className }: Props) {
       ) {
         selectedRequest = node.item;
       }
-
       const childItems = [...requests, ...folders].filter((f) =>
         node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
       );
 
-      childItems.sort((a, b) => a.sortPriority - b.sortPriority);
+      // Recurse to children
+      const isCollapsed = collapsed.value?.[node.item.id];
       const depth = node.depth + 1;
+      childItems.sort((a, b) => a.sortPriority - b.sortPriority);
       for (const item of childItems) {
         treeParentMap[item.id] = node;
+        // Add to children
         node.children.push(next({ item, children: [], depth }));
-        if (item.model !== 'folder') {
+        // Add to selectable requests
+        if (item.model !== 'folder' && !isCollapsed) {
           selectableRequests.push({ id: item.id, index: selectableRequestIndex++, tree: node });
         }
       }
+
       return node;
     };
 
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
     return { tree, treeParentMap, selectableRequests, selectedRequest };
-  }, [activeWorkspace, selectedId, requests, folders]);
+  }, [activeWorkspace, selectedId, requests, folders, collapsed.value]);
 
   const deleteSelectedRequest = useDeleteRequest(selectedRequest);
 
@@ -455,6 +459,7 @@ export function Sidebar({ className }: Props) {
       />
       <SidebarItems
         treeParentMap={treeParentMap}
+        activeId={activeRequest?.id ?? null}
         selectedId={selectedId}
         selectedTree={selectedTree}
         isCollapsed={isCollapsed}
@@ -476,6 +481,7 @@ interface SidebarItemsProps {
   tree: TreeNode;
   focused: boolean;
   draggingId: string | null;
+  activeId: string | null;
   selectedId: string | null;
   selectedTree: TreeNode | null;
   treeParentMap: Record<string, TreeNode>;
@@ -491,6 +497,7 @@ interface SidebarItemsProps {
 function SidebarItems({
   tree,
   focused,
+  activeId,
   selectedId,
   selectedTree,
   draggingId,
@@ -517,6 +524,7 @@ function SidebarItems({
     >
       {tree.children.map((child, i) => {
         const selected = selectedId === child.item.id;
+        const active = activeId === child.item.id;
         return (
           <Fragment key={child.item.id}>
             {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
@@ -535,7 +543,7 @@ function SidebarItems({
                 (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
                   <HttpMethodTag
                     request={child.item}
-                    className={classNames(!selected && 'text-fg-subtler')}
+                    className={classNames(!(active || selected) && 'text-fg-subtler')}
                   />
                 )
               }
@@ -558,6 +566,7 @@ function SidebarItems({
                     hoveredTree={hoveredTree}
                     hoveredIndex={hoveredIndex}
                     focused={focused}
+                    activeId={activeId}
                     selectedId={selectedId}
                     selectedTree={selectedTree}
                     onSelect={onSelect}

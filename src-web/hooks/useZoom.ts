@@ -9,7 +9,6 @@ export function useZoom() {
   const zoomIn = useCallback(() => {
     if (!settings) return;
     updateSettings.mutate({
-      ...settings,
       interfaceScale: Math.min(1.8, settings.interfaceScale * 1.1),
     });
   }, [settings, updateSettings]);
@@ -17,13 +16,11 @@ export function useZoom() {
   const zoomOut = useCallback(() => {
     if (!settings) return;
     updateSettings.mutate({
-      ...settings,
       interfaceScale: Math.max(0.4, settings.interfaceScale * 0.9),
     });
   }, [settings, updateSettings]);
 
   const zoomReset = useCallback(() => {
-    if (!settings) return;
     updateSettings.mutate({ ...settings, interfaceScale: 1 });
   }, [settings, updateSettings]);
 
