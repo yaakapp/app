@@ -11,7 +11,7 @@ interface Props<T extends string> {
   hideLabel?: boolean;
   value: T;
   leftSlot?: ReactNode;
-  options: SelectOption<T>[];
+  options: SelectOption<T>[] | SelectOptionGroup<T>[];
   onChange: (value: T) => void;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
@@ -20,6 +20,11 @@ interface Props<T extends string> {
 export interface SelectOption<T extends string> {
   label: string;
   value: T;
+}
+
+export interface SelectOptionGroup<T extends string> {
+  label: string;
+  options: SelectOption<T>[];
 }
 
 export function Select<T extends string>({
@@ -56,7 +61,6 @@ export function Select<T extends string>({
       </label>
       <HStack
         space={2}
-        alignItems="center"
         className={classNames(
           'w-full rounded-md text-fg text-sm font-mono',
           'pl-2',
@@ -77,11 +81,21 @@ export function Select<T extends string>({
           onBlur={() => setFocused(false)}
           className={classNames('pr-7 w-full outline-none bg-transparent')}
         >
-          {options.map(({ label, value }) => (
-            <option key={label} value={value}>
-              {label}
-            </option>
-          ))}
+          {options.map((o) =>
+            'options' in o ? (
+              <optgroup key={o.label} label={o.label}>
+                {o.options.map(({ label, value }) => (
+                  <option key={label} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              <option key={o.label} value={o.value}>
+                {o.label}
+              </option>
+            ),
+          )}
         </select>
       </HStack>
     </div>

@@ -1,7 +1,11 @@
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import React from 'react';
 import { createGlobalState, useKeyPressEvent } from 'react-use';
 import { capitalize } from '../../lib/capitalize';
+import { HStack } from '../core/Stacks';
 import { TabContent, Tabs } from '../core/Tabs/Tabs';
+import { HeaderSize } from '../HeaderSize';
+import { WindowControls } from '../WindowControls';
 import { SettingsAppearance } from './SettingsAppearance';
 import { SettingsGeneral } from './SettingsGeneral';
 
@@ -22,12 +26,20 @@ export const Settings = () => {
 
   return (
     <>
-      <div
+      <HeaderSize
         data-tauri-drag-region
-        className="x-theme-appHeader h-[27px] bg-background text-fg-subtle flex items-center justify-center border-b border-background-highlight text-sm font-semibold"
+        size="md"
+        className="x-theme-appHeader bg-background text-fg-subtle flex items-center justify-center border-b border-background-highlight text-sm font-semibold"
       >
-        Settings
-      </div>
+        <HStack
+          space={2}
+          justifyContent="center"
+          className="w-full h-full grid grid-cols-[1fr_auto]"
+        >
+          <div className="text-center">Settings</div>
+          <WindowControls className="ml-auto" />
+        </HStack>
+      </HeaderSize>
       <Tabs
         value={tab}
         addBorders

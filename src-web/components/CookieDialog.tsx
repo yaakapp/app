@@ -36,7 +36,7 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
             <th className="py-2 pl-4"></th>
           </tr>
         </thead>
-        <tbody className="divide-y">
+        <tbody className="divide-y divide-background-highlight-secondary">
           {cookieJar?.cookies.map((c) => (
             <tr key={c.domain + c.raw_cookie}>
               <td className="py-2 select-text cursor-text font-mono font-semibold max-w-0">

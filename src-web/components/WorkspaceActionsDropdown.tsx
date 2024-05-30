@@ -52,12 +52,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
           ),
           render: ({ hide }) => {
             return (
-              <HStack
-                space={2}
-                justifyContent="start"
-                alignItems="center"
-                className="mt-4 mb-6 flex-row-reverse"
-              >
+              <HStack space={2} justifyContent="start" className="mt-4 mb-6 flex-row-reverse">
                 <Button
                   className="focus"
                   color="primary"

@@ -1,0 +1,31 @@
+import classNames from 'classnames';
+import type { HTMLAttributes, ReactNode } from 'react';
+import { useIsFullscreen } from '../hooks/useIsFullscreen';
+import { useOsInfo } from '../hooks/useOsInfo';
+
+interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+  size: 'md' | 'lg';
+}
+
+export function HeaderSize({ className, style, size, ...props }: HeaderSizeProps) {
+  const platform = useOsInfo();
+  const fullscreen = useIsFullscreen();
+  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
+  return (
+    <div
+      data-tauri-drag-region
+      style={style}
+      className={classNames(
+        className,
+        'pt-[1px] w-full border-b border-background-highlight min-w-0',
+        stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
+        size === 'md' && 'h-[27px]',
+        size === 'lg' && 'h-[38px]',
+      )}
+    >
+      {/* NOTE: This needs display:grid or else the element shrinks (even though scrollable) */}
+      <div className="h-full w-full overflow-x-auto hide-scrollbars grid" {...props} />
+    </div>
+  );
+}

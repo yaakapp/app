@@ -224,7 +224,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   );
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
   const [filter, setFilter] = useState<string>('');
-  const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   // Calculate the max height so we can scroll
   const initMenu = useCallback((el: HTMLDivElement | null) => {
@@ -349,11 +348,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
   );
 
-  const initContainerRef = (n: HTMLDivElement | null) => {
-    if (n == null) return null;
-    setContainerWidth(n.offsetWidth);
-  };
-
   const { containerStyles, triangleStyles } = useMemo<{
     containerStyles: CSSProperties;
     triangleStyles: CSSProperties | null;
@@ -379,7 +373,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       ? { right: width / 2, marginRight: '-0.2rem', ...size }
       : { left: width / 2, marginLeft: '-0.2rem', ...size };
     return { containerStyles, triangleStyles };
-  }, [triggerShape, containerWidth]);
+  }, [triggerShape]);
 
   const filteredItems = useMemo(
     () => items.filter((i) => getNodeText(i.label).toLowerCase().includes(filter.toLowerCase())),
@@ -422,7 +416,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
               role="menu"
               aria-orientation="vertical"
               dir="ltr"
-              ref={initContainerRef}
               style={containerStyles}
               className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
             >
@@ -446,7 +439,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   {filter && (
                     <HStack
                       space={2}
-                      alignItems="center"
                       className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-xs"
                     >
                       <Icon icon="search" size="xs" className="text-fg-subtle" />

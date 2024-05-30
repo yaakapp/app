@@ -19,7 +19,7 @@ interface HStackProps extends BaseStackProps {
 }
 
 export const HStack = forwardRef(function HStack(
-  { className, space, children, ...props }: HStackProps,
+  { className, space, children, alignItems = 'center', ...props }: HStackProps,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ref: ForwardedRef<any>,
 ) {
@@ -27,6 +27,7 @@ export const HStack = forwardRef(function HStack(
     <BaseStack
       ref={ref}
       className={classNames(className, 'flex-row', space != null && gapClasses[space])}
+      alignItems={alignItems}
       {...props}
     >
       {children}
