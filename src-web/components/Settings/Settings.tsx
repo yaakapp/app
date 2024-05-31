@@ -28,7 +28,7 @@ export const Settings = () => {
   useKeyPressEvent('Escape', () => getCurrent().close());
 
   return (
-    <>
+    <div className={classNames('grid grid-rows-[auto_minmax(0,1fr)] h-full')}>
       <HeaderSize
         data-tauri-drag-region
         ignoreStoplights
@@ -60,6 +60,6 @@ export const Settings = () => {
           <SettingsAppearance />
         </TabContent>
       </Tabs>
-    </>
+    </div>
   );
 };

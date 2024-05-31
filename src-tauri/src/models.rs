@@ -4,9 +4,9 @@ use std::fs;
 use log::error;
 use rand::distributions::{Alphanumeric, DistString};
 use serde::{Deserialize, Serialize};
-use sqlx::{Pool, Sqlite};
-use sqlx::types::{Json, JsonValue};
 use sqlx::types::chrono::NaiveDateTime;
+use sqlx::types::{Json, JsonValue};
+use sqlx::{Pool, Sqlite};
 use tauri::{AppHandle, Manager, WebviewWindow, Wry};
 use tokio::sync::Mutex;
 
