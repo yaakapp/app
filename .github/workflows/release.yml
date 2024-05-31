@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - release
+      - beta
 jobs:
   build-artifacts:
     permissions:
