@@ -7,9 +7,10 @@ import { HStack } from './core/Stacks';
 
 interface Props {
   className?: string;
+  onlyX?: boolean;
 }
 
-export function WindowControls({ className }: Props) {
+export function WindowControls({ className, onlyX }: Props) {
   const [maximized, setMaximized] = useState<boolean>(false);
   const osInfo = useOsInfo();
   const shouldShow = osInfo?.osType === 'linux' || osInfo?.osType === 'windows';
@@ -19,37 +20,41 @@ export function WindowControls({ className }: Props) {
 
   return (
     <HStack className={classNames(className, 'ml-4 h-full')}>
-      <Button
-        className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
-        color="custom"
-        onClick={() => getCurrent().minimize()}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-          <path fill="currentColor" d="M14 8v1H3V8z" />
-        </svg>
-      </Button>
-      <Button
-        className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
-        color="custom"
-        onClick={async () => {
-          const w = getCurrent();
-          await w.toggleMaximize();
-          setMaximized(await w.isMaximized());
-        }}
-      >
-        {maximized ? (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-            <g fill="currentColor">
-              <path d="M3 5v9h9V5zm8 8H4V6h7z" />
-              <path fillRule="evenodd" d="M5 5h1V4h7v7h-1v1h2V3H5z" clipRule="evenodd" />
-            </g>
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-            <path fill="currentColor" d="M3 3v10h10V3zm9 9H4V4h8z" />
-          </svg>
-        )}
-      </Button>
+      {!onlyX && (
+        <>
+          <Button
+            className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
+            color="custom"
+            onClick={() => getCurrent().minimize()}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+              <path fill="currentColor" d="M14 8v1H3V8z" />
+            </svg>
+          </Button>
+          <Button
+            className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
+            color="custom"
+            onClick={async () => {
+              const w = getCurrent();
+              await w.toggleMaximize();
+              setMaximized(await w.isMaximized());
+            }}
+          >
+            {maximized ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <g fill="currentColor">
+                  <path d="M3 5v9h9V5zm8 8H4V6h7z" />
+                  <path fillRule="evenodd" d="M5 5h1V4h7v7h-1v1h2V3H5z" clipRule="evenodd" />
+                </g>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <path fill="currentColor" d="M3 3v10h10V3zm9 9H4V4h8z" />
+              </svg>
+            )}
+          </Button>
+        </>
+      )}
       <Button
         color="custom"
         className="!h-full px-4 text-fg-subtle rounded-none hocus:bg-fg-danger hocus:text-fg"

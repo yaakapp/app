@@ -1,6 +1,8 @@
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import classNames from 'classnames';
 import React from 'react';
 import { createGlobalState, useKeyPressEvent } from 'react-use';
+import { useOsInfo } from '../../hooks/useOsInfo';
 import { capitalize } from '../../lib/capitalize';
 import { HStack } from '../core/Stacks';
 import { TabContent, Tabs } from '../core/Tabs/Tabs';
@@ -18,6 +20,7 @@ const tabs = [Tab.General, Tab.Appearance];
 const useTabState = createGlobalState<string>(tabs[0]!);
 
 export const Settings = () => {
+  const osInfo = useOsInfo();
   const [tab, setTab] = useTabState();
 
   // Close settings window on escape
@@ -37,8 +40,10 @@ export const Settings = () => {
           justifyContent="center"
           className="w-full h-full grid grid-cols-[1fr_auto] pointer-events-none"
         >
-          <div className="text-center">Settings</div>
-          <WindowControls className="ml-auto" />
+          <div className={classNames(osInfo?.osType === 'macos' ? 'text-center' : 'pl-2')}>
+            Settings
+          </div>
+          <WindowControls className="ml-auto" onlyX />
         </HStack>
       </HeaderSize>
       <Tabs

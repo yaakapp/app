@@ -1818,7 +1818,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             .resizable(true)
             .fullscreen(false)
             .disable_drag_drop_handler() // Required for frontend Dnd on windows
-            .inner_size(DEFAULT_WINDOW_WIDTH as f64, DEFAULT_WINDOW_HEIGHT as f64)
+            .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
             .position(
                 // Randomly offset so windows don't stack exactly
                 100.0 + random::<f64>() * 30.0,
@@ -1839,7 +1839,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     #[cfg(not(target_os = "macos"))]
     {
         // Doesn't seem to work from Rust, here, so we do it in main.tsx
-        // win_builder = win_builder.decorations(false);
+        win_builder = win_builder.decorations(false);
     }
 
     let win = win_builder.build().expect("failed to build window");
