@@ -65,6 +65,9 @@
       "dmg",
       "updater"
     ],
+    "iOS": {
+      "developmentTeam": "7PU3P6ELJ8"
+    },
     "macOS": {
       "exceptionDomain": "",
       "entitlements": "macos/entitlements.plist",

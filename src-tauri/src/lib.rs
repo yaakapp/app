@@ -1787,7 +1787,7 @@ fn create_nested_window(
     .title(title)
     .parent(&window)
     .unwrap()
-    .inner_size(DEFAULT_WINDOW_WIDTH * 0.5, DEFAULT_WINDOW_HEIGHT * 0.75);
+    .inner_size(DEFAULT_WINDOW_WIDTH * 0.7, DEFAULT_WINDOW_HEIGHT * 0.9);
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1877,6 +1877,9 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 ))
                 .unwrap(),
             "dev.refresh" => webview_window.eval("location.reload()").unwrap(),
+            "dev.generate_theme_css" => {
+                w.emit("generate_theme_css", true).unwrap();
+            }
             "dev.toggle_devtools" => {
                 if webview_window.is_devtools_open() {
                     webview_window.close_devtools();

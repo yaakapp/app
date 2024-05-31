@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
+import { useClipboardText } from '../hooks/useClipboardText';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { foldersQueryKey } from '../hooks/useFolders';
@@ -24,6 +25,13 @@ import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
+import { catppuccinMacchiato } from '../lib/theme/themes/catppuccin';
+import { githubLight } from '../lib/theme/themes/github';
+import { hotdogStandDefault } from '../lib/theme/themes/hotdog-stand';
+import { monokaiProDefault } from '../lib/theme/themes/monokai-pro';
+import { rosePineDefault } from '../lib/theme/themes/rose-pine';
+import { yaakDark } from '../lib/theme/themes/yaak';
+import { getThemeCSS } from '../lib/theme/window';
 
 export function GlobalHooks() {
   // Include here so they always update, even if no component references them
@@ -145,6 +153,21 @@ export function GlobalHooks() {
   useListenToTauriEvent('zoom_out', () => zoom.zoomOut);
   useHotKey('app.zoom_reset', () => zoom.zoomReset);
   useListenToTauriEvent('zoom_reset', () => zoom.zoomReset);
+
+  const [, copy] = useClipboardText();
+  useListenToTauriEvent('generate_theme_css', () => {
+    const themesCss = [
+      yaakDark,
+      monokaiProDefault,
+      rosePineDefault,
+      catppuccinMacchiato,
+      githubLight,
+      hotdogStandDefault,
+    ]
+      .map(getThemeCSS)
+      .join('\n\n');
+    copy(themesCss);
+  });
 
   return null;
 }
