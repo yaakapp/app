@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run build:plugins && npm run tauri-dev:desktop",
+    "start": "npm run tauri-dev:desktop",
     "tauri-dev:desktop": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
     "tauri-dev:ios": "tauri ios dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
     "tauri-build": "tauri build",
