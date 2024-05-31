@@ -1563,6 +1563,11 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_mac_window::init());
     }
 
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder; // Don't complain about not being mut
+    }
+
     builder
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -1804,6 +1809,7 @@ fn create_nested_window(
 }
 
 fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+    #[allow(unused_variables)]
     let menu = app_menu(handle).unwrap();
 
     // This causes the window to not be clickable (in AppImage), so disable on Linux
@@ -1830,7 +1836,6 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     #[cfg(target_os = "macos")]
     {
         win_builder = win_builder
-            // .menu(app_menu)
             .hidden_title(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }

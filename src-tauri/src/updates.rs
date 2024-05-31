@@ -65,8 +65,7 @@ impl YaakUpdater {
             .check()
             .await;
 
-        match update_check_result
-        {
+        match update_check_result {
             Ok(Some(update)) => {
                 let h = app_handle.clone();
                 app_handle

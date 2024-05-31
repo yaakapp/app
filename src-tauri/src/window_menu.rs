@@ -1,8 +1,8 @@
-pub use tauri::AppHandle;
 use tauri::menu::{
-    AboutMetadata, HELP_SUBMENU_ID, Menu, MenuItemBuilder, PredefinedMenuItem, Submenu,
+    AboutMetadata, Menu, MenuItemBuilder, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID,
     WINDOW_SUBMENU_ID,
 };
+pub use tauri::AppHandle;
 use tauri::Wry;
 
 pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {

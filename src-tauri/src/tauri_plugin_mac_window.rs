@@ -1,7 +1,10 @@
 use hex_color::HexColor;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
-use tauri::{Manager, plugin::{Builder, TauriPlugin}, Runtime, Window, WindowEvent};
+use tauri::{
+    plugin::{Builder, TauriPlugin},
+    Manager, Runtime, Window, WindowEvent,
+};
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
@@ -15,24 +18,21 @@ unsafe impl Sync for UnsafeWindowHandle {}
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("mac_window")
         .on_window_ready(|window| {
-            #[cfg(target_os = "macos")] {
+            #[cfg(target_os = "macos")]
+            {
                 setup_traffic_light_positioner(&window);
                 let h = window.app_handle();
 
                 let window_for_theme = window.clone();
                 let id1 = h.listen("yaak_bg_changed", move |ev| {
-                    let payload = serde_json::from_str::<&str>(ev.payload())
-                        .unwrap()
-                        .trim();
+                    let payload = serde_json::from_str::<&str>(ev.payload()).unwrap().trim();
                     let color = HexColor::parse_rgb(payload).unwrap();
                     update_window_theme(window_for_theme.clone(), color);
                 });
 
                 let window_for_title = window.clone();
                 let id2 = h.listen("yaak_title_changed", move |ev| {
-                    let payload = serde_json::from_str::<&str>(ev.payload())
-                        .unwrap()
-                        .trim();
+                    let payload = serde_json::from_str::<&str>(ev.payload()).unwrap().trim();
                     update_window_title(window_for_title.clone(), payload.to_string());
                 });
 
@@ -54,11 +54,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
 #[cfg(target_os = "macos")]
 fn update_window_title<R: Runtime>(window: Window<R>, title: String) {
-    use cocoa::{
-        appkit::NSWindow,
-        base::nil,
-        foundation::NSString,
-    };
+    use cocoa::{appkit::NSWindow, base::nil, foundation::NSString};
 
     unsafe {
         let window_handle = UnsafeWindowHandle(window.ns_window().unwrap());
@@ -76,7 +72,8 @@ fn update_window_title<R: Runtime>(window: Window<R>, title: String) {
                 label,
             );
         });
-    }}
+    }
+}
 
 #[cfg(target_os = "macos")]
 fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
@@ -156,9 +153,9 @@ struct WindowState<R: Runtime> {
 
 #[cfg(target_os = "macos")]
 pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
-    use cocoa::delegate;
     use cocoa::appkit::NSWindow;
-    use cocoa::base::{BOOL, id};
+    use cocoa::base::{id, BOOL};
+    use cocoa::delegate;
     use cocoa::foundation::NSUInteger;
     use objc::runtime::{Object, Sel};
     use std::ffi::c_void;
@@ -181,7 +178,6 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
         };
         func(ptr);
     }
-
 
     unsafe {
         let ns_win = window
@@ -410,7 +406,9 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
         // Are we de-allocing this properly ? (I miss safe Rust :(  )
         let window_label = window.label().to_string();
 
-        let app_state = WindowState { window: window.clone() };
+        let app_state = WindowState {
+            window: window.clone(),
+        };
         let app_box = Box::into_raw(Box::new(app_state)) as *mut c_void;
         let random_str: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)

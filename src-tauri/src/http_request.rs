@@ -7,11 +7,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use base64::Engine;
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use http::header::{ACCEPT, USER_AGENT};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use log::{error, info, warn};
-use reqwest::{multipart, Url};
 use reqwest::redirect::Policy;
+use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
 use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
