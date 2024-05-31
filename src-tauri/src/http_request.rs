@@ -290,7 +290,7 @@ pub async fn send_http_request(
                         .unwrap_or_default();
 
                     let name = render::render(name_raw, &workspace, environment_ref);
-                    let part = if file_path.is_empty() {
+                    let mut part = if file_path.is_empty() {
                         multipart::Part::text(render::render(
                             value_raw,
                             &workspace,
@@ -311,23 +311,24 @@ pub async fn send_http_request(
                         .as_str()
                         .unwrap_or_default();
 
-                    multipart_form = multipart_form.part(
-                        name,
-                        if ct_raw.is_empty() {
-                            part
-                        } else {
-                            let content_type = render::render(ct_raw, &workspace, environment_ref);
-                            let filename = PathBuf::from(file_path)
-                                .file_name()
-                                .unwrap_or_default()
-                                .to_str()
-                                .unwrap_or_default()
-                                .to_string();
-                            part.file_name(filename)
-                                .mime_str(content_type.as_str())
-                                .map_err(|e| e.to_string())?
-                        },
-                    );
+                    if !ct_raw.is_empty() {
+                        let content_type = render::render(ct_raw, &workspace, environment_ref);
+                        part = part
+                            .mime_str(content_type.as_str())
+                            .map_err(|e| e.to_string())?;
+                    }
+
+                    if !file_path.is_empty() {
+                        let filename = PathBuf::from(file_path)
+                            .file_name()
+                            .unwrap_or_default()
+                            .to_str()
+                            .unwrap_or_default()
+                            .to_string();
+                        part = part.file_name(filename);
+                    }
+
+                    multipart_form = multipart_form.part(name, part);
                 }
             }
             headers.remove("Content-Type"); // reqwest will add this automatically
