@@ -1,7 +1,7 @@
 import { Color } from '../color';
 import type { YaakTheme } from '../window';
 
-const hotdogStandDefault: YaakTheme = {
+export const hotdogStandDefault: YaakTheme = {
   id: 'hotdog-stand',
   name: 'Hotdog Stand',
   background: new Color('#ff0000', 'dark'),
