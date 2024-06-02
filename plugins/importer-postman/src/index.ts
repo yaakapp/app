@@ -180,6 +180,7 @@ function importBody(rawBody: any): Pick<HttpRequest, 'body' | 'bodyType' | 'head
           f.src != null
             ? {
                 enabled: !f.disabled,
+                contentType: f.contentType ?? null,
                 name: f.key ?? '',
                 file: f.src ?? '',
               }
@@ -244,6 +245,7 @@ function convertTemplateSyntax<T>(obj: T): T {
 }
 
 const idCount: Partial<Record<Model['model'], number>> = {};
+
 function generateId(model: Model['model']): string {
   idCount[model] = (idCount[model] ?? -1) + 1;
   return `GENERATE_ID::${model.toUpperCase()}_${idCount[model]}`;
