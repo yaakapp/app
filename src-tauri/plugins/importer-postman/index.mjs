@@ -131,6 +131,7 @@ function j(e) {
       form: b(t.formdata).map(
         (n) => n.src != null ? {
           enabled: !n.disabled,
+          contentType: n.contentType ?? null,
           name: n.key ?? "",
           file: n.src ?? ""
         } : {
