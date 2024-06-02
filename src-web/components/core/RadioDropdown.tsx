@@ -50,5 +50,9 @@ export function RadioDropdown<T = string | null>({
     [items, extraItems, value, onChange],
   );
 
-  return <Dropdown items={dropdownItems}>{children}</Dropdown>;
+  return (
+    <Dropdown fullWidth items={dropdownItems}>
+      {children}
+    </Dropdown>
+  );
 }

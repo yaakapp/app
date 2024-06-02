@@ -8,8 +8,8 @@ import { useUpdateWorkspace } from '../../hooks/useUpdateWorkspace';
 import { Checkbox } from '../core/Checkbox';
 import { Heading } from '../core/Heading';
 import { IconButton } from '../core/IconButton';
-import { Input } from '../core/Input';
 import { KeyValueRow, KeyValueRows } from '../core/KeyValueRow';
+import { PlainInput } from '../core/PlainInput';
 import { Select } from '../core/Select';
 import { Separator } from '../core/Separator';
 import { VStack } from '../core/Stacks';
@@ -59,7 +59,7 @@ export function SettingsGeneral() {
         </div>
       </Heading>
       <VStack className="mt-1 w-full" space={3}>
-        <Input
+        <PlainInput
           size="sm"
           name="requestTimeout"
           label="Request Timeout (ms)"
@@ -68,6 +68,7 @@ export function SettingsGeneral() {
           defaultValue={`${workspace.settingRequestTimeout}`}
           validate={(value) => parseInt(value) >= 0}
           onChange={(v) => updateWorkspace.mutate({ settingRequestTimeout: parseInt(v) || 0 })}
+          type="number"
         />
 
         <Checkbox

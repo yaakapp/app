@@ -59,6 +59,7 @@ export interface DropdownProps {
   items: DropdownItem[];
   onOpen?: () => void;
   onClose?: () => void;
+  fullWidth?: boolean;
   hotKeyAction?: HotkeyAction;
 }
 
@@ -73,7 +74,7 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, onOpen, onClose, hotKeyAction }: DropdownProps,
+  { children, items, onOpen, onClose, hotKeyAction, fullWidth }: DropdownProps,
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
@@ -153,6 +154,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       <Menu
         ref={menuRef}
         showTriangle
+        fullWidth={fullWidth}
         defaultSelectedIndex={defaultSelectedIndex}
         items={items}
         triggerShape={triggerRect ?? null}
@@ -203,6 +205,7 @@ interface MenuProps {
   triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'> | null;
   onClose: () => void;
   showTriangle?: boolean;
+  fullWidth?: boolean;
   isOpen: boolean;
 }
 
@@ -211,6 +214,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     className,
     isOpen,
     items,
+    fullWidth,
     onClose,
     triggerShape,
     defaultSelectedIndex,
@@ -359,21 +363,23 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const heightAbove = triggerShape.top;
     const heightBelow = docRect.height - triggerShape.bottom;
     const hSpaceRemaining = docRect.width - triggerShape.left;
-    const top = triggerShape?.bottom + 5;
+    const top = triggerShape.bottom + 5;
     const onRight = hSpaceRemaining < 200;
     const upsideDown = heightAbove > heightBelow && heightBelow < 200;
+    const triggerWidth = triggerShape.right - triggerShape.left;
     const containerStyles = {
       top: !upsideDown ? top : undefined,
       bottom: upsideDown ? docRect.height - top : undefined,
-      right: onRight ? docRect.width - triggerShape?.right : undefined,
-      left: !onRight ? triggerShape?.left : undefined,
+      right: onRight ? docRect.width - triggerShape.right : undefined,
+      left: !onRight ? triggerShape.left : undefined,
+      minWidth: fullWidth ? triggerWidth : undefined,
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
       ? { right: width / 2, marginRight: '-0.2rem', ...size }
       : { left: width / 2, marginLeft: '-0.2rem', ...size };
     return { containerStyles, triangleStyles };
-  }, [triggerShape]);
+  }, [fullWidth, triggerShape]);
 
   const filteredItems = useMemo(
     () => items.filter((i) => getNodeText(i.label).toLowerCase().includes(filter.toLowerCase())),

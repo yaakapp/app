@@ -120,7 +120,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {isLoading ? (
         <Icon icon="refresh" size={size} className="animate-spin mr-1" />
       ) : leftSlot ? (
-        <div className="mr-1">{leftSlot}</div>
+        <div className="mr-2">{leftSlot}</div>
       ) : null}
       <div
         className={classNames(

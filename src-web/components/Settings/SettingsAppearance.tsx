@@ -14,7 +14,7 @@ import { Editor } from '../core/Editor';
 import type { IconProps } from '../core/Icon';
 import { Icon } from '../core/Icon';
 import { IconButton } from '../core/IconButton';
-import type { SelectOption } from '../core/Select';
+import type { SelectProps } from '../core/Select';
 import { Select } from '../core/Select';
 import { Separator } from '../core/Separator';
 import { HStack, VStack } from '../core/Stacks';
@@ -64,14 +64,14 @@ export function SettingsAppearance() {
     return null;
   }
 
-  const lightThemes: SelectOption<string>[] = themes
+  const lightThemes: SelectProps<string>['options'] = themes
     .filter((theme) => !isThemeDark(theme))
     .map((theme) => ({
       label: theme.name,
       value: theme.id,
     }));
 
-  const darkThemes: SelectOption<string>[] = themes
+  const darkThemes: SelectProps<string>['options'] = themes
     .filter((theme) => isThemeDark(theme))
     .map((theme) => ({
       label: theme.name,
@@ -131,8 +131,9 @@ export function SettingsAppearance() {
             name="lightTheme"
             label="Light Theme"
             size="sm"
+            className="flex-1"
             value={activeTheme.light.id}
-            options={[{ label: 'Light Mode Themes', options: lightThemes }]}
+            options={lightThemes}
             onChange={(themeLight) => {
               trackEvent('theme', 'update', { theme: themeLight, appearance: 'light' });
               updateSettings.mutateAsync({ ...settings, themeLight });
@@ -143,11 +144,12 @@ export function SettingsAppearance() {
           <Select
             hideLabel
             name="darkTheme"
+            className="flex-1"
             label="Dark Theme"
             leftSlot={<Icon icon="moon" />}
             size="sm"
             value={activeTheme.dark.id}
-            options={[{ label: 'Dark Mode Themes', options: darkThemes }]}
+            options={darkThemes}
             onChange={(themeDark) => {
               trackEvent('theme', 'update', { theme: themeDark, appearance: 'dark' });
               updateSettings.mutateAsync({ ...settings, themeDark });
