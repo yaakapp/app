@@ -195,7 +195,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
             placeholderCompartment.current.of(
               placeholderExt(placeholderElFromText(placeholder ?? '')),
             ),
-            wrapLinesCompartment.current.of([]),
+            wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
             ...getExtensions({
               container,
               readOnly,
@@ -357,8 +357,7 @@ function getExtensions({
       blur: () => {
         onBlur.current?.();
       },
-      keydown: (e, cm) => {
-        console.log('KEY DOWN', e, cm);
+      keydown: (e) => {
         onKeyDown.current?.(e);
       },
       paste: (e) => {
