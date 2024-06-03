@@ -109,7 +109,7 @@ export function SettingsAppearance() {
       <Select
         name="appearance"
         label="Appearance"
-        labelPosition="left"
+        labelPosition="top"
         size="sm"
         value={settings.appearance}
         onChange={(appearance) => {
@@ -123,7 +123,6 @@ export function SettingsAppearance() {
         ]}
       />
       <HStack space={2}>
-        <div>Theme</div>
         {(settings.appearance === 'system' || settings.appearance === 'light') && (
           <Select
             hideLabel

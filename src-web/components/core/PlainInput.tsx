@@ -85,7 +85,11 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
     >
       <label
         htmlFor={id}
-        className={classNames(labelClassName, 'text-fg whitespace-nowrap', hideLabel && 'sr-only')}
+        className={classNames(
+          labelClassName,
+          'text-fg-subtle whitespace-nowrap',
+          hideLabel && 'sr-only',
+        )}
       >
         {label}
       </label>
