@@ -1,8 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
 const height = {
-  '2xs': '1.5rem',
-  xs: '1.75rem',
+  xs: '1.8rem',
   sm: '2.0rem',
   md: '2.5rem',
 };
@@ -27,11 +26,14 @@ module.exports = {
         sm: 'calc(2.0rem - 2px)',
         md: 'calc(2.5rem - 2px)',
       },
+      transitionProperty: {
+        grid: 'grid',
+      },
     },
     fontFamily: {
       mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       sans: [
-        'Inter',
+        'Inter UI',
         '-apple-system',
         'BlinkMacSystemFont',
         'Segoe UI',
@@ -50,58 +52,51 @@ module.exports = {
       '4xs': '0.6rem',
       '3xs': '0.675rem',
       '2xs': '0.75rem',
-      xs: '0.8rem',
-      sm: '0.9rem',
-      base: '1rem',
-      xl: '1.25rem',
+      'xs': '0.8rem',
+      'sm': '0.9rem',
+      'base': '1rem',
+      'xl': '1.25rem',
       '2xl': '1.5rem',
       '3xl': '2rem',
       '4xl': '2.5rem',
       '5xl': '3rem',
+      'editor': 'var(--editor-font-size)',
+      'shrink': '0.8em',
+    },
+    boxShadow: {
+      DEFAULT: '0 1px 3px 0 var(--shadow);',
+      lg: '0 10px 15px -3px var(--shadow)',
     },
     colors: {
-      selection: 'hsl(var(--color-violet-500) / 0.3)',
-      focus: 'hsl(var(--color-blue-500) / 0.7)',
-      invalid: 'hsl(var(--color-red-500))',
-      highlight: 'hsl(var(--color-gray-500) / 0.3)',
-      highlightSecondary: 'hsl(var(--color-gray-500) / 0.15)',
-      transparent: 'transparent',
-      white: 'hsl(0 100% 100% / <alpha-value>)',
-      black: 'hsl(0 100% 0% / <alpha-value>)',
-      placeholder: 'hsl(var(--color-gray-400) / <alpha-value>)',
-      red: color('red'),
-      orange: color('orange'),
-      yellow: color('yellow'),
-      blue: color('blue'),
-      green: color('green'),
-      pink: color('pink'),
-      violet: color('violet'),
-      gray: color('gray'),
+      'transparent': 'transparent',
+      'placeholder': 'var(--fg-subtler)',
+      'selection': 'var(--background-selection)',
+
+      // New theme values
+
+      'border-focus': 'var(--border-focus)',
+      'fg': 'var(--fg)',
+      'fg-danger': 'var(--fg-danger)',
+      'fg-subtle': 'var(--fg-subtle)',
+      'fg-subtler': 'var(--fg-subtler)',
+      'fg-primary': 'var(--fg-primary)',
+      'fg-secondary': 'var(--fg-secondary)',
+      'fg-success': 'var(--fg-success)',
+      'fg-info': 'var(--fg-info)',
+      'fg-notice': 'var(--fg-notice)',
+      'fg-warning': 'var(--fg-warning)',
+      'background': 'var(--background)',
+      'background-active': 'var(--background-active)',
+      'background-highlight': 'var(--background-highlight)',
+      'background-highlight-secondary': 'var(--background-highlight-secondary)',
+      'background-backdrop': 'var(--background-backdrop)',
     },
   },
   plugins: [
     require('@tailwindcss/container-queries'),
-    plugin(function ({ addVariant }) {
+    plugin(function ({addVariant}) {
       addVariant('hocus', ['&:hover', '&:focus-visible', '&.focus:focus']);
       addVariant('focus-visible-or-class', ['&:focus-visible', '&.focus:focus']);
     }),
   ],
 };
-
-function color(name) {
-  return {
-    0: `hsl(var(--color-${name}-0) / <alpha-value>)`,
-    50: `hsl(var(--color-${name}-50) / <alpha-value>)`,
-    100: `hsl(var(--color-${name}-100) / <alpha-value>)`,
-    200: `hsl(var(--color-${name}-200) / <alpha-value>)`,
-    300: `hsl(var(--color-${name}-300) / <alpha-value>)`,
-    400: `hsl(var(--color-${name}-400) / <alpha-value>)`,
-    500: `hsl(var(--color-${name}-500) / <alpha-value>)`,
-    600: `hsl(var(--color-${name}-600) / <alpha-value>)`,
-    700: `hsl(var(--color-${name}-700) / <alpha-value>)`,
-    800: `hsl(var(--color-${name}-800) / <alpha-value>)`,
-    900: `hsl(var(--color-${name}-900) / <alpha-value>)`,
-    950: `hsl(var(--color-${name}-950) / <alpha-value>)`,
-    1000: `hsl(var(--color-${name}-1000) / <alpha-value>)`,
-  };
-}

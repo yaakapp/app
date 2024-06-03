@@ -8,7 +8,7 @@ export function useCommandPalette() {
   const appInfo = useAppInfo();
   useHotKey('command_palette.toggle', () => {
     // Disabled in production for now
-    if (!appInfo.data?.isDev) {
+    if (!appInfo?.isDev) {
       return;
     }
 

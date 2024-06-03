@@ -9,6 +9,7 @@ import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -40,7 +41,6 @@ import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 
 interface Props {
   className?: string;
@@ -133,27 +133,31 @@ export function Sidebar({ className }: Props) {
       ) {
         selectedRequest = node.item;
       }
-
       const childItems = [...requests, ...folders].filter((f) =>
         node.item.model === 'workspace' ? f.folderId == null : f.folderId === node.item.id,
       );
 
-      childItems.sort((a, b) => a.sortPriority - b.sortPriority);
+      // Recurse to children
+      const isCollapsed = collapsed.value?.[node.item.id];
       const depth = node.depth + 1;
+      childItems.sort((a, b) => a.sortPriority - b.sortPriority);
       for (const item of childItems) {
         treeParentMap[item.id] = node;
+        // Add to children
         node.children.push(next({ item, children: [], depth }));
-        if (item.model !== 'folder') {
+        // Add to selectable requests
+        if (item.model !== 'folder' && !isCollapsed) {
           selectableRequests.push({ id: item.id, index: selectableRequestIndex++, tree: node });
         }
       }
+
       return node;
     };
 
     const tree = next({ item: activeWorkspace, children: [], depth: 0 });
 
     return { tree, treeParentMap, selectableRequests, selectedRequest };
-  }, [activeWorkspace, selectedId, requests, folders]);
+  }, [activeWorkspace, selectedId, requests, folders, collapsed.value]);
 
   const deleteSelectedRequest = useDeleteRequest(selectedRequest);
 
@@ -455,6 +459,7 @@ export function Sidebar({ className }: Props) {
       />
       <SidebarItems
         treeParentMap={treeParentMap}
+        activeId={activeRequest?.id ?? null}
         selectedId={selectedId}
         selectedTree={selectedTree}
         isCollapsed={isCollapsed}
@@ -476,6 +481,7 @@ interface SidebarItemsProps {
   tree: TreeNode;
   focused: boolean;
   draggingId: string | null;
+  activeId: string | null;
   selectedId: string | null;
   selectedTree: TreeNode | null;
   treeParentMap: Record<string, TreeNode>;
@@ -491,6 +497,7 @@ interface SidebarItemsProps {
 function SidebarItems({
   tree,
   focused,
+  activeId,
   selectedId,
   selectedTree,
   draggingId,
@@ -510,60 +517,68 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-highlight',
+        tree.depth > 0 && 'border-l border-background-highlight-secondary',
         tree.depth === 0 && 'ml-0',
-        tree.depth >= 1 && 'ml-[1.2em]',
+        tree.depth >= 1 && 'ml-[1.2rem]',
       )}
     >
-      {tree.children.map((child, i) => (
-        <Fragment key={child.item.id}>
-          {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
-          <DraggableSidebarItem
-            draggable
-            selected={selectedId === child.item.id}
-            itemId={child.item.id}
-            itemName={child.item.name}
-            itemFallbackName={
-              child.item.model === 'http_request' || child.item.model === 'grpc_request'
-                ? fallbackRequestName(child.item)
-                : 'New Folder'
-            }
-            itemModel={child.item.model}
-            itemPrefix={
-              (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
-                <HttpMethodTag request={child.item} />
-              )
-            }
-            onMove={handleMove}
-            onEnd={handleEnd}
-            onSelect={onSelect}
-            onDragStart={handleDragStart}
-            useProminentStyles={focused}
-            isCollapsed={isCollapsed}
-            child={child}
-          >
-            {child.item.model === 'folder' &&
-              !isCollapsed(child.item.id) &&
-              draggingId !== child.item.id && (
-                <SidebarItems
-                  treeParentMap={treeParentMap}
-                  tree={child}
-                  isCollapsed={isCollapsed}
-                  draggingId={draggingId}
-                  hoveredTree={hoveredTree}
-                  hoveredIndex={hoveredIndex}
-                  focused={focused}
-                  selectedId={selectedId}
-                  selectedTree={selectedTree}
-                  onSelect={onSelect}
-                  handleMove={handleMove}
-                  handleEnd={handleEnd}
-                  handleDragStart={handleDragStart}
-                />
-              )}
-          </DraggableSidebarItem>
-        </Fragment>
-      ))}
+      {tree.children.map((child, i) => {
+        const selected = selectedId === child.item.id;
+        const active = activeId === child.item.id;
+        return (
+          <Fragment key={child.item.id}>
+            {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
+            <DraggableSidebarItem
+              draggable
+              selected={selected}
+              itemId={child.item.id}
+              itemName={child.item.name}
+              itemFallbackName={
+                child.item.model === 'http_request' || child.item.model === 'grpc_request'
+                  ? fallbackRequestName(child.item)
+                  : 'New Folder'
+              }
+              itemModel={child.item.model}
+              itemPrefix={
+                (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
+                  <HttpMethodTag
+                    request={child.item}
+                    className={classNames(!(active || selected) && 'text-fg-subtler')}
+                  />
+                )
+              }
+              onMove={handleMove}
+              onEnd={handleEnd}
+              onSelect={onSelect}
+              onDragStart={handleDragStart}
+              useProminentStyles={focused}
+              isCollapsed={isCollapsed}
+              child={child}
+            >
+              {child.item.model === 'folder' &&
+                !isCollapsed(child.item.id) &&
+                draggingId !== child.item.id && (
+                  <SidebarItems
+                    treeParentMap={treeParentMap}
+                    tree={child}
+                    isCollapsed={isCollapsed}
+                    draggingId={draggingId}
+                    hoveredTree={hoveredTree}
+                    hoveredIndex={hoveredIndex}
+                    focused={focused}
+                    activeId={activeId}
+                    selectedId={selectedId}
+                    selectedTree={selectedTree}
+                    onSelect={onSelect}
+                    handleMove={handleMove}
+                    handleEnd={handleEnd}
+                    handleDragStart={handleDragStart}
+                  />
+                )}
+            </DraggableSidebarItem>
+          </Fragment>
+        );
+      })}
       {hoveredIndex === tree.children.length && hoveredTree?.item.id === tree.item.id && (
         <DropMarker />
       )}
@@ -608,7 +623,7 @@ const SidebarItem = forwardRef(function SidebarItem(
   const deleteRequest = useDeleteRequest(activeRequest ?? null);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
-  const [, copyAsCurl] = useCopyAsCurl(itemId);
+  const copyAsCurl = useCopyAsCurl(itemId);
   const sendRequest = useSendRequest(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestHttpResponse = useLatestHttpResponse(itemId);
@@ -753,11 +768,14 @@ const SidebarItem = forwardRef(function SidebarItem(
                       const name = await prompt({
                         id: 'rename-request',
                         title: 'Rename Request',
-                        description: (
-                          <>
-                            Enter a new name for <InlineCode>{itemName}</InlineCode>
-                          </>
-                        ),
+                        description:
+                          itemName === '' ? (
+                            'Enter a new name'
+                          ) : (
+                            <>
+                              Enter a new name for <InlineCode>{itemName}</InlineCode>
+                            </>
+                          ),
                         name: 'name',
                         label: 'Name',
                         placeholder: 'New Name',
@@ -802,12 +820,12 @@ const SidebarItem = forwardRef(function SidebarItem(
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-1.5 items-center text-sm h-xs px-1.5 rounded-md transition-colors',
+            'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-highlightSecondary text-gray-800',
+            isActive && 'bg-background-highlight-secondary text-fg',
             !isActive &&
-              'text-gray-600 group-hover/item:text-gray-800 active:bg-highlightSecondary',
-            selected && useProminentStyles && '!bg-violet-400/20',
+              'text-fg-subtle group-hover/item:text-fg active:bg-background-highlight-secondary',
+            selected && useProminentStyles && '!bg-background-active',
           )}
         >
           {itemModel === 'folder' && (
@@ -815,7 +833,8 @@ const SidebarItem = forwardRef(function SidebarItem(
               size="sm"
               icon="chevronRight"
               className={classNames(
-                'transition-transform opacity-50',
+                'text-fg-subtler',
+                'transition-transform',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
             />
@@ -837,15 +856,15 @@ const SidebarItem = forwardRef(function SidebarItem(
           {latestGrpcConnection ? (
             <div className="ml-auto">
               {latestGrpcConnection.elapsed === 0 && (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="update" className="text-fg-subtler" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="update" className="text-gray-400" />
+                <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
               ) : (
-                <StatusTag className="text-2xs dark:opacity-80" response={latestHttpResponse} />
+                <StatusTag className="text-xs" response={latestHttpResponse} />
               )}
             </div>
           ) : null}

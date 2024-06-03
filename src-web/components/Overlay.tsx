@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import FocusTrap from 'focus-trap-react';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import React from 'react';
 import { Portal } from './Portal';
 
 interface Props {
@@ -43,10 +44,16 @@ export function Overlay({
               onClick={onClose}
               className={classNames(
                 'absolute inset-0',
-                variant === 'default' && 'bg-gray-600/30 dark:bg-black/30 backdrop-blur-sm',
+                variant === 'default' && 'bg-background-backdrop backdrop-blur-sm',
               )}
             />
-            <div className="bg-red-100">{children}</div>
+            {children}
+
+            {/* Show draggable region at the top */}
+            {/* TODO: Figure out tauri drag region and also make clickable still */}
+            {variant === 'default' && (
+              <div data-tauri-drag-region className="absolute top-0 left-0 h-md right-0" />
+            )}
           </motion.div>
         </FocusTrap>
       )}

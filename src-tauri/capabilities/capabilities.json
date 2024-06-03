@@ -39,6 +39,7 @@
         }
       ]
     },
+    "webview:allow-set-webview-zoom",
     "window:allow-close",
     "window:allow-is-fullscreen",
     "window:allow-maximize",
@@ -48,6 +49,7 @@
     "window:allow-set-title",
     "window:allow-start-dragging",
     "window:allow-unmaximize",
+    "window:allow-theme",
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text"
   ]

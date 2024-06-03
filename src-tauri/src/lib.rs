@@ -6,71 +6,76 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 use std::time::Duration;
 
-use ::http::Uri;
 use ::http::uri::InvalidUri;
+use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use window_ext::TrafficLightWindowExt;
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
-use crate::http::send_http_request;
+use crate::http_request::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, generate_model_id,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
-    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse,
-    KeyValue, list_cookie_jars, list_environments, list_folders, list_grpc_connections,
-    list_grpc_events, list_grpc_requests, list_http_requests, list_responses, list_workspaces,
-    ModelType, set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar,
-    upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
-    Workspace, WorkspaceExportResources,
+    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
+    list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
+    list_http_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+    WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
-use crate::plugin::{ImportResult, run_plugin_export_curl, run_plugin_import};
+use crate::plugin::{run_plugin_export_curl, run_plugin_import, ImportResult};
 use crate::render::render_request;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 
 mod analytics;
 mod grpc;
-mod http;
+mod http_request;
 mod models;
 mod notifications;
 mod plugin;
 mod render;
+#[cfg(target_os = "macos")]
+mod tauri_plugin_mac_window;
+#[cfg(target_os = "windows")]
+mod tauri_plugin_windows_window;
 mod updates;
-mod window_ext;
 mod window_menu;
+
+const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
+const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
 
 async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
     let pool = &*db.lock().await;
@@ -747,16 +752,16 @@ async fn cmd_import_data(
 ) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec![
-        "importer-yaak",
-        "importer-insomnia",
         "importer-postman",
+        "importer-insomnia",
+        "importer-yaak",
         "importer-curl",
     ];
-    let file = fs::read_to_string(file_path)
+    let file = read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     for plugin_name in plugins {
-        let v = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_contents)
+        let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)
             .await
             .map_err(|e| e.to_string())?;
         if let Some(r) = v {
@@ -1291,6 +1296,15 @@ async fn cmd_update_folder(folder: Folder, w: WebviewWindow) -> Result<Folder, S
 }
 
 #[tauri::command]
+async fn cmd_write_file_dev(pathname: &str, contents: &str) -> Result<(), String> {
+    if !is_dev() {
+        panic!("Cannot write arbitrary files when not in dev mode");
+    }
+
+    fs::write(pathname, contents).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_delete_folder(w: WebviewWindow, folder_id: &str) -> Result<Folder, String> {
     delete_folder(&w, folder_id)
         .await
@@ -1491,8 +1505,19 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_new_window(window: WebviewWindow, url: &str) -> Result<(), String> {
-    create_window(&window.app_handle(), Some(url));
+async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
+    create_window(&app_handle, url);
+    Ok(())
+}
+
+#[tauri::command]
+async fn cmd_new_nested_window(
+    window: WebviewWindow,
+    url: &str,
+    label: &str,
+    title: &str,
+) -> Result<(), String> {
+    create_nested_window(&window, label, url, title);
     Ok(())
 }
 
@@ -1519,14 +1544,31 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_fs::init());
+
+    #[cfg(target_os = "windows")]
+    {
+        builder = builder.plugin(tauri_plugin_windows_window::init());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.plugin(tauri_plugin_mac_window::init());
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder; // Don't complain about not being mut
+    }
+
+    builder
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([
@@ -1652,6 +1694,7 @@ pub fn run() {
             cmd_list_http_responses,
             cmd_list_workspaces,
             cmd_metadata,
+            cmd_new_nested_window,
             cmd_new_window,
             cmd_request_to_curl,
             cmd_dismiss_notification,
@@ -1667,13 +1710,20 @@ pub fn run() {
             cmd_update_http_request,
             cmd_update_settings,
             cmd_update_workspace,
+            cmd_write_file_dev,
         ])
+        .register_uri_scheme_protocol("yaak", |_app, _req| {
+            debug!("Testing yaak protocol");
+            tauri::http::Response::builder()
+                .body("Success".as_bytes().to_vec())
+                .unwrap()
+        })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    create_window(app_handle, None);
+                    create_window(app_handle, "/");
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&h).await;
@@ -1719,36 +1769,30 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
-    let menu = app_menu(handle).unwrap();
-
-    // This causes the window to not be clickable (in AppImage), so disable on Linux
-    #[cfg(not(target_os = "linux"))]
-    handle.set_menu(menu).expect("Failed to set app menu");
-
-    let window_num = handle.webview_windows().len();
-    let window_id = format!("wnd_{}", window_num);
+fn create_nested_window(
+    window: &WebviewWindow,
+    label: &str,
+    url: &str,
+    title: &str,
+) -> WebviewWindow {
+    info!("Create new nested window label={label}");
     let mut win_builder = tauri::WebviewWindowBuilder::new(
-        handle,
-        window_id,
-        WebviewUrl::App(url.unwrap_or_default().into()),
+        window,
+        format!("nested_{}_{}", window.label(), label),
+        WebviewUrl::App(url.into()),
     )
     .resizable(true)
     .fullscreen(false)
     .disable_drag_drop_handler() // Required for frontend Dnd on windows
-    .inner_size(1100.0, 600.0)
-    .position(
-        // Randomly offset so windows don't stack exactly
-        100.0 + random::<f64>() * 30.0,
-        100.0 + random::<f64>() * 30.0,
-    )
-    .title(handle.package_info().name.to_string());
+    .title(title)
+    .parent(&window)
+    .unwrap()
+    .inner_size(DEFAULT_WINDOW_WIDTH * 0.7, DEFAULT_WINDOW_HEIGHT * 0.9);
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
     {
         win_builder = win_builder
-            // .menu(app_menu)
             .hidden_title(true)
             .title_bar_style(TitleBarStyle::Overlay);
     }
@@ -1756,17 +1800,56 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
     // Add non-MacOS things
     #[cfg(not(target_os = "macos"))]
     {
-        // Doesn't seem to work from Rust, here, so we do it in JS
         win_builder = win_builder.decorations(false);
     }
 
     let win = win_builder.build().expect("failed to build window");
 
-    // Tauri doesn't support shadows when hiding decorations, so we add our own
-    // #[cfg(any(windows, target_os = "macos"))]
-    // set_shadow(&win, true).unwrap();
+    win
+}
 
-    let win2 = win.clone();
+fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+    #[allow(unused_variables)]
+    let menu = app_menu(handle).unwrap();
+
+    // This causes the window to not be clickable (in AppImage), so disable on Linux
+    #[cfg(not(target_os = "linux"))]
+    handle.set_menu(menu).expect("Failed to set app menu");
+
+    let window_num = handle.webview_windows().len();
+    let label = format!("main_{}", window_num);
+    info!("Create new window label={label}");
+    let mut win_builder =
+        tauri::WebviewWindowBuilder::new(handle, label, WebviewUrl::App(url.into()))
+            .resizable(true)
+            .fullscreen(false)
+            .disable_drag_drop_handler() // Required for frontend Dnd on windows
+            .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
+            .position(
+                // Randomly offset so windows don't stack exactly
+                100.0 + random::<f64>() * 30.0,
+                100.0 + random::<f64>() * 30.0,
+            )
+            .title(handle.package_info().name.to_string());
+
+    // Add macOS-only things
+    #[cfg(target_os = "macos")]
+    {
+        win_builder = win_builder
+            .hidden_title(true)
+            .title_bar_style(TitleBarStyle::Overlay);
+    }
+
+    // Add non-MacOS things
+    #[cfg(not(target_os = "macos"))]
+    {
+        // Doesn't seem to work from Rust, here, so we do it in main.tsx
+        win_builder = win_builder.decorations(false);
+    }
+
+    let win = win_builder.build().expect("failed to build window");
+
+    let webview_window = win.clone();
     win.on_menu_event(move |w, event| {
         if !w.is_focused().unwrap() {
             return;
@@ -1775,48 +1858,39 @@ fn create_window(handle: &AppHandle, url: Option<&str>) -> WebviewWindow {
         match event.id().0.as_str() {
             "quit" => exit(0),
             "close" => w.close().unwrap(),
-            "zoom_reset" => w.emit("zoom", 0).unwrap(),
-            "zoom_in" => w.emit("zoom", 1).unwrap(),
-            "zoom_out" => w.emit("zoom", -1).unwrap(),
+            "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
+            "zoom_in" => w.emit("zoom_in", true).unwrap(),
+            "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
-            "duplicate_request" => w.emit("duplicate_request", true).unwrap(),
-            "refresh" => win2.eval("location.reload()").unwrap(),
             "open_feedback" => {
-                _ = win2
+                _ = webview_window
                     .app_handle()
                     .shell()
                     .open("https://yaak.canny.io", None)
             }
-            "toggle_devtools" => {
-                if win2.is_devtools_open() {
-                    win2.close_devtools();
+
+            // Commands for development
+            "dev.reset_size" => webview_window
+                .set_size(LogicalSize::new(
+                    DEFAULT_WINDOW_WIDTH,
+                    DEFAULT_WINDOW_HEIGHT,
+                ))
+                .unwrap(),
+            "dev.refresh" => webview_window.eval("location.reload()").unwrap(),
+            "dev.generate_theme_css" => {
+                w.emit("generate_theme_css", true).unwrap();
+            }
+            "dev.toggle_devtools" => {
+                if webview_window.is_devtools_open() {
+                    webview_window.close_devtools();
                 } else {
-                    win2.open_devtools();
+                    webview_window.open_devtools();
                 }
             }
             _ => {}
         }
     });
 
-    let win3 = win.clone();
-    win.on_window_event(move |e| {
-        let apply_offset = || {
-            win3.position_traffic_lights();
-        };
-
-        match e {
-            WindowEvent::Resized(..) => apply_offset(),
-            WindowEvent::ThemeChanged(..) => apply_offset(),
-            WindowEvent::Focused(..) => apply_offset(),
-            WindowEvent::ScaleFactorChanged { .. } => apply_offset(),
-            WindowEvent::CloseRequested { .. } => {
-                // api.prevent_close();
-            }
-            _ => {}
-        }
-    });
-
-    win.position_traffic_lights();
     win
 }
 

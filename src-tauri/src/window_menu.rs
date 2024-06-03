@@ -126,11 +126,15 @@ pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
                 "Develop",
                 true,
                 &[
-                    &MenuItemBuilder::with_id("refresh".to_string(), "Refresh")
+                    &MenuItemBuilder::with_id("dev.refresh".to_string(), "Refresh")
                         .accelerator("CmdOrCtrl+Shift+r")
                         .build(app_handle)?,
-                    &MenuItemBuilder::with_id("toggle_devtools".to_string(), "Open Devtools")
+                    &MenuItemBuilder::with_id("dev.toggle_devtools".to_string(), "Open Devtools")
                         .accelerator("CmdOrCtrl+Option+i")
+                        .build(app_handle)?,
+                    &MenuItemBuilder::with_id("dev.reset_size".to_string(), "Reset Size")
+                        .build(app_handle)?,
+                    &MenuItemBuilder::with_id("dev.generate_theme_css".to_string(), "Generate Theme CSS")
                         .build(app_handle)?,
                 ],
             )?,

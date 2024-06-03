@@ -6,7 +6,7 @@
   html,
   body,
   #root {
-    @apply w-full h-full overflow-hidden text-gray-900 bg-gray-50;
+    @apply w-full h-full overflow-hidden text-fg bg-background;
   }
 
   * {
@@ -38,7 +38,7 @@
   .hide-scrollbars {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-      display: none !important;
+      display: NONE !important;
     }
   }
 
@@ -58,7 +58,7 @@
     &:hover {
       &.scrollbar-thumb,
       &::-webkit-scrollbar-thumb {
-        @apply bg-gray-500/30 hover:bg-gray-500/50 rounded-full;
+        @apply bg-background-highlight-secondary hover:bg-fg-subtler rounded-full;
       }
     }
   }
@@ -70,7 +70,7 @@
   iframe {
     &::-webkit-scrollbar-corner,
     &::-webkit-scrollbar {
-      @apply bg-gray-100;
+      @apply bg-background-highlight-secondary !important;
     }
   }
 
@@ -79,15 +79,5 @@
     --transition-duration: 100ms ease-in-out;
     --color-white: 255 100% 100%;
     --color-black: 255 0% 0%;
-  }
-
-  select {
-    @apply appearance-none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
-    -webkit-print-color-adjust: exact;
   }
 }

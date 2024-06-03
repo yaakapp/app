@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import React from 'react';
 import { useKey } from 'react-use';
-import { IconButton } from './IconButton';
 import type { IconProps } from './Icon';
 import { Icon } from './Icon';
+import { IconButton } from './IconButton';
 
 export interface ToastProps {
   children: ReactNode;
@@ -52,14 +52,15 @@ export function Toast({
       transition={{ duration: 0.2 }}
       className={classNames(
         className,
+        'x-theme-toast',
         'pointer-events-auto',
-        'relative bg-gray-50 dark:bg-gray-100 pointer-events-auto',
+        'relative bg-background pointer-events-auto',
         'rounded-lg',
-        'border border-highlightSecondary dark:border-highlight shadow-xl',
+        'border border-background-highlight shadow-lg',
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
-        'text-gray-700',
+        'text-fg',
       )}
     >
       <div className="px-3 py-2 flex items-center gap-2">
@@ -67,10 +68,10 @@ export function Toast({
           <Icon
             icon={ICONS[variant]}
             className={classNames(
-              variant === 'success' && 'text-green-500',
-              variant === 'warning' && 'text-orange-500',
-              variant === 'error' && 'text-red-500',
-              variant === 'copied' && 'text-violet-500',
+              variant === 'success' && 'text-fg-success',
+              variant === 'warning' && 'text-fg-warning',
+              variant === 'error' && 'text-fg-danger',
+              variant === 'copied' && 'text-fg-primary',
             )}
           />
         )}
@@ -82,7 +83,7 @@ export function Toast({
 
       <IconButton
         color="custom"
-        className="opacity-50"
+        className="opacity-60"
         title="Dismiss"
         icon="x"
         onClick={onClose}
@@ -91,7 +92,7 @@ export function Toast({
       {timeout != null && (
         <div className="w-full absolute bottom-0 left-0 right-0">
           <motion.div
-            className="bg-highlight h-0.5"
+            className="bg-background-highlight h-0.5"
             initial={{ width: '100%' }}
             animate={{ width: '0%', opacity: 0.2 }}
             transition={{ duration: timeout / 1000, ease: 'linear' }}

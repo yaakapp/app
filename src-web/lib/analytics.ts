@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 export type TrackResource =
+  | 'appearance'
   | 'app'
   | 'cookie_jar'
   | 'dialog'
@@ -14,7 +15,7 @@ export type TrackResource =
   | 'key_value'
   | 'setting'
   | 'sidebar'
-  | 'toast'
+  | 'theme'
   | 'workspace';
 
 export type TrackAction =

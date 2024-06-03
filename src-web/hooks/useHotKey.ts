@@ -20,7 +20,10 @@ export type HotkeyAction =
   | 'sidebar.focus'
   | 'sidebar.toggle'
   | 'urlBar.focus'
-  | 'command_palette.toggle';
+  | 'command_palette.toggle'
+  | 'app.zoom_in'
+  | 'app.zoom_out'
+  | 'app.zoom_reset';
 
 const hotkeys: Record<HotkeyAction, string[]> = {
   'environmentEditor.toggle': ['CmdCtrl+Shift+e'],
@@ -37,6 +40,9 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'sidebar.toggle': ['CmdCtrl+b'],
   'urlBar.focus': ['CmdCtrl+l'],
   'command_palette.toggle': ['CmdCtrl+k'],
+  'app.zoom_in': ['CmdCtrl+='],
+  'app.zoom_out': ['CmdCtrl+-'],
+  'app.zoom_reset': ['CmdCtrl+0'],
 };
 
 const hotkeyLabels: Record<HotkeyAction, string> = {
@@ -54,6 +60,9 @@ const hotkeyLabels: Record<HotkeyAction, string> = {
   'sidebar.toggle': 'Toggle Sidebar',
   'urlBar.focus': 'Focus URL',
   'command_palette.toggle': 'Toggle Command Palette',
+  'app.zoom_in': 'Zoom In',
+  'app.zoom_out': 'Zoom Out',
+  'app.zoom_reset': 'Zoom to Actual Size',
 };
 
 export const hotkeyActions: HotkeyAction[] = Object.keys(hotkeys) as (keyof typeof hotkeys)[];
@@ -114,6 +123,7 @@ export function useHotKey(
             e.preventDefault();
             e.stopPropagation();
             callbackRef.current(e);
+            currentKeys.current.clear();
           }
         }
       }

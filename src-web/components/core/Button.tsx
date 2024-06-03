@@ -7,10 +7,19 @@ import { Icon } from './Icon';
 
 export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
   innerClassName?: string;
-  color?: 'custom' | 'default' | 'gray' | 'primary' | 'secondary' | 'warning' | 'danger';
+  color?:
+    | 'custom'
+    | 'default'
+    | 'secondary'
+    | 'primary'
+    | 'info'
+    | 'success'
+    | 'notice'
+    | 'warning'
+    | 'danger';
   variant?: 'border' | 'solid';
   isLoading?: boolean;
-  size?: 'xs' | 'sm' | 'md';
+  size?: '2xs' | 'xs' | 'sm' | 'md';
   justify?: 'start' | 'center';
   type?: 'button' | 'submit';
   forDropdown?: boolean;
@@ -48,57 +57,44 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
   const classes = classNames(
     className,
+    'x-theme-button',
+    `x-theme-button--${variant}`,
+    `x-theme-button--${variant}--${color}`,
+    'text-fg',
+    'border', // They all have borders to ensure the same width
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects
     'whitespace-nowrap outline-none',
     'flex-shrink-0 flex items-center',
-    'focus-visible-or-class:ring rounded-md',
+    'focus-visible-or-class:ring',
     disabled ? 'pointer-events-none opacity-disabled' : 'pointer-events-auto',
     justify === 'start' && 'justify-start',
     justify === 'center' && 'justify-center',
-    size === 'md' && 'h-md px-3',
-    size === 'sm' && 'h-sm px-2.5 text-sm',
-    size === 'xs' && 'h-xs px-2 text-sm',
+    size === 'md' && 'h-md px-3 rounded-md',
+    size === 'sm' && 'h-sm px-2.5 rounded-md',
+    size === 'xs' && 'h-xs px-2 text-sm rounded-md',
+    size === '2xs' && 'h-5 px-1 text-xs rounded',
+
     // Solids
+    variant === 'solid' && 'border-transparent',
     variant === 'solid' && color === 'custom' && 'ring-blue-400',
     variant === 'solid' &&
+      color !== 'custom' &&
+      color !== 'default' &&
+      'bg-background enabled:hocus:bg-background-highlight ring-background-highlight-secondary',
+    variant === 'solid' &&
       color === 'default' &&
-      'text-gray-700 enabled:hocus:bg-gray-700/10 enabled:hocus:text-gray-800 ring-blue-400',
-    variant === 'solid' &&
-      color === 'gray' &&
-      'text-gray-800 bg-gray-200/70 enabled:hocus:bg-gray-200 ring-blue-400',
-    variant === 'solid' &&
-      color === 'primary' &&
-      'bg-blue-400 text-white ring-blue-700 enabled:hocus:bg-blue-500',
-    variant === 'solid' &&
-      color === 'secondary' &&
-      'bg-violet-400 text-white ring-violet-700 enabled:hocus:bg-violet-500',
-    variant === 'solid' &&
-      color === 'warning' &&
-      'bg-orange-400 text-white ring-orange-700 enabled:hocus:bg-orange-500',
-    variant === 'solid' &&
-      color === 'danger' &&
-      'bg-red-400 text-white ring-red-700 enabled:hocus:bg-red-500',
+      'enabled:hocus:bg-background-highlight ring-fg-info',
+
     // Borders
     variant === 'border' && 'border',
     variant === 'border' &&
+      color !== 'custom' &&
+      color !== 'default' &&
+      'border-fg-subtler text-fg-subtle enabled:hocus:border-fg-subtle enabled:hocus:bg-background-highlight enabled:hocus:text-fg ring-fg-subtler',
+    variant === 'border' &&
       color === 'default' &&
-      'border-highlight text-gray-700 enabled:hocus:border-focus enabled:hocus:text-gray-800 ring-blue-500/50',
-    variant === 'border' &&
-      color === 'gray' &&
-      'border-gray-500/70 text-gray-700 enabled:hocus:bg-gray-500/20 enabled:hocus:text-gray-800 ring-blue-500/50',
-    variant === 'border' &&
-      color === 'primary' &&
-      'border-blue-500/70 text-blue-700 enabled:hocus:border-blue-500 ring-blue-500/50',
-    variant === 'border' &&
-      color === 'secondary' &&
-      'border-violet-500/70 text-violet-700 enabled:hocus:border-violet-500 ring-violet-500/50',
-    variant === 'border' &&
-      color === 'warning' &&
-      'border-orange-500/70 text-orange-700 enabled:hocus:border-orange-500 ring-orange-500/50',
-    variant === 'border' &&
-      color === 'danger' &&
-      'border-red-500/70 text-red-700 enabled:hocus:border-red-500 ring-red-500/50',
+      'border-background-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-background-highlight-secondary',
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -124,7 +120,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {isLoading ? (
         <Icon icon="refresh" size={size} className="animate-spin mr-1" />
       ) : leftSlot ? (
-        <div className="mr-1">{leftSlot}</div>
+        <div className="mr-2">{leftSlot}</div>
       ) : null}
       <div
         className={classNames(

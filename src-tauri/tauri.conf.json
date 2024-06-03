@@ -6,7 +6,7 @@
     "frontendDist": "../dist"
   },
   "productName": "Yaak",
-  "version": "2024.4.2",
+  "version": "2024.5.0",
   "identifier": "app.yaak.desktop",
   "app": {
     "withGlobalTauri": false,
@@ -22,6 +22,14 @@
     }
   },
   "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": [
+          "yaak"
+        ]
+      }
+    },
     "updater": {
       "endpoints": [
         "https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"
@@ -42,13 +50,13 @@
       "icons/release/icon.icns",
       "icons/release/icon.ico"
     ],
-    "longDescription": "The best cross-platform visual API client",
+    "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
     "resources": [
       "migrations/*",
       "plugins/*",
       "protoc-vendored/include/*"
     ],
-    "shortDescription": "The best API client",
+    "shortDescription": "Desktop API client",
     "targets": [
       "deb",
       "appimage",
@@ -57,6 +65,9 @@
       "dmg",
       "updater"
     ],
+    "iOS": {
+      "developmentTeam": "7PU3P6ELJ8"
+    },
     "macOS": {
       "exceptionDomain": "",
       "entitlements": "macos/entitlements.plist",

@@ -41,7 +41,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           : null,
         isExpandable: Object.keys(attrValue).length > 0,
         label: isExpanded ? `{${Object.keys(attrValue).length || ' '}}` : `{⋯}`,
-        labelClassName: 'text-gray-600',
+        labelClassName: 'text-fg-subtler',
       };
     } else if (jsonType === '[object Array]') {
       return {
@@ -59,7 +59,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           : null,
         isExpandable: attrValue.length > 0,
         label: isExpanded ? `[${attrValue.length || ' '}]` : `[⋯]`,
-        labelClassName: 'text-gray-600',
+        labelClassName: 'text-subtler',
       };
     } else {
       return {
@@ -67,22 +67,20 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
         isExpandable: false,
         label: jsonType === '[object String]' ? `"${attrValue}"` : `${attrValue}`,
         labelClassName: classNames(
-          jsonType === '[object Boolean]' && 'text-pink-600',
-          jsonType === '[object Number]' && 'text-blue-600',
-          jsonType === '[object String]' && 'text-yellow-600',
-          jsonType === '[object Null]' && 'text-red-600',
+          jsonType === '[object Boolean]' && 'text-fg-primary',
+          jsonType === '[object Number]' && 'text-fg-info',
+          jsonType === '[object String]' && 'text-fg-notice',
+          jsonType === '[object Null]' && 'text-fg-danger',
         ),
       };
     }
   }, [attrValue, attrKeyJsonPath, isExpanded, depth]);
 
   const labelEl = (
-    <span className={classNames(labelClassName, 'select-text group-hover:text-gray-800')}>
-      {label}
-    </span>
+    <span className={classNames(labelClassName, 'select-text group-hover:text-fg')}>{label}</span>
   );
   return (
-    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-2xs')}>
+    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-xs')}>
       <div className="flex items-center">
         {isExpandable ? (
           <button className="group relative flex items-center pl-4 w-full" onClick={toggleExpanded}>
@@ -91,18 +89,18 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
               icon="chevronRight"
               className={classNames(
                 'left-0 absolute transition-transform flex items-center',
-                'text-gray-600 group-hover:text-gray-900',
+                'text-fg-subtler group-hover:text-fg-subtle',
                 isExpanded ? 'rotate-90' : '',
               )}
             />
-            <span className="text-violet-600 group-hover:text-violet-700 mr-1.5 whitespace-nowrap">
+            <span className="text-fg-primary group-hover:text-fg-primary mr-1.5 whitespace-nowrap">
               {attrKey === undefined ? '$' : attrKey}:
             </span>
             {labelEl}
           </button>
         ) : (
           <>
-            <span className="text-violet-600 mr-1.5 pl-4 whitespace-nowrap select-text">
+            <span className="text-fg-primary mr-1.5 pl-4 whitespace-nowrap select-text">
               {attrKey}:
             </span>
             {labelEl}

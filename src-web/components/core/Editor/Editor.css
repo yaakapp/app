@@ -5,7 +5,9 @@
     @apply w-full block text-base;
 
     .cm-cursor {
-      @apply border-gray-800 !important;
+      @apply border-fg !important;
+      /* Widen the cursor */
+      @apply border-l-[2px];
     }
 
     &.cm-focused {
@@ -17,7 +19,7 @@
     }
 
     .cm-line {
-      @apply text-gray-800 pl-1 pr-1.5;
+      @apply text-fg pl-1 pr-1.5;
     }
 
     .cm-placeholder {
@@ -47,27 +49,21 @@
     /* Style gutters */
 
     .cm-gutters {
-      @apply border-0 text-gray-500/50;
+      @apply border-0 text-fg-subtler bg-transparent;
 
       .cm-gutterElement {
         @apply cursor-default;
       }
     }
 
-    .placeholder-widget {
-      @apply text-xs text-violet-700 dark:text-violet-700 px-1 mx-[0.5px] rounded cursor-default dark:shadow;
+    .placeholder {
+      /* Colors */
+      @apply bg-background text-fg-subtle border-background-highlight-secondary;
+      @apply hover:border-background-highlight hover:text-fg hover:bg-background-highlight-secondary;
 
-      /* NOTE: Background and border are translucent so we can see text selection through it */
-      @apply bg-violet-500/20 border border-violet-500/20 border-opacity-40;
-
-      /* Bring above on hover */
-      @apply hover:z-10 relative;
+      @apply border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 
       -webkit-text-security: none;
-
-      &.placeholder-widget-error {
-        @apply text-red-700 dark:text-red-800 bg-red-300/30 border-red-300/80 border-opacity-40 hover:border-red-300 hover:bg-red-300/40;
-      }
     }
 
     .hyperlink-widget {
@@ -108,8 +104,7 @@
     }
 
     .cm-scroller {
-      @apply font-mono text-[0.75rem];
-
+      @apply font-mono text-editor;
       /*
                                * Round corners or they'll stick out of the editor bounds of editor is rounded.
                                * Could potentially be pushed up from the editor like we do with bg color but this
@@ -137,7 +132,7 @@
 
 .cm-editor .fold-gutter-icon::after {
   @apply block w-1.5 h-1.5 border-transparent -rotate-45
-    border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
+  border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
 }
 
 .cm-editor .fold-gutter-icon[data-open] {
@@ -149,12 +144,12 @@
 }
 
 .cm-editor .fold-gutter-icon:hover {
-  @apply text-gray-900 bg-gray-300/50;
+  @apply text-fg bg-background-highlight;
 }
 
 .cm-editor .cm-foldPlaceholder {
-  @apply px-2 border border-gray-400/50 bg-gray-300/50;
-  @apply hover:text-gray-800 hover:border-gray-400;
+  @apply px-2 border border-fg-subtler bg-background-highlight;
+  @apply hover:text-fg hover:border-fg-subtle text-fg;
   @apply cursor-default !important;
 }
 
@@ -164,11 +159,13 @@
 
 .cm-wrapper:not(.cm-readonly) .cm-editor {
   &.cm-focused .cm-activeLineGutter {
-    @apply text-gray-600;
+    @apply text-fg-subtle;
   }
+}
 
+.cm-wrapper.cm-readonly .cm-editor {
   .cm-cursor {
-    @apply border-l-2 border-gray-800;
+    @apply border-fg-danger !important;
   }
 }
 
@@ -187,18 +184,18 @@
 }
 
 .cm-tooltip.cm-tooltip-hover {
-  @apply shadow-lg bg-gray-100 rounded text-gray-700 border border-gray-500 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-fg-subtler z-50 pointer-events-auto text-sm;
   @apply px-2 py-1;
 
   a {
-    @apply text-gray-800;
+    @apply text-fg;
 
     &:hover {
       @apply underline;
     }
 
     &::after {
-      @apply text-gray-800 bg-gray-800 h-3 w-3 ml-1;
+      @apply text-fg bg-fg-secondary h-3 w-3 ml-1;
       content: '';
       -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
       -webkit-mask-size: contain;
@@ -210,7 +207,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-gray-100 rounded text-gray-700 border border-gray-300 z-50 pointer-events-auto text-xs;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-sm;
 
   .cm-completionIcon {
     @apply italic font-mono;
@@ -269,7 +266,7 @@
   }
 
   &.cm-completionInfo-right {
-    @apply ml-1 -mt-0.5 text-sm;
+    @apply ml-1 -mt-0.5 font-sans;
   }
 
   &.cm-completionInfo-right-narrow {
@@ -281,24 +278,26 @@
   }
 
   &.cm-tooltip-autocomplete {
+    @apply font-mono;
+
     & > ul {
       @apply p-1 max-h-[40vh];
     }
 
     & > ul > li {
-      @apply cursor-default px-2 rounded-sm text-gray-600 h-7 flex items-center;
+      @apply cursor-default px-2 py-1.5 rounded-sm text-fg-subtle flex items-center;
     }
 
     & > ul > li[aria-selected] {
-      @apply bg-highlight text-gray-900;
+      @apply bg-background-highlight-secondary text-fg;
     }
 
     .cm-completionIcon {
-      @apply text-xs flex items-center pb-0.5 flex-shrink-0;
+      @apply text-sm flex items-center pb-0.5 flex-shrink-0;
     }
 
     .cm-completionLabel {
-      @apply text-gray-700;
+      @apply text-fg-subtle;
     }
 
     .cm-completionDetail {
@@ -308,7 +307,7 @@
 }
 
 .cm-editor .cm-panels {
-  @apply bg-gray-100 backdrop-blur-sm p-1 mb-1 text-gray-800 z-20 rounded-md;
+  @apply bg-background-highlight-secondary backdrop-blur-sm p-1 mb-1 text-fg z-20 rounded-md;
 
   input,
   button {
@@ -316,19 +315,21 @@
   }
 
   button {
-    @apply appearance-none bg-none bg-gray-200 hocus:bg-gray-300 hocus:text-gray-950 border-0 text-gray-800 cursor-default;
+    @apply border-fg-subtler bg-background-highlight text-fg hover:border-fg-info;
+    @apply appearance-none bg-none cursor-default;
   }
 
   button[name='close'] {
-    @apply text-gray-600 hocus:text-gray-900 px-2 -mr-1.5 !important;
+    @apply text-fg-subtle hocus:text-fg px-2 -mr-1.5 !important;
   }
 
   input {
-    @apply bg-gray-50 border border-gray-500/50 focus:border-focus outline-none;
+    @apply bg-background border-background-highlight focus:border-border-focus;
+    @apply border outline-none cursor-text;
   }
 
   label {
-    @apply focus-within:text-gray-950;
+    @apply focus-within:text-fg;
   }
 
   /* Hide the "All" button */

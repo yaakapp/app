@@ -23,14 +23,14 @@ import React, {
 import { useKey, useWindowSize } from 'react-use';
 import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useHotKey } from '../../hooks/useHotKey';
+import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import { getNodeText } from '../../lib/getNodeText';
 import { Overlay } from '../Overlay';
 import { Button } from './Button';
 import { HotKey } from './HotKey';
+import { Icon } from './Icon';
 import { Separator } from './Separator';
 import { HStack, VStack } from './Stacks';
-import { Icon } from './Icon';
-import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 
 export type DropdownItemSeparator = {
   type: 'separator';
@@ -59,6 +59,7 @@ export interface DropdownProps {
   items: DropdownItem[];
   onOpen?: () => void;
   onClose?: () => void;
+  fullWidth?: boolean;
   hotKeyAction?: HotkeyAction;
 }
 
@@ -73,7 +74,7 @@ export interface DropdownRef {
 }
 
 export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown(
-  { children, items, onOpen, onClose, hotKeyAction }: DropdownProps,
+  { children, items, onOpen, onClose, hotKeyAction, fullWidth }: DropdownProps,
   ref,
 ) {
   const [isOpen, _setIsOpen] = useState<boolean>(false);
@@ -153,6 +154,7 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
       <Menu
         ref={menuRef}
         showTriangle
+        fullWidth={fullWidth}
         defaultSelectedIndex={defaultSelectedIndex}
         items={items}
         triggerShape={triggerRect ?? null}
@@ -203,6 +205,7 @@ interface MenuProps {
   triggerShape: Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'> | null;
   onClose: () => void;
   showTriangle?: boolean;
+  fullWidth?: boolean;
   isOpen: boolean;
 }
 
@@ -211,6 +214,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     className,
     isOpen,
     items,
+    fullWidth,
     onClose,
     triggerShape,
     defaultSelectedIndex,
@@ -224,7 +228,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   );
   const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
   const [filter, setFilter] = useState<string>('');
-  const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   // Calculate the max height so we can scroll
   const initMenu = useCallback((el: HTMLDivElement | null) => {
@@ -349,11 +352,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
   );
 
-  const initContainerRef = (n: HTMLDivElement | null) => {
-    if (n == null) return null;
-    setContainerWidth(n.offsetWidth);
-  };
-
   const { containerStyles, triangleStyles } = useMemo<{
     containerStyles: CSSProperties;
     triangleStyles: CSSProperties | null;
@@ -365,22 +363,23 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const heightAbove = triggerShape.top;
     const heightBelow = docRect.height - triggerShape.bottom;
     const hSpaceRemaining = docRect.width - triggerShape.left;
-    const top = triggerShape?.bottom + 5;
+    const top = triggerShape.bottom + 5;
     const onRight = hSpaceRemaining < 200;
     const upsideDown = heightAbove > heightBelow && heightBelow < 200;
+    const triggerWidth = triggerShape.right - triggerShape.left;
     const containerStyles = {
       top: !upsideDown ? top : undefined,
       bottom: upsideDown ? docRect.height - top : undefined,
-      right: onRight ? docRect.width - triggerShape?.right : undefined,
-      left: !onRight ? triggerShape?.left : undefined,
-      width: containerWidth ?? 'auto',
+      right: onRight ? docRect.width - triggerShape.right : undefined,
+      left: !onRight ? triggerShape.left : undefined,
+      minWidth: fullWidth ? triggerWidth : undefined,
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
       ? { right: width / 2, marginRight: '-0.2rem', ...size }
       : { left: width / 2, marginLeft: '-0.2rem', ...size };
     return { containerStyles, triangleStyles };
-  }, [triggerShape, containerWidth]);
+  }, [fullWidth, triggerShape]);
 
   const filteredItems = useMemo(
     () => items.filter((i) => getNodeText(i.label).toLowerCase().includes(filter.toLowerCase())),
@@ -413,7 +412,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       )}
       {isOpen && (
         <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
-          <div>
+          <div className="x-theme-menu">
             <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
               tabIndex={0}
@@ -423,7 +422,6 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
               role="menu"
               aria-orientation="vertical"
               dir="ltr"
-              ref={initContainerRef}
               style={containerStyles}
               className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
             >
@@ -431,7 +429,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-gray-50 absolute rotate-45 border-gray-200 border-t border-l"
+                  className="bg-background absolute rotate-45 border-background-highlight-secondary border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -440,22 +438,21 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   style={menuStyles}
                   className={classNames(
                     className,
-                    'h-auto bg-gray-50 rounded-md shadow-lg dark:shadow-gray-0 py-1.5 border',
-                    'border-gray-200 overflow-auto mb-1 mx-0.5',
+                    'h-auto bg-background rounded-md shadow-lg py-1.5 border',
+                    'border-background-highlight-secondary overflow-auto mb-1 mx-0.5',
                   )}
                 >
                   {filter && (
                     <HStack
                       space={2}
-                      alignItems="center"
-                      className="pb-0.5 px-1.5 mb-2 text-xs border border-highlight mx-2 rounded font-mono h-2xs"
+                      className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-xs"
                     >
-                      <Icon icon="search" size="xs" className="text-gray-700" />
-                      <div className="text-gray-800">{filter}</div>
+                      <Icon icon="search" size="xs" className="text-fg-subtle" />
+                      <div className="text-fg">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
-                    <span className="text-gray-500 text-sm text-center px-2 py-1">No matches</span>
+                    <span className="text-fg-subtler text-center px-2 py-1">No matches</span>
                   )}
                   {filteredItems.map((item, i) => {
                     if (item.type === 'separator') {
@@ -529,17 +526,21 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onFocus={handleFocus}
       onClick={handleClick}
       justify="start"
-      leftSlot={item.leftSlot && <div className="pr-2 flex justify-start">{item.leftSlot}</div>}
+      leftSlot={
+        item.leftSlot && <div className="pr-2 flex justify-start opacity-70">{item.leftSlot}</div>
+      }
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
+      innerClassName="!text-left"
+      color="custom"
       className={classNames(
         className,
         'h-xs', // More compact
-        'min-w-[8rem] outline-none px-2 mx-1.5 flex text-sm text-gray-700 whitespace-nowrap',
-        'focus:bg-highlight focus:text-gray-800 rounded',
-        item.variant === 'danger' && 'text-red-600',
-        item.variant === 'notify' && 'text-pink-600',
+        'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
+        'focus:bg-background-highlight focus:text-fg rounded',
+        item.variant === 'default' && 'text-fg-subtle',
+        item.variant === 'danger' && 'text-fg-danger',
+        item.variant === 'notify' && 'text-fg-primary',
       )}
-      innerClassName="!text-left"
       {...props}
     >
       <div

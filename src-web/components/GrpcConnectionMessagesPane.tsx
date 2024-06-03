@@ -2,9 +2,11 @@ import classNames from 'classnames';
 import { format } from 'date-fns';
 import type { CSSProperties } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
+import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
+import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import type { GrpcEvent, GrpcRequest } from '../lib/models';
+import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
@@ -13,8 +15,6 @@ import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentConnectionsDropdown } from './RecentConnectionsDropdown';
-import { Button } from './core/Button';
-import { useStateWithDeps } from '../hooks/useStateWithDeps';
 
 interface Props {
   style?: CSSProperties;
@@ -31,11 +31,11 @@ interface Props {
 
 export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }: Props) {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const connections = useGrpcConnections(activeRequest.id ?? null);
-  const activeConnection = connections[0] ?? null;
-  const events = useGrpcEvents(activeConnection?.id ?? null);
   const [showLarge, setShowLarge] = useStateWithDeps<boolean>(false, [activeRequest.id]);
   const [showingLarge, setShowingLarge] = useState<boolean>(false);
+  const { activeConnection, connections, setPinnedConnectionId } =
+    usePinnedGrpcConnection(activeRequest);
+  const events = useGrpcEvents(activeConnection?.id ?? null);
 
   const activeEvent = useMemo(
     () => events.find((m) => m.id === activeEventId) ?? null,
@@ -61,19 +61,17 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
       firstSlot={() =>
         activeConnection && (
           <div className="w-full grid grid-rows-[auto_minmax(0,1fr)] items-center">
-            <HStack className="pl-3 mb-1 font-mono" alignItems="center">
-              <HStack alignItems="center" space={2}>
+            <HStack className="pl-3 mb-1 font-mono">
+              <HStack space={2}>
                 <span>{events.length} messages</span>
                 {activeConnection.elapsed === 0 && (
-                  <Icon icon="refresh" size="sm" spin className="text-gray-600" />
+                  <Icon icon="refresh" size="sm" spin className="text-fg-subtler" />
                 )}
               </HStack>
               <RecentConnectionsDropdown
                 connections={connections}
                 activeConnection={activeConnection}
-                onPinned={() => {
-                  // todo
-                }}
+                onPinnedConnectionId={setPinnedConnectionId}
               />
             </HStack>
             <div className="overflow-y-auto h-full">
@@ -107,7 +105,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                     Message {activeEvent.eventType === 'client_message' ? 'Sent' : 'Received'}
                   </div>
                   {!showLarge && activeEvent.content.length > 1000 * 1000 ? (
-                    <VStack space={2} className="text-sm italic text-gray-500">
+                    <VStack space={2} className="italic text-fg-subtler">
                       Message previews larger than 1MB are hidden
                       <div>
                         <Button
@@ -119,7 +117,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                             }, 500);
                           }}
                           isLoading={showingLarge}
-                          color="gray"
+                          color="secondary"
                           variant="border"
                           size="xs"
                         >
@@ -138,7 +136,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                       {activeEvent.content}
                     </div>
                     {activeEvent.error && (
-                      <div className="select-text cursor-text text-xs font-mono py-1 text-orange-700">
+                      <div className="select-text cursor-text text-sm font-mono py-1 text-fg-warning">
                         {activeEvent.error}
                       </div>
                     )}
@@ -183,21 +181,21 @@ function EventRow({
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
           'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-highlight text-gray-900',
-          'text-gray-800 hover:text-gray-900',
+          isActive && '!bg-background-highlight-secondary !text-fg',
+          'text-fg-subtle hover:text-fg',
         )}
       >
         <Icon
           className={
             eventType === 'server_message'
-              ? 'text-blue-600'
+              ? 'text-fg-info'
               : eventType === 'client_message'
-              ? 'text-violet-600'
+              ? 'text-fg-primary'
               : eventType === 'error' || (status != null && status > 0)
-              ? 'text-orange-600'
+              ? 'text-fg-danger'
               : eventType === 'connection_end'
-              ? 'text-green-600'
-              : 'text-gray-700'
+              ? 'text-fg-success'
+              : 'text-fg-subtle'
           }
           title={
             eventType === 'server_message'
@@ -222,11 +220,11 @@ function EventRow({
               : 'info'
           }
         />
-        <div className={classNames('w-full truncate text-2xs')}>
+        <div className={classNames('w-full truncate text-xs')}>
           {content.slice(0, 1000)}
-          {error && <span className="text-orange-600"> ({error})</span>}
+          {error && <span className="text-fg-warning"> ({error})</span>}
         </div>
-        <div className={classNames('opacity-50 text-2xs')}>
+        <div className={classNames('opacity-50 text-xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}
         </div>
       </button>

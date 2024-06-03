@@ -135,7 +135,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-sm text-gray-900 whitespace-nowrap',
+          'text-fg-subtle whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
@@ -145,10 +145,11 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         alignItems="stretch"
         className={classNames(
           containerClassName,
-          'relative w-full rounded-md text-gray-900',
+          'x-theme-input',
+          'relative w-full rounded-md text-fg',
           'border',
-          focused ? 'border-focus' : 'border-highlight',
-          !isValid && '!border-invalid',
+          focused ? 'border-border-focus' : 'border-background-highlight',
+          !isValid && '!border-fg-danger',
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',
           size === 'xs' && 'min-h-xs',
@@ -156,7 +157,6 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
       >
         {leftSlot}
         <HStack
-          alignItems="center"
           className={classNames(
             'w-full min-w-0',
             leftSlot && 'pl-0.5 -ml-2',
@@ -186,7 +186,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
             size="xs"
             className="mr-0.5 group/obscure !h-auto my-0.5"
-            iconClassName="text-gray-500 group-hover/obscure:text-gray-800"
+            iconClassName="text-fg-subtle group-hover/obscure:text-fg"
             iconSize="sm"
             icon={obscured ? 'eye' : 'eyeClosed'}
             onClick={() => setObscured((o) => !o)}

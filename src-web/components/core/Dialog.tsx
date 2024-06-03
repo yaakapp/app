@@ -50,7 +50,7 @@ export function Dialog({
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="x-theme-dialog absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
           role="dialog"
           aria-labelledby={titleId}
@@ -63,9 +63,9 @@ export function Dialog({
             className={classNames(
               className,
               'grid grid-rows-[auto_auto_minmax(0,1fr)]',
-              'relative bg-gray-50 pointer-events-auto',
+              'relative bg-background pointer-events-auto',
               'rounded-lg',
-              'dark:border border-highlight shadow shadow-black/10',
+              'border border-background-highlight-secondary shadow-lg shadow-[rgba(0,0,0,0.1)]',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
               size === 'sm' && 'w-[25rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
@@ -83,7 +83,7 @@ export function Dialog({
             )}
 
             {description ? (
-              <p className="px-6 text-gray-700" id={descriptionId}>
+              <p className="px-6 text-fg-subtle" id={descriptionId}>
                 {description}
               </p>
             ) : (
@@ -94,7 +94,7 @@ export function Dialog({
               className={classNames(
                 'h-full w-full grid grid-cols-[minmax(0,1fr)]',
                 !noPadding && 'px-6 py-2',
-                !noScroll && 'overflow-y-auto',
+                !noScroll && 'overflow-y-auto overflow-x-hidden',
               )}
             >
               {children}

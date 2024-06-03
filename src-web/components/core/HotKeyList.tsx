@@ -11,7 +11,7 @@ interface Props {
 
 export const HotKeyList = ({ hotkeys, bottomSlot }: Props) => {
   return (
-    <div className="h-full flex items-center justify-center text-gray-700 text-sm">
+    <div className="h-full flex items-center justify-center">
       <VStack space={2}>
         {hotkeys.map((hotkey) => (
           <HStack key={hotkey} className="grid grid-cols-2">

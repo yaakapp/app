@@ -11,12 +11,17 @@ import { HStack } from './core/Stacks';
 interface Props {
   connections: GrpcConnection[];
   activeConnection: GrpcConnection;
-  onPinned: (r: GrpcConnection) => void;
+  onPinnedConnectionId: (id: string) => void;
 }
 
-export function RecentConnectionsDropdown({ activeConnection, connections, onPinned }: Props) {
+export function RecentConnectionsDropdown({
+  activeConnection,
+  connections,
+  onPinnedConnectionId,
+}: Props) {
   const deleteConnection = useDeleteGrpcConnection(activeConnection?.id ?? null);
   const deleteAllConnections = useDeleteGrpcConnections(activeConnection?.requestId);
+  const latestConnectionId = connections[0]?.id ?? 'n/a';
 
   return (
     <Dropdown
@@ -38,19 +43,19 @@ export function RecentConnectionsDropdown({ activeConnection, connections, onPin
         ...connections.slice(0, 20).map((c) => ({
           key: c.id,
           label: (
-            <HStack space={2} alignItems="center">
+            <HStack space={2}>
               {formatDistanceToNowStrict(c.createdAt + 'Z')} ago &bull;{' '}
-              <span className="font-mono text-xs">{c.elapsed}ms</span>
+              <span className="font-mono text-sm">{c.elapsed}ms</span>
             </HStack>
           ),
           leftSlot: activeConnection?.id === c.id ? <Icon icon="check" /> : <Icon icon="empty" />,
-          onSelect: () => onPinned(c),
+          onSelect: () => onPinnedConnectionId(c.id),
         })),
       ]}
     >
       <IconButton
         title="Show connection history"
-        icon="chevronDown"
+        icon={activeConnection?.id === latestConnectionId ? 'chevronDown' : 'pin'}
         className="ml-auto"
         size="sm"
         iconSize="md"

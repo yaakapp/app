@@ -34,7 +34,13 @@ export interface Settings extends BaseModel {
   readonly model: 'settings';
   theme: string;
   appearance: string;
+  themeLight: string;
+  themeDark: string;
   updateChannel: string;
+  interfaceFontSize: number;
+  interfaceScale: number;
+  editorFontSize: number;
+  editorSoftWrap: boolean;
 }
 
 export interface Workspace extends BaseModel {

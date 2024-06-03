@@ -1,6 +1,9 @@
+import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { useRef } from 'react';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppInfo } from '../hooks/useAppInfo';
+import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
@@ -11,7 +14,6 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { useDialog } from './DialogContext';
 import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
-import { SettingsDialog } from './SettingsDialog';
 
 export function SettingsDropdown() {
   const importData = useImportData();
@@ -20,13 +22,15 @@ export function SettingsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
   const checkForUpdates = useCheckForUpdates();
+  const routes = useAppRoutes();
+  const workspaceId = useActiveWorkspaceId();
 
-  const showSettings = () => {
-    dialog.show({
-      id: 'settings',
-      size: 'md',
-      title: 'Settings',
-      render: () => <SettingsDialog />,
+  const showSettings = async () => {
+    if (!workspaceId) return;
+    await invoke('cmd_new_nested_window', {
+      url: routes.paths.workspaceSettings({ workspaceId }),
+      label: 'settings',
+      title: 'Yaak Settings',
     });
   };
 
@@ -52,7 +56,7 @@ export function SettingsDropdown() {
             dialog.show({
               id: 'hotkey',
               title: 'Keyboard Shortcuts',
-              size: 'sm',
+              size: 'dynamic',
               render: () => <KeyboardShortcutsDialog />,
             });
           },
@@ -69,7 +73,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="folderOutput" />,
           onSelect: () => exportData.mutate(),
         },
-        { type: 'separator', label: `Yaak v${appInfo.data?.version}` },
+        { type: 'separator', label: `Yaak v${appInfo?.version}` },
         {
           key: 'update-check',
           label: 'Check for Updates',
@@ -88,7 +92,7 @@ export function SettingsDropdown() {
           label: 'Changelog',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => open(`https://yaak.app/changelog/${appInfo.data?.version}`),
+          onSelect: () => open(`https://yaak.app/changelog/${appInfo?.version}`),
         },
       ]}
     >

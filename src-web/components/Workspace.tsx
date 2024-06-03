@@ -1,11 +1,6 @@
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
-import type {
-  CSSProperties,
-  HTMLAttributes,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-} from 'react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
@@ -13,11 +8,10 @@ import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
 import { useImportData } from '../hooks/useImportData';
-import { useIsFullscreen } from '../hooks/useIsFullscreen';
-import { useOsInfo } from '../hooks/useOsInfo';
 import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useSidebarWidth } from '../hooks/useSidebarWidth';
+import { useSyncWorkspaceRequestTitle } from '../hooks/useSyncWorkspaceRequestTitle';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
@@ -27,6 +21,7 @@ import { FeedbackLink } from './core/Link';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
 import { GrpcConnectionLayout } from './GrpcConnectionLayout';
+import { HeaderSize } from './HeaderSize';
 import { HttpRequestLayout } from './HttpRequestLayout';
 import { Overlay } from './Overlay';
 import { ResizeHandle } from './ResizeHandle';
@@ -40,6 +35,7 @@ const body = { gridArea: 'body' };
 const drag = { gridArea: 'drag' };
 
 export default function Workspace() {
+  useSyncWorkspaceRequestTitle();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = useActiveWorkspaceId();
@@ -130,7 +126,7 @@ export default function Workspace() {
         'grid w-full h-full',
         // Animate sidebar width changes but only when not resizing
         // because it's too slow to animate on mouse move
-        !isResizing && 'transition-all',
+        !isResizing && 'transition-grid',
       )}
     >
       {floating ? (
@@ -143,11 +139,12 @@ export default function Workspace() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
-              'absolute top-0 left-0 bottom-0 bg-gray-100 border-r border-highlight w-[14rem]',
+              'x-theme-sidebar',
+              'absolute top-0 left-0 bottom-0 bg-background border-r border-background-highlight w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
           >
-            <HeaderSize className="border-transparent">
+            <HeaderSize size="lg" className="border-transparent">
               <SidebarActions />
             </HeaderSize>
             <Sidebar />
@@ -155,8 +152,11 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div style={side} className={classNames('overflow-hidden bg-gray-100')}>
-            <Sidebar className="border-r border-highlight" />
+          <div
+            style={side}
+            className={classNames('x-theme-sidebar', 'overflow-hidden bg-background')}
+          >
+            <Sidebar className="border-r border-background-highlight" />
           </div>
           <ResizeHandle
             className="-translate-x-3"
@@ -168,14 +168,19 @@ export default function Workspace() {
           />
         </>
       )}
-      <HeaderSize data-tauri-drag-region style={head}>
+      <HeaderSize
+        data-tauri-drag-region
+        size="lg"
+        className="x-theme-appHeader bg-background"
+        style={head}
+      >
         <WorkspaceHeader className="pointer-events-none" />
       </HeaderSize>
       {activeWorkspace == null ? (
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
             The active workspace{' '}
-            <InlineCode className="text-orange-800">{activeWorkspaceId}</InlineCode> was not found.
+            <InlineCode className="text-fg-warning">{activeWorkspaceId}</InlineCode> was not found.
             Select a workspace from the header menu or report this bug to <FeedbackLink />
           </Banner>
         </div>
@@ -200,29 +205,6 @@ export default function Workspace() {
       ) : (
         <HttpRequestLayout activeRequest={activeRequest} style={body} />
       )}
-    </div>
-  );
-}
-
-interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
-
-function HeaderSize({ className, style, ...props }: HeaderSizeProps) {
-  const platform = useOsInfo();
-  const fullscreen = useIsFullscreen();
-  const stoplightsVisible = platform?.osType === 'macos' && !fullscreen;
-  return (
-    <div
-      style={style}
-      className={classNames(
-        className,
-        'h-md pt-[1px] w-full border-b min-w-0',
-        stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
-      )}
-    >
-      {/* NOTE: This needs display:grid or else the element shrinks (even though scrollable) */}
-      <div className="h-full w-full overflow-x-auto hide-scrollbars grid" {...props} />
     </div>
   );
 }

@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "npm run build:plugins && npm run tauri-dev:desktop",
+    "start": "npm run tauri-dev:desktop",
     "tauri-dev:desktop": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
-    "tauri-dev:ios": "tauri ios dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
+    "tauri-dev:ios": "tauri ios dev --force-ip-prompt --config ./src-tauri/tauri-dev.conf.json",
     "tauri-build": "tauri build",
     "tauri": "tauri",
     "build": "npm run build:frontend",
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.1",
-    "@codemirror/lang-javascript": "^6.1.4",
+    "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-xml": "^6.0.2",
     "@codemirror/language": "^6.6.0",
@@ -74,7 +74,7 @@
   "devDependencies": {
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tanstack/react-query-devtools": "^5.35.5",
-    "@tauri-apps/cli": ">=2.0.0-beta.0",
+    "@tauri-apps/cli": "^2.0.0-beta.15",
     "@types/node": "^18.7.10",
     "@types/papaparse": "^5.3.7",
     "@types/parse-color": "^1.0.1",
@@ -101,7 +101,7 @@
     "prettier": "^2.8.4",
     "react-devtools": "^4.27.2",
     "tailwindcss": "^3.2.7",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
     "vite": "^5.0.0",
     "vite-plugin-svgr": "^4.2.0",
     "vite-plugin-top-level-await": "^1.4.1",

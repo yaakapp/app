@@ -17,6 +17,7 @@ import {
 } from 'react';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
+import { useSettings } from '../../../hooks/useSettings';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
@@ -85,10 +86,15 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }: EditorProps,
   ref,
 ) {
+  const s = useSettings();
   const e = useActiveEnvironment();
   const w = useActiveWorkspace();
   const environment = autocompleteVariables ? e : null;
   const workspace = autocompleteVariables ? w : null;
+
+  if (s && wrapLines === undefined) {
+    wrapLines = s.editorSoftWrap;
+  }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
   useImperativeHandle(ref, () => cm.current?.view);
@@ -189,7 +195,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
             placeholderCompartment.current.of(
               placeholderExt(placeholderElFromText(placeholder ?? '')),
             ),
-            wrapLinesCompartment.current.of([]),
+            wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
             ...getExtensions({
               container,
               readOnly,
@@ -206,7 +212,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
         view = new EditorView({ state, parent: container });
         cm.current = { view, languageCompartment };
-        syncGutterBg({ parent: container, bgClassList });
         if (autoFocus) {
           view.focus();
         }
@@ -270,7 +275,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       ref={initEditorRef}
       className={classNames(
         className,
-        'cm-wrapper text-base bg-gray-50',
+        'cm-wrapper text-base',
         type === 'password' && 'cm-obscure-text',
         heightMode === 'auto' ? 'cm-auto-height' : 'cm-full-height',
         singleLine ? 'cm-singleline' : 'cm-multiline',
@@ -284,12 +289,11 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }
 
   return (
-    <div className="group relative h-full w-full">
+    <div className="group relative h-full w-full x-theme-editor bg-background">
       {cmContainer}
       {decoratedActions && (
         <HStack
           space={1}
-          alignItems="center"
           justifyContent="end"
           className={classNames(
             'absolute bottom-2 left-0 right-0',
@@ -327,7 +331,25 @@ function getExtensions({
     undefined;
 
   return [
-    // NOTE: These *must* be anonymous functions so the references update properly
+    ...baseExtensions, // Must be first
+    tooltips({ parent }),
+    keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
+    ...(singleLine ? [singleLineExt()] : []),
+    ...(!singleLine ? [multiLineExtensions] : []),
+    ...(readOnly
+      ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
+      : []),
+
+    // ------------------------ //
+    // Things that must be last //
+    // ------------------------ //
+
+    EditorView.updateListener.of((update) => {
+      if (onChange && update.docChanged) {
+        onChange.current?.(update.state.doc.toString());
+      }
+    }),
+
     EditorView.domEventHandlers({
       focus: () => {
         onFocus.current?.();
@@ -342,37 +364,8 @@ function getExtensions({
         onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
       },
     }),
-    tooltips({ parent }),
-    keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
-    ...(singleLine ? [singleLineExt()] : []),
-    ...(!singleLine ? [multiLineExtensions] : []),
-    ...(readOnly
-      ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
-      : []),
-
-    // Handle onChange
-    EditorView.updateListener.of((update) => {
-      if (onChange && update.docChanged) {
-        onChange.current?.(update.state.doc.toString());
-      }
-    }),
-
-    ...baseExtensions,
   ];
 }
-
-const syncGutterBg = ({
-  parent,
-  bgClassList,
-}: {
-  parent: HTMLDivElement;
-  bgClassList: string[];
-}) => {
-  const gutterEl = parent.querySelector<HTMLDivElement>('.cm-gutters');
-  if (gutterEl) {
-    gutterEl?.classList.add(...bgClassList);
-  }
-};
 
 const placeholderElFromText = (text: string) => {
   const el = document.createElement('div');

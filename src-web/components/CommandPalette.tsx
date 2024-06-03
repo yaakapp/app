@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
-import { useMemo, useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
@@ -117,8 +117,8 @@ function CommandPaletteItem({
     <button
       onClick={onClick}
       className={classNames(
-        'w-full h-xs flex items-center rounded px-1.5 text-gray-600',
-        active && 'bg-highlightSecondary text-gray-800',
+        'w-full h-xs flex items-center rounded px-1.5 text-fg-subtle',
+        active && 'bg-background-highlight-secondary text-fg',
       )}
     >
       {children}

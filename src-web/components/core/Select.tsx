@@ -1,15 +1,24 @@
 import classNames from 'classnames';
+import type { CSSProperties, ReactNode } from 'react';
+import { useState } from 'react';
+import { useOsInfo } from '../../hooks/useOsInfo';
+import type { ButtonProps } from './Button';
+import { Button } from './Button';
+import type { RadioDropdownItem } from './RadioDropdown';
+import { RadioDropdown } from './RadioDropdown';
+import { HStack } from './Stacks';
 
-interface Props<T extends string> {
+export interface SelectProps<T extends string> {
   name: string;
   label: string;
   labelPosition?: 'top' | 'left';
   labelClassName?: string;
   hideLabel?: boolean;
   value: T;
-  options: { label: string; value: T }[];
+  leftSlot?: ReactNode;
+  options: RadioDropdownItem<T>[];
   onChange: (value: T) => void;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ButtonProps['size'];
   className?: string;
 }
 
@@ -21,18 +30,22 @@ export function Select<T extends string>({
   label,
   value,
   options,
+  leftSlot,
   onChange,
   className,
   size = 'md',
-}: Props<T>) {
+}: SelectProps<T>) {
+  const osInfo = useOsInfo();
+  const [focused, setFocused] = useState<boolean>(false);
   const id = `input-${name}`;
   return (
     <div
       className={classNames(
         className,
+        'x-theme-input',
         'w-full',
         'pointer-events-auto', // Just in case we're placing in disabled parent
-        labelPosition === 'left' && 'flex items-center gap-2',
+        labelPosition === 'left' && 'grid grid-cols-[auto_1fr] items-center gap-2',
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
@@ -40,38 +53,69 @@ export function Select<T extends string>({
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-sm text-gray-900 whitespace-nowrap',
+          'text-fg-subtle whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
         {label}
       </label>
-      <select
-        value={value}
-        style={selectBackgroundStyles}
-        onChange={(e) => onChange(e.target.value as T)}
-        className={classNames(
-          'font-mono text-xs border w-full outline-none bg-transparent pl-2 pr-7',
-          'border-highlight focus:border-focus',
-          size === 'xs' && 'h-xs',
-          size === 'sm' && 'h-sm',
-          size === 'md' && 'h-md',
-          size === 'lg' && 'h-lg',
-        )}
-      >
-        {options.map(({ label, value }) => (
-          <option key={label} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
+      {osInfo?.osType === 'macos' ? (
+        <HStack
+          space={2}
+          className={classNames(
+            'w-full rounded-md text-fg text-sm font-mono',
+            'pl-2',
+            'border',
+            focused ? 'border-border-focus' : 'border-background-highlight',
+            size === 'xs' && 'h-xs',
+            size === 'sm' && 'h-sm',
+            size === 'md' && 'h-md',
+          )}
+        >
+          {leftSlot && <div>{leftSlot}</div>}
+          <select
+            value={value}
+            style={selectBackgroundStyles}
+            onChange={(e) => onChange(e.target.value as T)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className={classNames('pr-7 w-full outline-none bg-transparent')}
+          >
+            {options.map((o) => {
+              if (o.type === 'separator') return null;
+              return (
+                <option key={o.label} value={o.value}>
+                  {o.label}
+                </option>
+              );
+            })}
+          </select>
+        </HStack>
+      ) : (
+        // Use custom "select" component until Tauri can be configured to have select menus not always appear in
+        // light mode
+        <RadioDropdown value={value} onChange={onChange} items={options}>
+          <Button
+            className="w-full text-sm font-mono"
+            justify="start"
+            variant="border"
+            size={size}
+            leftSlot={leftSlot}
+            forDropdown
+          >
+            {options.find((o) => o.type !== 'separator' && o.value === value)?.label ?? '--'}
+          </Button>
+        </RadioDropdown>
+      )}
     </div>
   );
 }
 
-const selectBackgroundStyles = {
+const selectBackgroundStyles: CSSProperties = {
   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
   backgroundPosition: 'right 0.3rem center',
   backgroundRepeat: 'no-repeat',
   backgroundSize: '1.5em 1.5em',
+  appearance: 'none',
+  printColorAdjust: 'exact',
 };

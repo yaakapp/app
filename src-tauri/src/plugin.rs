@@ -1,16 +1,16 @@
 use std::rc::Rc;
 
-use boa_engine::{
-    Context, js_string, JsNativeError, JsValue, Module, module::SimpleModuleLoader,
-    property::Attribute, Source,
-};
 use boa_engine::builtins::promise::PromiseState;
+use boa_engine::{
+    js_string, module::SimpleModuleLoader, property::Attribute, Context, JsNativeError, JsValue,
+    Module, Source,
+};
 use boa_runtime::Console;
 use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 
 use crate::models::{HttpRequest, WorkspaceExportResources};
 

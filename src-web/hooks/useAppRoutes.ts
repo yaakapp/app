@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
-import { useActiveRequestId } from './useActiveRequestId';
-import type { Environment } from '../lib/models';
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { Environment } from '../lib/models';
+import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
+import { useActiveRequestId } from './useActiveRequestId';
+import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export type RouteParamsWorkspace = {
   workspaceId: string;
@@ -17,6 +17,9 @@ export type RouteParamsRequest = RouteParamsWorkspace & {
 export const routePaths = {
   workspaces() {
     return '/workspaces';
+  },
+  workspaceSettings({ workspaceId } = { workspaceId: ':workspaceId' } as RouteParamsWorkspace) {
+    return `/workspaces/${workspaceId}/settings`;
   },
   workspace(
     { workspaceId, environmentId } = {

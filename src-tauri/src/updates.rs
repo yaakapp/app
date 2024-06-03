@@ -19,6 +19,7 @@ pub struct YaakUpdater {
 pub enum UpdateMode {
     Stable,
     Beta,
+    Alpha,
 }
 
 impl Display for UpdateMode {
@@ -26,6 +27,7 @@ impl Display for UpdateMode {
         let s = match self {
             UpdateMode::Stable => "stable",
             UpdateMode::Beta => "beta",
+            UpdateMode::Alpha => "alpha",
         };
         write!(f, "{}", s)
     }
@@ -35,6 +37,7 @@ impl UpdateMode {
     pub fn new(mode: &str) -> UpdateMode {
         match mode {
             "beta" => UpdateMode::Beta,
+            "alpha" => UpdateMode::Alpha,
             _ => UpdateMode::Stable,
         }
     }
@@ -53,13 +56,8 @@ impl YaakUpdater {
     ) -> Result<bool, tauri_plugin_updater::Error> {
         self.last_update_check = SystemTime::now();
 
-        let enabled = !is_dev();
-        info!("Checking for updates mode={} enabled={}", mode, enabled);
+        info!("Checking for updates mode={}", mode);
 
-        if !enabled {
-            return Ok(false);
-        }
-        
         let update_check_result = app_handle
             .updater_builder()
             .header("X-Update-Mode", mode.to_string())?
@@ -67,8 +65,7 @@ impl YaakUpdater {
             .check()
             .await;
 
-        match update_check_result
-        {
+        match update_check_result {
             Ok(Some(update)) => {
                 let h = app_handle.clone();
                 app_handle
@@ -118,6 +115,11 @@ impl YaakUpdater {
         let ignore_check =
             self.last_update_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
         if ignore_check {
+            return Ok(false);
+        }
+
+        // Don't check if dev
+        if is_dev() {
             return Ok(false);
         }
 

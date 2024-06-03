@@ -45,11 +45,11 @@ export function BinaryFileEditor({
 
   return (
     <VStack space={2}>
-      <HStack space={2} alignItems="center">
-        <Button variant="border" color="gray" size="sm" onClick={handleClick}>
+      <HStack space={2}>
+        <Button variant="border" color="secondary" size="sm" onClick={handleClick}>
           Choose File
         </Button>
-        <div className="text-xs font-mono truncate rtl pr-3 text-gray-800">
+        <div className="text-sm font-mono truncate rtl pr-3 text-fg">
           {/* Special character to insert ltr text in rtl element without making things wonky */}
           &#x200E;
           {filePath ?? 'Select File'}
@@ -57,21 +57,21 @@ export function BinaryFileEditor({
       </HStack>
       {filePath != null && mimeType !== contentType && !ignoreContentType.value && (
         <Banner className="mt-3 !py-5">
-          <div className="text-sm mb-4 text-center">
+          <div className="mb-4 text-center">
             <div>Set Content-Type header</div>
             <InlineCode>{mimeType}</InlineCode> for current request?
           </div>
           <HStack space={1.5} justifyContent="center">
+            <Button size="sm" variant="border" onClick={() => ignoreContentType.set(true)}>
+              Ignore
+            </Button>
             <Button
               variant="solid"
-              color="gray"
-              size="xs"
+              color="primary"
+              size="sm"
               onClick={() => onChangeContentType(mimeType)}
             >
               Set Header
-            </Button>
-            <Button size="xs" variant="border" onClick={() => ignoreContentType.set(true)}>
-              Ignore
             </Button>
           </HStack>
         </Banner>

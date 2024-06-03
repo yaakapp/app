@@ -40,7 +40,6 @@ export function GrpcProtoSelection({ requestId }: Props) {
       <HStack space={2} justifyContent="start" className="flex-row-reverse">
         <Button
           color="primary"
-          size="sm"
           onClick={async () => {
             const selected = await open({
               title: 'Select Proto Files',
@@ -60,8 +59,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
         <Button
           isLoading={grpc.reflect.isFetching}
           disabled={grpc.reflect.isFetching}
-          color="gray"
-          size="sm"
+          color="secondary"
           onClick={() => grpc.reflect.refetch()}
         >
           Refresh Schema
@@ -103,25 +101,24 @@ export function GrpcProtoSelection({ requestId }: Props) {
         )}
 
         {protoFiles.length > 0 && (
-          <table className="w-full divide-y">
+          <table className="w-full divide-y divide-background-highlight">
             <thead>
               <tr>
-                <th className="text-gray-600">
-                  <span className="font-mono text-sm">*.proto</span> Files
+                <th className="text-fg-subtler">
+                  <span className="font-mono">*.proto</span> Files
                 </th>
                 <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-background-highlight">
               {protoFiles.map((f, i) => (
                 <tr key={f + i} className="group">
-                  <td className="pl-1 text-sm font-mono">{f.split('/').pop()}</td>
+                  <td className="pl-1 font-mono">{f.split('/').pop()}</td>
                   <td className="w-0 py-0.5">
                     <IconButton
                       title="Remove file"
-                      size="sm"
                       icon="trash"
-                      className="ml-auto opacity-30 transition-opacity group-hover:opacity-100"
+                      className="ml-auto opacity-50 transition-opacity group-hover:opacity-100"
                       onClick={async () => {
                         await protoFilesKv.set(protoFiles.filter((p) => p !== f));
                       }}

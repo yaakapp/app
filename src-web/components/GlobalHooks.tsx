@@ -1,32 +1,38 @@
-import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useClipboardText } from '../hooks/useClipboardText';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { environmentsQueryKey } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
 import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
 import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
+import { useHotKey } from '../hooks/useHotKey';
 import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useNotificationToast } from '../hooks/useNotificationToast';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { settingsQueryKey } from '../hooks/useSettings';
-import { useSyncAppearance } from '../hooks/useSyncAppearance';
-import { useSyncWindowTitle } from '../hooks/useSyncWindowTitle';
+import { settingsQueryKey, useSettings } from '../hooks/useSettings';
+import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
+import { useZoom } from '../hooks/useZoom';
 import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
-import { setPathname } from '../lib/persistPathname';
-import { useNotificationToast } from '../hooks/useNotificationToast';
-
-const DEFAULT_FONT_SIZE = 16;
+import { catppuccinMacchiato } from '../lib/theme/themes/catppuccin';
+import { githubLight } from '../lib/theme/themes/github';
+import { hotdogStandDefault } from '../lib/theme/themes/hotdog-stand';
+import { monokaiProDefault } from '../lib/theme/themes/monokai-pro';
+import { rosePineDefault } from '../lib/theme/themes/rose-pine';
+import { yaakDark } from '../lib/theme/themes/yaak';
+import { getThemeCSS } from '../lib/theme/window';
 
 export function GlobalHooks() {
   // Include here so they always update, even if no component references them
@@ -34,20 +40,14 @@ export function GlobalHooks() {
   useRecentEnvironments();
   useRecentRequests();
 
-  useSyncAppearance();
-  useSyncWindowTitle();
+  // Other useful things
+  useSyncThemeToDocument();
   useGlobalCommands();
   useCommandPalette();
   useNotificationToast();
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
-
-  // Listen for location changes and update the pathname
-  const location = useLocation();
-  useEffect(() => {
-    setPathname(location.pathname).catch(console.error);
-  }, [location.pathname]);
 
   interface ModelPayload {
     model: Model;
@@ -63,6 +63,8 @@ export function GlobalHooks() {
         ? httpResponsesQueryKey(model)
         : model.model === 'folder'
         ? foldersQueryKey(model)
+        : model.model === 'environment'
+        ? environmentsQueryKey(model)
         : model.model === 'grpc_connection'
         ? grpcConnectionsQueryKey(model)
         : model.model === 'grpc_event'
@@ -97,10 +99,8 @@ export function GlobalHooks() {
     queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
       const index = values.findIndex((v) => modelsEq(v, model)) ?? -1;
       if (index >= 0) {
-        // console.log('UPDATED', payload);
         return [...values.slice(0, index), model, ...values.slice(index + 1)];
       } else {
-        // console.log('CREATED', payload);
         return pushToFront ? [model, ...(values ?? [])] : [...(values ?? []), model];
       }
     });
@@ -118,6 +118,8 @@ export function GlobalHooks() {
       queryClient.setQueryData(httpResponsesQueryKey(model), removeById(model));
     } else if (model.model === 'folder') {
       queryClient.setQueryData(foldersQueryKey(model), removeById(model));
+    } else if (model.model === 'environment') {
+      queryClient.setQueryData(environmentsQueryKey(model), removeById(model));
     } else if (model.model === 'grpc_request') {
       queryClient.setQueryData(grpcRequestsQueryKey(model), removeById(model));
     } else if (model.model === 'grpc_connection') {
@@ -133,26 +135,42 @@ export function GlobalHooks() {
     }
   });
 
-  useListenToTauriEvent<number>(
-    'zoom',
-    ({ payload: zoomDelta }) => {
-      const fontSize = parseFloat(window.getComputedStyle(document.documentElement).fontSize);
+  const settings = useSettings();
+  useEffect(() => {
+    if (settings == null) {
+      return;
+    }
 
-      let newFontSize;
-      if (zoomDelta === 0) {
-        newFontSize = DEFAULT_FONT_SIZE;
-      } else if (zoomDelta > 0) {
-        newFontSize = Math.min(fontSize * 1.1, DEFAULT_FONT_SIZE * 5);
-      } else if (zoomDelta < 0) {
-        newFontSize = Math.max(fontSize * 0.9, DEFAULT_FONT_SIZE * 0.4);
-      }
+    const { interfaceScale, interfaceFontSize, editorFontSize } = settings;
+    getCurrent().setZoom(interfaceScale).catch(console.error);
+    document.documentElement.style.setProperty('font-size', `${interfaceFontSize}px`);
+    document.documentElement.style.setProperty('--editor-font-size', `${editorFontSize}px`);
+  }, [settings]);
 
-      document.documentElement.style.fontSize = `${newFontSize}px`;
-    },
-    {
-      target: { kind: 'WebviewWindow', label: getCurrent().label },
-    },
-  );
+  // Handle Zoom. Note, Mac handles it in app menu, so need to also handle keyboard
+  // shortcuts for Windows/Linux
+  const zoom = useZoom();
+  useHotKey('app.zoom_in', () => zoom.zoomIn);
+  useListenToTauriEvent('zoom_in', () => zoom.zoomIn);
+  useHotKey('app.zoom_out', () => zoom.zoomOut);
+  useListenToTauriEvent('zoom_out', () => zoom.zoomOut);
+  useHotKey('app.zoom_reset', () => zoom.zoomReset);
+  useListenToTauriEvent('zoom_reset', () => zoom.zoomReset);
+
+  const [, copy] = useClipboardText();
+  useListenToTauriEvent('generate_theme_css', () => {
+    const themesCss = [
+      yaakDark,
+      monokaiProDefault,
+      rosePineDefault,
+      catppuccinMacchiato,
+      githubLight,
+      hotdogStandDefault,
+    ]
+      .map(getThemeCSS)
+      .join('\n\n');
+    copy(themesCss);
+  });
 
   return null;
 }

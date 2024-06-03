@@ -20,6 +20,13 @@ tauri-build = { version = "2.0.0-beta", features = [] }
 objc = "0.2.7"
 cocoa = "0.25.0"
 
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.56.0", features = [
+    "Win32_Graphics_Dwm",
+    "Win32_Foundation",
+    "Win32_UI_Controls",
+] }
+
 [target.'cfg(target_os = "linux")'.dependencies]
 openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
 
@@ -34,7 +41,7 @@ reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "br
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "2.0.0-beta.19", features = ["config-toml", "devtools", "protocol-asset"] }
+tauri = { version = "2.0.0-beta.22", features = ["config-toml", "devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-dialog = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2", features = ["colored"] }
@@ -43,6 +50,7 @@ tauri-plugin-os = { git = "https://github.com/tauri-apps/plugins-workspace", bra
 tauri-plugin-updater = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tauri-plugin-fs = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
+tauri-plugin-deep-link = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v2" }
 tokio = { version = "1.36.0", features = ["sync"] }
 uuid = "1.7.0"
 log = "0.4.21"
@@ -51,3 +59,4 @@ reqwest_cookie_store = "0.6.0"
 grpc = { path = "./grpc" }
 tokio-stream = "0.1.15"
 regex = "1.10.2"
+hex_color = "3.0.0"

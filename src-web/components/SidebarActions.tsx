@@ -19,7 +19,7 @@ export function SidebarActions() {
   );
 
   return (
-    <HStack className="h-full" alignItems="center">
+    <HStack className="h-full">
       <IconButton
         onClick={async () => {
           trackEvent('sidebar', 'toggle');

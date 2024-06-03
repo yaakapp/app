@@ -1,17 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import type { Settings } from '../lib/models';
-import { settingsQueryKey } from './useSettings';
+import { useSettings } from './useSettings';
 
 export function useUpdateSettings() {
-  const queryClient = useQueryClient();
+  const settings = useSettings();
 
-  return useMutation<void, unknown, Settings>({
-    mutationFn: async (settings) => {
-      await invoke('cmd_update_settings', { settings });
-    },
-    onMutate: async (settings) => {
-      queryClient.setQueryData<Settings[]>(settingsQueryKey(), [settings]);
+  return useMutation<void, unknown, Partial<Settings>>({
+    mutationFn: async (patch) => {
+      if (settings == null) return;
+      const newSettings: Settings = { ...settings, ...patch };
+      await invoke('cmd_update_settings', { settings: newSettings });
     },
   });
 }

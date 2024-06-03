@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use log::warn;
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
@@ -19,6 +19,7 @@ const NUM_LAUNCHES_KEY: &str = "num_launches";
 #[serde(rename_all = "snake_case")]
 pub enum AnalyticsResource {
     App,
+    Appearance,
     CookieJar,
     Dialog,
     Environment,
@@ -29,9 +30,10 @@ pub enum AnalyticsResource {
     HttpRequest,
     HttpResponse,
     KeyValue,
-    Sidebar,
-    Workspace,
     Setting,
+    Sidebar,
+    Theme,
+    Workspace,
 }
 
 impl AnalyticsResource {
@@ -187,7 +189,7 @@ pub async fn track_event(
 
     // Disable analytics actual sending in dev
     if is_dev() {
-        // debug!("track: {} {} {:?}", event, attributes_json, params);
+        debug!("track: {}", event);
         return;
     }
 

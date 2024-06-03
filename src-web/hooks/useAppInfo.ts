@@ -16,5 +16,5 @@ export function useAppInfo() {
       const metadata = await invoke('cmd_metadata');
       return metadata as AppInfo;
     },
-  });
+  }).data;
 }

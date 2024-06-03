@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
-import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
+import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -20,9 +20,11 @@ import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
+import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { TextViewer } from './responseViewers/TextViewer';
+import { VideoViewer } from './responseViewers/VideoViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
 
 interface Props {
@@ -34,7 +36,7 @@ interface Props {
 const useActiveTab = createGlobalState<string>('body');
 
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
-  const { activeResponse, setPinnedResponse, responses } = usePinnedHttpResponse(activeRequest);
+  const { activeResponse, setPinnedResponseId, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
   const [activeTab, setActiveTab] = useActiveTab();
   const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
@@ -73,9 +75,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
       style={style}
       className={classNames(
         className,
+        'x-theme-responsePane',
         'max-h-full h-full',
-        'bg-gray-50 dark:bg-gray-100 rounded-md border border-highlight',
-        'shadow shadow-gray-100 dark:shadow-gray-0 relative',
+        'bg-background rounded-md border border-background-highlight',
+        'relative',
       )}
     >
       {activeResponse == null ? (
@@ -89,41 +92,41 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
       ) : (
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
-            alignItems="center"
             className={classNames(
-              'text-gray-700 text-sm w-full flex-shrink-0',
+              'text-fg-subtle w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
               '-mb-1.5',
             )}
           >
             {activeResponse && (
-              <HStack alignItems="center" className="w-full">
-                <div className="whitespace-nowrap px-3">
-                  <HStack space={2}>
-                    <StatusTag showReason response={activeResponse} />
-                    {activeResponse.elapsed > 0 && (
-                      <>
-                        <span>&bull;</span>
-                        <DurationTag
-                          headers={activeResponse.elapsedHeaders}
-                          total={activeResponse.elapsed}
-                        />
-                      </>
-                    )}
-                    {!!activeResponse.contentLength && (
-                      <>
-                        <span>&bull;</span>
-                        <SizeTag contentLength={activeResponse.contentLength} />
-                      </>
-                    )}
-                  </HStack>
-                </div>
+              <HStack
+                space={2}
+                className="whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm"
+              >
+                <StatusTag showReason response={activeResponse} />
+                {activeResponse.elapsed > 0 && (
+                  <>
+                    <span>&bull;</span>
+                    <DurationTag
+                      headers={activeResponse.elapsedHeaders}
+                      total={activeResponse.elapsed}
+                    />
+                  </>
+                )}
+                {!!activeResponse.contentLength && (
+                  <>
+                    <span>&bull;</span>
+                    <SizeTag contentLength={activeResponse.contentLength} />
+                  </>
+                )}
 
-                <RecentResponsesDropdown
-                  responses={responses}
-                  activeResponse={activeResponse}
-                  onPinnedResponse={setPinnedResponse}
-                />
+                <div className="ml-auto">
+                  <RecentResponsesDropdown
+                    responses={responses}
+                    activeResponse={activeResponse}
+                    onPinnedResponseId={setPinnedResponseId}
+                  />
+                </div>
               </HStack>
             )}
           </HStack>
@@ -138,7 +141,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               onChangeValue={setActiveTab}
               label="Response"
               tabs={tabs}
-              className="ml-3 mr-1"
+              className="ml-3 mr-3 mb-3"
               tabListClassName="mt-1.5"
             >
               <TabContent value="headers">
@@ -146,19 +149,27 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               </TabContent>
               <TabContent value="body">
                 {!activeResponse.contentLength ? (
-                  <EmptyStateText>Empty Body</EmptyStateText>
+                  <div className="pb-2 h-full">
+                    <EmptyStateText>Empty Body</EmptyStateText>
+                  </div>
                 ) : contentType?.startsWith('image') ? (
                   <ImageViewer className="pb-2" response={activeResponse} />
+                ) : contentType?.startsWith('audio') ? (
+                  <AudioViewer response={activeResponse} />
+                ) : contentType?.startsWith('video') ? (
+                  <VideoViewer response={activeResponse} />
                 ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
-                  <div className="text-sm italic text-gray-500">
-                    Cannot preview text responses larger than 2MB
-                  </div>
+                  <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>
                 ) : viewMode === 'pretty' && contentType?.includes('html') ? (
                   <WebPageViewer response={activeResponse} />
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
                 ) : (
-                  <TextViewer response={activeResponse} pretty={viewMode === 'pretty'} />
+                  <TextViewer
+                    className="-mr-2" // Pull to the right
+                    response={activeResponse}
+                    pretty={viewMode === 'pretty'}
+                  />
                 )}
               </TabContent>
             </Tabs>
