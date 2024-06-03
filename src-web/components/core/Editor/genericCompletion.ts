@@ -20,7 +20,11 @@ export interface GenericCompletionConfig {
 /**
  * Complete options, always matching until the start of the line
  */
-export function genericCompletion({ options, minMatch = 1 }: GenericCompletionConfig) {
+export function genericCompletion(config?: GenericCompletionConfig) {
+  if (config == null) return [];
+
+  const { minMatch = 1, options } = config;
+
   return function completions(context: CompletionContext) {
     const toMatch = context.matchBefore(/.*/);
 

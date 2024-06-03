@@ -39,7 +39,7 @@ import { text } from './text/extension';
 import { twig } from './twig/extension';
 import { url } from './url/extension';
 
-export const myHighlightStyle = HighlightStyle.define([
+export const syntaxHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
     color: 'var(--fg-subtler)',
@@ -61,7 +61,7 @@ export const myHighlightStyle = HighlightStyle.define([
   { tag: [t.atom, t.meta, t.operator, t.bool, t.null, t.keyword], color: 'var(--fg-danger)' },
 ]);
 
-const myTheme = EditorView.theme({}, { dark: true });
+const syntaxTheme = EditorView.theme({}, { dark: true });
 
 const syntaxExtensions: Record<string, LanguageSupport> = {
   'application/graphql': graphqlLanguageSupport(),
@@ -108,8 +108,8 @@ export const baseExtensions = [
       return (a.boost ?? 0) - (b.boost ?? 0);
     },
   }),
-  syntaxHighlighting(myHighlightStyle),
-  myTheme,
+  syntaxHighlighting(syntaxHighlightStyle),
+  syntaxTheme,
   EditorState.allowMultipleSelections.of(true),
 ];
 

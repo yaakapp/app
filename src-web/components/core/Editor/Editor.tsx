@@ -195,7 +195,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
             placeholderCompartment.current.of(
               placeholderExt(placeholderElFromText(placeholder ?? '')),
             ),
-            wrapLinesCompartment.current.of([]),
+            wrapLinesCompartment.current.of(wrapLines ? [EditorView.lineWrapping] : []),
             ...getExtensions({
               container,
               readOnly,
@@ -331,7 +331,25 @@ function getExtensions({
     undefined;
 
   return [
-    // NOTE: These *must* be anonymous functions so the references update properly
+    ...baseExtensions, // Must be first
+    tooltips({ parent }),
+    keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
+    ...(singleLine ? [singleLineExt()] : []),
+    ...(!singleLine ? [multiLineExtensions] : []),
+    ...(readOnly
+      ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
+      : []),
+
+    // ------------------------ //
+    // Things that must be last //
+    // ------------------------ //
+
+    EditorView.updateListener.of((update) => {
+      if (onChange && update.docChanged) {
+        onChange.current?.(update.state.doc.toString());
+      }
+    }),
+
     EditorView.domEventHandlers({
       focus: () => {
         onFocus.current?.();
@@ -346,22 +364,6 @@ function getExtensions({
         onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
       },
     }),
-    tooltips({ parent }),
-    keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
-    ...(singleLine ? [singleLineExt()] : []),
-    ...(!singleLine ? [multiLineExtensions] : []),
-    ...(readOnly
-      ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
-      : []),
-
-    // Handle onChange
-    EditorView.updateListener.of((update) => {
-      if (onChange && update.docChanged) {
-        onChange.current?.(update.state.doc.toString());
-      }
-    }),
-
-    ...baseExtensions,
   ];
 }
 

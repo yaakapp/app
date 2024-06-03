@@ -389,7 +389,7 @@ function PairEditorRow({
             <Button
               size="xs"
               color="secondary"
-              className="font-mono text-sm"
+              className="font-mono text-2xs rtl"
               onClick={async (e) => {
                 e.preventDefault();
                 const selected = await open({
@@ -403,7 +403,9 @@ function PairEditorRow({
                 handleChangeValueFile(selected.path);
               }}
             >
-              {getFileName(pairContainer.pair.value) || 'Select File'}
+              {/* Special character to insert ltr text in rtl element without making things wonky */}
+              &#x200E;
+              {pairContainer.pair.value || 'Select File'}
             </Button>
           ) : (
             <Input
@@ -493,10 +495,4 @@ const newPairContainer = (initialPair?: Pair): PairContainer => {
   const id = initialPair?.id ?? uuid();
   const pair = initialPair ?? { name: '', value: '', enabled: true, isFile: false };
   return { id, pair };
-};
-
-const getFileName = (path: string | null | undefined): string => {
-  if (typeof path !== 'string') return '';
-  const parts = path.split(/[\\/]/);
-  return parts[parts.length - 1] ?? '';
 };

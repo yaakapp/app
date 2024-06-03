@@ -266,7 +266,7 @@
   }
 
   &.cm-completionInfo-right {
-    @apply ml-1 -mt-0.5;
+    @apply ml-1 -mt-0.5 font-sans;
   }
 
   &.cm-completionInfo-right-narrow {
@@ -278,7 +278,7 @@
   }
 
   &.cm-tooltip-autocomplete {
-    @apply font-mono text-editor;
+    @apply font-mono;
 
     & > ul {
       @apply p-1 max-h-[40vh];

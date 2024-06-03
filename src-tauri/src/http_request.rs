@@ -89,14 +89,24 @@ pub async fn send_http_request(
     let uri = match http::Uri::from_str(url_string.as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), window).await;
+            return response_err(
+                response,
+                format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
+                window,
+            )
+            .await;
         }
     };
     // Yes, we're parsing both URI and URL because they could return different errors
     let url = match Url::from_str(uri.to_string().as_str()) {
         Ok(u) => u,
         Err(e) => {
-            return response_err(response, e.to_string(), window).await;
+            return response_err(
+                response,
+                format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
+                window,
+            )
+                .await;
         }
     };
 

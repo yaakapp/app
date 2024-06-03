@@ -133,7 +133,11 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     >
       <label
         htmlFor={id}
-        className={classNames(labelClassName, 'text-fg whitespace-nowrap', hideLabel && 'sr-only')}
+        className={classNames(
+          labelClassName,
+          'text-fg-subtle whitespace-nowrap',
+          hideLabel && 'sr-only',
+        )}
       >
         {label}
       </label>

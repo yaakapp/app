@@ -18,6 +18,6 @@ export function useFilterResponse({
 
         return (await invoke('cmd_filter_response', { responseId, filter })) as string | null;
       },
-    }).data ?? null
+    }).data ?? ''
   );
 }

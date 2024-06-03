@@ -752,16 +752,16 @@ async fn cmd_import_data(
 ) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
     let plugins = vec![
-        "importer-yaak",
-        "importer-insomnia",
         "importer-postman",
+        "importer-insomnia",
+        "importer-yaak",
         "importer-curl",
     ];
-    let file = fs::read_to_string(file_path)
+    let file = read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     for plugin_name in plugins {
-        let v = plugin::run_plugin_import(&w.app_handle(), plugin_name, file_contents)
+        let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)
             .await
             .map_err(|e| e.to_string())?;
         if let Some(r) = v {
