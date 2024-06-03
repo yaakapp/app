@@ -109,11 +109,14 @@ export const RequestPane = memo(function RequestPane({
             if (bodyType === BODY_TYPE_NONE) {
               newContentType = null;
             } else if (
-              bodyType === BODY_TYPE_FORM_URLENCODED ||
-              bodyType === BODY_TYPE_FORM_MULTIPART ||
-              bodyType === BODY_TYPE_JSON ||
-              bodyType === BODY_TYPE_OTHER ||
-              bodyType === BODY_TYPE_XML
+              activeRequest.method.toLowerCase() !== 'put' &&
+              activeRequest.method.toLowerCase() !== 'patch' &&
+              activeRequest.method.toLowerCase() !== 'post' &&
+              (bodyType === BODY_TYPE_FORM_URLENCODED ||
+                bodyType === BODY_TYPE_FORM_MULTIPART ||
+                bodyType === BODY_TYPE_JSON ||
+                bodyType === BODY_TYPE_OTHER ||
+                bodyType === BODY_TYPE_XML)
             ) {
               patch.method = 'POST';
               newContentType = bodyType === BODY_TYPE_OTHER ? 'text/plain' : bodyType;
@@ -181,6 +184,7 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.authenticationType,
       activeRequest.bodyType,
       activeRequest.headers,
+      activeRequest.method,
       activeRequest.urlParameters,
       handleContentTypeChange,
       updateRequest,
