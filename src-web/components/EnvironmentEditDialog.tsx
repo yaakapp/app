@@ -281,7 +281,7 @@ function SidebarButton({
               },
             },
             {
-              key: 'delete',
+              key: 'delete-environment',
               variant: 'danger',
               label: 'Delete',
               leftSlot: <Icon icon="trash" size="sm" />,

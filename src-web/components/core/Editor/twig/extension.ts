@@ -1,13 +1,13 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
+import type { Environment, Workspace } from '../../../../lib/models';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
-import { placeholders } from './placeholder';
 import { textLanguageName } from '../text/extension';
 import { twigCompletion } from './completion';
+import { placeholders } from './placeholder';
 import { parser as twigParser } from './twig';
-import type { Environment, Workspace } from '../../../../lib/models';
 
 export function twig(
   base: LanguageSupport,
@@ -15,25 +15,19 @@ export function twig(
   workspace: Workspace | null,
   autocomplete?: GenericCompletionConfig,
 ) {
-  const variables =
-    [...(workspace?.variables ?? []), ...(environment?.variables ?? [])].filter((v) => v.enabled) ??
-    [];
-  const completions = twigCompletion({ options: variables });
-
   const language = mixLanguage(base);
-  const completion = language.data.of({ autocomplete: completions });
-  const completionBase = base.language.data.of({ autocomplete: completions });
-  const additionalCompletion = autocomplete
-    ? [base.language.data.of({ autocomplete: genericCompletion(autocomplete) })]
-    : [];
+  const allVariables = [...(workspace?.variables ?? []), ...(environment?.variables ?? [])];
+  const variables = allVariables.filter((v) => v.enabled) ?? [];
+  const completions = twigCompletion({ options: variables });
 
   return [
     language,
-    completion,
-    completionBase,
     base.support,
     placeholders(variables),
-    ...additionalCompletion,
+    language.data.of({ autocomplete: completions }),
+    base.language.data.of({ autocomplete: completions }),
+    language.data.of({ autocomplete: genericCompletion(autocomplete) }),
+    base.language.data.of({ autocomplete: genericCompletion(autocomplete) }),
   ];
 }
 
