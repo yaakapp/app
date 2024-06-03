@@ -527,9 +527,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       onClick={handleClick}
       justify="start"
       leftSlot={
-        item.leftSlot && (
-          <div className="pr-2 flex justify-start text-fg-subtle">{item.leftSlot}</div>
-        )
+        item.leftSlot && <div className="pr-2 flex justify-start opacity-70">{item.leftSlot}</div>
       }
       rightSlot={rightSlot && <div className="ml-auto pl-3">{rightSlot}</div>}
       innerClassName="!text-left"
