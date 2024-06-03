@@ -12,6 +12,8 @@ export function UrlParametersEditor({ urlParameters, forceUpdateKey, onChange }:
     <PairEditor
       valueAutocompleteVariables
       nameAutocompleteVariables
+      namePlaceholder="param_name"
+      valuePlaceholder="Value"
       pairs={urlParameters}
       onChange={onChange}
       forceUpdateKey={forceUpdateKey}
