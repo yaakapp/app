@@ -331,21 +331,7 @@ function getExtensions({
     undefined;
 
   return [
-    // NOTE: These *must* be anonymous functions so the references update properly
-    EditorView.domEventHandlers({
-      focus: () => {
-        onFocus.current?.();
-      },
-      blur: () => {
-        onBlur.current?.();
-      },
-      keydown: (e) => {
-        onKeyDown.current?.(e);
-      },
-      paste: (e) => {
-        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
-      },
-    }),
+    ...baseExtensions, // Must be first
     tooltips({ parent }),
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
     ...(singleLine ? [singleLineExt()] : []),
@@ -354,14 +340,31 @@ function getExtensions({
       ? [EditorState.readOnly.of(true), EditorView.contentAttributes.of({ tabindex: '-1' })]
       : []),
 
-    // Handle onChange
+    // ------------------------ //
+    // Things that must be last //
+    // ------------------------ //
+
     EditorView.updateListener.of((update) => {
       if (onChange && update.docChanged) {
         onChange.current?.(update.state.doc.toString());
       }
     }),
 
-    ...baseExtensions,
+    EditorView.domEventHandlers({
+      focus: () => {
+        onFocus.current?.();
+      },
+      blur: () => {
+        onBlur.current?.();
+      },
+      keydown: (e, cm) => {
+        console.log('KEY DOWN', e, cm);
+        onKeyDown.current?.(e);
+      },
+      paste: (e) => {
+        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
+      },
+    }),
   ];
 }
 
