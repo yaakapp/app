@@ -40,12 +40,10 @@ export const colors = {
 const moonlightDefault: YaakTheme = {
   id: 'moonlight',
   name: 'Moonlight',
-  background: new Color(colors.gray4, 'dark'),
-  backgroundHighlight: new Color(colors.gray5, 'dark'),
-  backgroundHighlightSecondary: new Color(colors.gray5, 'dark'),
-  foreground: new Color(colors.gray11, 'dark'),
-  foregroundSubtle: new Color(colors.gray7, 'dark'),
-  foregroundSubtler: new Color(colors.gray6, 'dark'),
+  background: new Color('#222436', 'dark'),
+  foreground: new Color('#d5def8', 'dark'),
+  foregroundSubtle: new Color('#828bb8', 'dark'),
+  foregroundSubtler: new Color('hsl(232,26%,43%)', 'dark'),
   colors: {
     primary: new Color(colors.purple, 'dark'),
     secondary: new Color(colors.desaturatedGray, 'dark'),
@@ -58,13 +56,9 @@ const moonlightDefault: YaakTheme = {
   components: {
     appHeader: {
       background: new Color(colors.gray3, 'dark'),
-      backgroundHighlight: new Color(colors.gray5, 'dark'),
-      backgroundHighlightSecondary: new Color(colors.gray4, 'dark'),
     },
     sidebar: {
       background: new Color(colors.gray3, 'dark'),
-      backgroundHighlight: new Color(colors.gray5, 'dark'),
-      backgroundHighlightSecondary: new Color(colors.gray4, 'dark'),
     },
   },
 };

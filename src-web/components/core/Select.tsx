@@ -1,9 +1,14 @@
 import classNames from 'classnames';
 import type { CSSProperties, ReactNode } from 'react';
 import { useState } from 'react';
+import { useOsInfo } from '../../hooks/useOsInfo';
+import type { ButtonProps } from './Button';
+import { Button } from './Button';
+import type { RadioDropdownItem } from './RadioDropdown';
+import { RadioDropdown } from './RadioDropdown';
 import { HStack } from './Stacks';
 
-interface Props<T extends string> {
+export interface SelectProps<T extends string> {
   name: string;
   label: string;
   labelPosition?: 'top' | 'left';
@@ -11,20 +16,10 @@ interface Props<T extends string> {
   hideLabel?: boolean;
   value: T;
   leftSlot?: ReactNode;
-  options: SelectOption<T>[] | SelectOptionGroup<T>[];
+  options: RadioDropdownItem<T>[];
   onChange: (value: T) => void;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: ButtonProps['size'];
   className?: string;
-}
-
-export interface SelectOption<T extends string> {
-  label: string;
-  value: T;
-}
-
-export interface SelectOptionGroup<T extends string> {
-  label: string;
-  options: SelectOption<T>[];
 }
 
 export function Select<T extends string>({
@@ -39,7 +34,8 @@ export function Select<T extends string>({
   onChange,
   className,
   size = 'md',
-}: Props<T>) {
+}: SelectProps<T>) {
+  const osInfo = useOsInfo();
   const [focused, setFocused] = useState<boolean>(false);
   const id = `input-${name}`;
   return (
@@ -49,55 +45,68 @@ export function Select<T extends string>({
         'x-theme-input',
         'w-full',
         'pointer-events-auto', // Just in case we're placing in disabled parent
-        labelPosition === 'left' && 'flex items-center gap-2',
+        labelPosition === 'left' && 'grid grid-cols-[auto_1fr] items-center gap-2',
         labelPosition === 'top' && 'flex-row gap-0.5',
       )}
     >
       <label
         htmlFor={id}
-        className={classNames(labelClassName, 'text-fg whitespace-nowrap', hideLabel && 'sr-only')}
+        className={classNames(
+          labelClassName,
+          'text-fg-subtle whitespace-nowrap',
+          hideLabel && 'sr-only',
+        )}
       >
         {label}
       </label>
-      <HStack
-        space={2}
-        className={classNames(
-          'w-full rounded-md text-fg text-sm font-mono',
-          'pl-2',
-          'border',
-          focused ? 'border-border-focus' : 'border-background-highlight',
-          size === 'xs' && 'h-xs',
-          size === 'sm' && 'h-sm',
-          size === 'md' && 'h-md',
-          size === 'lg' && 'h-lg',
-        )}
-      >
-        {leftSlot && <div>{leftSlot}</div>}
-        <select
-          value={value}
-          style={selectBackgroundStyles}
-          onChange={(e) => onChange(e.target.value as T)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className={classNames('pr-7 w-full outline-none bg-transparent')}
-        >
-          {options.map((o) =>
-            'options' in o ? (
-              <optgroup key={o.label} label={o.label}>
-                {o.options.map(({ label, value }) => (
-                  <option key={label} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </optgroup>
-            ) : (
-              <option key={o.label} value={o.value}>
-                {o.label}
-              </option>
-            ),
+      {osInfo?.osType === 'macos' ? (
+        <HStack
+          space={2}
+          className={classNames(
+            'w-full rounded-md text-fg text-sm font-mono',
+            'pl-2',
+            'border',
+            focused ? 'border-border-focus' : 'border-background-highlight',
+            size === 'xs' && 'h-xs',
+            size === 'sm' && 'h-sm',
+            size === 'md' && 'h-md',
           )}
-        </select>
-      </HStack>
+        >
+          {leftSlot && <div>{leftSlot}</div>}
+          <select
+            value={value}
+            style={selectBackgroundStyles}
+            onChange={(e) => onChange(e.target.value as T)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            className={classNames('pr-7 w-full outline-none bg-transparent')}
+          >
+            {options.map((o) => {
+              if (o.type === 'separator') return null;
+              return (
+                <option key={o.label} value={o.value}>
+                  {o.label}
+                </option>
+              );
+            })}
+          </select>
+        </HStack>
+      ) : (
+        // Use custom "select" component until Tauri can be configured to have select menus not always appear in
+        // light mode
+        <RadioDropdown value={value} onChange={onChange} items={options}>
+          <Button
+            className="w-full text-sm font-mono"
+            justify="start"
+            variant="border"
+            size={size}
+            leftSlot={leftSlot}
+            forDropdown
+          >
+            {options.find((o) => o.type !== 'separator' && o.value === value)?.label ?? '--'}
+          </Button>
+        </RadioDropdown>
+      )}
     </div>
   );
 }

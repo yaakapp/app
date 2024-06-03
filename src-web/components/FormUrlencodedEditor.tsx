@@ -30,6 +30,8 @@ export function FormUrlencodedEditor({ body, forceUpdateKey, onChange }: Props) 
     <PairEditor
       valueAutocompleteVariables
       nameAutocompleteVariables
+      namePlaceholder="entry_name"
+      valuePlaceholder="Value"
       pairs={pairs}
       onChange={handleChange}
       forceUpdateKey={forceUpdateKey}
