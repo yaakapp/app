@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useClipboardText } from '../hooks/useClipboardText';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { environmentsQueryKey } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
 import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
@@ -62,6 +63,8 @@ export function GlobalHooks() {
         ? httpResponsesQueryKey(model)
         : model.model === 'folder'
         ? foldersQueryKey(model)
+        : model.model === 'environment'
+        ? environmentsQueryKey(model)
         : model.model === 'grpc_connection'
         ? grpcConnectionsQueryKey(model)
         : model.model === 'grpc_event'
@@ -96,10 +99,8 @@ export function GlobalHooks() {
     queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
       const index = values.findIndex((v) => modelsEq(v, model)) ?? -1;
       if (index >= 0) {
-        // console.log('UPDATED', payload);
         return [...values.slice(0, index), model, ...values.slice(index + 1)];
       } else {
-        // console.log('CREATED', payload);
         return pushToFront ? [model, ...(values ?? [])] : [...(values ?? []), model];
       }
     });
@@ -117,6 +118,8 @@ export function GlobalHooks() {
       queryClient.setQueryData(httpResponsesQueryKey(model), removeById(model));
     } else if (model.model === 'folder') {
       queryClient.setQueryData(foldersQueryKey(model), removeById(model));
+    } else if (model.model === 'environment') {
+      queryClient.setQueryData(environmentsQueryKey(model), removeById(model));
     } else if (model.model === 'grpc_request') {
       queryClient.setQueryData(grpcRequestsQueryKey(model), removeById(model));
     } else if (model.model === 'grpc_connection') {
