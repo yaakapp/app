@@ -1551,6 +1551,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init());
 
+
     #[cfg(target_os = "macos")]
     {
         builder = builder.plugin(tauri_plugin_mac_window::init());
