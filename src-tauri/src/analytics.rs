@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use log::{debug, warn};
+use log::{debug, info, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
@@ -194,10 +194,7 @@ pub async fn track_event(
     }
 
     if let Err(e) = req.send().await {
-        warn!(
-            "Error sending analytics event: {} {} {} {:?}",
-            e, event, attributes_json, params,
-        );
+        info!("Error sending analytics event: {}", e);
     }
 }
 
