@@ -69,8 +69,6 @@ mod plugin;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
-#[cfg(target_os = "windows")]
-mod tauri_plugin_windows_window;
 mod updates;
 mod window_menu;
 
@@ -1552,11 +1550,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init());
-
-    #[cfg(target_os = "windows")]
-    {
-        builder = builder.plugin(tauri_plugin_windows_window::init());
-    }
 
     #[cfg(target_os = "macos")]
     {
