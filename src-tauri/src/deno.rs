@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::plugin::ImportResult;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
@@ -30,7 +31,6 @@ use deno_core::RuntimeOptions;
 use deno_core::SourceMapGetter;
 use deno_core::{resolve_import, v8};
 use tokio::task::block_in_place;
-use crate::plugin::ImportResult;
 
 #[derive(Clone)]
 struct SourceMapStore(Rc<RefCell<HashMap<String, Vec<u8>>>>);
@@ -151,11 +151,15 @@ pub async fn run_plugin_deno(
 ) -> Result<Option<ImportResult>, Error> {
     let source_map_store = SourceMapStore(Rc::new(RefCell::new(HashMap::new())));
 
+    let mut ext_console = deno_console::deno_console::init_ops_and_esm();
+    ext_console.esm_entry_point = Some("ext:deno_console/01_console.js");
+
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
         module_loader: Some(Rc::new(TypescriptModuleLoader {
             source_maps: source_map_store.clone(),
         })),
         source_map_getter: Some(Rc::new(source_map_store)),
+        extensions: vec![ext_console],
         ..Default::default()
     });
 
@@ -164,6 +168,7 @@ pub async fn run_plugin_deno(
         &std::env::current_dir().context("Unable to get CWD")?,
     )?;
 
+    // Load the main module so we can do stuff with it
     let mod_id = js_runtime.load_main_es_module(&main_module).await?;
     let result = js_runtime.mod_evaluate(mod_id);
     js_runtime.run_event_loop(Default::default()).await?;
@@ -172,25 +177,26 @@ pub async fn run_plugin_deno(
     let scope = &mut js_runtime.handle_scope();
     let module_namespace = v8::Local::<v8::Object>::new(scope, module_namespace);
 
+    // Get the exported function we're calling
     let func_key = v8::String::new(scope, fn_name).unwrap();
     let func = module_namespace.get(scope, func_key.into()).unwrap();
     let func = v8::Local::<v8::Function>::try_from(func).unwrap();
 
+    // Call the function
     let a = v8::String::new(scope, fn_arg).unwrap().into();
     let tc_scope = &mut v8::TryCatch::new(scope);
     let func_res = func.call(tc_scope, module_namespace.into(), &[a]);
 
+    // Catch and return any thrown errors
     if tc_scope.has_caught() {
-        let e  = tc_scope.exception().unwrap();
+        let e = tc_scope.exception().unwrap();
         let js_error = JsError::from_v8_exception(tc_scope, e);
         return Err(Error::msg(js_error.stack.unwrap_or_default()));
     }
 
+    // Handle the result
     let response = match func_res {
-        None => {
-            println!("HELLO!");
-            Ok(None)
-        }
+        None => Ok(None),
         Some(res) => {
             if res.is_null() {
                 Ok(None)

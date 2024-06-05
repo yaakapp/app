@@ -119,7 +119,6 @@ async fn cmd_dismiss_notification(
     notification_id: &str,
     yaak_notifier: State<'_, Mutex<YaakNotifier>>,
 ) -> Result<(), String> {
-    info!("SEEN? {notification_id}");
     yaak_notifier.lock().await.seen(&app, notification_id).await
 }
 

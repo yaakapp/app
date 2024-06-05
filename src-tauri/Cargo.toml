@@ -34,7 +34,7 @@ reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "br
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "2.0.0-beta", features = ["config-toml", "devtools", "protocol-asset"] }
+tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = "2.1.0-beta"
 tauri-plugin-dialog = "2.0.0-beta"
 tauri-plugin-log = { version = "2.0.0-beta", features = ["colored"] }
@@ -54,6 +54,7 @@ tokio-stream = "0.1.15"
 regex = "1.10.2"
 hex_color = "3.0.0"
 anyhow = "1.0.86"
-deno_core = { version = "0.284.0" }
-deno_ast = { version = "0.39.0", features = ["transpiling"] }
 futures = "0.3.30"
+deno_core = { version = "0.283.0" }
+deno_ast = { version = "0.39.0", features = ["transpiling"] }
+deno_console = "0.154.0"
