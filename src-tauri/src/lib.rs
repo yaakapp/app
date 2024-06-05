@@ -1491,6 +1491,8 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
             &w,
             Workspace {
                 name: "Yaak".to_string(),
+                setting_follow_redirects: true,
+                setting_validate_certificates: true,
                 ..Default::default()
             },
         )
