@@ -1,9 +1,8 @@
 name: Generate Artifacts
 on:
   push:
-    branches:
-      - release
-      - beta
+    tags: [ v* ]
+
 jobs:
   build-artifacts:
     permissions:
