@@ -71,6 +71,7 @@ mod render;
 mod tauri_plugin_mac_window;
 mod updates;
 mod window_menu;
+mod deno;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
@@ -755,11 +756,12 @@ async fn cmd_import_data(
         "importer-yaak",
         "importer-curl",
     ];
+
     let file = read_to_string(file_path)
         .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     for plugin_name in plugins {
-        let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)
+        let v = run_plugin_import(plugin_name, file_contents)
             .await
             .map_err(|e| e.to_string())?;
         if let Some(r) = v {
@@ -808,13 +810,12 @@ async fn cmd_import_data(
                 }
             };
 
-            info!("Importing resources");
             for mut v in r.resources.workspaces {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
                 let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
-                info!("Imported workspace: {}", x.name);
             }
+            info!("Imported {} workspaces", imported_resources.workspaces.len());
 
             for mut v in r.resources.environments {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
@@ -825,8 +826,8 @@ async fn cmd_import_data(
                 );
                 let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.environments.push(x.clone());
-                info!("Imported environment: {}", x.name);
             }
+            info!("Imported {} environments", imported_resources.environments.len());
 
             for mut v in r.resources.folders {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
@@ -838,8 +839,8 @@ async fn cmd_import_data(
                 v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
                 let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.folders.push(x.clone());
-                info!("Imported folder: {}", x.name);
             }
+            info!("Imported {} folders", imported_resources.folders.len());
 
             for mut v in r.resources.http_requests {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
@@ -853,8 +854,8 @@ async fn cmd_import_data(
                     .await
                     .map_err(|e| e.to_string())?;
                 imported_resources.http_requests.push(x.clone());
-                info!("Imported request: {}", x.name);
             }
+            info!("Imported {} http_requests", imported_resources.http_requests.len());
 
             for mut v in r.resources.grpc_requests {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
@@ -868,8 +869,8 @@ async fn cmd_import_data(
                     .await
                     .map_err(|e| e.to_string())?;
                 imported_resources.grpc_requests.push(x.clone());
-                info!("Imported request: {}", x.name);
             }
+            info!("Imported {} grpc_requests", imported_resources.grpc_requests.len());
 
             Ok(imported_resources)
         }
@@ -898,11 +899,10 @@ async fn cmd_request_to_curl(
 
 #[tauri::command]
 async fn cmd_curl_to_request(
-    app: AppHandle,
     command: &str,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let v = run_plugin_import(&app, "importer-curl", command)
+    let v = run_plugin_import("importer-curl", command)
         .await
         .map_err(|e| e.to_string());
     match v {
@@ -1581,7 +1581,9 @@ pub fn run() {
                 .level_for("tokio_util", log::LevelFilter::Info)
                 .level_for("tonic", log::LevelFilter::Info)
                 .level_for("tower", log::LevelFilter::Info)
-                .level_for("tracing", log::LevelFilter::Info)
+                .level_for("tracing", log::LevelFilter::Warn)
+                .level_for("swc_ecma_codegen", log::LevelFilter::Off)
+                .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
                 .with_colors(ColoredLevelConfig::default())
                 .level(if is_dev() {
                     log::LevelFilter::Trace

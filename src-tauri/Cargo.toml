@@ -53,3 +53,7 @@ grpc = { path = "./grpc" }
 tokio-stream = "0.1.15"
 regex = "1.10.2"
 hex_color = "3.0.0"
+anyhow = "1.0.86"
+deno_core = { version = "0.284.0" }
+deno_ast = { version = "0.39.0", features = ["transpiling"] }
+futures = "0.3.30"

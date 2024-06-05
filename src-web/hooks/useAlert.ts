@@ -7,12 +7,22 @@ import { Alert } from './Alert';
 export function useAlert() {
   const dialog = useDialog();
   return useCallback(
-    ({ id, title, body }: { id: string; title: DialogProps['title']; body: AlertProps['body'] }) =>
+    ({
+      id,
+      title,
+      body,
+      size = 'sm',
+    }: {
+      id: string;
+      title: DialogProps['title'];
+      body: AlertProps['body'];
+      size?: DialogProps['size'];
+    }) =>
       dialog.show({
         id,
         title,
         hideX: true,
-        size: 'sm',
+        size,
         render: ({ hide }) => Alert({ onHide: hide, body }),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

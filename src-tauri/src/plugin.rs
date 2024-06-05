@@ -1,3 +1,4 @@
+use std::path;
 use std::rc::Rc;
 
 use boa_engine::builtins::promise::PromiseState;
@@ -12,6 +13,7 @@ use serde_json::json;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 
+use crate::deno::run_plugin_deno_block;
 use crate::models::{HttpRequest, WorkspaceExportResources};
 
 #[derive(Default, Debug, Deserialize, Serialize)]
@@ -65,23 +67,17 @@ pub fn run_plugin_export_curl(
 }
 
 pub async fn run_plugin_import(
-    app_handle: &AppHandle,
     plugin_name: &str,
     file_contents: &str,
 ) -> Result<Option<ImportResult>, String> {
-    let result_json = run_plugin(
-        app_handle,
-        plugin_name,
+    let plugin_dir = path::Path::new("/Users/gschier/Workspace/yaak/plugins");
+    let plugin_index_file = plugin_dir.join(plugin_name).join("src/index.ts");
+
+    run_plugin_deno_block(
+        plugin_index_file.to_str().unwrap(),
         "pluginHookImport",
-        &[js_string!(file_contents).into()],
-    );
-
-    if result_json.is_null() {
-        return Ok(None);
-    }
-
-    let resources: ImportResult = serde_json::from_value(result_json).map_err(|e| e.to_string())?;
-    Ok(Some(resources))
+        file_contents,
+    ).map_err(|e| e.to_string())
 }
 
 fn run_plugin(
