@@ -54,6 +54,6 @@ hex_color = "3.0.0"
 anyhow = "1.0.86"
 futures = "0.3.30"
 serde_yaml = "0.9.34+deprecated"
-deno_core = { version = "0.283.0" }
+deno_core = { version = "0.284.0" }
 deno_ast = { version = "0.39.0", features = ["transpiling"] }
-deno_console = "0.154.0"
+deno_console = "0.155.0"
