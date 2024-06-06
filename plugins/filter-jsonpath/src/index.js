@@ -1,6 +1,6 @@
 import jp from 'jsonpath';
 
-export function pluginHookResponseFilter(filter, text) {
+export function pluginHookResponseFilter(ctx, filter, text) {
   let parsed;
   try {
     parsed = JSON.parse(text);

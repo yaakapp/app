@@ -1,4 +1,4 @@
-export function pluginHookImport(contents: string) {
+export function pluginHookImport(ctx: any, contents: string) {
   let parsed;
   try {
     parsed = JSON.parse(contents);
@@ -18,7 +18,7 @@ export function pluginHookImport(contents: string) {
   // Migrate v1 to v2 -- changes requests to httpRequests
   if ('requests' in parsed.resources) {
     parsed.resources.httpRequests = parsed.resources.requests;
-    delete parsed.resources.requests;
+    delete parsed.resources['requests'];
   }
 
   return { resources: parsed.resources }; // Should already be in the correct format

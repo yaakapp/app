@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use crate::plugin::ImportResult;
+use crate::deno_ops::op_yaml_parse;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
@@ -137,29 +137,38 @@ impl ModuleLoader for TypescriptModuleLoader {
 pub fn run_plugin_deno_block(
     plugin_index_file: &str,
     fn_name: &str,
-    fn_arg: &str,
-) -> Result<Option<ImportResult>, Error> {
+    fn_args: Vec<serde_json::Value>,
+) -> Result<serde_json::Value, Error> {
     block_in_place(|| {
-        tauri::async_runtime::block_on(run_plugin_deno(plugin_index_file, fn_name, fn_arg))
+        tauri::async_runtime::block_on(run_plugin_deno_2(plugin_index_file, fn_name, fn_args))
     })
 }
 
-pub async fn run_plugin_deno(
+deno_core::extension!(
+    yaak_runtime,
+    ops = [ op_yaml_parse ],
+    esm_entry_point = "ext:yaak_runtime/yaml.js",
+    esm = [dir "src/plugin-runtime", "yaml.js"]
+);
+
+async fn run_plugin_deno_2(
     plugin_index_file: &str,
     fn_name: &str,
-    fn_arg: &str,
-) -> Result<Option<ImportResult>, Error> {
+    fn_args: Vec<serde_json::Value>,
+) -> Result<serde_json::Value, Error> {
     let source_map_store = SourceMapStore(Rc::new(RefCell::new(HashMap::new())));
 
     let mut ext_console = deno_console::deno_console::init_ops_and_esm();
     ext_console.esm_entry_point = Some("ext:deno_console/01_console.js");
+
+    let ext_yaak = yaak_runtime::init_ops_and_esm();
 
     let mut js_runtime = JsRuntime::new(RuntimeOptions {
         module_loader: Some(Rc::new(TypescriptModuleLoader {
             source_maps: source_map_store.clone(),
         })),
         source_map_getter: Some(Rc::new(source_map_store)),
-        extensions: vec![ext_console],
+        extensions: vec![ext_console, ext_yaak],
         ..Default::default()
     });
 
@@ -172,6 +181,7 @@ pub async fn run_plugin_deno(
     let mod_id = js_runtime.load_main_es_module(&main_module).await?;
     let result = js_runtime.mod_evaluate(mod_id);
     js_runtime.run_event_loop(Default::default()).await?;
+    result.await?;
 
     let module_namespace = js_runtime.get_module_namespace(mod_id).unwrap();
     let scope = &mut js_runtime.handle_scope();
@@ -181,11 +191,29 @@ pub async fn run_plugin_deno(
     let func_key = v8::String::new(scope, fn_name).unwrap();
     let func = module_namespace.get(scope, func_key.into()).unwrap();
     let func = v8::Local::<v8::Function>::try_from(func).unwrap();
+    let tc_scope = &mut v8::TryCatch::new(scope);
+
+    // Create Yaak context object
+    let null = v8::null(tc_scope).into();
+    let name = v8::String::new(tc_scope, "foo").unwrap().into();
+    let value = v8::String::new(tc_scope, "bar").unwrap().into();
+    let yaak_ctx: v8::Local<v8::Value> =
+        v8::Object::with_prototype_and_properties(tc_scope, null, &[name], &[value]).into();
+
+    // Create the function arguments
+    let passed_args = &mut fn_args
+        .iter()
+        .map(|a| {
+            let v: v8::Local<v8::Value> = deno_core::serde_v8::to_v8(tc_scope, a).unwrap();
+            v
+        })
+        .collect::<Vec<v8::Local<v8::Value>>>();
+
+    let all_args = &mut vec![yaak_ctx];
+    all_args.append(passed_args);
 
     // Call the function
-    let a = v8::String::new(scope, fn_arg).unwrap().into();
-    let tc_scope = &mut v8::TryCatch::new(scope);
-    let func_res = func.call(tc_scope, module_namespace.into(), &[a]);
+    let func_res = func.call(tc_scope, module_namespace.into(), all_args);
 
     // Catch and return any thrown errors
     if tc_scope.has_caught() {
@@ -195,19 +223,15 @@ pub async fn run_plugin_deno(
     }
 
     // Handle the result
-    let response = match func_res {
-        None => Ok(None),
+    match func_res {
+        None => Ok(serde_json::Value::Null),
         Some(res) => {
-            if res.is_null() {
-                Ok(None)
+            if res.is_null() || res.is_undefined() {
+                Ok(serde_json::Value::Null)
             } else {
-                let resources: ImportResult = deno_core::serde_v8::from_v8(tc_scope, res).unwrap();
-                Ok(Some(resources))
+                let value: serde_json::Value = deno_core::serde_v8::from_v8(tc_scope, res).unwrap();
+                Ok(value)
             }
         }
-    };
-
-    result.await?;
-
-    response
+    }
 }

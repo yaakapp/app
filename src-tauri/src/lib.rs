@@ -72,6 +72,7 @@ mod tauri_plugin_mac_window;
 mod updates;
 mod window_menu;
 mod deno;
+mod deno_ops;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
@@ -736,7 +737,7 @@ async fn cmd_filter_response(
     };
 
     let body = read_to_string(response.body_path.unwrap()).unwrap();
-    let filter_result = plugin::run_plugin_filter(&w.app_handle(), plugin_name, filter, &body)
+    let filter_result = plugin::run_plugin_filter(plugin_name, filter, &body)
         .await
         .expect("Failed to run filter");
     Ok(filter_result.filtered)
@@ -893,7 +894,7 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    Ok(run_plugin_export_curl(&app, &rendered)?)
+    Ok(run_plugin_export_curl(&rendered)?)
 }
 
 #[tauri::command]

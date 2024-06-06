@@ -25,8 +25,6 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 
 [dependencies]
 base64 = "0.22.0"
-boa_engine = { version = "0.18.0", features = ["annex-b"] }
-boa_runtime = { version = "0.18.0" }
 chrono = { version = "0.4.31", features = ["serde"] }
 http = "0.2.10"
 rand = "0.8.5"
@@ -55,6 +53,7 @@ regex = "1.10.2"
 hex_color = "3.0.0"
 anyhow = "1.0.86"
 futures = "0.3.30"
+serde_yaml = "0.9.34+deprecated"
 deno_core = { version = "0.283.0" }
 deno_ast = { version = "0.39.0", features = ["transpiling"] }
 deno_console = "0.154.0"
