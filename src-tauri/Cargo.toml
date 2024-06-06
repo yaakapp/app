@@ -1,4 +1,4 @@
-workspace = { members = ["grpc"] }
+workspace = { members = ["grpc", "templates"] }
 
 [package]
 name = "yaak-app"
@@ -50,6 +50,7 @@ log = "0.4.21"
 datetime = "0.5.2"
 reqwest_cookie_store = "0.6.0"
 grpc = { path = "./grpc" }
+templates = { path = "./templates" }
 tokio-stream = "0.1.15"
 regex = "1.10.2"
 hex_color = "3.0.0"
