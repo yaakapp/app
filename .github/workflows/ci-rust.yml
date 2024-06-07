@@ -2,6 +2,10 @@ on: [push, pull_request]
 
 name: CI (Rust)
 
+defaults:
+  run:
+    working-directory: ./src-tauri
+
 jobs:
   check:
     name: Check
@@ -20,9 +24,6 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src-tauri
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -37,9 +38,6 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src-tauri
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -56,9 +54,6 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src-tauri
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
