@@ -32,6 +32,7 @@ export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlacehol
     <Editor
       placeholder={`${namePlaceholder ?? 'name'}: ${valuePlaceholder ?? 'value'}`}
       defaultValue={pairsText}
+      contentType="pairs"
       onChange={handleChange}
     />
   );

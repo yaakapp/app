@@ -26,7 +26,7 @@ export function PairOrBulkEditor({ preferenceName, ...props }: Props) {
           <IconButton
             size="sm"
             title={useBulk ? 'Bulk edit' : 'Regular Edit'}
-            className="text-fg-subtler hover:text-fg opacity-50 group-hover:opacity-100"
+            className="text-fg-subtler hover:text-fg opacity-70 group-hover:opacity-100"
             onClick={() => setUseBulk((b) => !b)}
             icon={useBulk ? 'table' : 'fileCode'}
           />
