@@ -73,7 +73,7 @@ pub fn render(template: &str, workspace: &Workspace, environment: Option<&Enviro
         variables = add_variable_to_map(variables, &e.variables.0);
     }
 
-    parse_and_render(template, variables)
+    parse_and_render(template, variables, None)
 }
 
 fn add_variable_to_map<'a>(
