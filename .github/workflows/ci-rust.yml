@@ -54,9 +54,6 @@ jobs:
         with:
           sparse-checkout: 'src-tauri'
           sparse-checkout-cone-mode: false
-      - run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
