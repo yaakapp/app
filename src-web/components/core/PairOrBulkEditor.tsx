@@ -1,10 +1,9 @@
+import classNames from 'classnames';
 import { useKeyValue } from '../../hooks/useKeyValue';
 import { BulkPairEditor } from './BulkPairEditor';
 import { IconButton } from './IconButton';
 import type { PairEditorProps } from './PairEditor';
 import { PairEditor } from './PairEditor';
-import { Separator } from './Separator';
-import { HStack, VStack } from './Stacks';
 
 interface Props extends PairEditorProps {
   preferenceName: string;
@@ -18,20 +17,21 @@ export function PairOrBulkEditor({ preferenceName, ...props }: Props) {
   });
 
   return (
-    <div className="h-full w-full grid grid-rows-[minmax(0,1fr),auto]">
+    <div className="relative h-full w-full group/wrapper">
       {useBulk ? <BulkPairEditor {...props} /> : <PairEditor {...props} />}
-      <VStack space={1} className="w-full h-full group">
-        <Separator className="pt-0.5" dashed />
-        <HStack justifyContent="end">
-          <IconButton
-            size="sm"
-            title={useBulk ? 'Bulk edit' : 'Regular Edit'}
-            className="text-fg-subtler hover:text-fg opacity-70 group-hover:opacity-100"
-            onClick={() => setUseBulk((b) => !b)}
-            icon={useBulk ? 'table' : 'fileCode'}
-          />
-        </HStack>
-      </VStack>
+      <div className="absolute right-0 bottom-0">
+        <IconButton
+          size="sm"
+          variant="border"
+          title={useBulk ? 'Bulk edit' : 'Regular Edit'}
+          className={classNames(
+            'transition-opacity opacity-0 group-hover:opacity-80 hover:!opacity-100 shadow',
+            'bg-background text-fg-subtle hover:text-fg group-hover/wrapper:opacity-100',
+          )}
+          onClick={() => setUseBulk((b) => !b)}
+          icon={useBulk ? 'table' : 'fileCode'}
+        />
+      </div>
     </div>
   );
 }
