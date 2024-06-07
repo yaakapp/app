@@ -50,6 +50,33 @@ export function SettingsGeneral() {
           onClick={() => checkForUpdates.mutateAsync()}
         />
       </div>
+      <Select
+        name="openWorkspace"
+        label="Open Workspace"
+        labelPosition="left"
+        size="sm"
+        value={
+          settings.openWorkspaceNewWindow === true
+            ? 'new'
+            : settings.openWorkspaceNewWindow === false
+            ? 'current'
+            : 'ask'
+        }
+        onChange={(v) => {
+          if (v === 'current') {
+            updateSettings.mutate({ openWorkspaceNewWindow: false });
+          } else if (v === 'new') {
+            updateSettings.mutate({ openWorkspaceNewWindow: true });
+          } else {
+            updateSettings.mutate({ openWorkspaceNewWindow: null });
+          }
+        }}
+        options={[
+          { label: 'Always Ask', value: 'ask' },
+          { label: 'Current Window', value: 'current' },
+          { label: 'New Window', value: 'new' },
+        ]}
+      />
       <Separator className="my-4" />
 
       <Heading size={2}>
