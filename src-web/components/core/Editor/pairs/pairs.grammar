@@ -1,0 +1,9 @@
+@top pairs { (Key? Sep Value)* }
+
+@tokens {
+  Sep { ":" }
+  Key { ![:]+ }
+  Value { ![\n]+ }
+}
+
+@external propSource highlight from "./highlight"

@@ -6,7 +6,7 @@ import { mimeTypes } from '../lib/data/mimetypes';
 import type { HttpRequest } from '../lib/models';
 import type { GenericCompletionConfig } from './core/Editor/genericCompletion';
 import type { PairEditorProps } from './core/PairEditor';
-import { PairEditor } from './core/PairEditor';
+import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 
 type Props = {
   forceUpdateKey: string;
@@ -16,7 +16,8 @@ type Props = {
 
 export function HeadersEditor({ headers, onChange, forceUpdateKey }: Props) {
   return (
-    <PairEditor
+    <PairOrBulkEditor
+      preferenceName="headers"
       valueAutocompleteVariables
       nameAutocompleteVariables
       pairs={headers}

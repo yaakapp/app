@@ -102,7 +102,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   // Use ref so we can update the handler without re-initializing the editor
   const handleChange = useRef<EditorProps['onChange']>(onChange);
   useEffect(() => {
-    handleChange.current = onChange;
+    handleChange.current = onChange ? onChange : onChange;
   }, [onChange]);
 
   // Use ref so we can update the handler without re-initializing the editor

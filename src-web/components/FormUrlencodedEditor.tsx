@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { HttpRequest } from '../lib/models';
 import type { Pair, PairEditorProps } from './core/PairEditor';
-import { PairEditor } from './core/PairEditor';
+import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 
 type Props = {
   forceUpdateKey: string;
@@ -27,7 +27,8 @@ export function FormUrlencodedEditor({ body, forceUpdateKey, onChange }: Props) 
   );
 
   return (
-    <PairEditor
+    <PairOrBulkEditor
+      preferenceName="form_urlencoded"
       valueAutocompleteVariables
       nameAutocompleteVariables
       namePlaceholder="entry_name"

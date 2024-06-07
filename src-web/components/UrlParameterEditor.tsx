@@ -1,5 +1,5 @@
 import type { HttpRequest } from '../lib/models';
-import { PairEditor } from './core/PairEditor';
+import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 
 type Props = {
   forceUpdateKey: string;
@@ -9,7 +9,8 @@ type Props = {
 
 export function UrlParametersEditor({ urlParameters, forceUpdateKey, onChange }: Props) {
   return (
-    <PairEditor
+    <PairOrBulkEditor
+      preferenceName="url_parameters"
       valueAutocompleteVariables
       nameAutocompleteVariables
       namePlaceholder="param_name"
