@@ -33,6 +33,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const prompt = usePrompt();
   const settings = useSettings();
   const openWorkspace = useOpenWorkspace();
+  const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
@@ -40,8 +41,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       label: w.name,
       leftSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : <Icon icon="empty" />,
       onSelect: async () => {
-        if (typeof settings?.openWorkspaceNewWindow === 'boolean') {
-          openWorkspace.mutate({ workspace: w, inNewWindow: settings.openWorkspaceNewWindow });
+        if (typeof openWorkspaceNewWindow === 'boolean') {
+          openWorkspace.mutate({ workspace: w, inNewWindow: openWorkspaceNewWindow });
           return;
         }
 
@@ -111,7 +112,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     dialog,
     openWorkspace,
     prompt,
-    settings.openWorkspaceNewWindow,
+    openWorkspaceNewWindow,
     updateWorkspace,
     workspaces,
   ]);
