@@ -46,7 +46,6 @@ serde_yaml = "0.9.34"
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
 tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = "2.1.0-beta"
-tauri-plugin-deep-link = "2.0.0-beta"
 tauri-plugin-dialog = "2.0.0-beta"
 tauri-plugin-fs = "2.0.0-beta"
 tauri-plugin-log = { version = "2.0.0-beta", features = ["colored"] }
