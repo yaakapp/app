@@ -43,7 +43,7 @@ type Pair = string | boolean;
 
 type PairsByName = Record<string, Pair[]>;
 
-export function pluginHookImport(ctx: any, rawData: string) {
+export function pluginHookImport(_: any, rawData: string) {
   if (!rawData.match(/^\s*curl /)) {
     return null;
   }
