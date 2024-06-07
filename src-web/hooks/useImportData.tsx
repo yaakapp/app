@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../components/core/Button';
+import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
 import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
@@ -77,7 +78,12 @@ export function useImportData() {
 
   return useMutation({
     onError: (err: string) => {
-      alert({ id: 'import-failed', title: 'Import Failed', body: err });
+      alert({
+        id: 'import-failed',
+        title: 'Import Failed',
+        size: 'md',
+        body: <FormattedError>{err}</FormattedError>,
+      });
     },
     mutationFn: async () => {
       return new Promise<void>((resolve, reject) => {

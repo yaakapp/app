@@ -26,11 +26,13 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 [dependencies]
 grpc = { path = "./grpc" }
 templates = { path = "./templates" }
+anyhow = "1.0.86"
 base64 = "0.22.0"
-boa_engine = { version = "0.18.0", features = ["annex-b"] }
-boa_runtime = { version = "0.18.0" }
 chrono = { version = "0.4.31", features = ["serde"] }
 datetime = "0.5.2"
+deno_ast = { version = "0.39.0", features = ["transpiling"] }
+deno_console = "0.155.0"
+deno_core = { version = "0.284.0" }
 hex_color = "3.0.0"
 http = "0.2.10"
 log = "0.4.21"
@@ -40,8 +42,9 @@ reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "br
 reqwest_cookie_store = "0.6.0"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
+serde_yaml = "0.9.34+deprecated"
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "2.0.0-beta", features = ["config-toml", "devtools", "protocol-asset"] }
+tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = "2.1.0-beta"
 tauri-plugin-deep-link = "2.0.0-beta"
 tauri-plugin-dialog = "2.0.0-beta"

@@ -8,6 +8,8 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
-    outDir: resolve(__dirname, '../../src-tauri/plugins/importer-yaak'),
+    emptyOutDir: true,
+    sourcemap: true,
+    outDir: resolve(__dirname, 'build'),
   },
 });
