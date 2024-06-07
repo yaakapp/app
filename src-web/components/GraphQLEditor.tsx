@@ -125,7 +125,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         {...extraEditorProps}
       />
       <div className="grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1 min-h-[5rem]">
-        <Separator dashed variant="primary" className="pb-1">
+        <Separator dashed className="pb-1">
           Variables
         </Separator>
         <Editor
