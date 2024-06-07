@@ -23,7 +23,7 @@ describe('importer-postman', () => {
   for (const fixture of fixtures) {
     test('Imports ' + fixture, () => {
       const contents = fs.readFileSync(path.join(p, fixture), 'utf-8');
-      const imported = pluginHookImport(contents);
+      const imported = pluginHookImport({}, contents);
       const folder0 = newId('folder');
       const folder1 = newId('folder');
       expect(imported).toEqual({

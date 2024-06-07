@@ -5,7 +5,7 @@ import {
   HttpRequest,
   Workspace,
 } from '../../../src-web/lib/models';
-import { parse as parseYaml } from 'yaml';
+import '../../../src-web/plugin/runtime.d.ts';
 
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -17,7 +17,7 @@ export interface ExportResources {
   folders: AtLeast<Folder, 'name' | 'id' | 'model' | 'workspaceId'>[];
 }
 
-export function pluginHookImport(contents: string) {
+export function pluginHookImport(ctx: YaakContext, contents: string) {
   let parsed: any;
 
   try {
@@ -25,8 +25,10 @@ export function pluginHookImport(contents: string) {
   } catch (e) {}
 
   try {
-    parsed = parseYaml(contents);
-  } catch (e) {}
+    parsed = parsed ?? YAML.parse(contents);
+  } catch (e) {
+    console.log('FAILED', e);
+  }
 
   if (!isJSObject(parsed)) return;
   if (!Array.isArray(parsed.resources)) return;

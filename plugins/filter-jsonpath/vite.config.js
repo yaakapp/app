@@ -8,6 +8,8 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
-    outDir: resolve(__dirname, '../../src-tauri/plugins/filter-jsonpath'),
+    emptyOutDir: true,
+    sourcemap: true,
+    outDir: resolve(__dirname, 'build'),
   },
 });
