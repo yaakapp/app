@@ -2,6 +2,7 @@ on:
   push:
     paths:
       - src-tauri/**
+      - .github/workflows/**
 
 name: CI (Rust)
 
