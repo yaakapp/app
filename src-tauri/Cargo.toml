@@ -1,4 +1,4 @@
-workspace = { members = ["grpc"] }
+workspace = { members = ["grpc", "templates"] }
 
 [package]
 name = "yaak-app"
@@ -24,6 +24,8 @@ cocoa = "0.25.0"
 openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
 
 [dependencies]
+grpc = { path = "./grpc" }
+templates = { path = "./templates" }
 base64 = "0.22.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 http = "0.2.10"
@@ -47,7 +49,6 @@ uuid = "1.7.0"
 log = "0.4.21"
 datetime = "0.5.2"
 reqwest_cookie_store = "0.6.0"
-grpc = { path = "./grpc" }
 tokio-stream = "0.1.15"
 regex = "1.10.2"
 hex_color = "3.0.0"

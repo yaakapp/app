@@ -6753,6 +6753,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "templates"
+version = "0.1.0"
+
+[[package]]
 name = "tendril"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8258,6 +8262,7 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
+ "templates",
  "tokio",
  "tokio-stream",
  "uuid",
