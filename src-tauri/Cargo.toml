@@ -28,33 +28,31 @@ grpc = { path = "./grpc" }
 templates = { path = "./templates" }
 base64 = "0.22.0"
 chrono = { version = "0.4.31", features = ["serde"] }
+datetime = "0.5.2"
+deno_ast = { version = "0.39.0", features = ["transpiling"] }
+deno_console = "0.155.0"
+deno_core = { version = "0.284.0" }
+hex_color = "3.0.0"
 http = "0.2.10"
+log = "0.4.21"
 rand = "0.8.5"
+regex = "1.10.2"
 reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "brotli", "deflate", "json"] }
+reqwest_cookie_store = "0.6.0"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
+serde_yaml = "0.9.34+deprecated"
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
 tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = "2.1.0-beta"
+tauri-plugin-deep-link = "2.0.0-beta"
 tauri-plugin-dialog = "2.0.0-beta"
+tauri-plugin-fs = "2.0.0-beta"
 tauri-plugin-log = { version = "2.0.0-beta", features = ["colored"] }
-tauri-plugin-shell = "2.0.0-beta"
 tauri-plugin-os = "2.0.0-beta"
+tauri-plugin-shell = "2.0.0-beta"
 tauri-plugin-updater = "2.0.0-beta"
 tauri-plugin-window-state = "2.0.0-beta"
-tauri-plugin-fs = "2.0.0-beta"
-tauri-plugin-deep-link = "2.0.0-beta"
 tokio = { version = "1.36.0", features = ["sync"] }
-uuid = "1.7.0"
-log = "0.4.21"
-datetime = "0.5.2"
-reqwest_cookie_store = "0.6.0"
 tokio-stream = "0.1.15"
-regex = "1.10.2"
-hex_color = "3.0.0"
-anyhow = "1.0.86"
-futures = "0.3.30"
-serde_yaml = "0.9.34+deprecated"
-deno_core = { version = "0.284.0" }
-deno_ast = { version = "0.39.0", features = ["transpiling"] }
-deno_console = "0.155.0"
+uuid = "1.7.0"

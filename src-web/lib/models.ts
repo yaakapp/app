@@ -41,6 +41,7 @@ export interface Settings extends BaseModel {
   interfaceScale: number;
   editorFontSize: number;
   editorSoftWrap: boolean;
+  openWorkspaceNewWindow: boolean | null;
 }
 
 export interface Workspace extends BaseModel {

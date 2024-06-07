@@ -59,6 +59,7 @@ pub struct Settings {
     pub interface_scale: i64,
     pub editor_font_size: i64,
     pub editor_soft_wrap: bool,
+    pub open_workspace_new_window: Option<bool>,
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
@@ -891,7 +892,8 @@ async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings, sqlx::Error> 
             SELECT
                 id, model, created_at, updated_at, theme, appearance,
                 theme_dark, theme_light, update_channel,
-                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap
+                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap, 
+                open_workspace_new_window
             FROM settings
             WHERE id = 'default'
         "#,
@@ -928,8 +930,9 @@ pub async fn update_settings(
         r#"
             UPDATE settings SET (
                 theme, appearance, theme_dark, theme_light, update_channel,
-                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap
-            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE id = 'default';
+                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap,
+                open_workspace_new_window
+            ) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE id = 'default';
         "#,
         settings.theme,
         settings.appearance,
@@ -940,6 +943,7 @@ pub async fn update_settings(
         settings.interface_scale,
         settings.editor_font_size,
         settings.editor_soft_wrap,
+        settings.open_workspace_new_window,
     )
     .execute(&db)
     .await?;

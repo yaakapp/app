@@ -67,7 +67,7 @@ export function Dialog({
               'rounded-lg',
               'border border-background-highlight-secondary shadow-lg shadow-[rgba(0,0,0,0.1)]',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
-              size === 'sm' && 'w-[25rem] max-h-[80vh]',
+              size === 'sm' && 'w-[28rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
               size === 'lg' && 'w-[65rem] max-h-[80vh]',
               size === 'full' && 'w-[100vw] h-[100vh]',
