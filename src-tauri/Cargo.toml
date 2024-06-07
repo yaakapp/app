@@ -26,6 +26,7 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 [dependencies]
 grpc = { path = "./grpc" }
 templates = { path = "./templates" }
+anyhow = "1.0.86"
 base64 = "0.22.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 datetime = "0.5.2"

@@ -4,7 +4,7 @@ name: CI (JS)
 
 jobs:
   test:
-    name: Check
+    name: Lint/Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

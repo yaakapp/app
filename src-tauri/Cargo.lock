@@ -8236,7 +8236,6 @@ dependencies = [
  "deno_ast",
  "deno_console",
  "deno_core",
- "futures",
  "grpc",
  "hex_color",
  "http 0.2.12",
