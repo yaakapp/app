@@ -102,7 +102,7 @@ export function TextViewer({ response, pretty, className }: Props) {
     );
 
     return result;
-  }, [canFilter, filterText, isJson, isSearching, setFilterText, toggleSearch]);
+  }, [canFilter, filterText, isJson, isSearching, response.id, setFilterText, toggleSearch]);
 
   return (
     <Editor

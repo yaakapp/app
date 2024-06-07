@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
@@ -49,7 +49,7 @@ type PairContainer = {
   id: string;
 };
 
-export const PairEditor = memo(function PairEditor({
+export function PairEditor({
   className,
   forceUpdateKey,
   nameAutocomplete,
@@ -163,8 +163,8 @@ export const PairEditor = memo(function PairEditor({
     <div
       className={classNames(
         className,
-        '@container',
-        'pb-2 mb-auto',
+        '@container relative',
+        'pb-2 mb-auto h-full',
         !noScroll && 'overflow-y-auto max-h-full',
         // Move over the width of the drag handle
         '-ml-3',
@@ -204,7 +204,7 @@ export const PairEditor = memo(function PairEditor({
       })}
     </div>
   );
-});
+}
 
 enum ItemTypes {
   ROW = 'pair-row',
