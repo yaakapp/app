@@ -89,6 +89,6 @@ fn add_variable_to_map<'a>(
         let value = variable.value.as_str();
         map.insert(name, value);
     }
-    
+
     map
 }

@@ -1,4 +1,7 @@
-on: [push]
+on:
+  push:
+    paths:
+      - src-tauri/**
 
 name: CI (Rust)
 
