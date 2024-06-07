@@ -30,6 +30,22 @@ pub fn render(tokens: Vec<Token>, vars: HashMap<&str, &str>) -> String {
 mod tests {
     use crate::*;
     use std::collections::HashMap;
+    
+    #[test]
+    fn render_empty() {
+        let template = "";
+        let vars = HashMap::new();
+        let result = "";
+        assert_eq!(parse_and_render(template, vars), result.to_string());
+    }
+
+    #[test]
+    fn render_text_only() {
+        let template = "Hello World!";
+        let vars = HashMap::new();
+        let result = "Hello World!";
+        assert_eq!(parse_and_render(template, vars), result.to_string());
+    }
 
     #[test]
     fn render_simple() {

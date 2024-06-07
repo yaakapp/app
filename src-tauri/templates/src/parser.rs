@@ -1,4 +1,3 @@
-
 #[derive(Clone, PartialEq, Debug)]
 pub enum Val {
     Str(String),
@@ -40,11 +39,7 @@ impl Parser {
     pub fn parse(&mut self) -> Vec<Token> {
         let start_pos = self.pos;
 
-        for _ in 0..100 {
-            if self.pos >= self.chars.len() {
-                break;
-            }
-
+        while self.pos < self.chars.len() {
             if self.match_str("${[") {
                 let start_curr = self.pos;
                 if let Some(t) = self.parse_tag() {
@@ -111,11 +106,7 @@ impl Parser {
         let start_pos = self.pos;
 
         let mut args: Vec<Val> = Vec::new();
-        for _ in 0..100 {
-            if self.pos >= self.chars.len() {
-                break;
-            }
-
+        while self.pos < self.chars.len() {
             self.skip_whitespace();
             if let Some(v) = self.parse_ident_or_string() {
                 args.push(v);
@@ -155,10 +146,7 @@ impl Parser {
         let start_pos = self.pos;
 
         let mut text = String::new();
-        for _ in 0..100 {
-            if self.pos >= self.chars.len() {
-                break;
-            }
+        while self.pos < self.chars.len() {
             let ch = self.peek_char();
             if ch.is_alphanumeric() || ch == '_' {
                 text.push(ch);
@@ -187,11 +175,7 @@ impl Parser {
         }
 
         let mut found_closing = false;
-        for _ in 0..100 {
-            if self.pos >= self.chars.len() {
-                break;
-            }
-
+        while self.pos < self.chars.len() {
             let ch = self.next_char();
             match ch {
                 '\\' => {
@@ -220,11 +204,7 @@ impl Parser {
     }
 
     fn skip_whitespace(&mut self) {
-        for _ in 0..100 {
-            if self.pos >= self.chars.len() {
-                break;
-            }
-
+        while self.pos < self.chars.len() {
             if self.peek_char().is_whitespace() {
                 self.pos += 1;
             } else {
