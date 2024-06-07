@@ -1,13 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCommand } from '../hooks/useCommands';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
+import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
-import { getRecentEnvironments } from '../hooks/useRecentEnvironments';
-import { getRecentRequests } from '../hooks/useRecentRequests';
+import { useSettings } from '../hooks/useSettings';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import type { ButtonProps } from './core/Button';
@@ -16,8 +14,8 @@ import type { DropdownItem } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
-import { HStack } from './core/Stacks';
 import { useDialog } from './DialogContext';
+import { OpenWorkspaceDialog } from './OpenWorkspaceDialog';
 
 type Props = Pick<ButtonProps, 'className' | 'justify' | 'forDropdown' | 'leftSlot'>;
 
@@ -33,7 +31,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const createWorkspace = useCommand('workspace.create');
   const dialog = useDialog();
   const prompt = usePrompt();
-  const routes = useAppRoutes();
+  const settings = useSettings();
+  const openWorkspace = useOpenWorkspace();
 
   const items: DropdownItem[] = useMemo(() => {
     const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
@@ -41,58 +40,16 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       label: w.name,
       leftSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : <Icon icon="empty" />,
       onSelect: async () => {
+        if (typeof settings?.openWorkspaceNewWindow === 'boolean') {
+          openWorkspace.mutate({ workspace: w, inNewWindow: settings.openWorkspaceNewWindow });
+          return;
+        }
+
         dialog.show({
           id: 'open-workspace',
           size: 'sm',
           title: 'Open Workspace',
-          description: (
-            <>
-              Where would you like to open <InlineCode>{w.name}</InlineCode>?
-            </>
-          ),
-          render: ({ hide }) => {
-            return (
-              <HStack space={2} justifyContent="start" className="mt-4 mb-6 flex-row-reverse">
-                <Button
-                  className="focus"
-                  color="primary"
-                  onClick={async () => {
-                    hide();
-                    const environmentId = (await getRecentEnvironments(w.id))[0];
-                    const requestId = (await getRecentRequests(w.id))[0];
-                    if (requestId != null) {
-                      routes.navigate('request', { workspaceId: w.id, environmentId, requestId });
-                    } else {
-                      routes.navigate('workspace', { workspaceId: w.id, environmentId });
-                    }
-                  }}
-                >
-                  This Window
-                </Button>
-                <Button
-                  className="focus"
-                  color="secondary"
-                  rightSlot={<Icon icon="externalLink" />}
-                  onClick={async () => {
-                    hide();
-                    const environmentId = (await getRecentEnvironments(w.id))[0];
-                    const requestId = (await getRecentRequests(w.id))[0];
-                    const path =
-                      requestId != null
-                        ? routes.paths.request({
-                            workspaceId: w.id,
-                            environmentId,
-                            requestId,
-                          })
-                        : routes.paths.workspace({ workspaceId: w.id, environmentId });
-                    await invoke('cmd_new_window', { url: path });
-                  }}
-                >
-                  New Window
-                </Button>
-              </HStack>
-            );
-          },
+          render: ({ hide }) => <OpenWorkspaceDialog workspace={w} hide={hide} />,
         });
       },
     }));
@@ -152,8 +109,9 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
     createWorkspace,
     deleteWorkspace.mutate,
     dialog,
+    openWorkspace,
     prompt,
-    routes,
+    settings.openWorkspaceNewWindow,
     updateWorkspace,
     workspaces,
   ]);
