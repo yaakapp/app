@@ -1,0 +1,30 @@
+on:
+  push:
+    paths:
+      - src-tauri/**
+
+name: CI (Rust)
+
+defaults:
+  run:
+    working-directory: src-tauri
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: 'src-tauri'
+          sparse-checkout-cone-mode: false
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: cargo check
+      - run: cargo test --all

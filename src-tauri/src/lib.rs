@@ -755,8 +755,8 @@ async fn cmd_import_data(
         "importer-yaak",
         "importer-curl",
     ];
-    let file = read_to_string(file_path)
-        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
+    let file =
+        read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     for plugin_name in plugins {
         let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)

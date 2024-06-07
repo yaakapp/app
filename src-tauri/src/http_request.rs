@@ -106,7 +106,7 @@ pub async fn send_http_request(
                 format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
                 window,
             )
-                .await;
+            .await;
         }
     };
 
