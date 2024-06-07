@@ -99,8 +99,6 @@ const rosePineDawn: YaakTheme = {
     },
     menu: {
       background: new Color('#f2e9e1', 'light'),
-      backgroundHighlight: new Color('#dfdad9', 'light'),
-      backgroundHighlightSecondary: new Color('#6e6a86', 'light'),
     },
   },
 };

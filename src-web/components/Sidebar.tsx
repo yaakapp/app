@@ -839,7 +839,7 @@ const SidebarItem = forwardRef(function SidebarItem(
               )}
             />
           )}
-          <div className="flex items-end gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             {itemPrefix}
             {editing ? (
               <input
