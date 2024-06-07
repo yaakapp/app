@@ -42,7 +42,7 @@ reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "br
 reqwest_cookie_store = "0.6.0"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
-serde_yaml = "0.9.34+deprecated"
+serde_yaml = "0.9.34"
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
 tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
 tauri-plugin-clipboard-manager = "2.1.0-beta"
