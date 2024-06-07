@@ -5,6 +5,9 @@ import { memo } from 'react';
 
 const icons = {
   alert: lucide.AlertTriangleIcon,
+  text: lucide.FileTextIcon,
+  table: lucide.TableIcon,
+  fileCode: lucide.FileCodeIcon,
   archive: lucide.ArchiveIcon,
   arrowBigDownDash: lucide.ArrowBigDownDashIcon,
   arrowBigLeftDash: lucide.ArrowBigLeftDashIcon,
