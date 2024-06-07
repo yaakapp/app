@@ -1,10 +1,10 @@
-on: [push, pull_request]
+on: [push]
 
 name: CI (Rust)
 
 defaults:
   run:
-    working-directory: ./src-tauri
+    working-directory: src-tauri
 
 jobs:
   check:
