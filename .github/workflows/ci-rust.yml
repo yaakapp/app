@@ -2,9 +2,9 @@ on: [push]
 
 name: CI (Rust)
 
-defaults:
-  run:
-    working-directory: src-tauri
+#defaults:
+#  run:
+#    working-directory: src-tauri
 
 jobs:
   check:
