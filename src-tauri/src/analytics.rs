@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use log::{debug, info, warn};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::types::JsonValue;
