@@ -332,6 +332,20 @@ function getExtensions({
 
   return [
     ...baseExtensions, // Must be first
+    EditorView.domEventHandlers({
+      focus: () => {
+        onFocus.current?.();
+      },
+      blur: () => {
+        onBlur.current?.();
+      },
+      keydown: (e) => {
+        onKeyDown.current?.(e);
+      },
+      paste: (e) => {
+        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
+      },
+    }),
     tooltips({ parent }),
     keymap.of(singleLine ? defaultKeymap.filter((k) => k.key !== 'Enter') : defaultKeymap),
     ...(singleLine ? [singleLineExt()] : []),
@@ -348,21 +362,6 @@ function getExtensions({
       if (onChange && update.docChanged) {
         onChange.current?.(update.state.doc.toString());
       }
-    }),
-
-    EditorView.domEventHandlers({
-      focus: () => {
-        onFocus.current?.();
-      },
-      blur: () => {
-        onBlur.current?.();
-      },
-      keydown: (e) => {
-        onKeyDown.current?.(e);
-      },
-      paste: (e) => {
-        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
-      },
     }),
   ];
 }

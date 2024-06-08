@@ -4,10 +4,8 @@ import type { Workspace } from '../lib/models';
 import { useAppRoutes } from './useAppRoutes';
 import { getRecentEnvironments } from './useRecentEnvironments';
 import { getRecentRequests } from './useRecentRequests';
-import { useSettings } from './useSettings';
 
 export function useOpenWorkspace() {
-  const settings = useSettings();
   const routes = useAppRoutes();
 
   return useMutation({
@@ -18,7 +16,7 @@ export function useOpenWorkspace() {
       workspace: Workspace;
       inNewWindow: boolean;
     }) => {
-      if (settings == null || workspace == null) return;
+      if (workspace == null) return;
 
       if (inNewWindow) {
         const environmentId = (await getRecentEnvironments(workspace.id))[0];
