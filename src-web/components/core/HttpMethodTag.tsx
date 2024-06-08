@@ -4,9 +4,10 @@ import type { GrpcRequest, HttpRequest } from '../../lib/models';
 interface Props {
   request: HttpRequest | GrpcRequest;
   className?: string;
+  shortNames?: boolean;
 }
 
-const methodMap: Record<string, string> = {
+const longMethodMap = {
   get: 'GET',
   put: 'PUT',
   post: 'POST',
@@ -15,9 +16,20 @@ const methodMap: Record<string, string> = {
   options: 'OPTIONS',
   head: 'HEAD',
   grpc: 'GRPC',
+} as const;
+
+const shortMethodMap: Record<keyof typeof longMethodMap, string> = {
+  get: 'GET',
+  put: 'PUT',
+  post: 'POST',
+  patch: 'PTCH',
+  delete: 'DEL',
+  options: 'OPTS',
+  head: 'HEAD',
+  grpc: 'GRPC',
 };
 
-export function HttpMethodTag({ request, className }: Props) {
+export function HttpMethodTag({ shortNames, request, className }: Props) {
   const method =
     request.model === 'http_request' && request.bodyType === 'graphql'
       ? 'GQL'
@@ -26,9 +38,17 @@ export function HttpMethodTag({ request, className }: Props) {
       : request.method;
 
   const m = method.toLowerCase();
+  const methodMap: Record<string, string> = shortNames ? shortMethodMap : longMethodMap;
   return (
-    <span className={classNames(className, 'text-xs font-mono text-fg-subtle')}>
-      {methodMap[m] ?? m.slice(0, 3).toUpperCase()}
+    <span
+      className={classNames(
+        className,
+        'text-xs font-mono text-fg-subtle',
+        'pt-[0.25em]', // Fix for monospace font not vertically centering
+        shortNames && 'w-[2.5em]',
+      )}
+    >
+      {methodMap[m] ?? m.slice(0, 4).toUpperCase()}
     </span>
   );
 }
