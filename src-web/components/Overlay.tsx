@@ -47,13 +47,13 @@ export function Overlay({
                 variant === 'default' && 'bg-background-backdrop backdrop-blur-sm',
               )}
             />
-            {children}
 
             {/* Show draggable region at the top */}
             {/* TODO: Figure out tauri drag region and also make clickable still */}
             {variant === 'default' && (
               <div data-tauri-drag-region className="absolute top-0 left-0 h-md right-0" />
             )}
+            {children}
           </motion.div>
         </FocusTrap>
       )}

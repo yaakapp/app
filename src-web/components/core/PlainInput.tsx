@@ -6,7 +6,7 @@ import type { InputProps } from './Input';
 import { HStack } from './Stacks';
 
 export type PlainInputProps = Omit<InputProps, 'wrapLines' | 'onKeyDown' | 'type'> & {
-  type: 'text' | 'password' | 'number';
+  type?: 'text' | 'password' | 'number';
   step?: number;
 };
 
@@ -54,7 +54,7 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
   const inputClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
-    'px-1.5 text-xs font-mono',
+    'px-1.5 text-xs font-mono cursor-text',
   );
 
   const isValid = useMemo(() => {

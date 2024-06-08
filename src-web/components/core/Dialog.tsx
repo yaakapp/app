@@ -18,6 +18,7 @@ export interface DialogProps {
   hideX?: boolean;
   noPadding?: boolean;
   noScroll?: boolean;
+  vAlign?: 'top' | 'center';
 }
 
 export function Dialog({
@@ -31,6 +32,7 @@ export function Dialog({
   hideX,
   noPadding,
   noScroll,
+  vAlign = 'center',
 }: DialogProps) {
   const titleId = useMemo(() => Math.random().toString(36).slice(2), []);
   const descriptionId = useMemo(
@@ -50,7 +52,13 @@ export function Dialog({
 
   return (
     <Overlay open={open} onClose={onClose} portalName="dialog">
-      <div className="x-theme-dialog absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div
+        className={classNames(
+          'x-theme-dialog absolute inset-0 flex flex-col items-center pointer-events-none my-5',
+          vAlign === 'top' && 'justify-start',
+          vAlign === 'center' && 'justify-center',
+        )}
+      >
         <div
           role="dialog"
           aria-labelledby={titleId}
@@ -71,7 +79,7 @@ export function Dialog({
               size === 'md' && 'w-[45rem] max-h-[80vh]',
               size === 'lg' && 'w-[65rem] max-h-[80vh]',
               size === 'full' && 'w-[100vw] h-[100vh]',
-              size === 'dynamic' && 'min-w-[30vw] max-w-[80vw]',
+              size === 'dynamic' && 'min-w-[20rem] max-w-[80vw] max-h-[80vh]',
             )}
           >
             {title ? (
