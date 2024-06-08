@@ -28,6 +28,8 @@ type CommandPaletteItem = {
   onSelect: () => void;
 } & ({ searchText: string; label: ReactNode } | { label: string });
 
+const MAX_PER_GROUP = 4;
+
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const routes = useAppRoutes();
@@ -82,7 +84,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       items: [],
     };
 
-    for (const r of sortedRequests.slice(0, 4)) {
+    for (const r of sortedRequests) {
       if (r.id === activeRequestId) {
         continue;
       }
@@ -112,7 +114,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       items: [],
     };
 
-    for (const w of sortedWorkspaces.slice(0, 4)) {
+    for (const w of sortedWorkspaces) {
       if (w.id === activeWorkspaceId) {
         continue;
       }
@@ -200,7 +202,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           label="Command"
           placeholder="Search or type a command"
           className="font-sans !text-base"
-          defaultValue=""
+          defaultValue={command}
           onChange={setCommand}
           onKeyDownCapture={handleKeyDown}
         />
@@ -211,7 +213,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
             <Heading size={2} className="!text-xs uppercase px-1.5 h-sm flex items-center">
               {g.label}
             </Heading>
-            {g.items.map((v) => (
+            {g.items.slice(0, MAX_PER_GROUP).map((v) => (
               <CommandPaletteItem
                 active={v.key === selectedItem?.key}
                 key={v.key}
