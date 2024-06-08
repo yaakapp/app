@@ -101,7 +101,7 @@ export function Sidebar({ className }: Props) {
     [collapsed.value],
   );
 
-  const { tree, treeParentMap, selectableRequests, selectedRequest } = useMemo<{
+  const { tree, treeParentMap, selectableRequests } = useMemo<{
     tree: TreeNode | null;
     treeParentMap: Record<string, TreeNode>;
     selectedRequest: HttpRequest | GrpcRequest | null;
@@ -158,8 +158,6 @@ export function Sidebar({ className }: Props) {
 
     return { tree, treeParentMap, selectableRequests, selectedRequest };
   }, [activeWorkspace, selectedId, requests, folders, collapsed.value]);
-
-  const deleteSelectedRequest = useDeleteRequest(selectedRequest);
 
   const focusActiveRequest = useCallback(
     (
@@ -229,21 +227,6 @@ export function Sidebar({ className }: Props) {
   }, [focusActiveRequest, hasFocus]);
 
   const handleBlur = useCallback(() => setHasFocus(false), []);
-
-  const handleDeleteKey = useCallback(
-    async (e: KeyboardEvent) => {
-      if (!hasFocus) return;
-      e.preventDefault();
-
-      const selected = selectableRequests.find((r) => r.id === selectedId);
-      if (selected == null) return;
-      await deleteSelectedRequest.mutateAsync();
-    },
-    [hasFocus, selectableRequests, deleteSelectedRequest, selectedId],
-  );
-
-  useKeyPressEvent('Backspace', handleDeleteKey);
-  useKeyPressEvent('Delete', handleDeleteKey);
 
   useHotKey('sidebar.focus', async () => {
     // Hide the sidebar if it's already focused
