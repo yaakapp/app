@@ -53,7 +53,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
         key: request.id,
         label: fallbackRequestName(request),
         // leftSlot: <CountBadge className="!ml-0 px-0 w-5" count={recentRequestItems.length} />,
-        leftSlot: <HttpMethodTag request={request} />,
+        leftSlot: <HttpMethodTag className="text-right" shortNames request={request} />,
         onSelect: () => {
           routes.navigate('request', {
             requestId: request.id,

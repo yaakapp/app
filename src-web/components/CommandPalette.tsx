@@ -2,6 +2,8 @@ import classNames from 'classnames';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
+import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -10,25 +12,28 @@ import { useRequests } from '../hooks/useRequests';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Heading } from './core/Heading';
+import { HttpMethodTag } from './core/HttpMethodTag';
 import { Icon } from './core/Icon';
 import { PlainInput } from './core/PlainInput';
+import { HStack } from './core/Stacks';
 
 interface CommandPaletteGroup {
   key: string;
-  label: string;
+  label: ReactNode;
   items: CommandPaletteItem[];
 }
 
-interface CommandPaletteItem {
+type CommandPaletteItem = {
   key: string;
-  label: string;
   onSelect: () => void;
-}
+} & ({ searchText: string; label: ReactNode } | { label: string });
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const routes = useAppRoutes();
   const activeEnvironmentId = useActiveEnvironmentId();
+  const activeRequestId = useActiveRequestId();
+  const activeWorkspaceId = useActiveWorkspaceId();
   const workspaces = useWorkspaces();
   const recentWorkspaces = useRecentWorkspaces();
   const requests = useRequests();
@@ -78,9 +83,19 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     };
 
     for (const r of sortedRequests.slice(0, 4)) {
+      if (r.id === activeRequestId) {
+        continue;
+      }
+
       requestGroup.items.push({
         key: `switch-request-${r.id}`,
-        label: fallbackRequestName(r),
+        searchText: `${r.method} ${r.name}`,
+        label: (
+          <HStack space={2}>
+            <HttpMethodTag className="text-fg-subtler" shortNames request={r} />
+            <div className="truncate">{fallbackRequestName(r)}</div>
+          </HStack>
+        ),
         onSelect: () => {
           return routes.navigate('request', {
             workspaceId: r.workspaceId,
@@ -98,6 +113,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     };
 
     for (const w of sortedWorkspaces.slice(0, 4)) {
+      if (w.id === activeWorkspaceId) {
+        continue;
+      }
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
         label: w.name,
@@ -106,13 +124,24 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     }
 
     return [requestGroup, workspaceGroup];
-  }, [activeEnvironmentId, openWorkspace, routes, sortedRequests, sortedWorkspaces]);
+  }, [
+    activeEnvironmentId,
+    activeRequestId,
+    activeWorkspaceId,
+    openWorkspace,
+    routes,
+    sortedRequests,
+    sortedWorkspaces,
+  ]);
 
   const filteredGroups = useMemo(
     () =>
       groups
         .map((g) => {
-          g.items = g.items.filter((v) => v.label.toLowerCase().includes(command.toLowerCase()));
+          g.items = g.items.filter((v) => {
+            const s = 'searchText' in v ? v.searchText : v.label;
+            return s.toLowerCase().includes(command.toLowerCase());
+          });
           return g;
         })
         .filter((g) => g.items.length > 0),
