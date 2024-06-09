@@ -1,8 +1,8 @@
 use std::time::SystemTime;
 
 use chrono::{Duration, NaiveDateTime, Utc};
-use reqwest::Method;
 use log::debug;
+use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
