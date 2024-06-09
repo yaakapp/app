@@ -161,7 +161,7 @@ export function Sidebar({ className }: Props) {
 
   const jumpToRequest = async (index: number) => {
     const r = selectableRequests[index];
-    if (r != null) await handleSelect(r.id);
+    if (r != null) await handleSelect(r.id, { noFocus: true });
   };
 
   useHotKey('sidebar.jump_1', () => jumpToRequest(0));
@@ -204,7 +204,7 @@ export function Sidebar({ className }: Props) {
   );
 
   const handleSelect = useCallback(
-    async (id: string) => {
+    async (id: string, opts: { noFocus?: boolean } = {}) => {
       const tree = treeParentMap[id ?? 'n/a'] ?? null;
       const children = tree?.children ?? [];
       const node = children.find((m) => m.item.id === id) ?? null;
@@ -224,7 +224,7 @@ export function Sidebar({ className }: Props) {
         });
         setSelectedId(id);
         setSelectedTree(tree);
-        focusActiveRequest({ forced: { id, tree } });
+        if (!opts.noFocus) focusActiveRequest({ forced: { id, tree } });
       }
     },
     [treeParentMap, collapsed, routes, activeEnvironmentId, focusActiveRequest],
