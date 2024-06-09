@@ -111,7 +111,7 @@ export function GrpcConnectionLayout({ style }: Props) {
             ) : messages.length >= 0 ? (
               <GrpcConnectionMessagesPane activeRequest={activeRequest} methodType={methodType} />
             ) : (
-              <HotKeyList hotkeys={['grpc_request.send', 'sidebar.toggle', 'urlBar.focus']} />
+              <HotKeyList hotkeys={['grpc_request.send', 'sidebar.focus', 'urlBar.focus']} />
             )}
           </div>
         )

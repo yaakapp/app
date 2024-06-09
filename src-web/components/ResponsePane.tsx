@@ -83,7 +83,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     >
       {activeResponse == null ? (
         <HotKeyList
-          hotkeys={['http_request.send', 'http_request.create', 'sidebar.toggle', 'urlBar.focus']}
+          hotkeys={['http_request.send', 'http_request.create', 'sidebar.focus', 'urlBar.focus']}
         />
       ) : isResponseLoading(activeResponse) ? (
         <div className="h-full w-full flex items-center justify-center">

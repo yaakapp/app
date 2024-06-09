@@ -5,8 +5,7 @@ on:
 
 jobs:
   build-artifacts:
-    permissions:
-      contents: write
+    permissions: write-all
     name: Build
     strategy:
       fail-fast: false
