@@ -476,10 +476,7 @@ pub async fn send_http_request(
 
             Ok(response)
         }
-        Err(e) => {
-            warn!("FAILED TO SEND REQUEST {:?}", e);
-            response_err(response, e.to_string(), window).await
-        },
+        Err(e) => response_err(response, e.to_string(), window).await,
     }
 }
 
