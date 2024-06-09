@@ -185,20 +185,22 @@ impl GrpcHandle {
     pub async fn services_from_files(
         &mut self,
         id: &str,
-        uri: &Uri,
+        uri: &str,
         paths: Vec<PathBuf>,
     ) -> Result<Vec<ServiceDefinition>, String> {
         let pool = fill_pool_from_files(&self.app_handle, paths).await?;
-        self.pools.insert(self.get_pool_key(id, uri), pool.clone());
+        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
+        self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
         Ok(self.services_from_pool(&pool))
     }
     pub async fn services_from_reflection(
         &mut self,
         id: &str,
-        uri: &Uri,
+        uri: &str,
     ) -> Result<Vec<ServiceDefinition>, String> {
-        let pool = fill_pool(uri).await?;
-        self.pools.insert(self.get_pool_key(id, uri), pool.clone());
+        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
+        let pool = fill_pool(&uri).await?;
+        self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
         Ok(self.services_from_pool(&pool))
     }
 
@@ -234,9 +236,10 @@ impl GrpcHandle {
     pub async fn connect(
         &mut self,
         id: &str,
-        uri: Uri,
+        uri: &str,
         proto_files: Vec<PathBuf>,
     ) -> Result<GrpcConnection, String> {
+        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
         let pool = match self.pools.get(id) {
             Some(p) => p.clone(),
             None => match proto_files.len() {

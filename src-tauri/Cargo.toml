@@ -34,12 +34,12 @@ deno_ast = { version = "0.39.0", features = ["transpiling"] }
 deno_console = "0.155.0"
 deno_core = { version = "0.284.0" }
 hex_color = "3.0.0"
-http = "0.2.10"
+http = "1"
 log = "0.4.21"
 rand = "0.8.5"
 regex = "1.10.2"
-reqwest = { version = "0.11.23", features = ["multipart", "cookies", "gzip", "brotli", "deflate", "json"] }
-reqwest_cookie_store = "0.6.0"
+reqwest = { version = "0.12.4", features = ["multipart", "cookies", "gzip", "brotli", "deflate", "json", "native-tls-alpn"] }
+reqwest_cookie_store = "0.8.0"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
 serde_yaml = "0.9.34"
