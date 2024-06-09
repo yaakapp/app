@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import { pluginHookExport } from '../src';
 
+const ctx = {};
+
 describe('exporter-curl', () => {
   test('Exports GET with params', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         urlParameters: [
           { name: 'a', value: 'aaa' },
@@ -18,7 +20,7 @@ describe('exporter-curl', () => {
   });
   test('Exports POST with url form data', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/x-www-form-urlencoded',
@@ -37,7 +39,7 @@ describe('exporter-curl', () => {
 
   test('Exports PUT with multipart form', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         method: 'PUT',
         bodyType: 'multipart/form-data',
@@ -62,7 +64,7 @@ describe('exporter-curl', () => {
 
   test('Exports JSON body', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/json',
@@ -82,7 +84,7 @@ describe('exporter-curl', () => {
 
   test('Exports multi-line JSON body', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         method: 'POST',
         bodyType: 'application/json',
@@ -102,7 +104,7 @@ describe('exporter-curl', () => {
 
   test('Exports headers', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         headers: [
           { name: 'a', value: 'aaa' },
           { name: 'b', value: 'bbb', enabled: true },
@@ -114,7 +116,7 @@ describe('exporter-curl', () => {
 
   test('Basic auth', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         authenticationType: 'basic',
         authentication: {
@@ -127,7 +129,7 @@ describe('exporter-curl', () => {
 
   test('Broken basic auth', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         authenticationType: 'basic',
         authentication: {},
@@ -137,7 +139,7 @@ describe('exporter-curl', () => {
 
   test('Digest auth', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         authenticationType: 'digest',
         authentication: {
@@ -150,7 +152,7 @@ describe('exporter-curl', () => {
 
   test('Bearer auth', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         authenticationType: 'bearer',
         authentication: {
@@ -162,7 +164,7 @@ describe('exporter-curl', () => {
 
   test('Broken bearer auth', () => {
     expect(
-      pluginHookExport({
+      pluginHookExport(ctx, {
         url: 'https://yaak.app',
         authenticationType: 'bearer',
         authentication: {
