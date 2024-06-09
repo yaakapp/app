@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use chrono::{Duration, NaiveDateTime, Utc};
-use http::Method;
+use reqwest::Method;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};

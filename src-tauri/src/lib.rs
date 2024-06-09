@@ -12,8 +12,6 @@ use std::process::exit;
 use std::str::FromStr;
 use std::time::Duration;
 
-use ::http::uri::InvalidUri;
-use ::http::Uri;
 use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
@@ -61,6 +59,8 @@ use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 
 mod analytics;
+mod deno;
+mod deno_ops;
 mod grpc;
 mod http_request;
 mod models;
@@ -71,8 +71,6 @@ mod render;
 mod tauri_plugin_mac_window;
 mod updates;
 mod window_menu;
-mod deno;
-mod deno_ops;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
@@ -133,14 +131,14 @@ async fn cmd_grpc_reflect(
     let req = get_grpc_request(&window, request_id)
         .await
         .map_err(|e| e.to_string())?;
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
+    let uri = safe_uri(req.url.as_str());
     if proto_files.len() > 0 {
         grpc_handle
             .lock()
             .await
             .services_from_files(
                 &req.id,
-                &uri,
+                uri.as_str(),
                 proto_files
                     .iter()
                     .map(|p| PathBuf::from_str(p).unwrap())
@@ -151,7 +149,7 @@ async fn cmd_grpc_reflect(
         grpc_handle
             .lock()
             .await
-            .services_from_reflection(&req.id, &uri)
+            .services_from_reflection(&req.id, uri.as_str())
             .await
     }
 }
@@ -250,7 +248,7 @@ async fn cmd_grpc_go(
     let maybe_in_msg_tx = std::sync::Mutex::new(Some(in_msg_tx.clone()));
     let (cancelled_tx, mut cancelled_rx) = tokio::sync::watch::channel(false);
 
-    let uri = safe_uri(&req.url).map_err(|e| e.to_string())?;
+    let uri = safe_uri(&req.url);
 
     let in_msg_stream = tokio_stream::wrappers::ReceiverStream::new(in_msg_rx);
 
@@ -268,7 +266,7 @@ async fn cmd_grpc_go(
         .await
         .connect(
             &req.clone().id,
-            uri,
+            uri.as_str(),
             proto_files
                 .iter()
                 .map(|p| PathBuf::from_str(p).unwrap())
@@ -814,7 +812,10 @@ async fn cmd_import_data(
                 let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.workspaces.push(x.clone());
             }
-            info!("Imported {} workspaces", imported_resources.workspaces.len());
+            info!(
+                "Imported {} workspaces",
+                imported_resources.workspaces.len()
+            );
 
             for mut v in r.resources.environments {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
@@ -826,7 +827,10 @@ async fn cmd_import_data(
                 let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
                 imported_resources.environments.push(x.clone());
             }
-            info!("Imported {} environments", imported_resources.environments.len());
+            info!(
+                "Imported {} environments",
+                imported_resources.environments.len()
+            );
 
             for mut v in r.resources.folders {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
@@ -854,7 +858,10 @@ async fn cmd_import_data(
                     .map_err(|e| e.to_string())?;
                 imported_resources.http_requests.push(x.clone());
             }
-            info!("Imported {} http_requests", imported_resources.http_requests.len());
+            info!(
+                "Imported {} http_requests",
+                imported_resources.http_requests.len()
+            );
 
             for mut v in r.resources.grpc_requests {
                 v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
@@ -869,7 +876,10 @@ async fn cmd_import_data(
                     .map_err(|e| e.to_string())?;
                 imported_resources.grpc_requests.push(x.clone());
             }
-            info!("Imported {} grpc_requests", imported_resources.grpc_requests.len());
+            info!(
+                "Imported {} grpc_requests",
+                imported_resources.grpc_requests.len()
+            );
 
             Ok(imported_resources)
         }
@@ -897,10 +907,7 @@ async fn cmd_request_to_curl(
 }
 
 #[tauri::command]
-async fn cmd_curl_to_request(
-    command: &str,
-    workspace_id: &str,
-) -> Result<HttpRequest, String> {
+async fn cmd_curl_to_request(command: &str, workspace_id: &str) -> Result<HttpRequest, String> {
     let v = run_plugin_import("importer-curl", command)
         .await
         .map_err(|e| e.to_string());
@@ -1031,6 +1038,7 @@ async fn response_err(
     error: String,
     w: &WebviewWindow,
 ) -> Result<HttpResponse, String> {
+    warn!("Failed to send request: {}", error);
     let mut response = response.clone();
     response.elapsed = -1;
     response.error = Some(error.clone());
@@ -1895,11 +1903,10 @@ async fn get_update_mode(h: &AppHandle) -> UpdateMode {
     UpdateMode::new(settings.update_channel.as_str())
 }
 
-fn safe_uri(endpoint: &str) -> Result<Uri, InvalidUri> {
-    let uri = if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
-        Uri::from_str(endpoint)?
+fn safe_uri(endpoint: &str) -> String {
+    if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+        endpoint.into()
     } else {
-        Uri::from_str(&format!("http://{}", endpoint))?
-    };
-    Ok(uri)
+        format!("http://{}", endpoint)
+    }
 }

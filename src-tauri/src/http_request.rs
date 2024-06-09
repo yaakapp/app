@@ -8,9 +8,10 @@ use std::time::Duration;
 
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
-use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{error, info, warn};
 use reqwest::redirect::Policy;
+use reqwest::Method;
 use reqwest::{multipart, Url};
 use sqlx::types::{Json, JsonValue};
 use tauri::{Manager, WebviewWindow};
@@ -45,6 +46,7 @@ pub async fn send_http_request(
             true => Policy::limited(10), // TODO: Handle redirects natively
             false => Policy::none(),
         })
+        .connection_verbose(true)
         .gzip(true)
         .brotli(true)
         .deflate(true)
@@ -392,11 +394,11 @@ pub async fn send_http_request(
             response.url = v.url().to_string();
             response.remote_addr = v.remote_addr().map(|a| a.to_string());
             response.version = match v.version() {
-                http::Version::HTTP_09 => Some("HTTP/0.9".to_string()),
-                http::Version::HTTP_10 => Some("HTTP/1.0".to_string()),
-                http::Version::HTTP_11 => Some("HTTP/1.1".to_string()),
-                http::Version::HTTP_2 => Some("HTTP/2".to_string()),
-                http::Version::HTTP_3 => Some("HTTP/3".to_string()),
+                reqwest::Version::HTTP_09 => Some("HTTP/0.9".to_string()),
+                reqwest::Version::HTTP_10 => Some("HTTP/1.0".to_string()),
+                reqwest::Version::HTTP_11 => Some("HTTP/1.1".to_string()),
+                reqwest::Version::HTTP_2 => Some("HTTP/2".to_string()),
+                reqwest::Version::HTTP_3 => Some("HTTP/3".to_string()),
                 _ => None,
             };
 
@@ -474,7 +476,10 @@ pub async fn send_http_request(
 
             Ok(response)
         }
-        Err(e) => response_err(response, e.to_string(), window).await,
+        Err(e) => {
+            warn!("FAILED TO SEND REQUEST {:?}", e);
+            response_err(response, e.to_string(), window).await
+        },
     }
 }
 
