@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: lts/*
       - name: Install Rust
-        uses: actions-rs/toolchain@v2
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           target: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
