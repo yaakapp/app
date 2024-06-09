@@ -23,7 +23,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly # required for `cargo udeps`
+          toolchain: stable
           override: true
       - name: Set up cargo cache
         uses: actions/cache@v3
