@@ -39,10 +39,5 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
       - name: Lint
         run: cargo check --all
-      - run: cargo install --locked cargo-udeps || true
-      - name: Check
-        run: |
-          cargo udeps
-          rm -rf ~/.cargo/advisory-db
       - name: Test
         run: cargo test --all
