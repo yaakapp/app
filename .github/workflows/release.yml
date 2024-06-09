@@ -26,13 +26,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          target: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-          toolchain: stable
-          override: true
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
