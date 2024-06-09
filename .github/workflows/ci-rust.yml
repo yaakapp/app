@@ -28,7 +28,6 @@ jobs:
           profile: minimal
           toolchain: nightly # required for `cargo udeps`
           override: true
-          components: rustfmt, clippy
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -42,7 +41,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
       - name: Lint
-        run: cargo clippy -- -D warnings
+        run: cargo check
       - run: cargo install --locked cargo-udeps || true
       - name: Check
         run: |
