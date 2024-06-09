@@ -373,6 +373,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       right: onRight ? docRect.width - triggerShape.right : undefined,
       left: !onRight ? triggerShape.left : undefined,
       minWidth: fullWidth ? triggerWidth : undefined,
+      maxWidth: '25rem',
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
@@ -543,14 +544,7 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
       )}
       {...props}
     >
-      <div
-        className={classNames(
-          // Add padding on right when no right slot, for some visual balance
-          !item.rightSlot && 'pr-4',
-        )}
-      >
-        {item.label}
-      </div>
+      <div className={classNames('truncate')}>{item.label}</div>
     </Button>
   );
 }
