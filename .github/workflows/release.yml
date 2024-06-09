@@ -40,9 +40,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run lint
-        run: npm run lint
+        run: |
+          npm run lint
+          cargo check --all
       - name: Run tests
-        run: npm test
+        run: |
+          npm test
+          cargo test --all
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
