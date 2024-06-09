@@ -2,7 +2,7 @@ import { HttpRequest } from '../../../src-web/lib/models';
 
 const NEWLINE = '\\\n ';
 
-export function pluginHookExport(request: Partial<HttpRequest>) {
+export function pluginHookExport(_: any, request: Partial<HttpRequest>) {
   const xs = ['curl'];
 
   // Add method and URL all on first line
