@@ -1,5 +1,6 @@
 on:
-  push:
+  pull_request:
+    branches: [develop]
     paths:
       - src-tauri/**
       - .github/workflows/**

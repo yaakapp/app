@@ -1,4 +1,6 @@
-on: [push]
+on:
+  pull_request:
+    branches: [develop]
 
 name: CI (JS)
 
