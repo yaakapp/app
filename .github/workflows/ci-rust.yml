@@ -20,14 +20,8 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Set up cargo cache
-        uses: actions/cache@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v3
         continue-on-error: false
         with:
           path: |
@@ -38,7 +32,5 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-      - name: Lint
-        run: cargo check --all
-      - name: Test
-        run: cargo test --all
+      - run: cargo check --all
+      - run: cargo test --all

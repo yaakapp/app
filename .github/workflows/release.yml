@@ -22,17 +22,14 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
-      - name: setup node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-      - name: Set up cargo cache
-        uses: actions/cache@v3
+      - uses: actions/cache@v3
         continue-on-error: false
         with:
           path: |
@@ -48,17 +45,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - name: Install dependencies
-        run: npm ci
-      - name: Lint and Test (JS)
-        run: |
+      - run: npm ci
+      - run: |
           npm run lint
           npm test
-      - name: Lint and Test (Rust)
-        working-directory: src-tauri
-        run: |
+      - run: |
           cargo check --all
           cargo test --all
+        working-directory: src-tauri
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
