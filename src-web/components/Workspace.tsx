@@ -186,7 +186,7 @@ export default function Workspace() {
         </div>
       ) : activeRequest == null ? (
         <HotKeyList
-          hotkeys={['http_request.create', 'sidebar.toggle', 'settings.show']}
+          hotkeys={['http_request.create', 'sidebar.focus', 'settings.show']}
           bottomSlot={
             <HStack space={1} justifyContent="center" className="mt-3">
               <Button variant="border" size="sm" onClick={() => importData.mutate()}>

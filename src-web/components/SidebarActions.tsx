@@ -31,7 +31,6 @@ export function SidebarActions() {
         className="pointer-events-auto"
         size="sm"
         title="Show sidebar"
-        hotkeyAction="sidebar.toggle"
         icon={hidden ? 'leftPanelHidden' : 'leftPanelVisible'}
       />
       <CreateDropdown hotKeyAction="http_request.create">
