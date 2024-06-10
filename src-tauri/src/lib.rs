@@ -959,6 +959,28 @@ async fn cmd_export_data(
 }
 
 #[tauri::command]
+async fn cmd_save_response(
+    window: WebviewWindow,
+    response_id: &str,
+    filepath: &str,
+) -> Result<(), String> {
+    let response = get_http_response(&window, response_id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let body_path = match response.body_path {
+        None => {
+            return Err("Response does not have a body".to_string());
+        }
+        Some(p) => p,
+    };
+
+    fs::copy(body_path, filepath).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
 async fn cmd_send_http_request(
     window: WebviewWindow,
     request_id: &str,
@@ -1702,6 +1724,7 @@ pub fn run() {
             cmd_new_window,
             cmd_request_to_curl,
             cmd_dismiss_notification,
+            cmd_save_response,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
             cmd_set_key_value,
