@@ -23,6 +23,7 @@ import { ResponseHeaders } from './ResponseHeaders';
 import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
+import { PdfViewer } from './responseViewers/PdfViewer';
 import { TextViewer } from './responseViewers/TextViewer';
 import { VideoViewer } from './responseViewers/VideoViewer';
 import { WebPageViewer } from './responseViewers/WebPageViewer';
@@ -164,6 +165,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <WebPageViewer response={activeResponse} />
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
+                ) : contentType?.match(/pdf/) ? (
+                  <PdfViewer response={activeResponse} />
                 ) : (
                   <TextViewer
                     className="-mr-2" // Pull to the right

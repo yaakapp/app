@@ -35,21 +35,14 @@ export function TextViewer({ response, pretty, className }: Props) {
   );
 
   const contentType = useContentTypeFromHeaders(response.headers);
-  const rawBody = useResponseBodyText(response) ?? '';
+  const rawBody = useResponseBodyText(response) ?? null;
   const isSearching = filterText != null;
-  const formattedBody =
-    pretty && contentType?.includes('json')
-      ? tryFormatJson(rawBody)
-      : pretty && contentType?.includes('xml')
-      ? tryFormatXml(rawBody)
-      : rawBody;
 
   const filteredResponse = useFilterResponse({
     filter: debouncedFilterText ?? '',
     responseId: response.id,
   });
 
-  const body = isSearching && filterText?.length > 0 ? filteredResponse : formattedBody;
   const toggleSearch = useCallback(() => {
     if (isSearching) {
       setFilterText(null);
@@ -103,6 +96,18 @@ export function TextViewer({ response, pretty, className }: Props) {
 
     return result;
   }, [canFilter, filterText, isJson, isSearching, response.id, setFilterText, toggleSearch]);
+
+  if (rawBody == null) {
+    return 'bad';
+  }
+
+  const formattedBody =
+    pretty && contentType?.includes('json')
+      ? tryFormatJson(rawBody)
+      : pretty && contentType?.includes('xml')
+      ? tryFormatXml(rawBody)
+      : rawBody;
+  const body = isSearching && filterText?.length > 0 ? filteredResponse : formattedBody;
 
   return (
     <Editor
