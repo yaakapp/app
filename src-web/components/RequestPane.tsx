@@ -262,13 +262,15 @@ export const RequestPane = memo(function RequestPane({
               options:
                 requests.length > 0
                   ? [
-                      ...requests.map(
-                        (r) =>
-                          ({
-                            type: 'constant',
-                            label: r.url,
-                          } as GenericCompletionOption),
-                      ),
+                      ...requests
+                        .filter((r) => r.id !== activeRequestId)
+                        .map(
+                          (r) =>
+                            ({
+                              type: 'constant',
+                              label: r.url,
+                            } as GenericCompletionOption),
+                        ),
                     ]
                   : [
                       { label: 'http://', type: 'constant' },

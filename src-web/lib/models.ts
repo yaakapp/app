@@ -220,3 +220,7 @@ export function modelsEq(a: Model, b: Model) {
   }
   return false;
 }
+
+export function getContentTypeHeader(headers: HttpHeader[]): string | null {
+  return headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? null;
+}
