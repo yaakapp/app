@@ -35,6 +35,7 @@ import { HStack, VStack } from './Stacks';
 export type DropdownItemSeparator = {
   type: 'separator';
   label?: string;
+  hidden?: boolean;
 };
 
 export type DropdownItemDefault = {
@@ -373,7 +374,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       right: onRight ? docRect.width - triggerShape.right : undefined,
       left: !onRight ? triggerShape.left : undefined,
       minWidth: fullWidth ? triggerWidth : undefined,
-      maxWidth: '25rem',
+      maxWidth: '40rem',
     };
     const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
     const triangleStyles = onRight
@@ -456,15 +457,15 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                     <span className="text-fg-subtler text-center px-2 py-1">No matches</span>
                   )}
                   {filteredItems.map((item, i) => {
+                    if (item.hidden) {
+                      return null;
+                    }
                     if (item.type === 'separator') {
                       return (
                         <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
                           {item.label}
                         </Separator>
                       );
-                    }
-                    if (item.hidden) {
-                      return null;
                     }
                     return (
                       <MenuItem
@@ -538,9 +539,8 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         'h-xs', // More compact
         'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
         'focus:bg-background-highlight focus:text-fg rounded',
-        item.variant === 'default' && 'text-fg-subtle',
-        item.variant === 'danger' && 'text-fg-danger',
-        item.variant === 'notify' && 'text-fg-primary',
+        item.variant === 'danger' && '!text-fg-danger',
+        item.variant === 'notify' && '!text-fg-primary',
       )}
       {...props}
     >

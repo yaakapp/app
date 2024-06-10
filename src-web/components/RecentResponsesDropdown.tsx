@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
+import { useSaveResponse } from '../hooks/useSaveResponse';
 import type { HttpResponse } from '../lib/models';
 import { pluralize } from '../lib/pluralize';
 import { Dropdown } from './core/Dropdown';
@@ -25,24 +26,43 @@ export const RecentResponsesDropdown = function ResponsePane({
   const deleteResponse = useDeleteHttpResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
   const latestResponseId = responses[0]?.id ?? 'n/a';
+  const saveResponse = useSaveResponse(activeResponse);
 
   return (
     <Dropdown
       items={[
         {
+          key: 'save',
+          label: 'Save to File',
+          onSelect: saveResponse.mutate,
+          leftSlot: <Icon icon="save" />,
+          hidden: responses.length === 0,
+          disabled: responses.length === 0,
+        },
+        {
           key: 'clear-single',
-          label: 'Clear Response',
+          label: 'Delete',
+          leftSlot: <Icon icon="trash" />,
           onSelect: deleteResponse.mutate,
           disabled: responses.length === 0,
         },
         {
+          key: 'unpin',
+          label: 'Unpin Response',
+          onSelect: () => onPinnedResponseId(activeResponse.id),
+          leftSlot: <Icon icon="unpin" />,
+          hidden: latestResponseId === activeResponse.id,
+          disabled: responses.length === 0,
+        },
+        { type: 'separator', label: 'History' },
+        {
           key: 'clear-all',
-          label: `Clear ${responses.length} ${pluralize('Response', responses.length)}`,
+          label: `Delete ${responses.length} ${pluralize('Response', responses.length)}`,
           onSelect: deleteAllResponses.mutate,
           hidden: responses.length <= 1,
           disabled: responses.length === 0,
         },
-        { type: 'separator', label: 'History' },
+        { type: 'separator' },
         ...responses.slice(0, 20).map((r: HttpResponse) => ({
           key: r.id,
           label: (
