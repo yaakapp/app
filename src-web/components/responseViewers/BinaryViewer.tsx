@@ -13,13 +13,13 @@ export function BinaryViewer({ response }: Props) {
   const saveResponse = useSaveResponse(response);
   const contentType = getContentTypeHeader(response.headers) ?? 'unknown';
   return (
-    <Banner color="warning" className="h-full flex flex-col gap-3">
+    <Banner color="primary" className="h-full flex flex-col gap-3">
       <p>
         Content type <InlineCode>{contentType}</InlineCode> cannot be previewed
       </p>
       <div>
         <Button variant="border" size="sm" onClick={() => saveResponse.mutate()}>
-          Save
+          Save to File
         </Button>
       </div>
     </Banner>
