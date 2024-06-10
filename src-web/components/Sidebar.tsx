@@ -159,20 +159,6 @@ export function Sidebar({ className }: Props) {
     return { tree, treeParentMap, selectableRequests, selectedRequest };
   }, [activeWorkspace, selectedId, requests, folders, collapsed.value]);
 
-  const jumpToRequest = async (index: number) => {
-    const r = selectableRequests[index];
-    if (r != null) await handleSelect(r.id, { noFocus: true });
-  };
-
-  useHotKey('sidebar.jump_1', () => jumpToRequest(0));
-  useHotKey('sidebar.jump_2', () => jumpToRequest(1));
-  useHotKey('sidebar.jump_3', () => jumpToRequest(2));
-  useHotKey('sidebar.jump_4', () => jumpToRequest(3));
-  useHotKey('sidebar.jump_5', () => jumpToRequest(4));
-  useHotKey('sidebar.jump_6', () => jumpToRequest(5));
-  useHotKey('sidebar.jump_7', () => jumpToRequest(6));
-  useHotKey('sidebar.jump_8', () => jumpToRequest(7));
-
   const focusActiveRequest = useCallback(
     (
       args: {

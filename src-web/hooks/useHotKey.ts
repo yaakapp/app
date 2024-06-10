@@ -18,14 +18,6 @@ export type HotkeyAction =
   | 'request_switcher.toggle'
   | 'settings.show'
   | 'sidebar.focus'
-  | 'sidebar.jump_1'
-  | 'sidebar.jump_2'
-  | 'sidebar.jump_3'
-  | 'sidebar.jump_4'
-  | 'sidebar.jump_5'
-  | 'sidebar.jump_6'
-  | 'sidebar.jump_7'
-  | 'sidebar.jump_8'
   | 'urlBar.focus'
   | 'command_palette.toggle'
   | 'app.zoom_in'
@@ -44,14 +36,6 @@ const hotkeys: Record<HotkeyAction, string[]> = {
   'request_switcher.toggle': ['CmdCtrl+p'],
   'settings.show': ['CmdCtrl+,'],
   'sidebar.focus': ['CmdCtrl+b'],
-  'sidebar.jump_1': ['CmdCtrl+1'],
-  'sidebar.jump_2': ['CmdCtrl+2'],
-  'sidebar.jump_3': ['CmdCtrl+3'],
-  'sidebar.jump_4': ['CmdCtrl+4'],
-  'sidebar.jump_5': ['CmdCtrl+5'],
-  'sidebar.jump_6': ['CmdCtrl+6'],
-  'sidebar.jump_7': ['CmdCtrl+7'],
-  'sidebar.jump_8': ['CmdCtrl+8'],
   'urlBar.focus': ['CmdCtrl+l'],
   'command_palette.toggle': ['CmdCtrl+k'],
   'app.zoom_in': ['CmdCtrl+='],
@@ -71,14 +55,6 @@ const hotkeyLabels: Record<HotkeyAction, string> = {
   'request_switcher.toggle': 'Toggle Request Switcher',
   'settings.show': 'Open Settings',
   'sidebar.focus': 'Focus or Toggle Sidebar',
-  'sidebar.jump_1': 'Jump to request 1',
-  'sidebar.jump_2': 'Jump to request 2',
-  'sidebar.jump_3': 'Jump to request 3',
-  'sidebar.jump_4': 'Jump to request 4',
-  'sidebar.jump_5': 'Jump to request 5',
-  'sidebar.jump_6': 'Jump to request 6',
-  'sidebar.jump_7': 'Jump to request 7',
-  'sidebar.jump_8': 'Jump to request 8',
   'urlBar.focus': 'Focus URL',
   'command_palette.toggle': 'Toggle Command Palette',
   'app.zoom_in': 'Zoom In',
