@@ -6,7 +6,6 @@ import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { environmentsQueryKey } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
-import { useGlobalCommands } from '../hooks/useGlobalCommands';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
 import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
@@ -42,7 +41,6 @@ export function GlobalHooks() {
 
   // Other useful things
   useSyncThemeToDocument();
-  useGlobalCommands();
   useCommandPalette();
   useNotificationToast();
 
