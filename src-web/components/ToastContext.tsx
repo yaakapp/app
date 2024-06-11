@@ -67,7 +67,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     <ToastContext.Provider value={state}>
       {children}
       <Portal name="toasts">
-        <div className="absolute right-0 bottom-0">
+        <div className="absolute right-0 bottom-0 z-10">
           <AnimatePresence>
             {toasts.map((props: PrivateToastEntry) => (
               <ToastInstance key={props.id} {...props} />
