@@ -2,12 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { Editor } from './Editor';
 import type { PairEditorProps } from './PairEditor';
 
-type Props = Pick<
-  PairEditorProps,
-  'onChange' | 'pairs' | 'namePlaceholder' | 'valuePlaceholder'
-> & {
-  foo?: string;
-};
+type Props = PairEditorProps;
 
 export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlaceholder }: Props) {
   const pairsText = useMemo(() => {
@@ -30,6 +25,8 @@ export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlacehol
 
   return (
     <Editor
+      useTemplating
+      autocompleteVariables
       placeholder={`${namePlaceholder ?? 'name'}: ${valuePlaceholder ?? 'value'}`}
       defaultValue={pairsText}
       contentType="pairs"
