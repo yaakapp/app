@@ -603,7 +603,7 @@ const SidebarItem = forwardRef(function SidebarItem(
 ) {
   const activeRequest = useActiveRequest();
   const deleteFolder = useDeleteFolder(itemId);
-  const deleteRequest = useDeleteRequest(activeRequest ?? null);
+  const deleteRequest = useDeleteRequest(itemId);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const copyAsCurl = useCopyAsCurl(itemId);
