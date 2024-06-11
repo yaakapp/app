@@ -32,12 +32,24 @@ import { monokaiProDefault } from '../lib/theme/themes/monokai-pro';
 import { rosePineDefault } from '../lib/theme/themes/rose-pine';
 import { yaakDark } from '../lib/theme/themes/yaak';
 import { getThemeCSS } from '../lib/theme/window';
+import { Button } from './core/Button';
+import { useToast } from './ToastContext';
 
 export function GlobalHooks() {
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
   useRecentRequests();
+
+  const toast = useToast();
+  useEffect(() => {
+    toast.show({
+      id: 'test',
+      message: 'Hello Toast!',
+      action: <Button color="primary">HEllo</Button>,
+      timeout: 1000000,
+    });
+  }, [toast]);
 
   // Other useful things
   useSyncThemeToDocument();
