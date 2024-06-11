@@ -305,7 +305,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const { filteredGroups, filteredAllItems } = useMemo(() => {
     const result = command
       ? search(command, allItems, {
-          threshold: 0.4,
+          threshold: 0.5,
           keySelector: (v) => ('searchText' in v ? v.searchText : v.label),
         })
       : allItems;
