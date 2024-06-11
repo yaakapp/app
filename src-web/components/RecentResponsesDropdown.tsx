@@ -68,7 +68,7 @@ export const RecentResponsesDropdown = function ResponsePane({
           label: (
             <HStack space={2}>
               <StatusTag className="text-sm" response={r} />
-              <span>&rarr;</span>{' '}
+              <span className="text-fg-subtle">&rarr;</span>{' '}
               <span className="font-mono text-sm">{r.elapsed >= 0 ? `${r.elapsed}ms` : 'n/a'}</span>
             </HStack>
           ),
