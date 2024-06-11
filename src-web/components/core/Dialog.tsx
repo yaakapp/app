@@ -59,12 +59,7 @@ export function Dialog({
           vAlign === 'center' && 'justify-center',
         )}
       >
-        <div
-          role="dialog"
-          aria-labelledby={titleId}
-          aria-describedby={descriptionId}
-          className="pointer-events-auto"
-        >
+        <div role="dialog" aria-labelledby={titleId} aria-describedby={descriptionId}>
           <motion.div
             initial={{ top: 5, scale: 0.97 }}
             animate={{ top: 0, scale: 1 }}
