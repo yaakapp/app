@@ -9,6 +9,7 @@ export function useCommandPalette() {
       id: 'command_palette',
       size: 'dynamic',
       hideX: true,
+      className: '!max-h-[min(30rem,calc(100vh-4rem))]',
       vAlign: 'top',
       noPadding: true,
       noScroll: true,

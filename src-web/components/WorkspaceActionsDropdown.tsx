@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useCommand } from '../hooks/useCommands';
+import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
@@ -28,7 +28,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);
   const deleteWorkspace = useDeleteWorkspace(activeWorkspace);
-  const createWorkspace = useCommand('workspace.create');
+  const createWorkspace = useCreateWorkspace();
   const dialog = useDialog();
   const prompt = usePrompt();
   const settings = useSettings();
@@ -101,7 +101,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         key: 'create-workspace',
         label: 'New Workspace',
         leftSlot: <Icon icon="plus" />,
-        onSelect: () => createWorkspace.mutate({}),
+        onSelect: createWorkspace.mutate,
       },
     ];
   }, [
