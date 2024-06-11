@@ -21,7 +21,7 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
 import type { PairEditorProps } from './core/PairEditor';
-import { PairEditor } from './core/PairEditor';
+import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { Separator } from './core/Separator';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack, VStack } from './core/Stacks';
@@ -185,18 +185,20 @@ const EnvironmentEditor = function ({
           />
         </Heading>
       </HStack>
-      <PairEditor
-        className="pr-2"
-        nameAutocomplete={nameAutocomplete}
-        nameAutocompleteVariables={false}
-        namePlaceholder="VAR_NAME"
-        nameValidate={validateName}
-        valueType={valueVisibility.value ? 'text' : 'password'}
-        valueAutocompleteVariables={false}
-        forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}
-        pairs={variables}
-        onChange={handleChange}
-      />
+      <div className="h-full pr-2 pb-2">
+        <PairOrBulkEditor
+          preferenceName="environment"
+          nameAutocomplete={nameAutocomplete}
+          nameAutocompleteVariables={false}
+          namePlaceholder="VAR_NAME"
+          nameValidate={validateName}
+          valueType={valueVisibility.value ? 'text' : 'password'}
+          valueAutocompleteVariables={false}
+          forceUpdateKey={environment?.id ?? workspace?.id ?? 'n/a'}
+          pairs={variables}
+          onChange={handleChange}
+        />
+      </div>
     </VStack>
   );
 };
