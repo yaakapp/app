@@ -14,7 +14,7 @@ export function useCreateHttpRequest() {
   const routes = useAppRoutes();
 
   return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
-    mutationFn: (patch) => {
+    mutationFn: (patch = {}) => {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
@@ -28,7 +28,6 @@ export function useCreateHttpRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      console.log('PATCH', patch);
       return invoke('cmd_create_http_request', { request: { workspaceId, ...patch } });
     },
     onSettled: () => trackEvent('http_request', 'create'),
