@@ -274,7 +274,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       let nextIndex = (currIndex ?? 0) - 1;
       const maxTries = items.length;
       for (let i = 0; i < maxTries; i++) {
-        if (items[nextIndex]?.type === 'separator') {
+        if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
           nextIndex--;
         } else if (nextIndex < 0) {
           nextIndex = items.length - 1;
@@ -291,7 +291,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
       let nextIndex = (currIndex ?? -1) + 1;
       const maxTries = items.length;
       for (let i = 0; i < maxTries; i++) {
-        if (items[nextIndex]?.type === 'separator') {
+        if (items[nextIndex]?.hidden || items[nextIndex]?.type === 'separator') {
           nextIndex++;
         } else if (nextIndex >= items.length) {
           nextIndex = 0;
