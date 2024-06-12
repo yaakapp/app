@@ -18,11 +18,13 @@ export function useClipboardText() {
   const setText = useCallback(
     (text: string) => {
       writeText(text).catch(console.error);
-      toast.show({
-        id: 'copied',
-        variant: 'copied',
-        message: 'Copied to clipboard',
-      });
+      if (text != '') {
+        toast.show({
+          id: 'copied',
+          variant: 'copied',
+          message: 'Copied to clipboard',
+        });
+      }
       setValue(text);
     },
     [setValue, toast],
