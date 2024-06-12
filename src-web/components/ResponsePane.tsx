@@ -5,7 +5,6 @@ import { createGlobalState } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import { isBinaryContentType } from '../lib/data/mimetypes';
 import type { HttpRequest } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
@@ -22,7 +21,6 @@ import { EmptyStateText } from './EmptyStateText';
 import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
 import { AudioViewer } from './responseViewers/AudioViewer';
-import { BinaryViewer } from './responseViewers/BinaryViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
@@ -163,12 +161,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <VideoViewer response={activeResponse} />
                 ) : contentType?.match(/pdf/) ? (
                   <PdfViewer response={activeResponse} />
-                ) : isBinaryContentType(contentType) ? (
-                  <BinaryViewer response={activeResponse} />
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
-                ) : activeResponse.contentLength > 2 * 1000 * 1000 ? (
-                  <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>
                 ) : viewMode === 'pretty' && contentType?.includes('html') ? (
                   <WebPageViewer response={activeResponse} />
                 ) : (
