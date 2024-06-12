@@ -206,28 +206,3 @@ export const mimeTypes = [
   'video/x-flv',
   'video/x-m4v',
 ];
-
-export function isBinaryContentType(contentType: string | null) {
-  const mimeType = contentType?.split(';')[0];
-  if (mimeType == null) return false;
-
-  const [first, second] = mimeType.split('/').map((s) => s.trim().toLowerCase());
-  if (first == 'text' || second == null) {
-    return false;
-  }
-
-  if (first != 'application') {
-    return true;
-  }
-
-  const isTextSubtype =
-    second === 'json' ||
-    second === 'ld+json' ||
-    second === 'x-httpd-php' ||
-    second === 'x-sh' ||
-    second === 'x-csh' ||
-    second === 'xhtml+xml' ||
-    second === 'xml';
-
-  return !isTextSubtype;
-}

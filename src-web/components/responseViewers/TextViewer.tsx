@@ -12,6 +12,8 @@ import { Editor } from '../core/Editor';
 import { hyperlink } from '../core/Editor/hyperlink/extension';
 import { IconButton } from '../core/IconButton';
 import { Input } from '../core/Input';
+import { EmptyStateText } from '../EmptyStateText';
+import { BinaryViewer } from './BinaryViewer';
 
 const extraExtensions = [hyperlink];
 
@@ -98,7 +100,11 @@ export function TextViewer({ response, pretty, className }: Props) {
   }, [canFilter, filterText, isJson, isSearching, response.id, setFilterText, toggleSearch]);
 
   if (rawBody == null) {
-    return 'bad';
+    return <BinaryViewer response={response} />;
+  }
+
+  if ((response.contentLength ?? 0) > 2 * 1000 * 1000) {
+    return <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>;
   }
 
   const formattedBody =
