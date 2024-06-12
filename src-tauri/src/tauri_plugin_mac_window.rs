@@ -1,4 +1,5 @@
 use hex_color::HexColor;
+use log::warn;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
 use tauri::{
@@ -25,15 +26,35 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                 let window_for_theme = window.clone();
                 let id1 = h.listen("yaak_bg_changed", move |ev| {
-                    let payload = serde_json::from_str::<&str>(ev.payload()).unwrap().trim();
-                    let color = HexColor::parse_rgb(payload).unwrap();
-                    update_window_theme(window_for_theme.clone(), color);
+                    let color_str: String = match serde_json::from_str(ev.payload()) {
+                        Ok(color) => color,
+                        Err(err) => {
+                            warn!("Failed to JSON parse color '{}': {}", ev.payload(), err);
+                            return;
+                        }
+                    };
+
+                    match HexColor::parse_rgb(color_str.trim()) {
+                        Ok(color) => {
+                            update_window_theme(window_for_theme.clone(), color);
+                        }
+                        Err(err) => {
+                            warn!("Failed to parse background color '{}': {}", color_str, err)
+                        }
+                    }
                 });
 
                 let window_for_title = window.clone();
                 let id2 = h.listen("yaak_title_changed", move |ev| {
-                    let payload = serde_json::from_str::<&str>(ev.payload()).unwrap().trim();
-                    update_window_title(window_for_title.clone(), payload.to_string());
+                    let title: String = match serde_json::from_str(ev.payload()) {
+                        Ok(title) => title,
+                        Err(err) => {
+                            warn!("Failed to parse window title \"{}\": {}", ev.payload(), err);
+                            return;
+                        }
+                    };
+
+                    update_window_title(window_for_title.clone(), title);
                 });
 
                 let h = h.clone();
