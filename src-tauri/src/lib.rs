@@ -735,7 +735,7 @@ async fn cmd_filter_response(
     };
 
     let body = read_to_string(response.body_path.unwrap()).unwrap();
-    let filter_result = plugin::run_plugin_filter(plugin_name, filter, &body)
+    let filter_result = plugin::run_plugin_filter(&w.app_handle(), plugin_name, filter, &body)
         .await
         .expect("Failed to run filter");
     Ok(filter_result.filtered)
@@ -758,7 +758,7 @@ async fn cmd_import_data(
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     for plugin_name in plugins {
-        let v = run_plugin_import(plugin_name, file_contents)
+        let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)
             .await
             .map_err(|e| e.to_string())?;
         if let Some(r) = v {
@@ -903,12 +903,12 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    Ok(run_plugin_export_curl(&rendered)?)
+    Ok(run_plugin_export_curl(&app, &rendered)?)
 }
 
 #[tauri::command]
-async fn cmd_curl_to_request(command: &str, workspace_id: &str) -> Result<HttpRequest, String> {
-    let v = run_plugin_import("importer-curl", command)
+async fn cmd_curl_to_request(app_handle: AppHandle, command: &str, workspace_id: &str) -> Result<HttpRequest, String> {
+    let v = run_plugin_import(&app_handle, "importer-curl", command)
         .await
         .map_err(|e| e.to_string());
     match v {

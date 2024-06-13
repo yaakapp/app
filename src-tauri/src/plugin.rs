@@ -2,6 +2,8 @@ use std::path;
 
 use log::error;
 use serde::{Deserialize, Serialize};
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 
 use crate::deno::run_plugin_deno_block;
 use crate::models::{HttpRequest, WorkspaceExportResources};
@@ -17,12 +19,17 @@ pub struct ImportResult {
 }
 
 pub async fn run_plugin_filter(
+    app_handle: &AppHandle,
     plugin_name: &str,
     response_body: &str,
     filter: &str,
 ) -> Option<FilterResult> {
-    let plugin_dir = path::Path::new("/Users/gschier/Workspace/yaak/plugins");
-    let plugin_index_file = plugin_dir.join(plugin_name).join("build/index.mjs");
+    let plugin_dir = app_handle
+        .path()
+        .resolve("plugins", BaseDirectory::Resource)
+        .expect("failed to resolve plugin directory resource")
+        .join(plugin_name);
+    let plugin_index_file = plugin_dir.join("index.mjs");
 
     let result = run_plugin_deno_block(
         plugin_index_file.to_str().unwrap(),
@@ -45,9 +52,16 @@ pub async fn run_plugin_filter(
     Some(resources)
 }
 
-pub fn run_plugin_export_curl(request: &HttpRequest) -> Result<String, String> {
-    let plugin_dir = path::Path::new("/Users/gschier/Workspace/yaak/plugins");
-    let plugin_index_file = plugin_dir.join("exporter-curl").join("build/index.mjs");
+pub fn run_plugin_export_curl(
+    app_handle: &AppHandle,
+    request: &HttpRequest,
+) -> Result<String, String> {
+    let plugin_dir = app_handle
+        .path()
+        .resolve("plugins", BaseDirectory::Resource)
+        .expect("failed to resolve plugin directory resource")
+        .join("exporter-curl");
+    let plugin_index_file = plugin_dir.join("index.mjs");
 
     let request_json = serde_json::to_value(request).map_err(|e| e.to_string())?;
     let result = run_plugin_deno_block(
@@ -62,11 +76,16 @@ pub fn run_plugin_export_curl(request: &HttpRequest) -> Result<String, String> {
 }
 
 pub async fn run_plugin_import(
+    app_handle: &AppHandle,
     plugin_name: &str,
     file_contents: &str,
 ) -> Result<Option<ImportResult>, String> {
-    let plugin_dir = path::Path::new("/Users/gschier/Workspace/yaak/plugins");
-    let plugin_index_file = plugin_dir.join(plugin_name).join("build/index.mjs");
+    let plugin_dir = app_handle
+        .path()
+        .resolve("plugins", BaseDirectory::Resource)
+        .expect("failed to resolve plugin directory resource")
+        .join(plugin_name);
+    let plugin_index_file = plugin_dir.join("index.mjs");
 
     let result = run_plugin_deno_block(
         plugin_index_file.to_str().unwrap(),

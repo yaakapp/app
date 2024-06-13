@@ -59,7 +59,7 @@ export function ExportDataDialog({
   const noneSelected = numSelected === 0;
   return (
     <VStack space={3} className="w-full mb-3 px-4">
-      <table className="w-full mb-auto min-w-full max-w-full divide-y">
+      <table className="w-full mb-auto min-w-full max-w-full divide-y divide-background-highlight-secondary">
         <thead>
           <tr>
             <th className="w-6 min-w-0 py-2 text-left pl-1">
@@ -76,7 +76,7 @@ export function ExportDataDialog({
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y">
+        <tbody className="divide-y divide-background-highlight-secondary">
           {workspaces.map((w) => (
             <tr key={w.id}>
               <td className="min-w-0 py-1 pl-1">

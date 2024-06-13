@@ -1,15 +1,15 @@
 var Xe = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-function Nt(le) {
-  return le && le.__esModule && Object.prototype.hasOwnProperty.call(le, "default") ? le.default : le;
+function Nt(ce) {
+  return ce && ce.__esModule && Object.prototype.hasOwnProperty.call(ce, "default") ? ce.default : ce;
 }
-function Be(le) {
-  throw new Error('Could not dynamically require "' + le + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
+function Be(ce) {
+  throw new Error('Could not dynamically require "' + ce + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
 }
 var Ve = { exports: {} };
 /*! jsonpath 1.1.1 */
-(function(le, Ne) {
+(function(ce, Ne) {
   (function(T) {
-    le.exports = T();
+    ce.exports = T();
   })(function() {
     return function T(L, B, v) {
       function y(E, d) {
@@ -1131,7 +1131,7 @@ var Ve = { exports: {} };
         function Ze() {
           var e = [], t;
           for (t = i, O("["); !_("]"); )
-            _(",") ? (N(), e.push(null)) : (e.push(ce()), _("]") || O(","));
+            _(",") ? (N(), e.push(null)) : (e.push(le()), _("]") || O(","));
           return N(), n.markEnd(n.createArrayExpression(e), t);
         }
         function _e(e, t) {
@@ -1145,11 +1145,11 @@ var Ve = { exports: {} };
         function et() {
           var e, t, u, l, C, x;
           if (e = i, x = i, e.type === y.Identifier)
-            return u = De(), e.value === "get" && !_(":") ? (t = De(), O("("), O(")"), l = _e([]), n.markEnd(n.createProperty("get", t, l), x)) : e.value === "set" && !_(":") ? (t = De(), O("("), e = i, e.type !== y.Identifier ? (O(")"), G(e, a.UnexpectedToken, e.value), l = _e([])) : (C = [ye()], O(")"), l = _e(C, e)), n.markEnd(n.createProperty("set", t, l), x)) : (O(":"), l = ce(), n.markEnd(n.createProperty("init", u, l), x));
+            return u = De(), e.value === "get" && !_(":") ? (t = De(), O("("), O(")"), l = _e([]), n.markEnd(n.createProperty("get", t, l), x)) : e.value === "set" && !_(":") ? (t = De(), O("("), e = i, e.type !== y.Identifier ? (O(")"), G(e, a.UnexpectedToken, e.value), l = _e([])) : (C = [ye()], O(")"), l = _e(C, e)), n.markEnd(n.createProperty("set", t, l), x)) : (O(":"), l = le(), n.markEnd(n.createProperty("init", u, l), x));
           if (e.type === y.EOF || e.type === y.Punctuator)
             pe(e);
           else
-            return t = De(), O(":"), l = ce(), n.markEnd(n.createProperty("init", t, l), x);
+            return t = De(), O(":"), l = le(), n.markEnd(n.createProperty("init", t, l), x);
         }
         function tt() {
           var e = [], t, u, l, C, x = {}, j = String, W;
@@ -1184,7 +1184,7 @@ var Ve = { exports: {} };
         function je() {
           var e = [];
           if (O("("), !_(")"))
-            for (; r < h && (e.push(ce()), !_(")")); )
+            for (; r < h && (e.push(le()), !_(")")); )
               O(",");
           return O(")"), e;
         }
@@ -1300,17 +1300,17 @@ var Ve = { exports: {} };
         }
         function st() {
           var e, t, u, l, C;
-          return C = i, e = at(), _("?") && (N(), t = p.allowIn, p.allowIn = !0, u = ce(), p.allowIn = t, O(":"), l = ce(), e = n.createConditionalExpression(e, u, l), n.markEnd(e, C)), e;
+          return C = i, e = at(), _("?") && (N(), t = p.allowIn, p.allowIn = !0, u = le(), p.allowIn = t, O(":"), l = le(), e = n.createConditionalExpression(e, u, l), n.markEnd(e, C)), e;
         }
-        function ce() {
+        function le() {
           var e, t, u, l, C;
-          return e = i, C = i, l = t = st(), Ye() && (be(t) || G({}, a.InvalidLHSInAssignment), c && t.type === E.Identifier && J(t.name) && G(e, a.StrictLHSAssignment), e = N(), u = ce(), l = n.markEnd(n.createAssignmentExpression(e.value, t, u), C)), l;
+          return e = i, C = i, l = t = st(), Ye() && (be(t) || G({}, a.InvalidLHSInAssignment), c && t.type === E.Identifier && J(t.name) && G(e, a.StrictLHSAssignment), e = N(), u = le(), l = n.markEnd(n.createAssignmentExpression(e.value, t, u), C)), l;
         }
         function te() {
           var e, t = i;
-          if (e = ce(), _(",")) {
+          if (e = le(), _(",")) {
             for (e = n.createSequenceExpression([e]); r < h && _(","); )
-              N(), e.expressions.push(ce());
+              N(), e.expressions.push(le());
             n.markEnd(e, t);
           }
           return e;
@@ -1330,7 +1330,7 @@ var Ve = { exports: {} };
         }
         function lt(e) {
           var t = null, u, l;
-          return l = i, u = ye(), c && J(u.name) && G({}, a.StrictVarName), e === "const" ? (O("="), t = ce()) : _("=") && (N(), t = ce()), n.markEnd(n.createVariableDeclarator(u, t), l);
+          return l = i, u = ye(), c && J(u.name) && G({}, a.StrictVarName), e === "const" ? (O("="), t = le()) : _("=") && (N(), t = le()), n.markEnd(n.createVariableDeclarator(u, t), l);
         }
         function Te(e) {
           var t = [];
@@ -3176,16 +3176,17 @@ Expecting ` + se.join(", ") + ", got '" + (this.terminals_[w] || w) + "'" : ie =
 })(Ve);
 var Pt = Ve.exports;
 const Lt = /* @__PURE__ */ Nt(Pt);
-function Rt(le, Ne) {
-  let T;
+function Rt(ce, Ne, T) {
+  let L;
   try {
-    T = JSON.parse(Ne);
+    L = JSON.parse(T);
   } catch {
     return;
   }
-  const L = Lt.query(T, le);
-  return { filtered: JSON.stringify(L, null, 2) };
+  const B = Lt.query(L, Ne);
+  return { filtered: JSON.stringify(B, null, 2) };
 }
 export {
   Rt as pluginHookResponseFilter
 };
+//# sourceMappingURL=index.mjs.map

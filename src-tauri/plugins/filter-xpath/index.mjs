@@ -6116,10 +6116,11 @@ Tr.__DOMHandler = Dr;
 Tr.normalizeLineEndings = Rt;
 Tr.DOMParser = _t;
 var Cu = Tr.DOMParser;
-function yu(t, u) {
-  const n = new Cu().parseFromString(u, "text/xml");
-  return { filtered: `${Qt.select(t, n)}` };
+function yu(t, u, n) {
+  const s = new Cu().parseFromString(n, "text/xml");
+  return { filtered: `${Qt.select(u, s)}` };
 }
 export {
   yu as pluginHookResponseFilter
 };
+//# sourceMappingURL=index.mjs.map
