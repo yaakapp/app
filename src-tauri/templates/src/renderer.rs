@@ -1,7 +1,8 @@
-use crate::{Parser, Token, Val};
 use std::collections::HashMap;
 
-type TemplateCallback = fn(name: &str, args: Vec<&str>) -> String;
+use crate::{Parser, Token, Val};
+
+type TemplateCallback = fn(name: &str, args: Vec<String>) -> String;
 
 pub fn parse_and_render(
     template: &str,
@@ -23,26 +24,7 @@ pub fn render(
     for t in tokens {
         match t {
             Token::Raw(s) => doc_str.push(s),
-            Token::Var { name } => {
-                if let Some(v) = vars.get(name.as_str()) {
-                    doc_str.push(v.to_string());
-                }
-            }
-            Token::Fn { name, args } => {
-                let empty = &"";
-                let resolved_args = args
-                    .iter()
-                    .map(|a| match a {
-                        Val::Str(s) => s.as_str(),
-                        Val::Ident(i) => vars.get(i.as_str()).unwrap_or(empty),
-                    })
-                    .collect();
-                let val = match cb {
-                    Some(cb) => cb(name.as_str(), resolved_args),
-                    None => "".into(),
-                };
-                doc_str.push(val);
-            }
+            Token::Tag(val) => doc_str.push(render_tag(val, vars.clone(), cb)),
             Token::Eof => {}
         }
     }
@@ -50,10 +32,40 @@ pub fn render(
     return doc_str.join("");
 }
 
+fn render_tag<'s>(
+    val: Val,
+    vars: HashMap<&'s str, &'s str>,
+    cb: Option<TemplateCallback>,
+) -> String {
+    match val {
+        Val::Str(s) => s.into(),
+        Val::Var(name) => match vars.get(name.as_str()) {
+            Some(v) => v.to_string(),
+            None => "".into(),
+        },
+        Val::Fn { name, args } => {
+            let empty = &"";
+            let resolved_args = args
+                .iter()
+                .map(|a| match a {
+                    Val::Str(s) => s.to_string(),
+                    Val::Var(i) => vars.get(i.as_str()).unwrap_or(empty).to_string(),
+                    val => render_tag(val.clone(), vars.clone(), cb),
+                })
+                .collect::<Vec<String>>();
+            match cb {
+                Some(cb) => cb(name.as_str(), resolved_args),
+                None => "".into(),
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::*;
     use std::collections::HashMap;
+
+    use crate::*;
 
     #[test]
     fn render_empty() {
@@ -92,8 +104,26 @@ mod tests {
         let vars = HashMap::new();
         let template = r#"${[ say_hello("John", "Kate") ]}"#;
         let result = r#"say_hello: ["John", "Kate"]"#;
-        let cb: fn(&str, Vec<&str>) -> String =
-            |name: &str, args: Vec<&str>| format!("{name}: {:?}", args);
+
+        fn cb(name: &str, args: Vec<String>) -> String {
+            format!("{name}: {:?}", args)
+        }
+        assert_eq!(parse_and_render(template, vars, Some(cb)), result);
+    }
+
+    #[test]
+    fn render_nested_fn() {
+        let vars = HashMap::new();
+        let template = r#"${[ upper(secret()) ]}"#;
+        let result = r#"ABC"#;
+        fn cb(name: &str, args: Vec<String>) -> String {
+            match name {
+                "secret" => "abc".to_string(),
+                "upper" => args[0].to_string().to_uppercase(),
+                _ => "".to_string(),
+            }
+        }
+
         assert_eq!(
             parse_and_render(template, vars, Some(cb)),
             result.to_string()
