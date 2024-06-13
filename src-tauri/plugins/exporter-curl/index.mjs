@@ -1,36 +1,37 @@
 const o = `\\
  `;
-function d(n) {
-  var h, f, r, u, l, s;
-  const t = ["curl"];
-  n.method && t.push("-X", n.method), n.url && t.push(i(n.url)), t.push(o);
-  for (const a of (n.urlParameters ?? []).filter(p))
-    t.push("--url-query", i(`${a.name}=${a.value}`)), t.push(o);
-  for (const a of (n.headers ?? []).filter(p))
-    t.push("--header", i(`${a.name}: ${a.value}`)), t.push(o);
-  if (Array.isArray((h = n.body) == null ? void 0 : h.form)) {
-    const a = n.bodyType === "multipart/form-data" ? "--form" : "--data";
-    for (const e of (((f = n.body) == null ? void 0 : f.form) ?? []).filter(p)) {
+function y(p, t) {
+  var f, r, u, l, s, c;
+  const n = ["curl"];
+  t.method && n.push("-X", t.method), t.url && n.push(i(t.url)), n.push(o);
+  for (const a of (t.urlParameters ?? []).filter(h))
+    n.push("--url-query", i(`${a.name}=${a.value}`)), n.push(o);
+  for (const a of (t.headers ?? []).filter(h))
+    n.push("--header", i(`${a.name}: ${a.value}`)), n.push(o);
+  if (Array.isArray((f = t.body) == null ? void 0 : f.form)) {
+    const a = t.bodyType === "multipart/form-data" ? "--form" : "--data";
+    for (const e of (((r = t.body) == null ? void 0 : r.form) ?? []).filter(h)) {
       if (e.file) {
-        let c = `${e.name}=@${e.file}`;
-        c += e.contentType ? `;type=${e.contentType}` : "", t.push(a, c);
+        let d = `${e.name}=@${e.file}`;
+        d += e.contentType ? `;type=${e.contentType}` : "", n.push(a, d);
       } else
-        t.push(a, i(`${e.name}=${e.value}`));
-      t.push(o);
+        n.push(a, i(`${e.name}=${e.value}`));
+      n.push(o);
     }
   } else
-    typeof ((r = n.body) == null ? void 0 : r.text) == "string" && (t.push("--data-raw", `$${i(n.body.text)}`), t.push(o));
-  return (n.authenticationType === "basic" || n.authenticationType === "digest") && (n.authenticationType === "digest" && t.push("--digest"), t.push(
+    typeof ((u = t.body) == null ? void 0 : u.text) == "string" && (n.push("--data-raw", `$${i(t.body.text)}`), n.push(o));
+  return (t.authenticationType === "basic" || t.authenticationType === "digest") && (t.authenticationType === "digest" && n.push("--digest"), n.push(
     "--user",
-    i(`${((u = n.authentication) == null ? void 0 : u.username) ?? ""}:${((l = n.authentication) == null ? void 0 : l.password) ?? ""}`)
-  ), t.push(o)), n.authenticationType === "bearer" && (t.push("--header", i(`Authorization: Bearer ${((s = n.authentication) == null ? void 0 : s.token) ?? ""}`)), t.push(o)), t[t.length - 1] === o && t.splice(t.length - 1, 1), t.join(" ");
+    i(`${((l = t.authentication) == null ? void 0 : l.username) ?? ""}:${((s = t.authentication) == null ? void 0 : s.password) ?? ""}`)
+  ), n.push(o)), t.authenticationType === "bearer" && (n.push("--header", i(`Authorization: Bearer ${((c = t.authentication) == null ? void 0 : c.token) ?? ""}`)), n.push(o)), n[n.length - 1] === o && n.splice(n.length - 1, 1), n.join(" ");
 }
-function i(n) {
-  return `'${n.replace(/'/g, "\\'")}'`;
+function i(p) {
+  return `'${p.replace(/'/g, "\\'")}'`;
 }
-function p(n) {
-  return n.enabled !== !1 && !!n.name;
+function h(p) {
+  return p.enabled !== !1 && !!p.name;
 }
 export {
-  d as pluginHookExport
+  y as pluginHookExport
 };
+//# sourceMappingURL=index.mjs.map

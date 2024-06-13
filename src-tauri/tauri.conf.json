@@ -1,6 +1,6 @@
 {
   "productName": "yaak",
-  "version": "2024.6.3",
+  "version": "2024.6.4",
   "identifier": "app.yaak.desktop",
   "build": {
     "beforeBuildCommand": "npm run build",
@@ -27,6 +27,7 @@
       "desktop": {
         "schemes": [
           "yaak"
+
         ]
       }
     },

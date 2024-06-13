@@ -10,6 +10,6 @@ export default defineConfig({
     },
     emptyOutDir: true,
     sourcemap: true,
-    outDir: resolve(__dirname, 'build'),
+    outDir: resolve(__dirname, '../../src-tauri/plugins/importer-yaak'),
   },
 });
