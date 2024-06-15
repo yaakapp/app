@@ -31,7 +31,7 @@ export function OpenWorkspaceDialog({ hide, workspace }: Props) {
           color="primary"
           onClick={() => {
             hide();
-            openWorkspace.mutate({ workspace, inNewWindow: false });
+            openWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: false });
             if (remember) {
               updateSettings.mutate({ openWorkspaceNewWindow: false });
             }
@@ -45,7 +45,7 @@ export function OpenWorkspaceDialog({ hide, workspace }: Props) {
           rightSlot={<Icon icon="externalLink" />}
           onClick={() => {
             hide();
-            openWorkspace.mutate({ workspace, inNewWindow: true });
+            openWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: true });
             if (remember) {
               updateSettings.mutate({ openWorkspaceNewWindow: true });
             }
