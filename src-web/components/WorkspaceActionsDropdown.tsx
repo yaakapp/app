@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
@@ -8,12 +8,14 @@ import { usePrompt } from '../hooks/usePrompt';
 import { useSettings } from '../hooks/useSettings';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
 import { useWorkspaces } from '../hooks/useWorkspaces';
+import { getWorkspace } from '../lib/store';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
 import type { DropdownItem } from './core/Dropdown';
-import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
+import type { RadioDropdownItem } from './core/RadioDropdown';
+import { RadioDropdown } from './core/RadioDropdown';
 import { useDialog } from './DialogContext';
 import { OpenWorkspaceDialog } from './OpenWorkspaceDialog';
 
@@ -35,39 +37,18 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const openWorkspace = useOpenWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
 
-  const items: DropdownItem[] = useMemo(() => {
-    const workspaceItems: DropdownItem[] = workspaces.map((w) => ({
+  const { workspaceItems, extraItems } = useMemo<{
+    workspaceItems: RadioDropdownItem[];
+    extraItems: DropdownItem[];
+  }>(() => {
+    const workspaceItems: RadioDropdownItem[] = workspaces.map((w) => ({
       key: w.id,
       label: w.name,
+      value: w.id,
       leftSlot: w.id === activeWorkspaceId ? <Icon icon="check" /> : <Icon icon="empty" />,
-      onSelect: async () => {
-        if (typeof openWorkspaceNewWindow === 'boolean') {
-          openWorkspace.mutate({ workspace: w, inNewWindow: openWorkspaceNewWindow });
-          return;
-        }
-
-        dialog.show({
-          id: 'open-workspace',
-          size: 'sm',
-          title: 'Open Workspace',
-          render: ({ hide }) => <OpenWorkspaceDialog workspace={w} hide={hide} />,
-        });
-      },
     }));
 
-    const activeWorkspaceItems: DropdownItem[] =
-      workspaces.length <= 1
-        ? []
-        : [
-            ...workspaceItems,
-            {
-              type: 'separator',
-              label: activeWorkspace?.name,
-            },
-          ];
-
-    return [
-      ...activeWorkspaceItems,
+    const extraItems: DropdownItem[] = [
       {
         key: 'rename',
         label: 'Rename',
@@ -104,21 +85,47 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         onSelect: createWorkspace.mutate,
       },
     ];
+
+    return { workspaceItems, extraItems };
   }, [
     activeWorkspace?.name,
     activeWorkspaceId,
     createWorkspace,
     deleteWorkspace.mutate,
-    dialog,
-    openWorkspace,
     prompt,
-    openWorkspaceNewWindow,
     updateWorkspace,
     workspaces,
   ]);
 
+  const handleChange = useCallback(
+    async (workspaceId: string | null) => {
+      if (workspaceId == null) return;
+
+      if (typeof openWorkspaceNewWindow === 'boolean') {
+        openWorkspace.mutate({ workspaceId, inNewWindow: openWorkspaceNewWindow });
+        return;
+      }
+
+      const workspace = await getWorkspace(workspaceId);
+      if (workspace == null) return;
+
+      dialog.show({
+        id: 'open-workspace',
+        size: 'sm',
+        title: 'Open Workspace',
+        render: ({ hide }) => <OpenWorkspaceDialog workspace={workspace} hide={hide} />,
+      });
+    },
+    [dialog, openWorkspace, openWorkspaceNewWindow],
+  );
+
   return (
-    <Dropdown items={items}>
+    <RadioDropdown
+      items={workspaceItems}
+      extraItems={extraItems}
+      onChange={handleChange}
+      value={activeWorkspaceId}
+    >
       <Button
         size="sm"
         className={classNames(
@@ -130,6 +137,6 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
       >
         {activeWorkspace?.name ?? 'Workspace'}
       </Button>
-    </Dropdown>
+    </RadioDropdown>
   );
 });

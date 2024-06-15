@@ -278,7 +278,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
         label: w.name,
-        onSelect: () => openWorkspace.mutate({ workspace: w, inNewWindow: false }),
+        onSelect: () => openWorkspace.mutate({ workspaceId: w.id, inNewWindow: false }),
       });
     }
 
