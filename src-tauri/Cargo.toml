@@ -56,3 +56,4 @@ tauri-plugin-window-state = "2.0.0-beta"
 tokio = { version = "1.36.0", features = ["sync"] }
 tokio-stream = "0.1.15"
 uuid = "1.7.0"
+thiserror = "1.0.61"

@@ -6,7 +6,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File, read_to_string};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -17,43 +17,46 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use sqlx::{Pool, Sqlite, SqlitePool};
+use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri::path::BaseDirectory;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
-use tauri::{AppHandle, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
+use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
-    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
-    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
-    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
+    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
+    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
+    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
+    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
+    duplicate_http_request, Environment, EnvironmentVariable, Folder, generate_model_id,
+    get_cookie_jar, get_environment, get_folder, get_grpc_connection,
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, list_cookie_jars,
-    list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
-    list_http_requests, list_responses, list_workspaces, set_key_value_raw, update_response_if_id,
-    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
-    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+    get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
+    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue,
+    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events,
+    list_grpc_requests, list_http_requests, list_responses, list_workspaces, ModelType,
+    set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment,
+    upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace,
     WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
-use crate::plugin::{run_plugin_export_curl, run_plugin_import, ImportResult};
+use crate::plugin::{
+    find_plugins, get_plugin, ImportResult, PluginCapability,
+    run_plugin_export_curl, run_plugin_filter, run_plugin_import,
+};
 use crate::render::render_request;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
@@ -735,7 +738,11 @@ async fn cmd_filter_response(
     };
 
     let body = read_to_string(response.body_path.unwrap()).unwrap();
-    let filter_result = plugin::run_plugin_filter(&w.app_handle(), plugin_name, filter, &body)
+    let plugin = match get_plugin(&w.app_handle(), plugin_name).map_err(|e| e.to_string())? {
+        None => return Err("Failed to get plugin".into()),
+        Some(p) => p,
+    };
+    let filter_result = run_plugin_filter(&plugin, filter, &body)
         .await
         .expect("Failed to run filter");
     Ok(filter_result.filtered)
@@ -748,26 +755,23 @@ async fn cmd_import_data(
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let mut result: Option<ImportResult> = None;
-    let plugins = vec![
-        "importer-postman",
-        "importer-insomnia",
-        "importer-yaak",
-        "importer-curl",
-    ];
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    for plugin_name in plugins {
-        let v = run_plugin_import(&w.app_handle(), plugin_name, file_contents)
+    let plugins = find_plugins(w.app_handle(), &PluginCapability::Import)
+        .await
+        .map_err(|e| e.to_string())?;
+    for plugin in plugins {
+        let v = run_plugin_import(&plugin, file_contents)
             .await
             .map_err(|e| e.to_string())?;
         if let Some(r) = v {
-            info!("Imported data using {}", plugin_name);
+            info!("Imported data using {}", plugin.name);
             analytics::track_event(
                 &w.app_handle(),
                 AnalyticsResource::App,
                 AnalyticsAction::Import,
-                Some(json!({ "plugin": plugin_name })),
+                Some(json!({ "plugin": plugin.name })),
             )
             .await;
             result = Some(r);
@@ -907,10 +911,17 @@ async fn cmd_request_to_curl(
 }
 
 #[tauri::command]
-async fn cmd_curl_to_request(app_handle: AppHandle, command: &str, workspace_id: &str) -> Result<HttpRequest, String> {
-    let v = run_plugin_import(&app_handle, "importer-curl", command)
-        .await
-        .map_err(|e| e.to_string());
+async fn cmd_curl_to_request(
+    app_handle: AppHandle,
+    command: &str,
+    workspace_id: &str,
+) -> Result<HttpRequest, String> {
+    let plugin = match get_plugin(&app_handle, "importer-curl").map_err(|e| e.to_string())? {
+        None => return Err("Failed to find plugin".into()),
+        Some(p) => p,
+    };
+
+    let v = run_plugin_import(&plugin, command).await;
     match v {
         Ok(Some(r)) => r
             .resources
