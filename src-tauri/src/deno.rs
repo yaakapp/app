@@ -9,7 +9,6 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use crate::deno_ops::op_yaml_parse;
 use anyhow::anyhow;
 use anyhow::bail;
 use anyhow::Context;
@@ -31,6 +30,9 @@ use deno_core::RuntimeOptions;
 use deno_core::SourceMapGetter;
 use deno_core::{resolve_import, v8};
 use tokio::task::block_in_place;
+
+use crate::deno_ops::op_yaml_parse;
+use crate::plugin::PluginCapability;
 
 #[derive(Clone)]
 struct SourceMapStore(Rc<RefCell<HashMap<String, Vec<u8>>>>);
@@ -134,13 +136,13 @@ impl ModuleLoader for TypescriptModuleLoader {
     }
 }
 
-pub fn run_plugin_deno_block(
+pub fn run_plugin_block(
     plugin_index_file: &str,
     fn_name: &str,
     fn_args: Vec<serde_json::Value>,
 ) -> Result<serde_json::Value, Error> {
     block_in_place(|| {
-        tauri::async_runtime::block_on(run_plugin_deno_2(plugin_index_file, fn_name, fn_args))
+        tauri::async_runtime::block_on(run_plugin(plugin_index_file, fn_name, fn_args))
     })
 }
 
@@ -151,39 +153,13 @@ deno_core::extension!(
     esm = [dir "src/plugin-runtime", "yaml.js"]
 );
 
-async fn run_plugin_deno_2(
+async fn run_plugin(
     plugin_index_file: &str,
     fn_name: &str,
     fn_args: Vec<serde_json::Value>,
 ) -> Result<serde_json::Value, Error> {
-    let source_map_store = SourceMapStore(Rc::new(RefCell::new(HashMap::new())));
-
-    let mut ext_console = deno_console::deno_console::init_ops_and_esm();
-    ext_console.esm_entry_point = Some("ext:deno_console/01_console.js");
-
-    let ext_yaak = yaak_runtime::init_ops_and_esm();
-
-    let mut js_runtime = JsRuntime::new(RuntimeOptions {
-        module_loader: Some(Rc::new(TypescriptModuleLoader {
-            source_maps: source_map_store.clone(),
-        })),
-        source_map_getter: Some(Rc::new(source_map_store)),
-        extensions: vec![ext_console, ext_yaak],
-        ..Default::default()
-    });
-
-    let main_module = resolve_path(
-        plugin_index_file,
-        &std::env::current_dir().context("Unable to get CWD")?,
-    )?;
-
-    // Load the main module so we can do stuff with it
-    let mod_id = js_runtime.load_main_es_module(&main_module).await?;
-    let result = js_runtime.mod_evaluate(mod_id);
-    js_runtime.run_event_loop(Default::default()).await?;
-    result.await?;
-
-    let module_namespace = js_runtime.get_module_namespace(mod_id).unwrap();
+    let mut js_runtime = load_js_runtime()?;
+    let module_namespace = load_main_module(&mut js_runtime, plugin_index_file).await?;
     let scope = &mut js_runtime.handle_scope();
     let module_namespace = v8::Local::<v8::Object>::new(scope, module_namespace);
 
@@ -234,4 +210,96 @@ async fn run_plugin_deno_2(
             }
         }
     }
+}
+
+pub fn get_plugin_capabilities_block(plugin_index_file: &str) -> Result<Vec<PluginCapability>, Error> {
+    block_in_place(|| tauri::async_runtime::block_on(get_plugin_capabilities(plugin_index_file)))
+}
+
+pub async fn get_plugin_capabilities(
+    plugin_index_file: &str,
+) -> Result<Vec<PluginCapability>, Error> {
+    let mut js_runtime = load_js_runtime()?;
+    let module_namespace = load_main_module(&mut js_runtime, plugin_index_file).await?;
+    let scope = &mut js_runtime.handle_scope();
+    let module_namespace = v8::Local::<v8::Object>::new(scope, module_namespace);
+
+    let property_names =
+        match module_namespace.get_own_property_names(scope, v8::GetPropertyNamesArgs::default()) {
+            None => return Ok(Vec::new()),
+            Some(names) => names,
+        };
+
+    let mut capabilities: Vec<PluginCapability> = Vec::new();
+    for i in 0..property_names.length() {
+        let name = property_names.get_index(scope, i);
+        let name = match name {
+            Some(name) => name,
+            None => return Ok(Vec::new()),
+        };
+
+        match name.to_rust_string_lossy(scope).as_str() {
+            "pluginHookImport" => _ = capabilities.push(PluginCapability::Import),
+            "pluginHookExport" => _ = capabilities.push(PluginCapability::Export),
+            "pluginHookResponseFilter" => _ = capabilities.push(PluginCapability::Filter),
+            _ => {}
+        };
+    }
+
+    Ok(capabilities)
+}
+
+async fn load_main_module(
+    js_runtime: &mut JsRuntime,
+    plugin_index_file: &str,
+) -> Result<v8::Global<v8::Object>, Error> {
+    let main_module = resolve_path(
+        plugin_index_file,
+        &std::env::current_dir().context("Unable to get CWD")?,
+    )?;
+
+    // Load the main module so we can do stuff with it
+    let mod_id = js_runtime.load_main_es_module(&main_module).await?;
+    let result = js_runtime.mod_evaluate(mod_id);
+    js_runtime.run_event_loop(Default::default()).await?;
+    result.await?;
+
+    let module_namespace = js_runtime.get_module_namespace(mod_id).unwrap();
+
+    Ok(module_namespace)
+}
+
+fn load_js_runtime<'s>() -> Result<JsRuntime, Error> {
+    let source_map_store = SourceMapStore(Rc::new(RefCell::new(HashMap::new())));
+
+    let mut ext_console = deno_console::deno_console::init_ops_and_esm();
+    ext_console.esm_entry_point = Some("ext:deno_console/01_console.js");
+
+    let ext_yaak = yaak_runtime::init_ops_and_esm();
+
+    let js_runtime = JsRuntime::new(RuntimeOptions {
+        module_loader: Some(Rc::new(TypescriptModuleLoader {
+            source_maps: source_map_store.clone(),
+        })),
+        source_map_getter: Some(Rc::new(source_map_store)),
+        extensions: vec![ext_console, ext_yaak],
+        ..Default::default()
+    });
+
+    // let main_module = resolve_path(
+    //     plugin_index_file.to_str().unwrap(),
+    //     &std::env::current_dir().context("Unable to get CWD")?,
+    // )?;
+    //
+    // // Load the main module so we can do stuff with it
+    // let mod_id = js_runtime.load_main_es_module(&main_module).await?;
+    // let result = js_runtime.mod_evaluate(mod_id);
+    // js_runtime.run_event_loop(Default::default()).await?;
+    // result.await?;
+    //
+    // let module_namespace = js_runtime.get_module_namespace(mod_id).unwrap();
+    // let scope = &mut js_runtime.handle_scope();
+    // let module_namespace = v8::Local::<v8::Object>::new(scope, module_namespace);
+
+    Ok(js_runtime)
 }
