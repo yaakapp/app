@@ -9,16 +9,18 @@ use templates::parse_and_render;
 
 pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
     let r = r.clone();
+    let vars = &variables_from_environment(w, e);
+
     HttpRequest {
-        url: render(r.url.as_str(), w, e),
+        url: render(r.url.as_str(), vars),
         url_parameters: Json(
             r.url_parameters
                 .0
                 .iter()
                 .map(|p| HttpUrlParameter {
                     enabled: p.enabled,
-                    name: render(p.name.as_str(), w, e),
-                    value: render(p.value.as_str(), w, e),
+                    name: render(p.name.as_str(), vars),
+                    value: render(p.value.as_str(), vars),
                 })
                 .collect::<Vec<HttpUrlParameter>>(),
         ),
@@ -28,8 +30,8 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
                 .iter()
                 .map(|p| HttpRequestHeader {
                     enabled: p.enabled,
-                    name: render(p.name.as_str(), w, e),
-                    value: render(p.value.as_str(), w, e),
+                    name: render(p.name.as_str(), vars),
+                    value: render(p.value.as_str(), vars),
                 })
                 .collect::<Vec<HttpRequestHeader>>(),
         ),
@@ -39,11 +41,11 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
                 .iter()
                 .map(|(k, v)| {
                     let v = if v.is_string() {
-                        render(v.as_str().unwrap(), w, e)
+                        render(v.as_str().unwrap(), vars)
                     } else {
                         v.to_string()
                     };
-                    (render(k, w, e), JsonValue::from(v))
+                    (render(k, vars), JsonValue::from(v))
                 })
                 .collect::<HashMap<String, JsonValue>>(),
         ),
@@ -53,11 +55,11 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
                 .iter()
                 .map(|(k, v)| {
                     let v = if v.is_string() {
-                        render(v.as_str().unwrap(), w, e)
+                        render(v.as_str().unwrap(), vars)
                     } else {
                         v.to_string()
                     };
-                    (render(k, w, e), JsonValue::from(v))
+                    (render(k, vars), JsonValue::from(v))
                 })
                 .collect::<HashMap<String, JsonValue>>(),
         ),
@@ -65,7 +67,31 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
     }
 }
 
-pub fn render(template: &str, workspace: &Workspace, environment: Option<&Environment>) -> String {
+pub fn recursively_render_variables<'s>(
+    m: &HashMap<String, String>,
+    render_count: usize,
+) -> HashMap<String, String> {
+    let mut did_render = false;
+    let mut new_map = m.clone();
+    for (k, v) in m.clone() {
+        let rendered = render(v.as_str(), m);
+        if rendered != v {
+            did_render = true
+        }
+        new_map.insert(k, rendered);
+    }
+
+    if did_render && render_count <= 3 {
+        new_map = recursively_render_variables(&new_map, render_count + 1);
+    }
+
+    new_map
+}
+
+pub fn variables_from_environment(
+    workspace: &Workspace,
+    environment: Option<&Environment>,
+) -> HashMap<String, String> {
     let mut variables = HashMap::new();
     variables = add_variable_to_map(variables, &workspace.variables.0);
 
@@ -73,13 +99,17 @@ pub fn render(template: &str, workspace: &Workspace, environment: Option<&Enviro
         variables = add_variable_to_map(variables, &e.variables.0);
     }
 
-    parse_and_render(template, variables, None)
+    recursively_render_variables(&variables, 0)
 }
 
-fn add_variable_to_map<'a>(
-    m: HashMap<&'a str, &'a str>,
-    variables: &'a Vec<EnvironmentVariable>,
-) -> HashMap<&'a str, &'a str> {
+pub fn render(template: &str, vars: &HashMap<String, String>) -> String {
+    parse_and_render(template, vars, None)
+}
+
+fn add_variable_to_map(
+    m: HashMap<String, String>,
+    variables: &Vec<EnvironmentVariable>,
+) -> HashMap<String, String> {
     let mut map = m.clone();
     for variable in variables {
         if !variable.enabled || variable.value.is_empty() {
@@ -87,7 +117,7 @@ fn add_variable_to_map<'a>(
         }
         let name = variable.name.as_str();
         let value = variable.value.as_str();
-        map.insert(name, value);
+        map.insert(name.into(), value.into());
     }
 
     map
