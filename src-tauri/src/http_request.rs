@@ -18,6 +18,7 @@ use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
 
+use crate::render::variables_from_environment;
 use crate::{models, render, response_err};
 
 pub async fn send_http_request(
@@ -33,8 +34,9 @@ pub async fn send_http_request(
     let workspace = models::get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
+    let vars = variables_from_environment(&workspace, environment_ref);
 
-    let mut url_string = render::render(&request.url, &workspace, environment.as_ref());
+    let mut url_string = render::render(&request.url, &vars);
 
     url_string = ensure_proto(&url_string);
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
@@ -144,8 +146,8 @@ pub async fn send_http_request(
             continue;
         }
 
-        let name = render::render(&h.name, &workspace, environment_ref);
-        let value = render::render(&h.value, &workspace, environment_ref);
+        let name = render::render(&h.name, &vars);
+        let value = render::render(&h.value, &vars);
 
         let header_name = match HeaderName::from_bytes(name.as_bytes()) {
             Ok(n) => n,
@@ -180,8 +182,8 @@ pub async fn send_http_request(
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let username = render::render(raw_username, &workspace, environment_ref);
-            let password = render::render(raw_password, &workspace, environment_ref);
+            let username = render::render(raw_username, &vars);
+            let password = render::render(raw_password, &vars);
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
@@ -191,7 +193,7 @@ pub async fn send_http_request(
             );
         } else if b == "bearer" {
             let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, &workspace, environment_ref);
+            let token = render::render(raw_token, &vars);
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
@@ -205,8 +207,8 @@ pub async fn send_http_request(
             continue;
         }
         query_params.push((
-            render::render(&p.name, &workspace, environment_ref),
-            render::render(&p.value, &workspace, environment_ref),
+            render::render(&p.name, &vars),
+            render::render(&p.value, &vars),
         ));
     }
     request_builder = request_builder.query(&query_params);
@@ -222,7 +224,7 @@ pub async fn send_http_request(
                 .unwrap_or(empty_string)
                 .as_str()
                 .unwrap_or("");
-            let body = render::render(raw_text, &workspace, environment_ref);
+            let body = render::render(raw_text, &vars);
             request_builder = request_builder.body(body);
         } else if body_type == "application/x-www-form-urlencoded"
             && request_body.contains_key("form")
@@ -249,10 +251,7 @@ pub async fn send_http_request(
                         .unwrap_or(empty_string)
                         .as_str()
                         .unwrap_or_default();
-                    form_params.push((
-                        render::render(name, &workspace, environment_ref),
-                        render::render(value, &workspace, environment_ref),
-                    ));
+                    form_params.push((render::render(name, &vars), render::render(value, &vars)));
                 }
             }
             request_builder = request_builder.form(&form_params);
@@ -301,13 +300,9 @@ pub async fn send_http_request(
                         .as_str()
                         .unwrap_or_default();
 
-                    let name = render::render(name_raw, &workspace, environment_ref);
+                    let name = render::render(name_raw, &vars);
                     let mut part = if file_path.is_empty() {
-                        multipart::Part::text(render::render(
-                            value_raw,
-                            &workspace,
-                            environment_ref,
-                        ))
+                        multipart::Part::text(render::render(value_raw, &vars))
                     } else {
                         match fs::read(file_path) {
                             Ok(f) => multipart::Part::bytes(f),
@@ -324,7 +319,7 @@ pub async fn send_http_request(
                         .unwrap_or_default();
 
                     if !ct_raw.is_empty() {
-                        let content_type = render::render(ct_raw, &workspace, environment_ref);
+                        let content_type = render::render(ct_raw, &vars);
                         part = part
                             .mime_str(content_type.as_str())
                             .map_err(|e| e.to_string())?;

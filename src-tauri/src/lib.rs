@@ -57,7 +57,7 @@ use crate::plugin::{
     find_plugins, get_plugin, ImportResult, PluginCapability,
     run_plugin_export_curl, run_plugin_filter, run_plugin_import,
 };
-use crate::render::render_request;
+use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 
@@ -176,6 +176,7 @@ async fn cmd_grpc_go(
         .await
         .map_err(|e| e.to_string())?;
     let mut metadata = HashMap::new();
+    let vars = variables_from_environment(&workspace, environment.as_ref());
 
     // Add rest of metadata
     for h in req.clone().metadata.0 {
@@ -187,15 +188,14 @@ async fn cmd_grpc_go(
             continue;
         }
 
-        let name = render::render(&h.name, &workspace, environment.as_ref());
-        let value = render::render(&h.value, &workspace, environment.as_ref());
+        let name = render::render(&h.name, &vars);
+        let value = render::render(&h.value, &vars);
 
         metadata.insert(name, value);
     }
 
     if let Some(b) = &req.authentication_type {
         let req = req.clone();
-        let environment_ref = environment.as_ref();
         let empty_value = &serde_json::to_value("").unwrap();
         let a = req.authentication.0;
 
@@ -210,15 +210,15 @@ async fn cmd_grpc_go(
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let username = render::render(raw_username, &workspace, environment_ref);
-            let password = render::render(raw_password, &workspace, environment_ref);
+            let username = render::render(raw_username, &vars);
+            let password = render::render(raw_password, &vars);
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
             metadata.insert("Authorization".to_string(), format!("Basic {}", encoded));
         } else if b == "bearer" {
             let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, &workspace, environment_ref);
+            let token = render::render(raw_token, &vars);
             metadata.insert("Authorization".to_string(), format!("Bearer {token}"));
         }
     }
@@ -290,11 +290,10 @@ async fn cmd_grpc_go(
 
     let cb = {
         let cancelled_rx = cancelled_rx.clone();
-        let environment = environment.clone();
-        let workspace = workspace.clone();
         let w = w.clone();
         let base_msg = base_msg.clone();
         let method_desc = method_desc.clone();
+        let vars = vars.clone();
 
         move |ev: tauri::Event| {
             if *cancelled_rx.borrow() {
@@ -317,9 +316,8 @@ async fn cmd_grpc_go(
                 Ok(IncomingMsg::Message(raw_msg)) => {
                     let w = w.clone();
                     let base_msg = base_msg.clone();
-                    let environment_ref = environment.as_ref();
                     let method_desc = method_desc.clone();
-                    let msg = render::render(raw_msg.as_str(), &workspace, environment_ref);
+                    let msg = render::render(raw_msg.as_str(), &vars);
                     let d_msg: DynamicMessage = match deserialize_message(msg.as_str(), method_desc)
                     {
                         Ok(d_msg) => d_msg,
@@ -371,14 +369,13 @@ async fn cmd_grpc_go(
         let w = w.clone();
         let base_event = base_msg.clone();
         let req = req.clone();
-        let workspace = workspace.clone();
-        let environment = environment.clone();
+        let vars = vars.clone();
         let raw_msg = if req.message.is_empty() {
             "{}".to_string()
         } else {
             req.message
         };
-        let msg = render::render(&raw_msg, &workspace, environment.as_ref());
+        let msg = render::render(&raw_msg, &vars);
 
         upsert_grpc_event(
             &w,

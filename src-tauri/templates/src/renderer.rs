@@ -6,7 +6,7 @@ type TemplateCallback = fn(name: &str, args: Vec<String>) -> String;
 
 pub fn parse_and_render(
     template: &str,
-    vars: HashMap<&str, &str>,
+    vars: &HashMap<String, String>,
     cb: Option<TemplateCallback>,
 ) -> String {
     let mut p = Parser::new(template);
@@ -16,7 +16,7 @@ pub fn parse_and_render(
 
 pub fn render(
     tokens: Vec<Token>,
-    vars: HashMap<&str, &str>,
+    vars: &HashMap<String, String>,
     cb: Option<TemplateCallback>,
 ) -> String {
     let mut doc_str: Vec<String> = Vec::new();
@@ -24,7 +24,7 @@ pub fn render(
     for t in tokens {
         match t {
             Token::Raw(s) => doc_str.push(s),
-            Token::Tag(val) => doc_str.push(render_tag(val, vars.clone(), cb)),
+            Token::Tag(val) => doc_str.push(render_tag(val, &vars, cb)),
             Token::Eof => {}
         }
     }
@@ -32,9 +32,9 @@ pub fn render(
     return doc_str.join("");
 }
 
-fn render_tag<'s>(
+fn render_tag(
     val: Val,
-    vars: HashMap<&'s str, &'s str>,
+    vars: &HashMap<String, String>,
     cb: Option<TemplateCallback>,
 ) -> String {
     match val {
@@ -44,13 +44,13 @@ fn render_tag<'s>(
             None => "".into(),
         },
         Val::Fn { name, args } => {
-            let empty = &"";
+            let empty = "".to_string();
             let resolved_args = args
                 .iter()
                 .map(|a| match a {
                     Val::Str(s) => s.to_string(),
-                    Val::Var(i) => vars.get(i.as_str()).unwrap_or(empty).to_string(),
-                    val => render_tag(val.clone(), vars.clone(), cb),
+                    Val::Var(i) => vars.get(i.as_str()).unwrap_or(&empty).to_string(),
+                    val => render_tag(val.clone(), vars, cb),
                 })
                 .collect::<Vec<String>>();
             match cb {
@@ -72,7 +72,7 @@ mod tests {
         let template = "";
         let vars = HashMap::new();
         let result = "";
-        assert_eq!(parse_and_render(template, vars, None), result.to_string());
+        assert_eq!(parse_and_render(template, &vars, None), result.to_string());
     }
 
     #[test]
@@ -80,23 +80,23 @@ mod tests {
         let template = "Hello World!";
         let vars = HashMap::new();
         let result = "Hello World!";
-        assert_eq!(parse_and_render(template, vars, None), result.to_string());
+        assert_eq!(parse_and_render(template, &vars, None), result.to_string());
     }
 
     #[test]
     fn render_simple() {
         let template = "${[ foo ]}";
-        let vars = HashMap::from([("foo", "bar")]);
+        let vars = HashMap::from([("foo".to_string(), "bar".to_string())]);
         let result = "bar";
-        assert_eq!(parse_and_render(template, vars, None), result.to_string());
+        assert_eq!(parse_and_render(template, &vars, None), result.to_string());
     }
 
     #[test]
     fn render_surrounded() {
         let template = "hello ${[ word ]} world!";
-        let vars = HashMap::from([("word", "cruel")]);
+        let vars = HashMap::from([("word".to_string(), "cruel".to_string())]);
         let result = "hello cruel world!";
-        assert_eq!(parse_and_render(template, vars, None), result.to_string());
+        assert_eq!(parse_and_render(template, &vars, None), result.to_string());
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
         fn cb(name: &str, args: Vec<String>) -> String {
             format!("{name}: {:?}", args)
         }
-        assert_eq!(parse_and_render(template, vars, Some(cb)), result);
+        assert_eq!(parse_and_render(template, &vars, Some(cb)), result);
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod tests {
         }
 
         assert_eq!(
-            parse_and_render(template, vars, Some(cb)),
+            parse_and_render(template, &vars, Some(cb)),
             result.to_string()
         );
     }
