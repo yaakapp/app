@@ -13,8 +13,8 @@ export function CsvViewer({ response, className }: Props) {
   const body = useResponseBodyText(response);
 
   const parsed = useMemo(() => {
-    if (body === null) return null;
-    return Papa.parse<string[]>(body);
+    if (body.data == null) return null;
+    return Papa.parse<string[]>(body.data);
   }, [body]);
 
   if (parsed === null) return null;

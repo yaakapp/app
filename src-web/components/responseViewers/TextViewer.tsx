@@ -37,7 +37,7 @@ export function TextViewer({ response, pretty, className }: Props) {
   );
 
   const contentType = useContentTypeFromHeaders(response.headers);
-  const rawBody = useResponseBodyText(response) ?? null;
+  const rawBody = useResponseBodyText(response);
   const isSearching = filterText != null;
 
   const filteredResponse = useFilterResponse({
@@ -99,7 +99,11 @@ export function TextViewer({ response, pretty, className }: Props) {
     return result;
   }, [canFilter, filterText, isJson, isSearching, response.id, setFilterText, toggleSearch]);
 
-  if (rawBody == null) {
+  if (rawBody.isLoading) {
+    return null;
+  }
+
+  if (rawBody.data == null) {
     return <BinaryViewer response={response} />;
   }
 
@@ -109,10 +113,11 @@ export function TextViewer({ response, pretty, className }: Props) {
 
   const formattedBody =
     pretty && contentType?.includes('json')
-      ? tryFormatJson(rawBody)
+      ? tryFormatJson(rawBody.data)
       : pretty && contentType?.includes('xml')
-      ? tryFormatXml(rawBody)
-      : rawBody;
+      ? tryFormatXml(rawBody.data)
+      : rawBody.data;
+
   const body = isSearching && filterText?.length > 0 ? filteredResponse : formattedBody;
 
   return (
