@@ -9,12 +9,15 @@ interface Props {
 }
 
 export function JsonViewer({ response, className }: Props) {
-  const rawBody = useResponseBodyText(response) ?? '';
+  const rawBody = useResponseBodyText(response);
+
+  if (rawBody.isLoading || rawBody.data == null) return null;
+
   let parsed = {};
   try {
-    parsed = JSON.parse(rawBody);
+    parsed = JSON.parse(rawBody.data);
   } catch (e) {
-    // foo
+    // Nothing yet
   }
 
   return (

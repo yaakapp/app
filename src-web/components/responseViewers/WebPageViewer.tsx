@@ -8,7 +8,7 @@ interface Props {
 
 export function WebPageViewer({ response }: Props) {
   const { url } = response;
-  const body = useResponseBodyText(response) ?? '';
+  const body = useResponseBodyText(response).data ?? '';
 
   const contentForIframe: string | undefined = useMemo(() => {
     if (body.includes('<head>')) {
