@@ -1,6 +1,6 @@
 use std::time::SystemTime;
 
-use chrono::{Duration, NaiveDateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
@@ -23,7 +23,7 @@ pub struct YaakNotifier {
 #[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct YaakNotification {
-    timestamp: NaiveDateTime,
+    timestamp: DateTime<Utc>,
     id: String,
     message: String,
     action: Option<YaakNotificationAction>,
@@ -77,7 +77,7 @@ impl YaakNotifier {
 
         let age = notification
             .timestamp
-            .signed_duration_since(Utc::now().naive_utc());
+            .signed_duration_since(Utc::now());
         let seen = get_kv(app).await?;
         if seen.contains(&notification.id) || (age > Duration::days(1)) {
             debug!("Already seen notification {}", notification.id);
