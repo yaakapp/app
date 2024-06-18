@@ -208,7 +208,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-sm;
+  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-editor;
 
   .cm-completionIcon {
     @apply italic font-mono;
@@ -286,7 +286,7 @@
     }
 
     & > ul > li {
-      @apply cursor-default px-2 py-1.5 rounded-sm text-fg-subtle flex items-center;
+      @apply cursor-default px-2 h-[2em] rounded-sm text-fg flex items-center;
     }
 
     & > ul > li[aria-selected] {
@@ -298,11 +298,11 @@
     }
 
     .cm-completionLabel {
-      @apply text-fg-subtle;
+      @apply text-fg;
     }
 
     .cm-completionDetail {
-      @apply ml-auto pl-6;
+      @apply ml-auto pl-6 text-fg-subtle;
     }
   }
 }
