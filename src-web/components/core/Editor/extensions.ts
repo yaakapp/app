@@ -102,9 +102,6 @@ export const baseExtensions = [
   history(),
   dropCursor(),
   drawSelection(),
-  syntaxHighlighting(syntaxHighlightStyle),
-  syntaxTheme,
-  EditorState.allowMultipleSelections.of(true),
   autocompletion({
     tooltipClass: () => 'x-theme-menu',
     closeOnBlur: true, // Set to `false` for debugging in devtools without closing it
@@ -113,6 +110,9 @@ export const baseExtensions = [
       return (a.boost ?? 0) - (b.boost ?? 0);
     },
   }),
+  syntaxHighlighting(syntaxHighlightStyle),
+  syntaxTheme,
+  EditorState.allowMultipleSelections.of(true),
 ];
 
 export const multiLineExtensions = [
