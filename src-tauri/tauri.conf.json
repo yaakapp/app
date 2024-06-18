@@ -1,6 +1,6 @@
 {
   "productName": "yaak",
-  "version": "2024.6.5",
+  "version": "2024.6.6",
   "identifier": "app.yaak.desktop",
   "build": {
     "beforeBuildCommand": "npm run build",

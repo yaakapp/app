@@ -19,7 +19,8 @@
     }
 
     .cm-line {
-      @apply text-fg pl-1 pr-1.5;
+      @apply w-full; /* Important! Ensure it spans the entire width */
+      @apply w-full text-fg pl-1 pr-1.5;
     }
 
     .cm-placeholder {
