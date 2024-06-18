@@ -1,6 +1,5 @@
 import type { IntrospectionQuery } from 'graphql';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocalStorage } from 'react-use';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { HttpRequest } from '../lib/models';
@@ -8,6 +7,7 @@ import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useDebouncedValue } from './useDebouncedValue';
+import { useKeyValue } from './useKeyValue';
 
 const introspectionRequestBody = JSON.stringify({
   query: getIntrospectionQuery(),
@@ -22,9 +22,12 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
-  const [introspection, setIntrospection] = useLocalStorage<IntrospectionQuery | null>(
-    `introspection:${baseRequest.id}`,
-  );
+
+  const { value: introspection, set: setIntrospection } = useKeyValue<IntrospectionQuery | null>({
+    key: ['graphql_introspection', baseRequest.id],
+    fallback: null,
+    namespace: 'global',
+  });
 
   const introspectionInterval = useRef<NodeJS.Timeout>();
 
@@ -40,31 +43,26 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       const response = await minPromiseMillis(sendEphemeralRequest(args, activeEnvironmentId), 700);
 
       if (response.error) {
-        return Promise.reject(new Error(response.error));
+        throw new Error(response.error);
       }
 
       const bodyText = await getResponseBodyText(response);
       if (response.status < 200 || response.status >= 300) {
-        return Promise.reject(
-          new Error(`Request failed with status ${response.status}.\n\n${bodyText}`),
-        );
+        throw new Error(`Request failed with status ${response.status}.\n\n${bodyText}`);
       }
 
       if (bodyText === null) {
-        return Promise.reject(new Error('Empty body returned in response'));
+        throw new Error('Empty body returned in response');
       }
 
       const { data } = JSON.parse(bodyText);
       console.log('Introspection response', data);
-      setIntrospection(data);
+      await setIntrospection(data);
     };
 
     const runIntrospection = () => {
       fetchIntrospection()
-        .catch((e) => {
-          setIntrospection(null);
-          setError(e.message);
-        })
+        .catch((e) => setError(e.message))
         .finally(() => setIsLoading(false));
     };
 
