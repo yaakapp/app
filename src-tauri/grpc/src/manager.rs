@@ -189,7 +189,7 @@ impl GrpcHandle {
         paths: Vec<PathBuf>,
     ) -> Result<Vec<ServiceDefinition>, String> {
         let pool = fill_pool_from_files(&self.app_handle, paths).await?;
-        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
+        let uri = uri_from_str(uri)?;
         self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
         Ok(self.services_from_pool(&pool))
     }
@@ -198,7 +198,7 @@ impl GrpcHandle {
         id: &str,
         uri: &str,
     ) -> Result<Vec<ServiceDefinition>, String> {
-        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
+        let uri = uri_from_str(uri)?;
         let pool = fill_pool(&uri).await?;
         self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
         Ok(self.services_from_pool(&pool))
@@ -239,7 +239,7 @@ impl GrpcHandle {
         uri: &str,
         proto_files: Vec<PathBuf>,
     ) -> Result<GrpcConnection, String> {
-        let uri = Uri::from_str(uri).map_err(|e| e.to_string())?;
+        let uri = uri_from_str(uri)?;
         let pool = match self.pools.get(id) {
             Some(p) => p.clone(),
             None => match proto_files.len() {
@@ -266,4 +266,14 @@ fn decorate_req<T>(metadata: HashMap<String, String>, req: &mut Request<T>) -> R
         );
     }
     Ok(())
+}
+
+fn uri_from_str(uri_str: &str) -> Result<Uri, String> {
+    match Uri::from_str(uri_str) {
+        Ok(uri) => Ok(uri),
+        Err(err) => {
+            // Uri::from_str basically only returns "invalid format" so we add more context here
+            Err(format!("Failed to parse URL, {}", err.to_string()))
+        },
+    }
 }
