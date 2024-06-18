@@ -5,7 +5,6 @@ import { useGrpcRequest } from '../hooks/useGrpcRequest';
 import { count } from '../lib/pluralize';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
-import { FormattedError } from './core/FormattedError';
 import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';
 import { Link } from './core/Link';
@@ -129,7 +128,14 @@ export function GrpcProtoSelection({ requestId }: Props) {
             </tbody>
           </table>
         )}
-        {reflectError && <FormattedError>{reflectError}</FormattedError>}
+        {reflectError && (
+          <Banner color="warning">
+            <h1 className="font-bold">
+              Reflection failed on URL <InlineCode>{request.url}</InlineCode>
+            </h1>
+            {reflectError}
+          </Banner>
+        )}
         {reflectionUnimplemented && protoFiles.length === 0 && (
           <Banner>
             <InlineCode>{request.url}</InlineCode> doesn&apos;t implement{' '}
