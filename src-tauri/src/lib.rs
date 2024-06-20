@@ -135,12 +135,14 @@ async fn cmd_grpc_reflect(
         .await
         .map_err(|e| e.to_string())?;
 
+    let uri = safe_uri(&req.url);
+
     grpc_handle
         .lock()
         .await
         .services(
             &req.id,
-            &req.url,
+            &uri,
             &proto_files
                 .iter()
                 .map(|p| PathBuf::from_str(p).unwrap())
