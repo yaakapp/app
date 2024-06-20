@@ -17,14 +17,16 @@ interface Props {
   style: CSSProperties;
 }
 
+const emptyArray: string[] = [];
+
 export function GrpcConnectionLayout({ style }: Props) {
   const activeRequest = useActiveRequest('grpc_request');
-  const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
+  const { mutateAsync: updateRequest } = useUpdateGrpcRequest(activeRequest?.id ?? null);
   const connections = useGrpcConnections(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const messages = useGrpcEvents(activeConnection?.id ?? null);
   const protoFilesKv = useGrpcProtoFiles(activeRequest?.id ?? null);
-  const protoFiles = protoFilesKv.value ?? [];
+  const protoFiles = protoFilesKv.value ?? emptyArray;
   const grpc = useGrpc(activeRequest, activeConnection, protoFiles);
 
   const services = grpc.reflect.data ?? null;
@@ -32,7 +34,7 @@ export function GrpcConnectionLayout({ style }: Props) {
     if (services == null || activeRequest == null) return;
     const s = services.find((s) => s.name === activeRequest.service);
     if (s == null) {
-      updateRequest.mutate({
+      updateRequest({
         service: services[0]?.name ?? null,
         method: services[0]?.methods[0]?.name ?? null,
       });
@@ -41,7 +43,7 @@ export function GrpcConnectionLayout({ style }: Props) {
 
     const m = s.methods.find((m) => m.name === activeRequest.method);
     if (m == null) {
-      updateRequest.mutate({ method: s.methods[0]?.name ?? null });
+      updateRequest({ method: s.methods[0]?.name ?? null });
       return;
     }
   }, [activeRequest, services, updateRequest]);

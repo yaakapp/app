@@ -1,14 +1,14 @@
-import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { Button } from '../components/core/Button';
 import { useToast } from '../components/ToastContext';
+import { invokeCmd } from '../lib/tauri';
 import { useListenToTauriEvent } from './useListenToTauriEvent';
 
 export function useNotificationToast() {
   const toast = useToast();
 
   const markRead = (id: string) => {
-    invoke('cmd_dismiss_notification', { notificationId: id }).catch(console.error);
+    invokeCmd('cmd_dismiss_notification', { notificationId: id }).catch(console.error);
   };
 
   useListenToTauriEvent<{

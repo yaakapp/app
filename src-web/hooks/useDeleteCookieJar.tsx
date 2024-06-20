@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import type { CookieJar } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 import { cookieJarsQueryKey } from './useCookieJars';
 
@@ -23,7 +23,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_cookie_jar', { cookieJarId: cookieJar?.id });
+      return invokeCmd('cmd_delete_cookie_jar', { cookieJarId: cookieJar?.id });
     },
     onSettled: () => trackEvent('cookie_jar', 'delete'),
     onSuccess: async (cookieJar) => {

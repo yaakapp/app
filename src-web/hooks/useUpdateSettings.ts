@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Settings } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useSettings } from './useSettings';
 
 export function useUpdateSettings() {
@@ -10,7 +10,7 @@ export function useUpdateSettings() {
     mutationFn: async (patch) => {
       if (settings == null) return;
       const newSettings: Settings = { ...settings, ...patch };
-      await invoke('cmd_update_settings', { settings: newSettings });
+      await invokeCmd('cmd_update_settings', { settings: newSettings });
     },
   });
 }

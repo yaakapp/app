@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { CookieJar } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { cookieJarsQueryKey } from './useCookieJars';
 import { usePrompt } from './usePrompt';
@@ -24,7 +24,7 @@ export function useCreateCookieJar() {
         label: 'Name',
         defaultValue: 'My Jar',
       });
-      return invoke('cmd_create_cookie_jar', { workspaceId, name });
+      return invokeCmd('cmd_create_cookie_jar', { workspaceId, name });
     },
     onSettled: () => trackEvent('cookie_jar', 'create'),
     onSuccess: async (cookieJar) => {

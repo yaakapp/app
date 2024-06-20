@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import type { Folder } from '../lib/models';
 import { getFolder } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 import { foldersQueryKey } from './useFolders';
 import { httpRequestsQueryKey } from './useHttpRequests';
@@ -26,7 +26,7 @@ export function useDeleteFolder(id: string | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_folder', { folderId: id });
+      return invokeCmd('cmd_delete_folder', { folderId: id });
     },
     onSettled: () => trackEvent('folder', 'delete'),
     onSuccess: async (folder) => {

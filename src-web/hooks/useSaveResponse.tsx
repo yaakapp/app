@@ -1,5 +1,4 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
 import mime from 'mime';
 import slugify from 'slugify';
@@ -8,6 +7,7 @@ import { useToast } from '../components/ToastContext';
 import type { HttpResponse } from '../lib/models';
 import { getContentTypeHeader } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 
 export function useSaveResponse(response: HttpResponse) {
   const toast = useToast();
@@ -24,7 +24,7 @@ export function useSaveResponse(response: HttpResponse) {
         defaultPath: ext ? `${slug}.${ext}` : slug,
         title: 'Save Response',
       });
-      await invoke('cmd_save_response', { responseId: response.id, filepath });
+      await invokeCmd('cmd_save_response', { responseId: response.id, filepath });
       toast.show({
         message: (
           <>

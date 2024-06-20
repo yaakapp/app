@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
@@ -28,7 +28,7 @@ export function useCreateHttpRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invoke('cmd_create_http_request', { request: { workspaceId, ...patch } });
+      return invokeCmd('cmd_create_http_request', { request: { workspaceId, ...patch } });
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {

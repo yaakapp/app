@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invokeCmd } from './tauri';
 
 export type TrackResource =
   | 'appearance'
@@ -37,7 +37,7 @@ export function trackEvent(
   action: TrackAction,
   attributes: Record<string, string | number> = {},
 ) {
-  invoke('cmd_track_event', {
+  invokeCmd('cmd_track_event', {
     resource: resource,
     action,
     attributes,

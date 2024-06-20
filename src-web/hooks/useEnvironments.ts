@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Environment } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function environmentsQueryKey({ workspaceId }: { workspaceId: string }) {
@@ -15,7 +15,7 @@ export function useEnvironments() {
       queryKey: environmentsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('cmd_list_environments', { workspaceId })) as Environment[];
+        return (await invokeCmd('cmd_list_environments', { workspaceId })) as Environment[];
       },
     }).data ?? []
   );

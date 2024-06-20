@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
 import slugify from 'slugify';
 import { trackEvent } from '../lib/analytics';
 import type { HttpResponse } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useAlert } from './useAlert';
@@ -31,7 +31,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
         }
       }
 
-      return invoke('cmd_send_http_request', {
+      return invokeCmd('cmd_send_http_request', {
         requestId: id,
         environmentId: environment?.id,
         downloadDir: downloadDir,

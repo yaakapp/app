@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { Folder } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { foldersQueryKey } from './useFolders';
@@ -31,7 +31,7 @@ export function useCreateFolder() {
         }));
       patch.sortPriority = patch.sortPriority || -Date.now();
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invoke('cmd_create_folder', { workspaceId, ...patch });
+      return invokeCmd('cmd_create_folder', { workspaceId, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),
     onSuccess: async (request) => {

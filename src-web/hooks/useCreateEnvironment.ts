@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { Environment } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { environmentsQueryKey } from './useEnvironments';
@@ -24,7 +24,7 @@ export function useCreateEnvironment() {
         placeholder: 'My Environment',
         defaultValue: 'My Environment',
       });
-      return invoke('cmd_create_environment', { name, variables: [], workspaceId });
+      return invokeCmd('cmd_create_environment', { name, variables: [], workspaceId });
     },
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {

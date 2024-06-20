@@ -185,27 +185,37 @@ impl GrpcHandle {
     pub async fn services_from_files(
         &mut self,
         id: &str,
-        uri: &str,
         paths: Vec<PathBuf>,
     ) -> Result<Vec<ServiceDefinition>, String> {
+        let pool_key = format!(
+            "{}-{}",
+            id,
+            paths
+                .iter()
+                .map(|p| p.to_string_lossy().to_string())
+                .collect::<Vec<String>>()
+                .join(":")
+        );
         let pool = fill_pool_from_files(&self.app_handle, paths).await?;
-        let uri = uri_from_str(uri)?;
-        self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
+        self.pools.insert(pool_key, pool.clone());
         Ok(self.services_from_pool(&pool))
     }
+
     pub async fn services_from_reflection(
         &mut self,
         id: &str,
         uri: &str,
     ) -> Result<Vec<ServiceDefinition>, String> {
+        // Short-circuit if no URL is set
+        if uri.is_empty() {
+            return Ok(Vec::new());
+        }
+
         let uri = uri_from_str(uri)?;
         let pool = fill_pool(&uri).await?;
-        self.pools.insert(self.get_pool_key(id, &uri), pool.clone());
+        let pool_key = format!("{}-{}", id, uri);
+        self.pools.insert(pool_key, pool.clone());
         Ok(self.services_from_pool(&pool))
-    }
-
-    fn get_pool_key(&self, id: &str, uri: &Uri) -> String {
-        format!("{}-{}", id, uri)
     }
 
     fn services_from_pool(&self, pool: &DescriptorPool) -> Vec<ServiceDefinition> {
@@ -274,6 +284,6 @@ fn uri_from_str(uri_str: &str) -> Result<Uri, String> {
         Err(err) => {
             // Uri::from_str basically only returns "invalid format" so we add more context here
             Err(format!("Failed to parse URL, {}", err.to_string()))
-        },
+        }
     }
 }

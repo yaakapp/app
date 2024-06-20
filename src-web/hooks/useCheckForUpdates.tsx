@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
+import { invokeCmd } from '../lib/tauri';
 import { useAlert } from './useAlert';
 import { useAppInfo } from './useAppInfo';
 
@@ -10,7 +10,7 @@ export function useCheckForUpdates() {
   const appInfo = useAppInfo();
   return useMutation({
     mutationFn: async () => {
-      const hasUpdate: boolean = await minPromiseMillis(invoke('cmd_check_for_updates'), 500);
+      const hasUpdate: boolean = await minPromiseMillis(invokeCmd('cmd_check_for_updates'), 500);
       if (!hasUpdate) {
         alert({
           id: 'no-updates',

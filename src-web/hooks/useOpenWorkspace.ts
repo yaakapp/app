@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeCmd } from '../lib/tauri';
 import { useAppRoutes } from './useAppRoutes';
 import { getRecentEnvironments } from './useRecentEnvironments';
 import { getRecentRequests } from './useRecentRequests';
@@ -26,7 +26,7 @@ export function useOpenWorkspace() {
                 requestId,
               })
             : routes.paths.workspace({ workspaceId, environmentId });
-        await invoke('cmd_new_window', { url: path });
+        await invokeCmd('cmd_new_window', { url: path });
       } else {
         const environmentId = (await getRecentEnvironments(workspaceId))[0];
         const requestId = (await getRecentRequests(workspaceId))[0];

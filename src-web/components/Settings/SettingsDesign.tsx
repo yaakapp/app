@@ -1,9 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import React, { useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useThemes } from '../../hooks/useThemes';
 import { capitalize } from '../../lib/capitalize';
+import { invokeCmd } from '../../lib/tauri';
 import { yaakDark } from '../../lib/theme/themes/yaak';
 import { getThemeCSS } from '../../lib/theme/window';
 import { Banner } from '../core/Banner';
@@ -58,11 +58,11 @@ export function SettingsDesign() {
       const coreThemeCSS = [yaakDark].map(getThemeCSS).join('\n\n');
 
       try {
-        await invoke('cmd_write_file_dev', {
+        await invokeCmd('cmd_write_file_dev', {
           pathname: exportDir + '/themes-all.css',
           contents: allThemesCSS,
         });
-        await invoke('cmd_write_file_dev', {
+        await invokeCmd('cmd_write_file_dev', {
           pathname: exportDir + '/themes-slim.css',
           contents: coreThemeCSS,
         });

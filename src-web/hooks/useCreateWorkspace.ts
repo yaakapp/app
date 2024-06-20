@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Workspace } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useAppRoutes } from './useAppRoutes';
 import { usePrompt } from './usePrompt';
 
@@ -18,7 +18,7 @@ export function useCreateWorkspace() {
         confirmLabel: 'Create',
         placeholder: 'My Workspace',
       });
-      return invoke('cmd_create_workspace', { name });
+      return invokeCmd('cmd_create_workspace', { name });
     },
     onSuccess: async (workspace) => {
       routes.navigate('workspace', { workspaceId: workspace.id });

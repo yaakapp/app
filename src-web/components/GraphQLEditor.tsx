@@ -66,7 +66,6 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   // Refetch the schema when the URL changes
   useEffect(() => {
     if (editorViewRef.current === null) return;
-    console.log('SET SCHEMA', schema);
     updateSchema(editorViewRef.current, schema ?? undefined);
   }, [schema]);
 

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { CookieJar } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function cookieJarsQueryKey({ workspaceId }: { workspaceId: string }) {
@@ -15,7 +15,7 @@ export function useCookieJars() {
       queryKey: cookieJarsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('cmd_list_cookie_jars', { workspaceId })) as CookieJar[];
+        return (await invokeCmd('cmd_list_cookie_jars', { workspaceId })) as CookieJar[];
       },
     }).data ?? []
   );

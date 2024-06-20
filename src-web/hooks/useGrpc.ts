@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { emit } from '@tauri-apps/api/event';
 import { trackEvent } from '../lib/analytics';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import type { GrpcConnection, GrpcRequest } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -21,7 +21,8 @@ export function useGrpc(
   const environmentId = useActiveEnvironmentId();
 
   const go = useMutation<void, string>({
-    mutationFn: async () => await invoke('cmd_grpc_go', { requestId, environmentId, protoFiles }),
+    mutationFn: async () =>
+      await invokeCmd('cmd_grpc_go', { requestId, environmentId, protoFiles }),
     onSettled: () => trackEvent('grpc_request', 'send'),
   });
 
@@ -48,12 +49,11 @@ export function useGrpc(
     enabled: req != null,
     queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl, protoFiles],
     refetchOnWindowFocus: false,
-    queryFn: async () => {
-      return (await minPromiseMillis(
-        invoke('cmd_grpc_reflect', { requestId, protoFiles }),
+    queryFn: async () =>
+      (await minPromiseMillis(
+        invokeCmd('cmd_grpc_reflect', { requestId, protoFiles }),
         300,
-      )) as ReflectResponseService[];
-    },
+      )) as ReflectResponseService[],
   });
 
   return {

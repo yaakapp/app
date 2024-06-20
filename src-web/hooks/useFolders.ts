@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Folder } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function foldersQueryKey({ workspaceId }: { workspaceId: string }) {
@@ -15,7 +15,7 @@ export function useFolders() {
       queryKey: foldersQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('cmd_list_folders', { workspaceId })) as Folder[];
+        return (await invokeCmd('cmd_list_folders', { workspaceId })) as Folder[];
       },
     }).data ?? []
   );

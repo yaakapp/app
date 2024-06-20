@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
+import { invokeCmd } from '../lib/tauri';
 import { httpResponsesQueryKey } from './useHttpResponses';
 
 export function useDeleteHttpResponses(requestId?: string) {
@@ -8,7 +8,7 @@ export function useDeleteHttpResponses(requestId?: string) {
   return useMutation({
     mutationFn: async () => {
       if (requestId === undefined) return;
-      await invoke('cmd_delete_all_http_responses', { requestId });
+      await invokeCmd('cmd_delete_all_http_responses', { requestId });
     },
     onSettled: () => trackEvent('http_response', 'delete_many'),
     onSuccess: async () => {

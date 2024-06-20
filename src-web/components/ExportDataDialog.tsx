@@ -1,9 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
 import { save } from '@tauri-apps/plugin-dialog';
 import { useCallback, useMemo, useState } from 'react';
 import slugify from 'slugify';
 import type { Workspace } from '../lib/models';
 import { count } from '../lib/pluralize';
+import { invokeCmd } from '../lib/tauri';
 import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { HStack, VStack } from './core/Stacks';
@@ -49,7 +49,7 @@ export function ExportDataDialog({
       return;
     }
 
-    await invoke('cmd_export_data', { workspaceIds: ids, exportPath });
+    await invokeCmd('cmd_export_data', { workspaceIds: ids, exportPath });
     onHide();
     onSuccess(exportPath);
   }, [onHide, onSuccess, selectedWorkspaces, workspaces]);

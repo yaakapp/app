@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { GrpcRequest } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 
 export function grpcRequestsQueryKey({ workspaceId }: { workspaceId: string }) {
@@ -15,7 +15,7 @@ export function useGrpcRequests() {
       queryKey: grpcRequestsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
       queryFn: async () => {
         if (workspaceId == null) return [];
-        return (await invoke('cmd_list_grpc_requests', { workspaceId })) as GrpcRequest[];
+        return (await invokeCmd('cmd_list_grpc_requests', { workspaceId })) as GrpcRequest[];
       },
     }).data ?? []
   );
