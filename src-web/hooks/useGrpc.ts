@@ -44,11 +44,12 @@ export function useGrpc(
     onSettled: () => trackEvent('grpc_connection', 'commit'),
   });
 
-  const debouncedUrl = useDebouncedValue<string>(req?.url ?? 'n/a', 500);
+  const debouncedUrl = useDebouncedValue<string>(req?.url ?? '', 1000);
+  const debouncedMessage = useDebouncedValue<string>(req?.message ?? '', 1000);
+
   const reflect = useQuery<ReflectResponseService[], string>({
     enabled: req != null,
-    queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl, protoFiles],
-    refetchOnWindowFocus: false,
+    queryKey: ['grpc_reflect', req?.id ?? 'n/a', debouncedUrl, debouncedMessage, protoFiles],
     queryFn: async () =>
       (await minPromiseMillis(
         invokeCmd('cmd_grpc_reflect', { requestId, protoFiles }),
@@ -56,12 +57,13 @@ export function useGrpc(
       )) as ReflectResponseService[],
   });
 
+  console.log('CONN', conn);
   return {
     go,
     reflect,
     cancel,
     commit,
-    isStreaming: conn?.elapsed === 0,
+    isStreaming: conn != null && conn.elapsed === 0,
     send,
   };
 }

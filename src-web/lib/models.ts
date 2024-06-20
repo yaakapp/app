@@ -207,7 +207,7 @@ export interface HttpResponse extends BaseModel {
   readonly headers: HttpHeader[];
 }
 
-export function isResponseLoading(response: HttpResponse): boolean {
+export function isResponseLoading(response: HttpResponse | GrpcConnection): boolean {
   return response.elapsed === 0;
 }
 
