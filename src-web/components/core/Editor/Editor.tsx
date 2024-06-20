@@ -242,6 +242,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           size="sm"
           title="Reformat contents"
           icon="magicWand"
+          variant="border"
           className={classNames(actionClassName)}
           onClick={() => {
             if (cm.current === null) return;
