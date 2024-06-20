@@ -28,7 +28,7 @@ use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool_from_files(
     app_handle: &AppHandle,
-    paths: Vec<PathBuf>,
+    paths: &Vec<PathBuf>,
 ) -> Result<DescriptorPool, String> {
     let mut pool = DescriptorPool::new();
     let random_file_name = format!("{}.desc", uuid::Uuid::new_v4());
@@ -121,7 +121,7 @@ pub async fn fill_pool_from_files(
     Ok(pool)
 }
 
-pub async fn fill_pool(uri: &Uri) -> Result<DescriptorPool, String> {
+pub async fn fill_pool_from_reflection(uri: &Uri) -> Result<DescriptorPool, String> {
     let mut pool = DescriptorPool::new();
     let mut client = ServerReflectionClient::with_origin(get_transport(), uri.clone());
 

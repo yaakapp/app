@@ -6,8 +6,8 @@ import {
   handleRefresh,
   jsonCompletion,
   jsonSchemaLinter,
-  stateExtensions,
   updateSchema,
+  stateExtensions,
 } from 'codemirror-json-schema';
 import { useEffect, useMemo, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
@@ -41,6 +41,7 @@ export function GrpcEditor({
   ...extraEditorProps
 }: Props) {
   const editorViewRef = useRef<EditorView>(null);
+
   const alert = useAlert();
   const dialog = useDialog();
 

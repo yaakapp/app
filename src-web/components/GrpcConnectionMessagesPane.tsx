@@ -6,6 +6,8 @@ import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import type { GrpcEvent, GrpcRequest } from '../lib/models';
+import { isResponseLoading } from '../lib/models';
+import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { JsonAttributeTree } from './core/JsonAttributeTree';
@@ -64,7 +66,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
             <HStack className="pl-3 mb-1 font-mono">
               <HStack space={2}>
                 <span>{events.length} messages</span>
-                {activeConnection.elapsed === 0 && (
+                {isResponseLoading(activeConnection) && (
                   <Icon icon="refresh" size="sm" spin className="text-fg-subtler" />
                 )}
               </HStack>
@@ -75,6 +77,11 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               />
             </HStack>
             <div className="overflow-y-auto h-full">
+              {activeConnection.error && (
+                <Banner color="danger" className="m-3">
+                  {activeConnection.error}
+                </Banner>
+              )}
               {...events.map((e) => (
                 <EventRow
                   key={e.id}

@@ -86,6 +86,7 @@ export function GrpcConnectionLayout({ style }: Props) {
           activeRequest={activeRequest}
           protoFiles={protoFiles}
           methodType={methodType}
+          isStreaming={grpc.isStreaming}
           onGo={grpc.go.mutate}
           onCommit={grpc.commit.mutate}
           onCancel={grpc.cancel.mutate}

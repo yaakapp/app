@@ -4,7 +4,6 @@ import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
-import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import type { GrpcMetadataEntry, GrpcRequest } from '../lib/models';
@@ -37,6 +36,7 @@ interface Props {
     | 'streaming'
     | 'no-schema'
     | 'no-method';
+  isStreaming: boolean;
   onCommit: () => void;
   onCancel: () => void;
   onSend: (v: { message: string }) => void;
@@ -54,15 +54,13 @@ export function GrpcConnectionSetupPane({
   protoFiles,
   reflectionError,
   reflectionLoading,
+  isStreaming,
   onGo,
   onCommit,
   onCancel,
   onSend,
 }: Props) {
-  const connections = useGrpcConnections(activeRequest.id ?? null);
   const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
-  const activeConnection = connections[0] ?? null;
-  const isStreaming = activeConnection?.elapsed === 0;
   const [activeTab, setActiveTab] = useActiveTab();
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
@@ -78,7 +76,9 @@ export function GrpcConnectionSetupPane({
   );
 
   const handleChangeMessage = useCallback(
-    (message: string) => updateRequest.mutateAsync({ message }),
+    (message: string) => {
+      return updateRequest.mutateAsync({ message });
+    },
     [updateRequest],
   );
 

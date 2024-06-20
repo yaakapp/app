@@ -838,7 +838,7 @@ const SidebarItem = forwardRef(function SidebarItem(
           </div>
           {latestGrpcConnection ? (
             <div className="ml-auto">
-              {latestGrpcConnection.elapsed === 0 && (
+              {isResponseLoading(latestGrpcConnection) && (
                 <Icon spin size="sm" icon="update" className="text-fg-subtler" />
               )}
             </div>
