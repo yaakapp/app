@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import type { GrpcRequest } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
@@ -32,7 +32,7 @@ export function useCreateGrpcRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invoke('cmd_create_grpc_request', { workspaceId, name: '', ...patch });
+      return invokeCmd('cmd_create_grpc_request', { workspaceId, name: '', ...patch });
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {

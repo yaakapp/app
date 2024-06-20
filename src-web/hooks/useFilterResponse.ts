@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeCmd } from '../lib/tauri';
 
 export function useFilterResponse({
   responseId,
@@ -16,7 +16,7 @@ export function useFilterResponse({
           return null;
         }
 
-        return (await invoke('cmd_filter_response', { responseId, filter })) as string | null;
+        return (await invokeCmd('cmd_filter_response', { responseId, filter })) as string | null;
       },
     }).data ?? ''
   );

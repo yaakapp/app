@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Environment } from '../lib/models';
 import { getEnvironment } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { environmentsQueryKey } from './useEnvironments';
 
 export function useUpdateEnvironment(id: string | null) {
@@ -14,7 +14,7 @@ export function useUpdateEnvironment(id: string | null) {
       }
 
       const newEnvironment = typeof v === 'function' ? v(environment) : { ...environment, ...v };
-      await invoke('cmd_update_environment', { environment: newEnvironment });
+      await invokeCmd('cmd_update_environment', { environment: newEnvironment });
     },
     onMutate: async (v) => {
       const environment = await getEnvironment(id);

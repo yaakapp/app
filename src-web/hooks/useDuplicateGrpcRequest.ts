@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { trackEvent } from '../lib/analytics';
 import { setKeyValue } from '../lib/keyValueStore';
 import type { GrpcRequest } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
@@ -22,7 +22,7 @@ export function useDuplicateGrpcRequest({
   return useMutation<GrpcRequest, string>({
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null grpc request");
-      return invoke('cmd_duplicate_grpc_request', { id });
+      return invokeCmd('cmd_duplicate_grpc_request', { id });
     },
     onSettled: () => trackEvent('grpc_request', 'duplicate'),
     onSuccess: async (request) => {

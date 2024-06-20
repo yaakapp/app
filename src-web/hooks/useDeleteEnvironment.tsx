@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import type { Environment, Workspace } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 import { environmentsQueryKey } from './useEnvironments';
 
@@ -23,7 +23,7 @@ export function useDeleteEnvironment(environment: Environment | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_environment', { environmentId: environment?.id });
+      return invokeCmd('cmd_delete_environment', { environmentId: environment?.id });
     },
     onSettled: () => trackEvent('environment', 'delete'),
     onSuccess: async (environment) => {

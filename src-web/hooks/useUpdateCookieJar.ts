@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { CookieJar } from '../lib/models';
 import { getCookieJar } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { cookieJarsQueryKey } from './useCookieJars';
 
 export function useUpdateCookieJar(id: string | null) {
@@ -15,7 +15,7 @@ export function useUpdateCookieJar(id: string | null) {
 
       const newCookieJar = typeof v === 'function' ? v(cookieJar) : { ...cookieJar, ...v };
       console.log('NEW COOKIE JAR', newCookieJar.cookies.length);
-      await invoke('cmd_update_cookie_jar', { cookieJar: newCookieJar });
+      await invokeCmd('cmd_update_cookie_jar', { cookieJar: newCookieJar });
     },
     onMutate: async (v) => {
       const cookieJar = await getCookieJar(id);

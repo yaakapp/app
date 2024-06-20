@@ -134,12 +134,7 @@ async fn cmd_grpc_reflect(
     let req = get_grpc_request(&window, request_id)
         .await
         .map_err(|e| e.to_string())?;
-    
-    // Short-circuit if no URL is set
-    if req.url.is_empty() {
-        return Ok(Vec::new());    
-    }
-    
+
     let uri = safe_uri(req.url.as_str());
     if proto_files.len() > 0 {
         grpc_handle
@@ -147,7 +142,6 @@ async fn cmd_grpc_reflect(
             .await
             .services_from_files(
                 &req.id,
-                uri.as_str(),
                 proto_files
                     .iter()
                     .map(|p| PathBuf::from_str(p).unwrap())

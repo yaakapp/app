@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import type { Workspace } from '../lib/models';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';
 import { useConfirm } from './useConfirm';
@@ -28,7 +28,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_workspace', { workspaceId: workspace?.id });
+      return invokeCmd('cmd_delete_workspace', { workspaceId: workspace?.id });
     },
     onSettled: () => trackEvent('workspace', 'delete'),
     onSuccess: async (workspace) => {

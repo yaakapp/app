@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { useRef } from 'react';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
@@ -8,6 +7,7 @@ import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { invokeCmd } from '../lib/tauri';
 import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -27,7 +27,7 @@ export function SettingsDropdown() {
 
   const showSettings = async () => {
     if (!workspaceId) return;
-    await invoke('cmd_new_nested_window', {
+    await invokeCmd('cmd_new_nested_window', {
       url: routes.paths.workspaceSettings({ workspaceId }),
       label: 'settings',
       title: 'Yaak Settings',

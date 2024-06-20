@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { Folder } from '../lib/models';
 import { getFolder } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { foldersQueryKey } from './useFolders';
 
 export function useUpdateAnyFolder() {
@@ -14,7 +14,7 @@ export function useUpdateAnyFolder() {
         throw new Error("Can't update a null folder");
       }
 
-      await invoke('cmd_update_folder', { folder: update(folder) });
+      await invokeCmd('cmd_update_folder', { folder: update(folder) });
     },
     onMutate: async ({ id, update }) => {
       const folder = await getFolder(id);

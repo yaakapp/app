@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { GrpcRequest } from '../lib/models';
 import { getGrpcRequest } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { grpcRequestsQueryKey } from './useGrpcRequests';
 
 export function useUpdateAnyGrpcRequest() {
@@ -20,7 +20,7 @@ export function useUpdateAnyGrpcRequest() {
 
       const patchedRequest =
         typeof update === 'function' ? update(request) : { ...request, ...update };
-      await invoke('cmd_update_grpc_request', { request: patchedRequest });
+      await invokeCmd('cmd_update_grpc_request', { request: patchedRequest });
     },
     onMutate: async ({ id, update }) => {
       const request = await getGrpcRequest(id);

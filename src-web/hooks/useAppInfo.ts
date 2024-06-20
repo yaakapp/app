@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeCmd } from '../lib/tauri';
 
 export interface AppInfo {
   isDev: boolean;
@@ -13,7 +13,7 @@ export function useAppInfo() {
   return useQuery({
     queryKey: ['appInfo'],
     queryFn: async () => {
-      const metadata = await invoke('cmd_metadata');
+      const metadata = await invokeCmd('cmd_metadata');
       return metadata as AppInfo;
     },
   }).data;

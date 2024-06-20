@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
 import { useMutation } from '@tanstack/react-query';
+import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
@@ -17,7 +17,7 @@ export function useImportCurl({ clearClipboard }: { clearClipboard?: boolean } =
 
   return useMutation({
     mutationFn: async ({ requestId, command }: { requestId: string | null; command: string }) => {
-      const request: Record<string, unknown> = await invoke('cmd_curl_to_request', {
+      const request: Record<string, unknown> = await invokeCmd('cmd_curl_to_request', {
         command,
         workspaceId,
       });

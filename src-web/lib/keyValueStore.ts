@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
 import type { KeyValue } from './models';
+import { invokeCmd } from './tauri';
 
 export async function setKeyValue<T>({
   namespace = 'global',
@@ -10,7 +10,7 @@ export async function setKeyValue<T>({
   key: string | string[];
   value: T;
 }): Promise<void> {
-  await invoke('cmd_set_key_value', {
+  await invokeCmd('cmd_set_key_value', {
     namespace,
     key: buildKeyValueKey(key),
     value: JSON.stringify(value),
@@ -26,7 +26,7 @@ export async function getKeyValue<T>({
   key: string | string[];
   fallback: T;
 }) {
-  const kv = (await invoke('cmd_get_key_value', {
+  const kv = (await invokeCmd('cmd_get_key_value', {
     namespace,
     key: buildKeyValueKey(key),
   })) as KeyValue | null;

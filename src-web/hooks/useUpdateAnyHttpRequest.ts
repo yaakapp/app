@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import type { HttpRequest } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { httpRequestsQueryKey } from './useHttpRequests';
 
 export function useUpdateAnyHttpRequest() {
@@ -20,7 +20,7 @@ export function useUpdateAnyHttpRequest() {
 
       const patchedRequest =
         typeof update === 'function' ? update(request) : { ...request, ...update };
-      await invoke('cmd_update_http_request', { request: patchedRequest });
+      await invokeCmd('cmd_update_http_request', { request: patchedRequest });
     },
     onMutate: async ({ id, update }) => {
       const request = await getHttpRequest(id);

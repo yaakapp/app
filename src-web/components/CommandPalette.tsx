@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
 import classNames from 'classnames';
 import { search } from 'fast-fuzzy';
 import type { KeyboardEvent, ReactNode } from 'react';
@@ -25,6 +24,7 @@ import { useRequests } from '../hooks/useRequests';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { invokeCmd } from '../lib/tauri';
 import { CookieDialog } from './CookieDialog';
 import { Button } from './core/Button';
 import { Heading } from './core/Heading';
@@ -82,7 +82,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         action: 'settings.show',
         onSelect: async () => {
           if (workspaceId == null) return;
-          await invoke('cmd_new_nested_window', {
+          await invokeCmd('cmd_new_nested_window', {
             url: routes.paths.workspaceSettings({ workspaceId }),
             label: 'settings',
             title: 'Yaak Settings',

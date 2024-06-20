@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoke } from '@tauri-apps/api/core';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { HttpRequest } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
+import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 import { httpRequestsQueryKey } from './useHttpRequests';
 import { httpResponsesQueryKey } from './useHttpResponses';
@@ -29,7 +29,7 @@ export function useDeleteAnyHttpRequest() {
         ),
       });
       if (!confirmed) return null;
-      return invoke('cmd_delete_http_request', { requestId: id });
+      return invokeCmd('cmd_delete_http_request', { requestId: id });
     },
     onSettled: () => trackEvent('http_request', 'delete'),
     onSuccess: async (request) => {
