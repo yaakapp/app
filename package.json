@@ -25,7 +25,8 @@
     "build:plugin:filter-xpath": "cd plugins/filter-xpath && vite build --emptyOutDir",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "replace-version": "node ./scripts/replace-version.cjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.1",

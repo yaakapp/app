@@ -54,6 +54,10 @@ jobs:
         run: npm run lint
       - name: Run tests
         run: npm test
+      - name: Set version
+        run: npm run replace-version
+        env:
+          YAAK_VERSION: ${{ github.ref_name }}
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
