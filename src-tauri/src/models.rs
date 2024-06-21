@@ -562,6 +562,7 @@ pub async fn upsert_grpc_request(
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                 updated_at = CURRENT_TIMESTAMP,
+                workspace_id = excluded.workspace_id,
                 name = excluded.name,
                 folder_id = excluded.folder_id,
                 sort_priority = excluded.sort_priority,
@@ -892,7 +893,7 @@ async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings, sqlx::Error> 
             SELECT
                 id, model, created_at, updated_at, theme, appearance,
                 theme_dark, theme_light, update_channel,
-                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap, 
+                interface_font_size, interface_scale, editor_font_size, editor_soft_wrap,
                 open_workspace_new_window
             FROM settings
             WHERE id = 'default'
@@ -1125,6 +1126,7 @@ pub async fn upsert_http_request(
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
                updated_at = CURRENT_TIMESTAMP,
+               workspace_id = excluded.workspace_id,
                name = excluded.name,
                folder_id = excluded.folder_id,
                method = excluded.method,

@@ -49,7 +49,7 @@ export const routePaths = {
 };
 
 export function useAppRoutes() {
-  const workspaceId = useActiveWorkspaceId();
+  const activeWorkspaceId = useActiveWorkspaceId();
   const requestId = useActiveRequestId();
   const nav = useNavigate();
 
@@ -66,22 +66,22 @@ export function useAppRoutes() {
 
   const setEnvironment = useCallback(
     (environment: Environment | null) => {
-      if (workspaceId == null) {
+      if (activeWorkspaceId == null) {
         navigate('workspaces');
       } else if (requestId == null) {
         navigate('workspace', {
-          workspaceId: workspaceId,
+          workspaceId: activeWorkspaceId,
           environmentId: environment == null ? undefined : environment.id,
         });
       } else {
         navigate('request', {
-          workspaceId,
+          workspaceId: activeWorkspaceId,
           environmentId: environment == null ? undefined : environment.id,
           requestId,
         });
       }
     },
-    [navigate, workspaceId, requestId],
+    [navigate, activeWorkspaceId, requestId],
   );
 
   return {

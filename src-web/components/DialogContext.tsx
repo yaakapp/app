@@ -46,14 +46,7 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
     actions,
   };
 
-  return (
-    <DialogContext.Provider value={state}>
-      {children}
-      {dialogs.map((props: DialogEntry) => (
-        <DialogInstance key={props.id} {...props} />
-      ))}
-    </DialogContext.Provider>
-  );
+  return <DialogContext.Provider value={state}>{children}</DialogContext.Provider>;
 };
 
 function DialogInstance({ id, render, ...props }: DialogEntry) {
@@ -67,3 +60,14 @@ function DialogInstance({ id, render, ...props }: DialogEntry) {
 }
 
 export const useDialog = () => useContext(DialogContext).actions;
+
+export function Dialogs() {
+  const { dialogs } = useContext(DialogContext);
+  return (
+    <>
+      {dialogs.map((props: DialogEntry) => (
+        <DialogInstance key={props.id} {...props} />
+      ))}
+    </>
+  );
+}

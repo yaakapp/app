@@ -9,7 +9,7 @@ import { AnimatePresence } from 'framer-motion';
 type ToastEntry = {
   id?: string;
   message: ReactNode;
-  timeout?: number | null;
+  timeout?: 3000 | 5000 | 8000 | null;
   onClose?: ToastProps['onClose'];
 } & Omit<ToastProps, 'onClose' | 'open' | 'children' | 'timeout'>;
 
@@ -29,14 +29,14 @@ interface Actions {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ToastContext = createContext<State>({} as State);
+export const ToastContext = createContext<State>({} as State);
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<State['toasts']>([]);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const actions = useMemo<Actions>(
     () => ({
-      show({ id, timeout = 4000, ...props }: ToastEntry) {
+      show({ id, timeout = 5000, ...props }: ToastEntry) {
         id = id ?? generateId();
         if (timeout != null) {
           timeoutRef.current = setTimeout(() => this.hide(id), timeout);
@@ -62,21 +62,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const state: State = { toasts, actions };
-
-  return (
-    <ToastContext.Provider value={state}>
-      {children}
-      <Portal name="toasts">
-        <div className="absolute right-0 bottom-0 z-10">
-          <AnimatePresence>
-            {toasts.map((props: PrivateToastEntry) => (
-              <ToastInstance key={props.id} {...props} />
-            ))}
-          </AnimatePresence>
-        </div>
-      </Portal>
-    </ToastContext.Provider>
-  );
+  return <ToastContext.Provider value={state}>{children}</ToastContext.Provider>;
 };
 
 function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
@@ -96,3 +82,18 @@ function ToastInstance({ id, message, timeout, ...props }: PrivateToastEntry) {
 }
 
 export const useToast = () => useContext(ToastContext).actions;
+
+export const Toasts = () => {
+  const { toasts } = useContext(ToastContext);
+  return (
+    <Portal name="toasts">
+      <div className="absolute right-0 bottom-0 z-10">
+        <AnimatePresence>
+          {toasts.map((props: PrivateToastEntry) => (
+            <ToastInstance key={props.id} {...props} />
+          ))}
+        </AnimatePresence>
+      </div>
+    </Portal>
+  );
+};

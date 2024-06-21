@@ -13,7 +13,7 @@ import { BearerAuth } from './BearerAuth';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
-import { PairEditor } from './core/PairEditor';
+import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { RadioDropdown } from './core/RadioDropdown';
 import { HStack, VStack } from './core/Stacks';
 import type { TabItem } from './core/Tabs/Tabs';
@@ -209,7 +209,7 @@ export function GrpcConnectionSetupPane({
               rightSlot={<Icon className="text-fg-subtler" size="sm" icon="chevronDown" />}
               disabled={isStreaming || services == null}
               className={classNames(
-                'font-mono text-sm min-w-[5rem] !ring-0',
+                'font-mono text-editor min-w-[5rem] !ring-0',
                 paneSize < 400 && 'flex-1',
               )}
             >
@@ -291,7 +291,8 @@ export function GrpcConnectionSetupPane({
           )}
         </TabContent>
         <TabContent value="metadata">
-          <PairEditor
+          <PairOrBulkEditor
+            preferenceName="grpc_metadata"
             valueAutocompleteVariables
             nameAutocompleteVariables
             pairs={activeRequest.metadata}

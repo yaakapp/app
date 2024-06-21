@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrent } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useClipboardText } from '../hooks/useClipboardText';
 import { useCommandPalette } from '../hooks/useCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
@@ -32,8 +33,12 @@ import { monokaiProDefault } from '../lib/theme/themes/monokai-pro';
 import { rosePineDefault } from '../lib/theme/themes/rose-pine';
 import { yaakDark } from '../lib/theme/themes/yaak';
 import { getThemeCSS } from '../lib/theme/window';
+import { InlineCode } from './core/InlineCode';
+import { useToast } from './ToastContext';
 
 export function GlobalHooks() {
+  const toast = useToast();
+
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
@@ -43,6 +48,21 @@ export function GlobalHooks() {
   useSyncThemeToDocument();
   useCommandPalette();
   useNotificationToast();
+
+  const activeWorkspace = useActiveWorkspace();
+
+  useEffect(() => {
+    if (activeWorkspace == null) return;
+    toast.show({
+      id: 'workspace-changed',
+      timeout: 3000,
+      message: (
+        <>
+          Switched workspace to <InlineCode>{activeWorkspace.name}</InlineCode>
+        </>
+      ),
+    });
+  }, [activeWorkspace, toast]);
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
