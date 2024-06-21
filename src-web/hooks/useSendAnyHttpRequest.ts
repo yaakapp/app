@@ -9,7 +9,7 @@ import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useAlert } from './useAlert';
 
-export function useSendAnyRequest(options: { download?: boolean } = {}) {
+export function useSendAnyHttpRequest(options: { download?: boolean } = {}) {
   const environment = useActiveEnvironment();
   const alert = useAlert();
   const { activeCookieJar } = useActiveCookieJar();

@@ -6,7 +6,7 @@ import { useGrpc } from '../hooks/useGrpc';
 import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { useGrpcProtoFiles } from '../hooks/useGrpcProtoFiles';
-import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
+import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { Banner } from './core/Banner';
 import { HotKeyList } from './core/HotKeyList';
 import { SplitLayout } from './core/SplitLayout';
@@ -21,7 +21,7 @@ const emptyArray: string[] = [];
 
 export function GrpcConnectionLayout({ style }: Props) {
   const activeRequest = useActiveRequest('grpc_request');
-  const { mutateAsync: updateRequest } = useUpdateGrpcRequest(activeRequest?.id ?? null);
+  const updateRequest = useUpdateAnyGrpcRequest();
   const connections = useGrpcConnections(activeRequest?.id ?? null);
   const activeConnection = connections[0] ?? null;
   const messages = useGrpcEvents(activeConnection?.id ?? null);
@@ -34,16 +34,22 @@ export function GrpcConnectionLayout({ style }: Props) {
     if (services == null || activeRequest == null) return;
     const s = services.find((s) => s.name === activeRequest.service);
     if (s == null) {
-      updateRequest({
-        service: services[0]?.name ?? null,
-        method: services[0]?.methods[0]?.name ?? null,
+      updateRequest.mutate({
+        id: activeRequest.id,
+        update: {
+          service: services[0]?.name ?? null,
+          method: services[0]?.methods[0]?.name ?? null,
+        },
       });
       return;
     }
 
     const m = s.methods.find((m) => m.name === activeRequest.method);
     if (m == null) {
-      updateRequest({ method: s.methods[0]?.name ?? null });
+      updateRequest.mutate({
+        id: activeRequest.id,
+        update: { method: s.methods[0]?.name ?? null },
+      });
       return;
     }
   }, [activeRequest, services, updateRequest]);

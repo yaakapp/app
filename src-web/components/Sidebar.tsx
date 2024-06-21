@@ -23,14 +23,12 @@ import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { useMoveToWorkspace } from '../hooks/useMoveToWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
+import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSendManyRequests } from '../hooks/useSendFolder';
-import { useSendRequest } from '../hooks/useSendRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
-import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
-import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
@@ -609,14 +607,14 @@ const SidebarItem = forwardRef(function SidebarItem(
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const copyAsCurl = useCopyAsCurl(itemId);
-  const sendRequest = useSendRequest(itemId);
+  const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestHttpResponse = useLatestHttpResponse(itemId);
   const latestGrpcConnection = useLatestGrpcConnection(itemId);
-  const updateHttpRequest = useUpdateHttpRequest(itemId);
+  const updateHttpRequest = useUpdateAnyHttpRequest();
   const workspaces = useWorkspaces();
-  const updateGrpcRequest = useUpdateGrpcRequest(itemId);
+  const updateGrpcRequest = useUpdateAnyGrpcRequest();
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
   const [editing, setEditing] = useState<boolean>(false);
@@ -625,15 +623,14 @@ const SidebarItem = forwardRef(function SidebarItem(
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
-      if (activeRequest == null) return;
-      if (activeRequest.model === 'http_request') {
-        updateHttpRequest.mutate((r) => ({ ...r, name: el.value }));
-      } else if (activeRequest.model === 'grpc_request') {
-        updateGrpcRequest.mutate((r) => ({ ...r, name: el.value }));
+      if (itemModel === 'http_request') {
+        updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
+      } else if (itemModel === 'grpc_request') {
+        updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
       }
       setEditing(false);
     },
-    [activeRequest, updateGrpcRequest, updateHttpRequest],
+    [itemId, itemModel, updateGrpcRequest, updateHttpRequest],
   );
 
   const handleFocus = useCallback((el: HTMLInputElement | null) => {
@@ -736,7 +733,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                           hotKeyAction: 'http_request.send',
                           hotKeyLabelOnly: true, // Already bound in URL bar
                           leftSlot: <Icon icon="sendHorizontal" />,
-                          onSelect: sendRequest.mutate,
+                          onSelect: () => sendRequest.mutate(itemId),
                         },
                         {
                           key: 'copyCurl',
@@ -769,9 +766,9 @@ const SidebarItem = forwardRef(function SidebarItem(
                         defaultValue: itemName,
                       });
                       if (itemModel === 'http_request') {
-                        updateHttpRequest.mutate((r) => ({ ...r, name }));
+                        updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
                       } else {
-                        updateGrpcRequest.mutate((r) => ({ ...r, name }));
+                        updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
                       }
                     },
                   },
