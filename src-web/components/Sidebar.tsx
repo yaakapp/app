@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import type { ForwardedRef, ReactNode } from 'react';
-import React, { forwardRef, Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
@@ -299,7 +299,7 @@ export function Sidebar({ className }: Props) {
     [hasFocus, selectableRequests, selectedId, setSelectedId, setSelectedTree],
   );
 
-  const handleMove = useCallback<DraggableSidebarItemProps['onMove']>(
+  const handleMove = useCallback<SidebarItemProps['onMove']>(
     (id, side) => {
       let hoveredTree = treeParentMap[id] ?? null;
       const dragIndex = hoveredTree?.children.findIndex((n) => n.item.id === id) ?? -99;
@@ -318,11 +318,11 @@ export function Sidebar({ className }: Props) {
     [isCollapsed, treeParentMap],
   );
 
-  const handleDragStart = useCallback<DraggableSidebarItemProps['onDragStart']>((id: string) => {
+  const handleDragStart = useCallback<SidebarItemProps['onDragStart']>((id: string) => {
     setDraggingId(id);
   }, []);
 
-  const handleEnd = useCallback<DraggableSidebarItemProps['onEnd']>(
+  const handleEnd = useCallback<SidebarItemProps['onEnd']>(
     async (itemId) => {
       setHoveredTree(null);
       handleClearSelected();
@@ -436,7 +436,7 @@ export function Sidebar({ className }: Props) {
       )}
     >
       <ContextMenu
-        show={showMainContextMenu}
+        triggerPosition={showMainContextMenu}
         items={mainContextMenuItems}
         onClose={() => setShowMainContextMenu(null)}
       />
@@ -511,8 +511,7 @@ function SidebarItems({
         return (
           <Fragment key={child.item.id}>
             {hoveredIndex === i && hoveredTree?.item.id === tree.item.id && <DropMarker />}
-            <DraggableSidebarItem
-              draggable
+            <SidebarItem
               selected={selected}
               itemId={child.item.id}
               itemName={child.item.name}
@@ -558,7 +557,7 @@ function SidebarItems({
                     handleDragStart={handleDragStart}
                   />
                 )}
-            </DraggableSidebarItem>
+            </SidebarItem>
           </Fragment>
         );
       })}
@@ -579,28 +578,74 @@ type SidebarItemProps = {
   useProminentStyles?: boolean;
   selected?: boolean;
   draggable?: boolean;
+  onMove: (id: string, side: 'above' | 'below') => void;
+  onEnd: (id: string) => void;
+  onDragStart: (id: string) => void;
   children?: ReactNode;
   child: TreeNode;
 } & Pick<SidebarItemsProps, 'isCollapsed' | 'onSelect'>;
 
-const SidebarItem = forwardRef(function SidebarItem(
-  {
-    children,
-    className,
-    itemName,
-    itemFallbackName,
-    itemId,
-    itemModel,
-    itemPrefix,
-    useProminentStyles,
-    selected,
-    onSelect,
-    isCollapsed,
-    child,
-    draggable,
-  }: SidebarItemProps,
-  ref: ForwardedRef<HTMLLIElement>,
-) {
+type DragItem = {
+  id: string;
+  itemName: string;
+};
+
+function SidebarItem({
+  itemName,
+  itemId,
+  itemModel,
+  child,
+  onMove,
+  onEnd,
+  onDragStart,
+  onSelect,
+  isCollapsed,
+  itemPrefix,
+  className,
+  selected,
+  itemFallbackName,
+  useProminentStyles,
+  children,
+}: SidebarItemProps) {
+  const ref = useRef<HTMLLIElement>(null);
+
+  const [, connectDrop] = useDrop<DragItem, void>(
+    {
+      accept: ItemTypes.REQUEST,
+      hover: (_, monitor) => {
+        if (!ref.current) return;
+        const hoverBoundingRect = ref.current?.getBoundingClientRect();
+        const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+        const clientOffset = monitor.getClientOffset();
+        const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
+        onMove(itemId, hoverClientY < hoverMiddleY ? 'above' : 'below');
+      },
+    },
+    [onMove],
+  );
+
+  const [, connectDrag] = useDrag<
+    DragItem,
+    unknown,
+    {
+      isDragging: boolean;
+    }
+  >(
+    () => ({
+      type: ItemTypes.REQUEST,
+      item: () => {
+        onDragStart(itemId);
+        return { id: itemId, itemName };
+      },
+      collect: (m) => ({ isDragging: m.isDragging() }),
+      options: { dropEffect: 'move' },
+      end: () => onEnd(itemId),
+    }),
+    [onEnd],
+  );
+
+  connectDrag(connectDrop(ref));
+
   const activeRequest = useActiveRequest();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(itemId);
@@ -673,134 +718,163 @@ const SidebarItem = forwardRef(function SidebarItem(
     y: number;
   } | null>(null);
 
+  const handleCloseContextMenu = useCallback(() => {
+    setShowContextMenu(null);
+  }, []);
+
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setShowContextMenu({ x: e.clientX, y: e.clientY });
   }, []);
 
+  const items = useMemo<DropdownItem[]>(() => {
+    if (itemModel === 'folder') {
+      return [
+        {
+          key: 'sendAll',
+          label: 'Send All',
+          leftSlot: <Icon icon="sendHorizontal" />,
+          onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
+        },
+        {
+          key: 'rename',
+          label: 'Rename',
+          leftSlot: <Icon icon="pencil" />,
+          onSelect: async () => {
+            const name = await prompt({
+              id: 'rename-folder',
+              title: 'Rename Folder',
+              description: (
+                <>
+                  Enter a new name for <InlineCode>{itemName}</InlineCode>
+                </>
+              ),
+              name: 'name',
+              label: 'Name',
+              placeholder: 'New Name',
+              defaultValue: itemName,
+            });
+            updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
+          },
+        },
+        {
+          key: 'deleteFolder',
+          label: 'Delete',
+          variant: 'danger',
+          leftSlot: <Icon icon="trash" />,
+          onSelect: () => deleteFolder.mutate(),
+        },
+        { type: 'separator' },
+        ...createDropdownItems,
+      ];
+    } else {
+      const requestItems: DropdownItem[] =
+        itemModel === 'http_request'
+          ? [
+              {
+                key: 'sendRequest',
+                label: 'Send',
+                hotKeyAction: 'http_request.send',
+                hotKeyLabelOnly: true, // Already bound in URL bar
+                leftSlot: <Icon icon="sendHorizontal" />,
+                onSelect: () => sendRequest.mutate(itemId),
+              },
+              {
+                key: 'copyCurl',
+                label: 'Copy as Curl',
+                leftSlot: <Icon icon="copy" />,
+                onSelect: copyAsCurl,
+              },
+              { type: 'separator' },
+            ]
+          : [];
+      return [
+        ...requestItems,
+        {
+          key: 'renameRequest',
+          label: 'Rename',
+          leftSlot: <Icon icon="pencil" />,
+          onSelect: async () => {
+            const name = await prompt({
+              id: 'rename-request',
+              title: 'Rename Request',
+              description:
+                itemName === '' ? (
+                  'Enter a new name'
+                ) : (
+                  <>
+                    Enter a new name for <InlineCode>{itemName}</InlineCode>
+                  </>
+                ),
+              name: 'name',
+              label: 'Name',
+              placeholder: 'New Name',
+              defaultValue: itemName,
+            });
+            if (itemModel === 'http_request') {
+              updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
+            } else {
+              updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
+            }
+          },
+        },
+        {
+          key: 'duplicateRequest',
+          label: 'Duplicate',
+          hotKeyAction: 'http_request.duplicate',
+          hotKeyLabelOnly: true, // Would trigger for every request (bad)
+          leftSlot: <Icon icon="copy" />,
+          onSelect: () => {
+            itemModel === 'http_request'
+              ? duplicateHttpRequest.mutate()
+              : duplicateGrpcRequest.mutate();
+          },
+        },
+        {
+          key: 'moveWorkspace',
+          label: 'Change Workspace',
+          leftSlot: <Icon icon="house" />,
+          hidden: workspaces.length <= 1,
+          onSelect: moveToWorkspace.mutate,
+        },
+        {
+          key: 'deleteRequest',
+          variant: 'danger',
+          label: 'Delete',
+          leftSlot: <Icon icon="trash" />,
+          onSelect: () => deleteRequest.mutate(),
+        },
+      ];
+    }
+  }, [
+    child.children,
+    copyAsCurl,
+    createDropdownItems,
+    deleteFolder,
+    deleteRequest,
+    duplicateGrpcRequest,
+    duplicateHttpRequest,
+    itemId,
+    itemModel,
+    itemName,
+    moveToWorkspace.mutate,
+    prompt,
+    sendManyRequests,
+    sendRequest,
+    updateAnyFolder,
+    updateGrpcRequest,
+    updateHttpRequest,
+    workspaces.length,
+  ]);
+
   return (
-    <li ref={ref} draggable={draggable}>
+    <li ref={ref} draggable>
       <div className={classNames(className, 'block relative group/item px-1.5 pb-0.5')}>
         <ContextMenu
-          show={showContextMenu}
-          items={
-            itemModel === 'folder'
-              ? [
-                  {
-                    key: 'sendAll',
-                    label: 'Send All',
-                    leftSlot: <Icon icon="sendHorizontal" />,
-                    onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
-                  },
-                  {
-                    key: 'rename',
-                    label: 'Rename',
-                    leftSlot: <Icon icon="pencil" />,
-                    onSelect: async () => {
-                      const name = await prompt({
-                        id: 'rename-folder',
-                        title: 'Rename Folder',
-                        description: (
-                          <>
-                            Enter a new name for <InlineCode>{itemName}</InlineCode>
-                          </>
-                        ),
-                        name: 'name',
-                        label: 'Name',
-                        placeholder: 'New Name',
-                        defaultValue: itemName,
-                      });
-                      updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
-                    },
-                  },
-                  {
-                    key: 'deleteFolder',
-                    label: 'Delete',
-                    variant: 'danger',
-                    leftSlot: <Icon icon="trash" />,
-                    onSelect: () => deleteFolder.mutate(),
-                  },
-                  { type: 'separator' },
-                  ...createDropdownItems,
-                ]
-              : [
-                  ...((itemModel === 'http_request'
-                    ? [
-                        {
-                          key: 'sendRequest',
-                          label: 'Send',
-                          hotKeyAction: 'http_request.send',
-                          hotKeyLabelOnly: true, // Already bound in URL bar
-                          leftSlot: <Icon icon="sendHorizontal" />,
-                          onSelect: () => sendRequest.mutate(itemId),
-                        },
-                        {
-                          key: 'copyCurl',
-                          label: 'Copy as Curl',
-                          leftSlot: <Icon icon="copy" />,
-                          onSelect: copyAsCurl,
-                        },
-                        { type: 'separator' },
-                      ]
-                    : []) as DropdownItem[]),
-                  {
-                    key: 'renameRequest',
-                    label: 'Rename',
-                    leftSlot: <Icon icon="pencil" />,
-                    onSelect: async () => {
-                      const name = await prompt({
-                        id: 'rename-request',
-                        title: 'Rename Request',
-                        description:
-                          itemName === '' ? (
-                            'Enter a new name'
-                          ) : (
-                            <>
-                              Enter a new name for <InlineCode>{itemName}</InlineCode>
-                            </>
-                          ),
-                        name: 'name',
-                        label: 'Name',
-                        placeholder: 'New Name',
-                        defaultValue: itemName,
-                      });
-                      if (itemModel === 'http_request') {
-                        updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
-                      } else {
-                        updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
-                      }
-                    },
-                  },
-                  {
-                    key: 'duplicateRequest',
-                    label: 'Duplicate',
-                    hotKeyAction: 'http_request.duplicate',
-                    hotKeyLabelOnly: true, // Would trigger for every request (bad)
-                    leftSlot: <Icon icon="copy" />,
-                    onSelect: () => {
-                      itemModel === 'http_request'
-                        ? duplicateHttpRequest.mutate()
-                        : duplicateGrpcRequest.mutate();
-                    },
-                  },
-                  {
-                    key: 'moveWorkspace',
-                    label: 'Change Workspace',
-                    leftSlot: <Icon icon="house" />,
-                    hidden: workspaces.length <= 1,
-                    onSelect: moveToWorkspace.mutate,
-                  },
-                  {
-                    key: 'deleteRequest',
-                    variant: 'danger',
-                    label: 'Delete',
-                    leftSlot: <Icon icon="trash" />,
-                    onSelect: () => deleteRequest.mutate(),
-                  },
-                ]
-          }
-          onClose={() => setShowContextMenu(null)}
+          triggerPosition={showContextMenu}
+          items={items}
+          onClose={handleCloseContextMenu}
         />
         <button
           // tabIndex={-1} // Will prevent drag-n-drop
@@ -863,80 +937,5 @@ const SidebarItem = forwardRef(function SidebarItem(
       </div>
       {children}
     </li>
-  );
-});
-
-type DraggableSidebarItemProps = SidebarItemProps & {
-  onMove: (id: string, side: 'above' | 'below') => void;
-  onEnd: (id: string) => void;
-  onDragStart: (id: string) => void;
-  children?: ReactNode;
-  child?: TreeNode;
-};
-
-type DragItem = {
-  id: string;
-  itemName: string;
-};
-
-function DraggableSidebarItem({
-  itemName,
-  itemId,
-  itemModel,
-  child,
-  onMove,
-  onEnd,
-  onDragStart,
-  ...props
-}: DraggableSidebarItemProps) {
-  const ref = useRef<HTMLLIElement>(null);
-
-  const [, connectDrop] = useDrop<DragItem, void>(
-    {
-      accept: ItemTypes.REQUEST,
-      hover: (_, monitor) => {
-        if (!ref.current) return;
-        const hoverBoundingRect = ref.current?.getBoundingClientRect();
-        const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-        const clientOffset = monitor.getClientOffset();
-        const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-        onMove(itemId, hoverClientY < hoverMiddleY ? 'above' : 'below');
-      },
-    },
-    [onMove],
-  );
-
-  const [{ isDragging }, connectDrag] = useDrag<
-    DragItem,
-    unknown,
-    {
-      isDragging: boolean;
-    }
-  >(
-    () => ({
-      type: ItemTypes.REQUEST,
-      item: () => {
-        onDragStart(itemId);
-        return { id: itemId, itemName };
-      },
-      collect: (m) => ({ isDragging: m.isDragging() }),
-      options: { dropEffect: 'move' },
-      end: () => onEnd(itemId),
-    }),
-    [onEnd],
-  );
-
-  connectDrag(connectDrop(ref));
-
-  return (
-    <SidebarItem
-      ref={ref}
-      className={classNames(isDragging && 'opacity-20')}
-      itemName={itemName}
-      itemId={itemId}
-      itemModel={itemModel}
-      child={child}
-      {...props}
-    />
   );
 }

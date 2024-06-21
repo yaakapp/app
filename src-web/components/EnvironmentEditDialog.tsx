@@ -258,7 +258,7 @@ function SidebarButton({
       </div>
       {environment != null && (
         <ContextMenu
-          show={showContextMenu}
+          triggerPosition={showContextMenu}
           onClose={() => setShowContextMenu(null)}
           items={[
             {
