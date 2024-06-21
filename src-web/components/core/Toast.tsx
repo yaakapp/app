@@ -6,6 +6,7 @@ import { useKey } from 'react-use';
 import type { IconProps } from './Icon';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
+import { VStack } from './Stacks';
 
 export interface ToastProps {
   children: ReactNode;
@@ -75,10 +76,10 @@ export function Toast({
             )}
           />
         )}
-        <div className="flex flex-col gap-1 w-full">
+        <VStack space={2}>
           <div>{children}</div>
           {action}
-        </div>
+        </VStack>
       </div>
 
       <IconButton

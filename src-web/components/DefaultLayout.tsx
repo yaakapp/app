@@ -9,8 +9,9 @@ import { motion } from 'framer-motion';
 export function DefaultLayout() {
   const osInfo = useOsInfo();
   return (
-    <DialogProvider>
-      <ToastProvider>
+    // On outside so that dialogs/etc can use toasts
+    <ToastProvider>
+      <DialogProvider>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -23,7 +24,7 @@ export function DefaultLayout() {
           <Outlet />
         </motion.div>
         <GlobalHooks />
-      </ToastProvider>
-    </DialogProvider>
+      </DialogProvider>
+    </ToastProvider>
   );
 }
