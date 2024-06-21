@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package echo;
+
+service Echo {
+  rpc echo (EchoReq) returns (EchoRes);
+  rpc hookImport (HookImportReq) returns (HookImportRes);
+}
+
+message EchoReq {
+  string name = 1;
+}
+
+message EchoRes {
+  string message = 1;
+}
+
+message HookImportReq {
+  string data = 1;
+}
+
+message HookImportRes {
+  string data = 1;
+}
