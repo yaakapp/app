@@ -167,32 +167,34 @@ export const Dropdown = forwardRef<DropdownRef, DropdownProps>(function Dropdown
 });
 
 interface ContextMenuProps {
-  show: { x: number; y: number } | null;
+  triggerPosition: { x: number; y: number } | null;
   className?: string;
   items: DropdownProps['items'];
   onClose: () => void;
 }
 
 export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function ContextMenu(
-  { show, className, items, onClose },
+  { triggerPosition, className, items, onClose },
   ref,
 ) {
   const triggerShape = useMemo(
     () => ({
-      top: show?.y ?? 0,
-      bottom: show?.y ?? 0,
-      left: show?.x ?? 0,
-      right: show?.x ?? 0,
+      top: triggerPosition?.y ?? 0,
+      bottom: triggerPosition?.y ?? 0,
+      left: triggerPosition?.x ?? 0,
+      right: triggerPosition?.x ?? 0,
     }),
-    [show],
+    [triggerPosition],
   );
+
+  if (triggerPosition == null) return null;
 
   return (
     <Menu
+      isOpen // Always open because we return null if not
       className={className}
       ref={ref}
       items={items}
-      isOpen={show != null}
       onClose={onClose}
       triggerShape={triggerShape}
     />
