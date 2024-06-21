@@ -30,14 +30,13 @@ interface Actions {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ToastContext = createContext<State>({} as State);
-const DEFAULT_TOAST_TIMEOUT = 5000;
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<State['toasts']>([]);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const actions = useMemo<Actions>(
     () => ({
-      show({ id, timeout = DEFAULT_TOAST_TIMEOUT, ...props }: ToastEntry) {
+      show({ id, timeout = 5000, ...props }: ToastEntry) {
         id = id ?? generateId();
         if (timeout != null) {
           timeoutRef.current = setTimeout(() => this.hide(id), timeout);
