@@ -7,6 +7,7 @@ import { workspacesQueryKey } from './useWorkspaces';
 export function useUpdateWorkspace(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<void, unknown, Partial<Workspace> | ((w: Workspace) => Workspace)>({
+    mutationKey: ['update_workspace', id],
     mutationFn: async (v) => {
       const workspace = await getWorkspace(id);
       if (workspace == null) {

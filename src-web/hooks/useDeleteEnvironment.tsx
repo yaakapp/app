@@ -11,6 +11,7 @@ export function useDeleteEnvironment(environment: Environment | null) {
   const confirm = useConfirm();
 
   return useMutation<Environment | null, string>({
+    mutationKey: ['delete_environment', environment?.id],
     mutationFn: async () => {
       const confirmed = await confirm({
         id: 'delete-environment',

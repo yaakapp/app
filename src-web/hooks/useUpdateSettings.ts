@@ -7,6 +7,7 @@ export function useUpdateSettings() {
   const settings = useSettings();
 
   return useMutation<void, unknown, Partial<Settings>>({
+    mutationKey: ['update_settings'],
     mutationFn: async (patch) => {
       if (settings == null) return;
       const newSettings: Settings = { ...settings, ...patch };

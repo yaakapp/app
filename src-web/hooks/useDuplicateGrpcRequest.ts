@@ -20,6 +20,7 @@ export function useDuplicateGrpcRequest({
   const routes = useAppRoutes();
   const protoFiles = useGrpcProtoFiles(id);
   return useMutation<GrpcRequest, string>({
+    mutationKey: ['duplicate_grpc_request', id],
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null grpc request");
       return invokeCmd('cmd_duplicate_grpc_request', { id });

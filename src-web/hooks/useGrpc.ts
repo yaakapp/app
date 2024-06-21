@@ -21,12 +21,14 @@ export function useGrpc(
   const environmentId = useActiveEnvironmentId();
 
   const go = useMutation<void, string>({
+    mutationKey: ['grpc_go', conn?.id],
     mutationFn: async () =>
       await invokeCmd('cmd_grpc_go', { requestId, environmentId, protoFiles }),
     onSettled: () => trackEvent('grpc_request', 'send'),
   });
 
   const send = useMutation({
+    mutationKey: ['grpc_send', conn?.id],
     mutationFn: async ({ message }: { message: string }) =>
       await emit(`grpc_client_msg_${conn?.id ?? 'none'}`, { Message: message }),
     onSettled: () => trackEvent('grpc_connection', 'send'),

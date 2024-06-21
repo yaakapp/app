@@ -13,6 +13,7 @@ export function useDeleteAnyGrpcRequest() {
   const confirm = useConfirm();
 
   return useMutation<GrpcRequest | null, string, string>({
+    mutationKey: ['delete_any_grpc_request'],
     mutationFn: async (id) => {
       const request = await getGrpcRequest(id);
       if (request == null) return null;

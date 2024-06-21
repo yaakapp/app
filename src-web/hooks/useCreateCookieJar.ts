@@ -12,6 +12,7 @@ export function useCreateCookieJar() {
   const prompt = usePrompt();
 
   return useMutation<CookieJar>({
+    mutationKey: ['create_cookie_jar'],
     mutationFn: async () => {
       if (workspaceId === null) {
         throw new Error("Cannot create cookie jar when there's no active workspace");

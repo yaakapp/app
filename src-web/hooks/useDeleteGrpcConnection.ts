@@ -7,6 +7,7 @@ import { grpcConnectionsQueryKey } from './useGrpcConnections';
 export function useDeleteGrpcConnection(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<GrpcConnection>({
+    mutationKey: ['delete_grpc_connection', id],
     mutationFn: async () => {
       return await invokeCmd('cmd_delete_grpc_connection', { id: id });
     },

@@ -4,6 +4,7 @@ import { useSendAnyRequest } from './useSendAnyRequest';
 export function useSendManyRequests() {
   const sendAnyRequest = useSendAnyRequest();
   return useMutation<void, string, string[]>({
+    mutationKey: ['send_many_requests'],
     mutationFn: async (requestIds: string[]) => {
       for (const id of requestIds) {
         sendAnyRequest.mutate(id);

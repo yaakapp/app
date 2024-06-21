@@ -12,7 +12,7 @@ export function useMoveToWorkspace(id: string) {
   const activeWorkspaceId = useActiveWorkspaceId();
 
   return useMutation<void, unknown>({
-    mutationKey: ['moveWorkspace'],
+    mutationKey: ['move_workspace', id],
     mutationFn: async () => {
       if (request == null || activeWorkspaceId == null) return;
 

@@ -8,6 +8,7 @@ export function useCreateWorkspace() {
   const routes = useAppRoutes();
   const prompt = usePrompt();
   return useMutation<Workspace, void, void>({
+    mutationKey: ['create_workspace'],
     mutationFn: async () => {
       const name = await prompt({
         id: 'new-workspace',

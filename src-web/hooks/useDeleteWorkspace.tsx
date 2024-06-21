@@ -16,6 +16,7 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
   const confirm = useConfirm();
 
   return useMutation<Workspace | null, string>({
+    mutationKey: ['delete_workspace', workspace?.id],
     mutationFn: async () => {
       const confirmed = await confirm({
         id: 'delete-workspace',

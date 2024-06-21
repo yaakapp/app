@@ -11,6 +11,7 @@ export function useDeleteCookieJar(cookieJar: CookieJar | null) {
   const confirm = useConfirm();
 
   return useMutation<CookieJar | null, string>({
+    mutationKey: ['delete_cookie_jar', cookieJar?.id],
     mutationFn: async () => {
       const confirmed = await confirm({
         id: 'delete-cookie-jar',

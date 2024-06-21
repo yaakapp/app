@@ -9,6 +9,7 @@ export function useCheckForUpdates() {
   const alert = useAlert();
   const appInfo = useAppInfo();
   return useMutation({
+    mutationKey: ['check_for_updates'],
     mutationFn: async () => {
       const hasUpdate: boolean = await minPromiseMillis(invokeCmd('cmd_check_for_updates'), 500);
       if (!hasUpdate) {

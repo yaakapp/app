@@ -13,6 +13,7 @@ export function useDeleteFolder(id: string | null) {
   const confirm = useConfirm();
 
   return useMutation<Folder | null, string>({
+    mutationKey: ['delete_folder', id],
     mutationFn: async () => {
       const folder = await getFolder(id);
       const confirmed = await confirm({

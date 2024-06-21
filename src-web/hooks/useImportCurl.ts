@@ -16,6 +16,7 @@ export function useImportCurl({ clearClipboard }: { clearClipboard?: boolean } =
   const [, setClipboardText] = useClipboardText();
 
   return useMutation({
+    mutationKey: ['import_curl'],
     mutationFn: async ({ requestId, command }: { requestId: string | null; command: string }) => {
       const request: Record<string, unknown> = await invokeCmd('cmd_curl_to_request', {
         command,

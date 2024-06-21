@@ -14,6 +14,7 @@ export function useCreateHttpRequest() {
   const routes = useAppRoutes();
 
   return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
+    mutationKey: ['create_http_request'],
     mutationFn: (patch = {}) => {
       if (workspaceId === null) {
         throw new Error("Cannot create request when there's no active workspace");
