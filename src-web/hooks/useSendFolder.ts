@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { useSendAnyRequest } from './useSendAnyRequest';
+import { useSendAnyHttpRequest } from './useSendAnyHttpRequest';
 
 export function useSendManyRequests() {
-  const sendAnyRequest = useSendAnyRequest();
+  const sendAnyRequest = useSendAnyHttpRequest();
   return useMutation<void, string, string[]>({
     mutationKey: ['send_many_requests'],
     mutationFn: async (requestIds: string[]) => {

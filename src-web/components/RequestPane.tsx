@@ -9,8 +9,8 @@ import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { useSendRequest } from '../hooks/useSendRequest';
-import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
+import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
+import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
 import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
 import {
@@ -59,7 +59,7 @@ export const RequestPane = memo(function RequestPane({
 }: Props) {
   const requests = useRequests();
   const activeRequestId = activeRequest.id;
-  const updateRequest = useUpdateHttpRequest(activeRequestId);
+  const updateRequest = useUpdateAnyHttpRequest();
   const [activeTab, setActiveTab] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
@@ -76,12 +76,12 @@ export const RequestPane = memo(function RequestPane({
           enabled: true,
         });
       }
-      await updateRequest.mutateAsync({ headers });
+      await updateRequest.mutateAsync({ id: activeRequestId, update: { headers } });
 
       // Force update header editor so any changed headers are reflected
       setTimeout(() => setForceUpdateHeaderEditorKey((u) => u + 1), 100);
     },
-    [activeRequest.headers, updateRequest],
+    [activeRequest.headers, activeRequestId, updateRequest],
   );
 
   const tabs: TabItem[] = useMemo(
@@ -125,7 +125,7 @@ export const RequestPane = memo(function RequestPane({
               newContentType = 'application/json';
             }
 
-            await updateRequest.mutateAsync(patch);
+            await updateRequest.mutateAsync({ id: activeRequestId, update: patch });
 
             if (newContentType !== undefined) {
               await handleContentTypeChange(newContentType);
@@ -174,7 +174,10 @@ export const RequestPane = memo(function RequestPane({
                 token: authentication.token ?? '',
               };
             }
-            await updateRequest.mutateAsync({ authenticationType, authentication });
+            await updateRequest.mutateAsync({
+              id: activeRequestId,
+              update: { authenticationType, authentication },
+            });
           },
         },
       },
@@ -186,53 +189,55 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.headers,
       activeRequest.method,
       activeRequest.urlParameters,
+      activeRequestId,
       handleContentTypeChange,
       updateRequest,
     ],
   );
 
   const handleBodyChange = useCallback(
-    (body: HttpRequest['body']) => updateRequest.mutate({ body }),
-    [updateRequest],
+    (body: HttpRequest['body']) => updateRequest.mutate({ id: activeRequestId, update: { body } }),
+    [activeRequestId, updateRequest],
   );
 
   const handleBinaryFileChange = useCallback(
     (body: HttpRequest['body']) => {
-      updateRequest.mutate({ body });
+      updateRequest.mutate({ id: activeRequestId, update: { body } });
     },
-    [updateRequest],
+    [activeRequestId, updateRequest],
   );
   const handleBodyTextChange = useCallback(
-    (text: string) => updateRequest.mutate({ body: { text } }),
-    [updateRequest],
+    (text: string) => updateRequest.mutate({ id: activeRequestId, update: { body: { text } } }),
+    [activeRequestId, updateRequest],
   );
   const handleHeadersChange = useCallback(
-    (headers: HttpHeader[]) => updateRequest.mutate({ headers }),
-    [updateRequest],
+    (headers: HttpHeader[]) => updateRequest.mutate({ id: activeRequestId, update: { headers } }),
+    [activeRequestId, updateRequest],
   );
   const handleUrlParametersChange = useCallback(
-    (urlParameters: HttpUrlParameter[]) => updateRequest.mutate({ urlParameters }),
-    [updateRequest],
+    (urlParameters: HttpUrlParameter[]) =>
+      updateRequest.mutate({ id: activeRequestId, update: { urlParameters } }),
+    [activeRequestId, updateRequest],
   );
 
-  const sendRequest = useSendRequest(activeRequest.id ?? null);
+  const sendRequest = useSendAnyHttpRequest();
   const { activeResponse } = usePinnedHttpResponse(activeRequest);
   const cancelResponse = useCancelHttpResponse(activeResponse?.id ?? null);
   const handleSend = useCallback(async () => {
-    await sendRequest.mutateAsync();
-  }, [sendRequest]);
+    await sendRequest.mutateAsync(activeRequest.id ?? null);
+  }, [activeRequest.id, sendRequest]);
 
   const handleCancel = useCallback(async () => {
     await cancelResponse.mutateAsync();
   }, [cancelResponse]);
 
   const handleMethodChange = useCallback(
-    (method: string) => updateRequest.mutate({ method }),
-    [updateRequest],
+    (method: string) => updateRequest.mutate({ id: activeRequestId, update: { method } }),
+    [activeRequestId, updateRequest],
   );
   const handleUrlChange = useCallback(
-    (url: string) => updateRequest.mutate({ url }),
-    [updateRequest],
+    (url: string) => updateRequest.mutate({ id: activeRequestId, update: { url } }),
+    [activeRequestId, updateRequest],
   );
 
   const isLoading = useIsResponseLoading(activeRequestId ?? null);

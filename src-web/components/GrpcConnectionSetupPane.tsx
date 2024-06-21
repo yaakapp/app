@@ -5,7 +5,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
+import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import type { GrpcMetadataEntry, GrpcRequest } from '../lib/models';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
@@ -60,7 +60,7 @@ export function GrpcConnectionSetupPane({
   onCancel,
   onSend,
 }: Props) {
-  const updateRequest = useUpdateGrpcRequest(activeRequest?.id ?? null);
+  const updateRequest = useUpdateAnyGrpcRequest();
   const [activeTab, setActiveTab] = useActiveTab();
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
 
@@ -71,15 +71,15 @@ export function GrpcConnectionSetupPane({
   });
 
   const handleChangeUrl = useCallback(
-    (url: string) => updateRequest.mutateAsync({ url }),
-    [updateRequest],
+    (url: string) => updateRequest.mutateAsync({ id: activeRequest.id, update: { url } }),
+    [activeRequest.id, updateRequest],
   );
 
   const handleChangeMessage = useCallback(
     (message: string) => {
-      return updateRequest.mutateAsync({ message });
+      return updateRequest.mutateAsync({ id: activeRequest.id, update: { message } });
     },
-    [updateRequest],
+    [activeRequest.id, updateRequest],
   );
 
   const select = useMemo(() => {
@@ -99,11 +99,14 @@ export function GrpcConnectionSetupPane({
       const [serviceName, methodName] = v.split('/', 2);
       if (serviceName == null || methodName == null) throw new Error('Should never happen');
       await updateRequest.mutateAsync({
-        service: serviceName,
-        method: methodName,
+        id: activeRequest.id,
+        update: {
+          service: serviceName,
+          method: methodName,
+        },
       });
     },
-    [updateRequest],
+    [activeRequest.id, updateRequest],
   );
 
   const handleConnect = useCallback(async () => {
@@ -150,18 +153,27 @@ export function GrpcConnectionSetupPane({
                 token: authentication.token ?? '',
               };
             }
-            await updateRequest.mutateAsync({ authenticationType, authentication });
+            await updateRequest.mutateAsync({
+              id: activeRequest.id,
+              update: { authenticationType, authentication },
+            });
           },
         },
       },
       { value: 'metadata', label: 'Metadata' },
     ],
-    [activeRequest.authentication, activeRequest.authenticationType, updateRequest],
+    [
+      activeRequest.authentication,
+      activeRequest.authenticationType,
+      activeRequest.id,
+      updateRequest,
+    ],
   );
 
   const handleMetadataChange = useCallback(
-    (metadata: GrpcMetadataEntry[]) => updateRequest.mutate({ metadata }),
-    [updateRequest],
+    (metadata: GrpcMetadataEntry[]) =>
+      updateRequest.mutate({ id: activeRequest.id, update: { metadata } }),
+    [activeRequest.id, updateRequest],
   );
 
   return (

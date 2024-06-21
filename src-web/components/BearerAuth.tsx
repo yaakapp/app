@@ -1,5 +1,5 @@
-import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
-import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
+import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
+import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import type { GrpcRequest, HttpRequest } from '../lib/models';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
@@ -9,8 +9,8 @@ interface Props<T> {
 }
 
 export function BearerAuth<T extends HttpRequest | GrpcRequest>({ request }: Props<T>) {
-  const updateHttpRequest = useUpdateHttpRequest(request?.id ?? null);
-  const updateGrpcRequest = useUpdateGrpcRequest(request?.id ?? null);
+  const updateHttpRequest = useUpdateAnyHttpRequest();
+  const updateGrpcRequest = useUpdateAnyGrpcRequest();
 
   return (
     <VStack className="my-2" space={2}>
@@ -25,15 +25,21 @@ export function BearerAuth<T extends HttpRequest | GrpcRequest>({ request }: Pro
         defaultValue={`${request.authentication.token}`}
         onChange={(token: string) => {
           if (request.model === 'http_request') {
-            updateHttpRequest.mutate((r) => ({
-              ...r,
-              authentication: { token },
-            }));
+            updateHttpRequest.mutate({
+              id: request.id ?? null,
+              update: (r) => ({
+                ...r,
+                authentication: { token },
+              }),
+            });
           } else {
-            updateGrpcRequest.mutate((r) => ({
-              ...r,
-              authentication: { token },
-            }));
+            updateGrpcRequest.mutate({
+              id: request.id ?? null,
+              update: (r) => ({
+                ...r,
+                authentication: { token },
+              }),
+            });
           }
         }}
       />
