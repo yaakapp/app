@@ -20,6 +20,7 @@ import { useHotKey } from '../hooks/useHotKey';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
+import { useMoveToWorkspace } from '../hooks/useMoveToWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRequests } from '../hooks/useRequests';
 import { useSendManyRequests } from '../hooks/useSendFolder';
@@ -30,6 +31,7 @@ import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useUpdateGrpcRequest } from '../hooks/useUpdateGrpcRequest';
 import { useUpdateHttpRequest } from '../hooks/useUpdateHttpRequest';
+import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
@@ -608,10 +610,12 @@ const SidebarItem = forwardRef(function SidebarItem(
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const copyAsCurl = useCopyAsCurl(itemId);
   const sendRequest = useSendRequest(itemId);
+  const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
   const latestHttpResponse = useLatestHttpResponse(itemId);
   const latestGrpcConnection = useLatestGrpcConnection(itemId);
   const updateHttpRequest = useUpdateHttpRequest(itemId);
+  const workspaces = useWorkspaces();
   const updateGrpcRequest = useUpdateGrpcRequest(itemId);
   const updateAnyFolder = useUpdateAnyFolder();
   const prompt = usePrompt();
@@ -732,7 +736,7 @@ const SidebarItem = forwardRef(function SidebarItem(
                           hotKeyAction: 'http_request.send',
                           hotKeyLabelOnly: true, // Already bound in URL bar
                           leftSlot: <Icon icon="sendHorizontal" />,
-                          onSelect: () => sendRequest.mutate(),
+                          onSelect: sendRequest.mutate,
                         },
                         {
                           key: 'copyCurl',
@@ -782,6 +786,13 @@ const SidebarItem = forwardRef(function SidebarItem(
                         ? duplicateHttpRequest.mutate()
                         : duplicateGrpcRequest.mutate();
                     },
+                  },
+                  {
+                    key: 'moveWorkspace',
+                    label: 'Change Workspace',
+                    leftSlot: <Icon icon="house" />,
+                    hidden: workspaces.length <= 1,
+                    onSelect: moveToWorkspace.mutate,
                   },
                   {
                     key: 'deleteRequest',

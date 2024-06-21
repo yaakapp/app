@@ -57,7 +57,6 @@ export function useGrpc(
       )) as ReflectResponseService[],
   });
 
-  console.log('CONN', conn);
   return {
     go,
     reflect,

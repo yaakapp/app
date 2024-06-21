@@ -1,16 +1,21 @@
-import { Outlet } from 'react-router-dom';
-import { DialogProvider } from './DialogContext';
-import { GlobalHooks } from './GlobalHooks';
-import { ToastProvider } from './ToastContext';
 import classNames from 'classnames';
-import { useOsInfo } from '../hooks/useOsInfo';
 import { motion } from 'framer-motion';
+import { Outlet } from 'react-router-dom';
+import { useOsInfo } from '../hooks/useOsInfo';
+import { DialogProvider, Dialogs } from './DialogContext';
+import { GlobalHooks } from './GlobalHooks';
+import { ToastProvider, Toasts } from './ToastContext';
 
 export function DefaultLayout() {
   const osInfo = useOsInfo();
   return (
     <DialogProvider>
       <ToastProvider>
+        <>
+          {/* Must be inside all the providers, so they have access to them */}
+          <Toasts />
+          <Dialogs />
+        </>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
