@@ -14,6 +14,7 @@ export function useDeleteAnyHttpRequest() {
   const confirm = useConfirm();
 
   return useMutation<HttpRequest | null, string, string>({
+    mutationKey: ['delete_any_http_request'],
     mutationFn: async (id) => {
       const request = await getHttpRequest(id);
       if (request == null) return null;

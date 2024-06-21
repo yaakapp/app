@@ -7,6 +7,7 @@ import { environmentsQueryKey } from './useEnvironments';
 export function useUpdateEnvironment(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<void, unknown, Partial<Environment> | ((r: Environment) => Environment)>({
+    mutationKey: ['update_environment', id],
     mutationFn: async (v) => {
       const environment = await getEnvironment(id);
       if (environment == null) {

@@ -7,6 +7,7 @@ import { httpResponsesQueryKey } from './useHttpResponses';
 export function useDeleteHttpResponse(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<HttpResponse>({
+    mutationKey: ['delete_http_response', id],
     mutationFn: async () => {
       return await invokeCmd('cmd_delete_http_response', { id: id });
     },

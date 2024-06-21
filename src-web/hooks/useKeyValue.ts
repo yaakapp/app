@@ -32,6 +32,7 @@ export function useKeyValue<T extends Object | null>({
   });
 
   const mutate = useMutation<void, unknown, T>({
+    mutationKey: ['set_key_value', namespace, key],
     mutationFn: (value) => setKeyValue<T>({ namespace, key, value }),
     // k/v should be as fast as possible, so optimistically update the cache
     onMutate: (value) => queryClient.setQueryData<T>(keyValueQueryKey({ namespace, key }), value),

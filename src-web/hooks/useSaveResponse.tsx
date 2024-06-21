@@ -13,6 +13,7 @@ export function useSaveResponse(response: HttpResponse) {
   const toast = useToast();
 
   return useMutation({
+    mutationKey: ['save_response', response.id],
     mutationFn: async () => {
       const request = await getHttpRequest(response.requestId);
       if (request == null) return null;

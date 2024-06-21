@@ -77,6 +77,7 @@ export function useImportData() {
   };
 
   return useMutation({
+    mutationKey: ['import_data'],
     onError: (err: string) => {
       alert({
         id: 'import-failed',

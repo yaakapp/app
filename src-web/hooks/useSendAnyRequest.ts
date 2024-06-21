@@ -14,6 +14,7 @@ export function useSendAnyRequest(options: { download?: boolean } = {}) {
   const alert = useAlert();
   const { activeCookieJar } = useActiveCookieJar();
   return useMutation<HttpResponse | null, string, string | null>({
+    mutationKey: ['send_any_request'],
     mutationFn: async (id) => {
       const request = await getHttpRequest(id);
       if (request == null) {

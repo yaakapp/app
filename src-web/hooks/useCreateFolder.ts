@@ -14,6 +14,7 @@ export function useCreateFolder() {
   const prompt = usePrompt();
 
   return useMutation<Folder, unknown, Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>>({
+    mutationKey: ['create_folder'],
     mutationFn: async (patch) => {
       if (workspaceId === null) {
         throw new Error("Cannot create folder when there's no active workspace");

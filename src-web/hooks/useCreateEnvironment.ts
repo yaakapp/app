@@ -14,6 +14,7 @@ export function useCreateEnvironment() {
   const queryClient = useQueryClient();
 
   return useMutation<Environment, unknown, void>({
+    mutationKey: ['create_environment'],
     mutationFn: async () => {
       const name = await prompt({
         id: 'new-environment',

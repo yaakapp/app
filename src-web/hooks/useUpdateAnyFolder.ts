@@ -8,6 +8,7 @@ export function useUpdateAnyFolder() {
   const queryClient = useQueryClient();
 
   return useMutation<void, unknown, { id: string; update: (r: Folder) => Folder }>({
+    mutationKey: ['update_any_folder'],
     mutationFn: async ({ id, update }) => {
       const folder = await getFolder(id);
       if (folder === null) {

@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools buttonPosition="bottom-left" />
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>

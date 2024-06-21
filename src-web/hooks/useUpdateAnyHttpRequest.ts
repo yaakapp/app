@@ -12,6 +12,7 @@ export function useUpdateAnyHttpRequest() {
     unknown,
     { id: string; update: Partial<HttpRequest> | ((r: HttpRequest) => HttpRequest) }
   >({
+    mutationKey: ['update_any_http_request'],
     mutationFn: async ({ id, update }) => {
       const request = await getHttpRequest(id);
       if (request === null) {

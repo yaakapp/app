@@ -12,6 +12,7 @@ export function useUpdateAnyGrpcRequest() {
     unknown,
     { id: string; update: Partial<GrpcRequest> | ((r: GrpcRequest) => GrpcRequest) }
   >({
+    mutationKey: ['update_any_grpc_request'],
     mutationFn: async ({ id, update }) => {
       const request = await getGrpcRequest(id);
       if (request === null) {

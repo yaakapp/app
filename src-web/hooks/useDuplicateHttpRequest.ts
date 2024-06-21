@@ -17,6 +17,7 @@ export function useDuplicateHttpRequest({
   const activeEnvironmentId = useActiveEnvironmentId();
   const routes = useAppRoutes();
   return useMutation<HttpRequest, string>({
+    mutationKey: ['duplicate_http_request', id],
     mutationFn: async () => {
       if (id === null) throw new Error("Can't duplicate a null request");
       return invokeCmd('cmd_duplicate_http_request', { id });

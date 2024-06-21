@@ -7,6 +7,7 @@ import { cookieJarsQueryKey } from './useCookieJars';
 export function useUpdateCookieJar(id: string | null) {
   const queryClient = useQueryClient();
   return useMutation<void, unknown, Partial<CookieJar> | ((j: CookieJar) => CookieJar)>({
+    mutationKey: ['update_cookie_jar', id],
     mutationFn: async (v) => {
       const cookieJar = await getCookieJar(id);
       if (cookieJar == null) {

@@ -8,6 +8,7 @@ export function useOpenWorkspace() {
   const routes = useAppRoutes();
 
   return useMutation({
+    mutationKey: ['open_workspace'],
     mutationFn: async ({
       workspaceId,
       inNewWindow,

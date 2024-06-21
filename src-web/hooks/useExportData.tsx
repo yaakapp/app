@@ -14,6 +14,7 @@ export function useExportData() {
   const toast = useToast();
 
   return useMutation({
+    mutationKey: ['export_data'],
     onError: (err: string) => {
       alert({ id: 'export-failed', title: 'Export Failed', body: err });
     },

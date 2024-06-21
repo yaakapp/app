@@ -18,6 +18,7 @@ export function useCreateGrpcRequest() {
     unknown,
     Partial<Pick<GrpcRequest, 'name' | 'sortPriority' | 'folderId'>>
   >({
+    mutationKey: ['create_grpc_request'],
     mutationFn: (patch) => {
       if (workspaceId === null) {
         throw new Error("Cannot create grpc request when there's no active workspace");

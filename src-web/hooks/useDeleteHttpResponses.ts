@@ -6,6 +6,7 @@ import { httpResponsesQueryKey } from './useHttpResponses';
 export function useDeleteHttpResponses(requestId?: string) {
   const queryClient = useQueryClient();
   return useMutation({
+    mutationKey: ['delete_http_responses', requestId],
     mutationFn: async () => {
       if (requestId === undefined) return;
       await invokeCmd('cmd_delete_all_http_responses', { requestId });
