@@ -64,7 +64,7 @@ export function Toast({
         'text-fg',
       )}
     >
-      <div className="px-3 py-2 flex items-center gap-2">
+      <div className="px-3 py-3 flex items-center gap-2">
         {variant != null && (
           <Icon
             icon={ICONS[variant]}
