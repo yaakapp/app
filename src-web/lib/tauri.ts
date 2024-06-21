@@ -65,6 +65,6 @@ type TauriCmd =
   | 'cmd_write_file_dev';
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {
-  // console.log('RUN COMMAND', cmd, args);
+  console.log('RUN COMMAND', cmd, args);
   return invoke(cmd, args);
 }
