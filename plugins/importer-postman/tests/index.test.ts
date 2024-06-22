@@ -80,6 +80,7 @@ describe('importer-postman', () => {
 });
 
 const idCount: Partial<Record<Model['model'], number>> = {};
+
 function newId(model: Model['model']): string {
   idCount[model] = (idCount[model] ?? -1) + 1;
   return `GENERATE_ID::${model.toUpperCase()}_${idCount[model]}`;

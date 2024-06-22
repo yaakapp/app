@@ -14,10 +14,9 @@ interface ExportResources {
 }
 
 export function pluginHookImport(
-  ctx: any,
+  _ctx: any,
   contents: string,
 ): { resources: ExportResources } | undefined {
-  console.log('CTX', ctx);
   const root = parseJSONToRecord(contents);
   if (root == null) return;
 
