@@ -2,7 +2,7 @@
   "name": "@yaak/plugin-runtime",
   "scripts": {
     "dev": "nodemon",
-    "generate": "./node_modules/.bin/grpc_tools_node_protoc --ts_proto_out=./gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=./proto ./proto/echo.proto"
+    "generate": "./node_modules/.bin/grpc_tools_node_protoc --ts_proto_out=./gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
   },
   "dependencies": {
     "long": "^5.2.3",

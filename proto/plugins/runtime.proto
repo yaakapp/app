@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package yaak.plugins.runtime;
+
+service PluginRuntime {
+  rpc hookImport (HookImportRequest) returns (HookImportResponse);
+}
+
+message HookImportRequest {
+  string data = 1;
+}
+
+message HookImportResponse {
+  string data = 1;
+}
