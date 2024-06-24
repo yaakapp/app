@@ -159,7 +159,7 @@ function importHttpRequest(
   workspaceId: string,
   sortPriority = 0,
 ): ExportResources['httpRequests'][0] {
-  let bodyType = null;
+  let bodyType: string | null = null;
   let body = {};
   if (r.body.mimeType === 'application/octet-stream') {
     bodyType = 'binary';
@@ -191,7 +191,7 @@ function importHttpRequest(
     body = { text: convertSyntax(r.body.text ?? '') };
   }
 
-  let authenticationType = null;
+  let authenticationType: string | null = null;
   let authentication = {};
   if (r.authentication.type === 'bearer') {
     authenticationType = 'bearer';

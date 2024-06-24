@@ -6,18 +6,33 @@ import {
   PluginRuntimeDefinition,
   PluginRuntimeServiceImplementation,
 } from '../gen/plugins/runtime';
-import { loadPlugins } from './plugins';
+import { PluginManager } from './PluginManager';
 
-const echoServiceImpl: PluginRuntimeServiceImplementation = {
+class PluginRuntimeService implements PluginRuntimeServiceImplementation {
+  #manager: PluginManager;
+
+  constructor() {
+    this.#manager = PluginManager.instance();
+    this.#manager
+      .plugins()
+      .then(async (plugins) => {
+        for (const plugin of plugins) {
+          console.log('Loaded', await plugin.getInfo());
+        }
+      })
+      .catch((err) => console.log('Failed initial load of plugins', err));
+  }
+
   async hookImport(request: HookImportRequest): Promise<DeepPartial<HookImportResponse>> {
-    const plugins = await loadPlugins();
-    const curlPlugin = plugins.find((p) => p.name === 'importer-curl');
+    const curlPlugin = await this.#manager.pluginOrThrow('importer-curl');
     return { data: await curlPlugin.runImport(request.data) };
-  },
-};
+  }
+}
 
 const server = createServer();
-server.add(PluginRuntimeDefinition, echoServiceImpl);
+
+server.add(PluginRuntimeDefinition, new PluginRuntimeService());
+
 server.listen('0.0.0.0:4000').then((port) => {
   console.log('gRPC server listening on', port);
 });

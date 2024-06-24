@@ -4,18 +4,12 @@ import { PluginHandle } from './PluginHandle';
 
 export interface PluginInfo {
   name: string;
-  root_dir: string;
+  dir: string;
   capabilities: ('import' | 'export' | 'filter')[];
 }
 
-export async function loadPlugins(): Promise<PluginHandle[]> {
+export function loadPlugins(): PluginHandle[] {
   const pluginsDir = path.join(__dirname, '../../plugins');
   const pluginDirs = fs.readdirSync(pluginsDir).map((p) => path.join(pluginsDir, p));
-  return Promise.all(
-    pluginDirs.map(async (pluginDir) => {
-      const handle = new PluginHandle(pluginDir);
-      await handle.boot();
-      return handle;
-    }),
-  );
+  return pluginDirs.map((pluginDir) => new PluginHandle(pluginDir));
 }

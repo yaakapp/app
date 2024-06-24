@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { isMainThread, parentPort, workerData } from 'node:worker_threads';
+import { PluginEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
 
 if (!isMainThread) {
@@ -14,7 +15,7 @@ if (!isMainThread) {
     const info: PluginInfo = {
       capabilities: [],
       name: packageJson['name'] ?? 'n/a',
-      root_dir: pluginDir,
+      dir: pluginDir,
     };
 
     if (typeof pluginModule['pluginHookImport'] === 'function') {
@@ -31,12 +32,19 @@ if (!isMainThread) {
 
     delete require.cache[pluginEntrypoint];
 
-    parentPort.postMessage({ event: 'initialized', payload: info });
-
-    parentPort.on('message', (msg) => {
+    parentPort!.on('message', (msg: PluginEvent) => {
       if (msg.event === 'run-import' && typeof pluginModule['pluginHookImport'] === 'function') {
         const result = pluginModule['pluginHookImport']({}, msg.payload);
-        parentPort.postMessage({ event: 'run-import-response', payload: JSON.stringify(result) });
+        parentPort!.postMessage({
+          event: msg.callbackId,
+          payload: JSON.stringify(result),
+        });
+      }
+      if (msg.event === 'info') {
+        parentPort!.postMessage({
+          event: msg.callbackId,
+          payload: info,
+        });
       }
     });
   }).catch((err) => console.log('failed to boot plugin', err));

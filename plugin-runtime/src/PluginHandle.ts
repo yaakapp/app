@@ -1,63 +1,61 @@
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
+import { PluginInfo } from './plugins';
+
+export interface PluginEvent<T = any> {
+  event: string;
+  payload?: T;
+  callbackId?: string;
+}
 
 export class PluginHandle {
-  pluginDir: string;
-  name: string;
-  worker: Worker;
+  readonly pluginDir: string;
+  readonly #worker: Worker;
 
   constructor(pluginDir: string) {
     this.pluginDir = pluginDir;
-    this.name = '';
+
+    this.#worker = new Worker(path.resolve(__filename, '../plugin-worker.ts'), {
+      workerData: {
+        pluginDir: this.pluginDir,
+      },
+    });
+
+    this.#worker.on('error', this.handleError);
+    this.#worker.on('exit', this.handleExit);
   }
 
-  async boot() {
-    return new Promise<void>((resolve, reject) => {
-      this.worker = new Worker(path.resolve(__filename, '../plugin-worker.ts'), {
-        workerData: {
-          pluginDir: this.pluginDir,
-        },
-      });
-
-      this.worker.once('message', (msg: { event: string; payload: any }) => {
-        if (msg.event === 'initialized') {
-          this.name = msg.payload.name;
-          resolve();
-        }
-      });
-      this.worker.on('message', this.handleMessage);
-      this.worker.on('error', this.handleError);
-      this.worker.on('exit', this.handleExit);
-    });
+  async getInfo(): Promise<PluginInfo> {
+    return this.#callPlugin({ event: 'info' });
   }
 
   async runImport(data: string): Promise<string> {
+    const result = await this.#callPlugin({
+      event: 'run-import',
+      payload: data,
+    });
+    return result as string;
+  }
+
+  #callPlugin<T>(event: PluginEvent): Promise<T> {
     return new Promise((resolve) => {
-      this.worker.postMessage({
-        event: 'run-import',
-        payload: data,
-      });
-      this.worker.on('message', (msg) => {
-        if (msg.event === 'run-import-response') {
-          console.log('RESPONSE', msg.payload);
-          resolve(msg.payload);
+      const callbackId = `callback-${Math.random().toString()}`;
+      event.callbackId = callbackId;
+
+      const cb = (e: PluginEvent<T>) => {
+        if (e.event === callbackId) {
+          resolve(e.payload as T);
+          this.#worker.removeListener('message', cb);
         }
-      });
+      };
+
+      this.#worker.addListener('message', cb);
+      this.#worker.postMessage(event);
     });
   }
 
-  private async handleMessage(msg: { event: string; payload: any }) {
-    switch (msg.event) {
-      case 'initialized':
-        // console.log('INITIALIZED PLUGIN', msg.payload);
-        break;
-      default:
-        console.log('UNKNOWN EVENT', msg);
-    }
-  }
-
   private async handleError(err: Error) {
-    console.log('PLUGIN ERROR', err);
+    console.log('PLUGIN ERROR', this.pluginDir, err);
   }
 
   private async handleExit(code: number) {
