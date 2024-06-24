@@ -2,10 +2,15 @@ import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PluginInfo } from './plugins';
 
-export interface PluginEvent<T = any> {
-  event: string;
+export interface ParentToWorkerEvent<T = any> {
+  name: string;
+  callbackId: string;
   payload?: T;
-  callbackId?: string;
+}
+
+export interface WorkerToParentEvent<T = any> {
+  callbackId: string;
+  payload: T;
 }
 
 export class PluginHandle {
@@ -26,24 +31,22 @@ export class PluginHandle {
   }
 
   async getInfo(): Promise<PluginInfo> {
-    return this.#callPlugin({ event: 'info' });
+    const callbackId = `callback-${Math.random().toString()}`;
+    return this.#callPlugin({ name: 'info', callbackId });
   }
 
   async runImport(data: string): Promise<string> {
-    const result = await this.#callPlugin({
-      event: 'run-import',
+    return this.#callPlugin({
+      callbackId: `callback-${Math.random().toString()}`,
+      name: 'run-import',
       payload: data,
     });
-    return result as string;
   }
 
-  #callPlugin<T>(event: PluginEvent): Promise<T> {
+  #callPlugin<T>(event: ParentToWorkerEvent): Promise<T> {
     return new Promise((resolve) => {
-      const callbackId = `callback-${Math.random().toString()}`;
-      event.callbackId = callbackId;
-
-      const cb = (e: PluginEvent<T>) => {
-        if (e.event === callbackId) {
+      const cb = (e: WorkerToParentEvent<T>) => {
+        if (e.callbackId === event.callbackId) {
           resolve(e.payload as T);
           this.#worker.removeListener('message', cb);
         }

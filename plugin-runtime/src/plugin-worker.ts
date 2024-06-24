@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { isMainThread, parentPort, workerData } from 'node:worker_threads';
-import { PluginEvent } from './PluginHandle';
+import { ParentToWorkerEvent, WorkerToParentEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
 
 if (!isMainThread) {
@@ -32,19 +32,17 @@ if (!isMainThread) {
 
     delete require.cache[pluginEntrypoint];
 
-    parentPort!.on('message', (msg: PluginEvent) => {
-      if (msg.event === 'run-import' && typeof pluginModule['pluginHookImport'] === 'function') {
+    function reply(originalMsg: ParentToWorkerEvent, e: Omit<WorkerToParentEvent, 'callbackId'>) {
+      const fullEvent: WorkerToParentEvent = { ...e, callbackId: originalMsg.callbackId };
+      parentPort!.postMessage(fullEvent);
+    }
+
+    parentPort!.on('message', (msg: ParentToWorkerEvent) => {
+      if (msg.name === 'run-import' && typeof pluginModule['pluginHookImport'] === 'function') {
         const result = pluginModule['pluginHookImport']({}, msg.payload);
-        parentPort!.postMessage({
-          event: msg.callbackId,
-          payload: JSON.stringify(result),
-        });
-      }
-      if (msg.event === 'info') {
-        parentPort!.postMessage({
-          event: msg.callbackId,
-          payload: info,
-        });
+        reply(msg, { payload: JSON.stringify(result) });
+      } else if (msg.name === 'info') {
+        reply(msg, { payload: info });
       }
     });
   }).catch((err) => console.log('failed to boot plugin', err));
