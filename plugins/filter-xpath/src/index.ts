@@ -1,8 +1,10 @@
-import xpath from 'xpath';
 import { DOMParser } from '@xmldom/xmldom';
+import xpath from 'xpath';
 
-export function pluginHookResponseFilter(ctx: any, filter: string, text: string) {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const filtered = `${xpath.select(filter, doc)}`;
-  return { filtered };
+export function pluginHookResponseFilter(
+  _ctx: any,
+  { filter, body }: { filter: string; body: string },
+) {
+  const doc = new DOMParser().parseFromString(body, 'text/xml');
+  return `${xpath.select(filter, doc)}`;
 }

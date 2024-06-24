@@ -35,6 +35,14 @@ export class PluginHandle {
     return this.#callPlugin({ name: 'info', callbackId });
   }
 
+  async runFilter({ filter, body }: { filter: string; body: string }): Promise<string> {
+    return this.#callPlugin({
+      callbackId: `callback-${Math.random().toString()}`,
+      name: 'run-filter',
+      payload: { filter, body },
+    });
+  }
+
   async runImport(data: string): Promise<string> {
     return this.#callPlugin({
       callbackId: `callback-${Math.random().toString()}`,

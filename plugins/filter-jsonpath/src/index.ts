@@ -1,12 +1,15 @@
 import jp from 'jsonpath';
 
-export function pluginHookResponseFilter(_ctx: any, filter: string, text: string) {
+export function pluginHookResponseFilter(
+  _ctx: any,
+  { filter, body }: { filter: string; body: string },
+) {
   let parsed;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(body);
   } catch (e) {
     return;
   }
   const filtered = jp.query(parsed, filter);
-  return { filtered: JSON.stringify(filtered, null, 2) };
+  return JSON.stringify(filtered, null, 2);
 }

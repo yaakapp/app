@@ -41,6 +41,14 @@ if (!isMainThread) {
       if (msg.name === 'run-import' && typeof pluginModule['pluginHookImport'] === 'function') {
         const result = pluginModule['pluginHookImport']({}, msg.payload);
         reply(msg, { payload: JSON.stringify(result) });
+      } else if (
+        msg.name === 'run-filter' &&
+        typeof pluginModule['pluginHookResponseFilter'] === 'function'
+      ) {
+        console.log('RUN FILTER', msg);
+        const result = pluginModule['pluginHookResponseFilter']({}, msg.payload);
+        console.log('FILTER RESULT', result);
+        reply(msg, { payload: result });
       } else if (msg.name === 'info') {
         reply(msg, { payload: info });
       }

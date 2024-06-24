@@ -1,6 +1,8 @@
 import { createServer } from 'nice-grpc';
 import {
   DeepPartial,
+  HookFilterRequest,
+  HookFilterResponse,
   HookImportRequest,
   HookImportResponse,
   PluginRuntimeDefinition,
@@ -21,6 +23,11 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
         }
       })
       .catch((err) => console.log('Failed initial load of plugins', err));
+  }
+
+  async hookFilter(request: HookFilterRequest): Promise<DeepPartial<HookFilterResponse>> {
+    const plugin = await this.#manager.pluginOrThrow('filter-jsonpath');
+    return { data: await plugin.runFilter(request) };
   }
 
   async hookImport(request: HookImportRequest): Promise<DeepPartial<HookImportResponse>> {

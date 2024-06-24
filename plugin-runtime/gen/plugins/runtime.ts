@@ -18,6 +18,15 @@ export interface HookImportResponse {
   data: string;
 }
 
+export interface HookFilterRequest {
+  filter: string;
+  body: string;
+}
+
+export interface HookFilterResponse {
+  data: string;
+}
+
 function createBaseHookImportRequest(): HookImportRequest {
   return { data: "" };
 }
@@ -132,6 +141,137 @@ export const HookImportResponse = {
   },
 };
 
+function createBaseHookFilterRequest(): HookFilterRequest {
+  return { filter: "", body: "" };
+}
+
+export const HookFilterRequest = {
+  encode(message: HookFilterRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.filter !== "") {
+      writer.uint32(10).string(message.filter);
+    }
+    if (message.body !== "") {
+      writer.uint32(18).string(message.body);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookFilterRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHookFilterRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.filter = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.body = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HookFilterRequest {
+    return {
+      filter: isSet(object.filter) ? globalThis.String(object.filter) : "",
+      body: isSet(object.body) ? globalThis.String(object.body) : "",
+    };
+  },
+
+  toJSON(message: HookFilterRequest): unknown {
+    const obj: any = {};
+    if (message.filter !== "") {
+      obj.filter = message.filter;
+    }
+    if (message.body !== "") {
+      obj.body = message.body;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HookFilterRequest>): HookFilterRequest {
+    return HookFilterRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HookFilterRequest>): HookFilterRequest {
+    const message = createBaseHookFilterRequest();
+    message.filter = object.filter ?? "";
+    message.body = object.body ?? "";
+    return message;
+  },
+};
+
+function createBaseHookFilterResponse(): HookFilterResponse {
+  return { data: "" };
+}
+
+export const HookFilterResponse = {
+  encode(message: HookFilterResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.data !== "") {
+      writer.uint32(10).string(message.data);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookFilterResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHookFilterResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.data = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HookFilterResponse {
+    return { data: isSet(object.data) ? globalThis.String(object.data) : "" };
+  },
+
+  toJSON(message: HookFilterResponse): unknown {
+    const obj: any = {};
+    if (message.data !== "") {
+      obj.data = message.data;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HookFilterResponse>): HookFilterResponse {
+    return HookFilterResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HookFilterResponse>): HookFilterResponse {
+    const message = createBaseHookFilterResponse();
+    message.data = object.data ?? "";
+    return message;
+  },
+};
+
 export type PluginRuntimeDefinition = typeof PluginRuntimeDefinition;
 export const PluginRuntimeDefinition = {
   name: "PluginRuntime",
@@ -145,6 +285,14 @@ export const PluginRuntimeDefinition = {
       responseStream: false,
       options: {},
     },
+    hookFilter: {
+      name: "hookFilter",
+      requestType: HookFilterRequest,
+      requestStream: false,
+      responseType: HookFilterResponse,
+      responseStream: false,
+      options: {},
+    },
   },
 } as const;
 
@@ -153,6 +301,10 @@ export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
     request: HookImportRequest,
     context: CallContext & CallContextExt,
   ): Promise<DeepPartial<HookImportResponse>>;
+  hookFilter(
+    request: HookFilterRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<HookFilterResponse>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
@@ -160,6 +312,10 @@ export interface PluginRuntimeClient<CallOptionsExt = {}> {
     request: DeepPartial<HookImportRequest>,
     options?: CallOptions & CallOptionsExt,
   ): Promise<HookImportResponse>;
+  hookFilter(
+    request: DeepPartial<HookFilterRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<HookFilterResponse>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
