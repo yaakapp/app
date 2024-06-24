@@ -88,29 +88,11 @@ pub fn get_plugin(app_handle: &AppHandle, name: &str) -> Result<Option<PluginDef
 }
 
 pub async fn run_plugin_filter(
-    plugin: &PluginDef,
     response_body: &str,
     filter: &str,
-) -> Option<FilterResult> {
-    let result = run_plugin_block(
-        &plugin.path,
-        "pluginHookResponseFilter",
-        vec![
-            serde_json::to_value(response_body).unwrap(),
-            serde_json::to_value(filter).unwrap(),
-        ],
-    )
-    .map_err(|e| e.to_string())
-    .expect("Failed to run plugin");
-
-    if result.is_null() {
-        error!("Plugin {} failed to run", plugin.name);
-        return None;
-    }
-
-    let resources: FilterResult =
-        serde_json::from_value(result).expect("failed to parse filter plugin result json");
-    Some(resources)
+    _plugin_name: &str,
+) -> Result<String, String> {
+    plugin_runtime::run_filter(filter, response_body).await
 }
 
 pub fn run_plugin_export_curl(

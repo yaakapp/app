@@ -40,6 +40,6 @@ const server = createServer();
 
 server.add(PluginRuntimeDefinition, new PluginRuntimeService());
 
-server.listen('0.0.0.0:4000').then((port) => {
+server.listen('0.0.0.0:50051').then((port) => {
   console.log('gRPC server listening on', port);
 });
