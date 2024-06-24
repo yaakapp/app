@@ -36,7 +36,7 @@ export function RadioDropdown<T = string | null>({
           return item;
         } else {
           return {
-            key: item.label,
+            key: item.value,
             label: item.label,
             shortLabel: item.shortLabel,
             rightSlot: item.rightSlot,
