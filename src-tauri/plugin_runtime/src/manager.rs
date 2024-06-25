@@ -33,7 +33,7 @@ impl PluginManager {
         &self,
         filter: &str,
         body: &str,
-        _plugin_name: &str,
+        content_type: &str,
     ) -> Result<String, String> {
         let response = self
             .0
@@ -42,6 +42,7 @@ impl PluginManager {
             .hook_filter(tonic::Request::new(HookFilterRequest {
                 filter: filter.to_string(),
                 body: body.to_string(),
+                content_type: content_type.to_string(),
             }))
             .await
             .map_err(|e| e.message().to_string())?;

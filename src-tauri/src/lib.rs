@@ -741,17 +741,11 @@ async fn cmd_filter_response(
         }
     }
 
-    // TODO: Have plugins register their own content type (regex?)
-    let plugin_name = if content_type.contains("json") {
-        "filter-jsonpath"
-    } else {
-        "filter-xpath"
-    };
-
     let body = read_to_string(response.body_path.unwrap()).unwrap();
 
+    // TODO: Have plugins register their own content type (regex?)
     let manager: State<PluginManager> = w.app_handle().state();
-    manager.inner().run_filter(filter, &body, plugin_name).await
+    manager.inner().run_filter(filter, &body, &content_type).await
 }
 
 #[tauri::command]

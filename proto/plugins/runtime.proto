@@ -18,6 +18,7 @@ message HookImportResponse {
 message HookFilterRequest {
   string filter = 1;
   string body = 2;
+  string contentType = 3;
 }
 
 message HookFilterResponse {

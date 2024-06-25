@@ -21,6 +21,7 @@ export interface HookImportResponse {
 export interface HookFilterRequest {
   filter: string;
   body: string;
+  contentType: string;
 }
 
 export interface HookFilterResponse {
@@ -142,7 +143,7 @@ export const HookImportResponse = {
 };
 
 function createBaseHookFilterRequest(): HookFilterRequest {
-  return { filter: "", body: "" };
+  return { filter: "", body: "", contentType: "" };
 }
 
 export const HookFilterRequest = {
@@ -152,6 +153,9 @@ export const HookFilterRequest = {
     }
     if (message.body !== "") {
       writer.uint32(18).string(message.body);
+    }
+    if (message.contentType !== "") {
+      writer.uint32(26).string(message.contentType);
     }
     return writer;
   },
@@ -177,6 +181,13 @@ export const HookFilterRequest = {
 
           message.body = reader.string();
           continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.contentType = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -190,6 +201,7 @@ export const HookFilterRequest = {
     return {
       filter: isSet(object.filter) ? globalThis.String(object.filter) : "",
       body: isSet(object.body) ? globalThis.String(object.body) : "",
+      contentType: isSet(object.contentType) ? globalThis.String(object.contentType) : "",
     };
   },
 
@@ -201,6 +213,9 @@ export const HookFilterRequest = {
     if (message.body !== "") {
       obj.body = message.body;
     }
+    if (message.contentType !== "") {
+      obj.contentType = message.contentType;
+    }
     return obj;
   },
 
@@ -211,6 +226,7 @@ export const HookFilterRequest = {
     const message = createBaseHookFilterRequest();
     message.filter = object.filter ?? "";
     message.body = object.body ?? "";
+    message.contentType = object.contentType ?? "";
     return message;
   },
 };

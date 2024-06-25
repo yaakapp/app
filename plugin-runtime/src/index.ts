@@ -30,7 +30,8 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
   }
 
   async hookFilter(request: HookFilterRequest): Promise<DeepPartial<HookFilterResponse>> {
-    const plugin = await this.#manager.pluginOrThrow('filter-jsonpath');
+    const pluginName = request.contentType.includes('json') ? 'filter-jsonpath' : 'filter-xpath';
+    const plugin = await this.#manager.pluginOrThrow(pluginName);
     return { data: await plugin.runFilter(request) };
   }
 }
