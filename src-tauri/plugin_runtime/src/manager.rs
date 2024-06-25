@@ -1,10 +1,11 @@
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
+use crate::nodejs::ensure_nodejs;
 
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 use crate::plugin_runtime::{HookFilterRequest, HookImportRequest};
 
-pub struct PluginManager(pub Mutex<PluginRuntimeClient<Channel>>);
+pub struct PluginManager(Mutex<PluginRuntimeClient<Channel>>);
 
 impl PluginManager {
     pub async fn new() -> Result<PluginManager, String> {
@@ -12,6 +13,7 @@ impl PluginManager {
             .await
             .map_err(|e| e.to_string())?;
         let m = PluginManager(Mutex::new(client));
+        ensure_nodejs().await.unwrap();
         Ok(m)
     }
 

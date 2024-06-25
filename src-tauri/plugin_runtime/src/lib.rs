@@ -6,6 +6,7 @@ use tauri::{Manager, Runtime};
 use crate::manager::PluginManager;
 
 pub mod manager;
+mod nodejs;
 
 pub mod plugin_runtime {
     tonic::include_proto!("yaak.plugins.runtime");
