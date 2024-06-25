@@ -1,5 +1,5 @@
 import { PluginHandle } from './PluginHandle';
-import { loadPlugins } from './plugins';
+import { loadPlugins, PluginInfo } from './plugins';
 
 export class PluginManager {
   #handles: PluginHandle[] | null = null;
@@ -13,6 +13,16 @@ export class PluginManager {
   async plugins(): Promise<PluginHandle[]> {
     this.#handles = this.#handles ?? loadPlugins();
     return this.#handles;
+  }
+
+  async pluginsWith(capability: PluginInfo['capabilities'][0]): Promise<PluginHandle[]> {
+    const plugins = await this.plugins();
+    const pluginsWithInfo = await Promise.all(
+      plugins.map(async (plugin) => ({ plugin, info: await plugin.getInfo() })),
+    );
+    return pluginsWithInfo
+      .filter((v) => v.info.capabilities.includes(capability))
+      .map((v) => v.plugin);
   }
 
   async plugin(name: string): Promise<PluginHandle | null> {

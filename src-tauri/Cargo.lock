@@ -4177,6 +4177,7 @@ name = "plugin_runtime"
 version = "0.1.0"
 dependencies = [
  "prost",
+ "tauri",
  "tokio",
  "tonic 0.11.0",
  "tonic-build",

@@ -1,4 +1,6 @@
-import { createServer } from 'nice-grpc';
+import { isAbortError } from 'abort-controller-x';
+import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
+import { CallContext } from 'nice-grpc-common';
 import {
   DeepPartial,
   HookFilterRequest,
@@ -15,31 +17,51 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
 
   constructor() {
     this.#manager = PluginManager.instance();
-    this.#manager
-      .plugins()
-      .then(async (plugins) => {
-        for (const plugin of plugins) {
-          console.log('Loaded', await plugin.getInfo());
-        }
-      })
-      .catch((err) => console.log('Failed initial load of plugins', err));
+  }
+
+  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookImportResponse>> {
+    const plugins = await this.#manager.pluginsWith('import');
+    for (const p of plugins) {
+      const data = await p.runImport(request.data);
+      if (data != null) return { data };
+    }
+
+    throw new ServerError(Status.UNKNOWN, 'No importers found for data');
   }
 
   async hookFilter(request: HookFilterRequest): Promise<DeepPartial<HookFilterResponse>> {
     const plugin = await this.#manager.pluginOrThrow('filter-jsonpath');
     return { data: await plugin.runFilter(request) };
   }
+}
 
-  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookImportResponse>> {
-    const curlPlugin = await this.#manager.pluginOrThrow('importer-curl');
-    return { data: await curlPlugin.runImport(request.data) };
+let server = createServer();
+
+async function* errorHandlingMiddleware<Request, Response>(
+  call: ServerMiddlewareCall<Request, Response>,
+  context: CallContext,
+) {
+  try {
+    return yield* call.next(call.request, context);
+  } catch (error: unknown) {
+    if (error instanceof ServerError || isAbortError(error)) {
+      throw error;
+    }
+
+    let details = String(error);
+
+    if (process.env.NODE_ENV === 'development') {
+      // @ts-ignore
+      details += `: ${error.stack}`;
+    }
+
+    throw new ServerError(Status.UNKNOWN, details);
   }
 }
 
-const server = createServer();
-
+server = server.use(errorHandlingMiddleware);
 server.add(PluginRuntimeDefinition, new PluginRuntimeService());
 
-server.listen('0.0.0.0:50051').then((port) => {
-  console.log('gRPC server listening on', port);
+server.listen(process.env.GRPC_ADDR ?? 'localhost:4000').then((port) => {
+  console.log('gRPC server listening on', `http://localhost:${port}`);
 });

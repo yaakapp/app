@@ -20,11 +20,6 @@ pub enum PluginError {
 }
 
 #[derive(Default, Debug, Deserialize, Serialize)]
-pub struct FilterResult {
-    pub filtered: String,
-}
-
-#[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ImportResult {
     pub resources: WorkspaceExportResources,
 }
@@ -85,14 +80,6 @@ pub fn get_plugin(app_handle: &AppHandle, name: &str) -> Result<Option<PluginDef
     Ok(scan_plugins(app_handle)?
         .into_iter()
         .find(|p| p.name == name))
-}
-
-pub async fn run_plugin_filter(
-    response_body: &str,
-    filter: &str,
-    _plugin_name: &str,
-) -> Result<String, String> {
-    plugin_runtime::run_filter(filter, response_body).await
 }
 
 pub fn run_plugin_export_curl(

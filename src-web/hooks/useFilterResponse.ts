@@ -8,16 +8,14 @@ export function useFilterResponse({
   responseId: string | null;
   filter: string;
 }) {
-  return (
-    useQuery<string | null>({
-      queryKey: [responseId, filter],
-      queryFn: async () => {
-        if (filter === '') {
-          return null;
-        }
+  return useQuery<string | null, string>({
+    queryKey: [responseId, filter],
+    queryFn: async () => {
+      if (filter === '') {
+        return null;
+      }
 
-        return (await invokeCmd('cmd_filter_response', { responseId, filter })) as string | null;
-      },
-    }).data ?? ''
-  );
+      return (await invokeCmd('cmd_filter_response', { responseId, filter })) as string | null;
+    },
+  });
 }

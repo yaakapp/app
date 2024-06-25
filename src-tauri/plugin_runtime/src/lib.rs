@@ -1,37 +1,28 @@
-use crate::plugin_runtime::HookFilterRequest;
-use plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
-use plugin_runtime::HookImportRequest;
+extern crate core;
+
+use tauri::plugin::{Builder, TauriPlugin};
+use tauri::{Manager, Runtime};
+
+use crate::manager::PluginManager;
+
+pub mod manager;
 
 pub mod plugin_runtime {
     tonic::include_proto!("yaak.plugins.runtime");
 }
 
-pub async fn run_import(data: &str) -> Result<String, String> {
-    let mut client = PluginRuntimeClient::connect("http://127.0.0.1:50051")
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let response = client
-        .hook_import(tonic::Request::new(HookImportRequest {
-            data: data.to_string(),
-        }))
-        .await
-        .map_err(|e| e.to_string())?;
-
-    Ok(response.into_inner().data)
-}
-
-pub async fn run_filter(filter: &str, body: &str) -> Result<String, String> {
-    let mut client = PluginRuntimeClient::connect("http://127.0.0.1:50051")
-        .await
-        .map_err(|e| e.to_string())?;
-    let response = client
-        .hook_filter(tonic::Request::new(HookFilterRequest {
-            filter: filter.to_string(),
-            body: body.to_string(),
-        }))
-        .await
-        .map_err(|e| e.to_string())?;
-
-    Ok(response.into_inner().data)
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+    Builder::new("plugin_runtime")
+        .setup(|app, _| {
+            tauri::async_runtime::block_on(async move {
+                match PluginManager::new().await {
+                    Ok(m) => {
+                        app.manage(m);
+                        Ok(())
+                    }
+                    Err(err) => Err(err).map_err(|e| e.into()),
+                }
+            })
+        })
+        .build()
 }
