@@ -18,15 +18,14 @@ struct PortFile {
 }
 
 const NODE_VERSION: &str = "v22.3.0";
-const NODE_DIR: &str = "/Users/gschier/Desktop/foo";
-const NODE_REL_BIN: &str = "./bin/node";
-const NPM_REL_BIN: &str = "./bin/npm";
+const NODE_REL_BIN: &str = "bin/node";
+const NPM_REL_BIN: &str = "bin/npm";
 
 const PLUGIN_RUNTIME_DIR: &str = "/Users/gschier/Workspace/yaak/plugin-runtime";
 
-pub async fn npm_install() -> ExitStatus {
+pub async fn npm_install(node_dir: &PathBuf) -> ExitStatus {
     info!("Running npm install");
-    let npm_path = Path::new(NODE_DIR).join(NPM_REL_BIN);
+    let npm_path = Path::new(node_dir).join(NPM_REL_BIN);
     Command::new(npm_path)
         .current_dir(PLUGIN_RUNTIME_DIR)
         .args(["install"])
@@ -37,7 +36,7 @@ pub async fn npm_install() -> ExitStatus {
         .unwrap()
 }
 
-pub async fn node_start(temp_dir: &PathBuf) -> String {
+pub async fn node_start(temp_dir: &PathBuf, node_dir: &PathBuf) -> String {
     let port_file_path = temp_dir.join(Alphanumeric.sample_string(&mut rand::thread_rng(), 10));
 
     info!(
@@ -45,7 +44,7 @@ pub async fn node_start(temp_dir: &PathBuf) -> String {
         port_file_path.to_string_lossy()
     );
 
-    let node_path = Path::new(NODE_DIR).join(NODE_REL_BIN);
+    let node_path = Path::new(node_dir).join(NODE_REL_BIN);
     Command::new(node_path)
         .env("GRPC_PORT_FILE_PATH", port_file_path.clone())
         .current_dir(PLUGIN_RUNTIME_DIR)
@@ -72,12 +71,15 @@ pub async fn node_start(temp_dir: &PathBuf) -> String {
     format!("http://localhost:{}", port_file.port)
 }
 
-pub async fn ensure_nodejs() -> Result<(), String> {
-    let version = check_nodejs_version()
+pub async fn ensure_nodejs(node_dir: &PathBuf) -> Result<(), String> {
+    let version = check_nodejs_version(node_dir)
         .await
         .unwrap_or("__NONE__".to_string());
     if version == NODE_VERSION {
-        info!("Using existing NodeJS version {version}");
+        info!(
+            "Using existing NodeJS version {version} at {}",
+            node_dir.to_string_lossy()
+        );
         return Ok(());
     }
 
@@ -86,12 +88,16 @@ pub async fn ensure_nodejs() -> Result<(), String> {
 
     let res = reqwest::get(url).await.unwrap();
     let bytes = res.bytes().await.unwrap();
-    extract_archive(bytes.to_vec(), Path::new(NODE_DIR)).map_err(|e| e.to_string())
+    extract_archive(bytes.to_vec(), Path::new(node_dir)).map_err(|e| e.to_string())
 }
 
-async fn check_nodejs_version() -> Option<String> {
-    let node_path = Path::new(NODE_DIR).join(NODE_REL_BIN);
-    let stdout = match Command::new(node_path).args(["--version"]).output().await {
+async fn check_nodejs_version(node_dir: &PathBuf) -> Option<String> {
+    let node_path = Path::new(node_dir).join(NODE_REL_BIN);
+    let stdout = match Command::new(node_path.clone())
+        .args(["--version"])
+        .output()
+        .await
+    {
         Ok(v) => v.stdout,
         Err(err) => {
             info!("Failed to check NodeJS version {}", err);

@@ -24,8 +24,6 @@ pub fn extract_archive(bytes: Vec<u8>, path: &Path) -> Result<()> {
     let reader = Cursor::new(bytes);
     let mut archive = ZipArchive::new(reader).unwrap();
 
-    println!("Extracting...");
-
     for i in 0..archive.len() {
         let mut item = archive.by_index(i).unwrap();
         let file_path = item.mangled_name();
@@ -47,7 +45,7 @@ pub fn extract_archive(bytes: Vec<u8>, path: &Path) -> Result<()> {
         }
     }
 
-    println!(
+    info!(
         "Extracted to {}",
         // Have to remove \\?\ prefix 🤮
         path.to_str()
@@ -67,8 +65,6 @@ pub fn extract_archive(bytes: Vec<u8>, path: &Path) -> Result<()> {
 
     let version_dir_path = path.to_owned();
     create_dir_all(&version_dir_path).unwrap();
-
-    info!("Extracting...");
 
     let result = archive
         .entries()

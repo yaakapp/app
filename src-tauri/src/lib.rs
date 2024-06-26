@@ -1645,13 +1645,13 @@ pub fn run() {
                 app_config_dir.as_path().to_string_lossy(),
             );
             info!("App Data Dir: {}", app_data_dir.as_path().to_string_lossy());
-            let dir = match is_dev() {
+            let app_data_dir = match is_dev() {
                 true => current_dir().unwrap(),
                 false => app_data_dir,
             };
 
-            create_dir_all(dir.clone()).expect("Problem creating App directory!");
-            let p = dir.join("db.sqlite");
+            create_dir_all(app_data_dir.clone()).expect("Problem creating App directory!");
+            let p = app_data_dir.join("db.sqlite");
             File::options()
                 .write(true)
                 .create(true)
