@@ -66,7 +66,7 @@ pub fn extract_archive(bytes: Vec<u8>, path: &Path) -> Result<()> {
     let mut archive = Archive::new(tar);
 
     let version_dir_path = path.to_owned();
-    create_dir_all(&version_dir_path).expect("fuck");
+    create_dir_all(&version_dir_path).unwrap();
 
     info!("Extracting...");
 
