@@ -53,7 +53,6 @@
     "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
     "resources": [
       "migrations/*",
-      "plugins/*",
       "protoc-vendored/include/*"
     ],
     "shortDescription": "Desktop API client",

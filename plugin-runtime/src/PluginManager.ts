@@ -6,7 +6,10 @@ export class PluginManager {
   static #instance: PluginManager | null = null;
 
   public static instance(): PluginManager {
-    PluginManager.#instance = new PluginManager();
+    if (PluginManager.#instance == null) {
+      PluginManager.#instance = new PluginManager();
+      PluginManager.#instance.plugins(); // Trigger workers to boot, as it takes a few seconds
+    }
     return PluginManager.#instance;
   }
 
@@ -15,26 +18,19 @@ export class PluginManager {
     return this.#handles;
   }
 
-  async pluginsWith(capability: PluginInfo['capabilities'][0]): Promise<PluginHandle[]> {
+  async #pluginsWithInfo(): Promise<{ plugin: PluginHandle; info: PluginInfo }[]> {
     const plugins = await this.plugins();
-    const pluginsWithInfo = await Promise.all(
-      plugins.map(async (plugin) => ({ plugin, info: await plugin.getInfo() })),
-    );
-    return pluginsWithInfo
+    return Promise.all(plugins.map(async (plugin) => ({ plugin, info: await plugin.getInfo() })));
+  }
+
+  async pluginsWith(capability: PluginInfo['capabilities'][0]): Promise<PluginHandle[]> {
+    return (await this.#pluginsWithInfo())
       .filter((v) => v.info.capabilities.includes(capability))
       .map((v) => v.plugin);
   }
 
   async plugin(name: string): Promise<PluginHandle | null> {
-    const plugins = await this.plugins();
-    for (const plugin of plugins) {
-      const info = await plugin.getInfo();
-      if (info.name === name) {
-        return plugin;
-      }
-    }
-
-    return null;
+    return (await this.#pluginsWithInfo()).find((v) => v.info.name === name)?.plugin ?? null;
   }
 
   async pluginOrThrow(name: string): Promise<PluginHandle> {

@@ -1,19 +1,32 @@
+use std::path::PathBuf;
+
+use log::info;
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
-use crate::nodejs::ensure_nodejs;
 
+use crate::nodejs::{ensure_nodejs, node_start, npm_install};
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 use crate::plugin_runtime::{HookFilterRequest, HookImportRequest};
 
 pub struct PluginManager(Mutex<PluginRuntimeClient<Channel>>);
 
 impl PluginManager {
-    pub async fn new() -> Result<PluginManager, String> {
-        let client = PluginRuntimeClient::connect("http://127.0.0.1:4000")
-            .await
-            .map_err(|e| e.to_string())?;
-        let m = PluginManager(Mutex::new(client));
+    pub async fn new(temp_dir: &PathBuf) -> Result<PluginManager, String> {
         ensure_nodejs().await.unwrap();
+        npm_install().await;
+
+        let addr = node_start(temp_dir).await;
+        info!("Connecting to gRPC client at {addr}");
+
+        let client = match PluginRuntimeClient::connect(addr.clone()).await {
+            Ok(v) => v,
+            Err(err) => {
+                return Err(err.to_string());
+            }
+        };
+
+        let m = PluginManager(Mutex::new(client));
+
         Ok(m)
     }
 

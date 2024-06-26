@@ -745,7 +745,10 @@ async fn cmd_filter_response(
 
     // TODO: Have plugins register their own content type (regex?)
     let manager: State<PluginManager> = w.app_handle().state();
-    manager.inner().run_filter(filter, &body, &content_type).await
+    manager
+        .inner()
+        .run_filter(filter, &body, &content_type)
+        .await
 }
 
 #[tauri::command]
@@ -1585,26 +1588,6 @@ async fn cmd_check_for_updates(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_os::init())
-        .plugin(plugin_runtime::init())
-        .plugin(tauri_plugin_fs::init());
-
-    #[cfg(target_os = "macos")]
-    {
-        builder = builder.plugin(tauri_plugin_mac_window::init());
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        builder = builder; // Don't complain about not being mut
-    }
-
-    builder
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([
@@ -1612,6 +1595,7 @@ pub fn run() {
                     Target::new(TargetKind::LogDir { file_name: None }),
                     Target::new(TargetKind::Webview),
                 ])
+                .level_for("plugin_runtime", log::LevelFilter::Info)
                 .level_for("cookie_store", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
@@ -1633,6 +1617,26 @@ pub fn run() {
                 })
                 .build(),
         )
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(plugin_runtime::init())
+        .plugin(tauri_plugin_fs::init());
+
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.plugin(tauri_plugin_mac_window::init());
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        builder = builder; // Don't complain about not being mut
+    }
+
+    builder
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
             let app_config_dir = app.path().app_config_dir().unwrap();
