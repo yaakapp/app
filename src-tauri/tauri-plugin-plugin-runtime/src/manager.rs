@@ -1,10 +1,10 @@
-use log::info;
+use log::{debug, info};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
 
-use crate::nodejs::{ensure_nodejs, node_start, npm_install};
+use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 use crate::plugin_runtime::{HookFilterRequest, HookImportRequest};
 
@@ -15,15 +15,8 @@ pub struct PluginManager {
 impl PluginManager {
     pub async fn new<R: Runtime>(app_handle: &AppHandle<R>) -> PluginManager {
         let temp_dir = app_handle.path().temp_dir().unwrap();
-        let node_dir = app_handle
-            .path()
-            .resolve("./nodejs", BaseDirectory::AppData)
-            .unwrap();
 
-        ensure_nodejs(&node_dir).await.unwrap();
-        npm_install(&node_dir).await;
-        
-        let addr = node_start(&temp_dir, &node_dir).await;
+        let addr = node_start(app_handle, &temp_dir).await;
         info!("Connecting to gRPC client at {addr}");
 
         let client = match PluginRuntimeClient::connect(addr.clone()).await {
@@ -58,6 +51,7 @@ impl PluginManager {
         body: &str,
         content_type: &str,
     ) -> Result<String, String> {
+        debug!("Running plugin filter");
         let response = self
             .client
             .lock()
@@ -70,6 +64,8 @@ impl PluginManager {
             .await
             .map_err(|e| e.message().to_string())?;
 
-        Ok(response.into_inner().data)
+        let data = response.into_inner().data;
+        debug!("Ran plugin filter {data}");
+        Ok(data)
     }
 }

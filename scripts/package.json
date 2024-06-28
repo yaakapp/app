@@ -1,0 +1,9 @@
+{
+  "name": "yaak-scripts",
+  "private": true,
+  "dependencies": {
+    "decompress": "^4.2.1",
+    "nodejs-file-downloader": "^4.13.0",
+    "rimraf": "^5.0.7"
+  }
+}

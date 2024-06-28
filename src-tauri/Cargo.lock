@@ -4262,6 +4262,7 @@ dependencies = [
  "serde_json",
  "tar",
  "tauri",
+ "tauri-plugin-shell",
  "tokio",
  "tonic 0.11.0",
  "tonic-build",

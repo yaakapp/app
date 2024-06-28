@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "identifier": "app.yaak.desktop",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build:frontend",
+    "beforeDevCommand": "npm run dev:frontend",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
@@ -41,7 +41,8 @@
     "active": true,
     "category": "DeveloperTool",
     "externalBin": [
-      "protoc-vendored/protoc"
+      "vendored/protoc/protoc",
+      "vendored/nodejs/yaakplugins"
     ],
     "icon": [
       "icons/release/32x32.png",
@@ -53,9 +54,10 @@
     "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
     "resources": [
       "migrations/*",
-      "protoc-vendored/include/*"
+      "plugins/*",
+      "vendored/protoc/include/*"
     ],
-    "shortDescription": "Desktop API client",
+    "shortDescription": "Play with APIs, intuitively",
     "targets": [
       "deb",
       "appimage",

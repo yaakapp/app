@@ -1,7 +1,7 @@
-import { isAbortError } from 'abort-controller-x';
+import * as fs from 'node:fs';
 import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
 import { CallContext } from 'nice-grpc-common';
-import * as fs from 'node:fs';
+import { isAbortError } from 'abort-controller-x';
 import {
   DeepPartial,
   HookFilterRequest,
@@ -10,7 +10,7 @@ import {
   HookImportResponse,
   PluginRuntimeDefinition,
   PluginRuntimeServiceImplementation,
-} from '../gen/plugins/runtime';
+} from './gen/plugins/runtime';
 import { PluginManager } from './PluginManager';
 
 class PluginRuntimeService implements PluginRuntimeServiceImplementation {

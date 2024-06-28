@@ -2,7 +2,10 @@
   "name": "@yaak/plugin-runtime",
   "scripts": {
     "dev": "nodemon",
-    "generate": "./node_modules/.bin/grpc_tools_node_protoc --ts_proto_out=./gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
+    "build": "run-p build:*",
+    "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js",
+    "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=dist/index.worker.js",
+    "build:proto": "./node_modules/.bin/grpc_tools_node_protoc --ts_proto_out=./src/gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
   },
   "dependencies": {
     "long": "^5.2.3",
@@ -12,6 +15,7 @@
   "devDependencies": {
     "grpc-tools": "^1.12.4",
     "nodemon": "^3.1.4",
+    "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.2",
     "ts-proto": "^1.180.0",
     "typescript": "^5.5.2"

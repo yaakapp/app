@@ -1,7 +1,9 @@
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { isSea } from 'node:sea';
 import { Worker } from 'node:worker_threads';
 import { PluginInfo } from './plugins';
-import { randomUUID } from 'node:crypto';
+import { tmpdir } from 'node:os';
 
 export interface ParentToWorkerEvent<T = any> {
   callbackId: string;
@@ -28,7 +30,11 @@ export class PluginHandle {
   constructor(pluginDir: string) {
     this.pluginDir = pluginDir;
 
-    this.#worker = new Worker(path.resolve(__filename, '../plugin-worker.ts'), {
+    const workerPath = isSea()
+      ? path.resolve(tmpdir(), 'index.worker.js')
+      : path.resolve(__dirname, 'index.worker.ts');
+
+    this.#worker = new Worker(workerPath, {
       workerData: {
         pluginDir: this.pluginDir,
       },

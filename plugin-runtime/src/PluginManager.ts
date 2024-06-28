@@ -1,3 +1,7 @@
+import { existsSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { getAsset, isSea } from 'node:sea';
 import { PluginHandle } from './PluginHandle';
 import { loadPlugins, PluginInfo } from './plugins';
 
@@ -14,8 +18,23 @@ export class PluginManager {
   }
 
   async plugins(): Promise<PluginHandle[]> {
+    await this.#ensureWorkerForSea();
     this.#handles = this.#handles ?? loadPlugins();
     return this.#handles;
+  }
+
+  /**
+   * Copy worker JS asset to filesystem if we're in single-executable-application (SEA)
+   * @private
+   */
+  async #ensureWorkerForSea() {
+    if (!isSea()) return;
+
+    const assetPath = path.resolve(tmpdir(), 'index.worker.js');
+    if (existsSync(assetPath)) return;
+
+    console.log('Writing worker file to', assetPath);
+    writeFileSync(assetPath, getAsset('worker', 'utf8'));
   }
 
   async #pluginsWithInfo(): Promise<{ plugin: PluginHandle; info: PluginInfo }[]> {

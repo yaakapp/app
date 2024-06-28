@@ -6,6 +6,10 @@ use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager, Runtime};
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio::process::Command;
 
@@ -36,21 +40,39 @@ pub async fn npm_install(node_dir: &PathBuf) -> ExitStatus {
         .unwrap()
 }
 
-pub async fn node_start(temp_dir: &PathBuf, node_dir: &PathBuf) -> String {
+pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> String {
     let port_file_path = temp_dir.join(Alphanumeric.sample_string(&mut rand::thread_rng(), 10));
 
+    let plugins_dir = app
+        .path()
+        .resolve("plugins", BaseDirectory::Resource)
+        .expect("failed to resolve plugin directory resource");
+
     info!(
-        "Starting plugin runtime port_file={}",
-        port_file_path.to_string_lossy()
+        "Starting plugin runtime port_file={} plugins_dir={}",
+        port_file_path.to_string_lossy(),
+        plugins_dir.to_string_lossy(),
     );
 
-    let node_path = Path::new(node_dir).join(NODE_REL_BIN);
-    Command::new(node_path)
+    let (mut rx, _child) = app
+        .shell()
+        .sidecar("yaakplugins")
+        .unwrap()
         .env("GRPC_PORT_FILE_PATH", port_file_path.clone())
-        .current_dir(PLUGIN_RUNTIME_DIR)
-        .args(["-r", "ts-node/register", "./src/index.ts"])
+        .env("PLUGINS_DIR", plugins_dir)
         .spawn()
         .unwrap();
+
+    tauri::async_runtime::spawn(async move {
+        // read events such as stdout
+        while let Some(event) = rx.recv().await {
+            if let CommandEvent::Stdout(line) = event {
+                println!("{}", String::from_utf8_lossy(line.as_slice()));
+            } else if let CommandEvent::Stderr(line) = event {
+                println!("{}", String::from_utf8_lossy(line.as_slice()));
+            }
+        }
+    });
 
     let start = std::time::Instant::now();
     let port_file_contents = loop {
@@ -91,6 +113,7 @@ pub async fn ensure_nodejs(node_dir: &PathBuf) -> Result<(), String> {
     extract_archive(bytes.to_vec(), Path::new(node_dir)).map_err(|e| e.to_string())
 }
 
+#[allow(unused)]
 async fn check_nodejs_version(node_dir: &PathBuf) -> Option<String> {
     let node_path = Path::new(node_dir).join(NODE_REL_BIN);
     let stdout = match Command::new(node_path.clone())
