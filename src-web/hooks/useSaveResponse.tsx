@@ -20,7 +20,7 @@ export function useSaveResponse(response: HttpResponse) {
 
       const contentType = getContentTypeHeader(response.headers) ?? 'unknown';
       const ext = mime.getExtension(contentType);
-      const slug = slugify(request.name, { lower: true });
+      const slug = slugify(request.name ?? 'response', { lower: true });
       const filepath = await save({
         defaultPath: ext ? `${slug}.${ext}` : slug,
         title: 'Save Response',
