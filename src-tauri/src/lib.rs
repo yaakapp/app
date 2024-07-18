@@ -13,7 +13,6 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use base64::Engine;
-use deno_core::futures::TryFutureExt;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
@@ -38,6 +37,7 @@ use plugin_runtime::manager::PluginManager;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
+use crate::models::ImportResult;
 use crate::models::{
     cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
     delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
@@ -55,19 +55,15 @@ use crate::models::{
     WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
-use crate::plugin::{run_plugin_export_curl, ImportResult};
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 
 mod analytics;
-mod deno;
-mod deno_ops;
 mod grpc;
 mod http_request;
 mod models;
 mod notifications;
-mod plugin;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
@@ -745,9 +741,9 @@ async fn cmd_filter_response(
     let manager: State<PluginManager> = w.app_handle().state();
     manager
         .inner()
-        .run_filter(filter, &body, &content_type)
-        .map_ok(|r| r.data)
+        .run_response_filter(filter, &body, &content_type)
         .await
+        .map(|r| r.data)
 }
 
 #[tauri::command]
@@ -898,7 +894,11 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    Ok(run_plugin_export_curl(&app, &rendered)?)
+    let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
+
+    let manager: State<PluginManager> = app.state();
+    let import_response = manager.inner().run_export_curl(request_json.as_str()).await?;
+    Ok(import_response.data)
 }
 
 #[tauri::command]

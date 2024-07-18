@@ -41,8 +41,12 @@ export class PluginHandle {
     return this.#callPlugin('info', null);
   }
 
-  async runFilter({ filter, body }: { filter: string; body: string }): Promise<string> {
+  async runResponseFilter({ filter, body }: { filter: string; body: string }): Promise<string> {
     return this.#callPlugin('run-filter', { filter, body });
+  }
+
+  async runExport(request: any): Promise<string> {
+    return this.#callPlugin('run-export', request);
   }
 
   async runImport(data: string): Promise<string> {

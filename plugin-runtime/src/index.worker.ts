@@ -30,7 +30,7 @@ new Promise(async () => {
     info.capabilities.push('filter');
   }
 
-  console.log('Loaded plugin', info);
+  console.log('Loaded plugin', info.name, info.capabilities, info.dir);
 
   function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
     parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
@@ -45,19 +45,17 @@ new Promise(async () => {
 
   parentPort!.on('message', (msg: ParentToWorkerEvent) => {
     try {
-      switch (msg.name) {
-        case 'run-import':
-          reply(msg, mod['pluginHookImport']({}, msg.payload));
-          break;
-        case 'run-filter':
-          const response = mod['pluginHookResponseFilter']({}, msg.payload);
-          reply(msg, response);
-          break;
-        case 'info':
-          reply(msg, info);
-          break;
-        default:
-          console.log('Unknown message', msg);
+      const ctx = { todo: 'implement me' };
+      if (msg.name === 'run-import') {
+        reply(msg, mod.pluginHookImport(ctx, msg.payload));
+      } else if (msg.name === 'run-filter') {
+        reply(msg, mod.pluginHookResponseFilter(ctx, msg.payload));
+      } else if (msg.name === 'run-export') {
+        reply(msg, mod.pluginHookExport(ctx, msg.payload));
+      } else if (msg.name === 'info') {
+        reply(msg, info);
+      } else {
+        console.log('Unknown message', msg);
       }
     } catch (err: unknown) {
       replyErr(msg, err);

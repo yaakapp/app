@@ -1,13 +1,13 @@
-import * as fs from 'node:fs';
+import { isAbortError } from 'abort-controller-x';
 import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
 import { CallContext } from 'nice-grpc-common';
-import { isAbortError } from 'abort-controller-x';
+import * as fs from 'node:fs';
 import {
   DeepPartial,
-  HookFilterRequest,
-  HookFilterResponse,
+  HookExportRequest,
   HookImportRequest,
-  HookImportResponse,
+  HookResponse,
+  HookResponseFilterRequest,
   PluginRuntimeDefinition,
   PluginRuntimeServiceImplementation,
 } from './gen/plugins/runtime';
@@ -20,7 +20,14 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     this.#manager = PluginManager.instance();
   }
 
-  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookImportResponse>> {
+  async hookExport(request: HookExportRequest): Promise<DeepPartial<HookResponse>> {
+    const plugin = await this.#manager.pluginOrThrow('exporter-curl');
+    const data = await plugin.runExport(JSON.parse(request.request));
+    const info = { plugin: (await plugin.getInfo()).name };
+    return { info, data };
+  }
+
+  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookResponse>> {
     const plugins = await this.#manager.pluginsWith('import');
     for (const p of plugins) {
       const data = await p.runImport(request.data);
@@ -33,10 +40,10 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     throw new ServerError(Status.UNKNOWN, 'No importers found for data');
   }
 
-  async hookFilter(request: HookFilterRequest): Promise<DeepPartial<HookFilterResponse>> {
+  async hookResponseFilter(request: HookResponseFilterRequest): Promise<DeepPartial<HookResponse>> {
     const pluginName = request.contentType.includes('json') ? 'filter-jsonpath' : 'filter-xpath';
     const plugin = await this.#manager.pluginOrThrow(pluginName);
-    const data = await plugin.runFilter(request);
+    const data = await plugin.runResponseFilter(request);
     const info = { plugin: (await plugin.getInfo()).name };
     return { info, data };
   }
