@@ -10,11 +10,16 @@ import * as _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "yaak.plugins.runtime";
 
+export interface HookInfo {
+  plugin: string;
+}
+
 export interface HookImportRequest {
   data: string;
 }
 
 export interface HookImportResponse {
+  info: HookInfo | undefined;
   data: string;
 }
 
@@ -25,8 +30,66 @@ export interface HookFilterRequest {
 }
 
 export interface HookFilterResponse {
+  info: HookInfo | undefined;
   data: string;
 }
+
+function createBaseHookInfo(): HookInfo {
+  return { plugin: "" };
+}
+
+export const HookInfo = {
+  encode(message: HookInfo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.plugin !== "") {
+      writer.uint32(10).string(message.plugin);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookInfo {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHookInfo();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.plugin = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HookInfo {
+    return { plugin: isSet(object.plugin) ? globalThis.String(object.plugin) : "" };
+  },
+
+  toJSON(message: HookInfo): unknown {
+    const obj: any = {};
+    if (message.plugin !== "") {
+      obj.plugin = message.plugin;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HookInfo>): HookInfo {
+    return HookInfo.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HookInfo>): HookInfo {
+    const message = createBaseHookInfo();
+    message.plugin = object.plugin ?? "";
+    return message;
+  },
+};
 
 function createBaseHookImportRequest(): HookImportRequest {
   return { data: "" };
@@ -86,13 +149,16 @@ export const HookImportRequest = {
 };
 
 function createBaseHookImportResponse(): HookImportResponse {
-  return { data: "" };
+  return { info: undefined, data: "" };
 }
 
 export const HookImportResponse = {
   encode(message: HookImportResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.info !== undefined) {
+      HookInfo.encode(message.info, writer.uint32(10).fork()).ldelim();
+    }
     if (message.data !== "") {
-      writer.uint32(10).string(message.data);
+      writer.uint32(18).string(message.data);
     }
     return writer;
   },
@@ -109,6 +175,13 @@ export const HookImportResponse = {
             break;
           }
 
+          message.info = HookInfo.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.data = reader.string();
           continue;
       }
@@ -121,11 +194,17 @@ export const HookImportResponse = {
   },
 
   fromJSON(object: any): HookImportResponse {
-    return { data: isSet(object.data) ? globalThis.String(object.data) : "" };
+    return {
+      info: isSet(object.info) ? HookInfo.fromJSON(object.info) : undefined,
+      data: isSet(object.data) ? globalThis.String(object.data) : "",
+    };
   },
 
   toJSON(message: HookImportResponse): unknown {
     const obj: any = {};
+    if (message.info !== undefined) {
+      obj.info = HookInfo.toJSON(message.info);
+    }
     if (message.data !== "") {
       obj.data = message.data;
     }
@@ -137,6 +216,7 @@ export const HookImportResponse = {
   },
   fromPartial(object: DeepPartial<HookImportResponse>): HookImportResponse {
     const message = createBaseHookImportResponse();
+    message.info = (object.info !== undefined && object.info !== null) ? HookInfo.fromPartial(object.info) : undefined;
     message.data = object.data ?? "";
     return message;
   },
@@ -232,13 +312,16 @@ export const HookFilterRequest = {
 };
 
 function createBaseHookFilterResponse(): HookFilterResponse {
-  return { data: "" };
+  return { info: undefined, data: "" };
 }
 
 export const HookFilterResponse = {
   encode(message: HookFilterResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.info !== undefined) {
+      HookInfo.encode(message.info, writer.uint32(10).fork()).ldelim();
+    }
     if (message.data !== "") {
-      writer.uint32(10).string(message.data);
+      writer.uint32(18).string(message.data);
     }
     return writer;
   },
@@ -255,6 +338,13 @@ export const HookFilterResponse = {
             break;
           }
 
+          message.info = HookInfo.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.data = reader.string();
           continue;
       }
@@ -267,11 +357,17 @@ export const HookFilterResponse = {
   },
 
   fromJSON(object: any): HookFilterResponse {
-    return { data: isSet(object.data) ? globalThis.String(object.data) : "" };
+    return {
+      info: isSet(object.info) ? HookInfo.fromJSON(object.info) : undefined,
+      data: isSet(object.data) ? globalThis.String(object.data) : "",
+    };
   },
 
   toJSON(message: HookFilterResponse): unknown {
     const obj: any = {};
+    if (message.info !== undefined) {
+      obj.info = HookInfo.toJSON(message.info);
+    }
     if (message.data !== "") {
       obj.data = message.data;
     }
@@ -283,6 +379,7 @@ export const HookFilterResponse = {
   },
   fromPartial(object: DeepPartial<HookFilterResponse>): HookFilterResponse {
     const message = createBaseHookFilterResponse();
+    message.info = (object.info !== undefined && object.info !== null) ? HookInfo.fromPartial(object.info) : undefined;
     message.data = object.data ?? "";
     return message;
   },

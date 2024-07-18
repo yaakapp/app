@@ -13,6 +13,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use base64::Engine;
+use deno_core::futures::TryFutureExt;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
@@ -54,10 +55,7 @@ use crate::models::{
     WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
-use crate::plugin::{
-    find_plugins, get_plugin, run_plugin_export_curl, run_plugin_import, ImportResult,
-    PluginCapability,
-};
+use crate::plugin::{run_plugin_export_curl, ImportResult};
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
@@ -748,6 +746,7 @@ async fn cmd_filter_response(
     manager
         .inner()
         .run_filter(filter, &body, &content_type)
+        .map_ok(|r| r.data)
         .await
 }
 
@@ -757,140 +756,129 @@ async fn cmd_import_data(
     file_path: &str,
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
-    let mut result: Option<ImportResult> = None;
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let plugins = find_plugins(w.app_handle(), &PluginCapability::Import)
-        .await
-        .map_err(|e| e.to_string())?;
-    for plugin in plugins {
-        let v = run_plugin_import(&plugin, file_contents)
+    let manager: State<PluginManager> = w.app_handle().state();
+    let import_response = manager.inner().run_import(file_contents).await?;
+    let import_result: ImportResult =
+        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
+
+    // TODO: Track the plugin that ran, maybe return the run info in the plugin response?
+    let plugin_name = import_response.info.unwrap_or_default().plugin;
+    info!("Imported data using {}", plugin_name);
+    analytics::track_event(
+        &w.app_handle(),
+        AnalyticsResource::App,
+        AnalyticsAction::Import,
+        Some(json!({ "plugin": plugin_name })),
+    )
+    .await;
+
+    let mut imported_resources = WorkspaceExportResources::default();
+    let mut id_map: HashMap<String, String> = HashMap::new();
+
+    fn maybe_gen_id(id: &str, model: ModelType, ids: &mut HashMap<String, String>) -> String {
+        if !id.starts_with("GENERATE_ID::") {
+            return id.to_string();
+        }
+
+        let unique_key = id.replace("GENERATE_ID", "");
+        if let Some(existing) = ids.get(unique_key.as_str()) {
+            existing.to_string()
+        } else {
+            let new_id = generate_model_id(model);
+            ids.insert(unique_key, new_id.clone());
+            new_id
+        }
+    }
+
+    fn maybe_gen_id_opt(
+        id: Option<String>,
+        model: ModelType,
+        ids: &mut HashMap<String, String>,
+    ) -> Option<String> {
+        match id {
+            Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
+            None => None,
+        }
+    }
+
+    for mut v in import_result.resources.workspaces {
+        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
+        let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
+        imported_resources.workspaces.push(x.clone());
+    }
+    info!(
+        "Imported {} workspaces",
+        imported_resources.workspaces.len()
+    );
+
+    for mut v in import_result.resources.environments {
+        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
+        v.workspace_id = maybe_gen_id(
+            v.workspace_id.as_str(),
+            ModelType::TypeWorkspace,
+            &mut id_map,
+        );
+        let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
+        imported_resources.environments.push(x.clone());
+    }
+    info!(
+        "Imported {} environments",
+        imported_resources.environments.len()
+    );
+
+    for mut v in import_result.resources.folders {
+        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
+        v.workspace_id = maybe_gen_id(
+            v.workspace_id.as_str(),
+            ModelType::TypeWorkspace,
+            &mut id_map,
+        );
+        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+        let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
+        imported_resources.folders.push(x.clone());
+    }
+    info!("Imported {} folders", imported_resources.folders.len());
+
+    for mut v in import_result.resources.http_requests {
+        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
+        v.workspace_id = maybe_gen_id(
+            v.workspace_id.as_str(),
+            ModelType::TypeWorkspace,
+            &mut id_map,
+        );
+        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+        let x = upsert_http_request(&w, v)
             .await
             .map_err(|e| e.to_string())?;
-        if let Some(r) = v {
-            info!("Imported data using {}", plugin.name);
-            analytics::track_event(
-                &w.app_handle(),
-                AnalyticsResource::App,
-                AnalyticsAction::Import,
-                Some(json!({ "plugin": plugin.name })),
-            )
-            .await;
-            result = Some(r);
-            break;
-        }
+        imported_resources.http_requests.push(x.clone());
     }
+    info!(
+        "Imported {} http_requests",
+        imported_resources.http_requests.len()
+    );
 
-    match result {
-        None => Err("No import handlers found".to_string()),
-        Some(r) => {
-            let mut imported_resources = WorkspaceExportResources::default();
-            let mut id_map: HashMap<String, String> = HashMap::new();
-
-            let maybe_gen_id =
-                |id: &str, model: ModelType, ids: &mut HashMap<String, String>| -> String {
-                    if !id.starts_with("GENERATE_ID::") {
-                        return id.to_string();
-                    }
-
-                    let unique_key = id.replace("GENERATE_ID", "");
-                    if let Some(existing) = ids.get(unique_key.as_str()) {
-                        existing.to_string()
-                    } else {
-                        let new_id = generate_model_id(model);
-                        ids.insert(unique_key, new_id.clone());
-                        new_id
-                    }
-                };
-
-            let maybe_gen_id_opt = |id: Option<String>,
-                                    model: ModelType,
-                                    ids: &mut HashMap<String, String>|
-             -> Option<String> {
-                match id {
-                    Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
-                    None => None,
-                }
-            };
-
-            for mut v in r.resources.workspaces {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
-                let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
-                imported_resources.workspaces.push(x.clone());
-            }
-            info!(
-                "Imported {} workspaces",
-                imported_resources.workspaces.len()
-            );
-
-            for mut v in r.resources.environments {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
-                v.workspace_id = maybe_gen_id(
-                    v.workspace_id.as_str(),
-                    ModelType::TypeWorkspace,
-                    &mut id_map,
-                );
-                let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
-                imported_resources.environments.push(x.clone());
-            }
-            info!(
-                "Imported {} environments",
-                imported_resources.environments.len()
-            );
-
-            for mut v in r.resources.folders {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
-                v.workspace_id = maybe_gen_id(
-                    v.workspace_id.as_str(),
-                    ModelType::TypeWorkspace,
-                    &mut id_map,
-                );
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-                let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
-                imported_resources.folders.push(x.clone());
-            }
-            info!("Imported {} folders", imported_resources.folders.len());
-
-            for mut v in r.resources.http_requests {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
-                v.workspace_id = maybe_gen_id(
-                    v.workspace_id.as_str(),
-                    ModelType::TypeWorkspace,
-                    &mut id_map,
-                );
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-                let x = upsert_http_request(&w, v)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                imported_resources.http_requests.push(x.clone());
-            }
-            info!(
-                "Imported {} http_requests",
-                imported_resources.http_requests.len()
-            );
-
-            for mut v in r.resources.grpc_requests {
-                v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
-                v.workspace_id = maybe_gen_id(
-                    v.workspace_id.as_str(),
-                    ModelType::TypeWorkspace,
-                    &mut id_map,
-                );
-                v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-                let x = upsert_grpc_request(&w, &v)
-                    .await
-                    .map_err(|e| e.to_string())?;
-                imported_resources.grpc_requests.push(x.clone());
-            }
-            info!(
-                "Imported {} grpc_requests",
-                imported_resources.grpc_requests.len()
-            );
-
-            Ok(imported_resources)
-        }
+    for mut v in import_result.resources.grpc_requests {
+        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
+        v.workspace_id = maybe_gen_id(
+            v.workspace_id.as_str(),
+            ModelType::TypeWorkspace,
+            &mut id_map,
+        );
+        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+        let x = upsert_grpc_request(&w, &v)
+            .await
+            .map_err(|e| e.to_string())?;
+        imported_resources.grpc_requests.push(x.clone());
     }
+    info!(
+        "Imported {} grpc_requests",
+        imported_resources.grpc_requests.len()
+    );
+
+    Ok(imported_resources)
 }
 
 #[tauri::command]
@@ -919,27 +907,21 @@ async fn cmd_curl_to_request(
     command: &str,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let plugin = match get_plugin(&app_handle, "importer-curl").map_err(|e| e.to_string())? {
-        None => return Err("Failed to find plugin".into()),
-        Some(p) => p,
-    };
-
-    let v = run_plugin_import(&plugin, command).await;
-    match v {
-        Ok(Some(r)) => r
-            .resources
-            .http_requests
-            .get(0)
-            .ok_or("No curl command found".to_string())
-            .map(|r| {
-                let mut request = r.clone();
-                request.workspace_id = workspace_id.into();
-                request.id = "".to_string();
-                request
-            }),
-        Ok(None) => Err("Did not find curl request".to_string()),
-        Err(e) => Err(e),
-    }
+    let manager: State<PluginManager> = app_handle.state();
+    let import_response = manager.inner().run_import(command).await?;
+    let import_result: ImportResult =
+        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
+    import_result
+        .resources
+        .http_requests
+        .get(0)
+        .ok_or("No curl command found".to_string())
+        .map(|r| {
+            let mut request = r.clone();
+            request.workspace_id = workspace_id.into();
+            request.id = "".to_string();
+            request
+        })
 }
 
 #[tauri::command]

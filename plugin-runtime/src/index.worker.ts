@@ -30,7 +30,7 @@ new Promise(async () => {
     info.capabilities.push('filter');
   }
 
-  console.log('LOADED PLUGIN', { pluginDir }, info, mod.default);
+  console.log('Loaded plugin', info);
 
   function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
     parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
@@ -50,9 +50,7 @@ new Promise(async () => {
           reply(msg, mod['pluginHookImport']({}, msg.payload));
           break;
         case 'run-filter':
-          console.log('CALLING FILTER');
           const response = mod['pluginHookResponseFilter']({}, msg.payload);
-          console.log('CALLED FILTER', response);
           reply(msg, response);
           break;
         case 'info':

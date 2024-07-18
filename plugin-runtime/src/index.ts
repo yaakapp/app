@@ -24,7 +24,10 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     const plugins = await this.#manager.pluginsWith('import');
     for (const p of plugins) {
       const data = await p.runImport(request.data);
-      if (data != null) return { data };
+      if (data != 'null') {
+        const info = { plugin: (await p.getInfo()).name };
+        return { info, data };
+      }
     }
 
     throw new ServerError(Status.UNKNOWN, 'No importers found for data');
@@ -33,7 +36,9 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
   async hookFilter(request: HookFilterRequest): Promise<DeepPartial<HookFilterResponse>> {
     const pluginName = request.contentType.includes('json') ? 'filter-jsonpath' : 'filter-xpath';
     const plugin = await this.#manager.pluginOrThrow(pluginName);
-    return { data: await plugin.runFilter(request) };
+    const data = await plugin.runFilter(request);
+    const info = { plugin: (await plugin.getInfo()).name };
+    return { info, data };
   }
 }
 

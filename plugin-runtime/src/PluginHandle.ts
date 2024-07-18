@@ -27,7 +27,6 @@ export class PluginHandle {
   constructor({ pluginDir, workerJsPath }: { pluginDir: string; workerJsPath: string }) {
     this.pluginDir = pluginDir;
 
-    console.log('Starting worker for plugin', { pluginDir, workerJsPath });
     this.#worker = new Worker(workerJsPath, {
       workerData: {
         pluginDir: this.pluginDir,

@@ -5,7 +5,7 @@ use tonic::transport::Channel;
 
 use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
-use crate::plugin_runtime::{HookFilterRequest, HookImportRequest};
+use crate::plugin_runtime::{HookFilterRequest, HookFilterResponse, HookImportRequest, HookImportResponse};
 
 pub struct PluginManager {
     client: Mutex<PluginRuntimeClient<Channel>>,
@@ -30,7 +30,7 @@ impl PluginManager {
         }
     }
 
-    pub async fn run_import(&self, data: &str) -> Result<String, String> {
+    pub async fn run_import(&self, data: &str) -> Result<HookImportResponse, String> {
         let response = self
             .client
             .lock()
@@ -41,7 +41,7 @@ impl PluginManager {
             .await
             .map_err(|e| e.message().to_string())?;
 
-        Ok(response.into_inner().data)
+        Ok(response.into_inner())
     }
 
     pub async fn run_filter(
@@ -49,7 +49,7 @@ impl PluginManager {
         filter: &str,
         body: &str,
         content_type: &str,
-    ) -> Result<String, String> {
+    ) -> Result<HookFilterResponse, String> {
         debug!("Running plugin filter");
         let response = self
             .client
@@ -63,8 +63,8 @@ impl PluginManager {
             .await
             .map_err(|e| e.message().to_string())?;
 
-        let data = response.into_inner().data;
-        debug!("Ran plugin filter {data}");
-        Ok(data)
+        let result = response.into_inner();
+        debug!("Ran plugin filter {}", result.data);
+        Ok(result)
     }
 }

@@ -31,8 +31,6 @@ use deno_core::SourceMapGetter;
 use deno_core::{resolve_import, v8};
 use tokio::task::block_in_place;
 
-use crate::plugin::PluginCapability;
-
 #[derive(Clone)]
 struct SourceMapStore(Rc<RefCell<HashMap<String, Vec<u8>>>>);
 
@@ -202,43 +200,6 @@ async fn run_plugin(
             }
         }
     }
-}
-
-pub fn get_plugin_capabilities_block(plugin_index_file: &str) -> Result<Vec<PluginCapability>, Error> {
-    block_in_place(|| tauri::async_runtime::block_on(get_plugin_capabilities(plugin_index_file)))
-}
-
-pub async fn get_plugin_capabilities(
-    plugin_index_file: &str,
-) -> Result<Vec<PluginCapability>, Error> {
-    let mut js_runtime = load_js_runtime()?;
-    let module_namespace = load_main_module(&mut js_runtime, plugin_index_file).await?;
-    let scope = &mut js_runtime.handle_scope();
-    let module_namespace = v8::Local::<v8::Object>::new(scope, module_namespace);
-
-    let property_names =
-        match module_namespace.get_own_property_names(scope, v8::GetPropertyNamesArgs::default()) {
-            None => return Ok(Vec::new()),
-            Some(names) => names,
-        };
-
-    let mut capabilities: Vec<PluginCapability> = Vec::new();
-    for i in 0..property_names.length() {
-        let name = property_names.get_index(scope, i);
-        let name = match name {
-            Some(name) => name,
-            None => return Ok(Vec::new()),
-        };
-
-        match name.to_rust_string_lossy(scope).as_str() {
-            "pluginHookImport" => _ = capabilities.push(PluginCapability::Import),
-            "pluginHookExport" => _ = capabilities.push(PluginCapability::Export),
-            "pluginHookResponseFilter" => _ = capabilities.push(PluginCapability::Filter),
-            _ => {}
-        };
-    }
-
-    Ok(capabilities)
 }
 
 async fn load_main_module(
