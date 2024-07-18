@@ -1,8 +1,0 @@
-{
-  "name": "filter-xpath",
-  "version": "0.0.1",
-  "dependencies": {
-    "@xmldom/xmldom": "^0.8.10",
-    "xpath": "^0.0.34"
-  }
-}

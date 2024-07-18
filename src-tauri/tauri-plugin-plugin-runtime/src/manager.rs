@@ -1,5 +1,4 @@
 use log::{debug, info};
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;

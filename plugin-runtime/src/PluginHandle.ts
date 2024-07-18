@@ -1,9 +1,6 @@
-import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { isSea } from 'node:sea';
 import { Worker } from 'node:worker_threads';
 import { PluginInfo } from './plugins';
-import { tmpdir } from 'node:os';
 
 export interface ParentToWorkerEvent<T = any> {
   callbackId: string;
@@ -27,21 +24,18 @@ export class PluginHandle {
   readonly pluginDir: string;
   readonly #worker: Worker;
 
-  constructor(pluginDir: string) {
+  constructor({ pluginDir, workerJsPath }: { pluginDir: string; workerJsPath: string }) {
     this.pluginDir = pluginDir;
 
-    const workerPath = isSea()
-      ? path.resolve(tmpdir(), 'index.worker.js')
-      : path.resolve(__dirname, 'index.worker.ts');
-
-    this.#worker = new Worker(workerPath, {
+    console.log('Starting worker for plugin', { pluginDir, workerJsPath });
+    this.#worker = new Worker(workerJsPath, {
       workerData: {
         pluginDir: this.pluginDir,
       },
     });
 
-    this.#worker.on('error', this.#handleError);
-    this.#worker.on('exit', this.#handleExit);
+    this.#worker.on('error', this.#handleError.bind(this));
+    this.#worker.on('exit', this.#handleExit.bind(this));
   }
 
   async getInfo(): Promise<PluginInfo> {

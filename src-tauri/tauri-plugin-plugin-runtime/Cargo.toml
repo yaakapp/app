@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.86"
-flate2 = "1.0.30"
 log = "0.4.21"
 prost = "0.12"
 rand = "0.8.5"
@@ -16,14 +15,6 @@ tauri = { version = "2.0.0-beta" }
 tauri-plugin-shell = "2.0.0-beta"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "process"] }
 tonic = "0.11"
-zip = "2.1.3"
-
-[target.'cfg(unix)'.dependencies]
-flate2 = "1.0.28"
-tar = "0.4.40"
-
-[target.'cfg(windows)'.dependencies]
-zip = "2.1.3"
 
 [build-dependencies]
 tonic-build = "0.11"

@@ -31,7 +31,6 @@ use deno_core::SourceMapGetter;
 use deno_core::{resolve_import, v8};
 use tokio::task::block_in_place;
 
-use crate::deno_ops::op_yaml_parse;
 use crate::plugin::PluginCapability;
 
 #[derive(Clone)]
@@ -145,13 +144,6 @@ pub fn run_plugin_block(
         tauri::async_runtime::block_on(run_plugin(plugin_index_file, fn_name, fn_args))
     })
 }
-
-deno_core::extension!(
-    yaak_runtime,
-    ops = [ op_yaml_parse ],
-    esm_entry_point = "ext:yaak_runtime/yaml.js",
-    esm = [dir "src/plugin-runtime", "yaml.js"]
-);
 
 async fn run_plugin(
     plugin_index_file: &str,
@@ -275,14 +267,12 @@ fn load_js_runtime<'s>() -> Result<JsRuntime, Error> {
     let mut ext_console = deno_console::deno_console::init_ops_and_esm();
     ext_console.esm_entry_point = Some("ext:deno_console/01_console.js");
 
-    let ext_yaak = yaak_runtime::init_ops_and_esm();
-
     let js_runtime = JsRuntime::new(RuntimeOptions {
         module_loader: Some(Rc::new(TypescriptModuleLoader {
             source_maps: source_map_store.clone(),
         })),
         source_map_getter: Some(Rc::new(source_map_store)),
-        extensions: vec![ext_console, ext_yaak],
+        extensions: vec![ext_console],
         ..Default::default()
     });
 

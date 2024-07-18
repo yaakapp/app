@@ -2,8 +2,8 @@ const path = require('node:path');
 const {execSync} = require('node:child_process');
 const {tmpdir} = require('node:os');
 const {cpSync, mkdirSync, chmodSync, unlinkSync} = require('node:fs');
-const pluginRuntimeDir = path.join(__dirname, '..', 'plugin-runtime');
-const destDir = path.join(__dirname, '..', 'src-tauri', 'vendored', 'nodejs');
+const pluginRuntimeDir = path.join(__dirname, '..');
+const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugin-runtime');
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
 
 const DST_BIN_MAP = {
@@ -12,9 +12,6 @@ const DST_BIN_MAP = {
   linux_x64: 'yaakplugins-x86_64-unknown-linux-gnu',
   win32: 'yaakplugins-x86_64-pc-windows-msvc.exe',
 };
-
-console.log('Building plugin runtime');
-execSync('npm run build', {cwd: pluginRuntimeDir, stdio: "ignore"});
 
 // Build the sea
 console.log('Building SEA blob');

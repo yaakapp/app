@@ -2,9 +2,9 @@
   "name": "@yaak/plugin-runtime",
   "scripts": {
     "dev": "nodemon",
-    "build": "run-p build:*",
-    "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js",
-    "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=dist/index.worker.js",
+    "build": "run-p build:* && node scripts/generate-sea.cjs",
+    "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=build/index.js",
+    "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=build/index.worker.js",
     "build:proto": "./node_modules/.bin/grpc_tools_node_protoc --ts_proto_out=./src/gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
   },
   "dependencies": {

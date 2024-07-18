@@ -5,7 +5,6 @@ use tauri::{Manager, Runtime};
 
 use crate::manager::PluginManager;
 
-mod archive;
 pub mod manager;
 mod nodejs;
 

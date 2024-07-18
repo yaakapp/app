@@ -1,13 +1,14 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { getAsset, isSea } from 'node:sea';
+import { getAsset } from 'node:sea';
 import { PluginHandle } from './PluginHandle';
 import { loadPlugins, PluginInfo } from './plugins';
 
 export class PluginManager {
   #handles: PluginHandle[] | null = null;
   static #instance: PluginManager | null = null;
+  static #workerPath = path.join(tmpdir(), `index.${Math.random()}.worker.js`);
 
   public static instance(): PluginManager {
     if (PluginManager.#instance == null) {
@@ -19,7 +20,7 @@ export class PluginManager {
 
   async plugins(): Promise<PluginHandle[]> {
     await this.#ensureWorkerForSea();
-    this.#handles = this.#handles ?? loadPlugins();
+    this.#handles = this.#handles ?? loadPlugins(PluginManager.#workerPath);
     return this.#handles;
   }
 
@@ -28,13 +29,10 @@ export class PluginManager {
    * @private
    */
   async #ensureWorkerForSea() {
-    if (!isSea()) return;
+    if (existsSync(PluginManager.#workerPath)) return;
 
-    const assetPath = path.resolve(tmpdir(), 'index.worker.js');
-    if (existsSync(assetPath)) return;
-
-    console.log('Writing worker file to', assetPath);
-    writeFileSync(assetPath, getAsset('worker', 'utf8'));
+    console.log('Writing worker file to', PluginManager.#workerPath);
+    writeFileSync(PluginManager.#workerPath, getAsset('worker', 'utf8'));
   }
 
   async #pluginsWithInfo(): Promise<{ plugin: PluginHandle; info: PluginInfo }[]> {

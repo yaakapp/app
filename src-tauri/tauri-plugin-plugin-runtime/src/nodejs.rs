@@ -1,5 +1,4 @@
-use std::path::{Path, PathBuf};
-use std::process::ExitStatus;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use log::{debug, info};
@@ -11,9 +10,6 @@ use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
-use tokio::process::Command;
-
-use crate::archive::extract_archive;
 
 #[derive(Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -21,31 +17,12 @@ struct PortFile {
     port: i32,
 }
 
-const NODE_VERSION: &str = "v22.3.0";
-const NODE_REL_BIN: &str = "bin/node";
-const NPM_REL_BIN: &str = "bin/npm";
-
-const PLUGIN_RUNTIME_DIR: &str = "/Users/gschier/Workspace/yaak/plugin-runtime";
-
-pub async fn npm_install(node_dir: &PathBuf) -> ExitStatus {
-    info!("Running npm install");
-    let npm_path = Path::new(node_dir).join(NPM_REL_BIN);
-    Command::new(npm_path)
-        .current_dir(PLUGIN_RUNTIME_DIR)
-        .args(["install"])
-        .spawn()
-        .unwrap()
-        .wait()
-        .await
-        .unwrap()
-}
-
 pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> String {
     let port_file_path = temp_dir.join(Alphanumeric.sample_string(&mut rand::thread_rng(), 10));
 
     let plugins_dir = app
         .path()
-        .resolve("plugins", BaseDirectory::Resource)
+        .resolve("workspace/plugins/plugins", BaseDirectory::Home)
         .expect("failed to resolve plugin directory resource");
 
     info!(
@@ -90,74 +67,6 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
     };
 
     let port_file: PortFile = serde_json::from_str(port_file_contents.as_str()).unwrap();
+    info!("Started plugin runtime on :{}", port_file.port);
     format!("http://localhost:{}", port_file.port)
-}
-
-pub async fn ensure_nodejs(node_dir: &PathBuf) -> Result<(), String> {
-    let version = check_nodejs_version(node_dir)
-        .await
-        .unwrap_or("__NONE__".to_string());
-    if version == NODE_VERSION {
-        info!(
-            "Using existing NodeJS version {version} at {}",
-            node_dir.to_string_lossy()
-        );
-        return Ok(());
-    }
-
-    let url = release_url();
-    info!("Downloading NodeJS ({version} != {NODE_VERSION}) from {url}");
-
-    let res = reqwest::get(url).await.unwrap();
-    let bytes = res.bytes().await.unwrap();
-    extract_archive(bytes.to_vec(), Path::new(node_dir)).map_err(|e| e.to_string())
-}
-
-#[allow(unused)]
-async fn check_nodejs_version(node_dir: &PathBuf) -> Option<String> {
-    let node_path = Path::new(node_dir).join(NODE_REL_BIN);
-    let stdout = match Command::new(node_path.clone())
-        .args(["--version"])
-        .output()
-        .await
-    {
-        Ok(v) => v.stdout,
-        Err(err) => {
-            info!("Failed to check NodeJS version {}", err);
-            return None;
-        }
-    };
-
-    let version = String::from_utf8(stdout).unwrap();
-    let version = version.trim().to_string(); // Trim any space
-
-    Some(version)
-}
-
-fn release_url() -> String {
-    let os = if cfg!(target_os = "windows") {
-        "win"
-    } else if cfg!(target_os = "macos") {
-        "darwin"
-    } else {
-        "linux"
-    };
-
-    let arch = if cfg!(target_arch = "x86_64") {
-        "x64"
-    } else if cfg!(target_arch = "x86") {
-        "x64" // Not sure if possible
-    } else {
-        "arm64" // Not sure if possible
-    };
-
-    let ext = if cfg!(target_os = "windows") {
-        "zip"
-    } else {
-        "tar.gz"
-    };
-
-    format!(
-        "https://nodejs.org/download/release/{NODE_VERSION}/node-{NODE_VERSION}-{os}-{arch}.{ext}"
-    )
 }

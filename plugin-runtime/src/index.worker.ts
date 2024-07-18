@@ -1,64 +1,68 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { isMainThread, parentPort, workerData } from 'node:worker_threads';
+import { parentPort, workerData } from 'node:worker_threads';
 import { ParentToWorkerEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
 
-if (!isMainThread) {
-  new Promise(async () => {
-    const { pluginDir } = workerData;
-    const pluginEntrypoint = path.join(pluginDir, 'src/index.ts');
-    const pluginPackageJson = path.join(pluginDir, 'package.json');
+new Promise(async () => {
+  const { pluginDir } = workerData;
+  const pathMod = path.join(pluginDir, 'build/index.js');
+  const pathPkg = path.join(pluginDir, 'package.json');
 
-    const packageJson = await import(pluginPackageJson, { assert: { type: 'json' } });
-    const mod = await import(pluginEntrypoint);
+  const pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
+  const mod = (await import(pathMod)).default ?? {};
 
-    const info: PluginInfo = {
-      capabilities: [],
-      name: packageJson['name'] ?? 'n/a',
-      dir: pluginDir,
-    };
+  const info: PluginInfo = {
+    capabilities: [],
+    name: pkg['name'] ?? 'n/a',
+    dir: pluginDir,
+  };
 
-    if (typeof mod['pluginHookImport'] === 'function') {
-      info.capabilities.push('import');
-    }
+  if (typeof mod['pluginHookImport'] === 'function') {
+    info.capabilities.push('import');
+  }
 
-    if (typeof mod['pluginHookExport'] === 'function') {
-      info.capabilities.push('export');
-    }
+  if (typeof mod['pluginHookExport'] === 'function') {
+    info.capabilities.push('export');
+  }
 
-    if (typeof mod['pluginHookResponseFilter'] === 'function') {
-      info.capabilities.push('filter');
-    }
+  if (typeof mod['pluginHookResponseFilter'] === 'function') {
+    info.capabilities.push('filter');
+  }
 
-    function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
-      parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
-    }
+  console.log('LOADED PLUGIN', { pluginDir }, info, mod.default);
 
-    function replyErr(originalMsg: ParentToWorkerEvent, error: unknown) {
-      parentPort!.postMessage({
-        error: String(error),
-        callbackId: originalMsg.callbackId,
-      });
-    }
+  function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
+    parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
+  }
 
-    parentPort!.on('message', (msg: ParentToWorkerEvent) => {
-      try {
-        switch (msg.name) {
-          case 'run-import':
-            reply(msg, mod['pluginHookImport']({}, msg.payload));
-            break;
-          case 'run-filter':
-            reply(msg, mod['pluginHookResponseFilter']({}, msg.payload));
-            break;
-          case 'info':
-            reply(msg, info);
-            break;
-          default:
-            console.log('Unknown message', msg);
-        }
-      } catch (err: unknown) {
-        replyErr(msg, err);
-      }
+  function replyErr(originalMsg: ParentToWorkerEvent, error: unknown) {
+    parentPort!.postMessage({
+      error: String(error),
+      callbackId: originalMsg.callbackId,
     });
-  }).catch((err) => console.log('failed to boot plugin', err));
-}
+  }
+
+  parentPort!.on('message', (msg: ParentToWorkerEvent) => {
+    try {
+      switch (msg.name) {
+        case 'run-import':
+          reply(msg, mod['pluginHookImport']({}, msg.payload));
+          break;
+        case 'run-filter':
+          console.log('CALLING FILTER');
+          const response = mod['pluginHookResponseFilter']({}, msg.payload);
+          console.log('CALLED FILTER', response);
+          reply(msg, response);
+          break;
+        case 'info':
+          reply(msg, info);
+          break;
+        default:
+          console.log('Unknown message', msg);
+      }
+    } catch (err: unknown) {
+      replyErr(msg, err);
+    }
+  });
+}).catch((err) => console.log('failed to boot plugin', err));

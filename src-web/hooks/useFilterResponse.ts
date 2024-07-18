@@ -9,7 +9,7 @@ export function useFilterResponse({
   filter: string;
 }) {
   return useQuery<string | null, string>({
-    queryKey: [responseId, filter],
+    queryKey: ['filter_response', responseId, filter],
     queryFn: async () => {
       if (filter === '') {
         return null;
