@@ -3,6 +3,7 @@ const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
 const fs = require("node:fs");
 const rimraf = require('rimraf');
+const {mkdtempSync} = require("fs");
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -34,7 +35,7 @@ const SRC_BIN_MAP = {
 (async function () {
   const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
   const url = URL_MAP[key];
-  const tmpDir = path.join(__dirname, '.tmp', `${Math.random()}`);
+  const tmpDir = mkdtempSync('yaak_protoc');
   const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
   rimraf.sync(dstDir);
 
