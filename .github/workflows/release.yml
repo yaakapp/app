@@ -4,7 +4,7 @@ on:
     tags: [ v* ]
 
 env:
-  YAAK_PLUGINS_DIR: ./checkout/plugins
+  YAAK_PLUGINS_DIR: checkout/plugins
 
 jobs:
   build-artifacts:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: yaakapp/plugins
-          path: $YAAK_PLUGINS_DIR
+          path: ${{ env.YAAK_PLUGINS_DIR }}
 
       - name: setup node
         uses: actions/setup-node@v4
