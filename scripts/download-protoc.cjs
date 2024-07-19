@@ -58,5 +58,5 @@ const SRC_BIN_MAP = {
   const includeDst = path.join(dstDir, 'include');
   fs.cpSync(includeSrc, includeDst, {recursive: true});
 
-  console.log("Downloaded protoc to", dstDir);
+  console.log("Downloaded protoc to", binDst);
 })().catch(err => console.log('Script failed:', err));
