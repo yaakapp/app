@@ -33,7 +33,7 @@ const SRC_BIN_MAP = {
 };
 
 (async function () {
-  const key = `${process.platform}_${process.arch}`;
+  const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
   const url = URL_MAP[key];
   const tmpDir = path.join(os.tmpdir(), `${Math.random()}`);
   const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
