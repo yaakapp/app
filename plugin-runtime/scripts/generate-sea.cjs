@@ -60,7 +60,8 @@ try {
   process.exit(1);
 }
 
-const dstPath = path.join(destDir, DST_BIN_MAP[`${process.platform}_${process.arch}`]);
+const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
+const dstPath = path.join(destDir, DST_BIN_MAP[key]);
 cpSync(tmpNodePath, dstPath);
 
 console.log(`Copied sea to ${dstPath}`)
