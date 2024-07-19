@@ -40,14 +40,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
-      - name: Install Yaak CLI
-        run: go install github.com/yaakapp/yaakcli@latest
-
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:

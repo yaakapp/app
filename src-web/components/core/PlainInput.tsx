@@ -59,9 +59,10 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
 
   const isValid = useMemo(() => {
     if (require && !validateRequire(currentValue)) return false;
-    if (validate && !validate(currentValue)) return false;
+    if (typeof validate === 'boolean') return validate;
+    if (typeof validate === 'function' && !validate(currentValue)) return false;
     return true;
-  }, [currentValue, validate, require]);
+  }, [require, currentValue, validate]);
 
   const handleChange = useCallback(
     (value: string) => {
