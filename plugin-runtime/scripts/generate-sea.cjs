@@ -1,6 +1,6 @@
 const path = require('node:path');
 const {execSync} = require('node:child_process');
-const {cpSync, mkdirSync, chmodSync, unlinkSync} = require('node:fs');
+const {cpSync, mkdirSync, chmodSync, unlinkSync, rmSync} = require('node:fs');
 const pluginRuntimeDir = path.join(__dirname, '..');
 const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugin-runtime');
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
@@ -62,5 +62,7 @@ try {
 const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
 const dstPath = path.join(destDir, DST_BIN_MAP[key]);
 cpSync(tmpNodePath, dstPath);
+
+rmSync(tmp, {recursive: true, force: true});
 
 console.log(`Copied sea to ${dstPath}`)
