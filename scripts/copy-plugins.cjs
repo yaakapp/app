@@ -9,6 +9,8 @@ if (!PLUGINS_DIR) {
 }
 
 console.log('Installing dependencies', PLUGINS_DIR);
+const out = execSync('which npm', {cwd: PLUGINS_DIR, env: process.env}).toString('utf-8');
+console.log("WHICH NPM?", out);
 execSync('npm ci', {cwd: PLUGINS_DIR, env: process.env});
 console.log('Building plugins', PLUGINS_DIR);
 execSync('npm run build', {cwd: PLUGINS_DIR, env: process.env});
