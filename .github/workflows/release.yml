@@ -40,6 +40,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install Yaak CLI
+        run: bash <(curl -fsSL https://raw.githubusercontent.com/yaakapp/cli/main/install.sh)
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
