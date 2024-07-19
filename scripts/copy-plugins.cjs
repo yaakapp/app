@@ -8,9 +8,10 @@ if (!PLUGINS_DIR) {
   process.exit(1);
 }
 
-console.log('Building plugin repository at', PLUGINS_DIR);
-execSync('npm ci');
-execSync('npm run build');
+console.log('Installing dependencies', PLUGINS_DIR);
+execSync('npm ci', {cwd: PLUGINS_DIR});
+console.log('Building plugins', PLUGINS_DIR);
+execSync('npm run build', {cwd: PLUGINS_DIR});
 
 const pluginsRoot = path.join(PLUGINS_DIR, 'plugins');
 for (const name of readdirSync(pluginsRoot)) {
