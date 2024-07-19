@@ -30,3 +30,4 @@ dist-ssr
 .cargo
 
 .tmp
+tmp
