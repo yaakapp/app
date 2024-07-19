@@ -9,9 +9,10 @@ if (!PLUGINS_DIR) {
 }
 
 console.log('Installing dependencies', PLUGINS_DIR);
+execSync('which npm', {cwd: PLUGINS_DIR});
 execSync('npm ci', {cwd: PLUGINS_DIR});
 console.log('Building plugins', PLUGINS_DIR);
-execSync('npm run build', {cwd: PLUGINS_DIR});
+execSync('npm run build', {cwd: PLUGINS_DIR, shell: ''});
 
 const pluginsRoot = path.join(PLUGINS_DIR, 'plugins');
 for (const name of readdirSync(pluginsRoot)) {
