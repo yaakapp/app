@@ -3,6 +3,7 @@ const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
 const fs = require("node:fs");
 const rimraf = require('rimraf');
+const {rmSync} = require("node:fs");
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -56,6 +57,8 @@ const SRC_BIN_MAP = {
   const includeSrc = path.join(tmpDir, 'include');
   const includeDst = path.join(dstDir, 'include');
   fs.cpSync(includeSrc, includeDst, {recursive: true});
+
+  rmSync(tmpDir, {recursive: true, force: true});
 
   console.log("Downloaded protoc to", binDst);
 })().catch(err => console.log('Script failed:', err));
