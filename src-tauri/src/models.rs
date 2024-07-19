@@ -1588,6 +1588,11 @@ pub struct WorkspaceExportResources {
     pub grpc_requests: Vec<GrpcRequest>,
 }
 
+#[derive(Default, Debug, Deserialize, Serialize)]
+pub struct ImportResult {
+    pub resources: WorkspaceExportResources,
+}
+
 pub async fn get_workspace_export_resources(
     window: &WebviewWindow,
     workspace_ids: Vec<&str>,

@@ -1,0 +1,8 @@
+{
+  "main": "build/index.js",
+  "disableExperimentalSEAWarning": true,
+  "output": "yaak-plugins.blob",
+  "assets": {
+    "worker": "build/index.worker.js"
+  }
+}

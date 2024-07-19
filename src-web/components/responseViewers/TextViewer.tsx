@@ -28,7 +28,7 @@ const useFilterText = createGlobalState<Record<string, string | null>>({});
 export function TextViewer({ response, pretty, className }: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
   const filterText = filterTextMap[response.id] ?? null;
-  const debouncedFilterText = useDebouncedValue(filterText, 300);
+  const debouncedFilterText = useDebouncedValue(filterText, 200);
   const setFilterText = useCallback(
     (v: string | null) => {
       setFilterTextMap((m) => ({ ...m, [response.id]: v }));
@@ -67,6 +67,7 @@ export function TextViewer({ response, pretty, className }: Props) {
         <div key="input" className="w-full !opacity-100">
           <Input
             key={response.id}
+            validate={!filteredResponse.error}
             hideLabel
             autoFocus
             containerClassName="bg-background"
@@ -97,7 +98,16 @@ export function TextViewer({ response, pretty, className }: Props) {
     );
 
     return result;
-  }, [canFilter, filterText, isJson, isSearching, response.id, setFilterText, toggleSearch]);
+  }, [
+    canFilter,
+    filterText,
+    filteredResponse.error,
+    isJson,
+    isSearching,
+    response.id,
+    setFilterText,
+    toggleSearch,
+  ]);
 
   if (rawBody.isLoading) {
     return null;
@@ -118,7 +128,16 @@ export function TextViewer({ response, pretty, className }: Props) {
       ? tryFormatXml(rawBody.data)
       : rawBody.data;
 
-  const body = isSearching && filterText?.length > 0 ? filteredResponse : formattedBody;
+  let body;
+  if (isSearching && filterText?.length > 0) {
+    if (filteredResponse.error) {
+      body = '';
+    } else {
+      body = filteredResponse.data ?? '';
+    }
+  } else {
+    body = formattedBody;
+  }
 
   return (
     <Editor

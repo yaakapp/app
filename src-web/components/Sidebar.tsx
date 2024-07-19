@@ -784,7 +784,7 @@ function SidebarItem({
                 key: 'copyCurl',
                 label: 'Copy as Curl',
                 leftSlot: <Icon icon="copy" />,
-                onSelect: copyAsCurl,
+                onSelect: copyAsCurl.mutate,
               },
               { type: 'separator' },
             ]
