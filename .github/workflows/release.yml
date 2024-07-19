@@ -18,10 +18,10 @@ jobs:
         include:
           - platform: 'macos-latest' # for Arm-based macs (M1 and above).
             args: '--target aarch64-apple-darwin'
-            node_arch: 'x64'
+            node_arch: 'arm64'
           - platform: 'macos-latest' # for Intel-based macs.
             args: '--target x86_64-apple-darwin'
-            node_arch: 'arm64'
+            node_arch: 'x64'
           - platform: 'ubuntu-22.04' # for Tauri v1, you could replace this with ubuntu-20.04.
             args: ''
             node_arch: 'x64'
