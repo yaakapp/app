@@ -3,6 +3,9 @@ on:
   push:
     tags: [ v* ]
 
+env:
+  YAAK_PLUGINS_DIR: ./checkout/plugins
+
 jobs:
   build-artifacts:
     permissions:
@@ -27,6 +30,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Checkout plugins repo
+        uses: actions/checkout@v4
+        with:
+          repository: yaakapp/plugins
+          path: $YAAK_PLUGINS_DIR
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -50,6 +58,8 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - name: Install dependencies
         run: npm ci
+      - name: Build plugins
+        run: node scrips/copy-plugins.cjs
       - name: Run lint
         run: npm run lint
       - name: Run tests

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "identifier": "app.yaak.desktop",
   "build": {
-    "beforeBuildCommand": "npm run build:js",
+    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev:js",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
@@ -54,7 +54,8 @@
     "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
     "resources": {
       "migrations": "migrations",
-      "vendored/protoc/include": "protoc-include"
+      "vendored/protoc/include": "protoc-include",
+      "vendored/plugins": "plugins"
     },
     "shortDescription": "Play with APIs, intuitively",
     "targets": [

@@ -22,7 +22,7 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
 
     let plugins_dir = app
         .path()
-        .resolve("workspace/plugins/plugins", BaseDirectory::Home)
+        .resolve("plugins", BaseDirectory::Resource)
         .expect("failed to resolve plugin directory resource");
 
     info!(
