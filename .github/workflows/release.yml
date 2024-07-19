@@ -67,9 +67,6 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
-      - name: Install plugins deps
-        run: npm --prefix $YAAK_PLUGINS_DIR ci
-
       - name: Build plugins
         working-directory: $YAAK_PLUGINS
         run: |
