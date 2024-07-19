@@ -2,7 +2,6 @@ const decompress = require('decompress');
 const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
 const fs = require("node:fs");
-const os = require("node:os");
 const rimraf = require('rimraf');
 
 // `${process.platform}_${process.arch}`
@@ -35,7 +34,7 @@ const SRC_BIN_MAP = {
 (async function () {
   const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
   const url = URL_MAP[key];
-  const tmpDir = path.join(os.tmpdir(), `${Math.random()}`);
+  const tmpDir = path.join(__dirname, '.tmp', `${Math.random()}`);
   const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
   rimraf.sync(dstDir);
 

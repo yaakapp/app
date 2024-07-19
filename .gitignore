@@ -28,3 +28,5 @@ dist-ssr
 *.sqlite-*
 
 .cargo
+
+.tmp
