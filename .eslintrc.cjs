@@ -12,7 +12,7 @@ module.exports = {
   parserOptions: {
     project: ["./tsconfig.json"]
   },
-  ignorePatterns: ["scripts/**/*", "plugin-runtime/**/*", "src-tauri/**/*", "plugins/**/*"],
+  ignorePatterns: ["scripts/**/*", "plugin-runtime/**/*", "src-tauri/**/*", "plugins/**/*", "checkout/**/*"],
   settings: {
     react: {
       version: "detect"
