@@ -35,15 +35,16 @@ jobs:
           repository: yaakapp/plugins
           path: ${{ env.YAAK_PLUGINS_DIR }}
 
-      - name: setup node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+
       - name: Install Yaak CLI
-        run: bash <(curl -fsSL https://raw.githubusercontent.com/yaakapp/cli/main/install.sh)
-        env:
-          VERSION: latest
+        run: go install github.com/yaakapp/cli
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
