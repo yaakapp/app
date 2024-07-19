@@ -81,6 +81,11 @@ jobs:
         run: |
           npm ci
 
+      - name: Install Protoc for plugin-runtime
+        uses: arduino/setup-protoc@v3
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install yaak CLI
         run: go install github.com/yaakapp/yaakcli@latest
 
