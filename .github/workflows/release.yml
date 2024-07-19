@@ -10,6 +10,7 @@ jobs:
   build-artifacts:
     permissions:
       contents: write
+
     name: Build
     strategy:
       fail-fast: false
@@ -59,7 +60,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build plugins
-        run: node scrips/copy-plugins.cjs
+        run: node scripts/copy-plugins.cjs
       - name: Run lint
         run: npm run lint
       - name: Run tests
