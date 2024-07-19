@@ -40,7 +40,7 @@ export type InputProps = Omit<
     size?: 'xs' | 'sm' | 'md' | 'auto';
     className?: string;
     placeholder: string;
-    validate?: (v: string) => boolean;
+    validate?: boolean | ((v: string) => boolean);
     require?: boolean;
     wrapLines?: boolean;
   };
@@ -94,9 +94,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
 
   const isValid = useMemo(() => {
     if (require && !validateRequire(currentValue)) return false;
-    if (validate && !validate(currentValue)) return false;
+    if (typeof validate === 'boolean') return validate;
+    if (typeof validate === 'function' && !validate(currentValue)) return false;
     return true;
-  }, [currentValue, validate, require]);
+  }, [require, currentValue, validate]);
 
   const handleChange = useCallback(
     (value: string) => {

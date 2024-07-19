@@ -28,4 +28,3 @@ dist-ssr
 *.sqlite-*
 
 .cargo
-plugins/**/build

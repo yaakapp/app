@@ -1,4 +1,4 @@
-workspace = { members = ["grpc", "templates"] }
+workspace = { members = ["grpc", "templates", "tauri-plugin-plugin-runtime"] }
 
 [package]
 name = "yaak-app"
@@ -26,13 +26,11 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 [dependencies]
 grpc = { path = "./grpc" }
 templates = { path = "./templates" }
+plugin_runtime = { path = "tauri-plugin-plugin-runtime" }
 anyhow = "1.0.86"
 base64 = "0.22.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 datetime = "0.5.2"
-deno_ast = { version = "0.39.0", features = ["transpiling"] }
-deno_console = "0.155.0"
-deno_core = { version = "0.284.0" }
 hex_color = "3.0.0"
 http = "1"
 log = "0.4.21"
