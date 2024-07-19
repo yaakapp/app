@@ -1,6 +1,5 @@
 const path = require('node:path');
 const {execSync} = require('node:child_process');
-const {tmpdir} = require('node:os');
 const {cpSync, mkdirSync, chmodSync, unlinkSync} = require('node:fs');
 const pluginRuntimeDir = path.join(__dirname, '..');
 const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugin-runtime');
@@ -17,8 +16,8 @@ const DST_BIN_MAP = {
 console.log('Building SEA blob');
 execSync('node --experimental-sea-config sea-config.json', {cwd: pluginRuntimeDir});
 
-const tmp = path.join(tmpdir(), new Date().toISOString());
-mkdirSync(tmp);
+const tmp = path.join(__dirname, '.tmp', new Date().toISOString());
+mkdirSync(tmp, {recursive: true});
 
 let tmpNodePath = process.platform === 'win32' ? path.join(tmp, 'node.exe') : path.join(tmp, 'node');
 
