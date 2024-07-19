@@ -68,12 +68,12 @@ jobs:
         run: npm ci
 
       - name: Build plugins
-        working-directory: $YAAK_PLUGINS
+        working-directory: ${{ env.YAAK_PLUGINS_DIR }}
         run: |
           npm ci
           npm run build
 
-      - name: Copy plugins to Tauri app
+      - name: Copy plugins
         run: node scripts/copy-plugins.cjs
 
       - name: Run lint
