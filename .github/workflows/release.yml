@@ -73,6 +73,9 @@ jobs:
         run: |
           npm ci
 
+      - name: Install Protoc for plugin-runtime
+        uses: arduino/setup-protoc@v3
+
       - name: Build plugins
         working-directory: ${{ env.YAAK_PLUGINS_DIR }}
         run: |
