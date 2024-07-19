@@ -46,7 +46,7 @@ jobs:
           go-version: '1.22'
 
       - name: Install Yaak CLI
-        run: go install github.com/yaakapp/cli
+        run: go install github.com/yaakapp/cli@latest
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
