@@ -6,7 +6,7 @@ const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugi
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
 
 // https://federicoterzi.com/blog/automatic-codesigning-on-windows-using-github-actions/
-const WIN_SIGNTOOL = "& 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe'";
+const WIN_SIGNTOOL = "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe";
 
 const DST_BIN_MAP = {
   darwin_arm64: 'yaakplugins-aarch64-apple-darwin',
@@ -33,7 +33,7 @@ chmodSync(tmpNodePath, 0o755);
 console.log('Removing Node.js code signature');
 try {
   if (process.platform === 'darwin') execSync(`codesign --remove-signature ${tmpNodePath}`);
-  else if (process.platform === 'win32') execSync(`${WIN_SIGNTOOL} remove /s ${tmpNodePath}`);
+  else if (process.platform === 'win32') execSync(`"${WIN_SIGNTOOL}" remove /s ${tmpNodePath}`);
   /* Nothing for Linux */
 } catch (err) {
   console.log('Failed remove signature', err);
@@ -55,7 +55,7 @@ unlinkSync(blobPath);
 console.log('Re-signing Node.js');
 try {
   if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
-  else if (process.platform === 'win32') execSync(`${WIN_SIGNTOOL} sign /fd SHA256 ${tmpNodePath}`);
+  else if (process.platform === 'win32') execSync(`"${WIN_SIGNTOOL}" sign /fd SHA256 ${tmpNodePath}`);
   /* Nothing for Linux */
 } catch (err) {
   console.log('Failed sign', err);
