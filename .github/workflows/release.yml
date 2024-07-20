@@ -89,15 +89,6 @@ jobs:
       - name: Install yaak CLI
         run: go install github.com/yaakapp/yaakcli@latest
 
-      - name: Build plugins
-        working-directory: ${{ env.YAAK_PLUGINS_DIR }}
-        run: |
-          npm ci
-          npm run build
-
-      - name: Copy plugins
-        run: node scripts/copy-plugins.cjs
-
       - name: Run lint
         run: npm run lint
 
@@ -111,6 +102,7 @@ jobs:
 
       - uses: tauri-apps/tauri-action@v0
         env:
+          YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
           NODE_ARCH: ${{ matrix.node_arch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
