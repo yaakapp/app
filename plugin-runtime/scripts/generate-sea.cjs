@@ -1,6 +1,6 @@
 const path = require('node:path');
 const {execSync} = require('node:child_process');
-const {cpSync, mkdirSync, chmodSync, unlinkSync, rmSync} = require('node:fs');
+const {cpSync, mkdirSync, chmodSync, unlinkSync, rmSync, readdirSync, statSync} = require('node:fs');
 const pluginRuntimeDir = path.join(__dirname, '..');
 const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugin-runtime');
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
@@ -70,7 +70,7 @@ console.log(`Copied sea to ${dstPath}`)
 
 async function getSigntoolLocation() {
   const windowsKitsFolder = 'C:/Program Files (x86)/Windows Kits/10/bin/';
-  const folders = await fs.readdir(windowsKitsFolder);
+  const folders = readdirSync(windowsKitsFolder);
   let fileName = '';
   let maxVersion = 0;
   for (const folder of folders) {
@@ -81,7 +81,7 @@ async function getSigntoolLocation() {
     if (folderVersion > maxVersion) {
       const signtoolFilename = `${windowsKitsFolder}${folder}/x64/signtool.exe`;
       try {
-        const stat = await fs.stat(signtoolFilename);
+        const stat = statSync(signtoolFilename);
         if (stat.isFile()) {
           fileName = signtoolFilename;
           maxVersion = folderVersion;
