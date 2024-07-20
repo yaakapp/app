@@ -68,7 +68,8 @@ rmSync(tmp, {recursive: true, force: true});
 console.log(`Copied sea to ${dstPath}`)
 
 
-async function getSigntoolLocation() {
+// https://github.com/skymatic/code-sign-action/blob/a2a8833d4e9202556539b564a2a4af5b6da3e8b2/index.ts
+function getSigntoolLocation() {
   const windowsKitsFolder = 'C:/Program Files (x86)/Windows Kits/10/bin/';
   const folders = readdirSync(windowsKitsFolder);
   let fileName = '';
