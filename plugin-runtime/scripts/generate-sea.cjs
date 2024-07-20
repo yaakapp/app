@@ -9,7 +9,7 @@ const DST_BIN_MAP = {
   darwin_arm64: 'yaakplugins-aarch64-apple-darwin',
   darwin_x64: 'yaakplugins-x86_64-apple-darwin',
   linux_x64: 'yaakplugins-x86_64-unknown-linux-gnu',
-  win32: 'yaakplugins-x86_64-pc-windows-msvc.exe',
+  win32_x64: 'yaakplugins-x86_64-pc-windows-msvc.exe',
 };
 
 // Build the sea
