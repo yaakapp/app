@@ -6,7 +6,7 @@ const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugi
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
 
 // https://federicoterzi.com/blog/automatic-codesigning-on-windows-using-github-actions/
-const WIN_SIGNTOOL = "'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe'";
+const WIN_SIGNTOOL = "& 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe'";
 
 const DST_BIN_MAP = {
   darwin_arm64: 'yaakplugins-aarch64-apple-darwin',
