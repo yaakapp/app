@@ -49,15 +49,16 @@ try {
 
 unlinkSync(blobPath);
 
-console.log('Re-signing Node.js');
-try {
-  if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
-  else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" sign /fd SHA256 ${tmpNodePath}`);
-  /* Nothing for Linux */
-} catch (err) {
-  console.log('Failed sign', err);
-  process.exit(1);
-}
+// NOTE: Don't need to resign, as Tauri will sign the sidecar binaries during release
+// console.log('Re-signing Node.js');
+// try {
+//   // if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
+//   // else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" sign /fd SHA256 ${tmpNodePath}`);
+//   /* Nothing for Linux */
+// } catch (err) {
+//   console.log('Failed sign', err);
+//   process.exit(1);
+// }
 
 const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
 const dstPath = path.join(destDir, DST_BIN_MAP[key]);
