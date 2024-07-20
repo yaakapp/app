@@ -5,9 +5,6 @@ const pluginRuntimeDir = path.join(__dirname, '..');
 const destDir = path.join(__dirname, '..', '..', 'src-tauri', 'vendored', 'plugin-runtime');
 const blobPath = path.join(pluginRuntimeDir, 'yaak-plugins.blob');
 
-// https://federicoterzi.com/blog/automatic-codesigning-on-windows-using-github-actions/
-const WIN_SIGNTOOL = "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe";
-
 const DST_BIN_MAP = {
   darwin_arm64: 'yaakplugins-aarch64-apple-darwin',
   darwin_x64: 'yaakplugins-x86_64-apple-darwin',
@@ -33,7 +30,7 @@ chmodSync(tmpNodePath, 0o755);
 console.log('Removing Node.js code signature');
 try {
   if (process.platform === 'darwin') execSync(`codesign --remove-signature ${tmpNodePath}`);
-  else if (process.platform === 'win32') execSync(`"${WIN_SIGNTOOL}" remove /s ${tmpNodePath}`);
+  else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" remove /s ${tmpNodePath}`);
   /* Nothing for Linux */
 } catch (err) {
   console.log('Failed remove signature', err);
@@ -55,7 +52,7 @@ unlinkSync(blobPath);
 console.log('Re-signing Node.js');
 try {
   if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
-  else if (process.platform === 'win32') execSync(`"${WIN_SIGNTOOL}" sign /fd SHA256 ${tmpNodePath}`);
+  else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" sign /fd SHA256 ${tmpNodePath}`);
   /* Nothing for Linux */
 } catch (err) {
   console.log('Failed sign', err);
@@ -69,3 +66,36 @@ cpSync(tmpNodePath, dstPath);
 rmSync(tmp, {recursive: true, force: true});
 
 console.log(`Copied sea to ${dstPath}`)
+
+
+async function getSigntoolLocation() {
+  const windowsKitsFolder = 'C:/Program Files (x86)/Windows Kits/10/bin/';
+  const folders = await fs.readdir(windowsKitsFolder);
+  let fileName = '';
+  let maxVersion = 0;
+  for (const folder of folders) {
+    if (!folder.endsWith('.0')) {
+      continue;
+    }
+    const folderVersion = parseInt(folder.replace(/\./g,''));
+    if (folderVersion > maxVersion) {
+      const signtoolFilename = `${windowsKitsFolder}${folder}/x64/signtool.exe`;
+      try {
+        const stat = await fs.stat(signtoolFilename);
+        if (stat.isFile()) {
+          fileName = signtoolFilename;
+          maxVersion = folderVersion;
+        }
+      }
+      catch {
+        console.warn('Skipping %s due to error.', signtoolFilename);
+      }
+    }
+  }
+  if(fileName === '') {
+    throw new Error('Unable to find signtool.exe in ' + windowsKitsFolder);
+  }
+
+  console.log(`Signtool location is ${fileName}.`);
+  return fileName;
+}
