@@ -31,7 +31,7 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     const plugins = await this.#manager.pluginsWith('import');
     for (const p of plugins) {
       const data = await p.runImport(request.data);
-      if (data != 'null') {
+      if (data != null && data !== 'null') {
         const info = { plugin: (await p.getInfo()).name };
         return { info, data };
       }

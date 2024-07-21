@@ -49,16 +49,16 @@ try {
 
 unlinkSync(blobPath);
 
-// NOTE: Don't need to resign, as Tauri will sign the sidecar binaries during release
-// console.log('Re-signing Node.js');
-// try {
-//   // if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
-//   // else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" sign /fd SHA256 ${tmpNodePath}`);
-//   /* Nothing for Linux */
-// } catch (err) {
-//   console.log('Failed sign', err);
-//   process.exit(1);
-// }
+console.log('Re-signing Node.js');
+try {
+  if (process.platform === 'darwin') execSync(`codesign --sign - ${tmpNodePath}`);
+  // NOTE: Don't need to resign, as Tauri will sign the sidecar binaries during release
+  // else if (process.platform === 'win32') execSync(`"${getSigntoolLocation()}" sign /fd SHA256 ${tmpNodePath}`);
+  /* Nothing for Linux */
+} catch (err) {
+  console.log('Failed sign', err);
+  process.exit(1);
+}
 
 const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
 const dstPath = path.join(destDir, DST_BIN_MAP[key]);
@@ -79,7 +79,7 @@ function getSigntoolLocation() {
     if (!folder.endsWith('.0')) {
       continue;
     }
-    const folderVersion = parseInt(folder.replace(/\./g,''));
+    const folderVersion = parseInt(folder.replace(/\./g, ''));
     if (folderVersion > maxVersion) {
       const signtoolFilename = `${windowsKitsFolder}${folder}/x64/signtool.exe`;
       try {
@@ -88,13 +88,12 @@ function getSigntoolLocation() {
           fileName = signtoolFilename;
           maxVersion = folderVersion;
         }
-      }
-      catch {
+      } catch {
         console.warn('Skipping %s due to error.', signtoolFilename);
       }
     }
   }
-  if(fileName === '') {
+  if (fileName === '') {
     throw new Error('Unable to find signtool.exe in ' + windowsKitsFolder);
   }
 
