@@ -2513,69 +2513,6 @@
           ]
         },
         {
-          "description": "deep-link:default -> Allows reading the opened deep link via the get_current command",
-          "type": "string",
-          "enum": [
-            "deep-link:default"
-          ]
-        },
-        {
-          "description": "deep-link:allow-get-current -> Enables the get_current command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:allow-get-current"
-          ]
-        },
-        {
-          "description": "deep-link:allow-is-registered -> Enables the is_registered command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:allow-is-registered"
-          ]
-        },
-        {
-          "description": "deep-link:allow-register -> Enables the register command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:allow-register"
-          ]
-        },
-        {
-          "description": "deep-link:allow-unregister -> Enables the unregister command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:allow-unregister"
-          ]
-        },
-        {
-          "description": "deep-link:deny-get-current -> Denies the get_current command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:deny-get-current"
-          ]
-        },
-        {
-          "description": "deep-link:deny-is-registered -> Denies the is_registered command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:deny-is-registered"
-          ]
-        },
-        {
-          "description": "deep-link:deny-register -> Denies the register command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:deny-register"
-          ]
-        },
-        {
-          "description": "deep-link:deny-unregister -> Denies the unregister command without any pre-configured scope.",
-          "type": "string",
-          "enum": [
-            "deep-link:deny-unregister"
-          ]
-        },
-        {
           "type": "string",
           "enum": [
             "dialog:default"

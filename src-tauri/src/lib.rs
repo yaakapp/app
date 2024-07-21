@@ -897,7 +897,10 @@ async fn cmd_request_to_curl(
     let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
 
     let manager: State<PluginManager> = app.state();
-    let import_response = manager.inner().run_export_curl(request_json.as_str()).await?;
+    let import_response = manager
+        .inner()
+        .run_export_curl(request_json.as_str())
+        .await?;
     Ok(import_response.data)
 }
 
@@ -1569,6 +1572,7 @@ async fn cmd_check_for_updates(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::default()
@@ -1611,11 +1615,6 @@ pub fn run() {
     #[cfg(target_os = "macos")]
     {
         builder = builder.plugin(tauri_plugin_mac_window::init());
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        builder = builder; // Don't complain about not being mut
     }
 
     builder
