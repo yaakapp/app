@@ -24,11 +24,15 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         .path()
         .resolve("plugins", BaseDirectory::Resource)
         .expect("failed to resolve plugin directory resource");
+    let plugins_dir = plugins_dir.to_string_lossy().to_string();
+
+    // Remove UNC prefix for Windows paths
+    let plugins_dir = plugins_dir.replace("\\\\?\\", "");
 
     info!(
         "Starting plugin runtime port_file={} plugins_dir={}",
         port_file_path.to_string_lossy(),
-        plugins_dir.to_string_lossy(),
+        plugins_dir,
     );
 
     let (mut rx, _child) = app

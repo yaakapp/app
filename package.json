@@ -21,7 +21,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "prepare": "husky install",
-    "replace-version": "node ./scripts/replace-version.cjs"
+    "replace-version": "node scripts/replace-version.cjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.1",

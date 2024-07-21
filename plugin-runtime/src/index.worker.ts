@@ -10,7 +10,7 @@ new Promise(async () => {
   const pathPkg = path.join(pluginDir, 'package.json');
 
   const pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
-  const mod = (await import(pathMod)).default ?? {};
+  const mod = (await import(`file://${pathMod}`)).default ?? {};
 
   const info: PluginInfo = {
     capabilities: [],
