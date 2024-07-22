@@ -131,7 +131,7 @@ export function GrpcProtoSelection({ requestId }: Props) {
         {reflectError && (
           <Banner color="warning">
             <h1 className="font-bold">
-              Reflection failed on URL <InlineCode>{request.url}</InlineCode>
+              Reflection failed on URL <InlineCode>{request.url || 'n/a'}</InlineCode>
             </h1>
             {reflectError}
           </Banner>

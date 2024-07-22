@@ -79,14 +79,14 @@ export class PluginHandle {
   }
 
   async #handleError(err: Error) {
-    console.error('PLUGIN ERROR', this.pluginDir, err);
+    console.error('Plugin errored', this.pluginDir, err);
   }
 
   async #handleExit(code: number) {
     if (code === 0) {
-      console.log('PLUGIN EXITED SUCCESSFULLY');
+      console.log('Plugin exited successfully', this.pluginDir);
     } else {
-      console.log('PLUGIN EXITED CODE', code);
+      console.log('Plugin exited with error', code, this.pluginDir);
     }
   }
 }
