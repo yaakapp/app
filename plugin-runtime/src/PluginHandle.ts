@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PluginInfo } from './plugins';
 
@@ -24,10 +25,11 @@ export class PluginHandle {
   readonly pluginDir: string;
   readonly #worker: Worker;
 
-  constructor({ pluginDir, workerJsPath }: { pluginDir: string; workerJsPath: string }) {
+  constructor(pluginDir: string) {
     this.pluginDir = pluginDir;
 
-    this.#worker = new Worker(workerJsPath, {
+    const workerPath = path.join(__dirname, 'index.worker.cjs');
+    this.#worker = new Worker(workerPath, {
       workerData: {
         pluginDir: this.pluginDir,
       },
