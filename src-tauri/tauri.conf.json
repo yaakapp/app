@@ -42,7 +42,7 @@
     "category": "DeveloperTool",
     "externalBin": [
       "vendored/protoc/protoc",
-      "vendored/plugin-runtime/yaakplugins"
+      "vendored/node/node"
     ],
     "icon": [
       "icons/release/32x32.png",
@@ -55,7 +55,8 @@
     "resources": {
       "migrations": "migrations",
       "vendored/protoc/include": "protoc-include",
-      "vendored/plugins": "plugins"
+      "vendored/plugins": "plugins",
+      "../plugin-runtime/build": "plugin-runtime"
     },
     "shortDescription": "Play with APIs, intuitively",
     "targets": [

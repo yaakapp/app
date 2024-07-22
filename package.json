@@ -17,6 +17,7 @@
     "build:js": "vite build",
     "build:vendor-protoc": "node scripts/vendor-protoc.cjs",
     "build:vendor-plugins": "node scripts/vendor-plugins.cjs",
+    "build:vendor-node": "node scripts/vendor-node.cjs",
     "build:plugin-runtime": "npm run --prefix plugin-runtime build",
     "test": "vitest",
     "coverage": "vitest run --coverage",

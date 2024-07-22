@@ -23,10 +23,16 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
     let plugins_dir = app
         .path()
         .resolve("plugins", BaseDirectory::Resource)
-        .expect("failed to resolve plugin directory resource");
-    let plugins_dir = plugins_dir.to_string_lossy().to_string();
+        .expect("failed to resolve plugin directory resource")
+        .to_string_lossy()
+        .to_string();
 
-    // Remove UNC prefix for Windows paths
+    let plugin_runtime_dir = app
+        .path()
+        .resolve("plugin-runtime", BaseDirectory::Resource)
+        .expect("failed to resolve plugin runtime resource");
+
+    // HACK: Remove UNC prefix for Windows paths
     let plugins_dir = plugins_dir.replace("\\\\?\\", "");
 
     info!(
@@ -37,10 +43,11 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
 
     let (mut rx, _child) = app
         .shell()
-        .sidecar("yaakplugins")
+        .sidecar("node")
         .unwrap()
         .env("GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("PLUGINS_DIR", plugins_dir)
+        .args(&[plugin_runtime_dir.join("index.cjs")])
         .spawn()
         .unwrap();
 
