@@ -61,6 +61,7 @@
     "shortDescription": "Play with APIs, intuitively",
     "targets": [
       "deb",
+      "rpm",
       "appimage",
       "nsis",
       "app",

@@ -32,7 +32,7 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
   return (
     <VStack space={4} className="mb-4">
       <Select
-        label="Workspace"
+        label="New Workspace"
         name="workspace"
         value={selectedWorkspaceId}
         onChange={setSelectedWorkspaceId}
@@ -90,7 +90,7 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
           });
         }}
       >
-        Change Workspace
+        Move
       </Button>
     </VStack>
   );
