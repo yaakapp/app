@@ -833,8 +833,8 @@ function SidebarItem({
         },
         {
           key: 'moveWorkspace',
-          label: 'Change Workspace',
-          leftSlot: <Icon icon="house" />,
+          label: 'Move',
+          leftSlot: <Icon icon="arrowRightCircle" />,
           hidden: workspaces.length <= 1,
           onSelect: moveToWorkspace.mutate,
         },
