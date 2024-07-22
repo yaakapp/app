@@ -61,4 +61,6 @@ new Promise(async () => {
       replyErr(msg, err);
     }
   });
-}).catch((err) => console.log('failed to boot plugin', err));
+}).catch((err) => {
+  console.log('failed to boot plugin', err);
+});
