@@ -9,7 +9,7 @@ export interface PluginInfo {
 }
 
 export function loadPlugins(): PluginHandle[] {
-  const pluginsDir = process.env.PLUGINS_DIR;
+  const pluginsDir = process.env.YAAK_PLUGINS_DIR;
   if (!pluginsDir) throw new Error('PLUGINS_DIR is not set');
   console.log('Loading plugins from', pluginsDir);
 

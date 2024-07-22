@@ -45,8 +45,8 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         .shell()
         .sidecar("node")
         .unwrap()
-        .env("GRPC_PORT_FILE_PATH", port_file_path.clone())
-        .env("PLUGINS_DIR", plugins_dir)
+        .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
+        .env("YAAK_PLUGINS_DIR", plugins_dir)
         .args(&[plugin_runtime_dir.join("index.cjs")])
         .spawn()
         .unwrap();

@@ -76,12 +76,12 @@ async function* errorHandlingMiddleware<Request, Response>(
 server = server.use(errorHandlingMiddleware);
 server.add(PluginRuntimeDefinition, new PluginRuntimeService());
 
-// Start on random port if GRPC_PORT_FILE_PATH is set, or :4000
-const addr = process.env.GRPC_PORT_FILE_PATH ? 'localhost:0' : 'localhost:4000';
+// Start on random port if YAAK_GRPC_PORT_FILE_PATH is set, or :4000
+const addr = process.env.YAAK_GRPC_PORT_FILE_PATH ? 'localhost:0' : 'localhost:4000';
 server.listen(addr).then((port) => {
   console.log('gRPC server listening on', `http://localhost:${port}`);
-  if (process.env.GRPC_PORT_FILE_PATH) {
-    console.log('Wrote port file to', process.env.GRPC_PORT_FILE_PATH);
-    fs.writeFileSync(process.env.GRPC_PORT_FILE_PATH, JSON.stringify({ port }, null, 2));
+  if (process.env.YAAK_GRPC_PORT_FILE_PATH) {
+    console.log('Wrote port file to', process.env.YAAK_GRPC_PORT_FILE_PATH);
+    fs.writeFileSync(process.env.YAAK_GRPC_PORT_FILE_PATH, JSON.stringify({ port }, null, 2));
   }
 });
