@@ -86,16 +86,16 @@ jobs:
       - name: Run lint
         run: npm run lint
 
-      - name: Set version
-        run: npm run replace-version
-        env:
-          YAAK_VERSION: ${{ github.ref_name }}
-
       - name: Checkout yaakapp/plugins
         uses: actions/checkout@v4
         with:
           repository: yaakapp/plugins
           path: ${{ env.YAAK_PLUGINS_DIR }}
+
+      - name: Set version
+        run: npm run replace-version
+        env:
+          YAAK_VERSION: ${{ github.ref_name }}
 
       - uses: tauri-apps/tauri-action@v0
         env:

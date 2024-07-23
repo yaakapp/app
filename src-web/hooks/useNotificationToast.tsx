@@ -20,6 +20,7 @@ export function useNotificationToast() {
       label: string;
     };
   }>('notification', ({ payload }) => {
+    console.log('Got notification event', payload);
     const actionUrl = payload.action?.url;
     const actionLabel = payload.action?.label;
     toast.show({
