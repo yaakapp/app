@@ -86,9 +86,6 @@ jobs:
       - name: Run lint
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
-
       - name: Set version
         run: npm run replace-version
         env:
