@@ -127,7 +127,7 @@ export function TextViewer({ response, pretty, className }: Props) {
     return <BinaryViewer response={response} />;
   }
 
-  if (!showLargeResponse && (response.contentLength ?? 0) > LARGE_RESPONSE_BYTES / 1000) {
+  if (!showLargeResponse && (response.contentLength ?? 0) > LARGE_RESPONSE_BYTES) {
     return (
       <Banner color="primary" className="h-full flex flex-col gap-3">
         <p>
@@ -137,7 +137,7 @@ export function TextViewer({ response, pretty, className }: Props) {
           </InlineCode>{' '}
           may impact performance
         </p>
-        <HStack space={2}>
+        <HStack wrap space={2}>
           <Button color="primary" size="xs" onClick={toggleShowLargeResponse}>
             Reveal Response
           </Button>

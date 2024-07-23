@@ -5,7 +5,7 @@ import type { HotkeyAction } from '../../hooks/useHotKey';
 import { useFormattedHotkey, useHotKey } from '../../hooks/useHotKey';
 import { Icon } from './Icon';
 
-export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color'> & {
+export type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'color' | 'onChange'> & {
   innerClassName?: string;
   color?:
     | 'custom'
