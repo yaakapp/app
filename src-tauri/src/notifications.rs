@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use chrono::{DateTime, Duration, Utc};
-use log::debug;
+use log::{debug, info};
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -70,10 +70,11 @@ impl YaakNotifier {
                 ("launches", num_launches.to_string()),
             ]);
         let resp = req.send().await.map_err(|e| e.to_string())?;
-        if resp.status().to_string() != "200" {
+        if resp.status() != 200 {
+            debug!("Skipping notification status code {}", resp.status());
             return Ok(());
         }
-        
+
         let notification = resp
             .json::<YaakNotification>()
             .await
@@ -83,7 +84,7 @@ impl YaakNotifier {
             .timestamp
             .signed_duration_since(Utc::now());
         let seen = get_kv(app).await?;
-        if seen.contains(&notification.id) || (age > Duration::days(1)) {
+        if seen.contains(&notification.id) || (age > Duration::days(2)) {
             debug!("Already seen notification {}", notification.id);
             return Ok(());
         }
