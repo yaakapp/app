@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use chrono::{DateTime, Duration, Utc};
-use log::{debug, info};
+use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -80,9 +80,7 @@ impl YaakNotifier {
             .await
             .map_err(|e| e.to_string())?;
 
-        let age = notification
-            .timestamp
-            .signed_duration_since(Utc::now());
+        let age = notification.timestamp.signed_duration_since(Utc::now());
         let seen = get_kv(app).await?;
         if seen.contains(&notification.id) || (age > Duration::days(2)) {
             debug!("Already seen notification {}", notification.id);

@@ -1,4 +1,3 @@
-import { open } from '@tauri-apps/plugin-dialog';
 import mime from 'mime';
 import { useKeyValue } from '../hooks/useKeyValue';
 import type { HttpRequest } from '../lib/models';
@@ -6,6 +5,7 @@ import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { InlineCode } from './core/InlineCode';
 import { HStack, VStack } from './core/Stacks';
+import { SelectFile } from './SelectFile';
 
 type Props = {
   requestId: string;
@@ -28,33 +28,17 @@ export function BinaryFileEditor({
     fallback: false,
   });
 
-  const handleClick = async () => {
+  const handleChange = async (filePath: string | null) => {
     await ignoreContentType.set(false);
-    const selected = await open({
-      title: 'Select File',
-      multiple: false,
-    });
-    if (selected == null) {
-      return;
-    }
-    onChange({ filePath: selected.path });
+    onChange({ filePath: filePath ?? undefined });
   };
 
-  const filePath = typeof body.filePath === 'string' ? body.filePath : undefined;
+  const filePath = typeof body.filePath === 'string' ? body.filePath : null;
   const mimeType = mime.getType(filePath ?? '') ?? 'application/octet-stream';
 
   return (
     <VStack space={2}>
-      <HStack space={2}>
-        <Button variant="border" color="secondary" size="sm" onClick={handleClick}>
-          Choose File
-        </Button>
-        <div className="text-sm font-mono truncate rtl pr-3 text-fg">
-          {/* Special character to insert ltr text in rtl element without making things wonky */}
-          &#x200E;
-          {filePath ?? 'Select File'}
-        </div>
-      </HStack>
+      <SelectFile onChange={handleChange} filePath={filePath} />
       {filePath != null && mimeType !== contentType && !ignoreContentType.value && (
         <Banner className="mt-3 !py-5">
           <div className="mb-4 text-center">
