@@ -6,7 +6,7 @@ import { createGlobalState } from 'react-use';
 
 const useClipboardTextState = createGlobalState<string>('');
 
-export function useClipboardText() {
+export function useClipboardText({ disableToast }: { disableToast?: boolean } = {}) {
   const [value, setValue] = useClipboardTextState();
   const focused = useWindowFocus();
   const toast = useToast();
@@ -18,7 +18,7 @@ export function useClipboardText() {
   const setText = useCallback(
     (text: string) => {
       writeText(text).catch(console.error);
-      if (text != '') {
+      if (text != '' && !disableToast) {
         toast.show({
           id: 'copied',
           variant: 'copied',
@@ -27,7 +27,7 @@ export function useClipboardText() {
       }
       setValue(text);
     },
-    [setValue, toast],
+    [disableToast, setValue, toast],
   );
 
   return [value, setText] as const;

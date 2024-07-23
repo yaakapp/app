@@ -6,16 +6,24 @@ import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
+import { useSaveResponse } from '../../hooks/useSaveResponse';
+import { useToggle } from '../../hooks/useToggle';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import type { HttpResponse } from '../../lib/models';
+import { CopyButton } from '../CopyButton';
+import { Banner } from '../core/Banner';
+import { Button } from '../core/Button';
 import { Editor } from '../core/Editor';
 import { hyperlink } from '../core/Editor/hyperlink/extension';
 import { IconButton } from '../core/IconButton';
+import { InlineCode } from '../core/InlineCode';
 import { Input } from '../core/Input';
-import { EmptyStateText } from '../EmptyStateText';
+import { SizeTag } from '../core/SizeTag';
+import { HStack } from '../core/Stacks';
 import { BinaryViewer } from './BinaryViewer';
 
 const extraExtensions = [hyperlink];
+const LARGE_RESPONSE_BYTES = 2 * 1000 * 1000;
 
 interface Props {
   response: HttpResponse;
@@ -27,6 +35,7 @@ const useFilterText = createGlobalState<Record<string, string | null>>({});
 
 export function TextViewer({ response, pretty, className }: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
+  const [showLargeResponse, toggleShowLargeResponse] = useToggle();
   const filterText = filterTextMap[response.id] ?? null;
   const debouncedFilterText = useDebouncedValue(filterText, 200);
   const setFilterText = useCallback(
@@ -36,6 +45,7 @@ export function TextViewer({ response, pretty, className }: Props) {
     [setFilterTextMap, response],
   );
 
+  const saveResponse = useSaveResponse(response);
   const contentType = useContentTypeFromHeaders(response.headers);
   const rawBody = useResponseBodyText(response);
   const isSearching = filterText != null;
@@ -117,8 +127,32 @@ export function TextViewer({ response, pretty, className }: Props) {
     return <BinaryViewer response={response} />;
   }
 
-  if ((response.contentLength ?? 0) > 2 * 1000 * 1000) {
-    return <EmptyStateText>Cannot preview text responses larger than 2MB</EmptyStateText>;
+  if (!showLargeResponse && (response.contentLength ?? 0) > LARGE_RESPONSE_BYTES / 1000) {
+    return (
+      <Banner color="primary" className="h-full flex flex-col gap-3">
+        <p>
+          Showing responses over{' '}
+          <InlineCode>
+            <SizeTag contentLength={LARGE_RESPONSE_BYTES} />
+          </InlineCode>{' '}
+          may impact performance
+        </p>
+        <HStack space={2}>
+          <Button color="primary" size="xs" onClick={toggleShowLargeResponse}>
+            Reveal Response
+          </Button>
+          <Button variant="border" size="xs" onClick={() => saveResponse.mutate()}>
+            Save to File
+          </Button>
+          <CopyButton
+            variant="border"
+            size="xs"
+            onClick={() => saveResponse.mutate()}
+            text={rawBody.data}
+          />
+        </HStack>
+      </Banner>
+    );
   }
 
   const formattedBody =
