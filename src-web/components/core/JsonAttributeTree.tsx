@@ -9,9 +9,16 @@ interface Props {
   attrValue: any;
   attrKey?: string | number;
   attrKeyJsonPath?: string;
+  className?: string;
 }
 
-export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPath }: Props) => {
+export const JsonAttributeTree = ({
+  depth = 0,
+  attrKey,
+  attrValue,
+  attrKeyJsonPath,
+  className,
+}: Props) => {
   attrKeyJsonPath = attrKeyJsonPath ?? `${attrKey}`;
 
   const [isExpanded, setIsExpanded] = useState(true);
@@ -59,7 +66,7 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
           : null,
         isExpandable: attrValue.length > 0,
         label: isExpanded ? `[${attrValue.length || ' '}]` : `[⋯]`,
-        labelClassName: 'text-subtler',
+        labelClassName: 'text-fg-subtler',
       };
     } else {
       return {
@@ -77,10 +84,18 @@ export const JsonAttributeTree = ({ depth = 0, attrKey, attrValue, attrKeyJsonPa
   }, [attrValue, attrKeyJsonPath, isExpanded, depth]);
 
   const labelEl = (
-    <span className={classNames(labelClassName, 'select-text group-hover:text-fg')}>{label}</span>
+    <span className={classNames(labelClassName, 'select-text group-hover:text-fg-subtle')}>
+      {label}
+    </span>
   );
   return (
-    <div className={classNames(/*depth === 0 && '-ml-4',*/ 'font-mono text-xs')}>
+    <div
+      className={classNames(
+        className,
+        /*depth === 0 && '-ml-4',*/ 'font-mono text-xs',
+        depth === 0 && 'h-full overflow-y-auto pb-2',
+      )}
+    >
       <div className="flex items-center">
         {isExpandable ? (
           <button className="group relative flex items-center pl-4 w-full" onClick={toggleExpanded}>
