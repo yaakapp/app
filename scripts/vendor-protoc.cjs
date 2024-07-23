@@ -37,8 +37,9 @@ mkdirSync(dstDir, {recursive: true});
 
 (async function () {
   const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
+  console.log("Vendoring protoc binary for", key);
   const url = URL_MAP[key];
-  const tmpDir = path.join(__dirname, 'tmp', new Date().toISOString());
+  const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
 
   // Download GitHub release artifact
   const {filePath} = await new Downloader({url, directory: tmpDir,}).download();
