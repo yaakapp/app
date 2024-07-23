@@ -10,6 +10,7 @@ use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{error, info, warn};
+use mime_guess::Mime;
 use reqwest::redirect::Policy;
 use reqwest::Method;
 use reqwest::{multipart, Url};
@@ -318,13 +319,21 @@ pub async fn send_http_request(
                         .as_str()
                         .unwrap_or_default();
 
+                    // Set or guess mimetype
                     if !ct_raw.is_empty() {
                         let content_type = render::render(ct_raw, &vars);
                         part = part
                             .mime_str(content_type.as_str())
                             .map_err(|e| e.to_string())?;
+                    } else if !file_path.is_empty() {
+                        let default_mime = Mime::from_str("application/octet-stream").unwrap();
+                        let mime = mime_guess::from_path(file_path).first_or(default_mime);
+                        part = part
+                            .mime_str(mime.essence_str())
+                            .map_err(|e| e.to_string())?;
                     }
 
+                    // Set fil path if not empty
                     if !file_path.is_empty() {
                         let filename = PathBuf::from(file_path)
                             .file_name()
