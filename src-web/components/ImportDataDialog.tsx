@@ -24,7 +24,7 @@ export function ImportDataDialog({ importData }: Props) {
         </ul>
       </VStack>
       <VStack space={2}>
-        <SelectFile filePath={filePath} onChange={setFilePath} />
+        <SelectFile filePath={filePath} onChange={({ filePath }) => setFilePath(filePath)} />
         {filePath && (
           <Button
             color="primary"

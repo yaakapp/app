@@ -28,7 +28,7 @@ export function BinaryFileEditor({
     fallback: false,
   });
 
-  const handleChange = async (filePath: string | null) => {
+  const handleChange = async ({ filePath }: { filePath: string | null }) => {
     await ignoreContentType.set(false);
     onChange({ filePath: filePath ?? undefined });
   };

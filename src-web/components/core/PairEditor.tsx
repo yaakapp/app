@@ -1,4 +1,3 @@
-import { open } from '@tauri-apps/plugin-dialog';
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -7,7 +6,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
 import { usePrompt } from '../../hooks/usePrompt';
 import { DropMarker } from '../DropMarker';
-import { Button } from './Button';
+import { SelectFile } from '../SelectFile';
 import { Checkbox } from './Checkbox';
 import { Dropdown } from './Dropdown';
 import type { GenericCompletionConfig } from './Editor/genericCompletion';
@@ -286,7 +285,12 @@ function PairEditorRow({
   );
 
   const handleChangeValueFile = useMemo(
-    () => (value: string) => onChange({ id, pair: { ...pairContainer.pair, value, isFile: true } }),
+    () =>
+      ({ filePath }: { filePath: string | null }) =>
+        onChange({
+          id,
+          pair: { ...pairContainer.pair, value: filePath ?? '', isFile: true },
+        }),
     [onChange, id, pairContainer.pair],
   );
 
@@ -386,27 +390,12 @@ function PairEditorRow({
         />
         <div className="w-full grid grid-cols-[minmax(0,1fr)_auto] gap-1 items-center">
           {pairContainer.pair.isFile ? (
-            <Button
+            <SelectFile
+              inline
               size="xs"
-              color="secondary"
-              className="font-mono text-2xs rtl"
-              onClick={async (e) => {
-                e.preventDefault();
-                const selected = await open({
-                  title: 'Select file',
-                  multiple: false,
-                });
-                if (selected == null) {
-                  return;
-                }
-
-                handleChangeValueFile(selected.path);
-              }}
-            >
-              {/* Special character to insert ltr text in rtl element without making things wonky */}
-              &#x200E;
-              {pairContainer.pair.value || 'Select File'}
-            </Button>
+              filePath={pairContainer.pair.value}
+              onChange={handleChangeValueFile}
+            />
           ) : (
             <Input
               hideLabel
@@ -432,7 +421,7 @@ function PairEditorRow({
         <RadioDropdown
           value={pairContainer.pair.isFile ? 'file' : 'text'}
           onChange={(v) => {
-            if (v === 'file') handleChangeValueFile('');
+            if (v === 'file') handleChangeValueFile({ filePath: '' });
             else handleChangeValueText('');
           }}
           items={[
@@ -444,6 +433,7 @@ function PairEditorRow({
               key: 'mime',
               label: 'Set Content-Type',
               leftSlot: <Icon icon="pencil" />,
+              hidden: !pairContainer.pair.isFile,
               onSelect: async () => {
                 const v = await prompt({
                   id: 'content-type',
@@ -457,6 +447,15 @@ function PairEditorRow({
                   description: 'Leave blank to auto-detect',
                 });
                 handleChangeValueContentType(v);
+              },
+            },
+            {
+              key: 'clear-file',
+              label: 'Unset File',
+              leftSlot: <Icon icon="x" />,
+              hidden: !pairContainer.pair.isFile,
+              onSelect: async () => {
+                handleChangeValueFile({ filePath: null });
               },
             },
             {

@@ -60,10 +60,11 @@ type BaseStackProps = HTMLAttributes<HTMLElement> & {
   space?: keyof typeof gapClasses;
   alignItems?: 'start' | 'center' | 'stretch' | 'end';
   justifyContent?: 'start' | 'center' | 'end' | 'between';
+  wrap?: boolean;
 };
 
 const BaseStack = forwardRef(function BaseStack(
-  { className, alignItems, justifyContent, children, as, ...props }: BaseStackProps,
+  { className, alignItems, justifyContent, wrap, children, as, ...props }: BaseStackProps,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ref: ForwardedRef<any>,
 ) {
@@ -74,6 +75,7 @@ const BaseStack = forwardRef(function BaseStack(
       className={classNames(
         className,
         'flex',
+        wrap && 'flex-wrap',
         alignItems === 'center' && 'items-center',
         alignItems === 'start' && 'items-start',
         alignItems === 'stretch' && 'items-stretch',
