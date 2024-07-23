@@ -20,6 +20,7 @@ import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
 import { RecentResponsesDropdown } from './RecentResponsesDropdown';
 import { ResponseHeaders } from './ResponseHeaders';
+import { ResponseInfo } from './ResponseInfo';
 import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
@@ -46,7 +47,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     () => [
       {
         value: 'body',
-        label: 'Preview',
+        label: 'Preview Mode',
         options: {
           value: viewMode,
           onChange: setViewMode,
@@ -66,6 +67,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           </div>
         ),
         value: 'headers',
+      },
+      {
+        label: 'Info',
+        value: 'info',
       },
     ],
     [activeResponse?.headers, contentType, setViewMode, viewMode],
@@ -148,6 +153,9 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               <TabContent value="headers">
                 <ResponseHeaders response={activeResponse} />
               </TabContent>
+              <TabContent value="info">
+                <ResponseInfo response={activeResponse} />
+              </TabContent>
               <TabContent value="body">
                 {!activeResponse.contentLength ? (
                   <div className="pb-2 h-full">
@@ -166,6 +174,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                 ) : viewMode === 'pretty' && contentType?.includes('html') ? (
                   <WebPageViewer response={activeResponse} />
                 ) : (
+                  // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
+                  //   <JsonAttributeTree attrValue={activeResponse} />
                   <TextViewer
                     className="-mr-2" // Pull to the right
                     response={activeResponse}

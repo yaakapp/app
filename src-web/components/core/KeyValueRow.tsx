@@ -24,13 +24,20 @@ interface Props {
   label: ReactNode;
   value: ReactNode;
   labelClassName?: string;
+  labelColor?: 'secondary' | 'primary' | 'info';
 }
 
-export function KeyValueRow({ label, value, labelClassName }: Props) {
+export function KeyValueRow({ label, value, labelColor = 'secondary', labelClassName }: Props) {
   return (
     <>
       <td
-        className={classNames('py-0.5 pr-2 text-fg-subtle select-text cursor-text', labelClassName)}
+        className={classNames(
+          'py-0.5 pr-2 select-text cursor-text',
+          labelClassName,
+          labelColor === 'primary' && 'text-fg-primary',
+          labelColor === 'secondary' && 'text-fg-subtle',
+          labelColor === 'info' && 'text-fg-info',
+        )}
       >
         {label}
       </td>
