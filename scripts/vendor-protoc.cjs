@@ -2,8 +2,7 @@ const decompress = require('decompress');
 const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
 const fs = require("node:fs");
-const rimraf = require('rimraf');
-const {rmSync} = require("node:fs");
+const {rmSync, mkdirSync} = require("node:fs");
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -26,18 +25,20 @@ const DST_BIN_MAP = {
 };
 
 const SRC_BIN_MAP = {
-  [MAC_ARM]: 'protoc',
-  [MAC_X64]: 'protoc',
-  [LNX_X64]: 'protoc',
-  [WIN_X64]: 'protoc.exe',
+  [MAC_ARM]: 'bin/protoc',
+  [MAC_X64]: 'bin/protoc',
+  [LNX_X64]: 'bin/protoc',
+  [WIN_X64]: 'bin/protoc.exe',
 };
+
+const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
+rmSync(dstDir, {recursive: true, force: true});
+mkdirSync(dstDir);
 
 (async function () {
   const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
   const url = URL_MAP[key];
-  const tmpDir = path.join(__dirname, 'tmp', `${Math.random()}`);
-  const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
-  rimraf.sync(dstDir);
+  const tmpDir = path.join(__dirname, 'tmp', new Date().toISOString());
 
   // Download GitHub release artifact
   const {filePath} = await new Downloader({url, directory: tmpDir,}).download();
@@ -49,7 +50,7 @@ const SRC_BIN_MAP = {
   fs.unlinkSync(filePath);
 
   // Copy binary
-  const binSrc = path.join(tmpDir, 'bin', SRC_BIN_MAP[key]);
+  const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);
   const binDst = path.join(dstDir, DST_BIN_MAP[key]);
   fs.cpSync(binSrc, binDst);
 
