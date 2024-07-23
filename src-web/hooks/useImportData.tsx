@@ -1,16 +1,15 @@
 import { useMutation } from '@tanstack/react-query';
-import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from '../components/core/Button';
 import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
+import { ImportDataDialog } from '../components/ImportDataDialog';
 import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
-import { ImportDataDialog } from '../components/ImportDataDialog';
 
 export function useImportData() {
   const routes = useAppRoutes();
@@ -18,15 +17,7 @@ export function useImportData() {
   const alert = useAlert();
   const activeWorkspaceId = useActiveWorkspaceId();
 
-  const importData = async (): Promise<boolean> => {
-    const selected = await open({
-      filters: [{ name: 'Export File', extensions: ['json', 'yaml', 'sh', 'txt'] }],
-      multiple: false,
-    });
-    if (selected == null) {
-      return false;
-    }
-
+  const importData = async (filePath: string): Promise<boolean> => {
     const imported: {
       workspaces: Workspace[];
       environments: Environment[];
@@ -34,7 +25,7 @@ export function useImportData() {
       httpRequests: HttpRequest[];
       grpcRequests: GrpcRequest[];
     } = await invokeCmd('cmd_import_data', {
-      filePath: selected.path,
+      filePath,
       workspaceId: activeWorkspaceId,
     });
 
@@ -93,9 +84,9 @@ export function useImportData() {
           title: 'Import Data',
           size: 'sm',
           render: ({ hide }) => {
-            const importAndHide = async () => {
+            const importAndHide = async (filePath: string) => {
               try {
-                const didImport = await importData();
+                const didImport = await importData(filePath);
                 if (!didImport) {
                   return;
                 }
