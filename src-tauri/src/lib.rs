@@ -1858,6 +1858,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 100.0 + random::<f64>() * 30.0,
                 100.0 + random::<f64>() * 30.0,
             )
+            .min_inner_size(300.0, 300.0)
             .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
