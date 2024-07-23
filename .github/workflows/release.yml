@@ -18,16 +18,16 @@ jobs:
         include:
           - platform: 'macos-latest' # for Arm-based macs (M1 and above).
             args: '--target aarch64-apple-darwin'
-            node_arch: 'arm64'
+            yaak_arch: 'arm64'
           - platform: 'macos-latest' # for Intel-based macs.
             args: '--target x86_64-apple-darwin'
-            node_arch: 'x64'
+            yaak_arch: 'x64'
           - platform: 'ubuntu-22.04' # for Tauri v1, you could replace this with ubuntu-20.04.
             args: ''
-            node_arch: 'x64'
+            yaak_arch: 'x64'
           - platform: 'windows-latest'
             args: ''
-            node_arch: 'x64'
+            yaak_arch: 'x64'
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout yaakapp/app
@@ -100,7 +100,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
-          NODE_ARCH: ${{ matrix.node_arch }}
+          YAAK_TARGET_ARCH: ${{ matrix.yaak_arch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}

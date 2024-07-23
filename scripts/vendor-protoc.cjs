@@ -36,7 +36,7 @@ rmSync(dstDir, {recursive: true, force: true});
 mkdirSync(dstDir, {recursive: true});
 
 (async function () {
-  const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
+  const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
   const url = URL_MAP[key];
   const tmpDir = path.join(__dirname, 'tmp', new Date().toISOString());
 
