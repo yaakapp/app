@@ -8,8 +8,8 @@ const MAC_ARM = 'darwin_arm64';
 const MAC_X64 = 'darwin_x64';
 const LNX_X64 = 'linux_x64';
 const WIN_X64 = 'win32_x64';
-const URL_MAP = {
 
+const URL_MAP = {
   [MAC_ARM]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-arm64.tar.gz',
   [MAC_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-x64.tar.gz',
   [LNX_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-linux-arm64.tar.gz',
@@ -38,7 +38,7 @@ mkdirSync(dstDir, {recursive: true});
   const key = `${process.platform}_${process.env.YAKK_TARGET_ARCH ?? process.arch}`;
   console.log('Vendoring NodeJS binary for', key);
   const url = URL_MAP[key];
-  const tmpDir = path.join(__dirname, 'tmp', new Date().toISOString());
+  const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
 
   // Download GitHub release artifact
   const {filePath} = await new Downloader({url, directory: tmpDir,}).download();
