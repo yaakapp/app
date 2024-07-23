@@ -19,8 +19,6 @@
     "build:vendor-plugins": "node scripts/vendor-plugins.cjs",
     "build:vendor-node": "node scripts/vendor-node.cjs",
     "build:plugin-runtime": "npm run --prefix plugin-runtime build",
-    "test": "vitest",
-    "coverage": "vitest run --coverage",
     "prepare": "husky install",
     "replace-version": "node scripts/replace-version.cjs"
   },
@@ -107,8 +105,7 @@
     "nodejs-file-downloader": "^4.13.0",
     "rimraf": "^5.0.7",
     "vite-plugin-svgr": "^4.2.0",
-    "vite-plugin-top-level-await": "^1.4.1",
-    "vitest": "^1.3.0"
+    "vite-plugin-top-level-await": "^1.4.1"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --cache --fix",
