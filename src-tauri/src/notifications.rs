@@ -70,6 +70,10 @@ impl YaakNotifier {
                 ("launches", num_launches.to_string()),
             ]);
         let resp = req.send().await.map_err(|e| e.to_string())?;
+        if resp.status().to_string() != "200" {
+            return Ok(());
+        }
+        
         let notification = resp
             .json::<YaakNotification>()
             .await

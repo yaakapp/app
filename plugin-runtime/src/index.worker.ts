@@ -4,12 +4,20 @@ import { parentPort, workerData } from 'node:worker_threads';
 import { ParentToWorkerEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
 
-new Promise(async () => {
+new Promise<void>(async (resolve, reject) => {
   const { pluginDir } = workerData;
   const pathMod = path.join(pluginDir, 'build/index.js');
   const pathPkg = path.join(pluginDir, 'package.json');
 
-  const pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
+  let pkg: { [x: string]: any };
+  try {
+    pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
+  } catch (err) {
+    // TODO: Do something better here
+    reject(err);
+    return;
+  }
+
   const mod = (await import(`file://${pathMod}`)).default ?? {};
 
   const info: PluginInfo = {
@@ -43,15 +51,15 @@ new Promise(async () => {
     });
   }
 
-  parentPort!.on('message', (msg: ParentToWorkerEvent) => {
+  parentPort!.on('message', async (msg: ParentToWorkerEvent) => {
     try {
       const ctx = { todo: 'implement me' };
       if (msg.name === 'run-import') {
-        reply(msg, mod.pluginHookImport(ctx, msg.payload));
+        reply(msg, await mod.pluginHookImport(ctx, msg.payload));
       } else if (msg.name === 'run-filter') {
-        reply(msg, mod.pluginHookResponseFilter(ctx, msg.payload));
+        reply(msg, await mod.pluginHookResponseFilter(ctx, msg.payload));
       } else if (msg.name === 'run-export') {
-        reply(msg, mod.pluginHookExport(ctx, msg.payload));
+        reply(msg, await mod.pluginHookExport(ctx, msg.payload));
       } else if (msg.name === 'info') {
         reply(msg, info);
       } else {
@@ -61,6 +69,8 @@ new Promise(async () => {
       replyErr(msg, err);
     }
   });
+
+  resolve();
 }).catch((err) => {
   console.log('failed to boot plugin', err);
 });

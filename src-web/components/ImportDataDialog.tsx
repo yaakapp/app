@@ -14,8 +14,10 @@ export function ImportDataDialog({ importData }: Props) {
     <VStack space={5} className="pb-4">
       <VStack space={1}>
         <ul className="list-disc pl-5">
-          <li>Postman Collection v2+</li>
+          <li>OpenAPI 3.0, 3.1</li>
+          <li>Postman Collection v2, v2.1</li>
           <li>Insomnia v4+</li>
+          <li>Swagger 2.0</li>
           <li>Curl commands</li>
         </ul>
         <Banner className="mt-3 flex items-center gap-2">

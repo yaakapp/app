@@ -55,9 +55,9 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         // read events such as stdout
         while let Some(event) = rx.recv().await {
             if let CommandEvent::Stdout(line) = event {
-                println!("{}", String::from_utf8_lossy(line.as_slice()));
+                print!("{}", String::from_utf8_lossy(line.as_slice()));
             } else if let CommandEvent::Stderr(line) = event {
-                println!("{}", String::from_utf8_lossy(line.as_slice()));
+                print!("{}", String::from_utf8_lossy(line.as_slice()));
             }
         }
     });
