@@ -35,7 +35,7 @@ rmSync(dstDir, {recursive: true, force: true});
 mkdirSync(dstDir, {recursive: true});
 
 (async function () {
-  const key = `${process.platform}_${process.env.YAKK_TARGET_ARCH ?? process.arch}`;
+  const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
   console.log('Vendoring NodeJS binary for', key);
   const url = URL_MAP[key];
   const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
