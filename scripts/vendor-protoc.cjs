@@ -33,7 +33,7 @@ const SRC_BIN_MAP = {
 
 const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
 rmSync(dstDir, {recursive: true, force: true});
-mkdirSync(dstDir);
+mkdirSync(dstDir, {recursive: true});
 
 (async function () {
   const key = `${process.platform}_${process.env.NODE_ARCH ?? process.arch}`;
