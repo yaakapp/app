@@ -81,7 +81,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install yaak CLI
-        run: go install github.com/yaakapp/yaakcli@0.0.9
+        run: go install github.com/yaakapp/yaakcli@latest
 
       - name: Run lint
         run: npm run lint
