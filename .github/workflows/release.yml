@@ -33,12 +33,6 @@ jobs:
       - name: Checkout yaakapp/app
         uses: actions/checkout@v4
 
-      - name: Checkout yaakapp/plugins
-        uses: actions/checkout@v4
-        with:
-          repository: yaakapp/plugins
-          path: ${{ env.YAAK_PLUGINS_DIR }}
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -99,6 +93,12 @@ jobs:
         run: npm run replace-version
         env:
           YAAK_VERSION: ${{ github.ref_name }}
+
+      - name: Checkout yaakapp/plugins
+        uses: actions/checkout@v4
+        with:
+          repository: yaakapp/plugins
+          path: ${{ env.YAAK_PLUGINS_DIR }}
 
       - uses: tauri-apps/tauri-action@v0
         env:
