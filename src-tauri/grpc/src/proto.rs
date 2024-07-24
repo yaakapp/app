@@ -35,13 +35,18 @@ pub async fn fill_pool_from_files(
     let global_import_dir = app_handle
         .path()
         .resolve("protoc-include", BaseDirectory::Resource)
-        .expect("failed to resolve protoc include directory");
+        .expect("failed to resolve protoc include directory")
+        .to_string_lossy()
+        .to_string();
+
+    // HACK: Remove UNC prefix for Windows paths
+    let global_import_dir = global_import_dir.replace("\\\\?\\", "");
 
     let mut args = vec![
         "--include_imports".to_string(),
         "--include_source_info".to_string(),
         "-I".to_string(),
-        global_import_dir.to_string_lossy().to_string(),
+        global_import_dir,
         "-o".to_string(),
         desc_path.to_string_lossy().to_string(),
     ];
