@@ -4,8 +4,8 @@ package yaak.plugins.runtime;
 
 service PluginRuntime {
   rpc hookImport (HookImportRequest) returns (HookResponse);
-  rpc hookResponseFilter (HookResponseFilterRequest) returns (HookResponse);
   rpc hookExport (HookExportRequest) returns (HookResponse);
+  rpc hookResponseFilter (HookResponseFilterRequest) returns (HookResponse);
 }
 
 message PluginInfo {
