@@ -67,11 +67,11 @@ pub async fn fill_pool_from_files(
 
     let (mut rx, _child) = app_handle
         .shell()
-        .sidecar("protoc")
-        .expect("protoc not found")
+        .sidecar("yaakprotoc")
+        .expect("yaakprotoc not found")
         .args(args)
         .spawn()
-        .expect("protoc failed to start");
+        .expect("yaakprotoc failed to start");
 
     while let Some(event) = rx.recv().await {
         match event {

@@ -17,18 +17,18 @@ const URL_MAP = {
   [WIN_X64]: 'https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-win64.zip',
 };
 
-const DST_BIN_MAP = {
-  [MAC_ARM]: 'protoc-aarch64-apple-darwin',
-  [MAC_X64]: 'protoc-x86_64-apple-darwin',
-  [LNX_X64]: 'protoc-x86_64-unknown-linux-gnu',
-  [WIN_X64]: 'protoc-x86_64-pc-windows-msvc.exe',
-};
-
 const SRC_BIN_MAP = {
   [MAC_ARM]: 'bin/protoc',
   [MAC_X64]: 'bin/protoc',
   [LNX_X64]: 'bin/protoc',
   [WIN_X64]: 'bin/protoc.exe',
+};
+
+const DST_BIN_MAP = {
+  [MAC_ARM]: 'yaakprotoc-aarch64-apple-darwin',
+  [MAC_X64]: 'yaakprotoc-x86_64-apple-darwin',
+  [LNX_X64]: 'yaakprotoc-x86_64-unknown-linux-gnu',
+  [WIN_X64]: 'yaakprotoc-x86_64-pc-windows-msvc.exe',
 };
 
 const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'protoc');
