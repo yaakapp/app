@@ -44,13 +44,13 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
 
     let (mut rx, _child) = app
         .shell()
-        .sidecar("node")
-        .unwrap()
+        .sidecar("yaaknode")
+        .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
         .args(&[plugin_runtime_dir.join("index.cjs")])
         .spawn()
-        .unwrap();
+        .expect("yaaknode failed to start");
 
     tauri::async_runtime::spawn(async move {
         // read events such as stdout

@@ -16,18 +16,18 @@ const URL_MAP = {
   [WIN_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-win-x64.zip',
 };
 
-const DST_BIN_MAP = {
-  darwin_arm64: 'node-aarch64-apple-darwin',
-  darwin_x64: 'node-x86_64-apple-darwin',
-  linux_x64: 'node-x86_64-unknown-linux-gnu',
-  win32_x64: 'node-x86_64-pc-windows-msvc.exe',
-};
-
 const SRC_BIN_MAP = {
   [MAC_ARM]: 'node-v22.5.1-darwin-arm64/bin/node',
   [MAC_X64]: 'node-v22.5.1-darwin-x64/bin/node',
   [LNX_X64]: 'node-v22.5.1-linux-x64/bin/node',
   [WIN_X64]: 'node-v22.5.1-win-x64/node.exe',
+};
+
+const DST_BIN_MAP = {
+  darwin_arm64: 'yaaknode-aarch64-apple-darwin',
+  darwin_x64: 'yaaknode-x86_64-apple-darwin',
+  linux_x64: 'yaaknode-x86_64-unknown-linux-gnu',
+  win32_x64: 'yaaknode-x86_64-pc-windows-msvc.exe',
 };
 
 const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'node');
