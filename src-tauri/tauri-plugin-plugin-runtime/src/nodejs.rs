@@ -36,9 +36,10 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
     let plugins_dir = plugins_dir.replace("\\\\?\\", "");
 
     info!(
-        "Starting plugin runtime port_file={} plugins_dir={}",
+        "Starting plugin runtime\n  port_file={}\n  plugins_dir={}\n  runtime_dir={}",
         port_file_path.to_string_lossy(),
         plugins_dir,
+        plugin_runtime_dir.to_string_lossy(),
     );
 
     let (mut rx, _child) = app

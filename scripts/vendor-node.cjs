@@ -12,7 +12,7 @@ const WIN_X64 = 'win32_x64';
 const URL_MAP = {
   [MAC_ARM]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-arm64.tar.gz',
   [MAC_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-x64.tar.gz',
-  [LNX_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-linux-arm64.tar.gz',
+  [LNX_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-linux-x64.tar.gz',
   [WIN_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-win-x64.zip',
 };
 
@@ -26,7 +26,7 @@ const DST_BIN_MAP = {
 const SRC_BIN_MAP = {
   [MAC_ARM]: 'node-v22.5.1-darwin-arm64/bin/node',
   [MAC_X64]: 'node-v22.5.1-darwin-x64/bin/node',
-  [LNX_X64]: 'node-v22.5.1-linux-arm64/bin/node',
+  [LNX_X64]: 'node-v22.5.1-linux-x64/bin/node',
   [WIN_X64]: 'node-v22.5.1-win-x64/node.exe',
 };
 
@@ -56,4 +56,7 @@ mkdirSync(dstDir, {recursive: true});
   rmSync(tmpDir, {recursive: true, force: true});
 
   console.log("Downloaded NodeJS to", binDst);
-})().catch(err => console.log('Script failed:', err));
+})().catch(err => {
+  console.log('Script failed:', err);
+  process.exit(1);
+});
