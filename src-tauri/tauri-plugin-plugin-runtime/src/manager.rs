@@ -1,24 +1,27 @@
+use command_group::GroupChild;
 use log::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
-use tokio::sync::Mutex;
 use tonic::transport::Channel;
 
 use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
-use crate::plugin_runtime::{HookExportRequest, HookImportRequest, HookResponse, HookResponseFilterRequest};
+use crate::plugin_runtime::{
+    HookExportRequest, HookImportRequest, HookResponse, HookResponseFilterRequest,
+};
 
 pub struct PluginManager {
-    client: Mutex<PluginRuntimeClient<Channel>>,
+    client: PluginRuntimeClient<Channel>,
+    child: GroupChild,
 }
 
 impl PluginManager {
     pub async fn new<R: Runtime>(app_handle: &AppHandle<R>) -> PluginManager {
         let temp_dir = app_handle.path().temp_dir().unwrap();
 
-        let addr = node_start(app_handle, &temp_dir).await;
-        info!("Connecting to gRPC client at {addr}");
+        let start_resp = node_start(app_handle, &temp_dir).await;
+        info!("Connecting to gRPC client at {}", start_resp.addr);
 
-        let client = match PluginRuntimeClient::connect(addr.clone()).await {
+        let client = match PluginRuntimeClient::connect(start_resp.addr.clone()).await {
             Ok(v) => v,
             Err(err) => {
                 panic!("{}", err.to_string());
@@ -26,15 +29,19 @@ impl PluginManager {
         };
 
         PluginManager {
-            client: Mutex::new(client),
+            client,
+            child: start_resp.child,
         }
     }
 
-    pub async fn run_import(&self, data: &str) -> Result<HookResponse, String> {
+    pub fn cleanup(&mut self) {
+        info!("Cleaning up NodeJS process");
+        self.child.kill().unwrap();
+    }
+
+    pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {
         let response = self
             .client
-            .lock()
-            .await
             .hook_import(tonic::Request::new(HookImportRequest {
                 data: data.to_string(),
             }))
@@ -44,11 +51,9 @@ impl PluginManager {
         Ok(response.into_inner())
     }
 
-    pub async fn run_export_curl(&self, request: &str) -> Result<HookResponse, String> {
+    pub async fn run_export_curl(&mut self, request: &str) -> Result<HookResponse, String> {
         let response = self
             .client
-            .lock()
-            .await
             .hook_export(tonic::Request::new(HookExportRequest {
                 request: request.to_string(),
             }))
@@ -59,7 +64,7 @@ impl PluginManager {
     }
 
     pub async fn run_response_filter(
-        &self,
+        &mut self,
         filter: &str,
         body: &str,
         content_type: &str,
@@ -67,8 +72,6 @@ impl PluginManager {
         debug!("Running plugin filter");
         let response = self
             .client
-            .lock()
-            .await
             .hook_response_filter(tonic::Request::new(HookResponseFilterRequest {
                 filter: filter.to_string(),
                 body: body.to_string(),

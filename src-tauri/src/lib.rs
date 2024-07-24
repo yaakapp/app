@@ -30,10 +30,6 @@ use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-use plugin_runtime::manager::PluginManager;
-
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
@@ -58,6 +54,9 @@ use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
+use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use plugin_runtime::manager::PluginManager;
 
 mod analytics;
 mod grpc;
@@ -717,6 +716,7 @@ async fn cmd_send_ephemeral_request(
 async fn cmd_filter_response(
     w: WebviewWindow,
     response_id: &str,
+    plugin_manager: State<'_, Mutex<PluginManager>>,
     filter: &str,
 ) -> Result<String, String> {
     let response = get_http_response(&w, response_id)
@@ -738,9 +738,9 @@ async fn cmd_filter_response(
     let body = read_to_string(response.body_path.unwrap()).unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
-    let manager: State<PluginManager> = w.app_handle().state();
-    manager
-        .inner()
+    plugin_manager
+        .lock()
+        .await
         .run_response_filter(filter, &body, &content_type)
         .await
         .map(|r| r.data)
@@ -749,14 +749,18 @@ async fn cmd_filter_response(
 #[tauri::command]
 async fn cmd_import_data(
     w: WebviewWindow,
+    plugin_manager: State<'_, Mutex<PluginManager>>,
     file_path: &str,
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let manager: State<PluginManager> = w.app_handle().state();
-    let import_response = manager.inner().run_import(file_contents).await?;
+    let import_response = plugin_manager
+        .lock()
+        .await
+        .run_import(file_contents)
+        .await?;
     let import_result: ImportResult =
         serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
 
@@ -881,6 +885,7 @@ async fn cmd_import_data(
 async fn cmd_request_to_curl(
     app: AppHandle,
     request_id: &str,
+    plugin_manager: State<'_, Mutex<PluginManager>>,
     environment_id: Option<&str>,
 ) -> Result<String, String> {
     let request = get_http_request(&app, request_id)
@@ -896,9 +901,9 @@ async fn cmd_request_to_curl(
     let rendered = render_request(&request, &workspace, environment.as_ref());
     let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
 
-    let manager: State<PluginManager> = app.state();
-    let import_response = manager
-        .inner()
+    let import_response = plugin_manager
+        .lock()
+        .await
         .run_export_curl(request_json.as_str())
         .await?;
     Ok(import_response.data)
@@ -906,12 +911,11 @@ async fn cmd_request_to_curl(
 
 #[tauri::command]
 async fn cmd_curl_to_request(
-    app_handle: AppHandle,
     command: &str,
+    plugin_manager: State<'_, Mutex<PluginManager>>,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let manager: State<PluginManager> = app_handle.state();
-    let import_response = manager.inner().run_import(command).await?;
+    let import_response = plugin_manager.lock().await.run_import(command).await?;
     let import_result: ImportResult =
         serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
     import_result
@@ -1759,7 +1763,6 @@ pub fn run() {
                     });
                 }
                 RunEvent::WindowEvent {
-                    label: _label,
                     event: WindowEvent::Focused(true),
                     ..
                 } => {

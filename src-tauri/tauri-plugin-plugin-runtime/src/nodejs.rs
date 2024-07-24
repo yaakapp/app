@@ -1,13 +1,14 @@
 use std::path::PathBuf;
+use std::process::Command;
 use std::time::Duration;
 
+use command_group::{CommandGroup, GroupChild};
 use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
-use tauri_plugin_shell::process::CommandEvent;
+use tauri::path::BaseDirectory;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 
@@ -17,7 +18,12 @@ struct PortFile {
     port: i32,
 }
 
-pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> String {
+pub struct StartResp {
+    pub addr: String,
+    pub child: GroupChild,
+}
+
+pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> StartResp {
     let port_file_path = temp_dir.join(Alphanumeric.sample_string(&mut rand::thread_rng(), 10));
 
     let plugins_dir = app
@@ -42,26 +48,17 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         plugin_runtime_dir.to_string_lossy(),
     );
 
-    let (mut rx, _child) = app
+    let cmd = app
         .shell()
         .sidecar("yaaknode")
         .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
-        .args(&[plugin_runtime_dir.join("index.cjs")])
-        .spawn()
-        .expect("yaaknode failed to start");
+        .args(&[plugin_runtime_dir.join("index.cjs")]);
 
-    tauri::async_runtime::spawn(async move {
-        // read events such as stdout
-        while let Some(event) = rx.recv().await {
-            if let CommandEvent::Stdout(line) = event {
-                print!("{}", String::from_utf8_lossy(line.as_slice()));
-            } else if let CommandEvent::Stderr(line) = event {
-                print!("{}", String::from_utf8_lossy(line.as_slice()));
-            }
-        }
-    });
+    let child = Command::from(cmd)
+        .group_spawn()
+        .expect("yaaknode failed to start");
 
     let start = std::time::Instant::now();
     let port_file_contents = loop {
@@ -80,5 +77,7 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
 
     let port_file: PortFile = serde_json::from_str(port_file_contents.as_str()).unwrap();
     info!("Started plugin runtime on :{}", port_file.port);
-    format!("http://localhost:{}", port_file.port)
+    let addr = format!("http://localhost:{}", port_file.port);
+
+    StartResp { addr, child }
 }

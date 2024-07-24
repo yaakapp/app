@@ -29,16 +29,6 @@
       ]
     },
     "shell:allow-open",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "protoc",
-          "sidecar": true,
-          "args": true
-        }
-      ]
-    },
     "webview:allow-set-webview-zoom",
     "window:allow-close",
     "window:allow-is-fullscreen",
