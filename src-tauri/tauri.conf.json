@@ -41,8 +41,8 @@
     "active": true,
     "category": "DeveloperTool",
     "externalBin": [
-      "vendored/protoc/protoc",
-      "vendored/node/node"
+      "vendored/protoc/yaakprotoc",
+      "vendored/node/yaaknode"
     ],
     "icon": [
       "icons/release/32x32.png",
