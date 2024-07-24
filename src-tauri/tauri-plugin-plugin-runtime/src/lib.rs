@@ -1,11 +1,13 @@
 extern crate core;
 
 use log::info;
-use crate::manager::PluginManager;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::sync::Mutex;
 
+use crate::manager::PluginManager;
+
+mod archive;
 pub mod manager;
 mod nodejs;
 
