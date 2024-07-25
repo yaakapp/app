@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
 
@@ -7,8 +7,8 @@ use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::{AppHandle, Manager, Runtime};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 
