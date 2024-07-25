@@ -382,17 +382,17 @@ export const PluginRuntimeDefinition = {
       responseStream: false,
       options: {},
     },
-    hookResponseFilter: {
-      name: "hookResponseFilter",
-      requestType: HookResponseFilterRequest,
+    hookExport: {
+      name: "hookExport",
+      requestType: HookExportRequest,
       requestStream: false,
       responseType: HookResponse,
       responseStream: false,
       options: {},
     },
-    hookExport: {
-      name: "hookExport",
-      requestType: HookExportRequest,
+    hookResponseFilter: {
+      name: "hookResponseFilter",
+      requestType: HookResponseFilterRequest,
       requestStream: false,
       responseType: HookResponse,
       responseStream: false,
@@ -403,20 +403,20 @@ export const PluginRuntimeDefinition = {
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
   hookImport(request: HookImportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
+  hookExport(request: HookExportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
   hookResponseFilter(
     request: HookResponseFilterRequest,
     context: CallContext & CallContextExt,
   ): Promise<DeepPartial<HookResponse>>;
-  hookExport(request: HookExportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
   hookImport(request: DeepPartial<HookImportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
+  hookExport(request: DeepPartial<HookExportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
   hookResponseFilter(
     request: DeepPartial<HookResponseFilterRequest>,
     options?: CallOptions & CallOptionsExt,
   ): Promise<HookResponse>;
-  hookExport(request: DeepPartial<HookExportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

@@ -2033,6 +2033,7 @@ name = "grpc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "dunce",
  "hyper 0.14.29",
  "hyper-rustls 0.24.2",
  "log",
@@ -3874,6 +3875,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "command-group",
+ "dunce",
  "log",
  "prost 0.13.1",
  "rand 0.8.5",

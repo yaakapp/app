@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.86"
 command-group = "5.0.1"
+dunce = "1.0.4"
 log = "0.4.21"
 prost = "0.13.1"
 rand = "0.8.5"

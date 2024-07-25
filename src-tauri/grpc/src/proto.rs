@@ -1,6 +1,6 @@
 use std::env::temp_dir;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use anyhow::anyhow;
@@ -35,12 +35,15 @@ pub async fn fill_pool_from_files(
     let global_import_dir = app_handle
         .path()
         .resolve("protoc-include", BaseDirectory::Resource)
-        .expect("failed to resolve protoc include directory")
-        .to_string_lossy()
-        .to_string();
+        .expect("failed to resolve protoc include directory");
 
     // HACK: Remove UNC prefix for Windows paths
-    let global_import_dir = global_import_dir.replace("\\\\?\\", "");
+    let global_import_dir = dunce::simplified(&Path::from(global_import_dir))
+        .to_string_lossy()
+        .to_string();
+    let desc_path = dunce::simplified(&Path::from(desc_path))
+        .to_string_lossy()
+        .to_string();
 
     let mut args = vec![
         "--include_imports".to_string(),
@@ -48,7 +51,7 @@ pub async fn fill_pool_from_files(
         "-I".to_string(),
         global_import_dir,
         "-o".to_string(),
-        desc_path.to_string_lossy().to_string(),
+        desc_path,
     ];
 
     for p in paths {
