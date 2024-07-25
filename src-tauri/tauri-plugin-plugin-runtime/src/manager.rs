@@ -1,6 +1,6 @@
-use command_group::GroupChild;
 use log::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
+use tokio::sync::watch::Sender;
 use tonic::transport::Channel;
 
 use crate::nodejs::node_start;
@@ -11,32 +11,27 @@ use crate::plugin_runtime::{
 
 pub struct PluginManager {
     client: PluginRuntimeClient<Channel>,
-    child: GroupChild,
+    kill_tx: Sender<bool>,
 }
 
 impl PluginManager {
     pub async fn new<R: Runtime>(app_handle: &AppHandle<R>) -> PluginManager {
         let temp_dir = app_handle.path().temp_dir().unwrap();
 
-        let start_resp = node_start(app_handle, &temp_dir).await;
+        let (kill_tx, kill_rx) = tokio::sync::watch::channel(false);
+        let start_resp = node_start(app_handle, &temp_dir, &kill_rx).await;
         info!("Connecting to gRPC client at {}", start_resp.addr);
 
         let client = match PluginRuntimeClient::connect(start_resp.addr.clone()).await {
             Ok(v) => v,
-            Err(err) => {
-                panic!("{}", err.to_string());
-            }
+            Err(err) => panic!("{}", err.to_string()),
         };
 
-        PluginManager {
-            client,
-            child: start_resp.child,
-        }
+        PluginManager { client, kill_tx }
     }
 
     pub fn cleanup(&mut self) {
-        info!("Cleaning up NodeJS process");
-        self.child.kill().unwrap();
+        self.kill_tx.send_replace(true);
     }
 
     pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {

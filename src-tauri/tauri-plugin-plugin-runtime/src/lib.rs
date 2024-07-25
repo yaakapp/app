@@ -26,7 +26,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .on_event(|app, e| match e {
             RunEvent::ExitRequested { code, .. } => {
                 tauri::async_runtime::block_on(async move {
-                    info!("Exiting plugin runtime because of app exit {:?}", code);
+                    info!("Exiting plugin runtime due to app exit {:?}", code);
                     let manager: State<Mutex<PluginManager>> = app.state();
                     manager.lock().await.cleanup();
                 });

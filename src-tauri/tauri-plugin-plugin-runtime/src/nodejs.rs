@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
 
-use command_group::{CommandGroup, GroupChild};
-use log::{debug, info};
+use command_group::CommandGroup;
+use log::{debug, error, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
@@ -11,6 +11,7 @@ use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
+use tokio::sync::watch::Receiver;
 
 #[derive(Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -20,10 +21,13 @@ struct PortFile {
 
 pub struct StartResp {
     pub addr: String,
-    pub child: GroupChild,
 }
 
-pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> StartResp {
+pub async fn node_start<R: Runtime>(
+    app: &AppHandle<R>,
+    temp_dir: &PathBuf,
+    kill_rx: &Receiver<bool>,
+) -> StartResp {
     let port_file_path = temp_dir.join(Alphanumeric.sample_string(&mut rand::thread_rng(), 10));
 
     let plugins_dir = app
@@ -47,7 +51,7 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         .to_string();
 
     info!(
-        "Starting plugin runtime\n  port_file={}\n  plugins_dir={}\n  runtime_dir={}",
+        "Starting plugin runtime\n → port_file={}\n → plugins_dir={}\n → runtime_dir={}",
         port_file_path.to_string_lossy(),
         plugins_dir,
         plugin_runtime_main,
@@ -61,9 +65,27 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         .env("YAAK_PLUGINS_DIR", plugins_dir)
         .args(&[plugin_runtime_main]);
 
-    let child = Command::from(cmd)
+    println!("Waiting on plugin runtime");
+    let mut child = Command::from(cmd)
         .group_spawn()
         .expect("yaaknode failed to start");
+
+    let kill_rx = kill_rx.clone();
+
+    // Check on child
+    tokio::spawn(async move {
+        loop {
+            if let Ok(Some(status)) = child.try_wait() {
+                error!("Plugin runtime exited status={}", status);
+                // TODO: Try restarting plugin runtime
+                break;
+            } else if *kill_rx.borrow() {
+                info!("Stopping plugin runtime");
+                child.kill().expect("Failed to kill plugin runtime");
+                break;
+            }
+        }
+    });
 
     let start = std::time::Instant::now();
     let port_file_contents = loop {
@@ -84,5 +106,5 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
     info!("Started plugin runtime on :{}", port_file.port);
     let addr = format!("http://localhost:{}", port_file.port);
 
-    StartResp { addr, child }
+    StartResp { addr }
 }
