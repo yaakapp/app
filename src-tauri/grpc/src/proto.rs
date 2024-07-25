@@ -4,22 +4,22 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use hyper::client::HttpConnector;
 use hyper::Client;
+use hyper::client::HttpConnector;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use log::{debug, warn};
 use prost::Message;
 use prost_reflect::{DescriptorPool, MethodDescriptor};
 use prost_types::{FileDescriptorProto, FileDescriptorSet};
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
+use tauri::path::BaseDirectory;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio_stream::StreamExt;
 use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
-use tonic::transport::Uri;
 use tonic::Request;
+use tonic::transport::Uri;
 use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
 use tonic_reflection::pb::server_reflection_request::MessageRequest;
 use tonic_reflection::pb::server_reflection_response::MessageResponse;
@@ -38,12 +38,10 @@ pub async fn fill_pool_from_files(
         .expect("failed to resolve protoc include directory");
 
     // HACK: Remove UNC prefix for Windows paths
-    let global_import_dir = dunce::simplified(&Path::from(global_import_dir))
+    let global_import_dir = dunce::simplified(global_import_dir.as_path())
         .to_string_lossy()
         .to_string();
-    let desc_path = dunce::simplified(&Path::from(desc_path))
-        .to_string_lossy()
-        .to_string();
+    let desc_path = dunce::simplified(desc_path.as_path());
 
     let mut args = vec![
         "--include_imports".to_string(),
@@ -51,7 +49,7 @@ pub async fn fill_pool_from_files(
         "-I".to_string(),
         global_import_dir,
         "-o".to_string(),
-        desc_path,
+        desc_path.to_string_lossy().to_string(),
     ];
 
     for p in paths {
@@ -89,14 +87,12 @@ pub async fn fill_pool_from_files(
         ));
     }
 
-    let bytes = fs::read(desc_path.as_path())
-        .await
-        .map_err(|e| e.to_string())?;
+    let bytes = fs::read(desc_path).await.map_err(|e| e.to_string())?;
     let fdp = FileDescriptorSet::decode(bytes.deref()).map_err(|e| e.to_string())?;
     pool.add_file_descriptor_set(fdp)
         .map_err(|e| e.to_string())?;
 
-    fs::remove_file(desc_path.as_path())
+    fs::remove_file(desc_path)
         .await
         .map_err(|e| e.to_string())?;
 

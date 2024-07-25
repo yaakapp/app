@@ -59,15 +59,7 @@
       "../plugin-runtime/build": "plugin-runtime"
     },
     "shortDescription": "Play with APIs, intuitively",
-    "targets": [
-      "deb",
-      "rpm",
-      "appimage",
-      "nsis",
-      "app",
-      "dmg",
-      "updater"
-    ],
+    "targets": "all",
     "iOS": {
       "developmentTeam": "7PU3P6ELJ8"
     },
