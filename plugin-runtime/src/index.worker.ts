@@ -38,10 +38,38 @@ new Promise<void>(async (resolve, reject) => {
     info.capabilities.push('filter');
   }
 
+  if (typeof mod['pluginHookHttpRequestAction'] === 'function') {
+    info.capabilities.push('http-request-action');
+  }
+
   console.log('Loaded plugin', info.name, info.capabilities, info.dir);
 
-  function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
-    parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
+  let callbackId = 0;
+  const callbacks: Record<number, () => void> = {};
+
+  function reply<T>(originalMsg: ParentToWorkerEvent, rawPayload: T) {
+    // Convert callback functions to callback-id objects, so they can be serialized
+    // TODO: Don't parse/stringify, just iterate recursively (for perf)
+    const payload = JSON.parse(
+      JSON.stringify(rawPayload, (_key, value) => {
+        if (typeof value === 'function') {
+          callbackId++;
+          callbacks[callbackId] = value;
+          return { callbackId };
+        }
+        return value;
+      }),
+    );
+
+    try {
+      parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
+    } catch (err) {
+      console.log(
+        'Failed to post message from plugin worker. It was probably not serializable',
+        err,
+        originalMsg,
+      );
+    }
   }
 
   function replyErr(originalMsg: ParentToWorkerEvent, error: unknown) {
@@ -60,6 +88,8 @@ new Promise<void>(async (resolve, reject) => {
         reply(msg, await mod.pluginHookResponseFilter(ctx, msg.payload));
       } else if (msg.name === 'run-export') {
         reply(msg, await mod.pluginHookExport(ctx, msg.payload));
+      } else if (msg.name === 'run-http-request-action') {
+        reply(msg, await mod.pluginHookHttpRequestAction(ctx, msg.payload));
       } else if (msg.name === 'info') {
         reply(msg, info);
       } else {

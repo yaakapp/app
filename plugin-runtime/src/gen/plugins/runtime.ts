@@ -7,6 +7,7 @@
 /* eslint-disable */
 import { type CallContext, type CallOptions } from "nice-grpc-common";
 import * as _m0 from "protobufjs/minimal";
+import Long = require("long");
 
 export const protobufPackage = "yaak.plugins.runtime";
 
@@ -14,7 +15,7 @@ export interface PluginInfo {
   plugin: string;
 }
 
-export interface HookResponse {
+export interface HookGenericResponse {
   info: PluginInfo | undefined;
   data: string;
 }
@@ -31,6 +32,23 @@ export interface HookResponseFilterRequest {
 
 export interface HookExportRequest {
   request: string;
+}
+
+export interface HookHttpRequestActionRequest {
+}
+
+export interface Callback {
+  callbackId: number;
+}
+
+export interface RequestAction {
+  key: string;
+  label: string;
+  onSelect: Callback | undefined;
+}
+
+export interface HookHttpRequestActionResponse {
+  actions: RequestAction[];
 }
 
 function createBasePluginInfo(): PluginInfo {
@@ -90,12 +108,12 @@ export const PluginInfo = {
   },
 };
 
-function createBaseHookResponse(): HookResponse {
+function createBaseHookGenericResponse(): HookGenericResponse {
   return { info: undefined, data: "" };
 }
 
-export const HookResponse = {
-  encode(message: HookResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const HookGenericResponse = {
+  encode(message: HookGenericResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.info !== undefined) {
       PluginInfo.encode(message.info, writer.uint32(10).fork()).ldelim();
     }
@@ -105,10 +123,10 @@ export const HookResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): HookResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookGenericResponse {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseHookResponse();
+    const message = createBaseHookGenericResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -135,14 +153,14 @@ export const HookResponse = {
     return message;
   },
 
-  fromJSON(object: any): HookResponse {
+  fromJSON(object: any): HookGenericResponse {
     return {
       info: isSet(object.info) ? PluginInfo.fromJSON(object.info) : undefined,
       data: isSet(object.data) ? globalThis.String(object.data) : "",
     };
   },
 
-  toJSON(message: HookResponse): unknown {
+  toJSON(message: HookGenericResponse): unknown {
     const obj: any = {};
     if (message.info !== undefined) {
       obj.info = PluginInfo.toJSON(message.info);
@@ -153,11 +171,11 @@ export const HookResponse = {
     return obj;
   },
 
-  create(base?: DeepPartial<HookResponse>): HookResponse {
-    return HookResponse.fromPartial(base ?? {});
+  create(base?: DeepPartial<HookGenericResponse>): HookGenericResponse {
+    return HookGenericResponse.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<HookResponse>): HookResponse {
-    const message = createBaseHookResponse();
+  fromPartial(object: DeepPartial<HookGenericResponse>): HookGenericResponse {
+    const message = createBaseHookGenericResponse();
     message.info = (object.info !== undefined && object.info !== null)
       ? PluginInfo.fromPartial(object.info)
       : undefined;
@@ -369,6 +387,258 @@ export const HookExportRequest = {
   },
 };
 
+function createBaseHookHttpRequestActionRequest(): HookHttpRequestActionRequest {
+  return {};
+}
+
+export const HookHttpRequestActionRequest = {
+  encode(_: HookHttpRequestActionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookHttpRequestActionRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHookHttpRequestActionRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): HookHttpRequestActionRequest {
+    return {};
+  },
+
+  toJSON(_: HookHttpRequestActionRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<HookHttpRequestActionRequest>): HookHttpRequestActionRequest {
+    return HookHttpRequestActionRequest.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<HookHttpRequestActionRequest>): HookHttpRequestActionRequest {
+    const message = createBaseHookHttpRequestActionRequest();
+    return message;
+  },
+};
+
+function createBaseCallback(): Callback {
+  return { callbackId: 0 };
+}
+
+export const Callback = {
+  encode(message: Callback, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.callbackId !== 0) {
+      writer.uint32(8).int64(message.callbackId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Callback {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCallback();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 8) {
+            break;
+          }
+
+          message.callbackId = longToNumber(reader.int64() as Long);
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Callback {
+    return { callbackId: isSet(object.callbackId) ? globalThis.Number(object.callbackId) : 0 };
+  },
+
+  toJSON(message: Callback): unknown {
+    const obj: any = {};
+    if (message.callbackId !== 0) {
+      obj.callbackId = Math.round(message.callbackId);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<Callback>): Callback {
+    return Callback.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Callback>): Callback {
+    const message = createBaseCallback();
+    message.callbackId = object.callbackId ?? 0;
+    return message;
+  },
+};
+
+function createBaseRequestAction(): RequestAction {
+  return { key: "", label: "", onSelect: undefined };
+}
+
+export const RequestAction = {
+  encode(message: RequestAction, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.label !== "") {
+      writer.uint32(18).string(message.label);
+    }
+    if (message.onSelect !== undefined) {
+      Callback.encode(message.onSelect, writer.uint32(26).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): RequestAction {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRequestAction();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.label = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.onSelect = Callback.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RequestAction {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      label: isSet(object.label) ? globalThis.String(object.label) : "",
+      onSelect: isSet(object.onSelect) ? Callback.fromJSON(object.onSelect) : undefined,
+    };
+  },
+
+  toJSON(message: RequestAction): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.label !== "") {
+      obj.label = message.label;
+    }
+    if (message.onSelect !== undefined) {
+      obj.onSelect = Callback.toJSON(message.onSelect);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RequestAction>): RequestAction {
+    return RequestAction.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RequestAction>): RequestAction {
+    const message = createBaseRequestAction();
+    message.key = object.key ?? "";
+    message.label = object.label ?? "";
+    message.onSelect = (object.onSelect !== undefined && object.onSelect !== null)
+      ? Callback.fromPartial(object.onSelect)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseHookHttpRequestActionResponse(): HookHttpRequestActionResponse {
+  return { actions: [] };
+}
+
+export const HookHttpRequestActionResponse = {
+  encode(message: HookHttpRequestActionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.actions) {
+      RequestAction.encode(v!, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): HookHttpRequestActionResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHookHttpRequestActionResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.actions.push(RequestAction.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HookHttpRequestActionResponse {
+    return {
+      actions: globalThis.Array.isArray(object?.actions)
+        ? object.actions.map((e: any) => RequestAction.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: HookHttpRequestActionResponse): unknown {
+    const obj: any = {};
+    if (message.actions?.length) {
+      obj.actions = message.actions.map((e) => RequestAction.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HookHttpRequestActionResponse>): HookHttpRequestActionResponse {
+    return HookHttpRequestActionResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HookHttpRequestActionResponse>): HookHttpRequestActionResponse {
+    const message = createBaseHookHttpRequestActionResponse();
+    message.actions = object.actions?.map((e) => RequestAction.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 export type PluginRuntimeDefinition = typeof PluginRuntimeDefinition;
 export const PluginRuntimeDefinition = {
   name: "PluginRuntime",
@@ -378,7 +648,7 @@ export const PluginRuntimeDefinition = {
       name: "hookImport",
       requestType: HookImportRequest,
       requestStream: false,
-      responseType: HookResponse,
+      responseType: HookGenericResponse,
       responseStream: false,
       options: {},
     },
@@ -386,7 +656,7 @@ export const PluginRuntimeDefinition = {
       name: "hookExport",
       requestType: HookExportRequest,
       requestStream: false,
-      responseType: HookResponse,
+      responseType: HookGenericResponse,
       responseStream: false,
       options: {},
     },
@@ -394,7 +664,15 @@ export const PluginRuntimeDefinition = {
       name: "hookResponseFilter",
       requestType: HookResponseFilterRequest,
       requestStream: false,
-      responseType: HookResponse,
+      responseType: HookGenericResponse,
+      responseStream: false,
+      options: {},
+    },
+    hookHttpRequestAction: {
+      name: "hookHttpRequestAction",
+      requestType: HookHttpRequestActionRequest,
+      requestStream: false,
+      responseType: HookHttpRequestActionResponse,
       responseStream: false,
       options: {},
     },
@@ -402,21 +680,41 @@ export const PluginRuntimeDefinition = {
 } as const;
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
-  hookImport(request: HookImportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
-  hookExport(request: HookExportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
+  hookImport(
+    request: HookImportRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<HookGenericResponse>>;
+  hookExport(
+    request: HookExportRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<HookGenericResponse>>;
   hookResponseFilter(
     request: HookResponseFilterRequest,
     context: CallContext & CallContextExt,
-  ): Promise<DeepPartial<HookResponse>>;
+  ): Promise<DeepPartial<HookGenericResponse>>;
+  hookHttpRequestAction(
+    request: HookHttpRequestActionRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<HookHttpRequestActionResponse>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
-  hookImport(request: DeepPartial<HookImportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
-  hookExport(request: DeepPartial<HookExportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
+  hookImport(
+    request: DeepPartial<HookImportRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<HookGenericResponse>;
+  hookExport(
+    request: DeepPartial<HookExportRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<HookGenericResponse>;
   hookResponseFilter(
     request: DeepPartial<HookResponseFilterRequest>,
     options?: CallOptions & CallOptionsExt,
-  ): Promise<HookResponse>;
+  ): Promise<HookGenericResponse>;
+  hookHttpRequestAction(
+    request: DeepPartial<HookHttpRequestActionRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<HookHttpRequestActionResponse>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
@@ -426,6 +724,21 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+function longToNumber(long: Long): number {
+  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (long.lt(globalThis.Number.MIN_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

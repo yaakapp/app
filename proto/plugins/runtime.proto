@@ -3,16 +3,17 @@ syntax = "proto3";
 package yaak.plugins.runtime;
 
 service PluginRuntime {
-  rpc hookImport (HookImportRequest) returns (HookResponse);
-  rpc hookExport (HookExportRequest) returns (HookResponse);
-  rpc hookResponseFilter (HookResponseFilterRequest) returns (HookResponse);
+  rpc hookImport (HookImportRequest) returns (HookGenericResponse);
+  rpc hookExport (HookExportRequest) returns (HookGenericResponse);
+  rpc hookResponseFilter (HookResponseFilterRequest) returns (HookGenericResponse);
+  rpc hookHttpRequestAction (HookHttpRequestActionRequest) returns (HookHttpRequestActionResponse);
 }
 
 message PluginInfo {
   string plugin = 1;
 }
 
-message HookResponse {
+message HookGenericResponse {
   PluginInfo info = 1;
   string data = 2;
 }
@@ -29,4 +30,21 @@ message HookResponseFilterRequest {
 
 message HookExportRequest {
   string request = 1;
+}
+
+message HookHttpRequestActionRequest {
+}
+
+message Callback {
+  int64 callbackId = 1;
+}
+
+message RequestAction {
+  string key = 1;
+  string label = 2;
+  Callback onSelect = 3;
+}
+
+message HookHttpRequestActionResponse {
+  repeated RequestAction actions = 2;
 }

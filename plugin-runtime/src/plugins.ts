@@ -5,7 +5,7 @@ import { PluginHandle } from './PluginHandle';
 export interface PluginInfo {
   name: string;
   dir: string;
-  capabilities: ('import' | 'export' | 'filter')[];
+  capabilities: ('import' | 'export' | 'filter' | 'http-request-action')[];
 }
 
 export function loadPlugins(): PluginHandle[] {

@@ -57,6 +57,7 @@ use crate::window_menu::app_menu;
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
 use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use plugin_runtime::manager::PluginManager;
+use plugin_runtime::plugin_runtime::{HookHttpRequestActionResponse, RequestAction};
 
 mod analytics;
 mod grpc;
@@ -910,6 +911,18 @@ async fn cmd_request_to_curl(
 }
 
 #[tauri::command]
+async fn cmd_http_request_actions(
+    plugin_manager: State<'_, Mutex<PluginManager>>,
+) -> Result<Vec<RequestAction>, String> {
+    Ok(plugin_manager
+        .lock()
+        .await
+        .run_http_request_actions()
+        .await?
+        .actions)
+}
+
+#[tauri::command]
 async fn cmd_curl_to_request(
     command: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
@@ -1714,6 +1727,7 @@ pub fn run() {
             cmd_get_workspace,
             cmd_grpc_go,
             cmd_grpc_reflect,
+            cmd_http_request_actions,
             cmd_import_data,
             cmd_list_cookie_jars,
             cmd_list_environments,

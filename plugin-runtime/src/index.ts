@@ -6,10 +6,12 @@ import {
   DeepPartial,
   HookExportRequest,
   HookImportRequest,
-  HookResponse,
+  HookGenericResponse,
   HookResponseFilterRequest,
   PluginRuntimeDefinition,
   PluginRuntimeServiceImplementation,
+  HookHttpRequestActionRequest,
+  HookHttpRequestActionResponse,
 } from './gen/plugins/runtime';
 import { PluginManager } from './PluginManager';
 
@@ -20,17 +22,37 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     this.#manager = PluginManager.instance();
   }
 
-  async hookExport(request: HookExportRequest): Promise<DeepPartial<HookResponse>> {
+  async hookHttpRequestAction(
+    request: HookHttpRequestActionRequest,
+  ): Promise<DeepPartial<HookHttpRequestActionResponse>> {
+    const plugins = await this.#manager.pluginsWith('http-request-action');
+    console.log(
+      'PLUGINS',
+      plugins.map((p) => p.pluginDir),
+    );
+    let actions: HookHttpRequestActionResponse['actions'] = [];
+    for (const p of plugins) {
+      console.log('CALLING PLUGIN', p.pluginDir);
+      actions.push(await p.invoke('run-http-request-action', request));
+      console.log('CALLED PLUGIN', actions);
+    }
+
+    console.log('ACTIONS', actions);
+    return { actions };
+  }
+
+  async hookExport(request: HookExportRequest): Promise<DeepPartial<HookGenericResponse>> {
     const plugin = await this.#manager.pluginOrThrow('exporter-curl');
-    const data = await plugin.runExport(JSON.parse(request.request));
+    const data: string = await plugin.invoke('run-export', JSON.parse(request.request));
     const info = { plugin: (await plugin.getInfo()).name };
     return { info, data };
   }
 
-  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookResponse>> {
+  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookGenericResponse>> {
     const plugins = await this.#manager.pluginsWith('import');
     for (const p of plugins) {
-      const data = await p.runImport(request.data);
+      const result = await p.invoke('run-import', request.data);
+      const data = JSON.stringify(result, null, 2);
       if (data != null && data !== 'null') {
         const info = { plugin: (await p.getInfo()).name };
         return { info, data };
@@ -40,10 +62,12 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     throw new ServerError(Status.UNKNOWN, 'No importers found for data');
   }
 
-  async hookResponseFilter(request: HookResponseFilterRequest): Promise<DeepPartial<HookResponse>> {
+  async hookResponseFilter(
+    request: HookResponseFilterRequest,
+  ): Promise<DeepPartial<HookGenericResponse>> {
     const pluginName = request.contentType.includes('json') ? 'filter-jsonpath' : 'filter-xpath';
     const plugin = await this.#manager.pluginOrThrow(pluginName);
-    const data = await plugin.runResponseFilter(request);
+    const data: string = await plugin.invoke('run-filter', request);
     const info = { plugin: (await plugin.getInfo()).name };
     return { info, data };
   }

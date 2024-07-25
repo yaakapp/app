@@ -6,7 +6,8 @@ use tonic::transport::Channel;
 use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 use crate::plugin_runtime::{
-    HookExportRequest, HookImportRequest, HookResponse, HookResponseFilterRequest,
+    HookExportRequest, HookGenericResponse, HookHttpRequestActionRequest,
+    HookHttpRequestActionResponse, HookImportRequest, HookResponseFilterRequest,
 };
 
 pub struct PluginManager {
@@ -34,7 +35,7 @@ impl PluginManager {
         self.kill_tx.send_replace(true);
     }
 
-    pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {
+    pub async fn run_import(&mut self, data: &str) -> Result<HookGenericResponse, String> {
         let response = self
             .client
             .hook_import(tonic::Request::new(HookImportRequest {
@@ -46,7 +47,20 @@ impl PluginManager {
         Ok(response.into_inner())
     }
 
-    pub async fn run_export_curl(&mut self, request: &str) -> Result<HookResponse, String> {
+    pub async fn run_http_request_actions(
+        &mut self,
+    ) -> Result<HookHttpRequestActionResponse, String> {
+        let response = self
+            .client
+            .hook_http_request_action(tonic::Request::new(HookHttpRequestActionRequest {}))
+            .await
+            .map_err(|e| e.message().to_string())?;
+        println!("-------------------- {:?}", response);
+
+        Ok(response.into_inner())
+    }
+
+    pub async fn run_export_curl(&mut self, request: &str) -> Result<HookGenericResponse, String> {
         let response = self
             .client
             .hook_export(tonic::Request::new(HookExportRequest {
@@ -63,7 +77,7 @@ impl PluginManager {
         filter: &str,
         body: &str,
         content_type: &str,
-    ) -> Result<HookResponse, String> {
+    ) -> Result<HookGenericResponse, String> {
         debug!("Running plugin filter");
         let response = self
             .client

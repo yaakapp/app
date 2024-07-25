@@ -1,3 +1,4 @@
+use std::io::{stderr, stdout};
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
@@ -67,6 +68,8 @@ pub async fn node_start<R: Runtime>(
 
     println!("Waiting on plugin runtime");
     let mut child = Command::from(cmd)
+        .stdout(stdout())
+        .stderr(stderr())
         .group_spawn()
         .expect("yaaknode failed to start");
 
@@ -75,6 +78,7 @@ pub async fn node_start<R: Runtime>(
     // Check on child
     tokio::spawn(async move {
         loop {
+            tokio::time::sleep(Duration::from_millis(100)).await;
             if let Ok(Some(status)) = child.try_wait() {
                 error!("Plugin runtime exited status={}", status);
                 // TODO: Try restarting plugin runtime

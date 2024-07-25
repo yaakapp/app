@@ -17,6 +17,7 @@ import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHotKey } from '../hooks/useHotKey';
+import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
@@ -665,6 +666,8 @@ function SidebarItem({
   const [editing, setEditing] = useState<boolean>(false);
   const isActive = activeRequest?.id === itemId;
   const createDropdownItems = useCreateDropdownItems({ folderId: itemId });
+  const httpRequestActions = useHttpRequestActions();
+  console.log('HELLO', httpRequestActions);
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
@@ -786,6 +789,10 @@ function SidebarItem({
                 leftSlot: <Icon icon="copy" />,
                 onSelect: copyAsCurl.mutate,
               },
+              ...(httpRequestActions.data ?? []).map((a) => ({
+                label: a.label,
+                key: a.key,
+              })),
               { type: 'separator' },
             ]
           : [];
@@ -849,12 +856,13 @@ function SidebarItem({
     }
   }, [
     child.children,
-    copyAsCurl,
+    copyAsCurl.mutate,
     createDropdownItems,
     deleteFolder,
     deleteRequest,
     duplicateGrpcRequest,
     duplicateHttpRequest,
+    httpRequestActions.data,
     itemId,
     itemModel,
     itemName,

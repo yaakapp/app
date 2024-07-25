@@ -5,7 +5,7 @@ import { PluginInfo } from './plugins';
 
 export interface ParentToWorkerEvent<T = any> {
   callbackId: string;
-  name: string;
+  name: 'info' | 'run-filter' | 'run-import' | 'run-export' | 'run-http-request-action';
   payload: T;
 }
 
@@ -40,25 +40,10 @@ export class PluginHandle {
   }
 
   async getInfo(): Promise<PluginInfo> {
-    return this.#callPlugin('info', null);
+    return this.invoke('info', null);
   }
 
-  async runResponseFilter({ filter, body }: { filter: string; body: string }): Promise<string> {
-    return this.#callPlugin('run-filter', { filter, body });
-  }
-
-  async runExport(request: any): Promise<string> {
-    return this.#callPlugin('run-export', request);
-  }
-
-  async runImport(data: string): Promise<string> {
-    const result = await this.#callPlugin('run-import', data);
-
-    // Plugin returns object, but we convert to string
-    return JSON.stringify(result, null, 2);
-  }
-
-  #callPlugin<P, R>(name: string, payload: P): Promise<R> {
+  invoke<P, R>(name: ParentToWorkerEvent['name'], payload: P): Promise<R> {
     const callbackId = `cb_${randomUUID().replaceAll('-', '')}`;
     return new Promise((resolve, reject) => {
       const cb = (e: WorkerToParentEvent<R>) => {
