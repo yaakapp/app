@@ -21,3 +21,4 @@ uuid = { version = "1.7.0", features = ["v4"] }
 tauri = { version = "2.0.0-beta" }
 tauri-plugin-shell = "2.0.0-beta"
 md5 = "0.7.0"
+dunce = "1.0.4"

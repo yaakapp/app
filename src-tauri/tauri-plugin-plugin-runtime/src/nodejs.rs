@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
 
@@ -7,8 +7,8 @@ use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::{AppHandle, Manager, Runtime};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 
@@ -29,23 +29,28 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
     let plugins_dir = app
         .path()
         .resolve("plugins", BaseDirectory::Resource)
-        .expect("failed to resolve plugin directory resource")
-        .to_string_lossy()
-        .to_string();
+        .expect("failed to resolve plugin directory resource");
 
-    let plugin_runtime_dir = app
+    let plugin_runtime_main = app
         .path()
         .resolve("plugin-runtime", BaseDirectory::Resource)
-        .expect("failed to resolve plugin runtime resource");
+        .expect("failed to resolve plugin runtime resource")
+        .join("index.cjs");
 
-    // HACK: Remove UNC prefix for Windows paths
-    let plugins_dir = plugins_dir.replace("\\\\?\\", "");
+    // HACK: Remove UNC prefix for Windows paths to pass to sidecar
+
+    let plugins_dir = dunce::simplified(&Path::from(plugins_dir))
+        .to_string_lossy()
+        .to_string();
+    let plugin_runtime_main = dunce::simplified(&Path::from(plugin_runtime_main))
+        .to_string_lossy()
+        .to_string();
 
     info!(
         "Starting plugin runtime\n  port_file={}\n  plugins_dir={}\n  runtime_dir={}",
         port_file_path.to_string_lossy(),
         plugins_dir,
-        plugin_runtime_dir.to_string_lossy(),
+        plugin_runtime_main,
     );
 
     let cmd = app
@@ -54,7 +59,7 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
         .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
-        .args(&[plugin_runtime_dir.join("index.cjs")]);
+        .args(&[plugin_runtime_main]);
 
     let child = Command::from(cmd)
         .group_spawn()
