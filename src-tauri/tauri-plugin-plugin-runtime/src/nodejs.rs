@@ -7,8 +7,8 @@ use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri::path::BaseDirectory;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 
@@ -39,10 +39,10 @@ pub async fn node_start<R: Runtime>(app: &AppHandle<R>, temp_dir: &PathBuf) -> S
 
     // HACK: Remove UNC prefix for Windows paths to pass to sidecar
 
-    let plugins_dir = dunce::simplified(&Path::from(plugins_dir))
+    let plugins_dir = dunce::simplified(plugins_dir.as_path())
         .to_string_lossy()
         .to_string();
-    let plugin_runtime_main = dunce::simplified(&Path::from(plugin_runtime_main))
+    let plugin_runtime_main = dunce::simplified(plugin_runtime_main.as_path())
         .to_string_lossy()
         .to_string();
 
