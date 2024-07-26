@@ -1,7 +1,10 @@
 const path = require('node:path');
 const decompress = require('decompress');
 const Downloader = require("nodejs-file-downloader");
-const {rmSync, unlinkSync, cpSync, mkdirSync} = require("node:fs");
+const {rmSync, unlinkSync, cpSync, mkdirSync, existsSync} = require("node:fs");
+const {execSync} = require("node:child_process");
+
+const NODE_VERSION = 'v22.5.1';
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -10,17 +13,17 @@ const LNX_X64 = 'linux_x64';
 const WIN_X64 = 'win32_x64';
 
 const URL_MAP = {
-  [MAC_ARM]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-arm64.tar.gz',
-  [MAC_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-darwin-x64.tar.gz',
-  [LNX_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-linux-x64.tar.gz',
-  [WIN_X64]: 'https://nodejs.org/download/release/v22.5.1/node-v22.5.1-win-x64.zip',
+  [MAC_ARM]: `https://nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-darwin-arm64.tar.gz`,
+  [MAC_X64]: `https://nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-darwin-x64.tar.gz`,
+  [LNX_X64]: `https://nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-linux-x64.tar.gz`,
+  [WIN_X64]: `https://nodejs.org/download/release/${NODE_VERSION}/node-${NODE_VERSION}-win-x64.zip`,
 };
 
 const SRC_BIN_MAP = {
-  [MAC_ARM]: 'node-v22.5.1-darwin-arm64/bin/node',
-  [MAC_X64]: 'node-v22.5.1-darwin-x64/bin/node',
-  [LNX_X64]: 'node-v22.5.1-linux-x64/bin/node',
-  [WIN_X64]: 'node-v22.5.1-win-x64/node.exe',
+  [MAC_ARM]: `node-${NODE_VERSION}-darwin-arm64/bin/node`,
+  [MAC_X64]: `node-${NODE_VERSION}-darwin-x64/bin/node`,
+  [LNX_X64]: `node-${NODE_VERSION}-linux-x64/bin/node`,
+  [WIN_X64]: `node-${NODE_VERSION}-win-x64/node.exe`,
 };
 
 const DST_BIN_MAP = {
@@ -30,13 +33,21 @@ const DST_BIN_MAP = {
   win32_x64: 'yaaknode-x86_64-pc-windows-msvc.exe',
 };
 
-const dstDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'node');
-rmSync(dstDir, {recursive: true, force: true});
-mkdirSync(dstDir, {recursive: true});
+const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
+
+const destDir = path.join(__dirname, `..`, 'src-tauri', 'vendored', 'node');
+const binDest = path.join(destDir, DST_BIN_MAP[key]);
+console.log(`Vendoring NodeJS ${NODE_VERSION} for ${key}`);
+
+if (existsSync(binDest) && execSync(`${binDest} --version`).toString('utf-8').trim() === NODE_VERSION) {
+  console.log("NodeJS already vendored");
+  return;
+}
+
+rmSync(destDir, {recursive: true, force: true});
+mkdirSync(destDir, {recursive: true});
 
 (async function () {
-  const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
-  console.log('Vendoring NodeJS binary for', key);
   const url = URL_MAP[key];
   const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
 
@@ -51,11 +62,10 @@ mkdirSync(dstDir, {recursive: true});
 
   // Copy binary
   const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);
-  const binDst = path.join(dstDir, DST_BIN_MAP[key]);
-  cpSync(binSrc, binDst);
+  cpSync(binSrc, binDest);
   rmSync(tmpDir, {recursive: true, force: true});
 
-  console.log("Downloaded NodeJS to", binDst);
+  console.log("Downloaded NodeJS to", binDest);
 })().catch(err => {
   console.log('Script failed:', err);
   process.exit(1);
