@@ -43,19 +43,14 @@ pub async fn node_start<R: Runtime>(
         .join("index.cjs");
 
     // HACK: Remove UNC prefix for Windows paths to pass to sidecar
-
-    let plugins_dir = dunce::simplified(plugins_dir.as_path())
-        .to_string_lossy()
-        .to_string();
-    let plugin_runtime_main = dunce::simplified(plugin_runtime_main.as_path())
-        .to_string_lossy()
-        .to_string();
+    let plugins_dir = dunce::simplified(plugins_dir.as_path());
+    let plugin_runtime_main = dunce::simplified(plugin_runtime_main.as_path());
 
     info!(
         "Starting plugin runtime\n → port_file={}\n → plugins_dir={}\n → runtime_dir={}",
         port_file_path.to_string_lossy(),
-        plugins_dir,
-        plugin_runtime_main,
+        plugins_dir.to_string_lossy(),
+        plugin_runtime_main.to_string_lossy(),
     );
 
     let cmd = app
@@ -64,7 +59,7 @@ pub async fn node_start<R: Runtime>(
         .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
-        .args(&[plugin_runtime_main]);
+        .arg(plugin_runtime_main);
 
     println!("Waiting on plugin runtime");
     let mut child = Command::from(cmd)

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
+import { Callback } from './gen/plugins/runtime';
 import { ParentToWorkerEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
 
@@ -45,7 +46,7 @@ new Promise<void>(async (resolve, reject) => {
   console.log('Loaded plugin', info.name, info.capabilities, info.dir);
 
   let callbackId = 0;
-  const callbacks: Record<number, () => void> = {};
+  const callbacks: Record<number, Function> = {};
 
   function reply<T>(originalMsg: ParentToWorkerEvent, rawPayload: T) {
     // Convert callback functions to callback-id objects, so they can be serialized
@@ -53,9 +54,10 @@ new Promise<void>(async (resolve, reject) => {
     const payload = JSON.parse(
       JSON.stringify(rawPayload, (_key, value) => {
         if (typeof value === 'function') {
-          callbackId++;
+          callbackId += 1;
           callbacks[callbackId] = value;
-          return { callbackId };
+          const callback: Callback = { id: callbackId, plugin: info.name };
+          return callback;
         }
         return value;
       }),
@@ -90,6 +92,12 @@ new Promise<void>(async (resolve, reject) => {
         reply(msg, await mod.pluginHookExport(ctx, msg.payload));
       } else if (msg.name === 'run-http-request-action') {
         reply(msg, await mod.pluginHookHttpRequestAction(ctx, msg.payload));
+      } else if (msg.name === 'call-callback') {
+        const fn = callbacks[msg.payload.callbackId];
+        console.log('CALLBACK FN', fn, callbacks, msg.payload);
+        const result = await fn(msg.payload.data);
+        console.log('CALLING CALLBACK', result);
+        reply(msg, result);
       } else if (msg.name === 'info') {
         reply(msg, info);
       } else {

@@ -38,7 +38,8 @@ export interface HookHttpRequestActionRequest {
 }
 
 export interface Callback {
-  callbackId: number;
+  id: number;
+  plugin: string;
 }
 
 export interface RequestAction {
@@ -49,6 +50,16 @@ export interface RequestAction {
 
 export interface HookHttpRequestActionResponse {
   actions: RequestAction[];
+}
+
+export interface CallCallbackRequest {
+  callback: Callback | undefined;
+  data: string;
+}
+
+export interface CallCallbackResponse {
+  info: PluginInfo | undefined;
+  data: string;
 }
 
 function createBasePluginInfo(): PluginInfo {
@@ -431,13 +442,16 @@ export const HookHttpRequestActionRequest = {
 };
 
 function createBaseCallback(): Callback {
-  return { callbackId: 0 };
+  return { id: 0, plugin: "" };
 }
 
 export const Callback = {
   encode(message: Callback, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.callbackId !== 0) {
-      writer.uint32(8).int64(message.callbackId);
+    if (message.id !== 0) {
+      writer.uint32(8).int64(message.id);
+    }
+    if (message.plugin !== "") {
+      writer.uint32(18).string(message.plugin);
     }
     return writer;
   },
@@ -454,7 +468,14 @@ export const Callback = {
             break;
           }
 
-          message.callbackId = longToNumber(reader.int64() as Long);
+          message.id = longToNumber(reader.int64() as Long);
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.plugin = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -466,13 +487,19 @@ export const Callback = {
   },
 
   fromJSON(object: any): Callback {
-    return { callbackId: isSet(object.callbackId) ? globalThis.Number(object.callbackId) : 0 };
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      plugin: isSet(object.plugin) ? globalThis.String(object.plugin) : "",
+    };
   },
 
   toJSON(message: Callback): unknown {
     const obj: any = {};
-    if (message.callbackId !== 0) {
-      obj.callbackId = Math.round(message.callbackId);
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.plugin !== "") {
+      obj.plugin = message.plugin;
     }
     return obj;
   },
@@ -482,7 +509,8 @@ export const Callback = {
   },
   fromPartial(object: DeepPartial<Callback>): Callback {
     const message = createBaseCallback();
-    message.callbackId = object.callbackId ?? 0;
+    message.id = object.id ?? 0;
+    message.plugin = object.plugin ?? "";
     return message;
   },
 };
@@ -639,6 +667,158 @@ export const HookHttpRequestActionResponse = {
   },
 };
 
+function createBaseCallCallbackRequest(): CallCallbackRequest {
+  return { callback: undefined, data: "" };
+}
+
+export const CallCallbackRequest = {
+  encode(message: CallCallbackRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.callback !== undefined) {
+      Callback.encode(message.callback, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.data !== "") {
+      writer.uint32(18).string(message.data);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CallCallbackRequest {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCallCallbackRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.callback = Callback.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.data = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CallCallbackRequest {
+    return {
+      callback: isSet(object.callback) ? Callback.fromJSON(object.callback) : undefined,
+      data: isSet(object.data) ? globalThis.String(object.data) : "",
+    };
+  },
+
+  toJSON(message: CallCallbackRequest): unknown {
+    const obj: any = {};
+    if (message.callback !== undefined) {
+      obj.callback = Callback.toJSON(message.callback);
+    }
+    if (message.data !== "") {
+      obj.data = message.data;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CallCallbackRequest>): CallCallbackRequest {
+    return CallCallbackRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CallCallbackRequest>): CallCallbackRequest {
+    const message = createBaseCallCallbackRequest();
+    message.callback = (object.callback !== undefined && object.callback !== null)
+      ? Callback.fromPartial(object.callback)
+      : undefined;
+    message.data = object.data ?? "";
+    return message;
+  },
+};
+
+function createBaseCallCallbackResponse(): CallCallbackResponse {
+  return { info: undefined, data: "" };
+}
+
+export const CallCallbackResponse = {
+  encode(message: CallCallbackResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.info !== undefined) {
+      PluginInfo.encode(message.info, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.data !== "") {
+      writer.uint32(18).string(message.data);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CallCallbackResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCallCallbackResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.info = PluginInfo.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.data = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CallCallbackResponse {
+    return {
+      info: isSet(object.info) ? PluginInfo.fromJSON(object.info) : undefined,
+      data: isSet(object.data) ? globalThis.String(object.data) : "",
+    };
+  },
+
+  toJSON(message: CallCallbackResponse): unknown {
+    const obj: any = {};
+    if (message.info !== undefined) {
+      obj.info = PluginInfo.toJSON(message.info);
+    }
+    if (message.data !== "") {
+      obj.data = message.data;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CallCallbackResponse>): CallCallbackResponse {
+    return CallCallbackResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CallCallbackResponse>): CallCallbackResponse {
+    const message = createBaseCallCallbackResponse();
+    message.info = (object.info !== undefined && object.info !== null)
+      ? PluginInfo.fromPartial(object.info)
+      : undefined;
+    message.data = object.data ?? "";
+    return message;
+  },
+};
+
 export type PluginRuntimeDefinition = typeof PluginRuntimeDefinition;
 export const PluginRuntimeDefinition = {
   name: "PluginRuntime",
@@ -676,6 +856,14 @@ export const PluginRuntimeDefinition = {
       responseStream: false,
       options: {},
     },
+    callCallback: {
+      name: "callCallback",
+      requestType: CallCallbackRequest,
+      requestStream: false,
+      responseType: CallCallbackResponse,
+      responseStream: false,
+      options: {},
+    },
   },
 } as const;
 
@@ -696,6 +884,10 @@ export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
     request: HookHttpRequestActionRequest,
     context: CallContext & CallContextExt,
   ): Promise<DeepPartial<HookHttpRequestActionResponse>>;
+  callCallback(
+    request: CallCallbackRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<CallCallbackResponse>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
@@ -715,6 +907,10 @@ export interface PluginRuntimeClient<CallOptionsExt = {}> {
     request: DeepPartial<HookHttpRequestActionRequest>,
     options?: CallOptions & CallOptionsExt,
   ): Promise<HookHttpRequestActionResponse>;
+  callCallback(
+    request: DeepPartial<CallCallbackRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<CallCallbackResponse>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

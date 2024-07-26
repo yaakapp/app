@@ -2,6 +2,7 @@ import type { InvokeArgs } from '@tauri-apps/api/core';
 import { invoke } from '@tauri-apps/api/core';
 
 type TauriCmd =
+  | 'cmd_call_callback'
   | 'cmd_check_for_updates'
   | 'cmd_create_cookie_jar'
   | 'cmd_create_environment'

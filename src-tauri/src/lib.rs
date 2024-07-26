@@ -30,6 +30,12 @@ use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
+use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use plugin_runtime::manager::PluginManager;
+use plugin_runtime::plugin_runtime::{CallCallbackRequest, Callback, RequestAction};
+use plugin_runtime::Request;
+
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
@@ -54,10 +60,6 @@ use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
-use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-use plugin_runtime::manager::PluginManager;
-use plugin_runtime::plugin_runtime::{HookHttpRequestActionResponse, RequestAction};
 
 mod analytics;
 mod grpc;
@@ -945,6 +947,26 @@ async fn cmd_curl_to_request(
 }
 
 #[tauri::command]
+async fn cmd_call_callback(
+    plugin_manager: State<'_, Mutex<PluginManager>>,
+    callback: Callback,
+    data: &str,
+) -> Result<(), String> {
+    let result = plugin_manager
+        .lock()
+        .await
+        .client
+        .call_callback(Request::new(CallCallbackRequest {
+            data: data.to_string(),
+            callback: Some(callback),
+        }))
+        .await
+        .map_err(|e| e.to_string())?;
+    println!("RESULT ----------------- {:?}", result);
+    Ok(())
+}
+
+#[tauri::command]
 async fn cmd_export_data(
     window: WebviewWindow,
     export_path: &str,
@@ -1695,6 +1717,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            cmd_call_callback,
             cmd_check_for_updates,
             cmd_create_cookie_jar,
             cmd_create_environment,

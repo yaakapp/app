@@ -7,6 +7,7 @@ service PluginRuntime {
   rpc hookExport (HookExportRequest) returns (HookGenericResponse);
   rpc hookResponseFilter (HookResponseFilterRequest) returns (HookGenericResponse);
   rpc hookHttpRequestAction (HookHttpRequestActionRequest) returns (HookHttpRequestActionResponse);
+  rpc callCallback (CallCallbackRequest) returns (CallCallbackResponse);
 }
 
 message PluginInfo {
@@ -36,7 +37,8 @@ message HookHttpRequestActionRequest {
 }
 
 message Callback {
-  int64 callbackId = 1;
+  int64 id = 1;
+  string plugin = 2;
 }
 
 message RequestAction {
@@ -47,4 +49,14 @@ message RequestAction {
 
 message HookHttpRequestActionResponse {
   repeated RequestAction actions = 2;
+}
+
+message CallCallbackRequest {
+  Callback callback = 1;
+  string data = 2;
+}
+
+message CallCallbackResponse {
+  PluginInfo info = 1;
+  string data = 2;
 }

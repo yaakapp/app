@@ -34,6 +34,7 @@ import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
 import { isResponseLoading } from '../lib/models';
+import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
@@ -667,7 +668,6 @@ function SidebarItem({
   const isActive = activeRequest?.id === itemId;
   const createDropdownItems = useCreateDropdownItems({ folderId: itemId });
   const httpRequestActions = useHttpRequestActions();
-  console.log('HELLO', httpRequestActions);
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
@@ -792,6 +792,12 @@ function SidebarItem({
               ...(httpRequestActions.data ?? []).map((a) => ({
                 label: a.label,
                 key: a.key,
+                onSelect: async () => {
+                  const request = await getHttpRequest(itemId);
+                  if (request != null) {
+                    await a.onSelect(request);
+                  }
+                },
               })),
               { type: 'separator' },
             ]

@@ -5,6 +5,7 @@ use crate::manager::PluginManager;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::sync::Mutex;
+pub use tonic::Request;
 
 pub mod manager;
 mod nodejs;

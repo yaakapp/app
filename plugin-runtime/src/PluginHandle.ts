@@ -5,7 +5,13 @@ import { PluginInfo } from './plugins';
 
 export interface ParentToWorkerEvent<T = any> {
   callbackId: string;
-  name: 'info' | 'run-filter' | 'run-import' | 'run-export' | 'run-http-request-action';
+  name:
+    | 'info'
+    | 'call-callback'
+    | 'run-filter'
+    | 'run-import'
+    | 'run-export'
+    | 'run-http-request-action';
   payload: T;
 }
 

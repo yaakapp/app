@@ -12,6 +12,8 @@ import {
   PluginRuntimeServiceImplementation,
   HookHttpRequestActionRequest,
   HookHttpRequestActionResponse,
+  CallCallbackRequest,
+  CallCallbackResponse,
 } from './gen/plugins/runtime';
 import { PluginManager } from './PluginManager';
 
@@ -20,6 +22,16 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
 
   constructor() {
     this.#manager = PluginManager.instance();
+  }
+
+  async callCallback(request: CallCallbackRequest): Promise<DeepPartial<CallCallbackResponse>> {
+    const plugin = await this.#manager.pluginOrThrow(request.callback?.plugin ?? 'n/a');
+    const data: string = await plugin?.invoke('call-callback', {
+      callbackId: request.callback?.id,
+      data: JSON.parse(request.data),
+    });
+    const info = { plugin: (await plugin.getInfo()).name };
+    return { info, data };
   }
 
   async hookHttpRequestAction(

@@ -11,7 +11,7 @@ use crate::plugin_runtime::{
 };
 
 pub struct PluginManager {
-    client: PluginRuntimeClient<Channel>,
+    pub client: PluginRuntimeClient<Channel>,
     kill_tx: Sender<bool>,
 }
 

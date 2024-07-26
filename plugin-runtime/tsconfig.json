@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2021",
-    "lib": ["es2021"],
+    "lib": [
+      "es2021"
+    ],
     "noImplicitAny": false,
     "moduleResolution": "node",
     "sourceMap": true,
@@ -14,8 +16,7 @@
     "skipLibCheck": true,
     "paths": {
       "*": [
-        "node_modules/*",
-        "src/types/*"
+        "node_modules/*"
       ]
     }
   },
