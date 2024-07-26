@@ -65,7 +65,8 @@
       "deb",
       "dmg",
       "nsis",
-      "rpm"
+      "rpm",
+      "updater"
     ],
     "iOS": {
       "developmentTeam": "7PU3P6ELJ8"
