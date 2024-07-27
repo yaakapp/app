@@ -75,6 +75,7 @@ pub async fn node_start<R: Runtime>(
     // Check on child
     tokio::spawn(async move {
         loop {
+            tokio::time::sleep(Duration::from_millis(50)).await;
             if let Ok(Some(status)) = child.try_wait() {
                 error!("Plugin runtime exited status={}", status);
                 // TODO: Try restarting plugin runtime
