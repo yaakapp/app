@@ -1,3 +1,4 @@
+use std::time::Duration;
 use log::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::watch::Sender;
@@ -30,8 +31,10 @@ impl PluginManager {
         PluginManager { client, kill_tx }
     }
 
-    pub fn cleanup(&mut self) {
+    pub async fn cleanup(&mut self) {
         self.kill_tx.send_replace(true);
+        // Give it a sec to get the tx and kill
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
     pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {
