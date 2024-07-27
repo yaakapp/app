@@ -1,7 +1,7 @@
 extern crate core;
 
-use log::info;
 use crate::manager::PluginManager;
+use log::info;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::sync::Mutex;
@@ -24,11 +24,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             })
         })
         .on_event(|app, e| match e {
-            RunEvent::ExitRequested { code, .. } => {
+            // TODO: Also exit when app is force-quit (eg. cmd+r in IntelliJ runner)
+            RunEvent::Exit => {
                 tauri::async_runtime::block_on(async move {
-                    info!("Exiting plugin runtime due to app exit {:?}", code);
+                    info!("Exiting plugin runtime due to app exit");
                     let manager: State<Mutex<PluginManager>> = app.state();
-                    manager.lock().await.cleanup();
+                    manager.lock().await.cleanup().await;
                 });
             }
             _ => {}
