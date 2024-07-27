@@ -3,12 +3,12 @@ use std::process::Command;
 use std::time::Duration;
 
 use command_group::CommandGroup;
-use log::{debug, error, info};
+use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri::path::BaseDirectory;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio::sync::watch::Receiver;
@@ -70,23 +70,14 @@ pub async fn node_start<R: Runtime>(
         .group_spawn()
         .expect("yaaknode failed to start");
 
-    let kill_rx = kill_rx.clone();
+    let mut kill_rx = kill_rx.clone();
 
     // Check on child
     tokio::spawn(async move {
-        loop {
-            // Small sleep so we don't spin lock the CPU
-            tokio::time::sleep(Duration::from_millis(50)).await;
-            if let Ok(Some(status)) = child.try_wait() {
-                error!("Plugin runtime exited status={}", status);
-                // TODO: Try restarting plugin runtime
-                break;
-            } else if *kill_rx.borrow() {
-                info!("Stopping plugin runtime");
-                child.kill().expect("Failed to kill plugin runtime");
-                break;
-            }
-        }
+        kill_rx.wait_for(|b| *b == true).await.expect("Kill channel errored");
+        info!("Killing plugin runtime");
+        child.kill().expect("Failed to kill plugin runtime");
+        return;
     });
 
     let start = std::time::Instant::now();
