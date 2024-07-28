@@ -4,7 +4,7 @@ use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter};
 
 use crate::analytics::get_num_launches;
 use crate::models::{get_key_value_raw, set_key_value_raw};

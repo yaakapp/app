@@ -2,10 +2,7 @@ use hex_color::HexColor;
 use log::warn;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
-use tauri::{
-    plugin::{Builder, TauriPlugin},
-    Manager, Runtime, Window, WindowEvent,
-};
+use tauri::{plugin::{Builder, TauriPlugin}, Manager, Runtime, Window, WindowEvent, Emitter, Listener};
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
@@ -424,7 +421,7 @@ pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
             }
         }
 
-        // Are we de-allocing this properly ? (I miss safe Rust :(  )
+        // Are we de-allocing this properly? (I miss safe Rust :(  )
         let window_label = window.label().to_string();
 
         let app_state = WindowState {

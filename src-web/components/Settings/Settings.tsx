@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
 import React from 'react';
 import { useKeyPressEvent, useLocalStorage } from 'react-use';
@@ -24,7 +24,7 @@ export const Settings = () => {
 
   // Close settings window on escape
   // TODO: Could this be put in a better place? Eg. in Rust key listener when creating the window
-  useKeyPressEvent('Escape', () => getCurrent().close());
+  useKeyPressEvent('Escape', () => getCurrentWebviewWindow().close());
 
   return (
     <div className={classNames('grid grid-rows-[auto_minmax(0,1fr)] h-full')}>

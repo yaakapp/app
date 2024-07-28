@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { useOsInfo } from '../hooks/useOsInfo';
@@ -25,7 +25,7 @@ export function WindowControls({ className, onlyX }: Props) {
           <Button
             className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
             color="custom"
-            onClick={() => getCurrent().minimize()}
+            onClick={() => getCurrentWebviewWindow().minimize()}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
               <path fill="currentColor" d="M14 8v1H3V8z" />
@@ -35,7 +35,7 @@ export function WindowControls({ className, onlyX }: Props) {
             className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
             color="custom"
             onClick={async () => {
-              const w = getCurrent();
+              const w = getCurrentWebviewWindow();
               await w.toggleMaximize();
               setMaximized(await w.isMaximized());
             }}
@@ -58,7 +58,7 @@ export function WindowControls({ className, onlyX }: Props) {
       <Button
         color="custom"
         className="!h-full px-4 text-fg-subtle rounded-none hocus:bg-fg-danger hocus:text-fg"
-        onClick={() => getCurrent().close()}
+        onClick={() => getCurrentWebviewWindow().close()}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
           <path
