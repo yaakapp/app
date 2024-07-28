@@ -31,15 +31,11 @@ use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
-use plugin_runtime::manager::PluginManager;
-use plugin_runtime::plugin_runtime::{CallCallbackRequest, Callback, RequestAction};
-use plugin_runtime::Request;
-
 use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
 use plugin_runtime::manager::PluginManager;
+use plugin_runtime::plugin_runtime::{Callback, CallCallbackRequest, RequestAction};
+use plugin_runtime::Request;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;

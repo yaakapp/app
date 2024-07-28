@@ -1,4 +1,3 @@
-use std::io::{stderr, stdout};
 use std::path::PathBuf;
 use std::time::Duration;
 
