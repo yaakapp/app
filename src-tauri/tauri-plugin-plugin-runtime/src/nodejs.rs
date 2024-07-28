@@ -1,14 +1,12 @@
 use std::path::PathBuf;
-use std::process::Command;
 use std::time::Duration;
 
-use command_group::CommandGroup;
 use log::{debug, info};
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
-use tauri::{AppHandle, Manager, Runtime};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio::sync::watch::Receiver;
@@ -57,24 +55,24 @@ pub async fn node_start<R: Runtime>(
         plugin_runtime_main,
     );
 
-    let cmd = app
+    let (_, child) = app
         .shell()
         .sidecar("yaaknode")
         .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
-        .args(&[plugin_runtime_main]);
-
-    println!("Waiting on plugin runtime");
-    let mut child = Command::from(cmd)
-        .group_spawn()
+        .args(&[plugin_runtime_main])
+        .spawn()
         .expect("yaaknode failed to start");
 
     let mut kill_rx = kill_rx.clone();
 
     // Check on child
     tokio::spawn(async move {
-        kill_rx.wait_for(|b| *b == true).await.expect("Kill channel errored");
+        kill_rx
+            .wait_for(|b| *b == true)
+            .await
+            .expect("Kill channel errored");
         info!("Killing plugin runtime");
         child.kill().expect("Failed to kill plugin runtime");
         return;
