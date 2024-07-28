@@ -1,4 +1,5 @@
 use log::{debug, info};
+use std::time::Duration;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::watch::Sender;
 use tonic::transport::Channel;
@@ -31,8 +32,11 @@ impl PluginManager {
         PluginManager { client, kill_tx }
     }
 
-    pub fn cleanup(&mut self) {
+    pub async fn cleanup(&mut self) {
         self.kill_tx.send_replace(true);
+
+        // Give it a bit of time to kill
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
     pub async fn run_import(&mut self, data: &str) -> Result<HookGenericResponse, String> {

@@ -1,7 +1,7 @@
 const path = require('node:path');
 const decompress = require('decompress');
 const Downloader = require("nodejs-file-downloader");
-const {rmSync, unlinkSync, cpSync, mkdirSync, existsSync} = require("node:fs");
+const {rmSync, cpSync, mkdirSync, existsSync} = require("node:fs");
 const {execSync} = require("node:child_process");
 
 const NODE_VERSION = 'v22.5.1';
@@ -58,7 +58,7 @@ mkdirSync(destDir, {recursive: true});
   await decompress(filePath, tmpDir, {});
 
   // Remove the original archive
-  unlinkSync(filePath);
+  rmSync(filePath);
 
   // Copy binary
   const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);

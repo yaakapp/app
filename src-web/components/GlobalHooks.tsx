@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
 import { useAtiveWorkspaceChangedToast } from '../hooks/useAtiveWorkspaceChangedToast';
 import { useClipboardText } from '../hooks/useClipboardText';
@@ -86,7 +86,7 @@ export function GlobalHooks() {
       return;
     }
 
-    if (model.model === 'http_request' && windowLabel !== getCurrent().label) {
+    if (model.model === 'http_request' && windowLabel !== getCurrentWebviewWindow().label) {
       wasUpdatedExternally(model.id);
     }
 
@@ -142,7 +142,7 @@ export function GlobalHooks() {
     }
 
     const { interfaceScale, interfaceFontSize, editorFontSize } = settings;
-    getCurrent().setZoom(interfaceScale).catch(console.error);
+    getCurrentWebviewWindow().setZoom(interfaceScale).catch(console.error);
     document.documentElement.style.setProperty('font-size', `${interfaceFontSize}px`);
     document.documentElement.style.setProperty('--editor-font-size', `${editorFontSize}px`);
   }, [settings]);
