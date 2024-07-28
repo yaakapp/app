@@ -1,8 +1,7 @@
 const decompress = require('decompress');
 const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
-const fs = require("node:fs");
-const {rmSync, mkdirSync} = require("node:fs");
+const {rmSync, mkdirSync, cpSync} = require("node:fs");
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -48,17 +47,17 @@ mkdirSync(dstDir, {recursive: true});
   await decompress(filePath, tmpDir, {});
 
   // Remove the original archive
-  fs.unlinkSync(filePath);
+  rmSync(filePath);
 
   // Copy binary
   const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);
   const binDst = path.join(dstDir, DST_BIN_MAP[key]);
-  fs.cpSync(binSrc, binDst);
+  cpSync(binSrc, binDst);
 
   // Copy other files
   const includeSrc = path.join(tmpDir, 'include');
   const includeDst = path.join(dstDir, 'include');
-  fs.cpSync(includeSrc, includeDst, {recursive: true});
+  cpSync(includeSrc, includeDst, {recursive: true});
 
   rmSync(tmpDir, {recursive: true, force: true});
 
