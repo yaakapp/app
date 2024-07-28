@@ -55,15 +55,16 @@ pub async fn node_start<R: Runtime>(
         plugin_runtime_main,
     );
 
-    let (_, child) = app
+    let cmd = app
         .shell()
         .sidecar("yaaknode")
         .expect("yaaknode not found")
         .env("YAAK_GRPC_PORT_FILE_PATH", port_file_path.clone())
         .env("YAAK_PLUGINS_DIR", plugins_dir)
-        .args(&[plugin_runtime_main])
-        .spawn()
-        .expect("yaaknode failed to start");
+        .args(&[plugin_runtime_main]);
+
+    println!("Waiting on plugin runtime");
+    let (_, child) = cmd.spawn().expect("yaaknode failed to start");
 
     let mut kill_rx = kill_rx.clone();
 
@@ -75,6 +76,7 @@ pub async fn node_start<R: Runtime>(
             .expect("Kill channel errored");
         info!("Killing plugin runtime");
         child.kill().expect("Failed to kill plugin runtime");
+        info!("Killed plugin runtime");
         return;
     });
 
