@@ -988,15 +988,14 @@ async fn cmd_save_response(
 #[tauri::command]
 async fn cmd_send_http_request(
     window: WebviewWindow,
-    request_id: &str,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
     download_dir: Option<&str>,
+    // NOTE: We receive the entire request because to account for the race
+    //   condition where the user may have just edited a field before sending
+    //   that has not yet been saved in the DB.
+    request: HttpRequest,
 ) -> Result<HttpResponse, String> {
-    let request = get_http_request(&window, request_id)
-        .await
-        .expect("Failed to get request");
-
     let environment = match environment_id {
         Some(id) => match get_environment(&window, id).await {
             Ok(env) => Some(env),
