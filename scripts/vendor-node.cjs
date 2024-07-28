@@ -57,9 +57,6 @@ mkdirSync(destDir, {recursive: true});
   // Decompress to the same directory
   await decompress(filePath, tmpDir, {});
 
-  // Remove the original archive
-  rmSync(filePath);
-
   // Copy binary
   const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);
   cpSync(binSrc, binDest);
