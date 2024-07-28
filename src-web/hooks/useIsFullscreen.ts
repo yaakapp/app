@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useWindowSize } from 'react-use';
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -15,7 +15,7 @@ export function useIsFullscreen() {
     useQuery({
       queryKey: ['is_fullscreen', debouncedWindowWidth],
       queryFn: async () => {
-        return getCurrent().isFullscreen();
+        return getCurrentWebviewWindow().isFullscreen();
       },
     }).data ?? false
   );

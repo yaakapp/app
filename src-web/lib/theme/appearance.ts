@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Appearance } from './window';
 
 export function getCSSAppearance(): Appearance {
@@ -6,7 +6,7 @@ export function getCSSAppearance(): Appearance {
 }
 
 export async function getWindowAppearance(): Promise<Appearance> {
-  const a = await getCurrent().theme();
+  const a = await getCurrentWebviewWindow().theme();
   return a ?? getCSSAppearance();
 }
 
@@ -19,7 +19,7 @@ export function subscribeToWindowAppearanceChange(
 ): () => void {
   const container = { unsubscribe: () => {} };
 
-  getCurrent()
+  getCurrentWebviewWindow()
     .onThemeChanged((t) => {
       cb(t.payload);
     })

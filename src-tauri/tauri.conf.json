@@ -65,9 +65,9 @@
       "deb",
       "dmg",
       "nsis",
-      "rpm",
-      "updater"
+      "rpm"
     ],
+    "createUpdaterArtifacts": true,
     "iOS": {
       "developmentTeam": "7PU3P6ELJ8"
     },

@@ -1,4 +1,4 @@
-import { getCurrent } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -15,7 +15,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = await type();
 if (osType !== 'macos') {
-  await getCurrent().setDecorations(false);
+  await getCurrentWebviewWindow().setDecorations(false);
 }
 
 await attachConsole();

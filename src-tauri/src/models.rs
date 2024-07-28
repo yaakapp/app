@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDateTime;
 use sqlx::types::{Json, JsonValue};
 use sqlx::{Pool, Sqlite};
-use tauri::{AppHandle, Manager, WebviewWindow, Wry};
+use tauri::{AppHandle, Emitter, Manager, WebviewWindow, Wry};
 use tokio::sync::Mutex;
 
 pub enum ModelType {
