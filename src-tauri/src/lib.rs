@@ -1899,7 +1899,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 _ = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.canny.io", None)
+                    .open("https://yaak.app/roadmap", None)
             }
 
             // Commands for development

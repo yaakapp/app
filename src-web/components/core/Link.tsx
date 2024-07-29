@@ -35,5 +35,5 @@ export function Link({ href, children, className, ...other }: Props) {
 }
 
 export function FeedbackLink() {
-  return <Link href="https://yaak.canny.io">Feedback</Link>;
+  return <Link href="https://yaak.app/roadmap">Feedback</Link>;
 }
