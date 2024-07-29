@@ -85,7 +85,7 @@ export function SettingsDropdown() {
           label: 'Feedback',
           leftSlot: <Icon icon="chat" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => open('https://yaak.canny.io'),
+          onSelect: () => open('https://yaak.app/roadmap'),
         },
         {
           key: 'changelog',
