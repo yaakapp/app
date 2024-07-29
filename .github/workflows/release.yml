@@ -114,7 +114,7 @@ jobs:
         with:
           tagName: 'v__VERSION__'
           releaseName: 'Release __VERSION__'
-          releaseBody: 'https://yaak.app/changelog/__VERSION__'
+          releaseBody: 'https://yaak.app/blog/__VERSION__'
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

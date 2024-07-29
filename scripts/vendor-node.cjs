@@ -52,7 +52,7 @@ mkdirSync(destDir, {recursive: true});
   const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
 
   // Download GitHub release artifact
-  const {filePath} = await new Downloader({url, directory: tmpDir,}).download();
+  const {filePath} = await new Downloader({url, directory: tmpDir}).download();
 
   // Decompress to the same directory
   await decompress(filePath, tmpDir, {});
