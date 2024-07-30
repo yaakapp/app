@@ -38,6 +38,7 @@ export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlacehol
 function lineToPair(l: string): PairEditorProps['pairs'][0] {
   const [name, ...values] = l.split(':');
   const pair: PairEditorProps['pairs'][0] = {
+    enabled: true,
     name: (name ?? '').trim(),
     value: values.join(':').trim(),
   };
