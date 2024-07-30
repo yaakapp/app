@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{Parser, Token, Val};
+use crate::{FnArg, Parser, Token, Val};
 
-type TemplateCallback = fn(name: &str, args: Vec<String>) -> String;
+type TemplateCallback = fn(name: &str, args: HashMap<String, String>) -> String;
 
 pub fn parse_and_render(
     template: &str,
@@ -32,11 +32,7 @@ pub fn render(
     return doc_str.join("");
 }
 
-fn render_tag(
-    val: Val,
-    vars: &HashMap<String, String>,
-    cb: Option<TemplateCallback>,
-) -> String {
+fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallback>) -> String {
     match val {
         Val::Str(s) => s.into(),
         Val::Var(name) => match vars.get(name.as_str()) {
@@ -48,11 +44,22 @@ fn render_tag(
             let resolved_args = args
                 .iter()
                 .map(|a| match a {
-                    Val::Str(s) => s.to_string(),
-                    Val::Var(i) => vars.get(i.as_str()).unwrap_or(&empty).to_string(),
-                    val => render_tag(val.clone(), vars, cb),
+                    FnArg {
+                        name,
+                        value: Val::Str(s),
+                    } => (name.to_string(), s.to_string()),
+                    FnArg {
+                        name,
+                        value: Val::Var(i),
+                    } => (
+                        name.to_string(),
+                        vars.get(i.as_str()).unwrap_or(&empty).to_string(),
+                    ),
+                    FnArg { name, value: val } => {
+                        (name.to_string(), render_tag(val.clone(), vars, cb))
+                    }
                 })
-                .collect::<Vec<String>>();
+                .collect::<HashMap<String, String>>();
             match cb {
                 Some(cb) => cb(name.as_str(), resolved_args),
                 None => "".into(),
@@ -102,11 +109,11 @@ mod tests {
     #[test]
     fn render_valid_fn() {
         let vars = HashMap::new();
-        let template = r#"${[ say_hello("John", "Kate") ]}"#;
-        let result = r#"say_hello: ["John", "Kate"]"#;
+        let template = r#"${[ say_hello(a="John", b="Kate") ]}"#;
+        let result = r#"say_hello: 2, Some("John") Some("Kate")"#;
 
-        fn cb(name: &str, args: Vec<String>) -> String {
-            format!("{name}: {:?}", args)
+        fn cb(name: &str, args: HashMap<String, String>) -> String {
+            format!("{name}: {}, {:?} {:?}", args.len(), args.get("a"), args.get("b"))
         }
         assert_eq!(parse_and_render(template, &vars, Some(cb)), result);
     }
@@ -114,12 +121,12 @@ mod tests {
     #[test]
     fn render_nested_fn() {
         let vars = HashMap::new();
-        let template = r#"${[ upper(secret()) ]}"#;
+        let template = r#"${[ upper(foo=secret()) ]}"#;
         let result = r#"ABC"#;
-        fn cb(name: &str, args: Vec<String>) -> String {
+        fn cb(name: &str, args: HashMap<String, String>) -> String {
             match name {
                 "secret" => "abc".to_string(),
-                "upper" => args[0].to_string().to_uppercase(),
+                "upper" => args["foo"].to_string().to_uppercase(),
                 _ => "".to_string(),
             }
         }
