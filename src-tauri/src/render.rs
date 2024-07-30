@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-
+use std::time::SystemTime;
+use chrono::{DateTime, Utc};
 use sqlx::types::{Json, JsonValue};
 
 use crate::models::{
@@ -103,7 +104,20 @@ pub fn variables_from_environment(
 }
 
 pub fn render(template: &str, vars: &HashMap<String, String>) -> String {
-    parse_and_render(template, vars, None)
+    parse_and_render(template, vars, Some(template_callback))
+}
+
+fn template_callback(name: &str, _args: HashMap<String, String>) -> String {
+    match name {
+        "timestamp" => {
+            let now = SystemTime::now();
+            let now: DateTime<Utc> = now.into();
+            now.to_rfc3339()
+        },
+        _ => {
+            "".to_string()
+        }
+    }
 }
 
 fn add_variable_to_map(
