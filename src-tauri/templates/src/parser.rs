@@ -1,8 +1,14 @@
 #[derive(Clone, PartialEq, Debug)]
+pub struct FnArg {
+    pub name: String,
+    pub value: Val,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Val {
     Str(String),
     Var(String),
-    Fn { name: String, args: Vec<Val> },
+    Fn { name: String, args: Vec<FnArg> },
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -85,7 +91,7 @@ impl Parser {
     #[allow(dead_code)]
     fn debug_pos(&self, x: &str) {
         println!(
-            r#"Position: {x} -- [{}] = {} --> "{}" --> {:?}"#,
+            r#"Position: {x}: text[{}]='{}' → "{}" → {:?}"#,
             self.pos,
             self.chars[self.pos],
             self.chars.iter().collect::<String>(),
@@ -105,7 +111,7 @@ impl Parser {
         }
     }
 
-    fn parse_fn(&mut self) -> Option<(String, Vec<Val>)> {
+    fn parse_fn(&mut self) -> Option<(String, Vec<FnArg>)> {
         let start_pos = self.pos;
 
         let name = match self.parse_ident() {
@@ -127,21 +133,39 @@ impl Parser {
         Some((name, args))
     }
 
-    fn parse_fn_args(&mut self) -> Option<Vec<Val>> {
+    fn parse_fn_args(&mut self) -> Option<Vec<FnArg>> {
         if !self.match_str("(") {
             return None;
         }
 
         let start_pos = self.pos;
 
-        let mut args: Vec<Val> = Vec::new();
+        let mut args: Vec<FnArg> = Vec::new();
+
+        // Fn closed immediately
+        self.skip_whitespace();
+        if self.match_str(")") {
+            return Some(args)
+        }
+
         while self.pos < self.chars.len() {
             self.skip_whitespace();
-            if let Some(v) = self.parse_value() {
-                args.push(v);
+
+            let name = self.parse_ident();
+            self.skip_whitespace();
+            self.match_str("=");
+            self.skip_whitespace();
+            let value = self.parse_value();
+            self.skip_whitespace();
+
+            if let (Some(name), Some(value)) = (name.clone(), value.clone()) {
+                args.push(FnArg { name, value });
+            } else {
+                // Didn't find valid thing, so return
+                self.pos = start_pos;
+                return None;
             }
 
-            self.skip_whitespace();
             if self.match_str(")") {
                 break;
             }
@@ -339,13 +363,16 @@ mod tests {
 
     #[test]
     fn fn_ident_arg() {
-        let mut p = Parser::new("${[ foo(bar) ]}");
+        let mut p = Parser::new("${[ foo(a=bar) ]}");
         assert_eq!(
             p.parse(),
             vec![
                 Token::Tag(Val::Fn {
                     name: "foo".into(),
-                    args: vec![Val::Var("bar".into())],
+                    args: vec![FnArg {
+                        name: "a".into(),
+                        value: Val::Var("bar".into())
+                    }],
                 }),
                 Token::Eof
             ]
@@ -354,16 +381,25 @@ mod tests {
 
     #[test]
     fn fn_ident_args() {
-        let mut p = Parser::new("${[ foo(bar,baz, qux ) ]}");
+        let mut p = Parser::new("${[ foo(a=bar,b = baz, c =qux ) ]}");
         assert_eq!(
             p.parse(),
             vec![
                 Token::Tag(Val::Fn {
                     name: "foo".into(),
                     args: vec![
-                        Val::Var("bar".into()),
-                        Val::Var("baz".into()),
-                        Val::Var("qux".into()),
+                        FnArg {
+                            name: "a".into(),
+                            value: Val::Var("bar".into())
+                        },
+                        FnArg {
+                            name: "b".into(),
+                            value: Val::Var("baz".into())
+                        },
+                        FnArg {
+                            name: "c".into(),
+                            value: Val::Var("qux".into())
+                        },
                     ],
                 }),
                 Token::Eof
@@ -373,16 +409,25 @@ mod tests {
 
     #[test]
     fn fn_mixed_args() {
-        let mut p = Parser::new(r#"${[ foo(bar,"baz \"hi\"", qux ) ]}"#);
+        let mut p = Parser::new(r#"${[ foo(aaa=bar,bb="baz \"hi\"", c=qux ) ]}"#);
         assert_eq!(
             p.parse(),
             vec![
                 Token::Tag(Val::Fn {
                     name: "foo".into(),
                     args: vec![
-                        Val::Var("bar".into()),
-                        Val::Str(r#"baz "hi""#.into()),
-                        Val::Var("qux".into()),
+                        FnArg {
+                            name: "aaa".into(),
+                            value: Val::Var("bar".into())
+                        },
+                        FnArg {
+                            name: "bb".into(),
+                            value: Val::Str(r#"baz "hi""#.into())
+                        },
+                        FnArg {
+                            name: "c".into(),
+                            value: Val::Var("qux".into())
+                        },
                     ],
                 }),
                 Token::Eof
@@ -392,18 +437,54 @@ mod tests {
 
     #[test]
     fn fn_nested() {
-        let mut p = Parser::new(r#"${[ outer(inner(foo, "i"), "o") ]}"#);
+        let mut p = Parser::new("${[ foo(b=bar()) ]}");
+        assert_eq!(
+            p.parse(),
+            vec![
+                Token::Tag(Val::Fn {
+                    name: "foo".into(),
+                    args: vec![FnArg {
+                        name: "b".into(),
+                        value: Val::Fn {
+                            name: "bar".into(),
+                            args: vec![],
+                        }
+                    }],
+                }),
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn fn_nested_args() {
+        let mut p = Parser::new(r#"${[ outer(a=inner(a=foo, b="i"), c="o") ]}"#);
         assert_eq!(
             p.parse(),
             vec![
                 Token::Tag(Val::Fn {
                     name: "outer".into(),
                     args: vec![
-                        Val::Fn {
-                            name: "inner".into(),
-                            args: vec![Val::Var("foo".into()), Val::Str("i".into()),],
+                        FnArg {
+                            name: "a".into(),
+                            value: Val::Fn {
+                                name: "inner".into(),
+                                args: vec![
+                                    FnArg {
+                                        name: "a".into(),
+                                        value: Val::Var("foo".into())
+                                    },
+                                    FnArg {
+                                        name: "b".into(),
+                                        value: Val::Str("i".into()),
+                                    },
+                                ],
+                            }
                         },
-                        Val::Str("o".into())
+                        FnArg {
+                            name: "c".into(),
+                            value: Val::Str("o".into())
+                        },
                     ],
                 }),
                 Token::Eof
