@@ -3,7 +3,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useEffect } from 'react';
 import { useAtiveWorkspaceChangedToast } from '../hooks/useAtiveWorkspaceChangedToast';
 import { useClipboardText } from '../hooks/useClipboardText';
-import { useCommandPalette } from '../hooks/useCommandPalette';
+import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { environmentsQueryKey } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
@@ -42,9 +42,11 @@ export function GlobalHooks() {
 
   // Other useful things
   useSyncThemeToDocument();
-  useCommandPalette();
   useNotificationToast();
   useAtiveWorkspaceChangedToast();
+
+  const toggleCommandPalette = useToggleCommandPalette();
+  useHotKey('command_palette.toggle', toggleCommandPalette);
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
