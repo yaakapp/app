@@ -1,7 +1,9 @@
 import classNames from 'classnames';
 import React, { memo } from 'react';
+import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { CookieDropdown } from './CookieDropdown';
 import { Icon } from './core/Icon';
+import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { EnvironmentActionsDropdown } from './EnvironmentActionsDropdown';
 import { ImportCurlButton } from './ImportCurlButton';
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
+  const togglePalette = useToggleCommandPalette();
   return (
     <HStack space={2} justifyContent="center" className={classNames(className, 'w-full h-full')}>
       <HStack space={0.5} className="flex-1 pointer-events-none">
@@ -32,6 +35,12 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
       </div>
       <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none pr-0.5">
         <ImportCurlButton />
+        <IconButton
+          icon="search"
+          title="Search or execute a command"
+          size="sm"
+          onClick={togglePalette}
+        />
         <SettingsDropdown />
         <WindowControls />
       </div>

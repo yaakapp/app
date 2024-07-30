@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
-import { useActiveRequestId } from '../hooks/useActiveRequestId';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
@@ -13,6 +13,7 @@ import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
 import { useCreateHttpRequest } from '../hooks/useCreateHttpRequest';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
 import { useDebouncedState } from '../hooks/useDebouncedState';
+import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
@@ -20,7 +21,9 @@ import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
+import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useRequests } from '../hooks/useRequests';
+import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
@@ -55,13 +58,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const routes = useAppRoutes();
   const activeEnvironmentId = useActiveEnvironmentId();
-  const activeRequestId = useActiveRequestId();
-  const active = useActiveWorkspaceId();
   const workspaces = useWorkspaces();
   const environments = useEnvironments();
   const recentEnvironments = useRecentEnvironments();
   const recentWorkspaces = useRecentWorkspaces();
   const requests = useRequests();
+  const activeRequest = useActiveRequest();
   const recentRequests = useRecentRequests();
   const openWorkspace = useOpenWorkspace();
   const createWorkspace = useCreateWorkspace();
@@ -72,6 +74,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const dialog = useDialog();
   const workspaceId = useActiveWorkspaceId();
   const activeEnvironment = useActiveEnvironment();
+  const sendRequest = useSendAnyHttpRequest();
+  const renameRequest = useRenameRequest(activeRequest?.id ?? null);
+  const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
   const [, setSidebarHidden] = useSidebarHidden();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
@@ -142,20 +147,48 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         onSelect: () => setSidebarHidden((h) => !h),
       },
     ];
+
+    if (activeRequest?.model === 'http_request') {
+      commands.push({
+        key: 'http_request.send',
+        action: 'http_request.send',
+        label: 'Send Request',
+        onSelect: () => sendRequest.mutateAsync(activeRequest.id),
+      });
+    }
+
+    if (activeRequest != null) {
+      commands.push({
+        key: 'http_request.rename',
+        label: 'Rename Request',
+        onSelect: renameRequest.mutate,
+      });
+
+      commands.push({
+        key: 'http_request.delete',
+        label: 'Delete Request',
+        onSelect: deleteRequest.mutate,
+      });
+    }
+
     return commands.sort((a, b) =>
       ('searchText' in a ? a.searchText : a.label).localeCompare(
         'searchText' in b ? b.searchText : b.label,
       ),
     );
   }, [
-    activeCookieJar,
+    activeCookieJar?.id,
     activeEnvironment,
+    activeRequest,
     createEnvironment.mutate,
     createGrpcRequest,
     createHttpRequest,
     createWorkspace.mutate,
+    deleteRequest.mutate,
     dialog,
+    renameRequest.mutate,
     routes.paths,
+    sendRequest,
     setSidebarHidden,
     workspaceId,
   ]);
@@ -225,10 +258,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     };
 
     for (const r of sortedRequests) {
-      if (r.id === activeRequestId) {
-        continue;
-      }
-
       requestGroup.items.push({
         key: `switch-request-${r.id}`,
         searchText: fallbackRequestName(r),
@@ -272,9 +301,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     };
 
     for (const w of sortedWorkspaces) {
-      if (w.id === active) {
-        continue;
-      }
       workspaceGroup.items.push({
         key: `switch-workspace-${w.id}`,
         label: w.name,
@@ -286,13 +312,11 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }, [
     workspaceCommands,
     sortedRequests,
-    activeRequestId,
     routes,
     activeEnvironmentId,
     sortedEnvironments,
     activeEnvironment?.id,
     sortedWorkspaces,
-    active,
     openWorkspace,
   ]);
 
