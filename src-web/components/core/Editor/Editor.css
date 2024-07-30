@@ -132,16 +132,18 @@
 }
 
 .cm-editor .fold-gutter-icon::after {
-  @apply block w-1.5 h-1.5 border-transparent -rotate-45
+  @apply block w-1.5 h-1.5 p-0.5 border-transparent
   border-l border-b border-l-[currentColor] border-b-[currentColor] content-[''];
 }
 
-.cm-editor .fold-gutter-icon[data-open] {
-  @apply pt-[0.38em] pl-[0.3em];
+/* Rotate the fold gutter chevron when open */
+.cm-editor .fold-gutter-icon[data-open]::after {
+  @apply rotate-[-45deg];
 }
 
-.cm-editor .fold-gutter-icon[data-open]::after {
-  @apply rotate-[-135deg];
+/* Adjust fold gutter icon position after rotation */
+.cm-editor .fold-gutter-icon:not([data-open])::after {
+  @apply relative -left-[0.1em] top-[0.1em] rotate-[-135deg];
 }
 
 .cm-editor .fold-gutter-icon:hover {
