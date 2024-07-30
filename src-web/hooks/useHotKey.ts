@@ -91,6 +91,12 @@ export function useHotKey(
         return;
       }
 
+      // Don't add key if not holding modifier
+      const isHoldingModifier = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
+      if (!isHoldingModifier) {
+        return;
+      }
+
       const key = normalizeKey(e.key, os);
 
       // Don't add hold keys
@@ -127,6 +133,7 @@ export function useHotKey(
 
       clearCurrentKeys();
     };
+
     const up = (e: KeyboardEvent) => {
       if (options.enable === false) {
         return;
@@ -142,8 +149,9 @@ export function useHotKey(
         currentKeys.current.clear();
       }
     };
-    document.addEventListener('keydown', down, { capture: true });
+
     document.addEventListener('keyup', up, { capture: true });
+    document.addEventListener('keydown', down, { capture: true });
     return () => {
       document.removeEventListener('keydown', down, { capture: true });
       document.removeEventListener('keyup', up, { capture: true });
