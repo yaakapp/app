@@ -1,8 +1,8 @@
+use crate::{FnArg, Parser, Token, Val};
+use log::warn;
 use std::collections::HashMap;
 
-use crate::{FnArg, Parser, Token, Val};
-
-type TemplateCallback = fn(name: &str, args: HashMap<String, String>) -> String;
+type TemplateCallback = fn(name: &str, args: HashMap<String, String>) -> Result<String, String>;
 
 pub fn parse_and_render(
     template: &str,
@@ -61,7 +61,13 @@ fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallb
                 })
                 .collect::<HashMap<String, String>>();
             match cb {
-                Some(cb) => cb(name.as_str(), resolved_args),
+                Some(cb) => match cb(name.as_str(), resolved_args.clone()) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        warn!("Failed to run template callback {}({:?}): {}", name, resolved_args, e);
+                        "".to_string()
+                    }
+                },
                 None => "".into(),
             }
         }
@@ -112,8 +118,13 @@ mod tests {
         let template = r#"${[ say_hello(a="John", b="Kate") ]}"#;
         let result = r#"say_hello: 2, Some("John") Some("Kate")"#;
 
-        fn cb(name: &str, args: HashMap<String, String>) -> String {
-            format!("{name}: {}, {:?} {:?}", args.len(), args.get("a"), args.get("b"))
+        fn cb(name: &str, args: HashMap<String, String>) -> Result<String, String> {
+            Ok(format!(
+                "{name}: {}, {:?} {:?}",
+                args.len(),
+                args.get("a"),
+                args.get("b")
+            ))
         }
         assert_eq!(parse_and_render(template, &vars, Some(cb)), result);
     }
@@ -123,12 +134,27 @@ mod tests {
         let vars = HashMap::new();
         let template = r#"${[ upper(foo=secret()) ]}"#;
         let result = r#"ABC"#;
-        fn cb(name: &str, args: HashMap<String, String>) -> String {
-            match name {
+        fn cb(name: &str, args: HashMap<String, String>) -> Result<String, String> {
+            Ok(match name {
                 "secret" => "abc".to_string(),
                 "upper" => args["foo"].to_string().to_uppercase(),
                 _ => "".to_string(),
-            }
+            })
+        }
+
+        assert_eq!(
+            parse_and_render(template, &vars, Some(cb)),
+            result.to_string()
+        );
+    }
+    
+    #[test]
+    fn render_fn_err() {
+        let vars = HashMap::new();
+        let template = r#"${[ error() ]}"#;
+        let result = r#""#;
+        fn cb(_name: &str, _args: HashMap<String, String>) -> Result<String, String> {
+            Err("Failed to do it!".to_string())
         }
 
         assert_eq!(

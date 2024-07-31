@@ -83,6 +83,10 @@ jobs:
       - name: Install yaak CLI
         run: go install github.com/yaakapp/yaakcli@latest
 
+      - name: Rust test
+        working-directory: src-tauri
+        run: cargo test --all
+
       - name: Run lint
         run: npm run lint
 
