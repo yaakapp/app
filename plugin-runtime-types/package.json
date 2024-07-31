@@ -1,0 +1,18 @@
+{
+  "name": "@yaakapp/api",
+  "version": "0.0.5",
+  "main": "lib/index.js",
+  "typings": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "prepublish": "tsc"
+  },
+  "dependencies": {
+    "@types/node": "^22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
