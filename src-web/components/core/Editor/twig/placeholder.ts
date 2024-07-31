@@ -36,7 +36,7 @@ class PlaceholderWidget extends WidgetType {
 
 export const placeholders = function (variables: { name: string }[]) {
   const placeholderMatcher = new BetterMatchDecorator({
-    regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
+    regexp: /\$\{\[\s*([^\]]+)\s*]}/g,
     decoration(match, view, matchStartPos) {
       const matchEndPos = matchStartPos + match[0].length - 1;
 
