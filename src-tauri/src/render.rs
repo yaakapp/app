@@ -1,12 +1,13 @@
 use std::collections::HashMap;
-use std::time::SystemTime;
-use chrono::{DateTime, Utc};
+
 use sqlx::types::{Json, JsonValue};
+
+use templates::parse_and_render;
 
 use crate::models::{
     Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
 };
-use templates::parse_and_render;
+use crate::template_fns::timestamp;
 
 pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
     let r = r.clone();
@@ -107,16 +108,10 @@ pub fn render(template: &str, vars: &HashMap<String, String>) -> String {
     parse_and_render(template, vars, Some(template_callback))
 }
 
-fn template_callback(name: &str, _args: HashMap<String, String>) -> String {
+fn template_callback(name: &str, args: HashMap<String, String>) -> Result<String, String> {
     match name {
-        "timestamp" => {
-            let now = SystemTime::now();
-            let now: DateTime<Utc> = now.into();
-            now.to_rfc3339()
-        },
-        _ => {
-            "".to_string()
-        }
+        "timestamp" => timestamp(args),
+        _ => Err(format!("Unknown template function {name}")),
     }
 }
 
