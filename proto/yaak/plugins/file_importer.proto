@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package yaak.plugins;
+
+import "google/protobuf/struct.proto";
+import "yaak/common/callback.proto";
+
+message GetFileImportersRequest {}
+
+message FileImporter {
+  string name = 1;
+  string description = 2;
+  yaak.common.Callback on_import = 3;
+}
+
+message GetFileImportersResponse {
+  repeated FileImporter file_importers = 1;
+}
+
+message CallFileImportRequest {
+  string file_content = 1;
+}
+
+message CallFileImportResponse {
+  google.protobuf.Struct resources = 1;
+}

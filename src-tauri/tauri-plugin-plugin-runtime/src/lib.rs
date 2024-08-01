@@ -11,8 +11,12 @@ pub use tonic::Request;
 pub mod manager;
 mod nodejs;
 
+pub mod common {
+    tonic::include_proto!("yaak.common");
+} 
+
 pub mod plugin_runtime {
-    tonic::include_proto!("yaak.plugins.runtime");
+    tonic::include_proto!("yaak.plugins");
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {

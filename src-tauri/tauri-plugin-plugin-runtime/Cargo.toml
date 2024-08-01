@@ -9,6 +9,7 @@ command-group = "5.0.1"
 dunce = "1.0.4"
 log = "0.4.21"
 prost = "0.13.1"
+prost-types = "0.13.1"
 rand = "0.8.5"
 reqwest = { version = "0.12.5", features = ["stream"] }
 serde = { version = "1.0.198", features = ["derive"] }

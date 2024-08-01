@@ -7,6 +7,7 @@ use serde;
 use serde::Deserialize;
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 use tokio::fs;
 use tokio::sync::watch::Receiver;
@@ -58,12 +59,29 @@ pub async fn node_start<R: Runtime>(
         .env("YAAK_PLUGINS_DIR", plugins_dir)
         .arg(plugin_runtime_main);
 
-    println!("Waiting on plugin runtime");
-    let (_, child) = cmd
+    info!("Waiting on plugin runtime");
+    let (mut rx, child) = cmd
         .spawn()
         .expect("yaaknode failed to start");
 
     let mut kill_rx = kill_rx.clone();
+    
+    // Print stdout and stderr
+    tokio::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                CommandEvent::Stderr(line) => {
+                    print!("{}", String::from_utf8(line).unwrap());
+                }
+                CommandEvent::Stdout(line) => {
+                    print!("{}", String::from_utf8(line).unwrap());
+                }
+                // CommandEvent::Error(_) => {}
+                // CommandEvent::Terminated(_) => {}
+                _ => {}
+            }
+        }
+    });
 
     // Check on child
     tokio::spawn(async move {

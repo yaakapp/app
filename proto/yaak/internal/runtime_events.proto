@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package yaak.plugins;
+
+import "google/protobuf/struct.proto";
+
+message RuntimeEventPluginExecution {
+  string resource = 1;
+  string action = 2;
+  map<string, google.protobuf.Struct> attributes = 3;
+}
+
+message RuntimeEventsRequest {}
+
+message RuntimeEventsResponse {
+  oneof event {
+    RuntimeEventPluginExecution plugin_execution = 1;
+  }
+}

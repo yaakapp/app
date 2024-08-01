@@ -1,15 +1,18 @@
-import { OneOrMany } from '../helpers';
-import { FilterPlugin } from './filter';
+export * from './filter';
+export * from './httpRequestAction';
+export * from './import';
+export * from './context';
+
+import { DataFilterPlugin } from './filter';
 import { HttpRequestActionPlugin } from './httpRequestAction';
-import { ImporterPlugin } from './import';
-import { ThemePlugin } from './theme';
+import { FileImportPlugin } from './import';
 
 /**
  * The global structure of a Yaak plugin
  */
-export type YaakPlugin = {
-  importer?: OneOrMany<ImporterPlugin>;
-  theme?: OneOrMany<ThemePlugin>;
-  filter?: OneOrMany<FilterPlugin>;
-  httpRequestAction?: OneOrMany<HttpRequestActionPlugin>;
-};
+export interface YaakPlugin {
+  fileImport?: FileImportPlugin;
+  // theme?: ThemePlugin;
+  dataFilter?: DataFilterPlugin;
+  httpRequestAction?: HttpRequestActionPlugin;
+}

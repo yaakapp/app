@@ -7,13 +7,15 @@ import { attachConsole } from 'tauri-plugin-log-api';
 import { App } from './components/App';
 import './main.css';
 
+console.log('Running Yaak App');
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
 ).toString();
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
-const osType = await type();
+const osType = type();
 if (osType !== 'macos') {
   await getCurrentWebviewWindow().setDecorations(false);
 }

@@ -5,9 +5,11 @@
     "build": "run-p build:*",
     "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=build/index.cjs",
     "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=build/index.worker.cjs",
-    "build:proto": "grpc_tools_node_protoc --ts_proto_out=src/gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
+    "build:proto": "grpc_tools_node_protoc --ts_proto_out=src/gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/yaak/plugin_runtime.proto"
   },
   "dependencies": {
+    "@yaakapp/api": "^0.1.0-beta.1",
+    "abort-controller-x": "^0.4.3",
     "long": "^5.2.3",
     "nice-grpc": "^2.1.9",
     "protobufjs": "^7.3.2"

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package yaak.plugins;
+
+import "yaak/common/callback.proto";
+
+message GetDataFilterersRequest {
+  string mimeType = 3;
+}
+
+message DataFilterer {
+  string name = 1;
+  string description = 2;
+  yaak.common.Callback onFilter = 3;
+}
+
+message GetDataFilterersResponse {
+  repeated DataFilterer data_filterers = 1;
+}
+
+message CallDataFiltererRequest {
+  yaak.common.CallbackInvocation invocation = 1;
+}
+
+message FilterDataKeys {
+  repeated string json_keys = 1;
+}
+
+message CallDataFiltererResponse {
+  FilterDataKeys maybeKeys = 1;
+}

@@ -6,7 +6,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -16,47 +16,45 @@ use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
-use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
+use serde_json::Value;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::types::Json;
-use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
-use tauri::Listener;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
+use tauri::Listener;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use plugin_runtime::manager::PluginManager;
-use plugin_runtime::plugin_runtime::{Callback, CallCallbackRequest, RequestAction};
-use plugin_runtime::Request;
+use plugin_runtime::plugin_runtime::HttpRequestAction;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, generate_model_id,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection,
-    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
-    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue,
-    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events,
-    list_grpc_requests, list_http_requests, list_responses, list_workspaces, ModelType,
-    set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment,
-    upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request,
+    get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_workspace,
+    get_workspace_export_resources, list_cookie_jars, list_environments, list_folders,
+    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
+    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
+    Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
     WorkspaceExportResources,
 };
-use crate::models::ImportResult;
 use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
@@ -70,9 +68,9 @@ mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
+mod template_fns;
 mod updates;
 mod window_menu;
-mod template_fns;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
@@ -721,8 +719,8 @@ async fn cmd_send_ephemeral_request(
 async fn cmd_filter_response(
     w: WebviewWindow,
     response_id: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
-    filter: &str,
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
+    _filter: &str,
 ) -> Result<String, String> {
     let response = get_http_response(&w, response_id)
         .await
@@ -740,157 +738,152 @@ async fn cmd_filter_response(
         }
     }
 
-    let body = read_to_string(response.body_path.unwrap()).unwrap();
+    let _body = read_to_string(response.body_path.unwrap()).unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
-    plugin_manager
-        .lock()
-        .await
-        .run_response_filter(filter, &body, &content_type)
-        .await
-        .map(|r| r.data)
+    Err("TODO".into())
+    // plugin_manager
+    //     .lock()
+    //     .await
+    //     .run_response_filter(filter, &body, &content_type)
+    //     .await
+    //     .map(|r| r.data)
 }
 
 #[tauri::command]
 async fn cmd_import_data(
-    w: WebviewWindow,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
-    file_path: &str,
+    _w: WebviewWindow,
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
+    _file_path: &str,
     _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
-    let file =
-        read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
-    let file_contents = file.as_str();
-    let import_response = plugin_manager
-        .lock()
-        .await
-        .run_import(file_contents)
-        .await?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
-
-    // TODO: Track the plugin that ran, maybe return the run info in the plugin response?
-    let plugin_name = import_response.info.unwrap_or_default().plugin;
-    info!("Imported data using {}", plugin_name);
-    analytics::track_event(
-        &w.app_handle(),
-        AnalyticsResource::App,
-        AnalyticsAction::Import,
-        Some(json!({ "plugin": plugin_name })),
-    )
-    .await;
-
-    let mut imported_resources = WorkspaceExportResources::default();
-    let mut id_map: HashMap<String, String> = HashMap::new();
-
-    fn maybe_gen_id(id: &str, model: ModelType, ids: &mut HashMap<String, String>) -> String {
-        if !id.starts_with("GENERATE_ID::") {
-            return id.to_string();
-        }
-
-        let unique_key = id.replace("GENERATE_ID", "");
-        if let Some(existing) = ids.get(unique_key.as_str()) {
-            existing.to_string()
-        } else {
-            let new_id = generate_model_id(model);
-            ids.insert(unique_key, new_id.clone());
-            new_id
-        }
-    }
-
-    fn maybe_gen_id_opt(
-        id: Option<String>,
-        model: ModelType,
-        ids: &mut HashMap<String, String>,
-    ) -> Option<String> {
-        match id {
-            Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
-            None => None,
-        }
-    }
-
-    for mut v in import_result.resources.workspaces {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
-        let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
-        imported_resources.workspaces.push(x.clone());
-    }
-    info!(
-        "Imported {} workspaces",
-        imported_resources.workspaces.len()
-    );
-
-    for mut v in import_result.resources.environments {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
-        imported_resources.environments.push(x.clone());
-    }
-    info!(
-        "Imported {} environments",
-        imported_resources.environments.len()
-    );
-
-    for mut v in import_result.resources.folders {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-        let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
-        imported_resources.folders.push(x.clone());
-    }
-    info!("Imported {} folders", imported_resources.folders.len());
-
-    for mut v in import_result.resources.http_requests {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-        let x = upsert_http_request(&w, v)
-            .await
-            .map_err(|e| e.to_string())?;
-        imported_resources.http_requests.push(x.clone());
-    }
-    info!(
-        "Imported {} http_requests",
-        imported_resources.http_requests.len()
-    );
-
-    for mut v in import_result.resources.grpc_requests {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-        let x = upsert_grpc_request(&w, &v)
-            .await
-            .map_err(|e| e.to_string())?;
-        imported_resources.grpc_requests.push(x.clone());
-    }
-    info!(
-        "Imported {} grpc_requests",
-        imported_resources.grpc_requests.len()
-    );
-
-    Ok(imported_resources)
+    Err("TODO".into())
+    // let file =
+    //     read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
+    // let file_contents = file.as_str();
+    // // let import_response = plugin_manager
+    // //     .lock()
+    // //     .await
+    // //     .run_import(file_contents)
+    // //     .await?;
+    // let import_response = CallFileImportResponse::default();
+    // let import_result: ImportResult =
+    //     serde_json::from_str(import_response..as_str()).map_err(|e| e.to_string())?;
+    //
+    // // TODO: Track the plugin that ran, maybe return the run info in the plugin response?
+    // let plugin_name = import_response.info.unwrap_or_default().plugin;
+    //
+    // let mut imported_resources = WorkspaceExportResources::default();
+    // let mut id_map: HashMap<String, String> = HashMap::new();
+    //
+    // fn maybe_gen_id(id: &str, model: ModelType, ids: &mut HashMap<String, String>) -> String {
+    //     if !id.starts_with("GENERATE_ID::") {
+    //         return id.to_string();
+    //     }
+    //
+    //     let unique_key = id.replace("GENERATE_ID", "");
+    //     if let Some(existing) = ids.get(unique_key.as_str()) {
+    //         existing.to_string()
+    //     } else {
+    //         let new_id = generate_model_id(model);
+    //         ids.insert(unique_key, new_id.clone());
+    //         new_id
+    //     }
+    // }
+    //
+    // fn maybe_gen_id_opt(
+    //     id: Option<String>,
+    //     model: ModelType,
+    //     ids: &mut HashMap<String, String>,
+    // ) -> Option<String> {
+    //     match id {
+    //         Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),
+    //         None => None,
+    //     }
+    // }
+    //
+    // for mut v in import_result.resources.workspaces {
+    //     v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
+    //     let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
+    //     imported_resources.workspaces.push(x.clone());
+    // }
+    // info!(
+    //     "Imported {} workspaces",
+    //     imported_resources.workspaces.len()
+    // );
+    //
+    // for mut v in import_result.resources.environments {
+    //     v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
+    //     v.workspace_id = maybe_gen_id(
+    //         v.workspace_id.as_str(),
+    //         ModelType::TypeWorkspace,
+    //         &mut id_map,
+    //     );
+    //     let x = upsert_environment(&w, v).await.map_err(|e| e.to_string())?;
+    //     imported_resources.environments.push(x.clone());
+    // }
+    // info!(
+    //     "Imported {} environments",
+    //     imported_resources.environments.len()
+    // );
+    //
+    // for mut v in import_result.resources.folders {
+    //     v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
+    //     v.workspace_id = maybe_gen_id(
+    //         v.workspace_id.as_str(),
+    //         ModelType::TypeWorkspace,
+    //         &mut id_map,
+    //     );
+    //     v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+    //     let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
+    //     imported_resources.folders.push(x.clone());
+    // }
+    // info!("Imported {} folders", imported_resources.folders.len());
+    //
+    // for mut v in import_result.resources.http_requests {
+    //     v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
+    //     v.workspace_id = maybe_gen_id(
+    //         v.workspace_id.as_str(),
+    //         ModelType::TypeWorkspace,
+    //         &mut id_map,
+    //     );
+    //     v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+    //     let x = upsert_http_request(&w, v)
+    //         .await
+    //         .map_err(|e| e.to_string())?;
+    //     imported_resources.http_requests.push(x.clone());
+    // }
+    // info!(
+    //     "Imported {} http_requests",
+    //     imported_resources.http_requests.len()
+    // );
+    //
+    // for mut v in import_result.resources.grpc_requests {
+    //     v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
+    //     v.workspace_id = maybe_gen_id(
+    //         v.workspace_id.as_str(),
+    //         ModelType::TypeWorkspace,
+    //         &mut id_map,
+    //     );
+    //     v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+    //     let x = upsert_grpc_request(&w, &v)
+    //         .await
+    //         .map_err(|e| e.to_string())?;
+    //     imported_resources.grpc_requests.push(x.clone());
+    // }
+    // info!(
+    //     "Imported {} grpc_requests",
+    //     imported_resources.grpc_requests.len()
+    // );
+    //
+    // Ok(imported_resources)
 }
 
 #[tauri::command]
 async fn cmd_request_to_curl(
     app: AppHandle,
     request_id: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
     environment_id: Option<&str>,
 ) -> Result<String, String> {
     let request = get_http_request(&app, request_id)
@@ -904,68 +897,65 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
+    let _request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
 
-    let import_response = plugin_manager
-        .lock()
-        .await
-        .run_export_curl(request_json.as_str())
-        .await?;
-    Ok(import_response.data)
+    Err("TODO".into())
+    // let import_response = plugin_manager
+    //     .lock()
+    //     .await
+    //     .run_export_curl(request_json.as_str())
+    //     .await?;
+    // Ok(import_response.data)
 }
 
 #[tauri::command]
 async fn cmd_http_request_actions(
-    plugin_manager: State<'_, Mutex<PluginManager>>,
-) -> Result<Vec<RequestAction>, String> {
-    Ok(plugin_manager
-        .lock()
-        .await
-        .run_http_request_actions()
-        .await?
-        .actions)
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
+) -> Result<Vec<HttpRequestAction>, String> {
+    Err("TODO".into())
 }
 
 #[tauri::command]
 async fn cmd_curl_to_request(
-    command: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
-    workspace_id: &str,
+    _command: &str,
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
+    _workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let import_response = plugin_manager.lock().await.run_import(command).await?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
-    import_result
-        .resources
-        .http_requests
-        .get(0)
-        .ok_or("No curl command found".to_string())
-        .map(|r| {
-            let mut request = r.clone();
-            request.workspace_id = workspace_id.into();
-            request.id = "".to_string();
-            request
-        })
+    Err("TODO".into())
+    // let import_response = plugin_manager.lock().await.run_import(command).await?;
+    // let import_result: ImportResult =
+    //     serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
+    // import_result
+    //     .resources
+    //     .http_requests
+    //     .get(0)
+    //     .ok_or("No curl command found".to_string())
+    //     .map(|r| {
+    //         let mut request = r.clone();
+    //         request.workspace_id = workspace_id.into();
+    //         request.id = "".to_string();
+    //         request
+    //     })
 }
 
 #[tauri::command]
 async fn cmd_call_callback(
-    plugin_manager: State<'_, Mutex<PluginManager>>,
-    callback: Callback,
-    data: &str,
+    _plugin_manager: State<'_, Mutex<PluginManager>>,
+    _data: &str,
 ) -> Result<(), String> {
-    let result = plugin_manager
-        .lock()
-        .await
-        .client
-        .call_callback(Request::new(CallCallbackRequest {
-            data: data.to_string(),
-            callback: Some(callback),
-        }))
-        .await
-        .map_err(|e| e.to_string())?;
-    println!("RESULT ----------------- {:?}", result);
-    Ok(())
+    Err("TODO".into())
+    // let result = plugin_manager
+    //     .lock()
+    //     .await
+    //     .client
+    //     .call_callback(Request::new(CallCallbackRequest {
+    //         data: data.to_string(),
+    //         callback: Some(callback),
+    //     }))
+    //     .await
+    //     .map_err(|e| e.to_string())?;
+    // println!("RESULT ----------------- {:?}", result);
+    // Ok(())
 }
 
 #[tauri::command]

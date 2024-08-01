@@ -1,9 +1,14 @@
+import { YaakPlugin } from '@yaakapp/api';
+import { YaakContext } from '@yaakapp/api/lib/plugins/context';
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
-import { Callback } from './gen/plugins/runtime';
-import { ParentToWorkerEvent } from './PluginHandle';
+import { Callback } from './gen/yaak/common/callback';
+import { ParentToWorkerEvent, WorkerToParentEvent } from './PluginHandle';
 import { PluginInfo } from './plugins';
+
+export type CallbackFn = (ctx: YaakContext, jsonArgs: string) => Promise<void>;
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir } = workerData;
@@ -19,7 +24,7 @@ new Promise<void>(async (resolve, reject) => {
     return;
   }
 
-  const mod = (await import(`file://${pathMod}`)).default ?? {};
+  const plugin: YaakPlugin = (await import(`file://${pathMod}`)).plugin ?? {};
 
   const info: PluginInfo = {
     capabilities: [],
@@ -27,36 +32,31 @@ new Promise<void>(async (resolve, reject) => {
     dir: pluginDir,
   };
 
-  if (typeof mod['pluginHookImport'] === 'function') {
-    info.capabilities.push('import');
+  if (plugin.fileImport != null) {
+    info.capabilities.push('fileImport');
   }
 
-  if (typeof mod['pluginHookExport'] === 'function') {
-    info.capabilities.push('export');
+  if (plugin.dataFilter != null) {
+    info.capabilities.push('dataFilter');
   }
 
-  if (typeof mod['pluginHookResponseFilter'] === 'function') {
-    info.capabilities.push('filter');
-  }
-
-  if (typeof mod['pluginHookHttpRequestAction'] === 'function') {
-    info.capabilities.push('http-request-action');
+  if (plugin.httpRequestAction != null) {
+    info.capabilities.push('httpRequestAction');
   }
 
   console.log('Loaded plugin', info.name, info.capabilities, info.dir);
 
-  let callbackId = 0;
-  const callbacks: Record<number, Function> = {};
+  const callbacks: Record<string, CallbackFn> = {};
 
-  function reply<T>(originalMsg: ParentToWorkerEvent, rawPayload: T) {
+  function reply<T>(originalMsg: ParentToWorkerEvent<any>, rawPayload: T) {
     // Convert callback functions to callback-id objects, so they can be serialized
     // TODO: Don't parse/stringify, just iterate recursively (for perf)
     const payload = JSON.parse(
       JSON.stringify(rawPayload, (_key, value) => {
         if (typeof value === 'function') {
-          callbackId += 1;
+          const callbackId = randomUUID().replaceAll('-', '');
           callbacks[callbackId] = value;
-          const callback: Callback = { id: callbackId, plugin: info.name };
+          const callback: Callback = { id: callbackId };
           return callback;
         }
         return value;
@@ -64,7 +64,8 @@ new Promise<void>(async (resolve, reject) => {
     );
 
     try {
-      parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
+      const msg: WorkerToParentEvent = { payload, replyId: originalMsg.replyId };
+      parentPort!.postMessage(msg);
     } catch (err) {
       console.log(
         'Failed to post message from plugin worker. It was probably not serializable',
@@ -74,35 +75,39 @@ new Promise<void>(async (resolve, reject) => {
     }
   }
 
-  function replyErr(originalMsg: ParentToWorkerEvent, error: unknown) {
-    parentPort!.postMessage({
-      error: String(error),
-      callbackId: originalMsg.callbackId,
-    });
+  function replyErr(originalMsg: ParentToWorkerEvent<unknown>, error: unknown) {
+    const msg: WorkerToParentEvent = { error: String(error), replyId: originalMsg.replyId };
+    parentPort!.postMessage(msg);
   }
 
-  parentPort!.on('message', async (msg: ParentToWorkerEvent) => {
+  parentPort!.on('message', async (msg: ParentToWorkerEvent<unknown>) => {
     try {
-      const ctx = { todo: 'implement me' };
-      if (msg.name === 'run-import') {
-        reply(msg, await mod.pluginHookImport(ctx, msg.payload));
-      } else if (msg.name === 'run-filter') {
-        reply(msg, await mod.pluginHookResponseFilter(ctx, msg.payload));
-      } else if (msg.name === 'run-export') {
-        reply(msg, await mod.pluginHookExport(ctx, msg.payload));
-      } else if (msg.name === 'run-http-request-action') {
-        reply(msg, await mod.pluginHookHttpRequestAction(ctx, msg.payload));
-      } else if (msg.name === 'call-callback') {
-        const fn = callbacks[msg.payload.callbackId];
-        console.log('CALLBACK FN', fn, callbacks, msg.payload);
-        const result = await fn(msg.payload.data);
-        console.log('CALLING CALLBACK', result);
-        reply(msg, result);
-      } else if (msg.name === 'info') {
+      const ctx: YaakContext = {
+        // TODO: Fill out the context
+      } as any;
+
+      if ('meta' in msg && msg.meta === 'info') {
         reply(msg, info);
-      } else {
-        console.log('Unknown message', msg);
+        return;
       }
+
+      if ('invoke' in msg) {
+        const fn = plugin[msg.invoke];
+        if (typeof fn === 'function') {
+          reply(msg, await (fn as Function)(ctx, msg.args));
+        } else {
+          replyErr(msg, 'Cannot invoke non-function for plugin: ' + msg.invoke);
+        }
+        return;
+      }
+
+      if ('access' in msg) {
+        const v = plugin[msg.access];
+        reply(msg, v);
+      }
+
+      // Didn't find anything to do
+      console.info('ERROR: Invalid worker message', msg);
     } catch (err: unknown) {
       replyErr(msg, err);
     }

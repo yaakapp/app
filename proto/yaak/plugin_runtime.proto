@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "yaak/internal/runtime_events.proto";
+import "yaak/plugins/data_filterer.proto";
+import "yaak/plugins/http_request_action.proto";
+import "yaak/plugins/file_importer.proto";
+
+package yaak.plugins;
+
+service PluginRuntime {
+  // Runtime Event
+
+  rpc StreamRuntimeEvents(RuntimeEventsRequest) returns (stream RuntimeEventsResponse);
+
+  // File Import
+
+  rpc GetFileImporters(GetFileImportersRequest) returns (GetFileImportersResponse);
+  rpc CallFileImport(CallFileImportRequest) returns (CallFileImportResponse);
+
+  // Data Filter
+
+  rpc GetDataFilters(GetDataFilterersRequest) returns (GetDataFilterersResponse);
+  rpc CallDataFilter(CallDataFiltererRequest) returns (CallDataFiltererResponse);
+
+  // Http Request Action
+
+  rpc GetHttpRequestActions(GetHttpRequestActionsRequest) returns (GetHttpRequestActionsResponse);
+  rpc CallHttpRequestAction(CallHttpRequestActionRequest) returns (CallHttpRequestActionResponse);
+}

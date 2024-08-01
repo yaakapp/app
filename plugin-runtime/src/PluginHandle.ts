@@ -1,27 +1,44 @@
+import { YaakPlugin } from '@yaakapp/api';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { PluginInfo } from './plugins';
+import { Callback } from './gen/yaak/common/callback';
 
-export interface ParentToWorkerEvent<T = any> {
-  callbackId: string;
-  name:
-    | 'info'
-    | 'call-callback'
-    | 'run-filter'
-    | 'run-import'
-    | 'run-export'
-    | 'run-http-request-action';
-  payload: T;
-}
+export type ParentToWorkerAccessEvent = {
+  replyId: string;
+  access: keyof YaakPlugin;
+};
 
-export type WorkerToParentSuccessEvent<T> = {
-  callbackId: string;
-  payload: T;
+export type ParentToWorkerMetaEvent = {
+  replyId: string;
+  meta: 'info';
+};
+
+export type ParentToWorkerInvokeEvent<A> = {
+  replyId: string;
+  invoke: keyof YaakPlugin;
+  args: A;
+};
+
+export type ParentToWorkerCallbackEvent<A> = {
+  replyId: string;
+  callback: Callback;
+  args: A;
+};
+
+export type ParentToWorkerEvent<T> =
+  | ParentToWorkerAccessEvent
+  | ParentToWorkerMetaEvent
+  | ParentToWorkerInvokeEvent<T>
+  | ParentToWorkerCallbackEvent<T>;
+
+export type WorkerToParentSuccessEvent<P> = {
+  replyId: string;
+  payload: P;
 };
 
 export type WorkerToParentErrorEvent = {
-  callbackId: string;
+  replyId: string;
   error: string;
 };
 
@@ -45,15 +62,34 @@ export class PluginHandle {
     this.#worker.on('exit', this.#handleExit.bind(this));
   }
 
-  async getInfo(): Promise<PluginInfo> {
-    return this.invoke('info', null);
+  invoke<A, R>(name: ParentToWorkerInvokeEvent<A>['invoke'], args: A): Promise<R> {
+    return this.#postMessage({ invoke: name, args });
   }
 
-  invoke<P, R>(name: ParentToWorkerEvent['name'], payload: P): Promise<R> {
-    const callbackId = `cb_${randomUUID().replaceAll('-', '')}`;
+  access<N extends ParentToWorkerAccessEvent['access'], R extends YaakPlugin[N]>(
+    name: N,
+  ): Promise<NonNullable<R>> {
+    return this.#postMessage({ access: name });
+  }
+
+  meta<R>(name: ParentToWorkerMetaEvent['meta']): Promise<R> {
+    return this.#postMessage({ meta: name });
+  }
+
+  callback<A, R>(
+    callback: ParentToWorkerCallbackEvent<A>['callback'],
+    args: ParentToWorkerCallbackEvent<A>['args'],
+  ): Promise<R> {
+    return this.#postMessage({ callback, args });
+  }
+
+  #postMessage<R = void>(
+    message: Omit<ParentToWorkerAccessEvent | ParentToWorkerInvokeEvent<R>, 'replyId'>,
+  ): Promise<R> {
+    const replyId = `msg_${randomUUID().replaceAll('-', '')}`;
     return new Promise((resolve, reject) => {
       const cb = (e: WorkerToParentEvent<R>) => {
-        if (e.callbackId !== callbackId) return;
+        if (e.replyId !== replyId) return;
 
         if ('error' in e) {
           reject(e.error);
@@ -65,7 +101,7 @@ export class PluginHandle {
       };
 
       this.#worker.addListener('message', cb);
-      this.#worker.postMessage({ callbackId, name, payload });
+      this.#worker.postMessage(message);
     });
   }
 

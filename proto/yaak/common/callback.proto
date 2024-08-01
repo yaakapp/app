@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package yaak.common;
+
+import "google/protobuf/struct.proto";
+
+message Callback {
+  string id = 1;
+}
+
+message CallbackInvocation {
+  Callback callback = 1;
+  google.protobuf.Struct args = 2;
+}

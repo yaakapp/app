@@ -1,3 +1,4 @@
+import { YaakPlugin } from '@yaakapp/api';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { PluginHandle } from './PluginHandle';
@@ -5,7 +6,7 @@ import { PluginHandle } from './PluginHandle';
 export interface PluginInfo {
   name: string;
   dir: string;
-  capabilities: ('import' | 'export' | 'filter' | 'http-request-action')[];
+  capabilities: (keyof YaakPlugin)[];
 }
 
 export function loadPlugins(): PluginHandle[] {

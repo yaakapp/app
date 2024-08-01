@@ -3832,6 +3832,7 @@ dependencies = [
  "dunce",
  "log",
  "prost 0.13.1",
+ "prost-types 0.13.1",
  "rand 0.8.5",
  "reqwest",
  "serde",

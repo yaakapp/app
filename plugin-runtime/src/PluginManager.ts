@@ -3,6 +3,7 @@ import { loadPlugins, PluginInfo } from './plugins';
 
 export class PluginManager {
   #handles: PluginHandle[] | null = null;
+  #callbackToPluginMap: Record<string, string> = {};
   static #instance: PluginManager | null = null;
 
   public static instance(): PluginManager {
@@ -20,7 +21,9 @@ export class PluginManager {
 
   async #pluginsWithInfo(): Promise<{ plugin: PluginHandle; info: PluginInfo }[]> {
     const plugins = await this.plugins();
-    return Promise.all(plugins.map(async (plugin) => ({ plugin, info: await plugin.getInfo() })));
+    return Promise.all(
+      plugins.map(async (plugin) => ({ plugin, info: await plugin.meta('info') })),
+    );
   }
 
   async pluginsWith(capability: PluginInfo['capabilities'][0]): Promise<PluginHandle[]> {

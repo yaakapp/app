@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package yaak.plugins;
+
+import "yaak/common/callback.proto";
+
+message HttpRequestAction {
+  string key = 1;
+  string label = 2;
+  yaak.common.Callback on_select = 3;
+}
+
+message GetHttpRequestActionsRequest {}
+
+message GetHttpRequestActionsResponse {
+  repeated HttpRequestAction http_request_actions = 2;
+}
+
+message CallHttpRequestActionRequest {
+  yaak.common.CallbackInvocation invocation = 1;
+}
+
+message CallHttpRequestActionResponse {}
