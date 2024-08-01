@@ -9,9 +9,9 @@ import type {
   GrpcEvent,
   GrpcConnection,
   Environment,
-} from '../../plugin-runtime-types';
+} from '@yaakapp/api';
 
-export * from '../../plugin-runtime-types';
+export * from '@yaakapp/api';
 
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
