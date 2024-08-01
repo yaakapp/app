@@ -83,6 +83,10 @@ jobs:
       - name: Install yaak CLI
         run: go install github.com/yaakapp/yaakcli@latest
 
+      - name: Rust test
+        working-directory: src-tauri
+        run: cargo test --all
+
       - name: Run lint
         run: npm run lint
 
@@ -114,7 +118,7 @@ jobs:
         with:
           tagName: 'v__VERSION__'
           releaseName: 'Release __VERSION__'
-          releaseBody: 'https://yaak.app/changelog/__VERSION__'
+          releaseBody: 'https://yaak.app/blog/__VERSION__'
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

@@ -2,10 +2,12 @@ use std::collections::HashMap;
 
 use sqlx::types::{Json, JsonValue};
 
+use templates::parse_and_render;
+
 use crate::models::{
     Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
 };
-use templates::parse_and_render;
+use crate::template_fns::timestamp;
 
 pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
     let r = r.clone();
@@ -103,7 +105,14 @@ pub fn variables_from_environment(
 }
 
 pub fn render(template: &str, vars: &HashMap<String, String>) -> String {
-    parse_and_render(template, vars, None)
+    parse_and_render(template, vars, Some(template_callback))
+}
+
+fn template_callback(name: &str, args: HashMap<String, String>) -> Result<String, String> {
+    match name {
+        "timestamp" => timestamp(args),
+        _ => Err(format!("Unknown template function {name}")),
+    }
 }
 
 fn add_variable_to_map(

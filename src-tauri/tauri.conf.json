@@ -67,7 +67,7 @@
       "nsis",
       "rpm"
     ],
-    "createUpdaterArtifacts": true,
+    "createUpdaterArtifacts": "v1Compatible",
     "iOS": {
       "developmentTeam": "7PU3P6ELJ8"
     },

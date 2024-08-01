@@ -72,6 +72,7 @@ mod render;
 mod tauri_plugin_mac_window;
 mod updates;
 mod window_menu;
+mod template_fns;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
@@ -1935,7 +1936,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 _ = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.canny.io", None)
+                    .open("https://yaak.app/roadmap", None)
             }
 
             // Commands for development

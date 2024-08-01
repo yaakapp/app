@@ -23,6 +23,7 @@ import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { useMoveToWorkspace } from '../hooks/useMoveToWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
+import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useRequests } from '../hooks/useRequests';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSendManyRequests } from '../hooks/useSendFolder';
@@ -651,6 +652,7 @@ function SidebarItem({
   const activeRequest = useActiveRequest();
   const deleteFolder = useDeleteFolder(itemId);
   const deleteRequest = useDeleteRequest(itemId);
+  const renameRequest = useRenameRequest(itemId);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const copyAsCurl = useCopyAsCurl(itemId);
@@ -808,29 +810,7 @@ function SidebarItem({
           key: 'renameRequest',
           label: 'Rename',
           leftSlot: <Icon icon="pencil" />,
-          onSelect: async () => {
-            const name = await prompt({
-              id: 'rename-request',
-              title: 'Rename Request',
-              description:
-                itemName === '' ? (
-                  'Enter a new name'
-                ) : (
-                  <>
-                    Enter a new name for <InlineCode>{itemName}</InlineCode>
-                  </>
-                ),
-              name: 'name',
-              label: 'Name',
-              placeholder: 'New Name',
-              defaultValue: itemName,
-            });
-            if (itemModel === 'http_request') {
-              updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
-            } else {
-              updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name }) });
-            }
-          },
+          onSelect: renameRequest.mutate,
         },
         {
           key: 'duplicateRequest',
@@ -874,11 +854,10 @@ function SidebarItem({
     itemName,
     moveToWorkspace.mutate,
     prompt,
+    renameRequest.mutate,
     sendManyRequests,
     sendRequest,
     updateAnyFolder,
-    updateGrpcRequest,
-    updateHttpRequest,
     workspaces.length,
   ]);
 

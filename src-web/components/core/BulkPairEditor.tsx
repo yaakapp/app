@@ -4,7 +4,13 @@ import type { PairEditorProps } from './PairEditor';
 
 type Props = PairEditorProps;
 
-export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlaceholder }: Props) {
+export function BulkPairEditor({
+  pairs,
+  onChange,
+  namePlaceholder,
+  valuePlaceholder,
+  forceUpdateKey,
+}: Props) {
   const pairsText = useMemo(() => {
     return pairs
       .filter((p) => !(p.name.trim() === '' && p.value.trim() === ''))
@@ -27,6 +33,7 @@ export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlacehol
     <Editor
       useTemplating
       autocompleteVariables
+      forceUpdateKey={forceUpdateKey}
       placeholder={`${namePlaceholder ?? 'name'}: ${valuePlaceholder ?? 'value'}`}
       defaultValue={pairsText}
       contentType="pairs"
@@ -38,6 +45,7 @@ export function BulkPairEditor({ pairs, onChange, namePlaceholder, valuePlacehol
 function lineToPair(l: string): PairEditorProps['pairs'][0] {
   const [name, ...values] = l.split(':');
   const pair: PairEditorProps['pairs'][0] = {
+    enabled: true,
     name: (name ?? '').trim(),
     value: values.join(':').trim(),
   };

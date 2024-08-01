@@ -3,6 +3,8 @@ const Downloader = require("nodejs-file-downloader");
 const path = require("node:path");
 const {rmSync, mkdirSync, cpSync} = require("node:fs");
 
+const VERSION = '27.2';
+
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
 const MAC_X64 = 'darwin_x64';
@@ -10,10 +12,10 @@ const LNX_X64 = 'linux_x64';
 const WIN_X64 = 'win32_x64';
 
 const URL_MAP = {
-  [MAC_ARM]: 'https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-osx-aarch_64.zip',
-  [MAC_X64]: 'https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-osx-x86_64.zip',
-  [LNX_X64]: 'https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-linux-x86_64.zip',
-  [WIN_X64]: 'https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-win64.zip',
+  [MAC_ARM]: `https://github.com/protocolbuffers/protobuf/releases/download/v${VERSION}/protoc-${VERSION}-osx-aarch_64.zip`,
+  [MAC_X64]: `https://github.com/protocolbuffers/protobuf/releases/download/v${VERSION}/protoc-${VERSION}-osx-x86_64.zip`,
+  [LNX_X64]: `https://github.com/protocolbuffers/protobuf/releases/download/v${VERSION}/protoc-${VERSION}-linux-x86_64.zip`,
+  [WIN_X64]: `https://github.com/protocolbuffers/protobuf/releases/download/v${VERSION}/protoc-${VERSION}-win64.zip`,
 };
 
 const SRC_BIN_MAP = {
@@ -36,7 +38,7 @@ mkdirSync(dstDir, {recursive: true});
 
 (async function () {
   const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}`;
-  console.log("Vendoring protoc binary for", key);
+  console.log(`Vendoring protoc ${VERSION} for ${key}`);
   const url = URL_MAP[key];
   const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
 

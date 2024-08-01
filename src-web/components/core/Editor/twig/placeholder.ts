@@ -3,21 +3,32 @@ import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view
 import { BetterMatchDecorator } from '../BetterMatchDecorator';
 
 class PlaceholderWidget extends WidgetType {
-  constructor(readonly name: string, readonly isExistingVariable: boolean) {
+  constructor(
+    readonly name: string,
+    readonly exists: boolean,
+    readonly type: 'function' | 'variable' = 'variable',
+  ) {
     super();
   }
+
   eq(other: PlaceholderWidget) {
-    return this.name == other.name && this.isExistingVariable == other.isExistingVariable;
+    return this.name == other.name && this.exists == other.exists;
   }
+
   toDOM() {
     const elt = document.createElement('span');
     elt.className = `x-theme-placeholder placeholder ${
-      this.isExistingVariable ? 'x-theme-placeholder--primary' : 'x-theme-placeholder--danger'
+      !this.exists
+        ? 'x-theme-placeholder--danger'
+        : this.type === 'variable'
+        ? 'x-theme-placeholder--primary'
+        : 'x-theme-placeholder--info'
     }`;
-    elt.title = !this.isExistingVariable ? 'Variable not found in active environment' : '';
+    elt.title = !this.exists ? 'Variable not found in active environment' : '';
     elt.textContent = this.name;
     return elt;
   }
+
   ignoreEvent() {
     return false;
   }
@@ -25,7 +36,7 @@ class PlaceholderWidget extends WidgetType {
 
 export const placeholders = function (variables: { name: string }[]) {
   const placeholderMatcher = new BetterMatchDecorator({
-    regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
+    regexp: /\$\{\[\s*([^\]]+)\s*]}/g,
     decoration(match, view, matchStartPos) {
       const matchEndPos = matchStartPos + match[0].length - 1;
 
@@ -43,11 +54,13 @@ export const placeholders = function (variables: { name: string }[]) {
         return Decoration.replace({});
       }
 
+      const isFunction = groupMatch.includes('(');
       return Decoration.replace({
         inclusive: true,
         widget: new PlaceholderWidget(
           groupMatch,
-          variables.some((v) => v.name === groupMatch),
+          isFunction ? true : variables.some((v) => v.name === groupMatch),
+          isFunction ? 'function' : 'variable',
         ),
       });
     },
@@ -56,9 +69,11 @@ export const placeholders = function (variables: { name: string }[]) {
   return ViewPlugin.fromClass(
     class {
       placeholders: DecorationSet;
+
       constructor(view: EditorView) {
         this.placeholders = placeholderMatcher.createDeco(view);
       }
+
       update(update: ViewUpdate) {
         this.placeholders = placeholderMatcher.updateDeco(update, this.placeholders);
       }
