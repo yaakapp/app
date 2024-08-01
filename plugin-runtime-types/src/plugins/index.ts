@@ -1,4 +1,6 @@
-import { SingleOrArray } from '../helpers';
+import { OneOrMany } from '../helpers';
+import { FilterPlugin } from './filter';
+import { HttpRequestActionPlugin } from './httpRequestAction';
 import { ImporterPlugin } from './import';
 import { ThemePlugin } from './theme';
 
@@ -6,8 +8,8 @@ import { ThemePlugin } from './theme';
  * The global structure of a Yaak plugin
  */
 export type YaakPlugin = {
-  /** One or many plugins to import data into Yaak */
-  importers?: SingleOrArray<ImporterPlugin>;
-  /** One or many themes to customize the Yaak UI */
-  themes?: SingleOrArray<ThemePlugin>;
+  importer?: OneOrMany<ImporterPlugin>;
+  theme?: OneOrMany<ThemePlugin>;
+  filter?: OneOrMany<FilterPlugin>;
+  httpRequestAction?: OneOrMany<HttpRequestActionPlugin>;
 };

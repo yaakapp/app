@@ -1,5 +1,8 @@
 import { Theme } from '../themes';
+import { YaakContext } from './context';
 
 export type ThemePlugin = {
-  theme: Theme;
+  name: string;
+  description?: string;
+  getTheme(ctx: YaakContext, fileContents: string): Promise<Theme>;
 };
