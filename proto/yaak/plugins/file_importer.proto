@@ -18,7 +18,8 @@ message GetFileImportersResponse {
 }
 
 message CallFileImportRequest {
-  string file_content = 1;
+  yaak.common.Callback callback = 1;
+  string file_content = 2;
 }
 
 message CallFileImportResponse {

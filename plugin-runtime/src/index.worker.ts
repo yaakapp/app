@@ -5,7 +5,11 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
 import { Callback } from './gen/yaak/common/callback';
-import { ParentToWorkerEvent, WorkerToParentEvent } from './PluginHandle';
+import {
+  ParentToWorkerBaseEvent,
+  ParentToWorkerCallbackEvent,
+  WorkerToParentEvent,
+} from './PluginHandle';
 import { PluginInfo } from './plugins';
 
 export type CallbackFn = (ctx: YaakContext, jsonArgs: string) => Promise<void>;
@@ -48,7 +52,7 @@ new Promise<void>(async (resolve, reject) => {
 
   const callbacks: Record<string, CallbackFn> = {};
 
-  function reply<T>(originalMsg: ParentToWorkerEvent<any>, rawPayload: T) {
+  function reply<T>(originalMsg: ParentToWorkerBaseEvent, rawPayload: T) {
     // Convert callback functions to callback-id objects, so they can be serialized
     // TODO: Don't parse/stringify, just iterate recursively (for perf)
     const payload = JSON.parse(
@@ -75,25 +79,32 @@ new Promise<void>(async (resolve, reject) => {
     }
   }
 
-  function replyErr(originalMsg: ParentToWorkerEvent<unknown>, error: unknown) {
+  function replyErr(originalMsg: ParentToWorkerBaseEvent, error: unknown) {
     const msg: WorkerToParentEvent = { error: String(error), replyId: originalMsg.replyId };
     parentPort!.postMessage(msg);
   }
 
-  parentPort!.on('message', async (msg: ParentToWorkerEvent<unknown>) => {
+  parentPort!.on('message', async (msg: ParentToWorkerBaseEvent) => {
     try {
       const ctx: YaakContext = {
         // TODO: Fill out the context
       } as any;
-
-      console.log('Worker message', msg);
 
       if ('meta' in msg && msg.meta === 'info') {
         reply(msg, info);
         return;
       }
 
+      if ('callback' in msg) {
+        let m = msg as ParentToWorkerCallbackEvent<any>;
+        console.log('Worker callback', m);
+        const fn = callbacks[m.callback.id];
+        reply(msg, await (fn as Function)(ctx, ...m.args));
+        return;
+      }
+
       if ('invoke' in msg) {
+        console.log('Worker invoke', msg);
         const fn = plugin[msg.invoke];
         if (typeof fn === 'function') {
           reply(msg, await (fn as Function)(ctx, msg.args));
@@ -104,6 +115,7 @@ new Promise<void>(async (resolve, reject) => {
       }
 
       if ('access' in msg) {
+        console.log('Worker access', msg);
         const v = plugin[msg.access];
         reply(msg, v);
         return;

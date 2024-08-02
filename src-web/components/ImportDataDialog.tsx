@@ -29,7 +29,7 @@ export function ImportDataDialog({ importData }: Props) {
               {i.name} → {i.description}
               <Button
                 onClick={async () => {
-                  await i.onImport('foo');
+                  await i.onImport(filePath ?? 'n/a');
                 }}
               >
                 Try Import

@@ -930,7 +930,7 @@ async fn cmd_call_file_importer(
     plugin_manager: State<'_, Mutex<PluginManager>>,
     file_path: &str,
     _workspace_id: &str,
-    _callback: Callback,
+    callback: Callback,
 ) -> Result<WorkspaceExportResources, String> {
     let file = read_to_string(file_path)
         .await
@@ -939,7 +939,7 @@ async fn cmd_call_file_importer(
     let result = plugin_manager
         .lock()
         .await
-        .call_file_importer(file_contents)
+        .call_file_importer(callback, file_contents)
         .await?;
 
     println!("IMPORTED DATA {:?}", result);

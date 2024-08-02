@@ -4,33 +4,27 @@ import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { Callback } from './gen/yaak/common/callback';
 
-export type ParentToWorkerAccessEvent = {
-  replyId: string;
+export interface ParentToWorkerAccessEvent extends ParentToWorkerBaseEvent {
   access: keyof YaakPlugin;
-};
+}
 
-export type ParentToWorkerMetaEvent = {
-  replyId: string;
+export interface ParentToWorkerMetaEvent extends ParentToWorkerBaseEvent {
   meta: 'info';
-};
+}
 
-export type ParentToWorkerInvokeEvent<A> = {
-  replyId: string;
+export interface ParentToWorkerInvokeEvent<A> extends ParentToWorkerBaseEvent {
   invoke: keyof YaakPlugin;
   args: A;
-};
+}
 
-export type ParentToWorkerCallbackEvent<A> = {
-  replyId: string;
+export interface ParentToWorkerCallbackEvent<A extends Array<any>> extends ParentToWorkerBaseEvent {
   callback: Callback;
   args: A;
-};
+}
 
-export type ParentToWorkerEvent<T> =
-  | ParentToWorkerAccessEvent
-  | ParentToWorkerMetaEvent
-  | ParentToWorkerInvokeEvent<T>
-  | ParentToWorkerCallbackEvent<T>;
+export interface ParentToWorkerBaseEvent {
+  replyId: string;
+}
 
 export type WorkerToParentSuccessEvent<P> = {
   replyId: string;
@@ -47,6 +41,7 @@ export type WorkerToParentEvent<T = any> = WorkerToParentErrorEvent | WorkerToPa
 export class PluginHandle {
   readonly pluginDir: string;
   readonly #worker: Worker;
+  #callbacks: Record<string, Function> = {};
 
   constructor(pluginDir: string) {
     this.pluginDir = pluginDir;
@@ -63,40 +58,65 @@ export class PluginHandle {
   }
 
   invoke<A, R>(name: ParentToWorkerInvokeEvent<A>['invoke'], args: A): Promise<R> {
-    return this.#postMessage({ invoke: name, args });
+    return this.#postUnaryMessage({ invoke: name, args });
   }
 
   access<N extends ParentToWorkerAccessEvent['access'], R extends YaakPlugin[N]>(
     name: N,
   ): Promise<NonNullable<R>> {
-    return this.#postMessage({ access: name });
+    return this.#postUnaryMessage({ access: name });
   }
 
   meta<R>(name: ParentToWorkerMetaEvent['meta']): Promise<R> {
-    return this.#postMessage({ meta: name });
+    return this.#postUnaryMessage({ meta: name });
   }
 
-  callback<A, R>(
+  callback<A extends Array<unknown>, R>(
     callback: ParentToWorkerCallbackEvent<A>['callback'],
     args: ParentToWorkerCallbackEvent<A>['args'],
   ): Promise<R> {
-    return this.#postMessage({ callback, args });
+    return this.#postUnaryMessage({ callback, args });
   }
 
-  #postMessage<R = void>(message: Omit<ParentToWorkerEvent<R>, 'replyId'>): Promise<R> {
+  #postUnaryMessage<R = void>(msg: Record<string, any>): Promise<R> {
     const replyId = `msg_${randomUUID().replaceAll('-', '')}`;
     return new Promise((resolve, reject) => {
       const cb = (m: WorkerToParentEvent<R>) => {
         if (m.replyId !== replyId) return;
 
-        if ('error' in m) reject(m.error);
-        else resolve(m.payload as R);
+        if ('error' in m) {
+          reject(m.error);
+          return;
+        }
+
+        // Convert callback functions to callback-id objects, so they can be serialized
+        // TODO: Parse recursively
+        console.log('CONVERTING PAYLOAD', m.payload);
+        if (Object.prototype.toString.call(m.payload) === '[object Object]') {
+          for (const key of Object.keys(m.payload as any)) {
+            const value = m.payload[key];
+            if (
+              Object.prototype.toString.call(value) === '[object Object]' &&
+              Object.keys(value).length === 1 &&
+              'id' in value
+            ) {
+              console.log('CONVERTING CALLBACK', value);
+              const callback: Callback = value;
+              const callbackId = callback.id;
+              const callbackFn = (...args: any[]) => this.callback(callback, args);
+              this.#callbacks[callbackId] = callbackFn;
+              m.payload[key] = callbackFn;
+            }
+          }
+        }
+        console.log('CONVERTED VALUE', m.payload);
+        resolve(m.payload as R);
 
         this.#worker.removeListener('message', cb);
       };
 
       this.#worker.addListener('message', cb);
-      this.#worker.postMessage({ ...message, replyId });
+      this.#worker.postMessage({ ...msg, replyId });
     });
   }
 

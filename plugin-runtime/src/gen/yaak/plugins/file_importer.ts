@@ -25,6 +25,7 @@ export interface GetFileImportersResponse {
 }
 
 export interface CallFileImportRequest {
+  callback: Callback | undefined;
   fileContent: string;
 }
 
@@ -228,13 +229,16 @@ export const GetFileImportersResponse = {
 };
 
 function createBaseCallFileImportRequest(): CallFileImportRequest {
-  return { fileContent: "" };
+  return { callback: undefined, fileContent: "" };
 }
 
 export const CallFileImportRequest = {
   encode(message: CallFileImportRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.callback !== undefined) {
+      Callback.encode(message.callback, writer.uint32(10).fork()).ldelim();
+    }
     if (message.fileContent !== "") {
-      writer.uint32(10).string(message.fileContent);
+      writer.uint32(18).string(message.fileContent);
     }
     return writer;
   },
@@ -251,6 +255,13 @@ export const CallFileImportRequest = {
             break;
           }
 
+          message.callback = Callback.decode(reader, reader.uint32());
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.fileContent = reader.string();
           continue;
       }
@@ -263,11 +274,17 @@ export const CallFileImportRequest = {
   },
 
   fromJSON(object: any): CallFileImportRequest {
-    return { fileContent: isSet(object.fileContent) ? globalThis.String(object.fileContent) : "" };
+    return {
+      callback: isSet(object.callback) ? Callback.fromJSON(object.callback) : undefined,
+      fileContent: isSet(object.fileContent) ? globalThis.String(object.fileContent) : "",
+    };
   },
 
   toJSON(message: CallFileImportRequest): unknown {
     const obj: any = {};
+    if (message.callback !== undefined) {
+      obj.callback = Callback.toJSON(message.callback);
+    }
     if (message.fileContent !== "") {
       obj.fileContent = message.fileContent;
     }
@@ -279,6 +296,9 @@ export const CallFileImportRequest = {
   },
   fromPartial(object: DeepPartial<CallFileImportRequest>): CallFileImportRequest {
     const message = createBaseCallFileImportRequest();
+    message.callback = (object.callback !== undefined && object.callback !== null)
+      ? Callback.fromPartial(object.callback)
+      : undefined;
     message.fileContent = object.fileContent ?? "";
     return message;
   },

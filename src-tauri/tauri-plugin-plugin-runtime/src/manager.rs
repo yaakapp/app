@@ -4,7 +4,7 @@ use log::info;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::watch::Sender;
 use tonic::transport::Channel;
-
+use crate::common::Callback;
 use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 use crate::plugin_runtime::{
@@ -52,11 +52,13 @@ impl PluginManager {
 
     pub async fn call_file_importer(
         &mut self,
+        callback: Callback,
         file_content: &str,
     ) -> Result<CallFileImportResponse, String> {
         let response = self
             .client
             .call_file_import(tonic::Request::new(CallFileImportRequest {
+                callback: Some(callback),
                 file_content: file_content.into(),
             }))
             .await

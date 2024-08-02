@@ -1,3 +1,5 @@
+import { FileImportPlugin, FileImportPluginResponse } from '@yaakapp/api';
+import { YaakContext } from '@yaakapp/api/lib/plugins/context';
 import { isAbortError } from 'abort-controller-x';
 import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
 import { CallContext } from 'nice-grpc-common';
@@ -39,12 +41,9 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
   #callbackFns: Record<string, Function> = {};
 
   constructor() {
-    console.log('Getting plugins');
+    console.log('Loading plugins');
     this.pluginsWithInfo().then((plugins) => {
-      console.log('Got plugins', plugins.length);
-      for (const plugin of plugins) {
-        console.log('Plugin', plugin.info);
-      }
+      console.log('Loaded plugins', plugins.map((p) => p.info.name).join(', '));
     });
   }
 
@@ -89,28 +88,28 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     request: GetDataFilterersRequest,
     context: CallContext,
   ): Promise<DeepPartial<GetDataFilterersResponse>> {
-    throw new Error('TODO');
+    throw new Error('TODO get data filters');
   }
 
   async callDataFilter(
     request: CallDataFiltererRequest,
     context: CallContext,
   ): Promise<DeepPartial<CallDataFiltererResponse>> {
-    throw new Error('TODO');
+    throw new Error('TODO call data filter');
   }
 
   async getHttpRequestActions(
     request: GetHttpRequestActionsRequest,
     context: CallContext,
   ): Promise<DeepPartial<GetHttpRequestActionsResponse>> {
-    throw new Error('TODO');
+    throw new Error('TODO get http request actions');
   }
 
   async callHttpRequestAction(
     request: CallHttpRequestActionRequest,
     context: CallContext,
   ): Promise<DeepPartial<CallHttpRequestActionResponse>> {
-    throw new Error('TODO');
+    throw new Error('TODO call http request action');
   }
 
   async getFileImporters(
@@ -120,6 +119,7 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     const fileImporters: FileImporter[] = [];
     for (const plugin of await this.pluginsWith('fileImport')) {
       const importer = await plugin.access('fileImport');
+      console.log('ADDING CALLBACK', importer);
       fileImporters.push({
         name: importer.name,
         description: importer.description,
@@ -133,7 +133,22 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
     request: CallFileImportRequest,
     context: CallContext,
   ): Promise<DeepPartial<CallFileImportResponse>> {
-    throw new Error('TODO');
+    const callbackId = request.callback?.id ?? 'n/a';
+    const callback: FileImportPlugin['onImport'] = this.#callbackFns[callbackId];
+    if (callback == null) {
+      throw new Error(
+        `Callback not found for ${callbackId}. Options are ${Object.keys(
+          this.#callbackFns,
+        ).join()}`,
+      );
+    }
+    console.log('GOT CALLBACK', callback);
+    const ctx: YaakContext = {
+      // TODO: Fill out the context
+    } as any;
+    const resources: FileImportPluginResponse = await callback(ctx, { text: request.fileContent });
+    console.log('GOT RESOURCES', resources);
+    return { resources };
   }
 
   // async hookHttpRequestAction(
