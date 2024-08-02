@@ -7,7 +7,10 @@ use tonic::transport::Channel;
 
 use crate::nodejs::node_start;
 use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
-use crate::plugin_runtime::{GetFileImportersRequest, GetFileImportersResponse};
+use crate::plugin_runtime::{
+    CallFileImportRequest, CallFileImportResponse, GetFileImportersRequest,
+    GetFileImportersResponse,
+};
 
 pub struct PluginManager {
     pub client: PluginRuntimeClient<Channel>,
@@ -47,10 +50,15 @@ impl PluginManager {
         Ok(response.into_inner())
     }
 
-    pub async fn call_file_importer(&mut self) -> Result<GetFileImportersResponse, String> {
+    pub async fn call_file_importer(
+        &mut self,
+        file_content: &str,
+    ) -> Result<CallFileImportResponse, String> {
         let response = self
             .client
-            .get_file_importers(tonic::Request::new(GetFileImportersRequest {}))
+            .call_file_import(tonic::Request::new(CallFileImportRequest {
+                file_content: file_content.into(),
+            }))
             .await
             .map_err(|e| e.message().to_string())?;
 

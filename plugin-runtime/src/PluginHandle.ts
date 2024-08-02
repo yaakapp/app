@@ -83,25 +83,20 @@ export class PluginHandle {
     return this.#postMessage({ callback, args });
   }
 
-  #postMessage<R = void>(
-    message: Omit<ParentToWorkerAccessEvent | ParentToWorkerInvokeEvent<R>, 'replyId'>,
-  ): Promise<R> {
+  #postMessage<R = void>(message: Omit<ParentToWorkerEvent<R>, 'replyId'>): Promise<R> {
     const replyId = `msg_${randomUUID().replaceAll('-', '')}`;
     return new Promise((resolve, reject) => {
-      const cb = (e: WorkerToParentEvent<R>) => {
-        if (e.replyId !== replyId) return;
+      const cb = (m: WorkerToParentEvent<R>) => {
+        if (m.replyId !== replyId) return;
 
-        if ('error' in e) {
-          reject(e.error);
-        } else {
-          resolve(e.payload as R);
-        }
+        if ('error' in m) reject(m.error);
+        else resolve(m.payload as R);
 
         this.#worker.removeListener('message', cb);
       };
 
       this.#worker.addListener('message', cb);
-      this.#worker.postMessage(message);
+      this.#worker.postMessage({ ...message, replyId });
     });
   }
 

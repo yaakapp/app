@@ -38,6 +38,8 @@ type TauriCmd =
   | 'cmd_grpc_reflect'
   | 'cmd_http_request_actions'
   | 'cmd_import_data'
+  | 'cmd_get_file_importers'
+  | 'cmd_call_file_importer'
   | 'cmd_list_cookie_jars'
   | 'cmd_list_environments'
   | 'cmd_list_folders'

@@ -85,6 +85,7 @@ pub async fn node_start<R: Runtime>(
 
     // Check on child
     tokio::spawn(async move {
+        info!("Waiting for kill signal");
         kill_rx
             .wait_for(|b| *b == true)
             .await
@@ -92,7 +93,6 @@ pub async fn node_start<R: Runtime>(
         info!("Killing plugin runtime");
         child.kill().expect("Failed to kill plugin runtime");
         info!("Killed plugin runtime");
-        return;
     });
 
     let start = std::time::Instant::now();

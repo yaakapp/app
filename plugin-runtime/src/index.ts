@@ -1,6 +1,7 @@
 import { isAbortError } from 'abort-controller-x';
 import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
 import { CallContext } from 'nice-grpc-common';
+import { ServerReflection, ServerReflectionService } from 'nice-grpc-server-reflection';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import { Callback } from './gen/yaak/common/callback';
@@ -60,22 +61,8 @@ class PluginRuntimeService implements PluginRuntimeServiceImplementation {
   }
 
   async pluginsWith(capability: PluginInfo['capabilities'][0]): Promise<PluginHandle[]> {
-    return (await this.pluginsWithInfo())
-      .filter((v) => v.info.capabilities.includes(capability))
-      .map((v) => v.plugin);
-  }
-
-  async plugin(name: string): Promise<PluginHandle | null> {
-    return (await this.pluginsWithInfo()).find((v) => v.info.name === name)?.plugin ?? null;
-  }
-
-  async pluginOrThrow(name: string): Promise<PluginHandle> {
-    const plugin = await this.plugin(name);
-    if (plugin == null) {
-      throw new Error(`Failed to find plugin by ${name}`);
-    }
-
-    return plugin;
+    const withInfo = await this.pluginsWithInfo();
+    return withInfo.filter((v) => v.info.capabilities.includes(capability)).map((v) => v.plugin);
   }
 
   #createCallback<F extends Function>(fn: F): Callback {
@@ -213,6 +200,17 @@ async function* errorHandlingMiddleware<Request, Response>(
 
 server = server.use(errorHandlingMiddleware);
 server.add(PluginRuntimeDefinition, new PluginRuntimeService());
+try {
+  server.add(
+    ServerReflectionService,
+    ServerReflection(
+      fs.readFileSync('/Users/gschier/Workspace/yaak/plugin-runtime/src/gen/protoset.bin'),
+      [PluginRuntimeDefinition.fullName],
+    ),
+  );
+} catch (err) {
+  console.log('Failed to add gRPC server reflection', err);
+}
 
 // Start on random port if YAAK_GRPC_PORT_FILE_PATH is set, or :4000
 const addr = process.env.YAAK_GRPC_PORT_FILE_PATH ? 'localhost:0' : 'localhost:4000';

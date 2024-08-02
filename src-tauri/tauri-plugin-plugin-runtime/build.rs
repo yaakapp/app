@@ -3,6 +3,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .type_attribute("HttpRequestAction", derive)
         .type_attribute("GetHttpRequestActionsResponse", derive)
+        .type_attribute("FileImporter", derive)
+        .type_attribute("GetFileImportersResponse", derive)
         .type_attribute("Callback", derive)
         .compile(&["../../proto/yaak/plugin_runtime.proto"], &["../../proto"])?;
     Ok(())

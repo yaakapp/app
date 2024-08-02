@@ -6,7 +6,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -29,12 +29,14 @@ use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, Webvie
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
+use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
 use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use plugin_runtime::common::Callback;
 use plugin_runtime::manager::PluginManager;
-use plugin_runtime::plugin_runtime::HttpRequestAction;
+use plugin_runtime::plugin_runtime::{GetFileImportersResponse, HttpRequestAction};
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
@@ -52,7 +54,7 @@ use crate::models::{
     upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, CookieJar,
     Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace,
     WorkspaceExportResources,
 };
 use crate::notifications::YaakNotifier;
@@ -717,31 +719,31 @@ async fn cmd_send_ephemeral_request(
 
 #[tauri::command]
 async fn cmd_filter_response(
-    w: WebviewWindow,
-    response_id: &str,
+    _w: WebviewWindow,
+    _response_id: &str,
     _plugin_manager: State<'_, Mutex<PluginManager>>,
     _filter: &str,
 ) -> Result<String, String> {
-    let response = get_http_response(&w, response_id)
-        .await
-        .expect("Failed to get response");
-
-    if let None = response.body_path {
-        return Err("Response body not found".to_string());
-    }
-
-    let mut content_type = "".to_string();
-    for header in response.headers.iter() {
-        if header.name.to_lowercase() == "content-type" {
-            content_type = header.value.to_string().to_lowercase();
-            break;
-        }
-    }
-
-    let _body = read_to_string(response.body_path.unwrap()).unwrap();
-
-    // TODO: Have plugins register their own content type (regex?)
     Err("TODO".into())
+    // let response = get_http_response(&w, response_id)
+    //     .await
+    //     .expect("Failed to get response");
+    //
+    // if let None = response.body_path {
+    //     return Err("Response body not found".to_string());
+    // }
+    //
+    // let mut content_type = "".to_string();
+    // for header in response.headers.iter() {
+    //     if header.name.to_lowercase() == "content-type" {
+    //         content_type = header.value.to_string().to_lowercase();
+    //         break;
+    //     }
+    // }
+    //
+    // let _body = read_to_string(response.body_path.unwrap()).unwrap();
+    //
+    // TODO: Have plugins register their own content type (regex?)
     // plugin_manager
     //     .lock()
     //     .await
@@ -913,6 +915,36 @@ async fn cmd_http_request_actions(
     _plugin_manager: State<'_, Mutex<PluginManager>>,
 ) -> Result<Vec<HttpRequestAction>, String> {
     Err("TODO".into())
+}
+
+#[tauri::command]
+async fn cmd_get_file_importers(
+    plugin_manager: State<'_, Mutex<PluginManager>>,
+) -> Result<GetFileImportersResponse, String> {
+    plugin_manager.lock().await.get_file_importers().await
+}
+
+#[tauri::command]
+async fn cmd_call_file_importer(
+    _w: WebviewWindow,
+    plugin_manager: State<'_, Mutex<PluginManager>>,
+    file_path: &str,
+    _workspace_id: &str,
+    _callback: Callback,
+) -> Result<WorkspaceExportResources, String> {
+    let file = read_to_string(file_path)
+        .await
+        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
+    let file_contents = file.as_str();
+    let result = plugin_manager
+        .lock()
+        .await
+        .call_file_importer(file_contents)
+        .await?;
+
+    println!("IMPORTED DATA {:?}", result);
+
+    Ok(WorkspaceExportResources::default())
 }
 
 #[tauri::command]
@@ -1742,6 +1774,8 @@ pub fn run() {
             cmd_grpc_go,
             cmd_grpc_reflect,
             cmd_http_request_actions,
+            cmd_get_file_importers,
+            cmd_call_file_importer,
             cmd_import_data,
             cmd_list_cookie_jars,
             cmd_list_environments,

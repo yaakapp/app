@@ -86,6 +86,8 @@ new Promise<void>(async (resolve, reject) => {
         // TODO: Fill out the context
       } as any;
 
+      console.log('Worker message', msg);
+
       if ('meta' in msg && msg.meta === 'info') {
         reply(msg, info);
         return;
@@ -104,6 +106,7 @@ new Promise<void>(async (resolve, reject) => {
       if ('access' in msg) {
         const v = plugin[msg.access];
         reply(msg, v);
+        return;
       }
 
       // Didn't find anything to do
