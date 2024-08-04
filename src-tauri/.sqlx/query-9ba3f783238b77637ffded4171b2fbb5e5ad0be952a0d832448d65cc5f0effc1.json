@@ -36,7 +36,7 @@
       {
         "name": "setting_request_timeout",
         "ordinal": 6,
-        "type_info": "Int64"
+        "type_info": "Integer"
       },
       {
         "name": "setting_follow_redirects",

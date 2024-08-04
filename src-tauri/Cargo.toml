@@ -1,4 +1,6 @@
-workspace = { members = ["grpc", "templates", "tauri-plugin-plugin-runtime"] }
+[workspace]
+members = ["grpc", "templates", "tauri-plugin-plugin-runtime", "models"]
+
 
 [package]
 name = "yaak-app"
@@ -14,7 +16,7 @@ crate-type = ["staticlib", "cdylib", "lib"]
 strip = true  # Automatically strip symbols from the binary.
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta", features = [] }
+tauri-build = { version = "2.0.0-rc.0", features = [] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
@@ -26,7 +28,8 @@ openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installa
 [dependencies]
 grpc = { path = "./grpc" }
 templates = { path = "./templates" }
-plugin_runtime = { path = "tauri-plugin-plugin-runtime" }
+plugin_runtime = { path = "./tauri-plugin-plugin-runtime" }
+models = { path = "./models" }
 anyhow = "1.0.86"
 base64 = "0.22.0"
 chrono = { version = "0.4.31", features = ["serde"] }
@@ -41,18 +44,22 @@ reqwest_cookie_store = "0.8.0"
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = { version = "1.0.116", features = ["raw_value"] }
 serde_yaml = "0.9.34"
-sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono", "time"] }
-tauri = { version = "2.0.0-beta", features = ["devtools", "protocol-asset"] }
-tauri-plugin-clipboard-manager = "2.1.0-beta"
-tauri-plugin-dialog = "2.0.0-beta"
-tauri-plugin-fs = "2.0.0-beta"
-tauri-plugin-log = { version = "2.0.0-beta", features = ["colored"] }
-tauri-plugin-os = "2.0.0-beta"
-tauri-plugin-shell = "2.0.0-beta"
-tauri-plugin-updater = "2.0.0-beta"
-tauri-plugin-window-state = "2.0.0-beta"
+sqlx = { version = "0.8.0", features = ["sqlite", "runtime-tokio-rustls", "json", "chrono"] }
+tauri = { workspace = true }
+tauri-plugin-shell = { workspace = true }
+tauri-plugin-clipboard-manager = "2.0.0-rc.0"
+tauri-plugin-dialog = "2.0.0-rc.0"
+tauri-plugin-fs = "2.0.0-rc.0"
+tauri-plugin-log = { version = "2.0.0-rc.0", features = ["colored"] }
+tauri-plugin-os = "2.0.0-rc.0"
+tauri-plugin-updater = "2.0.0-rc.0"
+tauri-plugin-window-state = "2.0.0-rc.0"
 tokio = { version = "1.36.0", features = ["sync"] }
 tokio-stream = "0.1.15"
 uuid = "1.7.0"
 thiserror = "1.0.61"
 mime_guess = "2.0.5"
+
+[workspace.dependencies]
+tauri = { version = "2.0.0-rc.0", features = ["devtools", "protocol-asset"] }
+tauri-plugin-shell = "2.0.0-rc.0"

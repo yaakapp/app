@@ -18,7 +18,7 @@ anyhow = "1.0.79"
 hyper = { version = "0.14" }
 hyper-rustls = { version = "0.24.0", features = ["http2"] }
 uuid = { version = "1.7.0", features = ["v4"] }
-tauri = { version = "2.0.0-beta" }
-tauri-plugin-shell = "2.0.0-beta"
+tauri = { workspace = true }
+tauri-plugin-shell = { workspace = true }
 md5 = "0.7.0"
 dunce = "1.0.4"
