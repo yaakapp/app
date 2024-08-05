@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
-import { ParentToWorkerEvent } from './PluginHandle';
-import { PluginInfo } from './plugins';
+import { PluginEvent } from './gen/plugins/runtime';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir } = workerData;
@@ -18,55 +17,26 @@ new Promise<void>(async (resolve, reject) => {
     return;
   }
 
-  const mod = (await import(`file://${pathMod}`)).default ?? {};
+  const mod = (await import(pathMod)) ?? {};
 
-  const info: PluginInfo = {
-    capabilities: [],
-    name: pkg['name'] ?? 'n/a',
-    dir: pluginDir,
-  };
+  console.log('Plugin initialized', pkg.name, mod);
 
-  if (typeof mod['pluginHookImport'] === 'function') {
-    info.capabilities.push('import');
-  }
-
-  if (typeof mod['pluginHookExport'] === 'function') {
-    info.capabilities.push('export');
-  }
-
-  if (typeof mod['pluginHookResponseFilter'] === 'function') {
-    info.capabilities.push('filter');
-  }
-
-  console.log('Loaded plugin', info.name, info.capabilities, info.dir);
-
-  function reply<T>(originalMsg: ParentToWorkerEvent, payload: T) {
-    parentPort!.postMessage({ payload, callbackId: originalMsg.callbackId });
-  }
-
-  function replyErr(originalMsg: ParentToWorkerEvent, error: unknown) {
-    parentPort!.postMessage({
-      error: String(error),
-      callbackId: originalMsg.callbackId,
-    });
-  }
-
-  parentPort!.on('message', async (msg: ParentToWorkerEvent) => {
-    try {
-      const ctx = { todo: 'implement me' };
-      if (msg.name === 'run-import') {
-        reply(msg, await mod.pluginHookImport(ctx, msg.payload));
-      } else if (msg.name === 'run-filter') {
-        reply(msg, await mod.pluginHookResponseFilter(ctx, msg.payload));
-      } else if (msg.name === 'run-export') {
-        reply(msg, await mod.pluginHookExport(ctx, msg.payload));
-      } else if (msg.name === 'info') {
-        reply(msg, info);
-      } else {
-        console.log('Unknown message', msg);
+  parentPort!.on('message', async (event: PluginEvent) => {
+    console.log('Worker message:', event);
+    if (event.name === 'plugin.boot.request') {
+      const name = pkg.name;
+      const version = pkg.version;
+      const capabilities: string[] = [];
+      if (typeof mod.pluginHookExport === 'function') {
+        capabilities.push('export');
       }
-    } catch (err: unknown) {
-      replyErr(msg, err);
+
+      const reply: PluginEvent = {
+        name: 'plugin.boot.response',
+        replyId: event.replyId,
+        payload: JSON.stringify({ name, version, capabilities }),
+      };
+      parentPort!.postMessage(reply);
     }
   });
 

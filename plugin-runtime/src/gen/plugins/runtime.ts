@@ -33,7 +33,7 @@ export interface HookExportRequest {
   request: string;
 }
 
-export interface Event {
+export interface PluginEvent {
   name: string;
   replyId: string;
   payload: string;
@@ -375,12 +375,12 @@ export const HookExportRequest = {
   },
 };
 
-function createBaseEvent(): Event {
+function createBasePluginEvent(): PluginEvent {
   return { name: "", replyId: "", payload: "" };
 }
 
-export const Event = {
-  encode(message: Event, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const PluginEvent = {
+  encode(message: PluginEvent, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.name !== "") {
       writer.uint32(10).string(message.name);
     }
@@ -393,10 +393,10 @@ export const Event = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): Event {
+  decode(input: _m0.Reader | Uint8Array, length?: number): PluginEvent {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseEvent();
+    const message = createBasePluginEvent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -430,7 +430,7 @@ export const Event = {
     return message;
   },
 
-  fromJSON(object: any): Event {
+  fromJSON(object: any): PluginEvent {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       replyId: isSet(object.replyId) ? globalThis.String(object.replyId) : "",
@@ -438,7 +438,7 @@ export const Event = {
     };
   },
 
-  toJSON(message: Event): unknown {
+  toJSON(message: PluginEvent): unknown {
     const obj: any = {};
     if (message.name !== "") {
       obj.name = message.name;
@@ -452,11 +452,11 @@ export const Event = {
     return obj;
   },
 
-  create(base?: DeepPartial<Event>): Event {
-    return Event.fromPartial(base ?? {});
+  create(base?: DeepPartial<PluginEvent>): PluginEvent {
+    return PluginEvent.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<Event>): Event {
-    const message = createBaseEvent();
+  fromPartial(object: DeepPartial<PluginEvent>): PluginEvent {
+    const message = createBasePluginEvent();
     message.name = object.name ?? "";
     message.replyId = object.replyId ?? "";
     message.payload = object.payload ?? "";
@@ -471,9 +471,9 @@ export const PluginRuntimeDefinition = {
   methods: {
     eventStream: {
       name: "EventStream",
-      requestType: Event,
+      requestType: PluginEvent,
       requestStream: true,
-      responseType: Event,
+      responseType: PluginEvent,
       responseStream: true,
       options: {},
     },
@@ -482,13 +482,16 @@ export const PluginRuntimeDefinition = {
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
   eventStream(
-    request: AsyncIterable<Event>,
+    request: AsyncIterable<PluginEvent>,
     context: CallContext & CallContextExt,
-  ): ServerStreamingMethodResult<DeepPartial<Event>>;
+  ): ServerStreamingMethodResult<DeepPartial<PluginEvent>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
-  eventStream(request: AsyncIterable<DeepPartial<Event>>, options?: CallOptions & CallOptionsExt): AsyncIterable<Event>;
+  eventStream(
+    request: AsyncIterable<DeepPartial<PluginEvent>>,
+    options?: CallOptions & CallOptionsExt,
+  ): AsyncIterable<PluginEvent>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
