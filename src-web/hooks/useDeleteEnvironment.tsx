@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
-import type { Environment, Workspace } from '../lib/models';
+import type { Environment, Workspace } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 import { environmentsQueryKey } from './useEnvironments';

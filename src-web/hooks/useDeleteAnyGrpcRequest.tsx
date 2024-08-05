@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import type { GrpcRequest } from '../lib/models';
+import type { GrpcRequest } from '@yaakapp/api';
 import { getGrpcRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';

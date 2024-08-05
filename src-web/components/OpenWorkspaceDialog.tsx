@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useSettings } from '../hooks/useSettings';
 import { useUpdateSettings } from '../hooks/useUpdateSettings';
-import type { Workspace } from '../lib/models';
+import type { Workspace } from '@yaakapp/api';
 import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { Icon } from './core/Icon';

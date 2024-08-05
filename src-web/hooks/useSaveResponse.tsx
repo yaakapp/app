@@ -4,7 +4,7 @@ import mime from 'mime';
 import slugify from 'slugify';
 import { InlineCode } from '../components/core/InlineCode';
 import { useToast } from '../components/ToastContext';
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { getContentTypeHeader } from '../lib/models';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';

@@ -7,7 +7,7 @@ import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import type { GrpcRequest, HttpRequest } from '../lib/models';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 import { Button } from './core/Button';
 import { InlineCode } from './core/InlineCode';
 import { Select } from './core/Select';

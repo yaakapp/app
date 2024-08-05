@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import type { HttpResponse } from '../../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 
 interface Props {
   response: Pick<HttpResponse, 'status' | 'statusReason' | 'error'>;

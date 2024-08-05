@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
 import { setKeyValue } from '../lib/keyValueStore';
-import type { GrpcRequest } from '../lib/models';
+import type { GrpcRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';

@@ -19,6 +19,7 @@
   },
   "include": [
     "src-web",
+    "src-web/modules.d.ts",
     "vite.config.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

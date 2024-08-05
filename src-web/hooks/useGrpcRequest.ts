@@ -1,4 +1,4 @@
-import type { GrpcRequest } from '../lib/models';
+import type { GrpcRequest } from '@yaakapp/api';
 import { useGrpcRequests } from './useGrpcRequests';
 
 export function useGrpcRequest(id: string | null): GrpcRequest | null {

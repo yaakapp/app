@@ -2,7 +2,7 @@ import type { IntrospectionQuery } from 'graphql';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';

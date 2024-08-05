@@ -6,7 +6,7 @@ import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
-import type { GrpcMetadataEntry, GrpcRequest } from '../lib/models';
+import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp/api';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';

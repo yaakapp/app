@@ -1,4 +1,4 @@
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { useHttpRequests } from './useHttpRequests';
 
 export function useHttpRequest(id: string | null): HttpRequest | null {

@@ -1,7 +1,7 @@
 import { convertFileSrc } from '@tauri-apps/api/core';
 import classNames from 'classnames';
 import { useState } from 'react';
-import type { HttpResponse } from '../../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 
 interface Props {
   response: HttpResponse;

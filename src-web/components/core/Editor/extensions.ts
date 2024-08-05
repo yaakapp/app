@@ -33,7 +33,7 @@ import {
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import type { Environment, Workspace } from '../../../lib/models';
+import type { Environment, Workspace } from '@yaakapp/api';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
 import { text } from './text/extension';

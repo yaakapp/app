@@ -1,6 +1,6 @@
 {
   "name": "@yaakapp/api",
-  "version": "0.0.5",
+  "version": "0.1.0-beta.8",
   "main": "lib/index.js",
   "typings": "./lib/index.d.ts",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@types/node": "^22.0.0"
