@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { httpResponsesQueryKey } from './useHttpResponses';
 

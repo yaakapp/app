@@ -1,5 +1,6 @@
 import { useCookieJars } from '../hooks/useCookieJars';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
+import type { Cookie } from '../lib/gen/Cookie';
 import { cookieDomain } from '../lib/models';
 import { Banner } from './core/Banner';
 import { IconButton } from './core/IconButton';
@@ -37,7 +38,7 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
           </tr>
         </thead>
         <tbody className="divide-y divide-background-highlight-secondary">
-          {cookieJar?.cookies.map((c) => (
+          {cookieJar?.cookies.map((c: Cookie) => (
             <tr key={c.domain + c.raw_cookie}>
               <td className="py-2 select-text cursor-text font-mono font-semibold max-w-0">
                 {cookieDomain(c)}
@@ -55,7 +56,7 @@ export const CookieDialog = function ({ cookieJarId }: Props) {
                   onClick={async () => {
                     await updateCookieJar.mutateAsync({
                       ...cookieJar,
-                      cookies: cookieJar.cookies.filter((c2) => c2 !== c),
+                      cookies: cookieJar.cookies.filter((c2: Cookie) => c2 !== c),
                     });
                   }}
                 />

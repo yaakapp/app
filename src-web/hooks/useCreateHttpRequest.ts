@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';

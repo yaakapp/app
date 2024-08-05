@@ -12,7 +12,7 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
+import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp/api';
 import {
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
@@ -211,7 +211,8 @@ export const RequestPane = memo(function RequestPane({
     [activeRequestId, updateRequest],
   );
   const handleHeadersChange = useCallback(
-    (headers: HttpHeader[]) => updateRequest.mutate({ id: activeRequestId, update: { headers } }),
+    (headers: HttpRequestHeader[]) =>
+      updateRequest.mutate({ id: activeRequestId, update: { headers } }),
     [activeRequestId, updateRequest],
   );
   const handleUrlParametersChange = useCallback(

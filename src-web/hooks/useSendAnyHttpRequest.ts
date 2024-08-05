@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { save } from '@tauri-apps/plugin-dialog';
 import slugify from 'slugify';
 import { trackEvent } from '../lib/analytics';
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveCookieJar } from './useActiveCookieJar';
 import { useActiveEnvironment } from './useActiveEnvironment';

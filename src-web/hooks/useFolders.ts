@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Folder } from '../lib/models';
+import type { Folder } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 

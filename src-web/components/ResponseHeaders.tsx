@@ -1,4 +1,4 @@
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
 
 interface Props {

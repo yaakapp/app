@@ -5,9 +5,8 @@ use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
-
+use yaak_models::queries::{get_key_value_raw, set_key_value_raw};
 use crate::analytics::get_num_launches;
-use crate::models::{get_key_value_raw, set_key_value_raw};
 
 // Check for updates every hour
 const MAX_UPDATE_CHECK_SECONDS: u64 = 60 * 60;

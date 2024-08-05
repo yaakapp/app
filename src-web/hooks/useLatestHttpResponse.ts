@@ -1,4 +1,4 @@
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { useHttpResponses } from './useHttpResponses';
 
 export function useLatestHttpResponse(requestId: string | null): HttpResponse | null {

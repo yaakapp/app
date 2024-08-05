@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
-import type { Environment } from '../lib/models';
+import type { Environment } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useAppRoutes } from './useAppRoutes';

@@ -32,7 +32,7 @@ import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import type { Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
+import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import { isResponseLoading } from '../lib/models';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';

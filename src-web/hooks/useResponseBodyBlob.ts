@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { getResponseBodyBlob } from '../lib/responseBody';
 
 export function useResponseBodyBlob(response: HttpResponse) {

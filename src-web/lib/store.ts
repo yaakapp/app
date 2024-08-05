@@ -1,12 +1,6 @@
-import type {
-  CookieJar,
-  Environment,
-  Folder,
-  GrpcRequest,
-  HttpRequest,
-  Settings,
-  Workspace,
-} from './models';
+import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
+import type { CookieJar } from './gen/CookieJar';
+import type { Settings } from './gen/Settings';
 import { invokeCmd } from './tauri';
 
 export async function getSettings(): Promise<Settings> {

@@ -1,4 +1,4 @@
-import type { GrpcRequest, HttpRequest } from './models';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 
 export function fallbackRequestName(r: HttpRequest | GrpcRequest | null): string {
   if (r == null) return '';

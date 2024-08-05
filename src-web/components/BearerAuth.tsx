@@ -1,6 +1,6 @@
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
-import type { GrpcRequest, HttpRequest } from '../lib/models';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 
@@ -27,7 +27,7 @@ export function BearerAuth<T extends HttpRequest | GrpcRequest>({ request }: Pro
           if (request.model === 'http_request') {
             updateHttpRequest.mutate({
               id: request.id ?? null,
-              update: (r) => ({
+              update: (r: HttpRequest) => ({
                 ...r,
                 authentication: { token },
               }),
@@ -35,7 +35,7 @@ export function BearerAuth<T extends HttpRequest | GrpcRequest>({ request }: Pro
           } else {
             updateGrpcRequest.mutate({
               id: request.id ?? null,
-              update: (r) => ({
+              update: (r: GrpcRequest) => ({
                 ...r,
                 authentication: { token },
               }),

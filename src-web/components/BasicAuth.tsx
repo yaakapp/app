@@ -1,6 +1,6 @@
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
-import type { GrpcRequest, HttpRequest } from '../lib/models';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 
@@ -27,7 +27,7 @@ export function BasicAuth<T extends HttpRequest | GrpcRequest>({ request }: Prop
           if (request.model === 'http_request') {
             updateHttpRequest.mutate({
               id: request.id,
-              update: (r) => ({
+              update: (r: HttpRequest) => ({
                 ...r,
                 authentication: { password: r.authentication.password, username },
               }),
@@ -35,7 +35,7 @@ export function BasicAuth<T extends HttpRequest | GrpcRequest>({ request }: Prop
           } else {
             updateGrpcRequest.mutate({
               id: request.id,
-              update: (r) => ({
+              update: (r: GrpcRequest) => ({
                 ...r,
                 authentication: { password: r.authentication.password, username },
               }),
@@ -57,7 +57,7 @@ export function BasicAuth<T extends HttpRequest | GrpcRequest>({ request }: Prop
           if (request.model === 'http_request') {
             updateHttpRequest.mutate({
               id: request.id,
-              update: (r) => ({
+              update: (r: HttpRequest) => ({
                 ...r,
                 authentication: { username: r.authentication.username, password },
               }),
@@ -65,7 +65,7 @@ export function BasicAuth<T extends HttpRequest | GrpcRequest>({ request }: Prop
           } else {
             updateGrpcRequest.mutate({
               id: request.id,
-              update: (r) => ({
+              update: (r: GrpcRequest) => ({
                 ...r,
                 authentication: { username: r.authentication.username, password },
               }),

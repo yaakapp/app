@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Folder } from '../lib/models';
+import type { Folder } from '@yaakapp/api';
 import { getFolder } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { foldersQueryKey } from './useFolders';

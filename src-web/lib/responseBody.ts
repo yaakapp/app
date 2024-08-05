@@ -1,5 +1,5 @@
 import { readFile, readTextFile } from '@tauri-apps/plugin-fs';
-import type { HttpResponse } from './models';
+import type { HttpResponse } from '@yaakapp/api';
 
 export async function getResponseBodyText(response: HttpResponse): Promise<string | null> {
   if (response.bodyPath) {

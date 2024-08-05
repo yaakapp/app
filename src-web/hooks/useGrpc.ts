@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
 import { trackEvent } from '../lib/analytics';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
-import type { GrpcConnection, GrpcRequest } from '../lib/models';
+import type { GrpcConnection, GrpcRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useDebouncedValue } from './useDebouncedValue';

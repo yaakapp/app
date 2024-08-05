@@ -9,7 +9,7 @@ import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useSaveResponse } from '../../hooks/useSaveResponse';
 import { useToggle } from '../../hooks/useToggle';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
-import type { HttpResponse } from '../../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { CopyButton } from '../CopyButton';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';

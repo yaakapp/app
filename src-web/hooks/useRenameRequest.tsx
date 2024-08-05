@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { usePrompt } from './usePrompt';
 import { useRequests } from './useRequests';
@@ -33,9 +34,9 @@ export function useRenameRequest(requestId: string | null) {
         defaultValue: request.name,
       });
       if (request.model === 'http_request') {
-        updateHttpRequest.mutate({ id: request.id, update: (r) => ({ ...r, name }) });
+        updateHttpRequest.mutate({ id: request.id, update: (r: HttpRequest) => ({ ...r, name }) });
       } else {
-        updateGrpcRequest.mutate({ id: request.id, update: (r) => ({ ...r, name }) });
+        updateGrpcRequest.mutate({ id: request.id, update: (r: GrpcRequest) => ({ ...r, name }) });
       }
     },
   });

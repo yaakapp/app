@@ -1,5 +1,8 @@
+import { Environment } from '../gen/Environment';
+import { Folder } from '../gen/Folder';
+import { HttpRequest } from '../gen/HttpRequest';
+import { Workspace } from '../gen/Workspace';
 import { AtLeast } from '../helpers';
-import { Environment, Folder, HttpRequest, Workspace } from '../models';
 import { YaakContext } from './context';
 
 export type ImportPluginResponse = null | {
