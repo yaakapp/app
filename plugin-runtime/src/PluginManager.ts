@@ -3,15 +3,6 @@ import { loadPlugins, PluginInfo } from './plugins';
 
 export class PluginManager {
   #handles: PluginHandle[] | null = null;
-  static #instance: PluginManager | null = null;
-
-  public static instance(): PluginManager {
-    if (PluginManager.#instance == null) {
-      PluginManager.#instance = new PluginManager();
-      PluginManager.#instance.plugins(); // Trigger workers to boot, as it takes a few seconds
-    }
-    return PluginManager.#instance;
-  }
 
   async plugins(): Promise<PluginHandle[]> {
     this.#handles = this.#handles ?? loadPlugins();

@@ -33,6 +33,12 @@ export interface HookExportRequest {
   request: string;
 }
 
+export interface Event {
+  name: string;
+  replyId: string;
+  payload: string;
+}
+
 function createBasePluginInfo(): PluginInfo {
   return { plugin: "" };
 }
@@ -369,54 +375,120 @@ export const HookExportRequest = {
   },
 };
 
+function createBaseEvent(): Event {
+  return { name: "", replyId: "", payload: "" };
+}
+
+export const Event = {
+  encode(message: Event, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.replyId !== "") {
+      writer.uint32(18).string(message.replyId);
+    }
+    if (message.payload !== "") {
+      writer.uint32(26).string(message.payload);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Event {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEvent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.replyId = reader.string();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.payload = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): Event {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      replyId: isSet(object.replyId) ? globalThis.String(object.replyId) : "",
+      payload: isSet(object.payload) ? globalThis.String(object.payload) : "",
+    };
+  },
+
+  toJSON(message: Event): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.replyId !== "") {
+      obj.replyId = message.replyId;
+    }
+    if (message.payload !== "") {
+      obj.payload = message.payload;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<Event>): Event {
+    return Event.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Event>): Event {
+    const message = createBaseEvent();
+    message.name = object.name ?? "";
+    message.replyId = object.replyId ?? "";
+    message.payload = object.payload ?? "";
+    return message;
+  },
+};
+
 export type PluginRuntimeDefinition = typeof PluginRuntimeDefinition;
 export const PluginRuntimeDefinition = {
   name: "PluginRuntime",
   fullName: "yaak.plugins.runtime.PluginRuntime",
   methods: {
-    hookImport: {
-      name: "hookImport",
-      requestType: HookImportRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
-      options: {},
-    },
-    hookExport: {
-      name: "hookExport",
-      requestType: HookExportRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
-      options: {},
-    },
-    hookResponseFilter: {
-      name: "hookResponseFilter",
-      requestType: HookResponseFilterRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
+    eventStream: {
+      name: "EventStream",
+      requestType: Event,
+      requestStream: true,
+      responseType: Event,
+      responseStream: true,
       options: {},
     },
   },
 } as const;
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
-  hookImport(request: HookImportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
-  hookExport(request: HookExportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
-  hookResponseFilter(
-    request: HookResponseFilterRequest,
+  eventStream(
+    request: AsyncIterable<Event>,
     context: CallContext & CallContextExt,
-  ): Promise<DeepPartial<HookResponse>>;
+  ): ServerStreamingMethodResult<DeepPartial<Event>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
-  hookImport(request: DeepPartial<HookImportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
-  hookExport(request: DeepPartial<HookExportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
-  hookResponseFilter(
-    request: DeepPartial<HookResponseFilterRequest>,
-    options?: CallOptions & CallOptionsExt,
-  ): Promise<HookResponse>;
+  eventStream(request: AsyncIterable<DeepPartial<Event>>, options?: CallOptions & CallOptionsExt): AsyncIterable<Event>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
@@ -430,3 +502,5 @@ export type DeepPartial<T> = T extends Builtin ? T
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
 }
+
+export type ServerStreamingMethodResult<Response> = { [Symbol.asyncIterator](): AsyncIterator<Response, void> };
