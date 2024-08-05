@@ -1,15 +1,20 @@
 import type {
-  BaseModel,
-  Workspace,
-  HttpResponse,
-  HttpRequest,
-  HttpHeader,
-  Folder,
-  GrpcRequest,
-  GrpcEvent,
-  GrpcConnection,
   Environment,
+  Folder,
+  GrpcConnection,
+  GrpcEvent,
+  GrpcRequest,
+  HttpRequest,
+  HttpResponse,
+  KeyValue,
+  Workspace,
+  HttpResponseHeader,
 } from '@yaakapp/api';
+import type { Cookie } from './gen/Cookie';
+import type { CookieJar } from './gen/CookieJar';
+import type { Settings } from './gen/Settings';
+
+export type { CookieJar, Cookie, Settings };
 
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
@@ -37,34 +42,6 @@ export type Model =
   | Environment
   | CookieJar;
 
-export interface Settings extends BaseModel {
-  readonly model: 'settings';
-  theme: string;
-  appearance: string;
-  themeLight: string;
-  themeDark: string;
-  updateChannel: string;
-  interfaceFontSize: number;
-  interfaceScale: number;
-  editorFontSize: number;
-  editorSoftWrap: boolean;
-  openWorkspaceNewWindow: boolean | null;
-}
-
-export interface CookieJar extends BaseModel {
-  readonly model: 'cookie_jar';
-  workspaceId: string;
-  name: string;
-  cookies: Cookie[];
-}
-
-export interface Cookie {
-  raw_cookie: string;
-  domain: { HostOnly: string } | { Suffix: string } | 'NotPresent' | 'Empty';
-  expires: { AtUtc: string } | 'SessionEnd';
-  path: [string, boolean];
-}
-
 export function cookieDomain(cookie: Cookie): string {
   if (cookie.domain === 'NotPresent' || cookie.domain === 'Empty') {
     return 'n/a';
@@ -76,13 +53,6 @@ export function cookieDomain(cookie: Cookie): string {
     return cookie.domain.Suffix;
   }
   return 'unknown';
-}
-
-export interface KeyValue extends Omit<BaseModel, 'id'> {
-  readonly model: 'key_value';
-  readonly key: string;
-  readonly namespace: string;
-  value: string;
 }
 
 export function isResponseLoading(response: HttpResponse | GrpcConnection): boolean {
@@ -99,6 +69,6 @@ export function modelsEq(a: Model, b: Model) {
   return false;
 }
 
-export function getContentTypeHeader(headers: HttpHeader[]): string | null {
+export function getContentTypeHeader(headers: HttpResponseHeader[]): string | null {
   return headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? null;
 }

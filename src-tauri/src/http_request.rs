@@ -16,11 +16,10 @@ use mime_guess::Mime;
 use reqwest::redirect::Policy;
 use reqwest::Method;
 use reqwest::{multipart, Url};
-use sqlx::types::JsonValue;
 use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
-use yaak_models::models::{CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader};
+use yaak_models::models::{Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader};
 use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
 
 pub async fn send_http_request(
@@ -65,9 +64,9 @@ pub async fn send_http_request(
             let cookies = cj
                 .cookies
                 .iter()
-                .map(|json_cookie| {
-                    serde_json::from_value(json_cookie.clone())
-                        .expect("Failed to deserialize cookie")
+                .map(|cookie| {
+                    let json_cookie = serde_json::to_value(cookie).unwrap();
+                    serde_json::from_value(json_cookie).expect("Failed to deserialize cookie")
                 })
                 .map(|c| Ok(c))
                 .collect::<Vec<Result<_, ()>>>();
@@ -85,7 +84,7 @@ pub async fn send_http_request(
 
     if workspace.setting_request_timeout > 0 {
         client_builder = client_builder.timeout(Duration::from_millis(
-            workspace.setting_request_timeout.unsigned_abs(),
+            workspace.setting_request_timeout.unsigned_abs() as u64,
         ));
     }
 
@@ -382,9 +381,9 @@ pub async fn send_http_request(
     match raw_response {
         Ok(v) => {
             let mut response = response.clone();
-            response.elapsed_headers = start.elapsed().as_millis() as i64;
+            response.elapsed_headers = start.elapsed().as_millis() as i32;
             let response_headers = v.headers().clone();
-            response.status = v.status().as_u16() as i64;
+            response.status = v.status().as_u16() as i32;
             response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
             response.headers = response_headers
                 .iter()
@@ -406,12 +405,12 @@ pub async fn send_http_request(
 
             let content_length = v.content_length();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
-            response.elapsed = start.elapsed().as_millis() as i64;
+            response.elapsed = start.elapsed().as_millis() as i32;
 
             // Use content length if available, otherwise use body length
             response.content_length = match content_length {
-                Some(l) => Some(l as i64),
-                None => Some(body_bytes.len() as i64),
+                Some(l) => Some(l as i32),
+                None => Some(body_bytes.len() as i32),
             };
 
             {
@@ -462,11 +461,14 @@ pub async fn send_http_request(
                 // });
                 // store.store_response_cookies(cookies, &url);
 
-                let json_cookies: Vec<JsonValue> = cookie_store
+                let json_cookies: Vec<Cookie> = cookie_store
                     .lock()
                     .unwrap()
                     .iter_any()
-                    .map(|c| serde_json::to_value(&c).expect("Failed to serialize cookie"))
+                    .map(|c| {
+                        let json_cookie = serde_json::to_value(&c).expect("Failed to serialize cookie");
+                        serde_json::from_value(json_cookie).expect("Failed to deserialize cookie")
+                    })
                     .collect::<Vec<_>>();
                 cookie_jar.cookies = json_cookies;
                 if let Err(e) = upsert_cookie_jar(window, &cookie_jar).await {

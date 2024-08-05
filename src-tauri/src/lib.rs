@@ -37,7 +37,7 @@ use yaak_plugin_runtime::manager::PluginManager;
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
-use crate::models::{get_workspace_export_resources, ImportResult, WorkspaceExportResources};
+use crate::export_resources::{get_workspace_export_resources, ImportResult, WorkspaceExportResources};
 use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
@@ -63,7 +63,7 @@ use yaak_models::queries::{
 mod analytics;
 mod grpc;
 mod http_request;
-mod models;
+mod export_resources;
 mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
@@ -275,7 +275,7 @@ async fn cmd_grpc_go(
             upsert_grpc_connection(
                 &w,
                 &GrpcConnection {
-                    elapsed: start.elapsed().as_millis() as i64,
+                    elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
                     ..conn.clone()
                 },
@@ -479,7 +479,7 @@ async fn cmd_grpc_go(
                         &GrpcEvent {
                             content: "Connection complete".to_string(),
                             event_type: GrpcEventType::ConnectionEnd,
-                            status: Some(Code::Ok as i64),
+                            status: Some(Code::Ok as i32),
                             ..base_event.clone()
                         },
                     )
@@ -492,7 +492,7 @@ async fn cmd_grpc_go(
                         &(match e.status {
                             Some(s) => GrpcEvent {
                                 error: Some(s.message().to_string()),
-                                status: Some(s.code() as i64),
+                                status: Some(s.code() as i32),
                                 content: "Failed to connect".to_string(),
                                 metadata: metadata_to_map(s.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
@@ -500,7 +500,7 @@ async fn cmd_grpc_go(
                             },
                             None => GrpcEvent {
                                 error: Some(e.message),
-                                status: Some(Code::Unknown as i64),
+                                status: Some(Code::Unknown as i32),
                                 content: "Failed to connect".to_string(),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -541,7 +541,7 @@ async fn cmd_grpc_go(
                         &(match e.status {
                             Some(s) => GrpcEvent {
                                 error: Some(s.message().to_string()),
-                                status: Some(s.code() as i64),
+                                status: Some(s.code() as i32),
                                 content: "Failed to connect".to_string(),
                                 metadata: metadata_to_map(s.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
@@ -549,7 +549,7 @@ async fn cmd_grpc_go(
                             },
                             None => GrpcEvent {
                                 error: Some(e.message),
-                                status: Some(Code::Unknown as i64),
+                                status: Some(Code::Unknown as i32),
                                 content: "Failed to connect".to_string(),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -588,7 +588,7 @@ async fn cmd_grpc_go(
                             &w,
                             &GrpcEvent {
                                 content: "Connection complete".to_string(),
-                                status: Some(Code::Unavailable as i64),
+                                status: Some(Code::Unavailable as i32),
                                 metadata: metadata_to_map(trailers),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -603,7 +603,7 @@ async fn cmd_grpc_go(
                             &w,
                             &GrpcEvent {
                                 content: status.to_string(),
-                                status: Some(status.code() as i64),
+                                status: Some(status.code() as i32),
                                 metadata: metadata_to_map(status.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -629,11 +629,11 @@ async fn cmd_grpc_go(
                     let closed_event = events
                         .iter()
                         .find(|e| GrpcEventType::ConnectionEnd == e.event_type);
-                    let closed_status = closed_event.and_then(|e| e.status).unwrap_or(Code::Unavailable as i64);
+                    let closed_status = closed_event.and_then(|e| e.status).unwrap_or(Code::Unavailable as i32);
                     upsert_grpc_connection(
                         &w,
                         &GrpcConnection{
-                            elapsed: start.elapsed().as_millis() as i64,
+                            elapsed: start.elapsed().as_millis() as i32,
                             status: closed_status,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
@@ -645,15 +645,15 @@ async fn cmd_grpc_go(
                         &GrpcEvent {
                             content: "Cancelled".to_string(),
                             event_type: GrpcEventType::ConnectionEnd,
-                            status: Some(Code::Cancelled as i64),
+                            status: Some(Code::Cancelled as i32),
                             ..base_msg.clone()
                         },
                     ).await.unwrap();
                     upsert_grpc_connection(
                         &w,
                         &GrpcConnection {
-                            elapsed: start.elapsed().as_millis() as i64,
-                            status: Code::Cancelled as i64,
+                            elapsed: start.elapsed().as_millis() as i32,
+                            status: Code::Cancelled as i32,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
                     )
@@ -1193,7 +1193,7 @@ async fn cmd_create_environment(
 async fn cmd_create_grpc_request(
     workspace_id: &str,
     name: &str,
-    sort_priority: f64,
+    sort_priority: f32,
     folder_id: Option<&str>,
     w: WebviewWindow,
 ) -> Result<GrpcRequest, String> {
@@ -1303,7 +1303,7 @@ async fn cmd_list_folders(workspace_id: &str, w: WebviewWindow) -> Result<Vec<Fo
 async fn cmd_create_folder(
     workspace_id: &str,
     name: &str,
-    sort_priority: f64,
+    sort_priority: f32,
     folder_id: Option<&str>,
     w: WebviewWindow,
 ) -> Result<Folder, String> {
