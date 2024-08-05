@@ -12,7 +12,10 @@ pub fn timestamp(args: HashMap<String, String>) -> Result<String, String> {
         }
         _ => {
             let json_from = serde_json::to_string(from).unwrap_or_default();
-            let now: DateTime<Utc> = serde_json::from_str(json_from.as_str()).unwrap();
+            let now: DateTime<Utc> = match serde_json::from_str(json_from.as_str()) {
+                Ok(r) => r,
+                Err(e) => return Err(e.to_string()),
+            };
             now
         }
     };
@@ -43,7 +46,10 @@ mod tests {
     fn timestamp_from() {
         let mut args = HashMap::new();
         args.insert("from".to_string(), "2024-07-31T14:16:41.983Z".to_string());
-        assert_eq!(timestamp(args), Ok("2024-07-31T14:16:41.983+00:00".to_string()));
+        assert_eq!(
+            timestamp(args),
+            Ok("2024-07-31T14:16:41.983+00:00".to_string())
+        );
     }
 
     #[test]

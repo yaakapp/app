@@ -125,7 +125,7 @@ impl<'s> TryFrom<&Row<'s>> for Workspace {
 }
 
 impl Workspace {
-    pub(crate) fn new(name: String) -> Self {
+    pub fn new(name: String) -> Self {
         Self {
             name,
             model: "workspace".to_string(),
@@ -291,10 +291,6 @@ pub struct HttpUrlParameter {
     pub value: String,
 }
 
-fn default_http_request_method() -> String {
-    "GET".to_string()
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 pub struct HttpRequest {
@@ -448,7 +444,7 @@ impl<'s> TryFrom<&Row<'s>> for HttpResponse {
 }
 
 impl HttpResponse {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             model: "http_response".to_string(),
             ..Default::default()
@@ -705,6 +701,10 @@ impl<'s> TryFrom<&Row<'s>> for KeyValue {
 
 fn default_true() -> bool {
     true
+}
+
+fn default_http_request_method() -> String {
+    "GET".to_string()
 }
 
 pub enum ModelType {

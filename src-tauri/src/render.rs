@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use sqlx::types::{Json, JsonValue};
+use sqlx::types::JsonValue;
 
+use crate::template_fns::timestamp;
 use templates::parse_and_render;
-
-use crate::models::{
+use yaak_models::models::{
     Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
 };
-use crate::template_fns::timestamp;
 
 pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
     let r = r.clone();
@@ -15,56 +14,48 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
 
     HttpRequest {
         url: render(r.url.as_str(), vars),
-        url_parameters: Json(
-            r.url_parameters
-                .0
-                .iter()
-                .map(|p| HttpUrlParameter {
-                    enabled: p.enabled,
-                    name: render(p.name.as_str(), vars),
-                    value: render(p.value.as_str(), vars),
-                })
-                .collect::<Vec<HttpUrlParameter>>(),
-        ),
-        headers: Json(
-            r.headers
-                .0
-                .iter()
-                .map(|p| HttpRequestHeader {
-                    enabled: p.enabled,
-                    name: render(p.name.as_str(), vars),
-                    value: render(p.value.as_str(), vars),
-                })
-                .collect::<Vec<HttpRequestHeader>>(),
-        ),
-        body: Json(
-            r.body
-                .0
-                .iter()
-                .map(|(k, v)| {
-                    let v = if v.is_string() {
-                        render(v.as_str().unwrap(), vars)
-                    } else {
-                        v.to_string()
-                    };
-                    (render(k, vars), JsonValue::from(v))
-                })
-                .collect::<HashMap<String, JsonValue>>(),
-        ),
-        authentication: Json(
-            r.authentication
-                .0
-                .iter()
-                .map(|(k, v)| {
-                    let v = if v.is_string() {
-                        render(v.as_str().unwrap(), vars)
-                    } else {
-                        v.to_string()
-                    };
-                    (render(k, vars), JsonValue::from(v))
-                })
-                .collect::<HashMap<String, JsonValue>>(),
-        ),
+        url_parameters: r
+            .url_parameters
+            .iter()
+            .map(|p| HttpUrlParameter {
+                enabled: p.enabled,
+                name: render(p.name.as_str(), vars),
+                value: render(p.value.as_str(), vars),
+            })
+            .collect::<Vec<HttpUrlParameter>>(),
+        headers: r
+            .headers
+            .iter()
+            .map(|p| HttpRequestHeader {
+                enabled: p.enabled,
+                name: render(p.name.as_str(), vars),
+                value: render(p.value.as_str(), vars),
+            })
+            .collect::<Vec<HttpRequestHeader>>(),
+        body: r
+            .body
+            .iter()
+            .map(|(k, v)| {
+                let v = if v.is_string() {
+                    render(v.as_str().unwrap(), vars)
+                } else {
+                    v.to_string()
+                };
+                (render(k, vars), JsonValue::from(v))
+            })
+            .collect::<HashMap<String, JsonValue>>(),
+        authentication: r
+            .authentication
+            .iter()
+            .map(|(k, v)| {
+                let v = if v.is_string() {
+                    render(v.as_str().unwrap(), vars)
+                } else {
+                    v.to_string()
+                };
+                (render(k, vars), JsonValue::from(v))
+            })
+            .collect::<HashMap<String, JsonValue>>(),
         ..r
     }
 }
@@ -95,10 +86,10 @@ pub fn variables_from_environment(
     environment: Option<&Environment>,
 ) -> HashMap<String, String> {
     let mut variables = HashMap::new();
-    variables = add_variable_to_map(variables, &workspace.variables.0);
+    variables = add_variable_to_map(variables, &workspace.variables);
 
     if let Some(e) = environment {
-        variables = add_variable_to_map(variables, &e.variables.0);
+        variables = add_variable_to_map(variables, &e.variables);
     }
 
     recursively_render_variables(&variables, 0)

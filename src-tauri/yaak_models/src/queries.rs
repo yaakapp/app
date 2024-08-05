@@ -2,14 +2,12 @@ use std::fs;
 
 use log::error;
 use rand::distributions::{Alphanumeric, DistString};
-use rusqlite::Connection;
-use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query::ColumnRef::Asterisk;
 use sea_query::Keyword::CurrentTimestamp;
+use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow, Wry};
-use tauri::async_runtime::Mutex;
 use thiserror::Error;
 
 use crate::models::{
@@ -18,6 +16,7 @@ use crate::models::{
     HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
     ModelType, Settings, SettingsIden, Workspace, WorkspaceIden,
 };
+use crate::SqliteConnection;
 
 #[derive(Error, Debug)]
 pub enum DBError {
@@ -97,8 +96,8 @@ pub async fn set_key_value_raw(
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let existing = get_key_value_raw(mgr, namespace, key).await;
     let (sql, params) = Query::insert()
         .into_table(KeyValueIden::Table)
@@ -117,7 +116,7 @@ pub async fn set_key_value_raw(
             value.into(),
         ])
         .on_conflict(
-            OnConflict::column(GrpcRequestIden::Id)
+            OnConflict::new()
                 .update_columns([KeyValueIden::UpdatedAt, KeyValueIden::Value])
                 .to_owned(),
         )
@@ -138,8 +137,8 @@ pub async fn get_key_value_raw(
     namespace: &str,
     key: &str,
 ) -> Option<KeyValue> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(KeyValueIden::Table)
         .column(Asterisk)
@@ -155,8 +154,8 @@ pub async fn get_key_value_raw(
 }
 
 pub async fn list_workspaces(mgr: &impl Manager<Wry>) -> Result<Vec<Workspace>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(WorkspaceIden::Table)
         .column(Asterisk)
@@ -167,8 +166,8 @@ pub async fn list_workspaces(mgr: &impl Manager<Wry>) -> Result<Vec<Workspace>, 
 }
 
 pub async fn get_workspace(mgr: &impl Manager<Wry>, id: &str) -> Result<Workspace, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(WorkspaceIden::Table)
         .column(Asterisk)
@@ -188,8 +187,8 @@ pub async fn upsert_workspace(
     };
     let trimmed_name = workspace.name.trim();
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(WorkspaceIden::Table)
@@ -237,8 +236,8 @@ pub async fn upsert_workspace(
 }
 
 pub async fn delete_workspace(window: &WebviewWindow, id: &str) -> Result<Workspace, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let workspace = get_workspace(window, id).await?;
 
     let (sql, params) = Query::delete()
@@ -255,8 +254,8 @@ pub async fn delete_workspace(window: &WebviewWindow, id: &str) -> Result<Worksp
 }
 
 pub async fn get_cookie_jar(mgr: &impl Manager<Wry>, id: &str) -> Result<CookieJar, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(CookieJarIden::Table)
@@ -271,8 +270,8 @@ pub async fn list_cookie_jars(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<CookieJar>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(CookieJarIden::Table)
         .column(Asterisk)
@@ -285,8 +284,8 @@ pub async fn list_cookie_jars(
 
 pub async fn delete_cookie_jar(window: &WebviewWindow, id: &str) -> Result<CookieJar, DBError> {
     let cookie_jar = get_cookie_jar(window, id).await?;
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::delete()
         .from_table(CookieJarIden::Table)
@@ -309,8 +308,8 @@ pub async fn duplicate_grpc_request(
 pub async fn delete_grpc_request(window: &WebviewWindow, id: &str) -> Result<GrpcRequest, DBError> {
     let req = get_grpc_request(window, id).await?;
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::delete()
         .from_table(GrpcRequestIden::Table)
         .cond_where(Expr::col(GrpcRequestIden::Id).eq(id))
@@ -324,8 +323,8 @@ pub async fn upsert_grpc_request(
     window: &WebviewWindow,
     request: &GrpcRequest,
 ) -> Result<GrpcRequest, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let id = match request.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcRequest),
         _ => request.id.to_string(),
@@ -398,8 +397,8 @@ pub async fn upsert_grpc_request(
 }
 
 pub async fn get_grpc_request(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcRequest, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(GrpcRequestIden::Table)
@@ -414,8 +413,8 @@ pub async fn list_grpc_requests(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<GrpcRequest>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(GrpcRequestIden::Table)
         .cond_where(Expr::col(GrpcRequestIden::WorkspaceId).eq(workspace_id))
@@ -430,8 +429,8 @@ pub async fn upsert_grpc_connection(
     window: &WebviewWindow,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let id = match connection.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcConnection),
         _ => connection.id.to_string(),
@@ -492,8 +491,8 @@ pub async fn get_grpc_connection(
     mgr: &impl Manager<Wry>,
     id: &str,
 ) -> Result<GrpcConnection, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(GrpcConnectionIden::Table)
         .column(Asterisk)
@@ -507,8 +506,8 @@ pub async fn list_grpc_connections(
     mgr: &impl Manager<Wry>,
     request_id: &str,
 ) -> Result<Vec<GrpcConnection>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(GrpcConnectionIden::Table)
@@ -527,8 +526,8 @@ pub async fn delete_grpc_connection(
 ) -> Result<GrpcConnection, DBError> {
     let resp = get_grpc_connection(window, id).await?;
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::delete()
         .from_table(GrpcConnectionIden::Table)
@@ -553,8 +552,8 @@ pub async fn upsert_grpc_event(
     window: &WebviewWindow,
     event: &GrpcEvent,
 ) -> Result<GrpcEvent, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let id = match event.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcEvent),
         _ => event.id.to_string(),
@@ -609,8 +608,8 @@ pub async fn upsert_grpc_event(
 }
 
 pub async fn get_grpc_event(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcEvent, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(GrpcEventIden::Table)
         .column(Asterisk)
@@ -624,8 +623,8 @@ pub async fn list_grpc_events(
     mgr: &impl Manager<Wry>,
     connection_id: &str,
 ) -> Result<Vec<GrpcEvent>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(GrpcEventIden::Table)
@@ -648,8 +647,8 @@ pub async fn upsert_cookie_jar(
     };
     let trimmed_name = cookie_jar.name.trim();
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(CookieJarIden::Table)
@@ -690,8 +689,8 @@ pub async fn list_environments(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<Environment>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(EnvironmentIden::Table)
@@ -705,8 +704,8 @@ pub async fn list_environments(
 }
 
 pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Environment, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let env = get_environment(window, id).await?;
 
     let (sql, params) = Query::delete()
@@ -719,8 +718,8 @@ pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Envi
 }
 
 async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(SettingsIden::Table)
@@ -736,8 +735,8 @@ pub async fn get_or_create_settings(mgr: &impl Manager<Wry>) -> Settings {
         return settings;
     }
 
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(SettingsIden::Table)
@@ -757,8 +756,8 @@ pub async fn update_settings(
     window: &WebviewWindow,
     settings: Settings,
 ) -> Result<Settings, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::update()
         .table(SettingsIden::Table)
@@ -818,8 +817,8 @@ pub async fn upsert_environment(
     };
     let trimmed_name = environment.name.trim();
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(EnvironmentIden::Table)
@@ -859,8 +858,8 @@ pub async fn upsert_environment(
 }
 
 pub async fn get_environment(mgr: &impl Manager<Wry>, id: &str) -> Result<Environment, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(EnvironmentIden::Table)
@@ -872,8 +871,8 @@ pub async fn get_environment(mgr: &impl Manager<Wry>, id: &str) -> Result<Enviro
 }
 
 pub async fn get_folder(mgr: &impl Manager<Wry>, id: &str) -> Result<Folder, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(FolderIden::Table)
@@ -888,8 +887,8 @@ pub async fn list_folders(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<Folder>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(FolderIden::Table)
@@ -904,8 +903,8 @@ pub async fn list_folders(
 
 pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder, DBError> {
     let folder = get_folder(window, id).await?;
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::delete()
         .from_table(FolderIden::Table)
@@ -923,8 +922,8 @@ pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder, 
     };
     let trimmed_name = r.name.trim();
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(FolderIden::Table)
@@ -982,8 +981,8 @@ pub async fn upsert_http_request(
     };
     let trimmed_name = r.name.trim();
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(HttpRequestIden::Table)
@@ -1052,8 +1051,8 @@ pub async fn list_http_requests(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<HttpRequest>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(HttpRequestIden::Table)
         .cond_where(Expr::col(HttpRequestIden::WorkspaceId).eq(workspace_id))
@@ -1066,8 +1065,8 @@ pub async fn list_http_requests(
 }
 
 pub async fn get_http_request(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpRequest, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::select()
         .from(HttpRequestIden::Table)
@@ -1084,8 +1083,8 @@ pub async fn delete_http_request(window: &WebviewWindow, id: &str) -> Result<Htt
     // DB deletes will cascade but this will delete the files
     delete_all_http_responses(window, id).await?;
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::delete()
         .from_table(HttpRequestIden::Table)
         .cond_where(Expr::col(HttpRequestIden::Id).eq(id))
@@ -1112,8 +1111,8 @@ pub async fn create_http_response(
 ) -> Result<HttpResponse, DBError> {
     let req = get_http_request(window, request_id).await?;
     let id = generate_model_id(ModelType::TypeHttpResponse);
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::insert()
         .into_table(HttpResponseIden::Table)
@@ -1138,6 +1137,7 @@ pub async fn create_http_response(
             id.as_str().into(),
             CurrentTimestamp.into(),
             CurrentTimestamp.into(),
+            req.id.as_str().into(),
             req.workspace_id.as_str().into(),
             elapsed.into(),
             elapsed_headers.into(),
@@ -1159,8 +1159,8 @@ pub async fn create_http_response(
 }
 
 pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<(), DBError> {
-    let dbm = &*app.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*app.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::update()
         .table(GrpcConnectionIden::Table)
@@ -1173,8 +1173,8 @@ pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<(), DBEr
 }
 
 pub async fn cancel_pending_responses(app: &AppHandle) -> Result<(), DBError> {
-    let dbm = &*app.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*app.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::update()
         .table(HttpResponseIden::Table)
@@ -1204,8 +1204,8 @@ pub async fn update_response(
     window: &WebviewWindow,
     response: &HttpResponse,
 ) -> Result<HttpResponse, DBError> {
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
 
     let (sql, params) = Query::update()
         .table(HttpResponseIden::Table)
@@ -1255,8 +1255,8 @@ pub async fn update_response(
 }
 
 pub async fn get_http_response(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpResponse, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(HttpResponseIden::Table)
         .column(Asterisk)
@@ -1279,8 +1279,8 @@ pub async fn delete_http_response(
         };
     }
 
-    let dbm = &*window.app_handle().state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::delete()
         .from_table(HttpResponseIden::Table)
         .cond_where(Expr::col(HttpResponseIden::Id).eq(id))
@@ -1306,8 +1306,8 @@ pub async fn list_responses(
     limit: Option<i64>,
 ) -> Result<Vec<HttpResponse>, DBError> {
     let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(HttpResponseIden::Table)
         .cond_where(Expr::col(HttpResponseIden::RequestId).eq(request_id))
@@ -1324,8 +1324,8 @@ pub async fn list_responses_by_workspace_id(
     mgr: &impl Manager<Wry>,
     workspace_id: &str,
 ) -> Result<Vec<HttpResponse>, DBError> {
-    let dbm = &*mgr.state::<Mutex<Connection>>();
-    let db = dbm.lock().await;
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(HttpResponseIden::Table)
         .cond_where(Expr::col(HttpResponseIden::WorkspaceId).eq(workspace_id))

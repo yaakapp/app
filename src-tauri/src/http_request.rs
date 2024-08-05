@@ -6,6 +6,8 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::render::variables_from_environment;
+use crate::{render, response_err};
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
@@ -14,25 +16,24 @@ use mime_guess::Mime;
 use reqwest::redirect::Policy;
 use reqwest::Method;
 use reqwest::{multipart, Url};
-use sqlx::types::{Json, JsonValue};
+use sqlx::types::JsonValue;
 use tauri::{Manager, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
-
-use crate::render::variables_from_environment;
-use crate::{models, render, response_err};
+use yaak_models::models::{CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader};
+use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
 
 pub async fn send_http_request(
     window: &WebviewWindow,
-    request: models::HttpRequest,
-    response: &models::HttpResponse,
-    environment: Option<models::Environment>,
-    cookie_jar: Option<models::CookieJar>,
+    request: HttpRequest,
+    response: &HttpResponse,
+    environment: Option<Environment>,
+    cookie_jar: Option<CookieJar>,
     download_path: Option<PathBuf>,
     cancel_rx: &mut Receiver<bool>,
-) -> Result<models::HttpResponse, String> {
+) -> Result<HttpResponse, String> {
     let environment_ref = environment.as_ref();
-    let workspace = models::get_workspace(window, &request.workspace_id)
+    let workspace = get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
     let vars = variables_from_environment(&workspace, environment_ref);
@@ -63,7 +64,6 @@ pub async fn send_http_request(
             // HACK: Can't construct Cookie without serde, so we have to do this
             let cookies = cj
                 .cookies
-                .0
                 .iter()
                 .map(|json_cookie| {
                     serde_json::from_value(json_cookie.clone())
@@ -138,7 +138,7 @@ pub async fn send_http_request(
     //     );
     // }
 
-    for h in request.headers.0 {
+    for h in request.headers {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -170,7 +170,7 @@ pub async fn send_http_request(
 
     if let Some(b) = &request.authentication_type {
         let empty_value = &serde_json::to_value("").unwrap();
-        let a = request.authentication.0;
+        let a = request.authentication;
 
         if b == "basic" {
             let raw_username = a
@@ -203,7 +203,7 @@ pub async fn send_http_request(
     }
 
     let mut query_params = Vec::new();
-    for p in request.url_parameters.0 {
+    for p in request.url_parameters {
         if !p.enabled || p.name.is_empty() {
             continue;
         }
@@ -217,7 +217,7 @@ pub async fn send_http_request(
     if let Some(body_type) = &request.body_type {
         let empty_string = &serde_json::to_value("").unwrap();
         let empty_bool = &serde_json::to_value(false).unwrap();
-        let request_body = request.body.0;
+        let request_body = request.body;
 
         if request_body.contains_key("text") {
             let raw_text = request_body
@@ -386,15 +386,13 @@ pub async fn send_http_request(
             let response_headers = v.headers().clone();
             response.status = v.status().as_u16() as i64;
             response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
-            response.headers = Json(
-                response_headers
-                    .iter()
-                    .map(|(k, v)| models::HttpResponseHeader {
-                        name: k.as_str().to_string(),
-                        value: v.to_str().unwrap().to_string(),
-                    })
-                    .collect(),
-            );
+            response.headers = response_headers
+                .iter()
+                .map(|(k, v)| HttpResponseHeader {
+                    name: k.as_str().to_string(),
+                    value: v.to_str().unwrap_or_default().to_string(),
+                })
+                .collect();
             response.url = v.url().to_string();
             response.remote_addr = v.remote_addr().map(|a| a.to_string());
             response.version = match v.version() {
@@ -441,11 +439,11 @@ pub async fn send_http_request(
                 );
             }
 
-            response = models::update_response_if_id(window, &response)
+            response = update_response_if_id(window, &response)
                 .await
                 .expect("Failed to update response");
 
-            // Copy response to download path, if specified
+            // Copy response to the download path, if specified
             match (download_path, response.body_path.clone()) {
                 (Some(dl_path), Some(body_path)) => {
                     info!("Downloading response body to {}", dl_path.display());
@@ -464,16 +462,14 @@ pub async fn send_http_request(
                 // });
                 // store.store_response_cookies(cookies, &url);
 
-                let json_cookies: Json<Vec<JsonValue>> = Json(
-                    cookie_store
-                        .lock()
-                        .unwrap()
-                        .iter_any()
-                        .map(|c| serde_json::to_value(&c).expect("Failed to serialize cookie"))
-                        .collect::<Vec<_>>(),
-                );
+                let json_cookies: Vec<JsonValue> = cookie_store
+                    .lock()
+                    .unwrap()
+                    .iter_any()
+                    .map(|c| serde_json::to_value(&c).expect("Failed to serialize cookie"))
+                    .collect::<Vec<_>>();
                 cookie_jar.cookies = json_cookies;
-                if let Err(e) = models::upsert_cookie_jar(window, &cookie_jar).await {
+                if let Err(e) = upsert_cookie_jar(window, &cookie_jar).await {
                     error!("Failed to update cookie jar: {}", e);
                 };
             }

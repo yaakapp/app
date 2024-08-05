@@ -6,7 +6,7 @@ extern crate objc;
 use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs;
-use std::fs::{create_dir_all, File, read_to_string};
+use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -17,48 +17,48 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::types::Json;
-use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
-use tauri::{Manager, WindowEvent};
-use tauri::Listener;
+use sqlx::{Pool, Sqlite, SqlitePool};
 use tauri::path::BaseDirectory;
+use tauri::Listener;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
+use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::{Code, deserialize_message, serialize_message, ServiceDefinition};
 use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use plugin_runtime::manager::PluginManager;
+use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
-use crate::models::{
-    cancel_pending_grpc_connections, cancel_pending_responses, CookieJar,
-    create_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, Environment, EnvironmentVariable, Folder, generate_model_id,
-    get_cookie_jar, get_environment, get_folder, get_grpc_connection,
-    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, get_workspace_export_resources, GrpcConnection, GrpcEvent,
-    GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue,
-    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events,
-    list_grpc_requests, list_http_requests, list_responses, list_workspaces, ModelType,
-    set_key_value_raw, Settings, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment,
-    upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace, Workspace,
-    WorkspaceExportResources,
-};
-use crate::models::ImportResult;
+use crate::models::{get_workspace_export_resources, ImportResult, WorkspaceExportResources};
 use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
+use yaak_models::models::{
+    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+};
+use yaak_models::queries::{
+    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
+    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
+    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
+    get_or_create_settings, get_workspace, list_cookie_jars, list_environments, list_folders,
+    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
+    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
+};
 
 mod analytics;
 mod grpc;
@@ -68,15 +68,14 @@ mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
+mod template_fns;
 mod updates;
 mod window_menu;
-mod template_fns;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
 
-async fn migrate_db(app_handle: &AppHandle, db: &Mutex<Pool<Sqlite>>) -> Result<(), String> {
-    let pool = &*db.lock().await;
+async fn migrate_db(app_handle: &AppHandle, pool: &Pool<Sqlite>) -> Result<(), String> {
     let p = app_handle
         .path()
         .resolve("migrations", BaseDirectory::Resource)
@@ -170,7 +169,7 @@ async fn cmd_grpc_go(
     let vars = variables_from_environment(&workspace, environment.as_ref());
 
     // Add rest of metadata
-    for h in req.clone().metadata.0 {
+    for h in req.clone().metadata {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -188,7 +187,7 @@ async fn cmd_grpc_go(
     if let Some(b) = &req.authentication_type {
         let req = req.clone();
         let empty_value = &serde_json::to_value("").unwrap();
-        let a = req.authentication.0;
+        let a = req.authentication;
 
         if b == "basic" {
             let raw_username = a
@@ -392,7 +391,7 @@ async fn cmd_grpc_go(
             &GrpcEvent {
                 content: format!("Connecting to {}", req.url),
                 event_type: GrpcEventType::ConnectionStart,
-                metadata: Json(metadata.clone()),
+                metadata: metadata.clone(),
                 ..base_event.clone()
             },
         )
@@ -452,7 +451,7 @@ async fn cmd_grpc_go(
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
-                            metadata: Json(metadata_to_map(msg.metadata().clone())),
+                            metadata: metadata_to_map(msg.metadata().clone()),
                             content: if msg.metadata().len() == 0 {
                                 "Received response"
                             } else {
@@ -495,7 +494,7 @@ async fn cmd_grpc_go(
                                 error: Some(s.message().to_string()),
                                 status: Some(s.code() as i64),
                                 content: "Failed to connect".to_string(),
-                                metadata: Json(metadata_to_map(s.metadata().clone())),
+                                metadata: metadata_to_map(s.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
                             },
@@ -521,7 +520,7 @@ async fn cmd_grpc_go(
                     upsert_grpc_event(
                         &w,
                         &GrpcEvent {
-                            metadata: Json(metadata_to_map(stream.metadata().clone())),
+                            metadata: metadata_to_map(stream.metadata().clone()),
                             content: if stream.metadata().len() == 0 {
                                 "Received response"
                             } else {
@@ -544,7 +543,7 @@ async fn cmd_grpc_go(
                                 error: Some(s.message().to_string()),
                                 status: Some(s.code() as i64),
                                 content: "Failed to connect".to_string(),
-                                metadata: Json(metadata_to_map(s.metadata().clone())),
+                                metadata: metadata_to_map(s.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
                             },
@@ -590,7 +589,7 @@ async fn cmd_grpc_go(
                             &GrpcEvent {
                                 content: "Connection complete".to_string(),
                                 status: Some(Code::Unavailable as i64),
-                                metadata: Json(metadata_to_map(trailers)),
+                                metadata: metadata_to_map(trailers),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
                             },
@@ -605,7 +604,7 @@ async fn cmd_grpc_go(
                             &GrpcEvent {
                                 content: status.to_string(),
                                 status: Some(status.code() as i64),
-                                metadata: Json(metadata_to_map(status.metadata().clone())),
+                                metadata: metadata_to_map(status.metadata().clone()),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
                             },
@@ -1182,7 +1181,7 @@ async fn cmd_create_environment(
         Environment {
             workspace_id: workspace_id.to_string(),
             name: name.to_string(),
-            variables: Json(variables),
+            variables,
             ..Default::default()
         },
     )
@@ -1612,11 +1611,12 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::default().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(plugin_runtime::init())
-        .plugin(tauri_plugin_fs::init());
+        .plugin(tauri_plugin_fs::init())
+        .plugin(yaak_models::Builder::default().build())
+        .plugin(yaak_plugin_runtime::init());
 
     #[cfg(target_os = "macos")]
     {
@@ -1671,11 +1671,9 @@ pub fn run() {
                 let pool = SqlitePool::connect_with(opts)
                     .await
                     .expect("Failed to connect to database");
-                let m = Mutex::new(pool.clone());
-                migrate_db(app.handle(), &m)
+                migrate_db(app.handle(), &pool)
                     .await
                     .expect("Failed to migrate database");
-                app.manage(m);
                 let h = app.handle();
                 let _ = cancel_pending_responses(h).await;
                 let _ = cancel_pending_grpc_connections(h).await;

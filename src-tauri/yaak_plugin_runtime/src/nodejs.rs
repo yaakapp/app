@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use log::{debug, info};
+use log::info;
 use rand::distributions::{Alphanumeric, DistString};
 use serde;
 use serde::Deserialize;
@@ -88,8 +88,7 @@ pub async fn node_start<R: Runtime>(
 
         match fs::read_to_string(port_file_path.clone()).await {
             Ok(s) => break s,
-            Err(err) => {
-                debug!("Failed to read port file {}", err.to_string());
+            Err(_) => {
                 tokio::time::sleep(Duration::from_millis(500)).await;
             }
         }

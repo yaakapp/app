@@ -15,7 +15,7 @@ pub mod plugin_runtime {
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("plugin_runtime")
+    Builder::new("yaak_plugin_runtime")
         .setup(|app, _| {
             tauri::async_runtime::block_on(async move {
                 let manager = PluginManager::new(&app).await;
