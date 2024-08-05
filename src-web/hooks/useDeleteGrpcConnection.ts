@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
-import type { GrpcConnection } from '../lib/models';
+import type { GrpcConnection } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { grpcConnectionsQueryKey } from './useGrpcConnections';
 

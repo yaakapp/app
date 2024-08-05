@@ -2,7 +2,7 @@ import type { EditorView } from 'codemirror';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
 import { Editor, formatGraphQL } from './core/Editor';

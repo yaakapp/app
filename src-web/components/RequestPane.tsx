@@ -12,7 +12,7 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpHeader, HttpRequest, HttpUrlParameter } from '../lib/models';
+import type { HttpHeader, HttpRequest, HttpUrlParameter } from '@yaakapp/api';
 import {
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,

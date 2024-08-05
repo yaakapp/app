@@ -11,8 +11,6 @@ import type {
   Environment,
 } from '@yaakapp/api';
 
-export * from '@yaakapp/api';
-
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
 export const BODY_TYPE_JSON = 'application/json';

@@ -1,7 +1,7 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { Environment, Workspace } from '../../../../lib/models';
+import type { Environment, Workspace } from '@yaakapp/api';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { textLanguageName } from '../text/extension';

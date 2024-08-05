@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import { useSaveResponse } from '../hooks/useSaveResponse';
-import type { HttpResponse } from '../lib/models';
+import type { HttpResponse } from '@yaakapp/api';
 import { pluralize } from '../lib/pluralize';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';

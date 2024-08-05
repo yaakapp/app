@@ -4,7 +4,7 @@ import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
 import { ImportDataDialog } from '../components/ImportDataDialog';
-import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '../lib/models';
+import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Environment } from '../lib/models';
+import type { Environment } from '@yaakapp/api';
 import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';

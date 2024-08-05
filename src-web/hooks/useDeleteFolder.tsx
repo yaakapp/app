@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
-import type { Folder } from '../lib/models';
+import type { Folder } from '@yaakapp/api';
 import { getFolder } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';

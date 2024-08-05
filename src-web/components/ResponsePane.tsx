@@ -5,7 +5,7 @@ import { createGlobalState } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';

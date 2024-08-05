@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Workspace } from '../lib/models';
+import type { Workspace } from '@yaakapp/api';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useWorkspaces } from './useWorkspaces';
 

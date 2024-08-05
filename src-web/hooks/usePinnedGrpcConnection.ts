@@ -1,4 +1,4 @@
-import type { GrpcConnection, GrpcRequest } from '../lib/models';
+import type { GrpcConnection, GrpcRequest } from '@yaakapp/api';
 import { useGrpcConnections } from './useGrpcConnections';
 import { useKeyValue } from './useKeyValue';
 import { useLatestGrpcConnection } from './useLatestGrpcConnection';

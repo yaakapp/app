@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import type { GrpcRequest, HttpRequest } from '../../lib/models';
+import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
 
 interface Props {
   request: HttpRequest | GrpcRequest;

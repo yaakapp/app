@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { GrpcEvent } from '../lib/models';
+import type { GrpcEvent } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 
 export function grpcEventsQueryKey({ connectionId }: { connectionId: string }) {

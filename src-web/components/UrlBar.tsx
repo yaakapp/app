@@ -3,7 +3,7 @@ import type { EditorView } from 'codemirror';
 import type { FormEvent, ReactNode } from 'react';
 import { memo, useRef, useState } from 'react';
 import { useHotKey } from '../hooks/useHotKey';
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import type { IconProps } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import type { InputProps } from './core/Input';

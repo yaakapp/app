@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Environment } from '../lib/models';
+import type { Environment } from '@yaakapp/api';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useEnvironments } from './useEnvironments';
 

@@ -1,4 +1,4 @@
-import type { HttpRequest } from '../lib/models';
+import type { HttpRequest } from '@yaakapp/api';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 
 type Props = {
