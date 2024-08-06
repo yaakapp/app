@@ -1,19 +1,25 @@
 import { PluginEvent } from '@yaakapp/api';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
+import { EventChannel } from './EventChannel';
 
 export class PluginHandle {
   readonly #worker: Worker;
 
-  constructor(readonly pluginDir: string, readonly reply: (event: PluginEvent) => void) {
+  constructor(
+    readonly pluginDir: string,
+    readonly pluginRefId: string,
+    readonly events: EventChannel,
+  ) {
     const workerPath = process.env.YAAK_WORKER_PATH ?? path.join(__dirname, 'index.worker.cjs');
     this.#worker = new Worker(workerPath, {
       workerData: {
-        pluginDir: this.pluginDir,
+        pluginDir,
+        pluginRefId,
       },
     });
 
-    this.#worker.on('message', this.reply);
+    this.#worker.on('message', (e) => this.events.emit(e));
     this.#worker.on('error', this.#handleError.bind(this));
     this.#worker.on('exit', this.#handleExit.bind(this));
   }

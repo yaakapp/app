@@ -1,12 +1,10 @@
 use crate::error::Result;
-use crate::events::{PluginEvent, PluginEventPayload, PluginPingResponse};
+use crate::events::{PluginEventPayload, PluginPingResponse};
 use crate::manager::PluginManager;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
-use crate::server::{GrpcServer, PluginHandle};
+use crate::server::GrpcServer;
 use log::info;
-use std::collections::HashMap;
 use std::process::exit;
-use std::sync::Arc;
 use std::time::Duration;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
@@ -52,10 +50,11 @@ pub async fn start_server() -> Result<()> {
     };
 
     tokio::spawn(async move {
-        while let Some((event, mut plugin)) = to_server_rx.recv().await {
+        while let Some(event) = to_server_rx.recv().await {
             match event.clone().payload {
                 PluginEventPayload::PingRequest(req) => {
                     println!("Received ping! {req:?}");
+
                     server
                         .callback(
                             event,
@@ -67,7 +66,8 @@ pub async fn start_server() -> Result<()> {
                         .unwrap();
                 }
                 PluginEventPayload::BootResponse(resp) => {
-                    plugin.boot(resp);
+                    let id = event.plugin_ref_id.as_str();
+                    server.boot_plugin(id, &resp).await;
                 }
                 _ => {
                     println!("Received unknown event {event:?}")

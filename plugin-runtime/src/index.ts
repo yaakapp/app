@@ -9,22 +9,29 @@ const port = process.env.PORT || '50051';
 const channel = createChannel(`localhost:${port}`);
 const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channel);
 
-const serverEvents = new EventChannel();
-const plugins: PluginHandle[] = [];
+const events = new EventChannel();
+const plugins: Record<string, PluginHandle> = {};
 
 new Promise(async () => {
-  for await (const e of client.eventStream(serverEvents.listen())) {
+  for await (const e of client.eventStream(events.listen())) {
     const pluginEvent: PluginEvent = JSON.parse(e.event);
     // Handle special event to bootstrap plugin
     if (pluginEvent.payload.type === 'boot_request') {
       console.log('Got boot request', pluginEvent);
-      plugins.push(new PluginHandle(pluginEvent.payload.dir, (e) => serverEvents.emit(e)));
+      const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
+      plugins[pluginEvent.pluginRefId] = plugin;
     } else if (pluginEvent.payload.type === 'ping_response') {
       console.log('Got ping response', pluginEvent.payload.message);
     }
 
     // Once booted, forward all events to plugin's worker
-    plugins[0].sendToWorker(pluginEvent);
+    const plugin = plugins[pluginEvent.pluginRefId];
+    if (!plugin) {
+      console.warn('Failed to get plugin for event by', pluginEvent.pluginRefId);
+      continue;
+    }
+
+    plugin.sendToWorker(pluginEvent);
   }
 
   console.log('Stream ended');

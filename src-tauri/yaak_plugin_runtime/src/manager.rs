@@ -10,6 +10,7 @@ use crate::server::plugin_runtime::HookResponse;
 use crate::server::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
 
 pub struct PluginManager {
+    #[allow(dead_code)]
     client: PluginRuntimeClient<Channel>,
     kill_tx: Sender<bool>,
 }
@@ -37,7 +38,7 @@ impl PluginManager {
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {
+    pub async fn run_import(&mut self, _data: &str) -> Result<HookResponse, String> {
         todo!("Implement import");
         // let response = self
         //     .client
@@ -50,7 +51,7 @@ impl PluginManager {
         // Ok(response.into_inner())
     }
 
-    pub async fn run_export_curl(&mut self, request: &str) -> Result<HookResponse, String> {
+    pub async fn run_export_curl(&mut self, _request: &str) -> Result<HookResponse, String> {
         todo!("Implement curl export");
         // let response = self
         //     .client
@@ -65,9 +66,9 @@ impl PluginManager {
 
     pub async fn run_response_filter(
         &mut self,
-        filter: &str,
-        body: &str,
-        content_type: &str,
+        _filter: &str,
+        _body: &str,
+        _content_type: &str,
     ) -> Result<HookResponse, String> {
         todo!("Implement response filter")
         // let response = self
