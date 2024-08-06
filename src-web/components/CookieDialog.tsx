@@ -1,6 +1,6 @@
 import { useCookieJars } from '../hooks/useCookieJars';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
-import type { Cookie } from '../lib/gen/Cookie';
+import type { Cookie } from '../lib/models/Cookie';
 import { cookieDomain } from '../lib/models';
 import { Banner } from './core/Banner';
 import { IconButton } from './core/IconButton';

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Settings } from '../lib/gen/Settings';
+import type { Settings } from '../lib/models/Settings';
 import { invokeCmd } from '../lib/tauri';
 
 export function settingsQueryKey() {

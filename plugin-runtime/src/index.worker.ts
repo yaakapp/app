@@ -1,8 +1,7 @@
+import { PluginEvent, PluginEventPayload } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
-import { PluginEvent } from './gen/plugins/runtime';
-import { PluginBootResponse } from '@yaakapp/api';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir } = workerData;
@@ -23,8 +22,7 @@ new Promise<void>(async (resolve, reject) => {
   console.log('Plugin initialized', pkg.name, mod);
 
   parentPort!.on('message', async (event: PluginEvent) => {
-    console.log('Worker message:', event);
-    if (event.name === 'plugin.boot.request') {
+    if (event.payload.type === 'boot_request') {
       const name = pkg.name;
       const version = pkg.version;
       const capabilities: string[] = [];
@@ -32,12 +30,11 @@ new Promise<void>(async (resolve, reject) => {
         capabilities.push('export');
       }
 
-      const payload: PluginBootResponse = { name, version, capabilities };
+      const payload: PluginEventPayload = { type: 'boot_response', name, version, capabilities };
 
       const reply: PluginEvent = {
-        name: 'plugin.boot.response',
         replyId: event.replyId,
-        payload: JSON.stringify(payload),
+        payload,
       };
       parentPort!.postMessage(reply);
     }

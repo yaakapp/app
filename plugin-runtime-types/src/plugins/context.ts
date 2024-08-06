@@ -1,5 +1,5 @@
-import { HttpRequest } from '../gen/HttpRequest';
-import { HttpResponse } from '../gen/HttpResponse';
+import { HttpRequest } from '../gen/models/HttpRequest';
+import { HttpResponse } from '../gen/models/HttpResponse';
 
 export type YaakContext = {
   metadata: {

@@ -1,7 +1,7 @@
-import { Environment } from '../gen/Environment';
-import { Folder } from '../gen/Folder';
-import { HttpRequest } from '../gen/HttpRequest';
-import { Workspace } from '../gen/Workspace';
+import { Environment } from '../gen/models/Environment';
+import { Folder } from '../gen/models/Folder';
+import { HttpRequest } from '../gen/models/HttpRequest';
+import { Workspace } from '../gen/models/Workspace';
 import { AtLeast } from '../helpers';
 import { YaakContext } from './context';
 

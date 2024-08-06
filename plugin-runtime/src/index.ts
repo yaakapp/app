@@ -1,3 +1,4 @@
+import { PluginEvent } from '@yaakapp/api';
 import { createChannel, createClient } from 'nice-grpc';
 import { EventChannel } from './EventChannel';
 import { PluginRuntimeClient, PluginRuntimeDefinition } from './gen/plugins/runtime';
@@ -9,19 +10,25 @@ const channel = createChannel(`localhost:${port}`);
 const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channel);
 
 setTimeout(() => {
-  events.send({ name: 'ping', replyId: '', payload: '{}' });
+  events.sendForReply({
+    type: 'ping_request',
+    message: 'Hello!',
+  });
 }, 1000);
 
 const events = new EventChannel();
 const workers: PluginHandle[] = [];
 
 new Promise(async () => {
-  for await (const event of client.eventStream(events.listen())) {
+  for await (const e of client.eventStream(events.listen())) {
+    const event: PluginEvent = JSON.parse(e.event);
     // Handle special event to bootstrap plugin
-    if (event.name === 'plugin.boot.request') {
-      const payload: Record<string, any> = JSON.parse(event.payload);
-      const ph = new PluginHandle(payload.dir, events.send.bind(events));
+    if (event.payload.type === 'boot_request') {
+      console.log('Got boot request', event);
+      const ph = new PluginHandle(event.payload.dir, events.emit.bind(events));
       workers.push(ph);
+    } else if (event.payload.type === 'ping_request') {
+      console.log('GOT PING RESPONSE', event.payload.message);
     }
 
     // Once booted, forward all events to plugin's worker

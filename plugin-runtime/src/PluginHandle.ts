@@ -1,6 +1,6 @@
+import { PluginEvent } from '@yaakapp/api';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { PluginEvent } from './gen/plugins/runtime';
 
 export class PluginHandle {
   readonly #worker: Worker;

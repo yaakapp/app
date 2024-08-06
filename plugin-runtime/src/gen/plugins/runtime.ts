@@ -33,10 +33,8 @@ export interface HookExportRequest {
   request: string;
 }
 
-export interface PluginEvent {
-  name: string;
-  replyId: string;
-  payload: string;
+export interface EventStreamEvent {
+  event: string;
 }
 
 function createBasePluginInfo(): PluginInfo {
@@ -375,28 +373,22 @@ export const HookExportRequest = {
   },
 };
 
-function createBasePluginEvent(): PluginEvent {
-  return { name: "", replyId: "", payload: "" };
+function createBaseEventStreamEvent(): EventStreamEvent {
+  return { event: "" };
 }
 
-export const PluginEvent = {
-  encode(message: PluginEvent, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
-    if (message.replyId !== "") {
-      writer.uint32(18).string(message.replyId);
-    }
-    if (message.payload !== "") {
-      writer.uint32(26).string(message.payload);
+export const EventStreamEvent = {
+  encode(message: EventStreamEvent, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.event !== "") {
+      writer.uint32(10).string(message.event);
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): PluginEvent {
+  decode(input: _m0.Reader | Uint8Array, length?: number): EventStreamEvent {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePluginEvent();
+    const message = createBaseEventStreamEvent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -405,21 +397,7 @@ export const PluginEvent = {
             break;
           }
 
-          message.name = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
-          message.replyId = reader.string();
-          continue;
-        case 3:
-          if (tag !== 26) {
-            break;
-          }
-
-          message.payload = reader.string();
+          message.event = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -430,36 +408,24 @@ export const PluginEvent = {
     return message;
   },
 
-  fromJSON(object: any): PluginEvent {
-    return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      replyId: isSet(object.replyId) ? globalThis.String(object.replyId) : "",
-      payload: isSet(object.payload) ? globalThis.String(object.payload) : "",
-    };
+  fromJSON(object: any): EventStreamEvent {
+    return { event: isSet(object.event) ? globalThis.String(object.event) : "" };
   },
 
-  toJSON(message: PluginEvent): unknown {
+  toJSON(message: EventStreamEvent): unknown {
     const obj: any = {};
-    if (message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.replyId !== "") {
-      obj.replyId = message.replyId;
-    }
-    if (message.payload !== "") {
-      obj.payload = message.payload;
+    if (message.event !== "") {
+      obj.event = message.event;
     }
     return obj;
   },
 
-  create(base?: DeepPartial<PluginEvent>): PluginEvent {
-    return PluginEvent.fromPartial(base ?? {});
+  create(base?: DeepPartial<EventStreamEvent>): EventStreamEvent {
+    return EventStreamEvent.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<PluginEvent>): PluginEvent {
-    const message = createBasePluginEvent();
-    message.name = object.name ?? "";
-    message.replyId = object.replyId ?? "";
-    message.payload = object.payload ?? "";
+  fromPartial(object: DeepPartial<EventStreamEvent>): EventStreamEvent {
+    const message = createBaseEventStreamEvent();
+    message.event = object.event ?? "";
     return message;
   },
 };
@@ -471,9 +437,9 @@ export const PluginRuntimeDefinition = {
   methods: {
     eventStream: {
       name: "EventStream",
-      requestType: PluginEvent,
+      requestType: EventStreamEvent,
       requestStream: true,
-      responseType: PluginEvent,
+      responseType: EventStreamEvent,
       responseStream: true,
       options: {},
     },
@@ -482,16 +448,16 @@ export const PluginRuntimeDefinition = {
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
   eventStream(
-    request: AsyncIterable<PluginEvent>,
+    request: AsyncIterable<EventStreamEvent>,
     context: CallContext & CallContextExt,
-  ): ServerStreamingMethodResult<DeepPartial<PluginEvent>>;
+  ): ServerStreamingMethodResult<DeepPartial<EventStreamEvent>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
   eventStream(
-    request: AsyncIterable<DeepPartial<PluginEvent>>,
+    request: AsyncIterable<DeepPartial<EventStreamEvent>>,
     options?: CallOptions & CallOptionsExt,
-  ): AsyncIterable<PluginEvent>;
+  ): AsyncIterable<EventStreamEvent>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

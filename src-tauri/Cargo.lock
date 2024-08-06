@@ -7779,6 +7779,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-plugin-shell",
+ "thiserror",
  "tokio",
  "tonic 0.12.1",
  "tonic-build",
