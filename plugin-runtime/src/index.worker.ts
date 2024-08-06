@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
 import { PluginEvent } from './gen/plugins/runtime';
+import { PluginBootResponse } from '@yaakapp/api';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir } = workerData;
@@ -31,10 +32,12 @@ new Promise<void>(async (resolve, reject) => {
         capabilities.push('export');
       }
 
+      const payload: PluginBootResponse = { name, version, capabilities };
+
       const reply: PluginEvent = {
         name: 'plugin.boot.response',
         replyId: event.replyId,
-        payload: JSON.stringify({ name, version, capabilities }),
+        payload: JSON.stringify(payload),
       };
       parentPort!.postMessage(reply);
     }

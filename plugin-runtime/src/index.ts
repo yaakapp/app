@@ -9,8 +9,8 @@ const channel = createChannel(`localhost:${port}`);
 const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channel);
 
 setTimeout(() => {
-  events.send({ name: 'ping', replyId: '', payload: 'null' });
-}, 100);
+  events.send({ name: 'ping', replyId: '', payload: '{}' });
+}, 1000);
 
 const events = new EventChannel();
 const workers: PluginHandle[] = [];
@@ -25,8 +25,8 @@ new Promise(async () => {
     }
 
     // Once booted, forward all events to plugin's worker
-    console.log('Received event', event);
     workers[0].sendToWorker(event);
   }
+
   console.log('Stream ended');
 }).catch(console.error);

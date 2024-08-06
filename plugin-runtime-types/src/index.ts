@@ -15,4 +15,6 @@ export * from './gen/HttpResponse';
 export * from './gen/HttpResponseHeader';
 export * from './gen/HttpUrlParameter';
 export * from './gen/KeyValue';
+export * from './gen/PluginBootRequest';
+export * from './gen/PluginBootResponse';
 export * from './gen/Workspace';
