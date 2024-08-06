@@ -30,7 +30,17 @@ pub struct PluginHandle {
 }
 
 impl PluginHandle {
-    pub async fn send_event(&self, event: PluginEvent) -> Result<()> {
+    pub async fn send_event(
+        &self,
+        payload: &PluginEventPayload,
+        reply_id: Option<String>,
+    ) -> Result<()> {
+        let event = PluginEvent {
+            plugin_dir: self.dir.clone(),
+            reply_id,
+            payload: payload.clone(),
+        };
+        println!("Sending event to plugin {} {:?}", self.dir, event.payload);
         self.to_plugin_tx
             .lock()
             .await
@@ -40,7 +50,7 @@ impl PluginHandle {
             .await?;
         Ok(())
     }
-    
+
     pub fn boot(&mut self, resp: PluginBootResponse) {
         self.boot_resp = Some(resp.clone());
     }
@@ -58,6 +68,17 @@ pub struct GrpcServer {
 }
 
 impl GrpcServer {
+    pub async fn remove_plugin(&self, id: &str) {
+        match self.plugins.lock().await.remove(id) {
+            None => {
+                println!("Tried to remove non-existing plugin {}", id);
+            }
+            Some(_) => {
+                println!("Remove plugin {}", id);
+            }
+        };
+    }
+
     pub async fn add_plugin(
         &self,
         dir: &str,
@@ -123,24 +144,12 @@ impl GrpcServer {
             Some(n) => n,
         };
 
-        plugin
-            .send_event(PluginEvent {
-                reply_id: Some(reply_id),
-                payload: payload.clone(),
-            })
-            .await
+        plugin.send_event(&payload, Some(reply_id)).await
     }
 
     pub async fn send(&self, payload: PluginEventPayload) -> Result<()> {
         for ph in self.plugins.lock().await.values() {
-            self.send_to_plugin_handle(
-                ph,
-                PluginEvent {
-                    reply_id: None,
-                    payload: payload.clone(),
-                },
-            )
-            .await?;
+            self.send_to_plugin_handle(ph, &payload, None).await?;
         }
 
         Ok(())
@@ -150,14 +159,8 @@ impl GrpcServer {
         for ph in self.plugins.lock().await.values() {
             let mut reply_count = self.reply_count.lock().await;
             *reply_count += 1;
-            self.send_to_plugin_handle(
-                ph,
-                PluginEvent {
-                    reply_id: Some(reply_count.to_string()),
-                    payload: payload.clone(),
-                },
-            )
-            .await?;
+            self.send_to_plugin_handle(ph, &payload, Some(reply_count.to_string()))
+                .await?;
         }
 
         Ok(())
@@ -166,10 +169,10 @@ impl GrpcServer {
     async fn send_to_plugin_handle(
         &self,
         plugin: &PluginHandle,
-        payload: PluginEvent,
+        payload: &PluginEventPayload,
+        reply_id: Option<String>,
     ) -> Result<()> {
-        println!("Sending event to plugin {} {:?}", plugin.dir, payload);
-        plugin.send_event(payload).await
+        plugin.send_event(payload, reply_id).await
     }
 }
 
@@ -195,15 +198,19 @@ impl PluginRuntime for GrpcServer {
             }))
             .await
         {
-            println!("Failed to do it {}", e)
+            println!("Failed to send to {}: {}", plugin.ref_id, e)
+        } else {
+            println!("Send to {}", plugin.ref_id)
         }
 
         let callbacks = self.callbacks.clone();
+        let server = self.clone();
         tokio::spawn(async move {
             while let Some(result) = in_stream.next().await {
                 match result {
                     Ok(v) => {
                         let event: PluginEvent = serde_json::from_str(v.event.as_str()).unwrap();
+                        println!("Received event {:?}", event.payload);
                         to_server_tx
                             .lock()
                             .await
@@ -224,7 +231,7 @@ impl PluginRuntime for GrpcServer {
                     }
                 };
             }
-            println!("Stream ended");
+            server.remove_plugin(plugin.ref_id.as_str()).await;
         });
 
         // echo just write the same data that was received

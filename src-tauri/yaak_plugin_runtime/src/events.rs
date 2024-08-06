@@ -5,6 +5,7 @@ use ts_rs::TS;
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
 pub struct PluginEvent {
+    pub plugin_dir: String,
     pub reply_id: Option<String>,
     pub payload: PluginEventPayload,
 }

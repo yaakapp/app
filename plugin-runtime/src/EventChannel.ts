@@ -10,12 +10,12 @@ export class EventChannel {
     this.emitter.emit('__plugin_event__', { event: JSON.stringify(e) });
   }
 
-  send(payload: PluginEventPayload) {
-    this.emit({ payload, replyId: null });
+  send(pluginDir: string, payload: PluginEventPayload) {
+    this.emit({ pluginDir, payload, replyId: null });
   }
 
-  sendForReply(payload: PluginEventPayload) {
-    this.emit({ payload, replyId: `${this.replyId++}` });
+  sendForReply(pluginDir: string, payload: PluginEventPayload) {
+    this.emit({ pluginDir, payload, replyId: `${this.replyId++}` });
   }
 
   async *listen(): AsyncGenerator<EventStreamEvent> {

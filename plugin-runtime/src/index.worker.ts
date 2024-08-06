@@ -21,6 +21,17 @@ new Promise<void>(async (resolve, reject) => {
 
   console.log('Plugin initialized', pkg.name, mod);
 
+  setTimeout(() => {
+    sendToServer({
+      pluginDir,
+      replyId: '1',
+      payload: {
+        type: 'ping_request',
+        message: 'Hello!',
+      },
+    });
+  }, 3000);
+
   parentPort!.on('message', async (event: PluginEvent) => {
     if (event.payload.type === 'boot_request') {
       const name = pkg.name;
@@ -32,11 +43,11 @@ new Promise<void>(async (resolve, reject) => {
 
       const payload: PluginEventPayload = { type: 'boot_response', name, version, capabilities };
 
-      const reply: PluginEvent = {
-        replyId: event.replyId,
+      sendToServer({
+        pluginDir,
         payload,
-      };
-      parentPort!.postMessage(reply);
+        replyId: event.replyId,
+      });
     }
   });
 
@@ -44,3 +55,7 @@ new Promise<void>(async (resolve, reject) => {
 }).catch((err) => {
   console.log('failed to boot plugin', err);
 });
+
+function sendToServer(e: PluginEvent) {
+  parentPort!.postMessage(e);
+}

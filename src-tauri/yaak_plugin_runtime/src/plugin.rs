@@ -67,7 +67,6 @@ pub async fn start_server() -> Result<()> {
                         .unwrap();
                 }
                 PluginEventPayload::BootResponse(resp) => {
-                    println!("Plugin Booted {:?}", resp);
                     plugin.boot(resp);
                 }
                 _ => {
