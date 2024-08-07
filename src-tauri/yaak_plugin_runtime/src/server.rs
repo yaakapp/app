@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
-
+use std::time::Duration;
 use rand::distributions::{Alphanumeric, DistString};
 use tokio::sync::{mpsc, Mutex};
+use tokio::time::sleep;
 use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tonic::{Request, Response, Status, Streaming};
@@ -12,7 +13,7 @@ use plugin_runtime::EventStreamEvent;
 
 use crate::error::Error::{MissingCallbackErr, MissingCallbackIdErr, UnknownPluginErr};
 use crate::error::Result;
-use crate::events::{PluginBootRequest, PluginBootResponse, PluginEvent, PluginEventPayload};
+use crate::events::{PluginBootRequest, PluginBootResponse, PluginEvent, PluginEventPayload, PluginImportRequest};
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
 
 pub mod plugin_runtime {
@@ -295,6 +296,15 @@ impl PluginRuntime for GrpcServer {
             }
 
             server.remove_plugins(plugin_ids).await;
+        });
+
+        // TODO: Remove this debug event
+        let server = self.clone();
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(2)).await;
+            server.send_for_reply(PluginEventPayload::ImportRequest(PluginImportRequest{
+                content: "curl -X POST https://schier.co".to_string(),
+            })).await.unwrap();
         });
 
         // echo just write the same data that was received
