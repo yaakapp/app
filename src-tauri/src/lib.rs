@@ -35,9 +35,11 @@ use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
+use crate::export_resources::{
+    get_workspace_export_resources, ImportResult, WorkspaceExportResources,
+};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
-use crate::export_resources::{get_workspace_export_resources, ImportResult, WorkspaceExportResources};
 use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
@@ -61,9 +63,9 @@ use yaak_models::queries::{
 };
 
 mod analytics;
+mod export_resources;
 mod grpc;
 mod http_request;
-mod export_resources;
 mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
@@ -737,15 +739,16 @@ async fn cmd_filter_response(
         }
     }
 
-    let body = read_to_string(response.body_path.unwrap()).unwrap();
+    let _body = read_to_string(response.body_path.unwrap()).unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
-    plugin_manager
-        .lock()
-        .await
-        .run_response_filter(filter, &body, &content_type)
-        .await
-        .map(|r| r.data)
+    todo!()
+    // plugin_manager
+    //     .lock()
+    //     .await
+    //     .run_filter(filter, &body, &content_type)
+    //     .await
+    //     .map(|r| r.data)
 }
 
 #[tauri::command]
@@ -762,7 +765,8 @@ async fn cmd_import_data(
         .lock()
         .await
         .run_import(file_contents)
-        .await?;
+        .await
+        .map_err(|e| e.to_string())?;
     let import_result: ImportResult =
         serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
 
@@ -901,14 +905,14 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
 
     let import_response = plugin_manager
         .lock()
         .await
-        .run_export_curl(request_json.as_str())
-        .await?;
-    Ok(import_response.data)
+        .run_export_curl(&rendered)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(import_response.content)
 }
 
 #[tauri::command]
@@ -917,7 +921,12 @@ async fn cmd_curl_to_request(
     plugin_manager: State<'_, Mutex<PluginManager>>,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let import_response = plugin_manager.lock().await.run_import(command).await?;
+    let import_response = plugin_manager
+        .lock()
+        .await
+        .run_import(command)
+        .await
+        .map_err(|e| e.to_string())?;
     let import_result: ImportResult =
         serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
     import_result
@@ -1590,6 +1599,7 @@ pub fn run() {
                 .level_for("cookie_store", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
+                .level_for("hyper_util", log::LevelFilter::Info)
                 .level_for("hyper_rustls", log::LevelFilter::Info)
                 .level_for("reqwest", log::LevelFilter::Info)
                 .level_for("sqlx", log::LevelFilter::Warn)
@@ -1615,8 +1625,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(yaak_models::Builder::default().build())
-        .plugin(yaak_plugin_runtime::init());
+        .plugin(yaak_models::plugin::Builder::default().build())
+        .plugin(yaak_plugin_runtime::plugin::init());
 
     #[cfg(target_os = "macos")]
     {

@@ -1,4 +1,4 @@
-mod error;
+pub mod error;
 mod events;
 pub mod manager;
 mod nodejs;

@@ -23,6 +23,8 @@ pub enum InternalEventPayload {
     BootResponse(BootResponse),
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
+    ExportHttpRequestRequest(ExportHttpRequestRequest),
+    ExportHttpRequestResponse(ExportHttpRequestResponse),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

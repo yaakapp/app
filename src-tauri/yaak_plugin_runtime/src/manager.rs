@@ -1,34 +1,40 @@
-use std::time::Duration;
-
-use log::{ info};
-use tauri::{AppHandle, Manager, Runtime};
-use tokio::sync::watch::Sender;
-use tonic::transport::Channel;
-
-use crate::nodejs::node_start;
+use crate::error::Result;
+use crate::events::{
+    ExportHttpRequestRequest, ExportHttpRequestResponse, FilterResponse, ImportRequest,
+    InternalEvent, InternalEventPayload,
+};
+use crate::nodejs::start_nodejs_plugin_runtime;
 use crate::server::plugin_runtime::HookResponse;
-use crate::server::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
+use crate::server::PluginRuntimeGrpcServer;
+use multiqueue::BroadcastReceiver;
+use std::net::SocketAddr;
+use std::time::Duration;
+use tauri::{AppHandle, Runtime};
+use tokio::sync::watch::Sender;
+use yaak_models::models::HttpRequest;
 
 pub struct PluginManager {
-    #[allow(dead_code)]
-    client: PluginRuntimeClient<Channel>,
     kill_tx: Sender<bool>,
+    server: PluginRuntimeGrpcServer,
+    pub events_rx: BroadcastReceiver<InternalEvent>,
 }
 
 impl PluginManager {
-    pub async fn new<R: Runtime>(app_handle: &AppHandle<R>) -> PluginManager {
-        let temp_dir = app_handle.path().temp_dir().unwrap();
-
+    pub async fn new<R: Runtime>(
+        app_handle: &AppHandle<R>,
+        server: PluginRuntimeGrpcServer,
+        addr: SocketAddr,
+        events_rx: BroadcastReceiver<InternalEvent>,
+    ) -> PluginManager {
         let (kill_tx, kill_rx) = tokio::sync::watch::channel(false);
-        let start_resp = node_start(app_handle, &temp_dir, &kill_rx).await;
-        info!("Connecting to gRPC client at {}", start_resp.addr);
-
-        let client = match PluginRuntimeClient::connect(start_resp.addr.clone()).await {
-            Ok(v) => v,
-            Err(err) => panic!("{}", err.to_string()),
-        };
-
-        PluginManager { client, kill_tx }
+        start_nodejs_plugin_runtime(app_handle, addr, &kill_rx)
+            .await
+            .expect("Failed to start plugin runtime");
+        PluginManager {
+            kill_tx,
+            events_rx,
+            server,
+        }
     }
 
     pub async fn cleanup(&mut self) {
@@ -38,8 +44,19 @@ impl PluginManager {
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    pub async fn run_import(&mut self, _data: &str) -> Result<HookResponse, String> {
-        todo!("Implement import");
+    pub async fn run_import(&mut self, data: &str) -> Result<HookResponse> {
+        self.server
+            .send_for_reply(InternalEventPayload::ImportRequest(ImportRequest {
+                content: data.to_string(),
+            }))
+            .await?;
+
+        for event in self.events_rx.add_stream() {
+            println!("EVENT {event:?}");
+        }
+
+        todo!()
+
         // let response = self
         //     .client
         //     .hook_import(tonic::Request::new(HookImportRequest {
@@ -51,7 +68,37 @@ impl PluginManager {
         // Ok(response.into_inner())
     }
 
-    pub async fn run_export_curl(&mut self, _request: &str) -> Result<HookResponse, String> {
+    pub async fn run_export_curl(
+        &mut self,
+        request: &HttpRequest,
+    ) -> Result<ExportHttpRequestResponse> {
+        println!("EXPORTING TO CURL");
+        let events = self
+            .server
+            .send_for_reply(InternalEventPayload::ExportHttpRequestRequest(
+                ExportHttpRequestRequest {
+                    http_request: request.to_owned(),
+                },
+            ))
+            .await?;
+
+        let reply_ids = events
+            .iter()
+            .map(|e| e.reply_id.to_owned().unwrap())
+            .collect::<Vec<String>>();
+        
+        println!("Waiting for reply ids: {reply_ids:?}");
+        for event in self.events_rx.add_stream() {
+            match event.payload {
+                InternalEventPayload::ExportHttpRequestResponse(resp) => {
+                    println!("Found export response {resp:?}");
+                    return Ok(resp);
+                }
+                _ => {}
+            }
+        };
+        
+
         todo!("Implement curl export");
         // let response = self
         //     .client
@@ -64,12 +111,12 @@ impl PluginManager {
         // Ok(response.into_inner())
     }
 
-    pub async fn run_response_filter(
+    pub async fn run_filter(
         &mut self,
         _filter: &str,
         _body: &str,
         _content_type: &str,
-    ) -> Result<HookResponse, String> {
+    ) -> Result<FilterResponse> {
         todo!("Implement response filter")
         // let response = self
         //     .client

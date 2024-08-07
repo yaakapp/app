@@ -1,6 +1,7 @@
 import { ImportResponse, InternalEvent, InternalEventPayload } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
 
 new Promise<void>(async (resolve, reject) => {
@@ -16,6 +17,8 @@ new Promise<void>(async (resolve, reject) => {
     reject(err);
     return;
   }
+
+  prefixConsole(`[plugin][${pkg.name}] %s`);
 
   const mod = (await import(pathMod)) ?? {};
 
@@ -43,6 +46,16 @@ new Promise<void>(async (resolve, reject) => {
         const replyPayload: InternalEventPayload = { type: 'import_response', ...reply };
         sendToServer({ id: genId(), pluginRefId, replyId: null, payload: replyPayload });
       }
+    } else if (
+      payload.type === 'export_http_request_request' &&
+      typeof mod.pluginHookExport === 'function'
+    ) {
+      const reply: string = await mod.pluginHookExport({}, payload.httpRequest);
+      const replyPayload: InternalEventPayload = {
+        type: 'export_http_request_response',
+        content: reply,
+      };
+      sendToServer({ id: genId(), pluginRefId, replyId: null, payload: replyPayload });
     }
   });
 
@@ -62,4 +75,25 @@ function genId(len = 5): string {
     id += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
   return id;
+}
+
+// TODO: Make prefix all liines of each log
+function prefixConsole(s: string) {
+  if (!s.includes('%s')) {
+    throw new Error('Console prefix must contain a "%s" replacer');
+  }
+  const fns = {
+    log: console.log.bind(console),
+    info: console.info.bind(console),
+    warn: console.warn.bind(console),
+    error: console.error.bind(console),
+    debug: (console.debug || console.log).bind(console),
+  };
+
+  Object.keys(fns).forEach(function (k) {
+    console[k] = function () {
+      arguments[0] = util.format(s, arguments[0]);
+      fns[k].apply(console, arguments);
+    };
+  });
 }
