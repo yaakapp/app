@@ -1,55 +1,41 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use ts_rs::TS;
-use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, Workspace};
+
+use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, HttpResponse, Workspace};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginEvent {
+#[ts(export)]
+pub struct InternalEvent {
     pub id: String,
     pub plugin_ref_id: String,
     pub reply_id: Option<String>,
-    pub payload: PluginEventPayload,
+    pub payload: InternalEventPayload,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub enum PluginEventPayload {
-    PingRequest(PluginPingRequest),
-    PingResponse(PluginPingResponse),
-    BootRequest(PluginBootRequest),
-    BootResponse(PluginBootResponse),
-    ImportRequest(PluginImportRequest),
-    ImportResponse(PluginImportResponse),
+#[ts(export)]
+pub enum InternalEventPayload {
+    BootRequest(BootRequest),
+    BootResponse(BootResponse),
+    ImportRequest(ImportRequest),
+    ImportResponse(ImportResponse),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginPingRequest {
-    pub message: String,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginPingResponse {
-    pub message: String,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginBootRequest {
+#[ts(export)]
+pub struct BootRequest {
     pub dir: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginBootResponse {
+#[ts(export)]
+pub struct BootResponse {
     pub name: String,
     pub version: String,
     pub capabilities: Vec<String>,
@@ -57,22 +43,50 @@ pub struct PluginBootResponse {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginImportRequest {
+#[ts(export)]
+pub struct ImportRequest {
     pub content: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/events/")]
-pub struct PluginImportResponse {
-    pub resources: PluginImportResources,
+#[ts(export)]
+pub struct ImportResponse {
+    pub resources: ImportResources,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct FilterRequest {
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct FilterResponse {
+    pub items: Vec<Value>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct ExportHttpRequestRequest {
+    pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct ExportHttpRequestResponse {
+    pub content: String,
 }
 
 // TODO: Migrate plugins to return this type
 // #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "camelCase", untagged)]
-// #[ts(export, export_to = "../../../plugin-runtime-types/src/gen/common/")]
+// #[ts(export)]
 // pub enum ExportableModel {
 //     Workspace(Workspace),
 //     Environment(Environment),
@@ -83,11 +97,23 @@ pub struct PluginImportResponse {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/common/")]
-pub struct PluginImportResources {
+#[ts(export)]
+pub struct ImportResources {
     pub workspaces: Vec<Workspace>,
     pub environments: Vec<Environment>,
     pub folders: Vec<Folder>,
     pub http_requests: Vec<HttpRequest>,
     pub grpc_requests: Vec<GrpcRequest>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum Model {
+    Workspace(Workspace),
+    Environment(Environment),
+    Folder(Folder),
+    HttpRequest(HttpRequest),
+    HttpResponse(HttpResponse),
+    GrpcRequest(GrpcRequest),
 }

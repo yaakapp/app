@@ -1,4 +1,4 @@
-import { HttpRequest } from '../gen/models/HttpRequest';
+import { HttpRequest } from '../gen/HttpRequest';
 import { YaakContext } from './context';
 
 export type HttpRequestActionPlugin = {

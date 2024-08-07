@@ -1,12 +1,11 @@
-import { PluginEvent } from '@yaakapp/api';
+import { InternalEvent } from '@yaakapp/api';
 import EventEmitter from 'node:events';
 import { EventStreamEvent } from './gen/plugins/runtime';
 
 export class EventChannel {
   emitter: EventEmitter = new EventEmitter();
-  replyId = 0;
 
-  emit(e: PluginEvent) {
+  emit(e: InternalEvent) {
     this.emitter.emit('__plugin_event__', { event: JSON.stringify(e) });
   }
 

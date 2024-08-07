@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
+
 use rand::distributions::{Alphanumeric, DistString};
 use tokio::sync::{mpsc, Mutex};
 use tokio::time::sleep;
@@ -13,7 +14,9 @@ use plugin_runtime::EventStreamEvent;
 
 use crate::error::Error::{MissingCallbackErr, MissingCallbackIdErr, UnknownPluginErr};
 use crate::error::Result;
-use crate::events::{PluginBootRequest, PluginBootResponse, PluginEvent, PluginEventPayload, PluginImportRequest};
+use crate::events::{
+    BootRequest, BootResponse, ImportRequest, InternalEvent, InternalEventPayload,
+};
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
 
 pub mod plugin_runtime {
@@ -28,12 +31,16 @@ pub struct PluginHandle {
     dir: String,
     to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
     ref_id: String,
-    boot_resp: Option<PluginBootResponse>,
+    boot_resp: Option<BootResponse>,
 }
 
 impl PluginHandle {
-    pub async fn send(&self, payload: &PluginEventPayload, reply_id: Option<String>) -> Result<()> {
-        let event = PluginEvent {
+    pub async fn send(
+        &self,
+        payload: &InternalEventPayload,
+        reply_id: Option<String>,
+    ) -> Result<()> {
+        let event = InternalEvent {
             id: gen_id(),
             plugin_ref_id: self.ref_id.clone(),
             reply_id,
@@ -50,8 +57,8 @@ impl PluginHandle {
         Ok(())
     }
 
-    pub async fn send_for_reply(&self, payload: &PluginEventPayload) -> Result<()> {
-        let event = PluginEvent {
+    pub async fn send_for_reply(&self, payload: &InternalEventPayload) -> Result<()> {
+        let event = InternalEvent {
             id: gen_id(),
             plugin_ref_id: self.ref_id.clone(),
             reply_id: Some(gen_id()),
@@ -68,7 +75,7 @@ impl PluginHandle {
         Ok(())
     }
 
-    pub fn boot(&mut self, resp: &PluginBootResponse) {
+    pub fn boot(&mut self, resp: &BootResponse) {
         self.boot_resp = Some(resp.clone());
     }
 }
@@ -79,9 +86,10 @@ pub struct GrpcServer {
     plugins: Arc<Mutex<HashMap<String, PluginHandle>>>,
     // Callbacks is a map of callback_id -> plugin_name
     callbacks: Arc<Mutex<HashMap<String, String>>>,
-    /// Send here to send emit an event to the server
-    to_server_tx: Arc<Mutex<mpsc::Sender<PluginEvent>>>,
+
+    to_server_tx: Arc<Mutex<mpsc::Sender<InternalEvent>>>,
     reply_count: Arc<Mutex<u32>>,
+    plugin_dirs: Vec<String>,
 }
 
 impl GrpcServer {
@@ -102,7 +110,7 @@ impl GrpcServer {
         };
     }
 
-    pub async fn boot_plugin(&self, id: &str, resp: &PluginBootResponse) {
+    pub async fn boot_plugin(&self, id: &str, resp: &BootResponse) {
         match self.plugins.lock().await.get(id) {
             None => {
                 println!("Tried booting non-existing plugin {}", id);
@@ -135,19 +143,20 @@ impl GrpcServer {
 }
 
 impl GrpcServer {
-    pub fn new(tx: mpsc::Sender<PluginEvent>) -> Self {
+    pub fn new(tx: mpsc::Sender<InternalEvent>, plugin_dirs: Vec<String>) -> Self {
         GrpcServer {
             plugins: Arc::new(Mutex::new(HashMap::new())),
             callbacks: Arc::new(Mutex::new(HashMap::new())),
             to_server_tx: Arc::new(Mutex::new(tx)),
             reply_count: Arc::new(Mutex::new(0)),
+            plugin_dirs,
         }
     }
 
     pub async fn callback(
         &self,
-        source_event: PluginEvent,
-        payload: PluginEventPayload,
+        source_event: InternalEvent,
+        payload: InternalEventPayload,
     ) -> Result<()> {
         let reply_id = match source_event.clone().reply_id {
             None => {
@@ -181,7 +190,7 @@ impl GrpcServer {
         plugin.send(&payload, Some(reply_id)).await
     }
 
-    pub async fn send(&self, payload: PluginEventPayload) -> Result<()> {
+    pub async fn send(&self, payload: InternalEventPayload) -> Result<()> {
         for ph in self.plugins.lock().await.values() {
             self.send_to_plugin_handle(ph, &payload, None).await?;
         }
@@ -189,7 +198,7 @@ impl GrpcServer {
         Ok(())
     }
 
-    pub async fn send_for_reply(&self, payload: PluginEventPayload) -> Result<()> {
+    pub async fn send_for_reply(&self, payload: InternalEventPayload) -> Result<()> {
         for ph in self.plugins.lock().await.values() {
             let mut reply_count = self.reply_count.lock().await;
             *reply_count += 1;
@@ -203,7 +212,7 @@ impl GrpcServer {
     async fn send_to_plugin_handle(
         &self,
         plugin: &PluginHandle,
-        payload: &PluginEventPayload,
+        payload: &InternalEventPayload,
         reply_id: Option<String>,
     ) -> Result<()> {
         plugin.send(payload, reply_id).await
@@ -212,21 +221,16 @@ impl GrpcServer {
     async fn load_plugins(
         &self,
         to_plugin_tx: mpsc::Sender<tonic::Result<EventStreamEvent>>,
+        plugin_dirs: Vec<String>,
     ) -> Vec<String> {
-        let plugin_dirs = vec![
-            "/Users/gschier/Workspace/plugins/plugins/exporter-curl",
-            "/Users/gschier/Workspace/plugins/plugins/importer-curl",
-            "/Users/gschier/Workspace/plugins/plugins/importer-insomnia",
-        ];
-
         let mut plugin_ids = Vec::new();
 
         for dir in plugin_dirs {
-            let plugin = self.add_plugin(dir, to_plugin_tx.clone()).await;
+            let plugin = self.add_plugin(dir.as_str(), to_plugin_tx.clone()).await;
             plugin_ids.push(plugin.clone().ref_id);
 
             if let Err(e) = plugin
-                .send_for_reply(&PluginEventPayload::BootRequest(PluginBootRequest {
+                .send_for_reply(&InternalEventPayload::BootRequest(BootRequest {
                     dir: dir.to_string(),
                 }))
                 .await
@@ -258,7 +262,9 @@ impl PluginRuntime for GrpcServer {
         let (to_plugin_tx, to_plugin_rx) = mpsc::channel(128);
         let to_server_tx = Arc::clone(&self.to_server_tx);
 
-        let plugin_ids = self.load_plugins(to_plugin_tx).await;
+        let plugin_ids = self
+            .load_plugins(to_plugin_tx, self.plugin_dirs.clone())
+            .await;
 
         let callbacks = self.callbacks.clone();
         let server = self.clone();
@@ -266,12 +272,12 @@ impl PluginRuntime for GrpcServer {
             while let Some(result) = in_stream.next().await {
                 match result {
                     Ok(v) => {
-                        let event: PluginEvent = match serde_json::from_str(v.event.as_str()) {
+                        let event: InternalEvent = match serde_json::from_str(v.event.as_str()) {
                             Ok(pe) => pe,
                             Err(e) => {
                                 println!("Failed to deserialize event {e:?} -> {}", v.event);
                                 continue;
-                            },
+                            }
                         };
 
                         let plugin_ref_id = event.plugin_ref_id.clone();
@@ -302,9 +308,12 @@ impl PluginRuntime for GrpcServer {
         let server = self.clone();
         tokio::spawn(async move {
             sleep(Duration::from_secs(2)).await;
-            server.send_for_reply(PluginEventPayload::ImportRequest(PluginImportRequest{
-                content: "curl -X POST https://schier.co".to_string(),
-            })).await.unwrap();
+            server
+                .send_for_reply(InternalEventPayload::ImportRequest(ImportRequest {
+                    content: "curl -X POST https://schier.co".to_string(),
+                }))
+                .await
+                .unwrap();
         });
 
         // echo just write the same data that was received

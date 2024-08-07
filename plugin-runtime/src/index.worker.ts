@@ -1,4 +1,4 @@
-import { PluginEvent, PluginEventPayload, PluginImportResponse } from '@yaakapp/api';
+import { ImportResponse, InternalEvent, InternalEventPayload } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
@@ -19,43 +19,28 @@ new Promise<void>(async (resolve, reject) => {
 
   const mod = (await import(pathMod)) ?? {};
 
-  console.log('Plugin initialized', pkg.name, mod);
+  const capabilities: string[] = [];
+  if (typeof mod.pluginHookExport === 'function') capabilities.push('export');
+  if (typeof mod.pluginHookImport === 'function') capabilities.push('import');
+  if (typeof mod.pluginHookResponseFilter === 'function') capabilities.push('filter');
 
-  // setTimeout(() => {
-  //   sendToServer({
-  //     pluginRefId,
-  //     replyId: '1',
-  //     payload: {
-  //       type: 'ping_request',
-  //       message: `Hello from ${pluginRefId} - ${pluginDir}`,
-  //     },
-  //   });
-  // }, 3000);
+  console.log('Plugin initialized', pkg.name, capabilities);
 
   // Message comes into the plugin to be processed
-  parentPort!.on('message', async ({ payload, pluginRefId, replyId }: PluginEvent) => {
-    console.log(`Got event.${payload.type} to ${pkg.name}`);
+  parentPort!.on('message', async ({ payload, pluginRefId, replyId }: InternalEvent) => {
+    // console.log(`Got event.${payload.type} to ${pkg.name}`);
     if (payload.type === 'boot_request') {
-      const name = pkg.name;
-      const version = pkg.version;
-      const capabilities: string[] = [];
-      if (typeof mod.pluginHookExport === 'function') {
-        capabilities.push('export');
-      }
-      if (typeof mod.pluginHookImport === 'function') {
-        capabilities.push('import');
-      }
-      if (typeof mod.pluginHookFilter === 'function') {
-        capabilities.push('filter');
-      }
-
-      const payload: PluginEventPayload = { type: 'boot_response', name, version, capabilities };
+      const payload: InternalEventPayload = {
+        type: 'boot_response',
+        name: pkg.name,
+        version: pkg.version,
+        capabilities,
+      };
       sendToServer({ id: genId(), pluginRefId, replyId, payload });
     } else if (payload.type === 'import_request' && typeof mod.pluginHookImport === 'function') {
-      const reply: PluginImportResponse | null = await mod.pluginHookImport({}, payload.content);
+      const reply: ImportResponse | null = await mod.pluginHookImport({}, payload.content);
       if (reply != null) {
-        const replyPayload: PluginEventPayload = { type: 'import_response', ...reply };
-        console.log('HELLO', replyPayload);
+        const replyPayload: InternalEventPayload = { type: 'import_response', ...reply };
         sendToServer({ id: genId(), pluginRefId, replyId: null, payload: replyPayload });
       }
     }
@@ -66,7 +51,7 @@ new Promise<void>(async (resolve, reject) => {
   console.log('failed to boot plugin', err);
 });
 
-function sendToServer(e: PluginEvent) {
+function sendToServer(e: InternalEvent) {
   parentPort!.postMessage(e);
 }
 

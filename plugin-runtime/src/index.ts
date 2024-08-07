@@ -1,5 +1,5 @@
-import { PluginEvent } from '@yaakapp/api';
-import { createChannel, createClient } from 'nice-grpc';
+import { InternalEvent } from '@yaakapp/api';
+import { createChannel, createClient, Status } from 'nice-grpc';
 import { EventChannel } from './EventChannel';
 import { PluginRuntimeClient, PluginRuntimeDefinition } from './gen/plugins/runtime';
 import { PluginHandle } from './PluginHandle';
@@ -12,24 +12,31 @@ const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channe
 const events = new EventChannel();
 const plugins: Record<string, PluginHandle> = {};
 
-new Promise(async () => {
-  for await (const e of client.eventStream(events.listen())) {
-    const pluginEvent: PluginEvent = JSON.parse(e.event);
-    // Handle special event to bootstrap plugin
-    if (pluginEvent.payload.type === 'boot_request') {
-      const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
-      plugins[pluginEvent.pluginRefId] = plugin;
-    }
+(async () => {
+  try {
+    for await (const e of client.eventStream(events.listen())) {
+      const pluginEvent: InternalEvent = JSON.parse(e.event);
+      // Handle special event to bootstrap plugin
+      if (pluginEvent.payload.type === 'boot_request') {
+        const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
+        plugins[pluginEvent.pluginRefId] = plugin;
+      }
 
-    // Once booted, forward all events to plugin's worker
-    const plugin = plugins[pluginEvent.pluginRefId];
-    if (!plugin) {
-      console.warn('Failed to get plugin for event by', pluginEvent.pluginRefId);
-      continue;
-    }
+      // Once booted, forward all events to plugin's worker
+      const plugin = plugins[pluginEvent.pluginRefId];
+      if (!plugin) {
+        console.warn('Failed to get plugin for event by', pluginEvent.pluginRefId);
+        continue;
+      }
 
-    plugin.sendToWorker(pluginEvent);
+      plugin.sendToWorker(pluginEvent);
+    }
+    console.log('Stream ended');
+  } catch (err: any) {
+    if (err.code === Status.CANCELLED) {
+      console.log('Stream was cancelled by server');
+    } else {
+      console.log('Client stream errored', err);
+    }
   }
-
-  console.log('Stream ended');
-}).catch((e) => console.log('Client stream errored', e));
+})();

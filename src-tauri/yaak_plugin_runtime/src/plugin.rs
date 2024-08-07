@@ -2,19 +2,18 @@ use std::process::exit;
 use std::time::Duration;
 
 use log::info;
-use tauri::{Manager, RunEvent, Runtime, State};
 use tauri::plugin::{Builder, TauriPlugin};
+use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, Mutex};
-use tokio::time::sleep;
 use tonic::codegen::tokio_stream;
 use tonic::transport::Server;
 
 use crate::error::Result;
-use crate::events::{PluginEventPayload, PluginImportRequest, PluginPingResponse};
+use crate::events::InternalEventPayload;
 use crate::manager::PluginManager;
-use crate::server::GrpcServer;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
+use crate::server::GrpcServer;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("yaak_plugin_runtime")
@@ -42,9 +41,10 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .build()
 }
 
-pub async fn start_server() -> Result<()> {
+pub async fn start_server(plugin_dirs: Vec<String>) -> Result<()> {
+    println!("Starting plugin server with {plugin_dirs:?}");
     let (to_server_tx, mut to_server_rx) = mpsc::channel(128);
-    let server = GrpcServer::new(to_server_tx);
+    let server = GrpcServer::new(to_server_tx, plugin_dirs);
 
     let svc = PluginRuntimeServer::new(server.clone());
     let listen_addr = match option_env!("PORT") {
@@ -55,24 +55,11 @@ pub async fn start_server() -> Result<()> {
     tokio::spawn(async move {
         while let Some(event) = to_server_rx.recv().await {
             match event.clone().payload {
-                PluginEventPayload::PingRequest(req) => {
-                    println!("Received ping! {req:?}");
-
-                    server
-                        .callback(
-                            event,
-                            PluginEventPayload::PingResponse(PluginPingResponse {
-                                message: format!("Echo: {}", req.message),
-                            }),
-                        )
-                        .await
-                        .unwrap();
-                }
-                PluginEventPayload::BootResponse(resp) => {
+                InternalEventPayload::BootResponse(resp) => {
                     let id = event.plugin_ref_id.as_str();
                     server.boot_plugin(id, &resp).await;
                 }
-                PluginEventPayload::ImportResponse(resp) => {
+                InternalEventPayload::ImportResponse(resp) => {
                     println!("Got import response {:?}", resp.resources.http_requests)
                 }
                 _ => {

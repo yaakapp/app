@@ -1,4 +1,4 @@
-import { PluginEvent } from '@yaakapp/api';
+import { InternalEvent } from '@yaakapp/api';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { EventChannel } from './EventChannel';
@@ -24,7 +24,7 @@ export class PluginHandle {
     this.#worker.on('exit', this.#handleExit.bind(this));
   }
 
-  sendToWorker(event: PluginEvent) {
+  sendToWorker(event: InternalEvent) {
     this.#worker.postMessage(event);
   }
 
