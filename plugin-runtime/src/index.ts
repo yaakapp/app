@@ -17,11 +17,8 @@ new Promise(async () => {
     const pluginEvent: PluginEvent = JSON.parse(e.event);
     // Handle special event to bootstrap plugin
     if (pluginEvent.payload.type === 'boot_request') {
-      console.log('Got boot request', pluginEvent);
       const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
       plugins[pluginEvent.pluginRefId] = plugin;
-    } else if (pluginEvent.payload.type === 'ping_response') {
-      console.log('Got ping response', pluginEvent.payload.message);
     }
 
     // Once booted, forward all events to plugin's worker
@@ -35,4 +32,4 @@ new Promise(async () => {
   }
 
   console.log('Stream ended');
-}).catch(console.error);
+}).catch((e) => console.log('Client stream errored', e));

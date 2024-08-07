@@ -265,14 +265,21 @@ impl PluginRuntime for GrpcServer {
             while let Some(result) = in_stream.next().await {
                 match result {
                     Ok(v) => {
-                        let event: PluginEvent = serde_json::from_str(v.event.as_str()).unwrap();
-                        println!("Received event {:?}", event.payload);
+                        let event: PluginEvent = match serde_json::from_str(v.event.as_str()) {
+                            Ok(pe) => pe,
+                            Err(e) => {
+                                println!("Failed to deserialize event {e:?} -> {}", v.event);
+                                continue;
+                            },
+                        };
 
                         let plugin_ref_id = event.plugin_ref_id.clone();
                         let reply_id = event.reply_id.clone();
 
                         // Emit event to the channel for server to handle
-                        to_server_tx.lock().await.send(event).await.unwrap();
+                        if let Err(e) = to_server_tx.lock().await.send(event).await {
+                            println!("ERROR {:?}", e);
+                        }
 
                         // Add to callbacks if there's a reply_id
                         if let Some(reply_id) = reply_id {

@@ -1,4 +1,4 @@
-import { PluginEvent, PluginEventPayload } from '@yaakapp/api';
+import { PluginEvent, PluginEventPayload, PluginImportResponse } from '@yaakapp/api';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parentPort, workerData } from 'node:worker_threads';
@@ -32,7 +32,9 @@ new Promise<void>(async (resolve, reject) => {
   //   });
   // }, 3000);
 
+  // Message comes into the plugin to be processed
   parentPort!.on('message', async ({ payload, pluginRefId, replyId }: PluginEvent) => {
+    console.log(`Got event.${payload.type} to ${pkg.name}`);
     if (payload.type === 'boot_request') {
       const name = pkg.name;
       const version = pkg.version;
@@ -40,9 +42,22 @@ new Promise<void>(async (resolve, reject) => {
       if (typeof mod.pluginHookExport === 'function') {
         capabilities.push('export');
       }
+      if (typeof mod.pluginHookImport === 'function') {
+        capabilities.push('import');
+      }
+      if (typeof mod.pluginHookFilter === 'function') {
+        capabilities.push('filter');
+      }
 
       const payload: PluginEventPayload = { type: 'boot_response', name, version, capabilities };
-      sendToServer({ id: genId(), pluginRefId, payload, replyId });
+      sendToServer({ id: genId(), pluginRefId, replyId, payload });
+    } else if (payload.type === 'import_request' && typeof mod.pluginHookImport === 'function') {
+      const reply: PluginImportResponse | null = await mod.pluginHookImport({}, payload.content);
+      if (reply != null) {
+        const replyPayload: PluginEventPayload = { type: 'import_response', ...reply };
+        console.log('HELLO', replyPayload);
+        sendToServer({ id: genId(), pluginRefId, replyId: null, payload: replyPayload });
+      }
     }
   });
 

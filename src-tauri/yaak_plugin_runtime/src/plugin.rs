@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::events::{PluginEventPayload, PluginPingResponse};
+use crate::events::{PluginEventPayload, PluginImportRequest, PluginPingResponse};
 use crate::manager::PluginManager;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
 use crate::server::GrpcServer;
@@ -68,9 +68,17 @@ pub async fn start_server() -> Result<()> {
                 PluginEventPayload::BootResponse(resp) => {
                     let id = event.plugin_ref_id.as_str();
                     server.boot_plugin(id, &resp).await;
+                    
+                    // TODO: Remove this debug event
+                    server.send_for_reply(PluginEventPayload::ImportRequest(PluginImportRequest{
+                        content: "curl -X POST https://schier.co".to_string(),
+                    })).await.unwrap();
+                }
+                PluginEventPayload::ImportResponse(resp) => {
+                    println!("Got import response {:?}", resp.resources.http_requests)
                 }
                 _ => {
-                    println!("Received unknown event {event:?}")
+                    println!("Received unknown event {event:?}");
                 }
             };
         }

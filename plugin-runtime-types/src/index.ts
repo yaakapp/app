@@ -8,6 +8,10 @@ export * from './gen/events/PluginEventPayload';
 export * from './gen/events/PluginEventPayload';
 export * from './gen/events/PluginPingRequest';
 export * from './gen/events/PluginPingResponse';
+export * from './gen/events/PluginImportRequest';
+export * from './gen/events/PluginImportResponse';
+
+export * from './gen/common/PluginImportResources';
 
 export * from './gen/models/Environment';
 export * from './gen/models/EnvironmentVariable';
