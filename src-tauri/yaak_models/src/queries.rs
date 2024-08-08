@@ -906,6 +906,7 @@ pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder> 
             CurrentTimestamp.into(),
             CurrentTimestamp.into(),
             r.workspace_id.as_str().into(),
+            r.folder_id.as_ref().map(|s| s.as_str()).into(),
             trimmed_name.into(),
             r.sort_priority.into(),
         ])

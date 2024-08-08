@@ -9,7 +9,7 @@ use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::fs::read_dir;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::Mutex;
 use tonic::codegen::tokio_stream;
 use tonic::transport::Server;
 
@@ -26,24 +26,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 .path()
                 .resolve("plugins", BaseDirectory::Resource)
                 .expect("failed to resolve plugin directory resource");
-            let (tx, mut rx) = mpsc::channel(128);
-            let (send, recv) = multiqueue::broadcast_queue::<InternalEvent>(128);
-
-            // Tie together mpsc channel and "mpmc" multi-queue
-            tauri::async_runtime::spawn(async move {
-                while let Some(e) = rx.recv().await {
-                    send.try_send(e).unwrap()
-                }
-            });
 
             tauri::async_runtime::block_on(async move {
                 let plugin_dirs = read_plugins_dir(&plugins_dir)
                     .await
                     .expect("Failed to read plugins dir");
-                let (server, addr) = start_server(plugin_dirs, tx)
-                    .await
-                    .expect("Failed to start plugin runtime server");
-                let manager = PluginManager::new(&app, server, addr, recv).await;
+                let manager = PluginManager::new(&app, plugin_dirs).await;
                 let manager_state = Mutex::new(manager);
                 app.manage(manager_state);
                 Ok(())
@@ -67,11 +55,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
 pub async fn start_server(
     plugin_dirs: Vec<String>,
-    events_tx: mpsc::Sender<InternalEvent>,
 ) -> Result<(PluginRuntimeGrpcServer, SocketAddr)> {
     println!("Starting plugin server with {plugin_dirs:?}");
-    let (to_server_tx, mut to_server_rx) = mpsc::channel(128);
-    let server = PluginRuntimeGrpcServer::new(to_server_tx, plugin_dirs);
+    let server = PluginRuntimeGrpcServer::new(plugin_dirs);
 
     let svc = PluginRuntimeServer::new(server.clone());
     let listen_addr = match option_env!("PORT") {
@@ -82,7 +68,8 @@ pub async fn start_server(
     {
         let server = server.clone();
         tokio::spawn(async move {
-            while let Some(event) = to_server_rx.recv().await {
+            let (rx_id, mut rx) = server.subscribe().await;
+            while let Some(event) = rx.recv().await {
                 match event.clone() {
                     InternalEvent {
                         payload: InternalEventPayload::BootResponse(resp),
@@ -91,14 +78,10 @@ pub async fn start_server(
                     } => {
                         server.boot_plugin(plugin_ref_id.as_str(), &resp).await;
                     }
-                    event => {
-                        events_tx
-                            .send(event)
-                            .await
-                            .expect("Sending event to channel failed");
-                    }
+                    _ => {}
                 };
             }
+            server.unsubscribe(rx_id).await;
         });
     };
 
@@ -110,7 +93,8 @@ pub async fn start_server(
             .timeout(Duration::from_secs(10))
             .add_service(svc)
             .serve_with_incoming(tokio_stream::wrappers::TcpListenerStream::new(listener))
-            .await.expect("grpc plugin runtime server failed to start");
+            .await
+            .expect("grpc plugin runtime server failed to start");
     });
 
     Ok((server, addr))

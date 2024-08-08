@@ -17,16 +17,18 @@ pub enum Error {
     GrpcSendErr(#[from] SendError<tonic::Result<EventStreamEvent>>),
     #[error("JSON error")]
     JsonErr(#[from] serde_json::Error),
-    #[error("Unknown plugin error")]
-    UnknownPluginErr(String),
+    #[error("Plugin not found error")]
+    PluginNotFoundErr(String),
     #[error("unknown error")]
     MissingCallbackIdErr(String),
     #[error("Missing callback ID error")]
     MissingCallbackErr(String),
     #[error("No plugins found")]
     NoPluginsErr(String),
-    #[error("Missing callback error")]
-    UnknownErr,
+    #[error("Plugin error")]
+    PluginErr(String),
+    #[error("Unknown error")]
+    UnknownErr(String),
 }
 
 impl Into<String> for Error {

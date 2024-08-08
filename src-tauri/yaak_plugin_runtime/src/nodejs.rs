@@ -15,10 +15,6 @@ struct PortFile {
     port: i32,
 }
 
-pub struct StartResp {
-    pub addr: String,
-}
-
 pub async fn start_nodejs_plugin_runtime<R: Runtime>(
     app: &AppHandle<R>,
     addr: SocketAddr,
@@ -46,7 +42,7 @@ pub async fn start_nodejs_plugin_runtime<R: Runtime>(
     println!("Spawned plugin runtime");
 
     let mut kill_rx = kill_rx.clone();
-    
+
     tokio::spawn(async move {
         while let Some(event) = child_rx.recv().await {
             match event {

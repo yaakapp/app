@@ -16,7 +16,7 @@ use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
-use serde_json::{json, Value};
+use serde_json::Value;
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::{Pool, Sqlite, SqlitePool};
@@ -35,9 +35,7 @@ use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
-use crate::export_resources::{
-    get_workspace_export_resources, ImportResult, WorkspaceExportResources,
-};
+use crate::export_resources::{get_workspace_export_resources, WorkspaceExportResources};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
@@ -722,7 +720,8 @@ async fn cmd_filter_response(
     response_id: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     filter: &str,
-) -> Result<String, String> {
+) -> Result<Vec<Value>, String> {
+    println!("FILTERING? {filter}");
     let response = get_http_response(&w, response_id)
         .await
         .expect("Failed to get response");
@@ -739,16 +738,23 @@ async fn cmd_filter_response(
         }
     }
 
-    let _body = read_to_string(response.body_path.unwrap()).unwrap();
+    let body = read_to_string(response.body_path.unwrap()).unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
-    todo!()
-    // plugin_manager
-    //     .lock()
-    //     .await
-    //     .run_filter(filter, &body, &content_type)
-    //     .await
-    //     .map(|r| r.data)
+    let r = plugin_manager
+        .lock()
+        .await
+        .run_filter(filter, &body, &content_type)
+        .await
+        .map(|r| r.items)
+        .map_err(|e| {
+            println!("FILTER ERROR {e:?}");
+            e.to_string()
+        });
+    
+    println!("HELLO {r:?}");
+    
+    r
 }
 
 #[tauri::command]
@@ -761,25 +767,12 @@ async fn cmd_import_data(
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let import_response = plugin_manager
+    let import_result = plugin_manager
         .lock()
         .await
         .run_import(file_contents)
         .await
         .map_err(|e| e.to_string())?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
-
-    // TODO: Track the plugin that ran, maybe return the run info in the plugin response?
-    let plugin_name = import_response.info.unwrap_or_default().plugin;
-    info!("Imported data using {}", plugin_name);
-    analytics::track_event(
-        &w.app_handle(),
-        AnalyticsResource::App,
-        AnalyticsAction::Import,
-        Some(json!({ "plugin": plugin_name })),
-    )
-    .await;
 
     let mut imported_resources = WorkspaceExportResources::default();
     let mut id_map: HashMap<String, String> = HashMap::new();
@@ -810,7 +803,9 @@ async fn cmd_import_data(
         }
     }
 
-    for mut v in import_result.resources.workspaces {
+    let resources = import_result.resources;
+    
+    for mut v in resources.workspaces {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
         let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
         imported_resources.workspaces.push(x.clone());
@@ -820,7 +815,7 @@ async fn cmd_import_data(
         imported_resources.workspaces.len()
     );
 
-    for mut v in import_result.resources.environments {
+    for mut v in resources.environments {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -835,7 +830,7 @@ async fn cmd_import_data(
         imported_resources.environments.len()
     );
 
-    for mut v in import_result.resources.folders {
+    for mut v in resources.folders {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -848,7 +843,7 @@ async fn cmd_import_data(
     }
     info!("Imported {} folders", imported_resources.folders.len());
 
-    for mut v in import_result.resources.http_requests {
+    for mut v in resources.http_requests {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -866,7 +861,7 @@ async fn cmd_import_data(
         imported_resources.http_requests.len()
     );
 
-    for mut v in import_result.resources.grpc_requests {
+    for mut v in resources.grpc_requests {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -921,14 +916,13 @@ async fn cmd_curl_to_request(
     plugin_manager: State<'_, Mutex<PluginManager>>,
     workspace_id: &str,
 ) -> Result<HttpRequest, String> {
-    let import_response = plugin_manager
+    let import_result = plugin_manager
         .lock()
         .await
         .run_import(command)
         .await
         .map_err(|e| e.to_string())?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
+
     import_result
         .resources
         .http_requests
@@ -955,6 +949,7 @@ async fn cmd_export_data(
         .write(true)
         .open(export_path)
         .expect("Unable to create file");
+
     serde_json::to_writer_pretty(&f, &export_data)
         .map_err(|e| e.to_string())
         .expect("Failed to write");

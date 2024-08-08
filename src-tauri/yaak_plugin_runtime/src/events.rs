@@ -23,9 +23,19 @@ pub enum InternalEventPayload {
     BootResponse(BootResponse),
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
+    FilterRequest(FilterRequest),
+    FilterResponse(FilterResponse),
     ExportHttpRequestRequest(ExportHttpRequestRequest),
     ExportHttpRequestResponse(ExportHttpRequestResponse),
+    /// Returned when a plugin doesn't get run, just so the server
+    /// has something to listen for
+    EmptyResponse(EmptyResponse),
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default)]
+#[ts(export, type = "{}")]
+pub struct EmptyResponse {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -62,6 +72,7 @@ pub struct ImportResponse {
 #[ts(export)]
 pub struct FilterRequest {
     pub content: String,
+    pub filter: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
