@@ -741,20 +741,13 @@ async fn cmd_filter_response(
     let body = read_to_string(response.body_path.unwrap()).unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
-    let r = plugin_manager
+    plugin_manager
         .lock()
         .await
         .run_filter(filter, &body, &content_type)
         .await
         .map(|r| r.items)
-        .map_err(|e| {
-            println!("FILTER ERROR {e:?}");
-            e.to_string()
-        });
-    
-    println!("HELLO {r:?}");
-    
-    r
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -804,7 +797,7 @@ async fn cmd_import_data(
     }
 
     let resources = import_result.resources;
-    
+
     for mut v in resources.workspaces {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
         let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;

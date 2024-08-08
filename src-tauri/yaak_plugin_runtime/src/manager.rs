@@ -50,10 +50,8 @@ impl PluginManager {
             }))
             .await?;
 
-        println!("WAITING ON IMPORT {:?}", sent_events);
-
+        // TODO: Fix race condition where replies come back before we start waiting
         let reply_events = self.server.wait_for_replies(sent_events).await;
-        println!("IMPORT REPLIES {:?}", reply_events);
 
         // TODO: Don't just return the first valid response
         for event in reply_events {

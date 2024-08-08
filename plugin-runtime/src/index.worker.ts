@@ -1,5 +1,6 @@
 import { ImportResponse, InternalEvent, InternalEventPayload } from '@yaakapp/api';
 import interceptStdout from 'intercept-stdout';
+import * as console from 'node:console';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
@@ -31,7 +32,7 @@ new Promise<void>(async (resolve, reject) => {
   console.log('Plugin initialized', pkg.name, capabilities, Object.keys(mod));
 
   // Message comes into the plugin to be processed
-  parentPort!.on('message', async ({ payload, pluginRefId, id }: InternalEvent) => {
+  parentPort!.on('message', async ({ payload, pluginRefId, id: replyId }: InternalEvent) => {
     console.log(`Received ${payload.type}`);
 
     try {
@@ -42,7 +43,7 @@ new Promise<void>(async (resolve, reject) => {
           version: pkg.version,
           capabilities,
         };
-        sendToServer({ id: genId(), pluginRefId, replyId: id, payload });
+        sendToServer({ id: genId(), pluginRefId, replyId, payload });
         return;
       }
 
@@ -53,7 +54,7 @@ new Promise<void>(async (resolve, reject) => {
             type: 'import_response',
             resources: reply?.resources,
           };
-          sendToServer({ id: genId(), pluginRefId, replyId: id, payload: replyPayload });
+          sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
           return;
         } else {
           // Continue, to send back an empty reply
@@ -69,7 +70,7 @@ new Promise<void>(async (resolve, reject) => {
           type: 'export_http_request_response',
           content: reply,
         };
-        sendToServer({ id: genId(), pluginRefId, replyId: id, payload: replyPayload });
+        sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
         return;
       }
 
@@ -82,15 +83,18 @@ new Promise<void>(async (resolve, reject) => {
           type: 'filter_response',
           items: JSON.parse(reply),
         };
-        sendToServer({ id: genId(), pluginRefId, replyId: id, payload: replyPayload });
+        sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
         return;
       }
     } catch (err) {
       console.log('Plugin call threw exception', payload.type, err);
+      // TODO: Return errors to server
     }
 
     // No matches, so send back an empty response so the caller doesn't block forever
-    sendToServer({ id: genId(), pluginRefId, replyId: id, payload: { type: 'empty_response' } });
+    const id = genId();
+    console.log('Sending nothing back to', id, { replyId });
+    sendToServer({ id, pluginRefId, replyId, payload: { type: 'empty_response' } });
   });
 
   resolve();

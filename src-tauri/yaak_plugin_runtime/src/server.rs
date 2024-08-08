@@ -32,6 +32,13 @@ pub struct PluginHandle {
 }
 
 impl PluginHandle {
+    pub async fn name(&self) -> String {
+        match &*self.boot_resp.lock().await {
+            None => "__NOT_BOOTED__".to_string(),
+            Some(r) => r.name.to_owned(),
+        }
+    }
+
     pub async fn send(
         &self,
         payload: &InternalEventPayload,
@@ -43,7 +50,7 @@ impl PluginHandle {
             reply_id,
             payload: payload.clone(),
         };
-        info!("Sending event {}\n  └─ {:?}", event.id, event);
+        info!("Sending event {} {:?}", event.id, self.name().await);
         self.to_plugin_tx
             .lock()
             .await
@@ -52,24 +59,6 @@ impl PluginHandle {
             }))
             .await?;
         Ok(event)
-    }
-
-    pub async fn send_for_reply(&self, payload: &InternalEventPayload) -> Result<()> {
-        let event = InternalEvent {
-            id: gen_id(),
-            plugin_ref_id: self.ref_id.clone(),
-            reply_id: Some(gen_id()),
-            payload: payload.clone(),
-        };
-        info!("Sending event {}\n  └─ {:?}", event.id, event);
-        self.to_plugin_tx
-            .lock()
-            .await
-            .send(Ok(EventStreamEvent {
-                event: serde_json::to_string(&event)?,
-            }))
-            .await?;
-        Ok(())
     }
 
     pub async fn boot(&self, resp: &BootResponse) {
@@ -102,13 +91,17 @@ impl PluginRuntimeGrpcServer {
         self.subscribers.lock().await.insert(id.clone(), tx);
         (id, rx)
     }
-    
-    pub async fn unsubscribe(&self, rx_id: String)  {
+
+    pub async fn unsubscribe(&self, rx_id: String) {
         self.subscribers.lock().await.remove(rx_id.as_str());
     }
 
     pub async fn wait_for_reply(&self, sent_event: InternalEvent) -> InternalEvent {
-        self.wait_for_replies(vec![sent_event]).await.first().unwrap().to_owned()
+        self.wait_for_replies(vec![sent_event])
+            .await
+            .first()
+            .unwrap()
+            .to_owned()
     }
 
     pub async fn wait_for_replies(&self, sent_events: Vec<InternalEvent>) -> Vec<InternalEvent> {
@@ -127,7 +120,7 @@ impl PluginRuntimeGrpcServer {
                 break;
             }
         }
-        
+
         self.unsubscribe(rx_id).await;
 
         found_events
@@ -145,7 +138,7 @@ impl PluginRuntimeGrpcServer {
                 println!("Tried to remove non-existing plugin {}", id);
             }
             Some(plugin) => {
-                println!("Removed plugin {} {:?}", id, plugin.boot_resp);
+                println!("Removed plugin {} {}", id, plugin.name().await);
             }
         };
     }
@@ -230,7 +223,7 @@ impl PluginRuntimeGrpcServer {
 
         let mut plugin = None;
         for p in plugins.values() {
-            if p.boot_resp.lock().await.to_owned().unwrap().name == plugin_name {
+            if p.name().await == plugin_name {
                 plugin = Some(p);
                 break;
             }
@@ -252,9 +245,7 @@ impl PluginRuntimeGrpcServer {
             return Err(NoPluginsErr("Send failed because no plugins exist".into()));
         }
 
-        println!("COUNTING PLUGINS {}", plugins.len());
         for ph in plugins.values() {
-            println!("COUNTING PLUGIN {:?}", ph.boot_resp);
             let reply_id = gen_id();
             events.push(
                 self.send_to_plugin_handle(ph, &payload, Some(reply_id))
@@ -286,9 +277,12 @@ impl PluginRuntimeGrpcServer {
             plugin_ids.push(plugin.clone().ref_id);
 
             if let Err(e) = plugin
-                .send_for_reply(&InternalEventPayload::BootRequest(BootRequest {
-                    dir: dir.to_string(),
-                }))
+                .send(
+                    &InternalEventPayload::BootRequest(BootRequest {
+                        dir: dir.to_string(),
+                    }),
+                    None,
+                )
                 .await
             {
                 // TODO: Error handling
