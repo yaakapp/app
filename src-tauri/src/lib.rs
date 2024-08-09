@@ -4,7 +4,6 @@ extern crate core;
 extern crate objc;
 
 use std::collections::HashMap;
-use std::env::current_dir;
 use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
