@@ -105,7 +105,11 @@ async fn read_plugins_dir(dir: &PathBuf) -> Result<Vec<String>> {
     let mut dirs: Vec<String> = vec![];
     while let Ok(Some(entry)) = result.next_entry().await {
         if entry.path().is_dir() {
-            dirs.push(entry.path().to_string_lossy().to_string())
+            // HACK: Remove UNC prefix for Windows paths to pass to sidecar
+            let safe_path = dunce::simplified(entry.path().as_path())
+                .to_string_lossy()
+                .to_string();
+            dirs.push(safe_path)
         }
     }
     Ok(dirs)
