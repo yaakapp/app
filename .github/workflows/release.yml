@@ -83,12 +83,16 @@ jobs:
       - name: Install yaak CLI
         run: go install github.com/yaakapp/yaakcli@latest
 
+      - name: Run lint
+        run: npm run lint
+
+      - name: Vendor things for the app
+        run: npm run vendor
+
+      # NOTE: vendored things need to exist for tests to build
       - name: Rust test
         working-directory: src-tauri
         run: cargo test --all
-
-      - name: Run lint
-        run: npm run lint
 
       - name: Checkout yaakapp/plugins
         uses: actions/checkout@v4
