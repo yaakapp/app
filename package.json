@@ -42,6 +42,7 @@
     "@tauri-apps/plugin-fs": "^2.0.0-rc.0",
     "@tauri-apps/plugin-os": "^2.0.0-rc.0",
     "@tauri-apps/plugin-shell": "^2.0.0-rc.0",
+    "@tauri-apps/plugin-log": "^2.0.0-rc.0",
     "@yaakapp/api": "^0.1.4",
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
@@ -66,7 +67,6 @@
     "react-router-dom": "^6.8.1",
     "react-use": "^17.4.0",
     "slugify": "^1.6.6",
-    "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v2",
     "uuid": "^9.0.0",
     "xml-formatter": "^3.6.2"
   },
