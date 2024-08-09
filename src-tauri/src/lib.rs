@@ -724,10 +724,10 @@ async fn cmd_filter_response(
 ) -> Result<FilterResponse, String> {
     let response = get_http_response(&w, response_id)
         .await
-        .expect("Failed to get response");
+        .expect("Failed to get http response");
 
     if let None = response.body_path {
-        return Err("Response body not found".to_string());
+        return Err("Response body path not set".to_string());
     }
 
     let mut content_type = "".to_string();
