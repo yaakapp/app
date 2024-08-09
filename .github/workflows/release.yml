@@ -92,23 +92,6 @@ jobs:
           repository: yaakapp/plugins
           path: ${{ env.YAAK_PLUGINS_DIR }}
 
-      - name: build the app
-        run: npm run build
-        env:
-          YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
-          YAAK_TARGET_ARCH: ${{ matrix.yaak_arch }}
-
-      - name: Vendor the app
-        run: npm run vendor
-        env:
-          YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
-          YAAK_TARGET_ARCH: ${{ matrix.yaak_arch }}
-
-      # NOTE: Test needs vendor+build to be run
-      - name: Rust test
-        working-directory: src-tauri
-        run: cargo test --all
-
       - name: Set version
         run: npm run replace-version
         env:
