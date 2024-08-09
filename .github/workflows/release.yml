@@ -92,10 +92,13 @@ jobs:
           repository: yaakapp/plugins
           path: ${{ env.YAAK_PLUGINS_DIR }}
 
-      - name: Vendor things for the app
+      - name: build the app
+        run: npm run build
+
+      - name: Vendor the app
         run: npm run vendor
 
-      # NOTE: vendored things need to exist for tests to build
+      # NOTE: Test needs vendor+build to be run
       - name: Rust test
         working-directory: src-tauri
         run: cargo test --all
