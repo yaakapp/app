@@ -4,6 +4,7 @@ import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
+import { useAppInfo } from './useAppInfo';
 import { useOsInfo } from './useOsInfo';
 import { emit } from '@tauri-apps/api/event';
 
@@ -12,9 +13,10 @@ export function useSyncWorkspaceRequestTitle() {
   const activeWorkspace = useActiveWorkspace();
   const activeEnvironment = useActiveEnvironment();
   const osInfo = useOsInfo();
+  const appInfo = useAppInfo();
 
   useEffect(() => {
-    if (osInfo?.osType == null) {
+    if (osInfo.osType == null) {
       return;
     }
 
@@ -24,15 +26,19 @@ export function useSyncWorkspaceRequestTitle() {
     }
     if (activeRequest) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      newTitle += ` – ${fallbackRequestName(activeRequest)}`;
+      newTitle += ` › ${fallbackRequestName(activeRequest)}`;
+    }
+
+    if (appInfo?.isDev) {
+      newTitle = `[DEV] ${newTitle}`;
     }
 
     // TODO: This resets the stoplight position so we can't use it on macOS yet. So we send
     //   a custom command instead
-    if (osInfo?.osType !== 'macos') {
+    if (osInfo.osType !== 'macos') {
       getCurrentWebviewWindow().setTitle(newTitle).catch(console.error);
     } else {
       emit('yaak_title_changed', newTitle).catch(console.error);
     }
-  }, [activeEnvironment, activeRequest, activeWorkspace, osInfo?.osType]);
+  }, [activeEnvironment, activeRequest, activeWorkspace, appInfo?.isDev, osInfo.osType]);
 }
