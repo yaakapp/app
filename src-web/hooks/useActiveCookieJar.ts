@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
 import { useCookieJars } from './useCookieJars';
 import { useKeyValue } from './useKeyValue';
@@ -7,22 +7,30 @@ export function useActiveCookieJar() {
   const workspaceId = useActiveWorkspaceId();
   const cookieJars = useCookieJars();
 
-  const kv = useKeyValue<string | null>({
+  const {
+    set: setActiveCookieJarId,
+    value: activeCookieJarId,
+    isLoading: isLoadingActiveCookieJarId,
+  } = useKeyValue<string | null>({
     namespace: 'global',
     key: ['activeCookieJar', workspaceId ?? 'n/a'],
     fallback: null,
   });
 
-  const activeCookieJar = cookieJars.find((cookieJar) => cookieJar.id === kv.value);
+  const activeCookieJar = useMemo(
+    () => cookieJars.find((cookieJar) => cookieJar.id === activeCookieJarId),
+    [activeCookieJarId, cookieJars],
+  );
 
+  // TODO: Make this not be called so many times (move to GlobalHooks?)
   useEffect(() => {
-    if (!kv.isLoading && activeCookieJar == null && cookieJars.length > 0) {
-      kv.set(cookieJars[0]?.id ?? null);
+    if (!isLoadingActiveCookieJarId && activeCookieJar == null && cookieJars.length > 0) {
+      setActiveCookieJarId(cookieJars[0]?.id ?? null).catch(console.error);
     }
-  }, [activeCookieJar, cookieJars, kv]);
+  }, [activeCookieJar, cookieJars, isLoadingActiveCookieJarId, setActiveCookieJarId]);
 
   return {
     activeCookieJar: activeCookieJar ?? null,
-    setActiveCookieJarId: kv.set,
+    setActiveCookieJarId: setActiveCookieJarId,
   };
 }

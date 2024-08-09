@@ -33,6 +33,10 @@ export interface HookExportRequest {
   request: string;
 }
 
+export interface EventStreamEvent {
+  event: string;
+}
+
 function createBasePluginInfo(): PluginInfo {
   return { plugin: "" };
 }
@@ -369,54 +373,91 @@ export const HookExportRequest = {
   },
 };
 
+function createBaseEventStreamEvent(): EventStreamEvent {
+  return { event: "" };
+}
+
+export const EventStreamEvent = {
+  encode(message: EventStreamEvent, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.event !== "") {
+      writer.uint32(10).string(message.event);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): EventStreamEvent {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEventStreamEvent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.event = reader.string();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): EventStreamEvent {
+    return { event: isSet(object.event) ? globalThis.String(object.event) : "" };
+  },
+
+  toJSON(message: EventStreamEvent): unknown {
+    const obj: any = {};
+    if (message.event !== "") {
+      obj.event = message.event;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<EventStreamEvent>): EventStreamEvent {
+    return EventStreamEvent.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<EventStreamEvent>): EventStreamEvent {
+    const message = createBaseEventStreamEvent();
+    message.event = object.event ?? "";
+    return message;
+  },
+};
+
 export type PluginRuntimeDefinition = typeof PluginRuntimeDefinition;
 export const PluginRuntimeDefinition = {
   name: "PluginRuntime",
   fullName: "yaak.plugins.runtime.PluginRuntime",
   methods: {
-    hookImport: {
-      name: "hookImport",
-      requestType: HookImportRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
-      options: {},
-    },
-    hookExport: {
-      name: "hookExport",
-      requestType: HookExportRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
-      options: {},
-    },
-    hookResponseFilter: {
-      name: "hookResponseFilter",
-      requestType: HookResponseFilterRequest,
-      requestStream: false,
-      responseType: HookResponse,
-      responseStream: false,
+    eventStream: {
+      name: "EventStream",
+      requestType: EventStreamEvent,
+      requestStream: true,
+      responseType: EventStreamEvent,
+      responseStream: true,
       options: {},
     },
   },
 } as const;
 
 export interface PluginRuntimeServiceImplementation<CallContextExt = {}> {
-  hookImport(request: HookImportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
-  hookExport(request: HookExportRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HookResponse>>;
-  hookResponseFilter(
-    request: HookResponseFilterRequest,
+  eventStream(
+    request: AsyncIterable<EventStreamEvent>,
     context: CallContext & CallContextExt,
-  ): Promise<DeepPartial<HookResponse>>;
+  ): ServerStreamingMethodResult<DeepPartial<EventStreamEvent>>;
 }
 
 export interface PluginRuntimeClient<CallOptionsExt = {}> {
-  hookImport(request: DeepPartial<HookImportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
-  hookExport(request: DeepPartial<HookExportRequest>, options?: CallOptions & CallOptionsExt): Promise<HookResponse>;
-  hookResponseFilter(
-    request: DeepPartial<HookResponseFilterRequest>,
+  eventStream(
+    request: AsyncIterable<DeepPartial<EventStreamEvent>>,
     options?: CallOptions & CallOptionsExt,
-  ): Promise<HookResponse>;
+  ): AsyncIterable<EventStreamEvent>;
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
@@ -430,3 +471,5 @@ export type DeepPartial<T> = T extends Builtin ? T
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
 }
+
+export type ServerStreamingMethodResult<Response> = { [Symbol.asyncIterator](): AsyncIterator<Response, void> };

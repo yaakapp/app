@@ -12,9 +12,7 @@ export function useWorkspaces() {
     useQuery({
       queryKey: workspacesQueryKey(),
       queryFn: async () => {
-        console.log('GETTING WORKSPACES');
         const workspaces = await invokeCmd('cmd_list_workspaces');
-        console.log('GOT WORKSPACES');
         return workspaces as Workspace[];
       },
     }).data ?? []

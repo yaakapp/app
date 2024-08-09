@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocalStorage } from 'react-use';
 import { Button } from './core/Button';
 import { VStack } from './core/Stacks';
 import { SelectFile } from './SelectFile';
@@ -9,7 +10,7 @@ interface Props {
 
 export function ImportDataDialog({ importData }: Props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [filePath, setFilePath] = useState<string | null>(null);
+  const [filePath, setFilePath] = useLocalStorage<string | null>('importFilePath', null);
   return (
     <VStack space={5} className="pb-4">
       <VStack space={1}>
@@ -24,7 +25,10 @@ export function ImportDataDialog({ importData }: Props) {
         </ul>
       </VStack>
       <VStack space={2}>
-        <SelectFile filePath={filePath} onChange={({ filePath }) => setFilePath(filePath)} />
+        <SelectFile
+          filePath={filePath ?? null}
+          onChange={({ filePath }) => setFilePath(filePath)}
+        />
         {filePath && (
           <Button
             color="primary"

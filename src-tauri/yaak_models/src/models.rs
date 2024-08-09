@@ -8,7 +8,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../src-web/lib/gen/")]
+#[ts(export)]
 pub struct Settings {
     pub id: String,
     #[ts(type = "\"settings\"")]
@@ -72,7 +72,7 @@ impl<'s> TryFrom<&Row<'s>> for Settings {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct Workspace {
     pub id: String,
     #[ts(type = "\"workspace\"")]
@@ -140,7 +140,7 @@ impl Workspace {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../src-web/lib/gen/")]
+#[ts(export)]
 enum CookieDomain {
     HostOnly(String),
     Suffix(String),
@@ -149,14 +149,14 @@ enum CookieDomain {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../src-web/lib/gen/")]
+#[ts(export)]
 enum CookieExpires {
     AtUtc(String),
     SessionEnd,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../src-web/lib/gen/")]
+#[ts(export)]
 pub struct Cookie {
     raw_cookie: String,
     domain: CookieDomain,
@@ -166,7 +166,7 @@ pub struct Cookie {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../src-web/lib/gen/")]
+#[ts(export)]
 pub struct CookieJar {
     pub id: String,
     #[ts(type = "\"cookie_jar\"")]
@@ -210,7 +210,7 @@ impl<'s> TryFrom<&Row<'s>> for CookieJar {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct Environment {
     pub id: String,
     pub workspace_id: String,
@@ -254,7 +254,7 @@ impl<'s> TryFrom<&Row<'s>> for Environment {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct EnvironmentVariable {
     #[serde(default = "default_true")]
     #[ts(optional, as = "Option<bool>")]
@@ -265,7 +265,7 @@ pub struct EnvironmentVariable {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct Folder {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -311,7 +311,7 @@ impl<'s> TryFrom<&Row<'s>> for Folder {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct HttpRequestHeader {
     #[serde(default = "default_true")]
     #[ts(optional, as = "Option<bool>")]
@@ -322,7 +322,7 @@ pub struct HttpRequestHeader {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct HttpUrlParameter {
     #[serde(default = "default_true")]
     #[ts(optional, as = "Option<bool>")]
@@ -333,7 +333,7 @@ pub struct HttpUrlParameter {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct HttpRequest {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -348,7 +348,7 @@ pub struct HttpRequest {
     pub url_parameters: Vec<HttpUrlParameter>,
     #[serde(default = "default_http_request_method")]
     pub method: String,
-    #[ts(type = "Record<string, any>")] 
+    #[ts(type = "Record<string, any>")]
     pub body: HashMap<String, Value>,
     pub body_type: Option<String>,
     #[ts(type = "Record<string, any>")]
@@ -410,7 +410,7 @@ impl<'s> TryFrom<&Row<'s>> for HttpRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct HttpResponseHeader {
     pub name: String,
     pub value: String,
@@ -418,7 +418,7 @@ pub struct HttpResponseHeader {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct HttpResponse {
     pub id: String,
     #[ts(type = "\"http_response\"")]
@@ -501,7 +501,7 @@ impl HttpResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct GrpcMetadataEntry {
     #[serde(default = "default_true")]
     #[ts(optional, as = "Option<bool>")]
@@ -512,7 +512,7 @@ pub struct GrpcMetadataEntry {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct GrpcRequest {
     pub id: String,
     #[ts(type = "\"grpc_request\"")]
@@ -582,7 +582,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct GrpcConnection {
     pub id: String,
     #[ts(type = "\"grpc_connection\"")]
@@ -644,7 +644,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcConnection {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "snake_case")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub enum GrpcEventType {
     Info,
     Error,
@@ -662,7 +662,7 @@ impl Default for GrpcEventType {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct GrpcEvent {
     pub id: String,
     #[ts(type = "\"grpc_event\"")]
@@ -720,7 +720,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcEvent {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export, export_to = "../../../plugin-runtime-types/src/gen/")]
+#[ts(export)]
 pub struct KeyValue {
     #[ts(type = "\"key_value\"")]
     pub model: String,

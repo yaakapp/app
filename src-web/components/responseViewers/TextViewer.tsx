@@ -167,7 +167,7 @@ export function TextViewer({ response, pretty, className }: Props) {
     if (filteredResponse.error) {
       body = '';
     } else {
-      body = filteredResponse.data ?? '';
+      body = filteredResponse.data != null ? filteredResponse.data : '';
     }
   } else {
     body = formattedBody;
