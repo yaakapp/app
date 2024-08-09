@@ -196,7 +196,7 @@ pub async fn upsert_workspace(window: &WebviewWindow, workspace: Workspace) -> R
             CurrentTimestamp.into(),
             trimmed_name.into(),
             workspace.description.into(),
-            serde_json::to_string(&workspace.variables).unwrap().into(),
+            serde_json::to_string(&workspace.variables)?.into(),
             workspace.setting_request_timeout.into(),
             workspace.setting_follow_redirects.into(),
             workspace.setting_validate_certificates.into(),
@@ -350,10 +350,8 @@ pub async fn upsert_grpc_request(
                 .as_ref()
                 .map(|s| s.as_str())
                 .into(),
-            serde_json::to_string(&request.authentication)
-                .unwrap()
-                .into(),
-            serde_json::to_string(&request.metadata).unwrap().into(),
+            serde_json::to_string(&request.authentication)?.into(),
+            serde_json::to_string(&request.metadata)?.into(),
         ])
         .on_conflict(
             OnConflict::column(GrpcRequestIden::Id)
@@ -447,7 +445,7 @@ pub async fn upsert_grpc_connection(
             connection.elapsed.into(),
             connection.status.into(),
             connection.error.as_ref().map(|s| s.as_str()).into(),
-            serde_json::to_string(&connection.trailers).unwrap().into(),
+            serde_json::to_string(&connection.trailers)?.into(),
             connection.url.as_str().into(),
         ])
         .on_conflict(
@@ -555,8 +553,8 @@ pub async fn upsert_grpc_event(window: &WebviewWindow, event: &GrpcEvent) -> Res
             event.request_id.as_str().into(),
             event.connection_id.as_str().into(),
             event.content.as_str().into(),
-            serde_json::to_string(&event.event_type).unwrap().into(),
-            serde_json::to_string(&event.metadata).unwrap().into(),
+            serde_json::to_string(&event.event_type)?.into(),
+            serde_json::to_string(&event.metadata)?.into(),
             event.status.into(),
             event.error.as_ref().map(|s| s.as_str()).into(),
         ])
@@ -639,7 +637,7 @@ pub async fn upsert_cookie_jar(
             CurrentTimestamp.into(),
             cookie_jar.workspace_id.as_str().into(),
             trimmed_name.into(),
-            serde_json::to_string(&cookie_jar.cookies).unwrap().into(),
+            serde_json::to_string(&cookie_jar.cookies)?.into(),
         ])
         .on_conflict(
             OnConflict::column(GrpcEventIden::Id)
@@ -681,7 +679,7 @@ pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Envi
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
-    
+
     let (sql, params) = Query::delete()
         .from_table(EnvironmentIden::Table)
         .cond_where(Expr::col(EnvironmentIden::Id).eq(id))
@@ -807,9 +805,7 @@ pub async fn upsert_environment(
             CurrentTimestamp.into(),
             environment.workspace_id.as_str().into(),
             trimmed_name.into(),
-            serde_json::to_string(&environment.variables)
-                .unwrap()
-                .into(),
+            serde_json::to_string(&environment.variables)?.into(),
         ])
         .on_conflict(
             OnConflict::column(GrpcEventIden::Id)
@@ -871,7 +867,7 @@ pub async fn list_folders(mgr: &impl Manager<Wry>, workspace_id: &str) -> Result
 
 pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder> {
     let folder = get_folder(window, id).await?;
-    
+
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -975,13 +971,13 @@ pub async fn upsert_http_request(window: &WebviewWindow, r: HttpRequest) -> Resu
             r.folder_id.as_ref().map(|s| s.as_str()).into(),
             trimmed_name.into(),
             r.url.as_str().into(),
-            serde_json::to_string(&r.url_parameters).unwrap().into(),
+            serde_json::to_string(&r.url_parameters)?.into(),
             r.method.as_str().into(),
-            serde_json::to_string(&r.body).unwrap().into(),
+            serde_json::to_string(&r.body)?.into(),
             r.body_type.as_ref().map(|s| s.as_str()).into(),
-            serde_json::to_string(&r.authentication).unwrap().into(),
+            serde_json::to_string(&r.authentication)?.into(),
             r.authentication_type.as_ref().map(|s| s.as_str()).into(),
-            serde_json::to_string(&r.headers).unwrap().into(),
+            serde_json::to_string(&r.headers)?.into(),
             r.sort_priority.into(),
         ])
         .on_conflict(
@@ -1110,7 +1106,7 @@ pub async fn create_http_response(
             status_reason.into(),
             content_length.into(),
             body_path.into(),
-            serde_json::to_string(&headers).unwrap().into(),
+            serde_json::to_string(&headers)?.into(),
             version.into(),
             remote_addr.into(),
         ])

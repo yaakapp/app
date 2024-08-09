@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use ts_rs::TS;
 
 use yaak_models::models::{Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Workspace};
@@ -79,7 +78,7 @@ pub struct FilterRequest {
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
 pub struct FilterResponse {
-    pub items: Vec<Value>,
+    pub content: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
