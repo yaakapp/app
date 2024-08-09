@@ -1,9 +1,13 @@
+use crate::error::Result;
+use crate::events::{InternalEvent, InternalEventPayload};
+use crate::manager::PluginManager;
+use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
+use crate::server::PluginRuntimeGrpcServer;
+use log::info;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::process::exit;
 use std::time::Duration;
-
-use log::info;
 use tauri::path::BaseDirectory;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
@@ -12,12 +16,6 @@ use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use tonic::codegen::tokio_stream;
 use tonic::transport::Server;
-
-use crate::error::Result;
-use crate::events::{InternalEvent, InternalEventPayload};
-use crate::manager::PluginManager;
-use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
-use crate::server::PluginRuntimeGrpcServer;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("yaak_plugin_runtime")
@@ -105,12 +103,34 @@ async fn read_plugins_dir(dir: &PathBuf) -> Result<Vec<String>> {
     let mut dirs: Vec<String> = vec![];
     while let Ok(Some(entry)) = result.next_entry().await {
         if entry.path().is_dir() {
-            // HACK: Remove UNC prefix for Windows paths to pass to sidecar
-            let safe_path = dunce::simplified(entry.path().as_path())
-                .to_string_lossy()
-                .to_string();
-            dirs.push(safe_path)
+            #[cfg(target_os = "windows")]
+            dirs.push(fix_windows_paths(&entry.path()));
+            #[cfg(not(target_os = "windows"))]
+            dirs.push(entry.path().to_string_lossy().to_string());
         }
     }
     Ok(dirs)
+}
+
+
+#[cfg(target_os = "windows")]
+fn fix_windows_paths(p: &PathBuf) -> String {
+    use dunce;
+    use regex::Regex;
+    use path_slash::PathBufExt;
+    
+    // 1. Remove UNC prefix for Windows paths to pass to sidecar
+    let safe_path = dunce::simplified(p.as_path()).to_string_lossy().to_string();
+
+    // 2. Remove the drive letter
+    let safe_path = Regex::new("^[a-zA-Z]:")
+        .unwrap()
+        .replace(safe_path.as_str(), "");
+
+    // 3. Convert backslashes to forward
+    let safe_path = PathBuf::from(safe_path.to_string())
+        .to_slash_lossy()
+        .to_string();
+
+    safe_path
 }
