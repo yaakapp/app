@@ -86,6 +86,12 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Checkout yaakapp/plugins
+        uses: actions/checkout@v4
+        with:
+          repository: yaakapp/plugins
+          path: ${{ env.YAAK_PLUGINS_DIR }}
+
       - name: Vendor things for the app
         run: npm run vendor
 
@@ -93,12 +99,6 @@ jobs:
       - name: Rust test
         working-directory: src-tauri
         run: cargo test --all
-
-      - name: Checkout yaakapp/plugins
-        uses: actions/checkout@v4
-        with:
-          repository: yaakapp/plugins
-          path: ${{ env.YAAK_PLUGINS_DIR }}
 
       - name: Set version
         run: npm run replace-version
