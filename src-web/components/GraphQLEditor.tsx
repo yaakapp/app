@@ -32,7 +32,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
       return { query: '', variables: {} };
     }
     try {
-      const p = JSON.parse(defaultValue ?? '{}');
+      const p = JSON.parse(defaultValue || '{}');
       const query = p.query ?? '';
       const variables = p.variables;
       const operationName = p.operationName;
@@ -59,7 +59,14 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   );
 
   const handleChangeVariables = useCallback(
-    (variables: string) => handleChange({ query, variables: JSON.parse(variables) }),
+    (variables: string) => {
+      try {
+        handleChange({ query, variables: JSON.parse(variables || '{}') });
+      } catch (err) {
+        // Don't do anything if invalid JSON. The user probably hasn't finished
+        // typing yet.
+      }
+    },
     [handleChange, query],
   );
 
