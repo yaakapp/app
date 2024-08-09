@@ -32,6 +32,7 @@ import { BinaryFileEditor } from './BinaryFileEditor';
 import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
 import type { GenericCompletionOption } from './core/Editor/genericCompletion';
+import { InlineCode } from './core/InlineCode';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
@@ -39,6 +40,7 @@ import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
+import { useToast } from './ToastContext';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
 
@@ -67,6 +69,7 @@ export const RequestPane = memo(function RequestPane({
 
   const handleContentTypeChange = useCallback(
     async (contentType: string | null) => {
+      console.log('UPDATE CONTENT TYPE', contentType);
       const headers = activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type');
 
       if (contentType != null) {
@@ -83,6 +86,8 @@ export const RequestPane = memo(function RequestPane({
     },
     [activeRequest.headers, activeRequestId, updateRequest],
   );
+
+  const toast = useToast();
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -104,25 +109,44 @@ export const RequestPane = memo(function RequestPane({
             { label: 'No Body', shortLabel: 'Body', value: BODY_TYPE_NONE },
           ],
           onChange: async (bodyType) => {
+            if (bodyType === activeRequest.bodyType) return;
+
+            const showMethodToast = (newMethod: string) => {
+              if (activeRequest.method.toLowerCase() === newMethod.toLowerCase()) return;
+              toast.show({
+                id: 'switched-method',
+                message: (
+                  <>
+                    Request method switched to <InlineCode>POST</InlineCode>
+                  </>
+                ),
+              });
+            };
+
             const patch: Partial<HttpRequest> = { bodyType };
             let newContentType: string | null | undefined;
             if (bodyType === BODY_TYPE_NONE) {
               newContentType = null;
             } else if (
-              activeRequest.method.toLowerCase() !== 'put' &&
-              activeRequest.method.toLowerCase() !== 'patch' &&
-              activeRequest.method.toLowerCase() !== 'post' &&
-              (bodyType === BODY_TYPE_FORM_URLENCODED ||
-                bodyType === BODY_TYPE_FORM_MULTIPART ||
-                bodyType === BODY_TYPE_JSON ||
-                bodyType === BODY_TYPE_OTHER ||
-                bodyType === BODY_TYPE_XML)
+              bodyType === BODY_TYPE_FORM_URLENCODED ||
+              bodyType === BODY_TYPE_FORM_MULTIPART ||
+              bodyType === BODY_TYPE_JSON ||
+              bodyType === BODY_TYPE_OTHER ||
+              bodyType === BODY_TYPE_XML
             ) {
-              patch.method = 'POST';
+              const isDefaultishRequest =
+                activeRequest.bodyType === BODY_TYPE_NONE &&
+                activeRequest.method.toLowerCase() === 'get';
+              const requiresPost = bodyType === BODY_TYPE_FORM_MULTIPART;
+              if (isDefaultishRequest || requiresPost) {
+                patch.method = 'POST';
+                showMethodToast(patch.method);
+              }
               newContentType = bodyType === BODY_TYPE_OTHER ? 'text/plain' : bodyType;
             } else if (bodyType == BODY_TYPE_GRAPHQL) {
               patch.method = 'POST';
               newContentType = 'application/json';
+              showMethodToast(patch.method);
             }
 
             await updateRequest.mutateAsync({ id: activeRequestId, update: patch });
@@ -191,6 +215,7 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.urlParameters,
       activeRequestId,
       handleContentTypeChange,
+      toast,
       updateRequest,
     ],
   );

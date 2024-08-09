@@ -15,10 +15,11 @@ export interface ToastProps {
   className?: string;
   timeout: number | null;
   action?: ReactNode;
-  variant?: 'copied' | 'success' | 'info' | 'warning' | 'error';
+  variant?: 'custom' | 'copied' | 'success' | 'info' | 'warning' | 'error';
 }
 
-const ICONS: Record<NonNullable<ToastProps['variant']>, IconProps['icon']> = {
+const ICONS: Record<NonNullable<ToastProps['variant']>, IconProps['icon'] | null> = {
+  custom: null,
   copied: 'copyCheck',
   warning: 'alert',
   error: 'alert',
@@ -33,7 +34,7 @@ export function Toast({
   onClose,
   timeout,
   action,
-  variant,
+  variant = 'info',
 }: ToastProps) {
   useKey(
     'Escape',
@@ -44,6 +45,8 @@ export function Toast({
     {},
     [open],
   );
+
+  const icon = variant in ICONS && ICONS[variant];
 
   return (
     <motion.div
@@ -65,9 +68,9 @@ export function Toast({
       )}
     >
       <div className="px-3 py-3 flex items-center gap-2">
-        {variant != null && (
+        {icon && (
           <Icon
-            icon={ICONS[variant]}
+            icon={icon}
             className={classNames(
               variant === 'success' && 'text-fg-success',
               variant === 'warning' && 'text-fg-warning',

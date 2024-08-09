@@ -55,7 +55,6 @@ export const placeholders = function (variables: { name: string }[]) {
       }
 
       const isFunction = groupMatch.includes('(');
-      console.log('VAIRABLES', variables, groupMatch);
       return Decoration.replace({
         inclusive: true,
         widget: new PlaceholderWidget(
