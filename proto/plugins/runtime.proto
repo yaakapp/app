@@ -3,29 +3,7 @@ syntax = "proto3";
 package yaak.plugins.runtime;
 
 service PluginRuntime {
-  rpc EventStream (stream EventStreamEvent) returns (stream EventStreamEvent);}
-
-message PluginInfo {
-  string plugin = 1;
-}
-
-message HookResponse {
-  PluginInfo info = 1;
-  string data = 2;
-}
-
-message HookImportRequest {
-  string data = 1;
-}
-
-message HookResponseFilterRequest {
-  string filter = 1;
-  string body = 2;
-  string contentType = 3;
-}
-
-message HookExportRequest {
-  string request = 1;
+  rpc EventStream (stream EventStreamEvent) returns (stream EventStreamEvent);
 }
 
 message EventStreamEvent {

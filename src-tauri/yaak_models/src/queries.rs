@@ -328,6 +328,7 @@ pub async fn upsert_grpc_request(
             GrpcRequestIden::SortPriority,
             GrpcRequestIden::Url,
             GrpcRequestIden::Service,
+            GrpcRequestIden::Method,
             GrpcRequestIden::Message,
             GrpcRequestIden::AuthenticationType,
             GrpcRequestIden::Authentication,
@@ -345,11 +346,7 @@ pub async fn upsert_grpc_request(
             request.service.as_ref().map(|s| s.as_str()).into(),
             request.method.as_ref().map(|s| s.as_str()).into(),
             request.message.as_str().into(),
-            request
-                .authentication_type
-                .as_ref()
-                .map(|s| s.as_str())
-                .into(),
+            request .authentication_type .as_ref() .map(|s| s.as_str()) .into(),
             serde_json::to_string(&request.authentication)?.into(),
             serde_json::to_string(&request.metadata)?.into(),
         ])
