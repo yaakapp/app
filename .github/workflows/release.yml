@@ -94,6 +94,9 @@ jobs:
 
       - name: build the app
         run: npm run build
+        env:
+          YAAK_PLUGINS_DIR: ${{ env.YAAK_PLUGINS_DIR }}
+          YAAK_TARGET_ARCH: ${{ matrix.yaak_arch }}
 
       - name: Vendor the app
         run: npm run vendor
