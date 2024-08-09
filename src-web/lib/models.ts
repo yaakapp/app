@@ -1,15 +1,4 @@
-import type {
-  Environment,
-  Folder,
-  GrpcConnection,
-  GrpcEvent,
-  GrpcRequest,
-  HttpRequest,
-  HttpResponse,
-  KeyValue,
-  Workspace,
-  HttpResponseHeader,
-} from '@yaakapp/api';
+import type { GrpcConnection, HttpResponse, HttpResponseHeader, Model } from '@yaakapp/api';
 import type { Cookie } from './models/Cookie';
 import type { CookieJar } from './models/CookieJar';
 import type { Settings } from './models/Settings';
@@ -28,19 +17,6 @@ export const BODY_TYPE_XML = 'text/xml';
 export const AUTH_TYPE_NONE = null;
 export const AUTH_TYPE_BASIC = 'basic';
 export const AUTH_TYPE_BEARER = 'bearer';
-
-export type Model =
-  | Settings
-  | Workspace
-  | Folder
-  | GrpcConnection
-  | GrpcRequest
-  | GrpcEvent
-  | HttpRequest
-  | HttpResponse
-  | KeyValue
-  | Environment
-  | CookieJar;
 
 export function cookieDomain(cookie: Cookie): string {
   if (cookie.domain === 'NotPresent' || cookie.domain === 'Empty') {

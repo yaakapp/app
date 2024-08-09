@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use ts_rs::TS;
 
-use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, HttpResponse, Workspace};
+use yaak_models::models::{Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Workspace};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -120,13 +120,16 @@ pub struct ImportResources {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", untagged)]
 #[ts(export)]
 pub enum Model {
-    Workspace(Workspace),
     Environment(Environment),
     Folder(Folder),
+    GrpcConnection(GrpcConnection),
+    GrpcEvent(GrpcEvent),
+    GrpcRequest(GrpcRequest),
     HttpRequest(HttpRequest),
     HttpResponse(HttpResponse),
-    GrpcRequest(GrpcRequest),
+    KeyValue(KeyValue),
+    Workspace(Workspace),
 }
