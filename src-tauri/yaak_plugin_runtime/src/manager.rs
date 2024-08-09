@@ -42,7 +42,7 @@ impl PluginManager {
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    pub async fn run_import(&mut self, content: &str) -> Result<ImportResponse> {
+    pub async fn run_import(&mut self, content: &str) -> Result<(ImportResponse, String)> {
         let reply_events = self
             .server
             .send_and_wait(&InternalEventPayload::ImportRequest(ImportRequest {
@@ -54,7 +54,10 @@ impl PluginManager {
         for event in reply_events {
             match event.payload {
                 InternalEventPayload::ImportResponse(resp) => {
-                    return Ok(resp);
+                    let ref_id = event.plugin_ref_id.as_str();
+                    let plugin = self.server.plugin_by_ref_id(ref_id).await?;
+                    let plugin_name = plugin.name().await;
+                    return Ok((resp, plugin_name));
                 }
                 _ => {}
             }

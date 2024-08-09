@@ -184,6 +184,21 @@ impl PluginRuntimeGrpcServer {
     //     plugin.send(&payload, Some(reply_id)).await
     // }
 
+    pub async fn plugin_by_ref_id(&self, ref_id: &str) -> Result<PluginHandle> {
+        let plugins = self.plugin_ref_to_plugin.lock().await;
+        if plugins.is_empty() {
+            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
+        }
+
+        match plugins.get(ref_id) {
+            None => {
+                let msg = format!("Failed to find plugin for id {ref_id}");
+                Err(PluginNotFoundErr(msg))
+            }
+            Some(p) => Ok(p.to_owned()),
+        }
+    }
+
     pub async fn plugin_by_name(&self, plugin_name: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
         if plugins.is_empty() {
@@ -231,7 +246,11 @@ impl PluginRuntimeGrpcServer {
         }
     }
 
-    pub async fn send_to_plugin_and_wait(&self, plugin_name: &str, payload: &InternalEventPayload) -> Result<InternalEvent> {
+    pub async fn send_to_plugin_and_wait(
+        &self,
+        plugin_name: &str,
+        payload: &InternalEventPayload,
+    ) -> Result<InternalEvent> {
         let plugin = self.plugin_by_name(plugin_name).await?;
         let events = self.send_to_plugins_and_wait(payload, vec![plugin]).await?;
         Ok(events.first().unwrap().to_owned())
@@ -241,7 +260,13 @@ impl PluginRuntimeGrpcServer {
         &self,
         payload: &InternalEventPayload,
     ) -> Result<Vec<InternalEvent>> {
-        let plugins = self.plugin_ref_to_plugin.lock().await.values().cloned().collect();
+        let plugins = self
+            .plugin_ref_to_plugin
+            .lock()
+            .await
+            .values()
+            .cloned()
+            .collect();
         self.send_to_plugins_and_wait(payload, plugins).await
     }
 

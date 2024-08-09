@@ -16,7 +16,7 @@ use base64::Engine;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
-use serde_json::Value;
+use serde_json::{json, Value};
 use sqlx::migrate::Migrator;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::{Pool, Sqlite, SqlitePool};
@@ -102,13 +102,13 @@ struct AppMetaData {
 async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
     let app_log_dir = app_handle.path().app_log_dir().unwrap();
-    return Ok(AppMetaData {
+    Ok(AppMetaData {
         is_dev: is_dev(),
         version: app_handle.package_info().version.to_string(),
         name: app_handle.package_info().name.to_string(),
         app_data_dir: app_data_dir.to_string_lossy().to_string(),
         app_log_dir: app_log_dir.to_string_lossy().to_string(),
-    });
+    })
 }
 
 #[tauri::command]
@@ -759,7 +759,7 @@ async fn cmd_import_data(
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let import_result = plugin_manager
+    let (import_result, plugin_name) = plugin_manager
         .lock()
         .await
         .run_import(file_contents)
@@ -871,6 +871,14 @@ async fn cmd_import_data(
         imported_resources.grpc_requests.len()
     );
 
+    analytics::track_event(
+        &w.app_handle(),
+        AnalyticsResource::App,
+        AnalyticsAction::Import,
+        Some(json!({ "plugin": plugin_name })),
+    )
+    .await;
+
     Ok(imported_resources)
 }
 
@@ -907,13 +915,22 @@ async fn cmd_curl_to_request(
     command: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     workspace_id: &str,
+    w: WebviewWindow,
 ) -> Result<HttpRequest, String> {
-    let import_result = plugin_manager
+    let (import_result, plugin_name) = plugin_manager
         .lock()
         .await
         .run_import(command)
         .await
         .map_err(|e| e.to_string())?;
+
+    analytics::track_event(
+        &w.app_handle(),
+        AnalyticsResource::App,
+        AnalyticsAction::Import,
+        Some(json!({ "plugin": plugin_name })),
+    )
+    .await;
 
     import_result
         .resources
