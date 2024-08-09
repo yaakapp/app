@@ -20,6 +20,8 @@ tonic = "0.12.1"
 ts-rs = "9.0.1"
 thiserror = "1.0.63"
 yaak_models = {workspace = true}
+regex = "1.10.6"
+path-slash = "0.2.1"
 
 [build-dependencies]
 tonic-build = "0.12.1"
