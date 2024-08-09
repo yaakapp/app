@@ -2,8 +2,7 @@ use std::fmt::Display;
 
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use sqlx::types::JsonValue;
+use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
 
 use yaak_models::queries::{generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string};
@@ -155,7 +154,7 @@ pub async fn track_event(
     app_handle: &AppHandle,
     resource: AnalyticsResource,
     action: AnalyticsAction,
-    attributes: Option<JsonValue>,
+    attributes: Option<Value>,
 ) {
     let id = get_id(app_handle).await;
     let event = format!("{}.{}", resource, action);

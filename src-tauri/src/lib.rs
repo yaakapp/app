@@ -17,10 +17,6 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use sqlx::migrate::Migrator;
-use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::{Pool, Sqlite, SqlitePool};
-use tauri::path::BaseDirectory;
 use tauri::Listener;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
@@ -75,19 +71,6 @@ mod window_menu;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
-
-async fn migrate_db(app_handle: &AppHandle, pool: &Pool<Sqlite>) -> Result<(), String> {
-    let p = app_handle
-        .path()
-        .resolve("migrations", BaseDirectory::Resource)
-        .expect("failed to resolve resource");
-    info!("Running migrations at {}", p.to_string_lossy());
-    let mut m = Migrator::new(p).await.expect("Failed to load migrations");
-    m.set_ignore_missing(true); // So we can rollback versions and not crash
-    m.run(pool).await.expect("Failed to run migrations");
-    info!("Migrations complete!");
-    Ok(())
-}
 
 #[derive(serde::Serialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -1639,28 +1622,7 @@ pub fn run() {
     builder
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().unwrap();
-            let app_config_dir = app.path().app_config_dir().unwrap();
-            info!(
-                "App Config Dir: {}",
-                app_config_dir.as_path().to_string_lossy(),
-            );
-            info!("App Data Dir: {}", app_data_dir.as_path().to_string_lossy());
-            let app_data_dir = match is_dev() {
-                true => current_dir().unwrap(),
-                false => app_data_dir,
-            };
-
             create_dir_all(app_data_dir.clone()).expect("Problem creating App directory!");
-            let p = app_data_dir.join("db.sqlite");
-            File::options()
-                .write(true)
-                .create(true)
-                .open(&p)
-                .expect("Problem creating database file!");
-
-            let p_string = p.to_string_lossy().replace(' ', "%20");
-            let url = format!("sqlite://{}?mode=rwc", p_string);
-            info!("Connecting to database at {}", url);
 
             // Add updater
             let yaak_updater = YaakUpdater::new();
@@ -1677,20 +1639,6 @@ pub fn run() {
             // Add plugin manager
             let grpc_handle = GrpcHandle::new(&app.app_handle());
             app.manage(Mutex::new(grpc_handle));
-
-            // Add DB handle
-            tauri::async_runtime::block_on(async move {
-                let opts = SqliteConnectOptions::from_str(p.to_str().unwrap()).unwrap();
-                let pool = SqlitePool::connect_with(opts)
-                    .await
-                    .expect("Failed to connect to database");
-                migrate_db(app.handle(), &pool)
-                    .await
-                    .expect("Failed to migrate database");
-                let h = app.handle();
-                let _ = cancel_pending_responses(h).await;
-                let _ = cancel_pending_grpc_connections(h).await;
-            });
 
             Ok(())
         })
@@ -1773,6 +1721,13 @@ pub fn run() {
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&h).await;
                         debug!("Launched Yaak {:?}", info);
+                    });
+
+                    // Cancel pending requests
+                    let h = app_handle.clone();
+                    tauri::async_runtime::block_on(async move {
+                        let _ = cancel_pending_responses(&h).await;
+                        let _ = cancel_pending_grpc_connections(&h).await;
                     });
                 }
                 RunEvent::WindowEvent {
