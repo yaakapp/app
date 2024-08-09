@@ -3,6 +3,10 @@ export type * from './themes';
 
 export * from './gen/BootRequest';
 export * from './gen/BootResponse';
+export * from './gen/Cookie';
+export * from './gen/CookieDomain';
+export * from './gen/CookieExpires';
+export * from './gen/CookieJar';
 export * from './gen/EmptyResponse';
 export * from './gen/Environment';
 export * from './gen/EnvironmentVariable';
@@ -27,4 +31,5 @@ export * from './gen/InternalEvent';
 export * from './gen/InternalEventPayload';
 export * from './gen/KeyValue';
 export * from './gen/Model';
+export * from './gen/Settings';
 export * from './gen/Workspace';

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import type { Model } from '@yaakapp/api';
 import { useEffect } from 'react';
 import { useAtiveWorkspaceChangedToast } from '../hooks/useAtiveWorkspaceChangedToast';
 import { useClipboardText } from '../hooks/useClipboardText';
@@ -24,7 +25,6 @@ import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
-import type { Model } from '../lib/models';
 import { modelsEq } from '../lib/models';
 import { catppuccinMacchiato } from '../lib/theme/themes/catppuccin';
 import { githubLight } from '../lib/theme/themes/github';

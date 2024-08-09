@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use yaak_models::models::{Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Workspace};
+use yaak_models::models::{CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -131,4 +131,6 @@ pub enum Model {
     HttpResponse(HttpResponse),
     KeyValue(KeyValue),
     Workspace(Workspace),
+    CookieJar(CookieJar),
+    Settings(Settings),
 }
