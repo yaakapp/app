@@ -43,15 +43,12 @@ impl PluginManager {
     }
 
     pub async fn run_import(&mut self, content: &str) -> Result<ImportResponse> {
-        let sent_events = self
+        let reply_events = self
             .server
-            .send(InternalEventPayload::ImportRequest(ImportRequest {
+            .send_and_wait(&InternalEventPayload::ImportRequest(ImportRequest {
                 content: content.to_string(),
             }))
             .await?;
-
-        // TODO: Fix race condition where replies come back before we start waiting
-        let reply_events = self.server.wait_for_replies(sent_events).await;
 
         // TODO: Don't just return the first valid response
         for event in reply_events {
@@ -70,17 +67,15 @@ impl PluginManager {
         &mut self,
         request: &HttpRequest,
     ) -> Result<ExportHttpRequestResponse> {
-        let sent_event = self
+        let event = self
             .server
-            .send_to_plugin(
+            .send_to_plugin_and_wait(
                 "exporter-curl",
-                InternalEventPayload::ExportHttpRequestRequest(ExportHttpRequestRequest {
+                &InternalEventPayload::ExportHttpRequestRequest(ExportHttpRequestRequest {
                     http_request: request.to_owned(),
                 }),
             )
             .await?;
-
-        let event = self.server.wait_for_reply(sent_event).await;
 
         match event.payload {
             InternalEventPayload::ExportHttpRequestResponse(resp) => Ok(resp),
@@ -97,24 +92,22 @@ impl PluginManager {
         content: &str,
         content_type: &str,
     ) -> Result<FilterResponse> {
-        let plugin_name = if content_type == "application/json" {
-            "filter-jsonpath"
-        } else {
-            "filter-xpath"
+        let plugin_name = match content_type {
+            "application/json" => "filter-jsonpath",
+            _ => "filter-xpath",
         };
 
-        let sent_event = self
+        let event = self
             .server
-            .send_to_plugin(
+            .send_to_plugin_and_wait(
                 plugin_name,
-                InternalEventPayload::FilterRequest(FilterRequest {
+                &InternalEventPayload::FilterRequest(FilterRequest {
                     filter: filter.to_string(),
                     content: content.to_string(),
                 }),
             )
             .await?;
-        
-        let event = self.server.wait_for_reply(sent_event).await;
+
         match event.payload {
             InternalEventPayload::FilterResponse(resp) => Ok(resp),
             InternalEventPayload::EmptyResponse(_) => {

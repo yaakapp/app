@@ -7,7 +7,8 @@ use crate::models::{
     HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
     ModelType, Settings, SettingsIden, Workspace, WorkspaceIden,
 };
-use log::error;
+use crate::plugin::SqliteConnection;
+use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
 use sea_query::ColumnRef::Asterisk;
 use sea_query::Keyword::CurrentTimestamp;
@@ -15,7 +16,6 @@ use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, WebviewWindow, Wry};
-use crate::plugin::SqliteConnection;
 
 pub async fn set_key_value_string(
     mgr: &impl Manager<Wry>,
@@ -85,9 +85,10 @@ pub async fn set_key_value_raw(
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
+    let existing = get_key_value_raw(mgr, namespace, key).await;
+
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
-    let existing = get_key_value_raw(mgr, namespace, key).await;
     let (sql, params) = Query::insert()
         .into_table(KeyValueIden::Table)
         .columns([
@@ -222,9 +223,10 @@ pub async fn upsert_workspace(window: &WebviewWindow, workspace: Workspace) -> R
 }
 
 pub async fn delete_workspace(window: &WebviewWindow, id: &str) -> Result<Workspace> {
+    let workspace = get_workspace(window, id).await?;
+
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
-    let workspace = get_workspace(window, id).await?;
 
     let (sql, params) = Query::delete()
         .from_table(WorkspaceIden::Table)
@@ -306,14 +308,14 @@ pub async fn upsert_grpc_request(
     window: &WebviewWindow,
     request: &GrpcRequest,
 ) -> Result<GrpcRequest> {
-    let dbm = &*window.app_handle().state::<SqliteConnection>();
-    let db = dbm.0.lock().await.get().unwrap();
     let id = match request.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcRequest),
         _ => request.id.to_string(),
     };
     let trimmed_name = request.name.trim();
 
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::insert()
         .into_table(GrpcRequestIden::Table)
         .columns([
@@ -412,12 +414,12 @@ pub async fn upsert_grpc_connection(
     window: &WebviewWindow,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection> {
-    let dbm = &*window.app_handle().state::<SqliteConnection>();
-    let db = dbm.0.lock().await.get().unwrap();
     let id = match connection.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcConnection),
         _ => connection.id.to_string(),
     };
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::insert()
         .into_table(GrpcConnectionIden::Table)
         .columns([
@@ -523,13 +525,13 @@ pub async fn delete_all_grpc_connections(window: &WebviewWindow, request_id: &st
 }
 
 pub async fn upsert_grpc_event(window: &WebviewWindow, event: &GrpcEvent) -> Result<GrpcEvent> {
-    let dbm = &*window.app_handle().state::<SqliteConnection>();
-    let db = dbm.0.lock().await.get().unwrap();
     let id = match event.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcEvent),
         _ => event.id.to_string(),
     };
 
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::insert()
         .into_table(GrpcEventIden::Table)
         .columns([
@@ -675,10 +677,11 @@ pub async fn list_environments(
 }
 
 pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Environment> {
-    let dbm = &*window.app_handle().state::<SqliteConnection>();
-    let db = dbm.0.lock().await.get().unwrap();
     let env = get_environment(window, id).await?;
 
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    
     let (sql, params) = Query::delete()
         .from_table(EnvironmentIden::Table)
         .cond_where(Expr::col(EnvironmentIden::Id).eq(id))
@@ -868,6 +871,7 @@ pub async fn list_folders(mgr: &impl Manager<Wry>, workspace_id: &str) -> Result
 
 pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder> {
     let folder = get_folder(window, id).await?;
+    
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -1289,6 +1293,12 @@ pub async fn list_responses_by_workspace_id(
     let mut stmt = db.prepare(sql.as_str())?;
     let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
     Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn debug_pool(mgr: &impl Manager<Wry>) {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await;
+    debug!("Debug database state: {:?}", db.state());
 }
 
 pub fn generate_model_id(model: ModelType) -> String {

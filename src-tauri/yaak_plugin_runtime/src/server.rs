@@ -39,17 +39,20 @@ impl PluginHandle {
         }
     }
 
-    pub async fn send(
+    pub fn build_event_to_send(
         &self,
         payload: &InternalEventPayload,
         reply_id: Option<String>,
-    ) -> Result<InternalEvent> {
-        let event = InternalEvent {
+    ) -> InternalEvent {
+        InternalEvent {
             id: gen_id(),
             plugin_ref_id: self.ref_id.clone(),
             reply_id,
             payload: payload.clone(),
-        };
+        }
+    }
+
+    pub async fn send(&self, event: &InternalEvent) -> Result<()> {
         info!("Sending event {} {:?}", event.id, self.name().await);
         self.to_plugin_tx
             .lock()
@@ -58,7 +61,7 @@ impl PluginHandle {
                 event: serde_json::to_string(&event)?,
             }))
             .await?;
-        Ok(event)
+        Ok(())
     }
 
     pub async fn boot(&self, resp: &BootResponse) {
@@ -94,36 +97,6 @@ impl PluginRuntimeGrpcServer {
 
     pub async fn unsubscribe(&self, rx_id: String) {
         self.subscribers.lock().await.remove(rx_id.as_str());
-    }
-
-    pub async fn wait_for_reply(&self, sent_event: InternalEvent) -> InternalEvent {
-        self.wait_for_replies(vec![sent_event])
-            .await
-            .first()
-            .unwrap()
-            .to_owned()
-    }
-
-    pub async fn wait_for_replies(&self, sent_events: Vec<InternalEvent>) -> Vec<InternalEvent> {
-        let (rx_id, mut rx) = self.subscribe().await;
-        let mut found_events = Vec::new();
-
-        while let Some(event) = rx.recv().await {
-            if sent_events
-                .iter()
-                .find(|e| Some(e.id.to_owned()) == event.reply_id)
-                .is_some()
-            {
-                found_events.push(event)
-            }
-            if found_events.len() == sent_events.len() {
-                break;
-            }
-        }
-
-        self.unsubscribe(rx_id).await;
-
-        found_events
     }
 
     pub async fn remove_plugins(&self, plugin_ids: Vec<String>) {
@@ -211,6 +184,22 @@ impl PluginRuntimeGrpcServer {
     //     plugin.send(&payload, Some(reply_id)).await
     // }
 
+    pub async fn plugin_by_name(&self, plugin_name: &str) -> Result<PluginHandle> {
+        let plugins = self.plugin_ref_to_plugin.lock().await;
+        if plugins.is_empty() {
+            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
+        }
+
+        for p in plugins.values() {
+            if p.name().await == plugin_name {
+                return Ok(p.to_owned());
+            }
+        }
+
+        let msg = format!("Failed to find plugin for {plugin_name}");
+        Err(PluginNotFoundErr(msg))
+    }
+
     pub async fn send_to_plugin(
         &self,
         plugin_name: &str,
@@ -230,12 +219,81 @@ impl PluginRuntimeGrpcServer {
         }
 
         match plugin {
-            Some(plugin) => self.send_to_plugin_handle(plugin, &payload, None).await,
+            Some(plugin) => {
+                let event = plugin.build_event_to_send(&payload, None);
+                plugin.send(&event).await?;
+                Ok(event)
+            }
             None => {
                 let msg = format!("Failed to find plugin for {plugin_name}");
                 Err(PluginNotFoundErr(msg))
             }
         }
+    }
+
+    pub async fn send_to_plugin_and_wait(&self, plugin_name: &str, payload: &InternalEventPayload) -> Result<InternalEvent> {
+        let plugin = self.plugin_by_name(plugin_name).await?;
+        let events = self.send_to_plugins_and_wait(payload, vec![plugin]).await?;
+        Ok(events.first().unwrap().to_owned())
+    }
+
+    pub async fn send_and_wait(
+        &self,
+        payload: &InternalEventPayload,
+    ) -> Result<Vec<InternalEvent>> {
+        let plugins = self.plugin_ref_to_plugin.lock().await.values().cloned().collect();
+        self.send_to_plugins_and_wait(payload, plugins).await
+    }
+
+    async fn send_to_plugins_and_wait(
+        &self,
+        payload: &InternalEventPayload,
+        plugins: Vec<PluginHandle>,
+    ) -> Result<Vec<InternalEvent>> {
+        // 1. Build the events with IDs and everything
+        let events_to_send = plugins
+            .iter()
+            .map(|p| p.build_event_to_send(payload, None))
+            .collect::<Vec<InternalEvent>>();
+
+        // 2. Spawn thread to subscribe to incoming events and check reply ids
+        let server = self.clone();
+        let send_events_fut = {
+            let events_to_send = events_to_send.clone();
+            tokio::spawn(async move {
+                let (rx_id, mut rx) = server.subscribe().await;
+                let mut found_events = Vec::new();
+
+                while let Some(event) = rx.recv().await {
+                    if events_to_send
+                        .iter()
+                        .find(|e| Some(e.id.to_owned()) == event.reply_id)
+                        .is_some()
+                    {
+                        found_events.push(event.clone());
+                    };
+                    if found_events.len() == events_to_send.len() {
+                        break;
+                    }
+                }
+                server.unsubscribe(rx_id).await;
+
+                found_events
+            })
+        };
+
+        // 3. Send the events
+        for event in events_to_send {
+            let plugin = plugins
+                .iter()
+                .find(|p| p.ref_id == event.plugin_ref_id)
+                .expect("Didn't find plugin in list");
+            plugin.send(&event).await?
+        }
+
+        // 4. Join on the spawned thread
+        let events = send_events_fut.await.expect("Thread didn't succeed");
+        Ok(events)
     }
 
     pub async fn send(&self, payload: InternalEventPayload) -> Result<Vec<InternalEvent>> {
@@ -246,11 +304,9 @@ impl PluginRuntimeGrpcServer {
         }
 
         for ph in plugins.values() {
-            let reply_id = gen_id();
-            events.push(
-                self.send_to_plugin_handle(ph, &payload, Some(reply_id))
-                    .await?,
-            );
+            let event = ph.build_event_to_send(&payload, None);
+            self.send_to_plugin_handle(ph, &event).await?;
+            events.push(event);
         }
 
         Ok(events)
@@ -259,10 +315,9 @@ impl PluginRuntimeGrpcServer {
     async fn send_to_plugin_handle(
         &self,
         plugin: &PluginHandle,
-        payload: &InternalEventPayload,
-        reply_id: Option<String>,
-    ) -> Result<InternalEvent> {
-        plugin.send(payload, reply_id).await
+        event: &InternalEvent,
+    ) -> Result<()> {
+        plugin.send(event).await
     }
 
     async fn load_plugins(
@@ -276,15 +331,13 @@ impl PluginRuntimeGrpcServer {
             let plugin = self.add_plugin(dir.as_str(), to_plugin_tx.clone()).await;
             plugin_ids.push(plugin.clone().ref_id);
 
-            if let Err(e) = plugin
-                .send(
-                    &InternalEventPayload::BootRequest(BootRequest {
-                        dir: dir.to_string(),
-                    }),
-                    None,
-                )
-                .await
-            {
+            let event = plugin.build_event_to_send(
+                &InternalEventPayload::BootRequest(BootRequest {
+                    dir: dir.to_string(),
+                }),
+                None,
+            );
+            if let Err(e) = plugin.send(&event).await {
                 // TODO: Error handling
                 println!(
                     "Failed boot plugin {} at {} -> {}",
@@ -332,7 +385,8 @@ impl PluginRuntime for PluginRuntimeGrpcServer {
                         let plugin_ref_id = event.plugin_ref_id.clone();
                         let reply_id = event.reply_id.clone();
 
-                        for tx in server.subscribers.lock().await.values() {
+                        let subscribers = server.subscribers.lock().await;
+                        for tx in subscribers.values() {
                             // Emit event to the channel for server to handle
                             if let Err(e) = tx.try_send(event.clone()) {
                                 println!("Failed to send to server channel. Receiver probably isn't listening: {:?}", e);

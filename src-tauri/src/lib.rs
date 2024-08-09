@@ -755,7 +755,6 @@ async fn cmd_import_data(
     w: WebviewWindow,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     file_path: &str,
-    _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));

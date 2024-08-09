@@ -1,13 +1,13 @@
-use std::env::current_dir;
-use std::fs::create_dir_all;
-
 use log::info;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::Deserialize;
-use tauri::{is_dev, Manager, plugin, Runtime};
+use std::env::current_dir;
+use std::fs::create_dir_all;
+use std::time::Duration;
 use tauri::async_runtime::Mutex;
 use tauri::plugin::TauriPlugin;
+use tauri::{is_dev, plugin, Manager, Runtime};
 
 pub struct SqliteConnection(pub Mutex<Pool<SqliteConnectionManager>>);
 
@@ -41,7 +41,11 @@ impl Builder {
                 info!("Opening SQLite DB at {db_file_path:?}");
 
                 let manager = SqliteConnectionManager::file(db_file_path);
-                let pool = Pool::new(manager).unwrap();
+                let pool = Pool::builder()
+                    .max_size(1000) // Up from 10 (just in case)
+                    .connection_timeout(Duration::from_secs(10))
+                    .build(manager)
+                    .unwrap();
 
                 app.manage(SqliteConnection(Mutex::new(pool)));
 
