@@ -66,6 +66,7 @@ export function Dialog({
             className={classNames(
               className,
               'grid grid-rows-[auto_auto_minmax(0,1fr)]',
+              'grid-cols-1', // must be here for inline code blocks to correctly break words
               'relative bg-background pointer-events-auto',
               'rounded-lg',
               'border border-background-highlight-secondary shadow-lg shadow-[rgba(0,0,0,0.1)]',
