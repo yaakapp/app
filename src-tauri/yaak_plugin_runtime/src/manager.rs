@@ -1,34 +1,38 @@
-use log::{debug, info};
-use std::time::Duration;
-use tauri::{AppHandle, Manager, Runtime};
-use tokio::sync::watch::Sender;
-use tonic::transport::Channel;
-
-use crate::nodejs::node_start;
-use crate::plugin_runtime::plugin_runtime_client::PluginRuntimeClient;
-use crate::plugin_runtime::{
-    HookExportRequest, HookImportRequest, HookResponse, HookResponseFilterRequest,
+use crate::error::Result;
+use crate::events::{
+    ExportHttpRequestRequest, ExportHttpRequestResponse, FilterRequest, FilterResponse,
+    ImportRequest, ImportResponse, InternalEventPayload,
 };
 
+use crate::error::Error::PluginErr;
+use crate::nodejs::start_nodejs_plugin_runtime;
+use crate::plugin::start_server;
+use crate::server::PluginRuntimeGrpcServer;
+use std::time::Duration;
+use tauri::{AppHandle, Runtime};
+use tokio::sync::watch::Sender;
+use yaak_models::models::HttpRequest;
+
 pub struct PluginManager {
-    client: PluginRuntimeClient<Channel>,
     kill_tx: Sender<bool>,
+    server: PluginRuntimeGrpcServer,
 }
 
 impl PluginManager {
-    pub async fn new<R: Runtime>(app_handle: &AppHandle<R>) -> PluginManager {
-        let temp_dir = app_handle.path().temp_dir().unwrap();
+    pub async fn new<R: Runtime>(
+        app_handle: &AppHandle<R>,
+        plugin_dirs: Vec<String>,
+    ) -> PluginManager {
+        let (server, addr) = start_server(plugin_dirs)
+            .await
+            .expect("Failed to start plugin runtime server");
 
         let (kill_tx, kill_rx) = tokio::sync::watch::channel(false);
-        let start_resp = node_start(app_handle, &temp_dir, &kill_rx).await;
-        info!("Connecting to gRPC client at {}", start_resp.addr);
+        start_nodejs_plugin_runtime(app_handle, addr, &kill_rx)
+            .await
+            .expect("Failed to start plugin runtime");
 
-        let client = match PluginRuntimeClient::connect(start_resp.addr.clone()).await {
-            Ok(v) => v,
-            Err(err) => panic!("{}", err.to_string()),
-        };
-
-        PluginManager { client, kill_tx }
+        PluginManager { kill_tx, server }
     }
 
     pub async fn cleanup(&mut self) {
@@ -38,49 +42,81 @@ impl PluginManager {
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    pub async fn run_import(&mut self, data: &str) -> Result<HookResponse, String> {
-        let response = self
-            .client
-            .hook_import(tonic::Request::new(HookImportRequest {
-                data: data.to_string(),
+    pub async fn run_import(&mut self, content: &str) -> Result<(ImportResponse, String)> {
+        let reply_events = self
+            .server
+            .send_and_wait(&InternalEventPayload::ImportRequest(ImportRequest {
+                content: content.to_string(),
             }))
-            .await
-            .map_err(|e| e.message().to_string())?;
+            .await?;
 
-        Ok(response.into_inner())
+        // TODO: Don't just return the first valid response
+        for event in reply_events {
+            match event.payload {
+                InternalEventPayload::ImportResponse(resp) => {
+                    let ref_id = event.plugin_ref_id.as_str();
+                    let plugin = self.server.plugin_by_ref_id(ref_id).await?;
+                    let plugin_name = plugin.name().await;
+                    return Ok((resp, plugin_name));
+                }
+                _ => {}
+            }
+        }
+
+        Err(PluginErr("No import responses found".to_string()))
     }
 
-    pub async fn run_export_curl(&mut self, request: &str) -> Result<HookResponse, String> {
-        let response = self
-            .client
-            .hook_export(tonic::Request::new(HookExportRequest {
-                request: request.to_string(),
-            }))
-            .await
-            .map_err(|e| e.message().to_string())?;
+    pub async fn run_export_curl(
+        &mut self,
+        request: &HttpRequest,
+    ) -> Result<ExportHttpRequestResponse> {
+        let event = self
+            .server
+            .send_to_plugin_and_wait(
+                "exporter-curl",
+                &InternalEventPayload::ExportHttpRequestRequest(ExportHttpRequestRequest {
+                    http_request: request.to_owned(),
+                }),
+            )
+            .await?;
 
-        Ok(response.into_inner())
+        match event.payload {
+            InternalEventPayload::ExportHttpRequestResponse(resp) => Ok(resp),
+            InternalEventPayload::EmptyResponse(_) => {
+                Err(PluginErr("Export returned empty".to_string()))
+            }
+            e => Err(PluginErr(format!("Export returned invalid event {:?}", e))),
+        }
     }
 
-    pub async fn run_response_filter(
+    pub async fn run_filter(
         &mut self,
         filter: &str,
-        body: &str,
+        content: &str,
         content_type: &str,
-    ) -> Result<HookResponse, String> {
-        debug!("Running plugin filter");
-        let response = self
-            .client
-            .hook_response_filter(tonic::Request::new(HookResponseFilterRequest {
-                filter: filter.to_string(),
-                body: body.to_string(),
-                content_type: content_type.to_string(),
-            }))
-            .await
-            .map_err(|e| e.message().to_string())?;
+    ) -> Result<FilterResponse> {
+        let plugin_name = match content_type {
+            "application/json" => "filter-jsonpath",
+            _ => "filter-xpath",
+        };
 
-        let result = response.into_inner();
-        debug!("Ran plugin response filter {}", result.data);
-        Ok(result)
+        let event = self
+            .server
+            .send_to_plugin_and_wait(
+                plugin_name,
+                &InternalEventPayload::FilterRequest(FilterRequest {
+                    filter: filter.to_string(),
+                    content: content.to_string(),
+                }),
+            )
+            .await?;
+
+        match event.payload {
+            InternalEventPayload::FilterResponse(resp) => Ok(resp),
+            InternalEventPayload::EmptyResponse(_) => {
+                Err(PluginErr("Filter returned empty".to_string()))
+            }
+            e => Err(PluginErr(format!("Export returned invalid event {:?}", e))),
+        }
     }
 }

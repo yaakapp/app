@@ -1,87 +1,42 @@
-import { isAbortError } from 'abort-controller-x';
-import { createServer, ServerError, ServerMiddlewareCall, Status } from 'nice-grpc';
-import { CallContext } from 'nice-grpc-common';
-import * as fs from 'node:fs';
-import {
-  DeepPartial,
-  HookExportRequest,
-  HookImportRequest,
-  HookResponse,
-  HookResponseFilterRequest,
-  PluginRuntimeDefinition,
-  PluginRuntimeServiceImplementation,
-} from './gen/plugins/runtime';
-import { PluginManager } from './PluginManager';
+import { InternalEvent } from '@yaakapp/api';
+import { createChannel, createClient, Status } from 'nice-grpc';
+import { EventChannel } from './EventChannel';
+import { PluginRuntimeClient, PluginRuntimeDefinition } from './gen/plugins/runtime';
+import { PluginHandle } from './PluginHandle';
 
-class PluginRuntimeService implements PluginRuntimeServiceImplementation {
-  #manager: PluginManager;
+const port = process.env.PORT || '50051';
 
-  constructor() {
-    this.#manager = PluginManager.instance();
-  }
+const channel = createChannel(`localhost:${port}`);
+const client: PluginRuntimeClient = createClient(PluginRuntimeDefinition, channel);
 
-  async hookExport(request: HookExportRequest): Promise<DeepPartial<HookResponse>> {
-    const plugin = await this.#manager.pluginOrThrow('exporter-curl');
-    const data = await plugin.runExport(JSON.parse(request.request));
-    const info = { plugin: (await plugin.getInfo()).name };
-    return { info, data };
-  }
+const events = new EventChannel();
+const plugins: Record<string, PluginHandle> = {};
 
-  async hookImport(request: HookImportRequest): Promise<DeepPartial<HookResponse>> {
-    const plugins = await this.#manager.pluginsWith('import');
-    for (const p of plugins) {
-      const data = await p.runImport(request.data);
-      if (data != null && data !== 'null') {
-        const info = { plugin: (await p.getInfo()).name };
-        return { info, data };
-      }
-    }
-
-    throw new ServerError(Status.UNKNOWN, 'No importers found for data');
-  }
-
-  async hookResponseFilter(request: HookResponseFilterRequest): Promise<DeepPartial<HookResponse>> {
-    const pluginName = request.contentType.includes('json') ? 'filter-jsonpath' : 'filter-xpath';
-    const plugin = await this.#manager.pluginOrThrow(pluginName);
-    const data = await plugin.runResponseFilter(request);
-    const info = { plugin: (await plugin.getInfo()).name };
-    return { info, data };
-  }
-}
-
-let server = createServer();
-
-async function* errorHandlingMiddleware<Request, Response>(
-  call: ServerMiddlewareCall<Request, Response>,
-  context: CallContext,
-) {
+(async () => {
   try {
-    return yield* call.next(call.request, context);
-  } catch (error: unknown) {
-    if (error instanceof ServerError || isAbortError(error)) {
-      throw error;
+    for await (const e of client.eventStream(events.listen())) {
+      const pluginEvent: InternalEvent = JSON.parse(e.event);
+      // Handle special event to bootstrap plugin
+      if (pluginEvent.payload.type === 'boot_request') {
+        const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
+        plugins[pluginEvent.pluginRefId] = plugin;
+      }
+
+      // Once booted, forward all events to plugin's worker
+      const plugin = plugins[pluginEvent.pluginRefId];
+      if (!plugin) {
+        console.warn('Failed to get plugin for event by', pluginEvent.pluginRefId);
+        continue;
+      }
+
+      plugin.sendToWorker(pluginEvent);
     }
-
-    let details = String(error);
-
-    if (process.env.NODE_ENV === 'development') {
-      // @ts-ignore
-      details += `: ${error.stack}`;
+    console.log('Stream ended');
+  } catch (err: any) {
+    if (err.code === Status.CANCELLED) {
+      console.log('Stream was cancelled by server');
+    } else {
+      console.log('Client stream errored', err);
     }
-
-    throw new ServerError(Status.UNKNOWN, details);
   }
-}
-
-server = server.use(errorHandlingMiddleware);
-server.add(PluginRuntimeDefinition, new PluginRuntimeService());
-
-// Start on random port if YAAK_GRPC_PORT_FILE_PATH is set, or :4000
-const addr = process.env.YAAK_GRPC_PORT_FILE_PATH ? 'localhost:0' : 'localhost:4000';
-server.listen(addr).then((port) => {
-  console.log('gRPC server listening on', `http://localhost:${port}`);
-  if (process.env.YAAK_GRPC_PORT_FILE_PATH) {
-    console.log('Wrote port file to', process.env.YAAK_GRPC_PORT_FILE_PATH);
-    fs.writeFileSync(process.env.YAAK_GRPC_PORT_FILE_PATH, JSON.stringify({ port }, null, 2));
-  }
-});
+})();

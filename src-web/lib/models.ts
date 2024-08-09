@@ -10,9 +10,9 @@ import type {
   Workspace,
   HttpResponseHeader,
 } from '@yaakapp/api';
-import type { Cookie } from './gen/Cookie';
-import type { CookieJar } from './gen/CookieJar';
-import type { Settings } from './gen/Settings';
+import type { Cookie } from './models/Cookie';
+import type { CookieJar } from './models/CookieJar';
+import type { Settings } from './models/Settings';
 
 export type { CookieJar, Cookie, Settings };
 

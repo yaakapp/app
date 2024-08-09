@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { JsonValue } from '@yaakapp/api/lib/gen/serde_json/JsonValue';
 import { invokeCmd } from '../lib/tauri';
 
 export function useFilterResponse({
@@ -15,7 +16,8 @@ export function useFilterResponse({
         return null;
       }
 
-      return (await invokeCmd('cmd_filter_response', { responseId, filter })) as string | null;
+      const items = (await invokeCmd('cmd_filter_response', { responseId, filter })) as JsonValue[];
+      return JSON.stringify(items, null, 2);
     },
   });
 }

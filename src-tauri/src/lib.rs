@@ -35,9 +35,9 @@ use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
+use crate::export_resources::{get_workspace_export_resources, WorkspaceExportResources};
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
-use crate::export_resources::{get_workspace_export_resources, ImportResult, WorkspaceExportResources};
 use crate::notifications::YaakNotifier;
 use crate::render::{render_request, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
@@ -61,9 +61,9 @@ use yaak_models::queries::{
 };
 
 mod analytics;
+mod export_resources;
 mod grpc;
 mod http_request;
-mod export_resources;
 mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
@@ -102,13 +102,13 @@ struct AppMetaData {
 async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
     let app_log_dir = app_handle.path().app_log_dir().unwrap();
-    return Ok(AppMetaData {
+    Ok(AppMetaData {
         is_dev: is_dev(),
         version: app_handle.package_info().version.to_string(),
         name: app_handle.package_info().name.to_string(),
         app_data_dir: app_data_dir.to_string_lossy().to_string(),
         app_log_dir: app_log_dir.to_string_lossy().to_string(),
-    });
+    })
 }
 
 #[tauri::command]
@@ -720,7 +720,8 @@ async fn cmd_filter_response(
     response_id: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     filter: &str,
-) -> Result<String, String> {
+) -> Result<Vec<Value>, String> {
+    println!("FILTERING? {filter}");
     let response = get_http_response(&w, response_id)
         .await
         .expect("Failed to get response");
@@ -743,9 +744,10 @@ async fn cmd_filter_response(
     plugin_manager
         .lock()
         .await
-        .run_response_filter(filter, &body, &content_type)
+        .run_filter(filter, &body, &content_type)
         .await
-        .map(|r| r.data)
+        .map(|r| r.items)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -753,29 +755,16 @@ async fn cmd_import_data(
     w: WebviewWindow,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     file_path: &str,
-    _workspace_id: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
-    let import_response = plugin_manager
+    let (import_result, plugin_name) = plugin_manager
         .lock()
         .await
         .run_import(file_contents)
-        .await?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
-
-    // TODO: Track the plugin that ran, maybe return the run info in the plugin response?
-    let plugin_name = import_response.info.unwrap_or_default().plugin;
-    info!("Imported data using {}", plugin_name);
-    analytics::track_event(
-        &w.app_handle(),
-        AnalyticsResource::App,
-        AnalyticsAction::Import,
-        Some(json!({ "plugin": plugin_name })),
-    )
-    .await;
+        .await
+        .map_err(|e| e.to_string())?;
 
     let mut imported_resources = WorkspaceExportResources::default();
     let mut id_map: HashMap<String, String> = HashMap::new();
@@ -806,7 +795,9 @@ async fn cmd_import_data(
         }
     }
 
-    for mut v in import_result.resources.workspaces {
+    let resources = import_result.resources;
+
+    for mut v in resources.workspaces {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeWorkspace, &mut id_map);
         let x = upsert_workspace(&w, v).await.map_err(|e| e.to_string())?;
         imported_resources.workspaces.push(x.clone());
@@ -816,7 +807,7 @@ async fn cmd_import_data(
         imported_resources.workspaces.len()
     );
 
-    for mut v in import_result.resources.environments {
+    for mut v in resources.environments {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeEnvironment, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -831,7 +822,7 @@ async fn cmd_import_data(
         imported_resources.environments.len()
     );
 
-    for mut v in import_result.resources.folders {
+    for mut v in resources.folders {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -844,7 +835,7 @@ async fn cmd_import_data(
     }
     info!("Imported {} folders", imported_resources.folders.len());
 
-    for mut v in import_result.resources.http_requests {
+    for mut v in resources.http_requests {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeHttpRequest, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -862,7 +853,7 @@ async fn cmd_import_data(
         imported_resources.http_requests.len()
     );
 
-    for mut v in import_result.resources.grpc_requests {
+    for mut v in resources.grpc_requests {
         v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeGrpcRequest, &mut id_map);
         v.workspace_id = maybe_gen_id(
             v.workspace_id.as_str(),
@@ -879,6 +870,14 @@ async fn cmd_import_data(
         "Imported {} grpc_requests",
         imported_resources.grpc_requests.len()
     );
+
+    analytics::track_event(
+        &w.app_handle(),
+        AnalyticsResource::App,
+        AnalyticsAction::Import,
+        Some(json!({ "plugin": plugin_name })),
+    )
+    .await;
 
     Ok(imported_resources)
 }
@@ -901,14 +900,14 @@ async fn cmd_request_to_curl(
         .await
         .map_err(|e| e.to_string())?;
     let rendered = render_request(&request, &workspace, environment.as_ref());
-    let request_json = serde_json::to_string(&rendered).map_err(|e| e.to_string())?;
 
     let import_response = plugin_manager
         .lock()
         .await
-        .run_export_curl(request_json.as_str())
-        .await?;
-    Ok(import_response.data)
+        .run_export_curl(&rendered)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(import_response.content)
 }
 
 #[tauri::command]
@@ -916,10 +915,23 @@ async fn cmd_curl_to_request(
     command: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     workspace_id: &str,
+    w: WebviewWindow,
 ) -> Result<HttpRequest, String> {
-    let import_response = plugin_manager.lock().await.run_import(command).await?;
-    let import_result: ImportResult =
-        serde_json::from_str(import_response.data.as_str()).map_err(|e| e.to_string())?;
+    let (import_result, plugin_name) = plugin_manager
+        .lock()
+        .await
+        .run_import(command)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    analytics::track_event(
+        &w.app_handle(),
+        AnalyticsResource::App,
+        AnalyticsAction::Import,
+        Some(json!({ "plugin": plugin_name })),
+    )
+    .await;
+
     import_result
         .resources
         .http_requests
@@ -946,6 +958,7 @@ async fn cmd_export_data(
         .write(true)
         .open(export_path)
         .expect("Unable to create file");
+
     serde_json::to_writer_pretty(&f, &export_data)
         .map_err(|e| e.to_string())
         .expect("Failed to write");
@@ -1590,6 +1603,7 @@ pub fn run() {
                 .level_for("cookie_store", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
+                .level_for("hyper_util", log::LevelFilter::Info)
                 .level_for("hyper_rustls", log::LevelFilter::Info)
                 .level_for("reqwest", log::LevelFilter::Info)
                 .level_for("sqlx", log::LevelFilter::Warn)
@@ -1615,8 +1629,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(yaak_models::Builder::default().build())
-        .plugin(yaak_plugin_runtime::init());
+        .plugin(yaak_models::plugin::Builder::default().build())
+        .plugin(yaak_plugin_runtime::plugin::init());
 
     #[cfg(target_os = "macos")]
     {
