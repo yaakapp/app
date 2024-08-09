@@ -22,7 +22,7 @@ export function useCreateHttpRequest() {
       if (patch.sortPriority === undefined) {
         if (activeRequest != null) {
           // Place above currently-active request
-          patch.sortPriority = activeRequest.sortPriority + 0.0001;
+          patch.sortPriority = activeRequest.sortPriority - 0.0001;
         } else {
           // Place at the very top
           patch.sortPriority = -Date.now();

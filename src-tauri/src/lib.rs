@@ -59,6 +59,7 @@ use yaak_models::queries::{
     upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
 };
+use yaak_plugin_runtime::events::FilterResponse;
 
 mod analytics;
 mod export_resources;
@@ -720,8 +721,7 @@ async fn cmd_filter_response(
     response_id: &str,
     plugin_manager: State<'_, Mutex<PluginManager>>,
     filter: &str,
-) -> Result<Vec<Value>, String> {
-    println!("FILTERING? {filter}");
+) -> Result<FilterResponse, String> {
     let response = get_http_response(&w, response_id)
         .await
         .expect("Failed to get response");
@@ -746,7 +746,6 @@ async fn cmd_filter_response(
         .await
         .run_filter(filter, &body, &content_type)
         .await
-        .map(|r| r.items)
         .map_err(|e| e.to_string())
 }
 

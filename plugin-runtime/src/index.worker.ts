@@ -81,7 +81,7 @@ new Promise<void>(async (resolve, reject) => {
         );
         const replyPayload: InternalEventPayload = {
           type: 'filter_response',
-          items: JSON.parse(reply),
+          content: reply,
         };
         sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
         return;
