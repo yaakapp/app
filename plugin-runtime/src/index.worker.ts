@@ -8,8 +8,10 @@ import { parentPort, workerData } from 'node:worker_threads';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir /*, pluginRefId*/ } = workerData;
-  const pathMod = path.join(pluginDir, 'build/index.js');
   const pathPkg = path.join(pluginDir, 'package.json');
+
+  // NOTE: Use POSIX join because require() needs forward slash
+  const pathMod = path.posix.join(pluginDir, 'build', 'index.js');
 
   let pkg: { [x: string]: any };
   try {

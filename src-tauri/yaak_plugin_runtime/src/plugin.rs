@@ -112,13 +112,12 @@ async fn read_plugins_dir(dir: &PathBuf) -> Result<Vec<String>> {
     Ok(dirs)
 }
 
-
 #[cfg(target_os = "windows")]
 fn fix_windows_paths(p: &PathBuf) -> String {
     use dunce;
-    use regex::Regex;
     use path_slash::PathBufExt;
-    
+    use regex::Regex;
+
     // 1. Remove UNC prefix for Windows paths to pass to sidecar
     let safe_path = dunce::simplified(p.as_path()).to_string_lossy().to_string();
 
