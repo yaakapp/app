@@ -3,7 +3,7 @@ import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { pdfjs } from 'react-pdf';
-import { attachConsole } from 'tauri-plugin-log-api';
+import { attachConsole } from '@tauri-apps/plugin-log';
 import { App } from './components/App';
 import './main.css';
 
@@ -13,7 +13,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
-const osType = await type();
+const osType = type();
 if (osType !== 'macos') {
   await getCurrentWebviewWindow().setDecorations(false);
 }
