@@ -1,7 +1,5 @@
 use std::collections::HashMap;
-
-use sqlx::types::JsonValue;
-
+use serde_json::Value;
 use crate::template_fns::timestamp;
 use templates::parse_and_render;
 use yaak_models::models::{
@@ -41,9 +39,9 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
                 } else {
                     v.to_string()
                 };
-                (render(k, vars), JsonValue::from(v))
+                (render(k, vars), Value::from(v))
             })
-            .collect::<HashMap<String, JsonValue>>(),
+            .collect::<HashMap<String, Value>>(),
         authentication: r
             .authentication
             .iter()
@@ -53,9 +51,9 @@ pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -
                 } else {
                     v.to_string()
                 };
-                (render(k, vars), JsonValue::from(v))
+                (render(k, vars), Value::from(v))
             })
-            .collect::<HashMap<String, JsonValue>>(),
+            .collect::<HashMap<String, Value>>(),
         ..r
     }
 }

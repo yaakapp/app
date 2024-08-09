@@ -1,12 +1,12 @@
 use std::time::SystemTime;
 
+use crate::analytics::get_num_launches;
 use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 use yaak_models::queries::{get_key_value_raw, set_key_value_raw};
-use crate::analytics::get_num_launches;
 
 // Check for updates every hour
 const MAX_UPDATE_CHECK_SECONDS: u64 = 60 * 60;
@@ -19,7 +19,7 @@ pub struct YaakNotifier {
     last_check: SystemTime,
 }
 
-#[derive(sqlx::FromRow, Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub struct YaakNotification {
     timestamp: DateTime<Utc>,
