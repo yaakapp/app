@@ -40,6 +40,7 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
       validFor: () => true, // Not really sure why this is all it needs
       from: toMatch.from,
       options: options
+        .filter((v) => v.name.trim())
         .map((v) => ({
           label: toStartOfVariable ? `${openTag}${v.name}${closeTag}` : v.name,
           apply: `${openTag}${v.name}${closeTag}`,
