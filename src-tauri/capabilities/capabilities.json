@@ -11,6 +11,7 @@
     "core:event:allow-listen",
     "core:event:allow-unlisten",
     "os:allow-os-type",
+    "clipboard-manager:allow-clear",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-text",
     "dialog:allow-open",

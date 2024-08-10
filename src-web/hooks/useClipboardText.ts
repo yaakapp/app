@@ -1,8 +1,8 @@
-import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { clear, readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useCallback, useEffect } from 'react';
+import { createGlobalState } from 'react-use';
 import { useToast } from '../components/ToastContext';
 import { useWindowFocus } from './useWindowFocus';
-import { createGlobalState } from 'react-use';
 
 const useClipboardTextState = createGlobalState<string>('');
 
@@ -12,12 +12,21 @@ export function useClipboardText({ disableToast }: { disableToast?: boolean } = 
   const toast = useToast();
 
   useEffect(() => {
-    readText().then(setValue);
+    readText()
+      .then(setValue)
+      .catch(() => {
+        // Clipboard probably empty
+        setValue('');
+      });
   }, [focused, setValue]);
 
   const setText = useCallback(
-    (text: string) => {
-      writeText(text).catch(console.error);
+    (text: string | null) => {
+      if (text == null) {
+        clear().catch(console.error);
+      } else {
+        writeText(text).catch(console.error);
+      }
       if (text != '' && !disableToast) {
         toast.show({
           id: 'copied',
@@ -25,7 +34,7 @@ export function useClipboardText({ disableToast }: { disableToast?: boolean } = 
           message: 'Copied to clipboard',
         });
       }
-      setValue(text);
+      setValue(text || '');
     },
     [disableToast, setValue, toast],
   );

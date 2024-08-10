@@ -40,7 +40,7 @@ export function useImportCurl({ clearClipboard }: { clearClipboard?: boolean } =
       });
 
       if (clearClipboard) {
-        setClipboardText('');
+        setClipboardText(null);
       }
     },
   });
