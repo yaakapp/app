@@ -69,7 +69,6 @@ export const RequestPane = memo(function RequestPane({
 
   const handleContentTypeChange = useCallback(
     async (contentType: string | null) => {
-      console.log('UPDATE CONTENT TYPE', contentType);
       const headers = activeRequest.headers.filter((h) => h.name.toLowerCase() !== 'content-type');
 
       if (contentType != null) {

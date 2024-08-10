@@ -56,7 +56,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       }
 
       const { data } = JSON.parse(bodyText);
-      console.log('Introspection response', data);
+      console.log(`Got introspection response for ${baseRequest.url}`, data);
       await setIntrospection(data);
     };
 
