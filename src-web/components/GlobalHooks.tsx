@@ -3,9 +3,8 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Model } from '@yaakapp/api';
 import { useEffect } from 'react';
 import { useAtiveWorkspaceChangedToast } from '../hooks/useAtiveWorkspaceChangedToast';
-import { useClipboardText } from '../hooks/useClipboardText';
-import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
+import { useCopy } from '../hooks/useCopy';
 import { environmentsQueryKey } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
@@ -23,6 +22,7 @@ import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
+import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import { modelsEq } from '../lib/models';
@@ -159,7 +159,7 @@ export function GlobalHooks() {
   useHotKey('app.zoom_reset', () => zoom.zoomReset);
   useListenToTauriEvent('zoom_reset', () => zoom.zoomReset);
 
-  const [, copy] = useClipboardText();
+  const copy = useCopy();
   useListenToTauriEvent('generate_theme_css', () => {
     const themesCss = [
       yaakDark,

@@ -1,14 +1,21 @@
+import { clear, readText } from '@tauri-apps/plugin-clipboard-manager';
 import { motion } from 'framer-motion';
-import React, { useState } from 'react';
-import { useClipboardText } from '../hooks/useClipboardText';
+import React, { useEffect, useState } from 'react';
 import { useImportCurl } from '../hooks/useImportCurl';
+import { useWindowFocus } from '../hooks/useWindowFocus';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
 
 export function ImportCurlButton() {
-  const [clipboardText] = useClipboardText();
-  const importCurl = useImportCurl({ clearClipboard: true });
+  const focused = useWindowFocus();
+  const [clipboardText, setClipboardText] = useState('');
+
+  const importCurl = useImportCurl();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    readText().then(setClipboardText);
+  }, [focused]);
 
   if (!clipboardText?.trim().startsWith('curl ')) {
     return null;
@@ -26,14 +33,17 @@ export function ImportCurlButton() {
         color="primary"
         leftSlot={<Icon icon="paste" size="sm" />}
         isLoading={isLoading}
-        onClick={() => {
+        onClick={async () => {
           setIsLoading(true);
-          importCurl
-            .mutateAsync({
-              requestId: null, // Create request
-              command: clipboardText,
-            })
-            .finally(() => setIsLoading(false));
+          try {
+            await importCurl.mutateAsync({ command: clipboardText });
+            await clear(); // Clear the clipboard so the button goes away
+            setClipboardText('');
+          } catch (e) {
+            // Nothing
+          } finally {
+            setIsLoading(false);
+          }
         }}
       >
         Import Curl
