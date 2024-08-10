@@ -1,7 +1,7 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
-import React from 'react';
-import { useKeyPressEvent, useLocalStorage } from 'react-use';
+import React, { useState } from 'react';
+import { useKeyPressEvent } from 'react-use';
 import { useOsInfo } from '../../hooks/useOsInfo';
 import { capitalize } from '../../lib/capitalize';
 import { HStack } from '../core/Stacks';
@@ -20,7 +20,7 @@ const tabs = [Tab.General, Tab.Appearance];
 
 export const Settings = () => {
   const osInfo = useOsInfo();
-  const [tab, setTab] = useLocalStorage<string>('settings_tab', Tab.General);
+  const [tab, setTab] = useState<string>(Tab.General);
 
   // Close settings window on escape
   // TODO: Could this be put in a better place? Eg. in Rust key listener when creating the window

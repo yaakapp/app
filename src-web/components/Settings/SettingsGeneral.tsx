@@ -37,8 +37,8 @@ export function SettingsGeneral() {
           value={settings.updateChannel}
           onChange={(updateChannel) => updateSettings.mutate({ updateChannel })}
           options={[
-            { label: 'Release', value: 'stable' },
-            { label: 'Early Bird (Beta)', value: 'beta' },
+            { label: 'Stable (less frequent)', value: 'stable' },
+            { label: 'Beta (more frequent)', value: 'beta' },
           ]}
         />
         <IconButton
