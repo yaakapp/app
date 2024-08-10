@@ -1,3 +1,4 @@
+import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
@@ -12,7 +13,6 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp/api';
 import {
   AUTH_TYPE_BASIC,
   AUTH_TYPE_BEARER,
@@ -268,7 +268,7 @@ export const RequestPane = memo(function RequestPane({
 
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
-  const importCurl = useImportCurl({ clearClipboard: true });
+  const importCurl = useImportCurl();
 
   return (
     <div
@@ -282,11 +282,11 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onPaste={async (command) => {
+            onPaste={(command) => {
               if (!command.startsWith('curl ')) {
                 return;
               }
-              importCurl.mutate({ requestId: activeRequestId, command });
+              importCurl.mutate({ overwriteRequestId: activeRequestId, command });
             }}
             autocomplete={{
               minMatch: 3,
