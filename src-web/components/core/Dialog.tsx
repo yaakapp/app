@@ -67,9 +67,9 @@ export function Dialog({
               className,
               'grid grid-rows-[auto_auto_minmax(0,1fr)]',
               'grid-cols-1', // must be here for inline code blocks to correctly break words
-              'relative bg-background pointer-events-auto',
+              'relative bg-surface pointer-events-auto',
               'rounded-lg',
-              'border border-background-highlight-secondary shadow-lg shadow-[rgba(0,0,0,0.1)]',
+              'border border-border-subtle shadow-lg shadow-[rgba(0,0,0,0.1)]',
               'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-4rem)]',
               size === 'sm' && 'w-[28rem] max-h-[80vh]',
               size === 'md' && 'w-[45rem] max-h-[80vh]',
@@ -87,7 +87,7 @@ export function Dialog({
             )}
 
             {description ? (
-              <p className="px-6 text-fg-subtle" id={descriptionId}>
+              <p className="px-6 text-text-subtle" id={descriptionId}>
                 {description}
               </p>
             ) : (

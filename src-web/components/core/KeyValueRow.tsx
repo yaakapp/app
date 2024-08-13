@@ -34,9 +34,9 @@ export function KeyValueRow({ label, value, labelColor = 'secondary', labelClass
         className={classNames(
           'py-0.5 pr-2 select-text cursor-text',
           labelClassName,
-          labelColor === 'primary' && 'text-fg-primary',
-          labelColor === 'secondary' && 'text-fg-subtle',
-          labelColor === 'info' && 'text-fg-info',
+          labelColor === 'primary' && 'text-primary',
+          labelColor === 'secondary' && 'text-text-subtle',
+          labelColor === 'info' && 'text-info',
         )}
       >
         {label}

@@ -52,49 +52,55 @@ module.exports = {
       '4xs': '0.6rem',
       '3xs': '0.675rem',
       '2xs': '0.75rem',
-      'xs': '0.8rem',
-      'sm': '0.9rem',
-      'base': '1rem',
-      'xl': '1.25rem',
+      xs: '0.8rem',
+      sm: '0.9rem',
+      base: '1rem',
+      xl: '1.25rem',
       '2xl': '1.5rem',
       '3xl': '2rem',
       '4xl': '2.5rem',
       '5xl': '3rem',
-      'editor': 'var(--editor-font-size)',
-      'shrink': '0.8em',
+      editor: 'var(--editor-font-size)',
+      shrink: '0.8em',
     },
     boxShadow: {
       DEFAULT: '0 1px 3px 0 var(--shadow);',
       lg: '0 10px 15px -3px var(--shadow)',
     },
     colors: {
-      'transparent': 'transparent',
-      'placeholder': 'var(--fg-subtler)',
-      'selection': 'var(--background-selection)',
+      transparent: 'transparent',
+
+      // placeholder: 'var(--fg-subtler)', // Now a component?
+      shadow: 'var(--shadow)',
+      backdrop: 'var(--backdrop)',
+      selection: 'var(--selection)',
 
       // New theme values
 
-      'border-focus': 'var(--border-focus)',
-      'fg': 'var(--fg)',
-      'fg-danger': 'var(--fg-danger)',
-      'fg-subtle': 'var(--fg-subtle)',
-      'fg-subtler': 'var(--fg-subtler)',
-      'fg-primary': 'var(--fg-primary)',
-      'fg-secondary': 'var(--fg-secondary)',
-      'fg-success': 'var(--fg-success)',
-      'fg-info': 'var(--fg-info)',
-      'fg-notice': 'var(--fg-notice)',
-      'fg-warning': 'var(--fg-warning)',
-      'background': 'var(--background)',
-      'background-active': 'var(--background-active)',
-      'background-highlight': 'var(--background-highlight)',
-      'background-highlight-secondary': 'var(--background-highlight-secondary)',
-      'background-backdrop': 'var(--background-backdrop)',
+      surface: 'var(--surface)',
+      'surface-highlight': 'var(--surfaceHighlight)',
+      'surface-active': 'var(--surfaceActive)',
+
+      text: 'var(--text)',
+      'text-subtle': 'var(--textSubtle)',
+      'text-subtlest': 'var(--textSubtlest)',
+
+      border: 'var(--border)',
+      'border-subtle': 'var(--borderSubtle)',
+      'border-focus': 'var(--borderFocus)',
+
+      primary: 'var(--primary)',
+      danger: 'var(--danger)',
+      secondary: 'var(--secondary)',
+      success: 'var(--success)',
+      info: 'var(--info)',
+      notice: 'var(--notice)',
+      warning: 'var(--warning)',
     },
   },
   plugins: [
     require('@tailwindcss/container-queries'),
-    plugin(function ({addVariant}) {
+    plugin(function ({ addVariant }) {
       addVariant('hocus', ['&:hover', '&:focus-visible', '&.focus:focus']);
       addVariant('focus-visible-or-class', ['&:focus-visible', '&.focus:focus']);
     }),

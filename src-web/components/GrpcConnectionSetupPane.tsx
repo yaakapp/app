@@ -211,14 +211,14 @@ export function GrpcConnectionSetupPane({
                 label: 'Refresh',
                 type: 'default',
                 key: 'custom',
-                leftSlot: <Icon className="text-fg-subtler" size="sm" icon="refresh" />,
+                leftSlot: <Icon className="text-text-subtlest" size="sm" icon="refresh" />,
               },
             ]}
           >
             <Button
               size="sm"
               variant="border"
-              rightSlot={<Icon className="text-fg-subtler" size="sm" icon="chevronDown" />}
+              rightSlot={<Icon className="text-text-subtlest" size="sm" icon="chevronDown" />}
               disabled={isStreaming || services == null}
               className={classNames(
                 'font-mono text-editor min-w-[5rem] !ring-0',

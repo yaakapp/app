@@ -20,9 +20,9 @@ export function ImageViewer({ response, className }: Props) {
   if (!show) {
     return (
       <>
-        <div className="italic text-fg-subtler">
+        <div className="italic text-text-subtlest">
           Response body is too large to preview.{' '}
-          <button className="cursor-pointer underline hover:text-fg" onClick={() => setShow(true)}>
+          <button className="cursor-pointer underline hover:text" onClick={() => setShow(true)}>
             Show anyway
           </button>
         </div>

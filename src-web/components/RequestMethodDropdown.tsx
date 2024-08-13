@@ -58,7 +58,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
 
   return (
     <RadioDropdown value={method} items={radioItems} extraItems={extraItems} onChange={onChange}>
-      <Button size="xs" className={classNames(className, 'text-fg-subtle hover:text-fg')}>
+      <Button size="xs" className={classNames(className, 'text-text-subtle hover:text')}>
         {method.toUpperCase()}
       </Button>
     </RadioDropdown>

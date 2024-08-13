@@ -140,7 +140,7 @@ export default function Workspace() {
             animate={{ opacity: 1, x: 0 }}
             className={classNames(
               'x-theme-sidebar',
-              'absolute top-0 left-0 bottom-0 bg-background border-r border-background-highlight w-[14rem]',
+              'absolute top-0 left-0 bottom-0 bg-surface border-r border-border-subtle w-[14rem]',
               'grid grid-rows-[auto_1fr]',
             )}
           >
@@ -152,11 +152,8 @@ export default function Workspace() {
         </Overlay>
       ) : (
         <>
-          <div
-            style={side}
-            className={classNames('x-theme-sidebar', 'overflow-hidden bg-background')}
-          >
-            <Sidebar className="border-r border-background-highlight" />
+          <div style={side} className={classNames('x-theme-sidebar', 'overflow-hidden bg-surface')}>
+            <Sidebar className="border-r border-border-subtle" />
           </div>
           <ResizeHandle
             className="-translate-x-3"
@@ -171,7 +168,7 @@ export default function Workspace() {
       <HeaderSize
         data-tauri-drag-region
         size="lg"
-        className="x-theme-appHeader bg-background"
+        className="x-theme-appHeader bg-surface"
         style={head}
       >
         <WorkspaceHeader className="pointer-events-none" />
@@ -180,7 +177,7 @@ export default function Workspace() {
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
             The active workspace{' '}
-            <InlineCode className="text-fg-warning">{activeWorkspaceId}</InlineCode> was not found.
+            <InlineCode className="text-warning">{activeWorkspaceId}</InlineCode> was not found.
             Select a workspace from the header menu or report this bug to <FeedbackLink />
           </Banner>
         </div>

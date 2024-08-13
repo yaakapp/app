@@ -83,7 +83,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         className,
         'x-theme-responsePane',
         'max-h-full h-full',
-        'bg-background rounded-md border border-background-highlight',
+        'bg-surface rounded-md border border-border-subtle',
         'relative',
       )}
     >
@@ -99,7 +99,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
             className={classNames(
-              'text-fg-subtle w-full flex-shrink-0',
+              'text-text-subtle w-full flex-shrink-0',
               // Remove a bit of space because the tabs have lots too
               '-mb-1.5',
             )}
@@ -177,7 +177,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
                   //   <JsonAttributeTree attrValue={activeResponse} />
                   <TextViewer
-                    className="-mr-2" // Pull to the right
+                    className="-mr-2 bg-surface" // Pull to the right
                     response={activeResponse}
                     pretty={viewMode === 'pretty'}
                   />

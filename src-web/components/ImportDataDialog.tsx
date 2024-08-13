@@ -20,7 +20,7 @@ export function ImportDataDialog({ importData }: Props) {
           <li>Insomnia v4+</li>
           <li>Swagger 2.0</li>
           <li>
-            Curl commands <em className="text-fg-subtle">(or paste into URL)</em>
+            Curl commands <em className="text-text-subtle">(or paste into URL)</em>
           </li>
         </ul>
       </VStack>

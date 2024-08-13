@@ -68,7 +68,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
                   color="custom"
                   title="Add sub environment"
                   icon="plusCircle"
-                  iconClassName="text-fg-subtler group-hover:text-fg-subtle"
+                  iconClassName="text-text-subtlest group-hover:text-text-subtle"
                   className="group"
                   onClick={handleCreateEnvironment}
                 />
@@ -97,7 +97,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
       secondSlot={() =>
         activeWorkspace != null && (
           <EnvironmentEditor
-            className="pt-2 border-l border-background-highlight-secondary"
+            className="pt-2 border-l border-border-subtle"
             environment={selectedEnvironment}
             workspace={activeWorkspace}
           />
@@ -175,7 +175,7 @@ const EnvironmentEditor = function ({
         <Heading className="w-full flex items-center gap-1">
           <div>{environment?.name ?? 'Global Variables'}</div>
           <IconButton
-            iconClassName="text-fg-subtler"
+            iconClassName="text-text-subtlest"
             size="sm"
             icon={valueVisibility.value ? 'eye' : 'eyeClosed'}
             title={valueVisibility.value ? 'Hide Values' : 'Reveal Values'}
@@ -238,7 +238,7 @@ function SidebarButton({
         className={classNames(
           className,
           'w-full grid grid-cols-[minmax(0,1fr)_auto] items-center gap-0.5',
-          'px-2', // Padding to show focus border
+          'px-2', // Padding to show the focus border
         )}
       >
         <Button
@@ -246,7 +246,7 @@ function SidebarButton({
           size="xs"
           className={classNames(
             'w-full',
-            active ? 'text-fg bg-background-active' : 'text-fg-subtle hover:text-fg',
+            active ? 'text bg-surface-active' : 'text-text-subtle hover:text',
           )}
           justify="start"
           onClick={onClick}

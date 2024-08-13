@@ -23,7 +23,7 @@ export function WindowControls({ className, onlyX }: Props) {
       {!onlyX && (
         <>
           <Button
-            className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight-secondary rounded-none"
+            className="!h-full px-4 text-text-subtle hocus:text hocus:bg-surface-highlight-secondary rounded-none"
             color="custom"
             onClick={() => getCurrentWebviewWindow().minimize()}
           >
@@ -32,7 +32,7 @@ export function WindowControls({ className, onlyX }: Props) {
             </svg>
           </Button>
           <Button
-            className="!h-full px-4 text-fg-subtle hocus:text-fg hocus:bg-background-highlight rounded-none"
+            className="!h-full px-4 text-text-subtle hocus:text hocus:bg-surface-highlight rounded-none"
             color="custom"
             onClick={async () => {
               const w = getCurrentWebviewWindow();
@@ -57,7 +57,7 @@ export function WindowControls({ className, onlyX }: Props) {
       )}
       <Button
         color="custom"
-        className="!h-full px-4 text-fg-subtle rounded-none hocus:bg-fg-danger hocus:text-fg"
+        className="!h-full px-4 text-text-subtle rounded-none hocus:bg-fg-danger hocus:text"
         onClick={() => getCurrentWebviewWindow().close()}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">

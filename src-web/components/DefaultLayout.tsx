@@ -22,7 +22,7 @@ export function DefaultLayout() {
           transition={{ duration: 0.1, delay: 0.1 }}
           className={classNames(
             'w-full h-full',
-            osInfo?.osType === 'linux' && 'border border-background-highlight-secondary',
+            osInfo?.osType === 'linux' && 'border border-border-subtle',
           )}
         >
           <Outlet />

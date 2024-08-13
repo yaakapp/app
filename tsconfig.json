@@ -20,7 +20,8 @@
   "include": [
     "src-web",
     "src-web/modules.d.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "tailwind.config.cjs"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
