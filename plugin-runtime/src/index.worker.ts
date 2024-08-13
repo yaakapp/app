@@ -3,6 +3,7 @@ import {
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
+  SendHttpRequestResponse,
 } from '@yaakapp/api';
 import { YaakContext } from '@yaakapp/api/lib/plugins/context';
 import interceptStdout from 'intercept-stdout';
@@ -56,39 +57,41 @@ new Promise<void>(async (resolve, reject) => {
     parentPort!.postMessage(event);
   }
 
-  function waitForReply<T extends Omit<InternalEventPayload, 'type'>>(replyId: string) {
-    return new Promise<T>((resolve) => {
+  async function sendAndWaitForReply<T extends Omit<InternalEventPayload, 'type'>>(
+    payload: InternalEventPayload,
+  ): Promise<T> {
+    // 1. Build event to send
+    const eventToSend = buildEventToSend(payload, null);
+
+    // 2. Spawn listener in background
+    const promise = new Promise<InternalEventPayload>(async (resolve) => {
       const cb = (event: InternalEvent) => {
-        if (event.replyId === replyId) {
-          resolve(event.payload as unknown as T); // Not type-safe but oh well
+        if (event.replyId === eventToSend.id) {
+          resolve(event.payload); // Not type-safe but oh well
           parentPort!.off('message', cb); // Unlisten, now that we're done
         }
       };
       parentPort!.on('message', cb);
     });
+
+    // 3. Send the event after we start listening (to prevent race)
+    sendEvent(eventToSend);
+
+    // 4. Return the listener promise
+    return promise as unknown as Promise<T>;
   }
 
   const ctx: YaakContext = {
     httpRequest: {
       async getById({ id }) {
-        // 1. Build event to send
-        const eventToSend = buildEventToSend({ type: 'get_http_request_by_id_request', id });
-
-        // 2. Spawn listener in background
-        const p = new Promise<GetHttpRequestByIdResponse>(async (resolve) => {
-          resolve(await waitForReply<GetHttpRequestByIdResponse>(eventToSend.id));
-        });
-
-        // 3. Send the event after we start listening (to prevent race)
-        sendEvent(eventToSend);
-
-        // 4. Await the promise (wait for reply)
-        const event = await p;
-
-        return event.httpRequest;
+        const payload = { type: 'get_http_request_by_id_request', id } as const;
+        const { httpRequest } = await sendAndWaitForReply<GetHttpRequestByIdResponse>(payload);
+        return httpRequest;
       },
       async send({ httpRequest }) {
-        throw new Error('Implement Me: ' + httpRequest.id);
+        const payload = { type: 'send_http_request_request', httpRequest } as const;
+        const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(payload);
+        return httpResponse;
       },
     },
   };
