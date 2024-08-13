@@ -11,7 +11,7 @@ export function Heading({ className, size = 1, ...props }: Props) {
     <Component
       className={classNames(
         className,
-        'font-semibold text-fg',
+        'font-semibold text',
         size === 1 && 'text-2xl',
         size === 2 && 'text-xl',
         size === 3 && 'text-lg',

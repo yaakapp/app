@@ -43,23 +43,23 @@ import { url } from './url/extension';
 export const syntaxHighlightStyle = HighlightStyle.define([
   {
     tag: [t.documentMeta, t.blockComment, t.lineComment, t.docComment, t.comment],
-    color: 'var(--fg-subtler)',
+    color: 'var(--textSubtlest)',
     fontStyle: 'italic',
   },
   {
     tag: [t.paren, t.bracket, t.brace],
-    color: 'var(--fg)',
+    color: 'var(--textSubtle)',
   },
   {
     tag: [t.link, t.name, t.tagName, t.angleBracket, t.docString, t.number],
-    color: 'var(--fg-info)',
+    color: 'var(--info)',
   },
-  { tag: [t.variableName], color: 'var(--fg-success)' },
-  { tag: [t.bool], color: 'var(--fg-warning)' },
-  { tag: [t.attributeName, t.propertyName], color: 'var(--fg-primary)' },
-  { tag: [t.attributeValue], color: 'var(--fg-warning)' },
-  { tag: [t.string], color: 'var(--fg-notice)' },
-  { tag: [t.atom, t.meta, t.operator, t.bool, t.null, t.keyword], color: 'var(--fg-danger)' },
+  { tag: [t.variableName], color: 'var(--success)' },
+  { tag: [t.bool], color: 'var(--warning)' },
+  { tag: [t.attributeName, t.propertyName], color: 'var(--primary)' },
+  { tag: [t.attributeValue], color: 'var(--warning)' },
+  { tag: [t.string], color: 'var(--notice)' },
+  { tag: [t.atom, t.meta, t.operator, t.bool, t.null, t.keyword], color: 'var(--danger)' },
 ]);
 
 const syntaxTheme = EditorView.theme({}, { dark: true });

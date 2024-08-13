@@ -54,7 +54,7 @@ export function SelectFile({ onChange, filePath, inline, className }: Props) {
               onClick={handleClear}
             />
           )}
-          <div className="text-sm font-mono truncate rtl pr-3 text-fg">
+          <div className="text-sm font-mono truncate rtl pr-3 text">
             {rtlEscapeChar}
             {filePath ?? 'No file selected'}
           </div>

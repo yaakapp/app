@@ -59,7 +59,7 @@ export function ExportDataDialog({
   const noneSelected = numSelected === 0;
   return (
     <VStack space={3} className="w-full mb-3 px-4">
-      <table className="w-full mb-auto min-w-full max-w-full divide-y divide-background-highlight-secondary">
+      <table className="w-full mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
         <thead>
           <tr>
             <th className="w-6 min-w-0 py-2 text-left pl-1">
@@ -76,7 +76,7 @@ export function ExportDataDialog({
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-background-highlight-secondary">
+        <tbody className="divide-y divide-surface-highlight">
           {workspaces.map((w) => (
             <tr key={w.id}>
               <td className="min-w-0 py-1 pl-1">
@@ -90,7 +90,7 @@ export function ExportDataDialog({
                 />
               </td>
               <td
-                className="py-1 pl-4 text-fg whitespace-nowrap overflow-x-auto hide-scrollbars"
+                className="py-1 pl-4 text whitespace-nowrap overflow-x-auto hide-scrollbars"
                 onClick={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}
               >
                 {w.name} {w.id === activeWorkspace.id ? '(current workspace)' : ''}

@@ -1,8 +1,7 @@
-import classNames from 'classnames';
+import type { HttpResponse } from '@yaakapp/api';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import { useSaveResponse } from '../hooks/useSaveResponse';
-import type { HttpResponse } from '@yaakapp/api';
 import { pluralize } from '../lib/pluralize';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -21,7 +20,6 @@ export const RecentResponsesDropdown = function ResponsePane({
   activeResponse,
   responses,
   onPinnedResponseId,
-  className,
 }: Props) {
   const deleteResponse = useDeleteHttpResponse(activeResponse?.id ?? null);
   const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
@@ -68,7 +66,7 @@ export const RecentResponsesDropdown = function ResponsePane({
           label: (
             <HStack space={2}>
               <StatusTag className="text-sm" response={r} />
-              <span className="text-fg-subtle">&rarr;</span>{' '}
+              <span className="text-text-subtle">&rarr;</span>{' '}
               <span className="font-mono text-sm">{r.elapsed >= 0 ? `${r.elapsed}ms` : 'n/a'}</span>
             </HStack>
           ),
@@ -80,7 +78,7 @@ export const RecentResponsesDropdown = function ResponsePane({
       <IconButton
         title="Show response history"
         icon={activeResponse?.id === latestResponseId ? 'chevronDown' : 'pin'}
-        className={classNames(className, 'm-0.5')}
+        className="m-0.5"
         size="sm"
         iconSize="md"
       />

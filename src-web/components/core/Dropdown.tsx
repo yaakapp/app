@@ -433,7 +433,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-background absolute rotate-45 border-background-highlight-secondary border-t border-l"
+                  className="bg-surface absolute rotate-45 border-border-subtle border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -442,21 +442,21 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   style={menuStyles}
                   className={classNames(
                     className,
-                    'h-auto bg-background rounded-md shadow-lg py-1.5 border',
-                    'border-background-highlight-secondary overflow-auto mb-1 mx-0.5',
+                    'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
+                    'border-border-subtle overflow-auto mb-1 mx-0.5',
                   )}
                 >
                   {filter && (
                     <HStack
                       space={2}
-                      className="pb-0.5 px-1.5 mb-2 text-sm border border-background-highlight-secondary mx-2 rounded font-mono h-xs"
+                      className="pb-0.5 px-1.5 mb-2 text-sm border border-border-subtle mx-2 rounded font-mono h-xs"
                     >
-                      <Icon icon="search" size="xs" className="text-fg-subtle" />
-                      <div className="text-fg">{filter}</div>
+                      <Icon icon="search" size="xs" className="text-text-subtle" />
+                      <div className="text">{filter}</div>
                     </HStack>
                   )}
                   {filteredItems.length === 0 && (
-                    <span className="text-fg-subtler text-center px-2 py-1">No matches</span>
+                    <span className="text-text-subtlest text-center px-2 py-1">No matches</span>
                   )}
                   {filteredItems.map((item, i) => {
                     if (item.hidden) {
@@ -540,9 +540,9 @@ function MenuItem({ className, focused, onFocus, item, onSelect, ...props }: Men
         className,
         'h-xs', // More compact
         'min-w-[8rem] outline-none px-2 mx-1.5 flex whitespace-nowrap',
-        'focus:bg-background-highlight focus:text-fg rounded',
-        item.variant === 'danger' && '!text-fg-danger',
-        item.variant === 'notify' && '!text-fg-primary',
+        'focus:bg-surface-highlight focus:text rounded',
+        item.variant === 'danger' && '!text-danger',
+        item.variant === 'notify' && '!text-primary',
       )}
       {...props}
     >

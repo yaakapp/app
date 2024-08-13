@@ -12,7 +12,7 @@ export function CountBadge({ count, className }: Props) {
       aria-hidden
       className={classNames(
         className,
-        'opacity-70 border border-background-highlight-secondary text-4xs rounded mb-0.5 px-1 ml-1 h-4 font-mono',
+        'opacity-70 border border-border-subtle text-4xs rounded mb-0.5 px-1 ml-1 h-4 font-mono',
       )}
     >
       {count}

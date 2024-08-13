@@ -58,13 +58,13 @@ export function Toast({
         className,
         'x-theme-toast',
         'pointer-events-auto',
-        'relative bg-background pointer-events-auto',
+        'relative bg-surface pointer-events-auto',
         'rounded-lg',
-        'border border-background-highlight shadow-lg',
+        'border border-border-subtle shadow-lg',
         'max-w-[calc(100vw-5rem)] max-h-[calc(100vh-6rem)]',
         'w-[22rem] max-h-[80vh]',
         'm-2 grid grid-cols-[1fr_auto]',
-        'text-fg',
+        'text',
       )}
     >
       <div className="px-3 py-3 flex items-center gap-2">
@@ -72,10 +72,10 @@ export function Toast({
           <Icon
             icon={icon}
             className={classNames(
-              variant === 'success' && 'text-fg-success',
-              variant === 'warning' && 'text-fg-warning',
-              variant === 'error' && 'text-fg-danger',
-              variant === 'copied' && 'text-fg-primary',
+              variant === 'success' && 'text-success',
+              variant === 'warning' && 'text-warning',
+              variant === 'error' && 'text-danger',
+              variant === 'copied' && 'text-primary',
             )}
           />
         )}
@@ -96,7 +96,7 @@ export function Toast({
       {timeout != null && (
         <div className="w-full absolute bottom-0 left-0 right-0">
           <motion.div
-            className="bg-background-highlight h-0.5"
+            className="bg-surface-highlight h-0.5"
             initial={{ width: '100%' }}
             animate={{ width: '0%', opacity: 0.2 }}
             transition={{ duration: timeout / 1000, ease: 'linear' }}

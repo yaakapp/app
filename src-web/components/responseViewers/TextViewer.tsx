@@ -68,19 +68,19 @@ export function TextViewer({ response, pretty, className }: Props) {
   const canFilter = isJson || isXml;
 
   const actions = useMemo<ReactNode[]>(() => {
-    const result: ReactNode[] = [];
+    const nodes: ReactNode[] = [];
 
-    if (!canFilter) return result;
+    if (!canFilter) return nodes;
 
     if (isSearching) {
-      result.push(
+      nodes.push(
         <div key="input" className="w-full !opacity-100">
           <Input
             key={response.id}
             validate={!filteredResponse.error}
             hideLabel
             autoFocus
-            containerClassName="bg-background"
+            containerClassName="bg-surface"
             size="sm"
             placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
             label="Filter expression"
@@ -93,21 +93,18 @@ export function TextViewer({ response, pretty, className }: Props) {
       );
     }
 
-    result.push(
+    nodes.push(
       <IconButton
         key="icon"
         size="sm"
         icon={isSearching ? 'x' : 'filter'}
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={toggleSearch}
-        className={classNames(
-          'bg-background border !border-background-highlight',
-          isSearching && '!opacity-100',
-        )}
+        className={classNames('border !border-border-subtle', isSearching && '!opacity-100')}
       />,
     );
 
-    return result;
+    return nodes;
   }, [
     canFilter,
     filterText,

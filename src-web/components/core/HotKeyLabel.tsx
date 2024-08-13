@@ -9,5 +9,7 @@ interface Props {
 
 export function HotKeyLabel({ action, className }: Props) {
   const label = useHotKeyLabel(action);
-  return <span className={classNames(className, 'text-fg-subtle whitespace-nowrap')}>{label}</span>;
+  return (
+    <span className={classNames(className, 'text-text-subtle whitespace-nowrap')}>{label}</span>
+  );
 }

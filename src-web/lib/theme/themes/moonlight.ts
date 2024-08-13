@@ -1,5 +1,5 @@
-import { Color } from '../color';
 import type { YaakTheme } from '../window';
+import { YaakColor } from '../yaakColor';
 
 export const colors = {
   lightRed: '#ff98a4',
@@ -40,25 +40,23 @@ export const colors = {
 const moonlightDefault: YaakTheme = {
   id: 'moonlight',
   name: 'Moonlight',
-  background: new Color('#222436', 'dark'),
-  foreground: new Color('#d5def8', 'dark'),
-  foregroundSubtle: new Color('#828bb8', 'dark'),
-  foregroundSubtler: new Color('hsl(232,26%,43%)', 'dark'),
-  colors: {
-    primary: new Color(colors.purple, 'dark'),
-    secondary: new Color(colors.desaturatedGray, 'dark'),
-    info: new Color(colors.blue, 'dark'),
-    success: new Color(colors.teal, 'dark'),
-    notice: new Color(colors.yellow, 'dark'),
-    warning: new Color(colors.orange, 'dark'),
-    danger: new Color(colors.red, 'dark'),
-  },
+  surface: new YaakColor('#222436', 'dark'),
+  text: new YaakColor('#d5def8', 'dark'),
+  textSubtle: new YaakColor('#828bb8', 'dark'),
+  textSubtlest: new YaakColor('hsl(232,26%,43%)', 'dark'),
+  primary: new YaakColor(colors.purple, 'dark'),
+  secondary: new YaakColor(colors.desaturatedGray, 'dark'),
+  info: new YaakColor(colors.blue, 'dark'),
+  success: new YaakColor(colors.teal, 'dark'),
+  notice: new YaakColor(colors.yellow, 'dark'),
+  warning: new YaakColor(colors.orange, 'dark'),
+  danger: new YaakColor(colors.red, 'dark'),
   components: {
     appHeader: {
-      background: new Color(colors.gray3, 'dark'),
+      surface: new YaakColor(colors.gray3, 'dark'),
     },
     sidebar: {
-      background: new Color(colors.gray3, 'dark'),
+      surface: new YaakColor(colors.gray3, 'dark'),
     },
   },
 };

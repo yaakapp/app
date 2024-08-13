@@ -20,6 +20,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
   {
     showConfirm,
     icon,
+    color = 'default',
     spin,
     onClick,
     className,
@@ -50,10 +51,13 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
       onClick={handleClick}
       innerClassName="flex items-center justify-center"
       size={size}
+      color={color}
       className={classNames(
         className,
-        'group/button relative flex-shrink-0 text-fg-subtle',
+        'group/button relative flex-shrink-0',
         '!px-0',
+        color === 'custom' && 'text-text-subtle',
+        color === 'default' && 'text-text-subtle',
         size === 'md' && 'w-9',
         size === 'sm' && 'w-8',
         size === 'xs' && 'w-6',
@@ -72,7 +76,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         spin={spin}
         className={classNames(
           iconClassName,
-          'group-hover/button:text-fg',
+          'group-hover/button:text',
           props.disabled && 'opacity-70',
           confirmed && 'text-green-600',
         )}

@@ -136,7 +136,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-fg-subtle whitespace-nowrap',
+          'text-text-subtle whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
@@ -147,10 +147,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
         className={classNames(
           containerClassName,
           'x-theme-input',
-          'relative w-full rounded-md text-fg',
+          'relative w-full rounded-md text',
           'border',
-          focused ? 'border-border-focus' : 'border-background-highlight',
-          !isValid && '!border-fg-danger',
+          focused ? 'border-border-focus' : 'border-border',
+          !isValid && '!border-danger',
           size === 'md' && 'min-h-md',
           size === 'sm' && 'min-h-sm',
           size === 'xs' && 'min-h-xs',
@@ -187,7 +187,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             title={obscured ? `Show ${label}` : `Obscure ${label}`}
             size="xs"
             className="mr-0.5 group/obscure !h-auto my-0.5"
-            iconClassName="text-fg-subtle group-hover/obscure:text-fg"
+            iconClassName="text-text-subtle group-hover/obscure:text"
             iconSize="sm"
             icon={obscured ? 'eye' : 'eyeClosed'}
             onClick={() => setObscured((o) => !o)}

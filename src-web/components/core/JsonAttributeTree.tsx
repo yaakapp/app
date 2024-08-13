@@ -48,7 +48,7 @@ export const JsonAttributeTree = ({
           : null,
         isExpandable: Object.keys(attrValue).length > 0,
         label: isExpanded ? `{${Object.keys(attrValue).length || ' '}}` : `{⋯}`,
-        labelClassName: 'text-fg-subtler',
+        labelClassName: 'text-text-subtlest',
       };
     } else if (jsonType === '[object Array]') {
       return {
@@ -66,7 +66,7 @@ export const JsonAttributeTree = ({
           : null,
         isExpandable: attrValue.length > 0,
         label: isExpanded ? `[${attrValue.length || ' '}]` : `[⋯]`,
-        labelClassName: 'text-fg-subtler',
+        labelClassName: 'text-text-subtlest',
       };
     } else {
       return {
@@ -74,17 +74,17 @@ export const JsonAttributeTree = ({
         isExpandable: false,
         label: jsonType === '[object String]' ? `"${attrValue}"` : `${attrValue}`,
         labelClassName: classNames(
-          jsonType === '[object Boolean]' && 'text-fg-primary',
-          jsonType === '[object Number]' && 'text-fg-info',
-          jsonType === '[object String]' && 'text-fg-notice',
-          jsonType === '[object Null]' && 'text-fg-danger',
+          jsonType === '[object Boolean]' && 'text-primary',
+          jsonType === '[object Number]' && 'text-info',
+          jsonType === '[object String]' && 'text-notice',
+          jsonType === '[object Null]' && 'text-danger',
         ),
       };
     }
   }, [attrValue, attrKeyJsonPath, isExpanded, depth]);
 
   const labelEl = (
-    <span className={classNames(labelClassName, 'select-text group-hover:text-fg-subtle')}>
+    <span className={classNames(labelClassName, 'select-text group-hover:text-text-subtle')}>
       {label}
     </span>
   );
@@ -104,18 +104,18 @@ export const JsonAttributeTree = ({
               icon="chevronRight"
               className={classNames(
                 'left-0 absolute transition-transform flex items-center',
-                'text-fg-subtler group-hover:text-fg-subtle',
+                'text-text-subtlest group-hover:text-text-subtle',
                 isExpanded ? 'rotate-90' : '',
               )}
             />
-            <span className="text-fg-primary group-hover:text-fg-primary mr-1.5 whitespace-nowrap">
+            <span className="text-primary group-hover:text-primary mr-1.5 whitespace-nowrap">
               {attrKey === undefined ? '$' : attrKey}:
             </span>
             {labelEl}
           </button>
         ) : (
           <>
-            <span className="text-fg-primary mr-1.5 pl-4 whitespace-nowrap select-text">
+            <span className="text-primary mr-1.5 pl-4 whitespace-nowrap select-text">
               {attrKey}:
             </span>
             {labelEl}

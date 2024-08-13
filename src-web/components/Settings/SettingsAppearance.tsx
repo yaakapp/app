@@ -159,11 +159,11 @@ export function SettingsAppearance() {
 
       <VStack
         space={3}
-        className="mt-3 w-full bg-background p-3 border border-dashed border-background-highlight rounded overflow-x-auto"
+        className="mt-3 w-full bg-surface p-3 border border-dashed border-border-subtle rounded overflow-x-auto"
       >
-        <HStack className="text-fg font-bold" space={2}>
+        <HStack className="text font-bold" space={2}>
           Theme Preview{' '}
-          <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} className="text-fg-subtle" />
+          <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} className="text-text-subtle" />
         </HStack>
         <HStack space={1.5} className="w-full">
           {buttonColors.map((c, i) => (
@@ -173,7 +173,7 @@ export function SettingsAppearance() {
               size="2xs"
               iconSize="xs"
               icon={icons[i % icons.length]!}
-              iconClassName="text-fg"
+              iconClassName="text"
               title={`${c}`}
             />
           ))}
@@ -185,7 +185,7 @@ export function SettingsAppearance() {
               size="2xs"
               iconSize="xs"
               icon={icons[i % icons.length]!}
-              iconClassName="text-fg"
+              iconClassName="text"
               title={`${c}`}
             />
           ))}
