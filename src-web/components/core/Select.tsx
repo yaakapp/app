@@ -53,7 +53,7 @@ export function Select<T extends string>({
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-fg-subtle whitespace-nowrap',
+          'text-text-subtle whitespace-nowrap',
           hideLabel && 'sr-only',
         )}
       >
@@ -63,10 +63,10 @@ export function Select<T extends string>({
         <HStack
           space={2}
           className={classNames(
-            'w-full rounded-md text-fg text-sm font-mono',
+            'w-full rounded-md text text-sm font-mono',
             'pl-2',
             'border',
-            focused ? 'border-border-focus' : 'border-background-highlight',
+            focused ? 'border-border-focus' : 'border-border',
             size === 'xs' && 'h-xs',
             size === 'sm' && 'h-sm',
             size === 'md' && 'h-md',

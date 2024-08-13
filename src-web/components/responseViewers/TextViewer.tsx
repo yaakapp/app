@@ -80,7 +80,7 @@ export function TextViewer({ response, pretty, className }: Props) {
             validate={!filteredResponse.error}
             hideLabel
             autoFocus
-            containerClassName="bg-background"
+            containerClassName="bg-surface"
             size="sm"
             placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
             label="Filter expression"
@@ -101,7 +101,7 @@ export function TextViewer({ response, pretty, className }: Props) {
         title={isSearching ? 'Close filter' : 'Filter response'}
         onClick={toggleSearch}
         className={classNames(
-          'bg-background border !border-background-highlight',
+          'bg-surface border !border-border-subtle',
           isSearching && '!opacity-100',
         )}
       />,

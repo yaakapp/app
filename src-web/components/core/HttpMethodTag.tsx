@@ -43,7 +43,7 @@ export function HttpMethodTag({ shortNames, request, className }: Props) {
     <span
       className={classNames(
         className,
-        'text-xs font-mono text-fg-subtle',
+        'text-xs font-mono text-text-subtle',
         'pt-[0.25em]', // Fix for monospace font not vertically centering
         shortNames && 'w-[2.5em]',
       )}

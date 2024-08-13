@@ -67,7 +67,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
               <HStack space={2}>
                 <span>{events.length} Messages</span>
                 {isResponseLoading(activeConnection) && (
-                  <Icon icon="refresh" size="sm" spin className="text-fg-subtler" />
+                  <Icon icon="refresh" size="sm" spin className="text-text-subtlest" />
                 )}
               </HStack>
               <RecentConnectionsDropdown
@@ -112,7 +112,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                     Message {activeEvent.eventType === 'client_message' ? 'Sent' : 'Received'}
                   </div>
                   {!showLarge && activeEvent.content.length > 1000 * 1000 ? (
-                    <VStack space={2} className="italic text-fg-subtler">
+                    <VStack space={2} className="italic text-text-subtlest">
                       Message previews larger than 1MB are hidden
                       <div>
                         <Button
@@ -143,7 +143,7 @@ export function GrpcConnectionMessagesPane({ style, methodType, activeRequest }:
                       {activeEvent.content}
                     </div>
                     {activeEvent.error && (
-                      <div className="select-text cursor-text text-sm font-mono py-1 text-fg-warning">
+                      <div className="select-text cursor-text text-sm font-mono py-1 text-warning">
                         {activeEvent.error}
                       </div>
                     )}
@@ -188,21 +188,21 @@ function EventRow({
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
           'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-background-highlight-secondary !text-fg',
-          'text-fg-subtle hover:text-fg',
+          isActive && '!bg-surface-highlight-secondary !text',
+          'text-text-subtle hover:text',
         )}
       >
         <Icon
           className={
             eventType === 'server_message'
-              ? 'text-fg-info'
+              ? 'text-info'
               : eventType === 'client_message'
-              ? 'text-fg-primary'
+              ? 'text-primary'
               : eventType === 'error' || (status != null && status > 0)
-              ? 'text-fg-danger'
+              ? 'text-danger'
               : eventType === 'connection_end'
-              ? 'text-fg-success'
-              : 'text-fg-subtle'
+              ? 'text-success'
+              : 'text-text-subtle'
           }
           title={
             eventType === 'server_message'
@@ -229,7 +229,7 @@ function EventRow({
         />
         <div className={classNames('w-full truncate text-xs')}>
           {content.slice(0, 1000)}
-          {error && <span className="text-fg-warning"> ({error})</span>}
+          {error && <span className="text-warning"> ({error})</span>}
         </div>
         <div className={classNames('opacity-50 text-xs')}>
           {format(createdAt + 'Z', 'HH:mm:ss.SSS')}

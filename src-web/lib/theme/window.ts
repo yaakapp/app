@@ -1,138 +1,167 @@
-import { Color } from './color';
+import { defaultDarkTheme, defaultLightTheme } from './themes';
+import { YaakColor } from './yaakColor';
 
-export type Appearance = 'dark' | 'light' | 'system';
+export type YaakColors = {
+  surface: YaakColor;
+  surfaceHighlight?: YaakColor;
+  surfaceActive?: YaakColor;
 
-interface ThemeComponent {
-  background?: Color;
-  backgroundHighlight?: Color;
-  backgroundHighlightSecondary?: Color;
-  backgroundActive?: Color;
-  foreground?: Color;
-  foregroundSubtle?: Color;
-  foregroundSubtler?: Color;
-  shadow?: Color;
-  colors?: Partial<RootColors>;
-}
+  text: YaakColor;
+  textSubtle?: YaakColor;
+  textSubtlest?: YaakColor;
 
-export interface YaakTheme extends ThemeComponent {
+  border?: YaakColor;
+  borderSubtle?: YaakColor;
+  borderFocus?: YaakColor;
+
+  shadow?: YaakColor;
+  backdrop?: YaakColor;
+  selection?: YaakColor;
+
+  primary?: YaakColor;
+  secondary?: YaakColor;
+  info?: YaakColor;
+  success?: YaakColor;
+  notice?: YaakColor;
+  warning?: YaakColor;
+  danger?: YaakColor;
+};
+
+export type YaakTheme = YaakColors & {
   id: string;
   name: string;
-  components?: {
-    dialog?: ThemeComponent;
-    menu?: ThemeComponent;
-    toast?: ThemeComponent;
-    sidebar?: ThemeComponent;
-    responsePane?: ThemeComponent;
-    appHeader?: ThemeComponent;
-    button?: ThemeComponent;
-    banner?: ThemeComponent;
-    placeholder?: ThemeComponent;
-    urlBar?: ThemeComponent;
-    editor?: ThemeComponent;
-    input?: ThemeComponent;
-  };
-}
+  components?: Partial<{
+    dialog: Partial<YaakColors>;
+    menu: Partial<YaakColors>;
+    toast: Partial<YaakColors>;
+    sidebar: Partial<YaakColors>;
+    responsePane: Partial<YaakColors>;
+    appHeader: Partial<YaakColors>;
+    button: Partial<YaakColors>;
+    banner: Partial<YaakColors>;
+    placeholder: Partial<YaakColors>;
+    urlBar: Partial<YaakColors>;
+    editor: Partial<YaakColors>;
+    input: Partial<YaakColors>;
+  }>;
+};
 
-interface RootColors {
-  primary: Color;
-  secondary: Color;
-  info: Color;
-  success: Color;
-  notice: Color;
-  warning: Color;
-  danger: Color;
-}
+export type YaakColorKey = keyof YaakColors;
 
-type ColorName = keyof RootColors;
 type ComponentName = keyof NonNullable<YaakTheme['components']>;
 
-type CSSVariables = Record<string, string | undefined>;
+type CSSVariables = Record<YaakColorKey, YaakColor | undefined>;
 
-function themeVariables(theme?: ThemeComponent, base?: CSSVariables): CSSVariables | null {
+function themeVariables(theme?: Partial<YaakColors>, base?: CSSVariables): CSSVariables | null {
   const vars: CSSVariables = {
-    '--background': theme?.background?.css(),
-    '--background-highlight':
-      theme?.backgroundHighlight?.css() ?? theme?.background?.lift(0.11).css(),
-    '--background-highlight-secondary':
-      theme?.backgroundHighlightSecondary?.css() ?? theme?.background?.lift(0.06).css(),
-    '--background-active':
-      theme?.backgroundActive?.css() ?? theme?.colors?.primary?.lower(0.2).translucify(0.8).css(),
-    '--background-backdrop': theme?.background?.lower(0.2).translucify(0.2).css(),
-    '--background-selection': theme?.colors?.primary?.lower(0.1).translucify(0.7).css(),
-    '--fg': theme?.foreground?.css(),
-    '--fg-subtle': theme?.foregroundSubtle?.css() ?? theme?.foreground?.lower(0.2).css(),
-    '--fg-subtler': theme?.foregroundSubtler?.css() ?? theme?.foreground?.lower(0.3).css(),
-    '--border-focus': theme?.colors?.info?.css(),
-    '--shadow':
-      theme?.shadow?.css() ??
-      Color.black()
-        .translucify(isThemeDark(theme ?? {}) ? 0.7 : 0.93)
-        .css(),
+    surface: theme?.surface,
+    surfaceHighlight: theme?.surfaceHighlight ?? theme?.surface?.lift(0.06),
+    surfaceActive: theme?.surfaceActive ?? theme?.primary?.lower(0.2).translucify(0.8),
+    backdrop: theme?.surface?.lower(0.2).translucify(0.2),
+    selection: theme?.primary?.lower(0.1).translucify(0.7),
+    border: theme?.border ?? theme?.surface?.lift(0.11),
+    borderSubtle: theme?.borderSubtle ?? theme?.border?.lower(0.06),
+    borderFocus: theme?.info?.translucify(0.5),
+    text: theme?.text,
+    textSubtle: theme?.textSubtle ?? theme?.text?.lower(0.2),
+    textSubtlest: theme?.textSubtlest ?? theme?.text?.lower(0.3),
+    shadow:
+      theme?.shadow ??
+      YaakColor.black().translucify(isThemeDark(theme ?? ({} as Partial<YaakColors>)) ? 0.7 : 0.93),
+    primary: theme?.primary,
+    secondary: theme?.primary,
+    info: theme?.info,
+    success: theme?.success,
+    notice: theme?.notice,
+    warning: theme?.warning,
+    danger: theme?.danger,
   };
-
-  for (const [color, value] of Object.entries(theme?.colors ?? {})) {
-    vars[`--fg-${color}`] = (value as Color).css();
-  }
 
   // Extend with base
   for (const [k, v] of Object.entries(vars)) {
-    if (!v && base?.[k]) {
-      vars[k] = base[k];
+    if (!v && base?.[k as YaakColorKey]) {
+      vars[k as YaakColorKey] = base[k as YaakColorKey];
     }
   }
 
   return vars;
 }
 
-function placeholderColorVariables(color: Color): CSSVariables {
+function placeholderColorVariables(color: YaakColor): Partial<CSSVariables> {
   return {
-    '--fg': color.lift(0.6).css(),
-    '--fg-subtle': color.lift(0.4).css(),
-    '--fg-subtler': color.css(),
-    '--background': color.lower(0.2).translucify(0.8).css(),
-    '--background-highlight': color.lower(0.2).translucify(0.2).css(),
-    '--background-highlight-secondary': color.lower(0.1).translucify(0.7).css(),
+    text: color.lift(0.6),
+    textSubtle: color.lift(0.4),
+    textSubtlest: color,
+    surface: color.lower(0.2).translucify(0.8),
+    border: color.lower(0.2).translucify(0.2),
+    surfaceHighlight: color.lower(0.1).translucify(0.7),
   };
 }
 
-function bannerColorVariables(color: Color): CSSVariables {
+function bannerColorVariables(color: YaakColor): Partial<CSSVariables> {
   return {
-    '--fg': color.lift(0.8).css(),
-    '--fg-subtle': color.translucify(0.3).css(),
-    '--fg-subtler': color.css(),
-    '--background': color.css(),
-    '--background-highlight': color.lift(0.3).translucify(0.4).css(),
-    '--background-highlight-secondary': color.translucify(0.9).css(),
+    text: color.lift(0.8),
+    textSubtle: color.translucify(0.3),
+    textSubtlest: color,
+    surface: color,
+    border: color.lift(0.3).translucify(0.4),
+    surfaceHighlight: color.translucify(0.9),
   };
 }
 
-function buttonSolidColorVariables(color: Color): CSSVariables {
-  return {
-    '--fg': new Color('white', 'dark').css(),
-    '--background': color.lower(0.15).css(),
-    '--background-highlight': color.css(),
-    '--background-highlight-secondary': color.lower(0.3).css(),
+function buttonSolidColorVariables(
+  color: YaakColor,
+  isDefault: boolean = false,
+): Partial<CSSVariables> {
+  const theme = {
+    text: new YaakColor('white', 'dark'),
+    surface: color.lower(0.3),
+    surfaceHighlight: color.lower(0.1),
+    border: color,
   };
+
+  if (isDefault) {
+    theme.text = color.lift(0.8);
+    theme.surface = color;
+    theme.surfaceHighlight = color.lift(0.08);
+  }
+
+  return theme;
 }
 
-function buttonBorderColorVariables(color: Color): CSSVariables {
-  return {
-    '--fg': color.lift(0.6).css(),
-    '--fg-subtle': color.lift(0.4).css(),
-    '--fg-subtler': color.lift(0.4).translucify(0.6).css(),
-    '--background': Color.transparent().css(),
-    '--background-highlight': color.translucify(0.8).css(),
+function buttonBorderColorVariables(
+  color: YaakColor,
+  isDefault: boolean = false,
+): Partial<CSSVariables> {
+  const theme = {
+    text: color.lift(0.7),
+    textSubtle: color.lift(0.4),
+    textSubtlest: color.lift(0.4).translucify(0.6),
+    surface: YaakColor.transparent(),
+    surfaceHighlight: color.translucify(0.8),
+    borderSubtle: color.translucify(0.7),
+    border: color.translucify(0.3),
   };
+
+  if (isDefault) {
+    theme.borderSubtle = color.lift(0.08);
+    theme.border = color.lift(0.5);
+  }
+
+  return theme;
 }
 
-function variablesToCSS(selector: string | null, vars: CSSVariables | null): string | null {
+function variablesToCSS(
+  selector: string | null,
+  vars: Partial<CSSVariables> | null,
+): string | null {
   if (vars == null) {
     return null;
   }
 
   const css = Object.entries(vars ?? {})
     .filter(([, value]) => value)
-    .map(([name, value]) => `${name}: ${value};`)
+    .map(([name, value]) => `--${name}: ${value?.css()};`)
     .join('\n');
 
   return selector == null ? css : `${selector} {\n${indent(css)}\n}`;
@@ -150,41 +179,43 @@ function componentCSS(
   return variablesToCSS(`.x-theme-${component}`, themeVars);
 }
 
-function buttonCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
-  const cssColor = colors?.[color];
-  if (cssColor == null) {
+function buttonCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | null {
+  const yaakColor = colors?.[color];
+  if (yaakColor == null) {
     return null;
   }
 
   return [
-    variablesToCSS(`.x-theme-button--solid--${color}`, buttonSolidColorVariables(cssColor)),
-    variablesToCSS(`.x-theme-button--border--${color}`, buttonBorderColorVariables(cssColor)),
+    variablesToCSS(`.x-theme-button--solid--${color}`, buttonSolidColorVariables(yaakColor)),
+    variablesToCSS(`.x-theme-button--border--${color}`, buttonBorderColorVariables(yaakColor)),
   ].join('\n\n');
 }
 
-function bannerCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
-  const cssColor = colors?.[color];
-  if (cssColor == null) {
+function bannerCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | null {
+  const yaakColor = colors?.[color];
+  if (yaakColor == null) {
     return null;
   }
 
-  return [variablesToCSS(`.x-theme-banner--${color}`, bannerColorVariables(cssColor))].join('\n\n');
+  return [variablesToCSS(`.x-theme-banner--${color}`, bannerColorVariables(yaakColor))].join(
+    '\n\n',
+  );
 }
 
-function placeholderCSS(color: ColorName, colors?: Partial<RootColors>): string | null {
-  const cssColor = colors?.[color];
-  if (cssColor == null) {
+function placeholderCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | null {
+  const yaakColor = colors?.[color];
+  if (yaakColor == null) {
     return null;
   }
 
   return [
-    variablesToCSS(`.x-theme-placeholder--${color}`, placeholderColorVariables(cssColor)),
+    variablesToCSS(`.x-theme-placeholder--${color}`, placeholderColorVariables(yaakColor)),
   ].join('\n\n');
 }
 
-export function isThemeDark(theme: ThemeComponent): boolean {
-  if (theme.background && theme.foreground) {
-    return theme.foreground.lighterThan(theme.background);
+export function isThemeDark(theme: Partial<YaakColors>): boolean {
+  if (theme.surface && theme.text) {
+    return theme.text.lighterThan(theme.surface);
   }
 
   return false;
@@ -193,35 +224,49 @@ export function isThemeDark(theme: ThemeComponent): boolean {
 export function getThemeCSS(theme: YaakTheme): string {
   theme.components = theme.components ?? {};
   // Toast defaults to menu styles
-  theme.components.toast = theme.components.toast ?? theme.components.menu;
+  theme.components.toast = theme.components.toast ?? theme.components.menu ?? {};
+  const { components, id, name } = theme;
+  const colors = Object.keys(theme)
+    .filter((key) => theme[key as YaakColorKey] instanceof YaakColor)
+    .reduce((prev, key) => {
+      return { ...prev, [key]: theme[key as YaakColorKey] };
+    }, {});
 
   let themeCSS = '';
   try {
     const baseCss = variablesToCSS(null, themeVariables(theme));
-    const { components, colors } = theme;
     themeCSS = [
       baseCss,
       ...Object.keys(components ?? {}).map((key) =>
         componentCSS(key as ComponentName, theme.components),
       ),
-      ...Object.keys(colors ?? {}).map((key) =>
-        buttonCSS(key as ColorName, theme.components?.button?.colors ?? colors),
+      variablesToCSS(
+        `.x-theme-button--solid--default`,
+        buttonSolidColorVariables(theme.surface, true),
+      ),
+      variablesToCSS(
+        `.x-theme-button--border--default`,
+        buttonBorderColorVariables(theme.surface, true),
       ),
       ...Object.keys(colors ?? {}).map((key) =>
-        bannerCSS(key as ColorName, theme.components?.banner?.colors ?? colors),
+        buttonCSS(key as YaakColorKey, theme.components?.button ?? colors),
       ),
       ...Object.keys(colors ?? {}).map((key) =>
-        placeholderCSS(key as ColorName, theme.components?.placeholder?.colors ?? colors),
+        bannerCSS(key as YaakColorKey, theme.components?.banner ?? colors),
+      ),
+      ...Object.keys(colors ?? {}).map((key) =>
+        placeholderCSS(key as YaakColorKey, theme.components?.placeholder ?? colors),
       ),
     ].join('\n\n');
   } catch (err) {
-    console.error(err);
+    console.error('Failed to generate CSS', err);
   }
 
-  return [`/* ${theme.name} */`, `[data-theme="${theme.id}"] {`, indent(themeCSS), '}'].join('\n');
+  return [`/* ${name} */`, `[data-theme="${id}"] {`, indent(themeCSS), '}'].join('\n');
 }
 
 export function addThemeStylesToDocument(theme: YaakTheme) {
+  theme = completeTheme(theme);
   let styleEl = document.head.querySelector(`style[data-theme]`);
   if (!styleEl) {
     styleEl = document.createElement('style');
@@ -229,6 +274,7 @@ export function addThemeStylesToDocument(theme: YaakTheme) {
   }
 
   styleEl.setAttribute('data-theme', theme.id);
+  styleEl.setAttribute('data-updated-at', new Date().toISOString());
   styleEl.textContent = getThemeCSS(theme);
 }
 
@@ -241,4 +287,72 @@ export function indent(text: string, space = '    '): string {
     .split('\n')
     .map((line) => space + line)
     .join('\n');
+}
+
+export function completeTheme(theme: YaakTheme): YaakTheme {
+  // Clone the theme
+  theme = deserializeTheme(serializeTheme(theme));
+
+  const base = isThemeDark(theme) ? defaultDarkTheme : defaultLightTheme;
+
+  theme.primary = theme.primary ?? base.primary;
+  theme.secondary = theme.secondary ?? base.secondary;
+  theme.info = theme.info ?? base.info;
+  theme.success = theme.success ?? base.success;
+  theme.notice = theme.notice ?? base.notice;
+  theme.warning = theme.warning ?? base.warning;
+  theme.danger = theme.danger ?? base.danger;
+
+  theme.surface = theme.surface ?? base.surface;
+  theme.surfaceHighlight = theme.surfaceHighlight ?? theme.surface?.lift(0.06);
+  theme.surfaceActive = theme.surfaceActive ?? theme.primary?.lower(0.2).translucify(0.8);
+
+  theme.border = theme.border ?? theme.surface?.lift(0.12);
+  theme.borderSubtle = theme.borderSubtle ?? theme.border?.lower(0.15);
+
+  theme.text = theme.text ?? theme.border?.lift(1).lower(0.2);
+  theme.textSubtle = theme.textSubtle ?? theme.text?.lower(0.3);
+  theme.textSubtlest = theme.textSubtlest ?? theme.text?.lower(0.5);
+
+  return theme;
+}
+
+export function serializeTheme(theme: YaakTheme): string {
+  function next(o: Record<string, unknown>) {
+    o = { ...o }; // Clone first
+
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if (v instanceof YaakColor) {
+        o[k] = v.css();
+      } else if (Object.prototype.toString.call(v) === '[object Object]') {
+        o[k] = next(v as Record<string, unknown>);
+      } else {
+        o[k] = v;
+      }
+    }
+    return o;
+  }
+
+  return JSON.stringify(next(theme));
+}
+
+export function deserializeTheme(theme: string): YaakTheme {
+  function next(o: Record<string, unknown>) {
+    for (const k of Object.keys(o)) {
+      const v = o[k];
+      if (v instanceof YaakColor) {
+        o[k] = v;
+      } else if (typeof v === 'string' && v.match(/^(#|hsla\()/)) {
+        o[k] = new YaakColor(v, 'dark');
+      } else if (Object.prototype.toString.call(v) === '[object Object]') {
+        o[k] = next(v as Record<string, unknown>);
+      } else {
+        o[k] = v;
+      }
+    }
+    return o;
+  }
+
+  return next(JSON.parse(theme)) as YaakTheme;
 }

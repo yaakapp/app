@@ -263,7 +263,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         searchText: fallbackRequestName(r),
         label: (
           <HStack space={2}>
-            <HttpMethodTag className="text-fg-subtler" request={r} />
+            <HttpMethodTag className="text-text-subtlest" request={r} />
             <div className="truncate">{fallbackRequestName(r)}</div>
           </HStack>
         ),
@@ -389,7 +389,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           hideLabel
           leftSlot={
             <div className="h-md w-10 flex justify-center items-center">
-              <Icon icon="search" className="text-fg-subtle" />
+              <Icon icon="search" className="text-text-subtle" />
             </div>
           }
           name="command"
@@ -446,9 +446,9 @@ function CommandPaletteItem({
       justify="start"
       className={classNames(
         'w-full h-sm flex items-center rounded px-1.5',
-        'hover:text-fg',
-        active && 'bg-background-highlight-secondary text-fg',
-        !active && 'text-fg-subtle',
+        'hover:text',
+        active && 'bg-surface-highlight-secondary text',
+        !active && 'text-text-subtle',
       )}
     >
       <span className="truncate">{children}</span>

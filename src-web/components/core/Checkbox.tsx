@@ -27,13 +27,13 @@ export function Checkbox({
     <HStack
       as="label"
       space={2}
-      className={classNames(className, 'text-fg', disabled && 'opacity-disabled')}
+      className={classNames(className, 'text-text mr-auto', disabled && 'opacity-disabled')}
     >
       <div className={classNames(inputWrapperClassName, 'x-theme-input', 'relative flex')}>
         <input
           aria-hidden
           className={classNames(
-            'appearance-none w-4 h-4 flex-shrink-0 border border-background-highlight',
+            'appearance-none w-4 h-4 flex-shrink-0 border border-border',
             'rounded hocus:border-border-focus hocus:bg-focus/[5%] outline-none ring-0',
           )}
           type="checkbox"

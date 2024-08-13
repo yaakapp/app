@@ -25,7 +25,7 @@ export function HeaderSize({
       style={style}
       className={classNames(
         className,
-        'pt-[1px] w-full border-b border-background-highlight min-w-0',
+        'pt-[1px] w-full border-b border-border-subtle min-w-0',
         stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
         size === 'md' && 'h-[27px]',
         size === 'lg' && 'h-[38px]',

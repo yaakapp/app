@@ -5,7 +5,7 @@
     @apply w-full block text-base;
 
     .cm-cursor {
-      @apply border-fg !important;
+      @apply border-danger !important;
       /* Widen the cursor */
       @apply border-l-[2px];
     }
@@ -20,11 +20,11 @@
 
     .cm-line {
       @apply w-full; /* Important! Ensure it spans the entire width */
-      @apply w-full text-fg pl-1 pr-1.5;
+      @apply w-full text-text pl-1 pr-1.5;
     }
 
     .cm-placeholder {
-      @apply text-placeholder;
+      @apply text-text-subtlest;
     }
 
     .cm-scroller {
@@ -50,7 +50,7 @@
     /* Style gutters */
 
     .cm-gutters {
-      @apply border-0 text-fg-subtler bg-transparent;
+      @apply border-0 text-text-subtlest bg-transparent;
 
       .cm-gutterElement {
         @apply cursor-default;
@@ -59,8 +59,8 @@
 
     .placeholder {
       /* Colors */
-      @apply bg-background text-fg-subtle border-background-highlight-secondary;
-      @apply hover:border-background-highlight hover:text-fg hover:bg-background-highlight-secondary;
+      @apply bg-surface text-text-subtle border-border-subtle;
+      @apply hover:border-border-subtle hover:text-text hover:bg-surface-highlight;
 
       @apply border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 
@@ -147,12 +147,12 @@
 }
 
 .cm-editor .fold-gutter-icon:hover {
-  @apply text-fg bg-background-highlight;
+  @apply text-text bg-surface-highlight;
 }
 
 .cm-editor .cm-foldPlaceholder {
-  @apply px-2 border border-fg-subtler bg-background-highlight;
-  @apply hover:text-fg hover:border-fg-subtle text-fg;
+  @apply px-2 border border-border-subtle bg-surface-highlight;
+  @apply hover:text-text hover:border-border-subtle text-text;
   @apply cursor-default !important;
 }
 
@@ -162,13 +162,13 @@
 
 .cm-wrapper:not(.cm-readonly) .cm-editor {
   &.cm-focused .cm-activeLineGutter {
-    @apply text-fg-subtle;
+    @apply text-text-subtle;
   }
 }
 
 .cm-wrapper.cm-readonly .cm-editor {
   .cm-cursor {
-    @apply border-fg-danger !important;
+    @apply border-danger !important;
   }
 }
 
@@ -187,18 +187,18 @@
 }
 
 .cm-tooltip.cm-tooltip-hover {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-fg-subtler z-50 pointer-events-auto text-sm;
+  @apply shadow-lg bg-surface rounded text-text-subtle border border-border-subtle z-50 pointer-events-auto text-sm;
   @apply px-2 py-1;
 
   a {
-    @apply text-fg;
+    @apply text-text;
 
     &:hover {
       @apply underline;
     }
 
     &::after {
-      @apply text-fg bg-fg-secondary h-3 w-3 ml-1;
+      @apply text-text bg-surface-highlight h-3 w-3 ml-1;
       content: '';
       -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='black' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
       -webkit-mask-size: contain;
@@ -210,7 +210,7 @@
 /* NOTE: Extra selector required to override default styles */
 .cm-tooltip.cm-tooltip-autocomplete,
 .cm-tooltip.cm-completionInfo {
-  @apply shadow-lg bg-background rounded text-fg-subtle border border-background-highlight z-50 pointer-events-auto text-editor;
+  @apply shadow-lg bg-surface rounded text-text-subtle border border-border-subtle z-50 pointer-events-auto text-editor;
 
   .cm-completionIcon {
     @apply italic font-mono;
@@ -288,11 +288,11 @@
     }
 
     & > ul > li {
-      @apply cursor-default px-2 h-[2em] rounded-sm text-fg flex items-center;
+      @apply cursor-default px-2 h-[2em] rounded-sm text-text flex items-center;
     }
 
     & > ul > li[aria-selected] {
-      @apply bg-background-highlight-secondary text-fg;
+      @apply bg-surface-highlight text-text;
     }
 
     .cm-completionIcon {
@@ -300,17 +300,17 @@
     }
 
     .cm-completionLabel {
-      @apply text-fg;
+      @apply text-text;
     }
 
     .cm-completionDetail {
-      @apply ml-auto pl-6 text-fg-subtle;
+      @apply ml-auto pl-6 text-text-subtle;
     }
   }
 }
 
 .cm-editor .cm-panels {
-  @apply bg-background-highlight-secondary backdrop-blur-sm p-1 mb-1 text-fg z-20 rounded-md;
+  @apply bg-surface-highlight backdrop-blur-sm p-1 mb-1 text-text z-20 rounded-md;
 
   input,
   button {
@@ -318,21 +318,21 @@
   }
 
   button {
-    @apply border-fg-subtler bg-background-highlight text-fg hover:border-fg-info;
+    @apply border-border-subtle bg-surface-highlight text-text hover:border-info;
     @apply appearance-none bg-none cursor-default;
   }
 
   button[name='close'] {
-    @apply text-fg-subtle hocus:text-fg px-2 -mr-1.5 !important;
+    @apply text-text-subtle hocus:text-text px-2 -mr-1.5 !important;
   }
 
   input {
-    @apply bg-background border-background-highlight focus:border-border-focus;
+    @apply bg-surface border-border-subtle focus:border-border-focus;
     @apply border outline-none cursor-text;
   }
 
   label {
-    @apply focus-within:text-fg;
+    @apply focus-within:text-text;
   }
 
   /* Hide the "All" button */

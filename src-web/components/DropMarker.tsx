@@ -14,7 +14,7 @@ export const DropMarker = memo(
           'relative w-full h-0 overflow-visible pointer-events-none',
         )}
       >
-        <div className="absolute z-50 left-2 right-2 -bottom-[0.1rem] h-[0.2rem] bg-fg-primary rounded-full" />
+        <div className="absolute z-50 left-2 right-2 -bottom-[0.1rem] h-[0.2rem] bg-primary rounded-full" />
       </div>
     );
   },

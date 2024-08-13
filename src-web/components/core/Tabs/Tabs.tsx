@@ -87,8 +87,8 @@ export function Tabs({
               'h-full flex items-center rounded',
               '!px-2 ml-[1px]',
               addBorders && 'border',
-              isActive ? 'text-fg' : 'text-fg-subtle hover:text-fg',
-              isActive && addBorders ? 'border-background-highlight' : 'border-transparent',
+              isActive ? 'text-text' : 'text-text-subtle hover:text-text',
+              isActive && addBorders ? 'border-border-subtle' : 'border-transparent',
             );
 
             if ('options' in t) {
@@ -103,7 +103,6 @@ export function Tabs({
                   onChange={t.options.onChange}
                 >
                   <button
-                    color="custom"
                     onClick={isActive ? undefined : () => handleTabChange(t.value)}
                     className={btnClassName}
                   >
@@ -113,7 +112,7 @@ export function Tabs({
                     <Icon
                       size="sm"
                       icon="chevronDown"
-                      className={classNames('ml-1', isActive ? 'text-fg-subtle' : 'opacity-50')}
+                      className={classNames('ml-1', isActive ? 'text-text-subtle' : 'opacity-50')}
                     />
                   </button>
                 </RadioDropdown>
@@ -122,7 +121,6 @@ export function Tabs({
               return (
                 <button
                   key={t.value}
-                  color="custom"
                   onClick={() => handleTabChange(t.value)}
                   className={btnClassName}
                 >

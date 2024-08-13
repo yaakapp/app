@@ -76,7 +76,6 @@ export const UrlBar = memo(function UrlBar({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onPaste={onPaste}
-        containerClassName="bg-background border border-background-highlight"
         onChange={onUrlChange}
         defaultValue={url}
         placeholder={placeholder}

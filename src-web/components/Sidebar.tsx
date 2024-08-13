@@ -501,7 +501,7 @@ function SidebarItems({
       aria-orientation="vertical"
       dir="ltr"
       className={classNames(
-        tree.depth > 0 && 'border-l border-background-highlight-secondary',
+        tree.depth > 0 && 'border-l border-border-subtle',
         tree.depth === 0 && 'ml-0',
         tree.depth >= 1 && 'ml-[1.2rem]',
       )}
@@ -526,7 +526,7 @@ function SidebarItems({
                 (child.item.model === 'http_request' || child.item.model === 'grpc_request') && (
                   <HttpMethodTag
                     request={child.item}
-                    className={classNames(!(active || selected) && 'text-fg-subtler')}
+                    className={classNames(!(active || selected) && 'text-text-subtlest')}
                   />
                 )
               }
@@ -864,12 +864,12 @@ function SidebarItem({
           data-active={isActive}
           data-selected={selected}
           className={classNames(
-            'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md',
+            'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md focus-visible:ring focus-visible:ring-border-focus outline-0',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-background-highlight-secondary text-fg',
+            isActive && 'bg-surface-highlight-secondary text',
             !isActive &&
-              'text-fg-subtle group-hover/item:text-fg active:bg-background-highlight-secondary',
-            selected && useProminentStyles && '!bg-background-active',
+              'text-text-subtle group-hover/item:text-text active:bg-surface-highlight-secondary',
+            selected && useProminentStyles && '!bg-surface-active',
           )}
         >
           {itemModel === 'folder' && (
@@ -877,7 +877,7 @@ function SidebarItem({
               size="sm"
               icon="chevronRight"
               className={classNames(
-                'text-fg-subtler',
+                'text-text-subtlest',
                 'transition-transform',
                 !isCollapsed(itemId) && 'transform rotate-90',
               )}
@@ -900,13 +900,13 @@ function SidebarItem({
           {latestGrpcConnection ? (
             <div className="ml-auto">
               {isResponseLoading(latestGrpcConnection) && (
-                <Icon spin size="sm" icon="update" className="text-fg-subtler" />
+                <Icon spin size="sm" icon="update" className="text-text-subtlest" />
               )}
             </div>
           ) : latestHttpResponse ? (
             <div className="ml-auto">
               {isResponseLoading(latestHttpResponse) ? (
-                <Icon spin size="sm" icon="refresh" className="text-fg-subtler" />
+                <Icon spin size="sm" icon="refresh" className="text-text-subtlest" />
               ) : (
                 <StatusTag className="text-xs" response={latestHttpResponse} />
               )}

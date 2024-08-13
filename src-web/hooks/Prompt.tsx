@@ -52,7 +52,7 @@ export function Prompt({
         onChange={setValue}
       />
       <HStack space={2} justifyContent="end">
-        <Button onClick={onHide} variant="border">
+        <Button onClick={onHide} variant="border" color="secondary">
           Cancel
         </Button>
         <Button type="submit" color="primary">

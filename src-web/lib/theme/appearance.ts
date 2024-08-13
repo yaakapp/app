@@ -1,5 +1,6 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import type { Appearance } from './window';
+
+type Appearance = 'light' | 'dark';
 
 export function getCSSAppearance(): Appearance {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

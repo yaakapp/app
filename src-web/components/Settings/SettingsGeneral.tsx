@@ -81,7 +81,7 @@ export function SettingsGeneral() {
 
       <Heading size={2}>
         Workspace{' '}
-        <div className="inline-block ml-1 bg-background-highlight px-2 py-0.5 rounded text-fg text-shrink">
+        <div className="inline-block ml-1 bg-surface-highlight px-2 py-0.5 rounded text text-shrink">
           {workspace.name}
         </div>
       </Heading>

@@ -60,7 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     'x-theme-button',
     `x-theme-button--${variant}`,
     `x-theme-button--${variant}--${color}`,
-    'text-fg',
+    'text-text',
     'border', // They all have borders to ensure the same width
     'max-w-full min-w-0', // Help with truncation
     'hocus:opacity-100', // Force opacity for certain hover effects
@@ -77,24 +77,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
     // Solids
     variant === 'solid' && 'border-transparent',
-    variant === 'solid' && color === 'custom' && 'ring-blue-400',
+    variant === 'solid' && color === 'custom' && 'ring-border-focus',
     variant === 'solid' &&
       color !== 'custom' &&
-      color !== 'default' &&
-      'bg-background enabled:hocus:bg-background-highlight ring-background-highlight-secondary',
-    variant === 'solid' &&
-      color === 'default' &&
-      'enabled:hocus:bg-background-highlight ring-fg-info',
+      'bg-surface enabled:hocus: enabled:hocus:bg-surface-highlight ring-border-subtle',
 
     // Borders
     variant === 'border' && 'border',
     variant === 'border' &&
       color !== 'custom' &&
-      color !== 'default' &&
-      'border-fg-subtler text-fg-subtle enabled:hocus:border-fg-subtle enabled:hocus:bg-background-highlight enabled:hocus:text-fg ring-fg-subtler',
-    variant === 'border' &&
-      color === 'default' &&
-      'border-background-highlight enabled:hocus:border-fg-subtler enabled:hocus:bg-background-highlight-secondary',
+      'border-border-subtle text-text-subtle enabled:hocus:border-border ' +
+        'enabled:hocus:bg-surface-highlight enabled:hocus:text-text ring-border-subtler',
   );
 
   const buttonRef = useRef<HTMLButtonElement>(null);

@@ -100,16 +100,16 @@ export function GrpcProtoSelection({ requestId }: Props) {
         )}
 
         {protoFiles.length > 0 && (
-          <table className="w-full divide-y divide-background-highlight">
+          <table className="w-full divide-y divide-surface-highlight">
             <thead>
               <tr>
-                <th className="text-fg-subtler">
+                <th className="text-text-subtlest">
                   <span className="font-mono">*.proto</span> Files
                 </th>
                 <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-background-highlight">
+            <tbody className="divide-y divide-surface-highlight">
               {protoFiles.map((f, i) => (
                 <tr key={f + i} className="group">
                   <td className="pl-1 font-mono">{f.split('/').pop()}</td>
