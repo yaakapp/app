@@ -6,13 +6,14 @@ export const parser = LRParser.deserialize({
   states: "!^QQOPOOOOOO'#C_'#C_OYOQO'#C^OOOO'#Cc'#CcQQOPOOOOOO'#Cd'#CdO_OQO,58xOOOO-E6a-E6aOOOO-E6b-E6bOOOO1G.d1G.d",
   stateData: "g~OUROYPO~OSTO~OSTOTXO~O",
   goto: "nXPPY^PPPbhTROSTQOSQSORVSQUQRWU",
-  nodeNames: "⚠ Template Tag Open Content Close Text",
+  nodeNames: "⚠ Template Tag TagOpen TagContent TagClose Text",
   maxTerm: 10,
   propSources: [highlight],
   skippedNodes: [0],
   repeatNodeCount: 2,
-  tokenData: "![~RTOtbtuyu;'Sb;'S;=`s<%lOb~gSU~Otbu;'Sb;'S;=`s<%lOb~vP;=`<%lb~|P#o#p!P~!SP!}#O!V~![OY~",
+  tokenData: "#]~RTOtbtu!hu;'Sb;'S;=`!]<%lOb~gTU~Otbtuvu;'Sb;'S;=`!]<%lOb~yUO#ob#p;'Sb;'S;=`!]<%l~b~Ob~~!c~!`P;=`<%lb~!hOU~~!kVO#ob#o#p#Q#p;'Sb;'S;=`!]<%l~b~Ob~~!c~#TP!}#O#W~#]OY~",
   tokenizers: [1, new LocalTokenGroup("b~RP#P#QU~XP#q#r[~aOT~~", 17, 4)],
   topRules: {"Template":[0,1]},
   tokenPrec: 0
 })
+
