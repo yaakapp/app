@@ -1,12 +1,11 @@
-import { HttpRequest } from '../gen/HttpRequest';
-import { HttpResponse } from '../gen/HttpResponse';
+import { GetHttpRequestByIdRequest } from '../gen/GetHttpRequestByIdRequest';
+import { GetHttpRequestByIdResponse } from '../gen/GetHttpRequestByIdResponse';
+import { SendHttpRequestRequest } from '../gen/SendHttpRequestRequest';
+import { SendHttpRequestResponse } from '../gen/SendHttpRequestResponse';
 
 export type YaakContext = {
-  metadata: {
-    getVersion(): Promise<string>;
-  };
   httpRequest: {
-    send(id: string): Promise<HttpResponse>;
-    getById(id: string): Promise<HttpRequest | null>;
+    send(args: SendHttpRequestRequest): Promise<SendHttpRequestResponse['httpResponse']>;
+    getById(args: GetHttpRequestByIdRequest): Promise<GetHttpRequestByIdResponse['httpRequest']>;
   };
 };

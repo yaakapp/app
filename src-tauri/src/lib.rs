@@ -25,8 +25,8 @@ use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::Mutex;
 
-use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
+use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};

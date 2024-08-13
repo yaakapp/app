@@ -95,8 +95,8 @@ impl PluginRuntimeGrpcServer {
         (id, rx)
     }
 
-    pub async fn unsubscribe(&self, rx_id: String) {
-        self.subscribers.lock().await.remove(rx_id.as_str());
+    pub async fn unsubscribe(&self, rx_id: &str) {
+        self.subscribers.lock().await.remove(rx_id);
     }
 
     pub async fn remove_plugins(&self, plugin_ids: Vec<String>) {
@@ -301,7 +301,7 @@ impl PluginRuntimeGrpcServer {
                         break;
                     }
                 }
-                server.unsubscribe(rx_id).await;
+                server.unsubscribe(rx_id.as_str()).await;
 
                 found_events
             })
@@ -319,30 +319,6 @@ impl PluginRuntimeGrpcServer {
         // 4. Join on the spawned thread
         let events = send_events_fut.await.expect("Thread didn't succeed");
         Ok(events)
-    }
-
-    pub async fn send(&self, payload: InternalEventPayload) -> Result<Vec<InternalEvent>> {
-        let mut events: Vec<InternalEvent> = Vec::new();
-        let plugins = self.plugin_ref_to_plugin.lock().await;
-        if plugins.is_empty() {
-            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
-        }
-
-        for ph in plugins.values() {
-            let event = ph.build_event_to_send(&payload, None);
-            self.send_to_plugin_handle(ph, &event).await?;
-            events.push(event);
-        }
-
-        Ok(events)
-    }
-
-    async fn send_to_plugin_handle(
-        &self,
-        plugin: &PluginHandle,
-        event: &InternalEvent,
-    ) -> Result<()> {
-        plugin.send(event).await
     }
 
     async fn load_plugins(

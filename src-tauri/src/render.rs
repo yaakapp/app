@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde_json::Value;
 use crate::template_fns::timestamp;
-use templates::parse_and_render;
+use yaak_templates::parse_and_render;
 use yaak_models::models::{
     Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
 };

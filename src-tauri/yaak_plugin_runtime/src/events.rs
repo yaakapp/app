@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use yaak_models::models::{CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Settings, Workspace};
+use yaak_models::models::{
+    CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest,
+    HttpResponse, KeyValue, Settings, Workspace,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -20,12 +23,22 @@ pub struct InternalEvent {
 pub enum InternalEventPayload {
     BootRequest(BootRequest),
     BootResponse(BootResponse),
+
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
+
     FilterRequest(FilterRequest),
     FilterResponse(FilterResponse),
+
     ExportHttpRequestRequest(ExportHttpRequestRequest),
     ExportHttpRequestResponse(ExportHttpRequestResponse),
+    
+    SendHttpRequestRequest(SendHttpRequestRequest),
+    SendHttpRequestResponse(SendHttpRequestResponse),
+
+    GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
+    GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
+    
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
     EmptyResponse(EmptyResponse),
@@ -95,17 +108,33 @@ pub struct ExportHttpRequestResponse {
     pub content: String,
 }
 
-// TODO: Migrate plugins to return this type
-// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "camelCase", untagged)]
-// #[ts(export)]
-// pub enum ExportableModel {
-//     Workspace(Workspace),
-//     Environment(Environment),
-//     Folder(Folder),
-//     HttpRequest(HttpRequest),
-//     GrpcRequest(GrpcRequest),
-// }
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct SendHttpRequestRequest {
+    pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct SendHttpRequestResponse {
+    pub http_response: HttpResponse,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct GetHttpRequestByIdRequest {
+    pub id: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct GetHttpRequestByIdResponse {
+    pub http_request: Option<HttpRequest>,
+}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]

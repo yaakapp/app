@@ -79,7 +79,7 @@ pub async fn start_server(
                     _ => {}
                 };
             }
-            server.unsubscribe(rx_id).await;
+            server.unsubscribe(rx_id.as_str()).await;
         });
     };
 

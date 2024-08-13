@@ -1,5 +1,5 @@
 [workspace]
-members = ["grpc", "templates", "yaak_plugin_runtime", "yaak_models"]
+members = ["yaak_grpc", "yaak_templates", "yaak_plugin_runtime", "yaak_models"]
 
 
 [package]
@@ -26,8 +26,8 @@ cocoa = "0.25.0"
 openssl-sys = { version = "0.9", features = ["vendored"] } # For Ubuntu installation to work
 
 [dependencies]
-grpc = { path = "./grpc" }
-templates = { path = "./templates" }
+yaak_grpc = { path = "yaak_grpc" }
+yaak_templates = { path = "yaak_templates" }
 yaak_plugin_runtime = { path = "yaak_plugin_runtime" }
 anyhow = "1.0.86"
 base64 = "0.22.0"

@@ -15,7 +15,7 @@ use sea_query::Keyword::CurrentTimestamp;
 use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, WebviewWindow, Wry};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow, Wry};
 
 pub async fn set_key_value_string(
     mgr: &impl Manager<Wry>,
@@ -1021,7 +1021,7 @@ pub async fn list_http_requests(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn get_http_request(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpRequest> {
+pub async fn get_http_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<HttpRequest> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 

@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::events::{
     ExportHttpRequestRequest, ExportHttpRequestResponse, FilterRequest, FilterResponse,
-    ImportRequest, ImportResponse, InternalEventPayload,
+    GetHttpRequestByIdResponse, ImportRequest, ImportResponse, InternalEventPayload,
 };
 
 use crate::error::Error::PluginErr;
@@ -12,6 +12,7 @@ use std::time::Duration;
 use tauri::{AppHandle, Runtime};
 use tokio::sync::watch::Sender;
 use yaak_models::models::HttpRequest;
+use yaak_models::queries::get_http_request;
 
 pub struct PluginManager {
     kill_tx: Sender<bool>,
@@ -31,6 +32,35 @@ impl PluginManager {
         start_nodejs_plugin_runtime(app_handle, addr, &kill_rx)
             .await
             .expect("Failed to start plugin runtime");
+
+        {
+            let (_rx_id, mut rx) = server.subscribe().await;
+            let app_handle = app_handle.clone();
+            let server = server.clone();
+            tauri::async_runtime::spawn(async move {
+                while let Some(event) = rx.recv().await {
+                    let plugin = match server.plugin_by_ref_id(event.plugin_ref_id.as_str()).await {
+                        Ok(p) => p,
+                        Err(_) => continue,
+                    };
+
+                    match event.payload {
+                        InternalEventPayload::GetHttpRequestByIdRequest(req) => {
+                            let http_request =
+                                get_http_request(&app_handle, req.id.as_str()).await.ok();
+                            let event = plugin.build_event_to_send(
+                                &InternalEventPayload::GetHttpRequestByIdResponse(
+                                    GetHttpRequestByIdResponse { http_request },
+                                ),
+                                Some(event.id),
+                            );
+                            plugin.send(&event).await.unwrap()
+                        }
+                        _ => {}
+                    }
+                }
+            });
+        }
 
         PluginManager { kill_tx, server }
     }

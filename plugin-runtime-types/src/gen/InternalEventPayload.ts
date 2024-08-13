@@ -6,7 +6,11 @@ import type { ExportHttpRequestRequest } from "./ExportHttpRequestRequest";
 import type { ExportHttpRequestResponse } from "./ExportHttpRequestResponse";
 import type { FilterRequest } from "./FilterRequest";
 import type { FilterResponse } from "./FilterResponse";
+import type { GetHttpRequestByIdRequest } from "./GetHttpRequestByIdRequest";
+import type { GetHttpRequestByIdResponse } from "./GetHttpRequestByIdResponse";
 import type { ImportRequest } from "./ImportRequest";
 import type { ImportResponse } from "./ImportResponse";
+import type { SendHttpRequestRequest } from "./SendHttpRequestRequest";
+import type { SendHttpRequestResponse } from "./SendHttpRequestResponse";
 
-export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "empty_response" } & EmptyResponse;
+export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "empty_response" } & EmptyResponse;
