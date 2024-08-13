@@ -26,6 +26,8 @@ export const rosePineDefault: YaakTheme = {
       surface: new YaakColor('#393552', 'dark'),
       textSubtle: new YaakColor('#908caa', 'dark').lift(0.15),
       textSubtlest: new YaakColor('#6e6a86', 'dark').lift(0.15),
+      border: new YaakColor('#393552', 'dark').lift(0.2),
+      borderSubtle: new YaakColor('#393552', 'dark').lift(0.12),
     },
   },
 };
@@ -55,6 +57,8 @@ const rosePineMoon: YaakTheme = {
       surface: new YaakColor('#393552', 'dark'),
       textSubtle: new YaakColor('#908caa', 'dark').lift(0.15),
       textSubtlest: new YaakColor('#6e6a86', 'dark').lift(0.15),
+      border: new YaakColor('#393552', 'dark').lift(0.2),
+      borderSubtle: new YaakColor('#393552', 'dark').lift(0.12),
     },
   },
 };
@@ -94,7 +98,6 @@ const rosePineDawn: YaakTheme = {
     menu: {
       surface: new YaakColor('#f2e9e1', 'light'),
       border: new YaakColor('#dfdad9', 'light'),
-      surfaceHighlight: new YaakColor('#6e6a86', 'light'),
     },
   },
 };
