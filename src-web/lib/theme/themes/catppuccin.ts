@@ -19,12 +19,10 @@ export const catppuccinLatte: YaakTheme = {
     sidebar: {
       surface: new YaakColor('#e6e9ef', 'light'),
       border: new YaakColor('#e6e9ef', 'light').lift(0.05),
-      textSubtlest: new YaakColor('#7287fd', 'light'),
     },
     appHeader: {
       surface: new YaakColor('#dce0e8', 'light'),
       border: new YaakColor('#e6e9ef', 'light').lift(0.05),
-      textSubtlest: new YaakColor('#7287fd', 'light'),
     },
   },
 };

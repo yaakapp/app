@@ -1,17 +1,17 @@
 import parseColor from 'parse-color';
 
 export class YaakColor {
-  private theme: 'dark' | 'light' = 'light';
+  private readonly appearance: 'dark' | 'light' = 'light';
 
   private hue: number = 0;
   private saturation: number = 0;
   private lightness: number = 0;
   private alpha: number = 1;
 
-  constructor(cssColor: string, theme: 'dark' | 'light' = 'light') {
+  constructor(cssColor: string, appearance: 'dark' | 'light' = 'light') {
     try {
       this.set(cssColor);
-      this.theme = theme;
+      this.appearance = appearance;
     } catch (err) {
       console.log('Failed to parse CSS color', cssColor, err);
     }
@@ -43,15 +43,15 @@ export class YaakColor {
   }
 
   clone(): YaakColor {
-    return new YaakColor(this.css(), this.theme);
+    return new YaakColor(this.css(), this.appearance);
   }
 
   lower(mod: number): YaakColor {
-    return this.theme === 'dark' ? this._darken(mod) : this._lighten(mod);
+    return this.appearance === 'dark' ? this._darken(mod) : this._lighten(mod);
   }
 
   lift(mod: number): YaakColor {
-    return this.theme === 'dark' ? this._lighten(mod) : this._darken(mod);
+    return this.appearance === 'dark' ? this._lighten(mod) : this._darken(mod);
   }
 
   minLightness(n: number): YaakColor {

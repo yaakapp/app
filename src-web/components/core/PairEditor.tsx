@@ -360,7 +360,7 @@ function PairEditorRow({
         title={pairContainer.pair.enabled ? 'Disable item' : 'Enable item'}
         disabled={isLast}
         checked={isLast ? false : !!pairContainer.pair.enabled}
-        className={classNames('mr-2', isLast && '!opacity-disabled')}
+        className={classNames('pr-2', isLast && '!opacity-disabled')}
         onChange={handleChangeEnabled}
       />
       <div

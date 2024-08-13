@@ -113,7 +113,7 @@ function buttonSolidColorVariables(
   color: YaakColor,
   isDefault: boolean = false,
 ): Partial<CSSVariables> {
-  const theme = {
+  const theme: Partial<YaakTheme> = {
     text: new YaakColor('white', 'dark'),
     surface: color.lower(0.3),
     surfaceHighlight: color.lower(0.1),
@@ -122,7 +122,7 @@ function buttonSolidColorVariables(
 
   if (isDefault) {
     theme.text = color.lift(0.8);
-    theme.surface = color;
+    theme.surface = undefined; // Inherit from root
     theme.surfaceHighlight = color.lift(0.08);
   }
 
@@ -134,17 +134,16 @@ function buttonBorderColorVariables(
   isDefault: boolean = false,
 ): Partial<CSSVariables> {
   const theme = {
-    text: color.lift(0.7),
-    textSubtle: color.lift(0.4),
+    text: color.lift(0.8),
+    textSubtle: color.lift(0.55),
     textSubtlest: color.lift(0.4).translucify(0.6),
-    surface: YaakColor.transparent(),
     surfaceHighlight: color.translucify(0.8),
-    borderSubtle: color.translucify(0.7),
+    borderSubtle: color.translucify(0.5),
     border: color.translucify(0.3),
   };
 
   if (isDefault) {
-    theme.borderSubtle = color.lift(0.08);
+    theme.borderSubtle = color.lift(0.28);
     theme.border = color.lift(0.5);
   }
 
@@ -290,10 +289,12 @@ export function indent(text: string, space = '    '): string {
 }
 
 export function completeTheme(theme: YaakTheme): YaakTheme {
-  // Clone the theme
-  theme = deserializeTheme(serializeTheme(theme));
+  const isDark = isThemeDark(theme);
 
-  const base = isThemeDark(theme) ? defaultDarkTheme : defaultLightTheme;
+  // Clone the theme
+  theme = deserializeTheme(serializeTheme(theme), isDark ? 'dark' : 'light');
+
+  const base = isDark ? defaultDarkTheme : defaultLightTheme;
 
   theme.primary = theme.primary ?? base.primary;
   theme.secondary = theme.secondary ?? base.secondary;
@@ -308,7 +309,8 @@ export function completeTheme(theme: YaakTheme): YaakTheme {
   theme.surfaceActive = theme.surfaceActive ?? theme.primary?.lower(0.2).translucify(0.8);
 
   theme.border = theme.border ?? theme.surface?.lift(0.12);
-  theme.borderSubtle = theme.borderSubtle ?? theme.border?.lower(0.15);
+  theme.borderSubtle = theme.borderSubtle ?? theme.border?.lower(0.08);
+  console.log('HELLO', { theme });
 
   theme.text = theme.text ?? theme.border?.lift(1).lower(0.2);
   theme.textSubtle = theme.textSubtle ?? theme.text?.lower(0.3);
@@ -337,14 +339,14 @@ export function serializeTheme(theme: YaakTheme): string {
   return JSON.stringify(next(theme));
 }
 
-export function deserializeTheme(theme: string): YaakTheme {
+export function deserializeTheme(theme: string, appearance: 'dark' | 'light'): YaakTheme {
   function next(o: Record<string, unknown>) {
     for (const k of Object.keys(o)) {
       const v = o[k];
       if (v instanceof YaakColor) {
         o[k] = v;
       } else if (typeof v === 'string' && v.match(/^(#|hsla\()/)) {
-        o[k] = new YaakColor(v, 'dark');
+        o[k] = new YaakColor(v, appearance);
       } else if (Object.prototype.toString.call(v) === '[object Object]') {
         o[k] = next(v as Record<string, unknown>);
       } else {

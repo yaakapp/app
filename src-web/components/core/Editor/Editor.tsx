@@ -162,12 +162,6 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [contentType, autocomplete, useTemplating, environment, workspace]);
 
-  const classList = className?.split(/\s+/) ?? [];
-  const bgClassList = classList
-    .filter((c) => c.match(/(^|:)?bg-.+/)) // Find bg-* classes
-    .map((c) => c.replace(/^bg-/, '!bg-')) // !important
-    .map((c) => c.replace(/^dark:bg-/, 'dark:!bg-')); // !important
-
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback(
     (container: HTMLDivElement | null) => {
@@ -230,8 +224,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   const decoratedActions = useMemo(() => {
     const results = [];
     const actionClassName = classNames(
-      'transition-opacity opacity-0 group-hover:opacity-80 hover:!opacity-100 shadow',
-      bgClassList,
+      'bg-surface transition-opacity opacity-0 group-hover:opacity-100 hover:!opacity-100 shadow',
     );
 
     if (format) {
@@ -269,7 +262,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       }),
     );
     return results;
-  }, [actions, bgClassList, format, onChange]);
+  }, [actions, format, onChange]);
 
   const cmContainer = (
     <div

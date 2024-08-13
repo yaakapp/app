@@ -5,7 +5,7 @@
     @apply w-full block text-base;
 
     .cm-cursor {
-      @apply border-danger !important;
+      @apply border-text !important;
       /* Widen the cursor */
       @apply border-l-[2px];
     }
@@ -50,7 +50,10 @@
     /* Style gutters */
 
     .cm-gutters {
-      @apply border-0 text-text-subtlest bg-transparent;
+      @apply border-0 text-text-subtlest bg-surface;
+      /* Not sure why, but there's a tiny gap left of the gutter that you can see text
+         through. Move left slightly to fix that. */
+      @apply -left-[1px];
 
       .cm-gutterElement {
         @apply cursor-default;

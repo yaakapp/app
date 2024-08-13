@@ -80,7 +80,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     variant === 'solid' && color === 'custom' && 'ring-border-focus',
     variant === 'solid' &&
       color !== 'custom' &&
-      'bg-surface enabled:hocus: enabled:hocus:bg-surface-highlight ring-border-subtle',
+      'enabled:hocus:text-text enabled:hocus:bg-surface-highlight ring-border-subtle',
+    variant === 'solid' && color !== 'custom' && color !== 'default' && 'bg-surface',
 
     // Borders
     variant === 'border' && 'border',

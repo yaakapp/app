@@ -177,7 +177,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
                   //   <JsonAttributeTree attrValue={activeResponse} />
                   <TextViewer
-                    className="-mr-2" // Pull to the right
+                    className="-mr-2 bg-surface" // Pull to the right
                     response={activeResponse}
                     pretty={viewMode === 'pretty'}
                   />

@@ -48,7 +48,7 @@ export const syntaxHighlightStyle = HighlightStyle.define([
   },
   {
     tag: [t.paren, t.bracket, t.brace],
-    color: 'var(--text)',
+    color: 'var(--textSubtle)',
   },
   {
     tag: [t.link, t.name, t.tagName, t.angleBracket, t.docString, t.number],
