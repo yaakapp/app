@@ -5,9 +5,11 @@ import { BetterMatchDecorator } from '../BetterMatchDecorator';
 class PlaceholderWidget extends WidgetType {
   constructor(
     readonly name: string,
+    readonly value: string,
     readonly exists: boolean,
     readonly type: 'function' | 'variable' = 'variable',
   ) {
+    console.log('PLACEHOLDER', { name, value });
     super();
   }
 
@@ -24,7 +26,7 @@ class PlaceholderWidget extends WidgetType {
         ? 'x-theme-placeholder--primary'
         : 'x-theme-placeholder--info'
     }`;
-    elt.title = !this.exists ? 'Variable not found in active environment' : '';
+    elt.title = !this.exists ? 'Variable not found in active environment' : this.value ?? '';
     elt.textContent = this.name;
     return elt;
   }
@@ -34,7 +36,7 @@ class PlaceholderWidget extends WidgetType {
   }
 }
 
-export const placeholders = function (variables: { name: string }[]) {
+export const placeholders = function (variables: { name: string; value?: string }[]) {
   const placeholderMatcher = new BetterMatchDecorator({
     regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
     decoration(match, view, matchStartPos) {
@@ -59,6 +61,7 @@ export const placeholders = function (variables: { name: string }[]) {
         inclusive: true,
         widget: new PlaceholderWidget(
           groupMatch,
+          variables.find((v) => v.name === groupMatch)?.value ?? '',
           isFunction ? true : variables.some((v) => v.name === groupMatch),
           isFunction ? 'function' : 'variable',
         ),
