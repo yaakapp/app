@@ -1,15 +1,15 @@
 import { useMutation } from '@tanstack/react-query';
-import { trackEvent } from '../lib/analytics';
 import type { HttpRequest } from '@yaakapp/api';
+import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 
 export function useCreateHttpRequest() {
   const workspace = useActiveWorkspace();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
 
@@ -38,7 +38,7 @@ export function useCreateHttpRequest() {
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,
-        environmentId: activeEnvironmentId ?? undefined,
+        environmentId: activeEnvironment?.id,
       });
     },
   });

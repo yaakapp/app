@@ -1,11 +1,11 @@
+import type { HttpRequest } from '@yaakapp/api';
 import type { IntrospectionQuery } from 'graphql';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
-import type { HttpRequest } from '@yaakapp/api';
 import { getResponseBodyText } from '../lib/responseBody';
 import { sendEphemeralRequest } from '../lib/sendEphemeralRequest';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useKeyValue } from './useKeyValue';
 
@@ -18,7 +18,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   // Debounce the request because it can change rapidly and we don't
   // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();
@@ -40,7 +40,10 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
         bodyType: 'application/json',
         body: { text: introspectionRequestBody },
       };
-      const response = await minPromiseMillis(sendEphemeralRequest(args, activeEnvironmentId), 700);
+      const response = await minPromiseMillis(
+        sendEphemeralRequest(args, activeEnvironment?.id ?? null),
+        700,
+      );
 
       if (response.error) {
         throw new Error(response.error);
@@ -72,7 +75,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     runIntrospection(); // Run immediately
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [request.id, request.url, request.method, refetchKey, activeEnvironmentId]);
+  }, [request.id, request.url, request.method, refetchKey, activeEnvironment?.id]);
 
   const refetch = useCallback(() => {
     setRefetchKey((k) => k + 1);

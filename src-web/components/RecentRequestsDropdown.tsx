@@ -19,7 +19,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
   const activeWorkspace = useActiveWorkspace();
-  const activeEnvironment = useActiveEnvironment();
+  const [activeEnvironment] = useActiveEnvironment();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
   const recentRequestIds = useMemo(() => allRecentRequestIds.slice(1), [allRecentRequestIds]);

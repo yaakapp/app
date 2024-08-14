@@ -1,10 +1,10 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
+import type { GrpcConnection, GrpcRequest } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
-import type { GrpcConnection, GrpcRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useDebouncedValue } from './useDebouncedValue';
 
 export interface ReflectResponseService {
@@ -18,12 +18,12 @@ export function useGrpc(
   protoFiles: string[],
 ) {
   const requestId = req?.id ?? 'n/a';
-  const [environmentId] = useActiveEnvironmentId();
+  const [environment] = useActiveEnvironment();
 
   const go = useMutation<void, string>({
     mutationKey: ['grpc_go', conn?.id],
     mutationFn: async () =>
-      await invokeCmd('cmd_grpc_go', { requestId, environmentId, protoFiles }),
+      await invokeCmd('cmd_grpc_go', { requestId, environmentId: environment?.id, protoFiles }),
     onSettled: () => trackEvent('grpc_request', 'send'),
   });
 

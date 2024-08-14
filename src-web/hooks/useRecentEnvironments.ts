@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { getKeyValue } from '../lib/keyValueStore';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useEnvironments } from './useEnvironments';
 import { useKeyValue } from './useKeyValue';
@@ -12,7 +12,7 @@ const fallback: string[] = [];
 export function useRecentEnvironments() {
   const environments = useEnvironments();
   const activeWorkspace = useActiveWorkspace();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspace?.id ?? 'n/a'),
     namespace,
@@ -22,12 +22,12 @@ export function useRecentEnvironments() {
   // Set history when active request changes
   useEffect(() => {
     kv.set((currentHistory: string[]) => {
-      if (activeEnvironmentId === null) return currentHistory;
-      const withoutCurrentEnvironment = currentHistory.filter((id) => id !== activeEnvironmentId);
-      return [activeEnvironmentId, ...withoutCurrentEnvironment];
+      if (activeEnvironment === null) return currentHistory;
+      const withoutCurrentEnvironment = currentHistory.filter((id) => id !== activeEnvironment.id);
+      return [activeEnvironment.id, ...withoutCurrentEnvironment];
     }).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeEnvironmentId]);
+  }, [activeEnvironment?.id]);
 
   const onlyValidIds = useMemo(
     () => kv.value?.filter((id) => environments.some((e) => e.id === id)) ?? [],

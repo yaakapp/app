@@ -1,11 +1,12 @@
+import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { useKey, useKeyPressEvent } from 'react-use';
+import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
@@ -32,7 +33,6 @@ import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import { isResponseLoading } from '../lib/models';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
@@ -61,7 +61,7 @@ export function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const folders = useFolders();
   const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();
@@ -207,14 +207,14 @@ export function Sidebar({ className }: Props) {
         routes.navigate('request', {
           requestId: id,
           workspaceId: item.workspaceId,
-          environmentId: activeEnvironmentId ?? undefined,
+          environmentId: activeEnvironment?.id,
         });
         setSelectedId(id);
         setSelectedTree(tree);
         if (!opts.noFocus) focusActiveRequest({ forced: { id, tree } });
       }
     },
-    [treeParentMap, collapsed, routes, activeEnvironmentId, focusActiveRequest],
+    [treeParentMap, collapsed, routes, activeEnvironment, focusActiveRequest],
   );
 
   const handleClearSelected = useCallback(() => {
@@ -260,7 +260,7 @@ export function Sidebar({ className }: Props) {
     routes.navigate('request', {
       requestId: selected.id,
       workspaceId: activeWorkspace?.id,
-      environmentId: activeEnvironmentId ?? undefined,
+      environmentId: activeEnvironment?.id,
     });
   });
 

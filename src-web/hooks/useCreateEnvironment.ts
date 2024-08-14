@@ -2,13 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Environment } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { environmentsQueryKey } from './useEnvironments';
 import { usePrompt } from './usePrompt';
 
 export function useCreateEnvironment() {
-  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
+  const [, setActiveEnvironmentId] = useActiveEnvironment();
   const prompt = usePrompt();
   const workspace = useActiveWorkspace();
   const queryClient = useQueryClient();

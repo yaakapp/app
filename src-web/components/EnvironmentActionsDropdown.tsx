@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -20,8 +19,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   ...buttonProps
 }: Props) {
   const environments = useEnvironments();
-  const activeEnvironment = useActiveEnvironment();
-  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
   const dialog = useDialog();
 
   const showEnvironmentDialog = useCallback(() => {

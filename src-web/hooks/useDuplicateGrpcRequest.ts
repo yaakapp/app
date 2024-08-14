@@ -3,7 +3,7 @@ import type { GrpcRequest } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { setKeyValue } from '../lib/keyValueStore';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 import { protoFilesArgs, useGrpcProtoFiles } from './useGrpcProtoFiles';
@@ -16,7 +16,7 @@ export function useDuplicateGrpcRequest({
   navigateAfter: boolean;
 }) {
   const activeWorkspace = useActiveWorkspace();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const routes = useAppRoutes();
   const protoFiles = useGrpcProtoFiles(id);
   return useMutation<GrpcRequest, string>({
@@ -34,7 +34,7 @@ export function useDuplicateGrpcRequest({
         routes.navigate('request', {
           workspaceId: activeWorkspace.id,
           requestId: request.id,
-          environmentId: activeEnvironmentId ?? undefined,
+          environmentId: activeEnvironment?.id,
         });
       }
     },

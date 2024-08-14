@@ -8,7 +8,7 @@ import { useAlert } from './useAlert';
 import { useHttpRequests } from './useHttpRequests';
 
 export function useSendAnyHttpRequest() {
-  const environment = useActiveEnvironment();
+  const [environment] = useActiveEnvironment();
   const alert = useAlert();
   const [activeCookieJar] = useActiveCookieJar();
   const requests = useHttpRequests();

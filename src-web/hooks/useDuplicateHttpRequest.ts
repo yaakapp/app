@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import type { HttpRequest } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
+import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 
@@ -14,7 +14,7 @@ export function useDuplicateHttpRequest({
   navigateAfter: boolean;
 }) {
   const activeWorkspace = useActiveWorkspace();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment] = useActiveEnvironment();
   const routes = useAppRoutes();
   return useMutation<HttpRequest, string>({
     mutationKey: ['duplicate_http_request', id],
@@ -28,7 +28,7 @@ export function useDuplicateHttpRequest({
         routes.navigate('request', {
           workspaceId: activeWorkspace.id,
           requestId: request.id,
-          environmentId: activeEnvironmentId ?? undefined,
+          environmentId: activeEnvironment?.id,
         });
       }
     },

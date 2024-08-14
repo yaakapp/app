@@ -2,7 +2,7 @@ import type { Environment } from '@yaakapp/api';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QUERY_COOKIE_JAR_ID } from './useActiveCookieJar';
-import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
+import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironment';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useActiveWorkspace } from './useActiveWorkspace';
 

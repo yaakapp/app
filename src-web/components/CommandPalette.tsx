@@ -4,7 +4,6 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
@@ -56,9 +55,8 @@ const MAX_PER_GROUP = 8;
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [command, setCommand] = useDebouncedState<string>('', 150);
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
-  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
+  const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
   const routes = useAppRoutes();
-  const [activeEnvironmentId] = useActiveEnvironmentId();
   const workspaces = useWorkspaces();
   const environments = useEnvironments();
   const recentEnvironments = useRecentEnvironments();
@@ -74,7 +72,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
   const workspace = useActiveWorkspace();
-  const activeEnvironment = useActiveEnvironment();
   const sendRequest = useSendAnyHttpRequest();
   const renameRequest = useRenameRequest(activeRequest?.id ?? null);
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
@@ -272,7 +269,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           return routes.navigate('request', {
             workspaceId: r.workspaceId,
             requestId: r.id,
-            environmentId: activeEnvironmentId ?? undefined,
+            environmentId: activeEnvironment?.id,
           });
         },
       });
@@ -314,9 +311,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     workspaceCommands,
     sortedRequests,
     routes,
-    activeEnvironmentId,
+    activeEnvironment,
     sortedEnvironments,
-    activeEnvironment?.id,
     setActiveEnvironmentId,
     sortedWorkspaces,
     openWorkspace,
