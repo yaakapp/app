@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
+import type { ShowToastRequest } from '../../plugin-runtime-types/src';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import type { ToastProps } from './core/Toast';
 import { Toast } from './core/Toast';
 import { generateId } from '../lib/generateId';
@@ -60,6 +62,10 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     }),
     [],
   );
+
+  useListenToTauriEvent<ShowToastRequest>('show_toast', (event) => {
+    actions.show({ ...event.payload });
+  });
 
   const state: State = { toasts, actions };
   return <ToastContext.Provider value={state}>{children}</ToastContext.Provider>;

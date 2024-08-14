@@ -91,7 +91,11 @@ new Promise<void>(async (resolve, reject) => {
     clipboard: {
       async copyText(text) {
         await sendAndWaitForReply({ type: 'copy_text_request', text });
-        // Will be an empty reply
+      },
+    },
+    toast: {
+      async show(args) {
+        await sendAndWaitForReply({ type: 'show_toast_request', ...args });
       },
     },
     httpRequest: {
@@ -170,8 +174,9 @@ new Promise<void>(async (resolve, reject) => {
       ) {
         const reply: HttpRequestAction[] = mod.plugin.httpRequestActions.map(
           (a: HttpRequestActionPlugin) => ({
-            key: a.key,
-            label: a.label,
+            ...a,
+            // Add everything except onSelect
+            onSelect: undefined,
           }),
         );
         const replyPayload: InternalEventPayload = {

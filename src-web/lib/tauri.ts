@@ -48,7 +48,6 @@ type TauriCmd =
   | 'cmd_metadata'
   | 'cmd_new_nested_window'
   | 'cmd_new_window'
-  | 'cmd_request_to_curl'
   | 'cmd_dismiss_notification'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'

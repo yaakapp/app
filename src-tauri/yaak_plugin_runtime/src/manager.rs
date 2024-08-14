@@ -103,29 +103,6 @@ impl PluginManager {
         Err(PluginErr("No import responses found".to_string()))
     }
 
-    pub async fn run_export_curl(
-        &self,
-        request: &HttpRequest,
-    ) -> Result<ExportHttpRequestResponse> {
-        let event = self
-            .server
-            .send_to_plugin_and_wait(
-                "exporter-curl",
-                &InternalEventPayload::ExportHttpRequestRequest(ExportHttpRequestRequest {
-                    http_request: request.to_owned(),
-                }),
-            )
-            .await?;
-
-        match event.payload {
-            InternalEventPayload::ExportHttpRequestResponse(resp) => Ok(resp),
-            InternalEventPayload::EmptyResponse(_) => {
-                Err(PluginErr("Export returned empty".to_string()))
-            }
-            e => Err(PluginErr(format!("Export returned invalid event {:?}", e))),
-        }
-    }
-
     pub async fn run_filter(
         &self,
         filter: &str,

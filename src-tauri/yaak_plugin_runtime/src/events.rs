@@ -42,6 +42,8 @@ pub enum InternalEventPayload {
 
     CopyTextRequest(CopyTextRequest),
 
+    ShowToastRequest(ShowToastRequest),
+
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
 
@@ -138,6 +140,32 @@ pub struct CopyTextRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
+pub struct ShowToastRequest {
+    pub message: String,
+    pub variant: ToastVariant,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum ToastVariant {
+    Custom,
+    Copied,
+    Success,
+    Info,
+    Warning,
+    Error,
+}
+
+impl Default for ToastVariant {
+    fn default() -> Self {
+        ToastVariant::Info
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
 pub struct GetHttpRequestActionsResponse {
     pub actions: Vec<HttpRequestAction>,
     pub plugin_ref_id: String,
@@ -149,6 +177,7 @@ pub struct GetHttpRequestActionsResponse {
 pub struct HttpRequestAction {
     pub key: String,
     pub label: String,
+    pub icon: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

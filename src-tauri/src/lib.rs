@@ -871,32 +871,6 @@ async fn cmd_import_data(
 }
 
 #[tauri::command]
-async fn cmd_request_to_curl(
-    app: AppHandle,
-    request_id: &str,
-    plugin_manager: State<'_, PluginManager>,
-    environment_id: Option<&str>,
-) -> Result<String, String> {
-    let request = get_http_request(&app, request_id)
-        .await
-        .map_err(|e| e.to_string())?;
-    let environment = match environment_id {
-        Some(id) => Some(get_environment(&app, id).await.map_err(|e| e.to_string())?),
-        None => None,
-    };
-    let workspace = get_workspace(&app, &request.workspace_id)
-        .await
-        .map_err(|e| e.to_string())?;
-    let rendered = render_request(&request, &workspace, environment.as_ref());
-
-    let import_response = plugin_manager
-        .run_export_curl(&rendered)
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(import_response.content)
-}
-
-#[tauri::command]
 async fn cmd_http_request_actions(
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<Vec<GetHttpRequestActionsResponse>, String> {
@@ -1694,7 +1668,6 @@ pub fn run() {
             cmd_metadata,
             cmd_new_nested_window,
             cmd_new_window,
-            cmd_request_to_curl,
             cmd_save_response,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
@@ -1948,6 +1921,10 @@ async fn handle_plugin_event<R: Runtime>(
                 .clipboard()
                 .write_text(req.text.as_str())
                 .expect("Failed to write text to clipboard");
+            None
+        }
+        InternalEventPayload::ShowToastRequest(req) => {
+            app_handle.emit("show_toast", req).expect("Failed to emit show_toast");
             None
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {

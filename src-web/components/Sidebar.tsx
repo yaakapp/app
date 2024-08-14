@@ -10,7 +10,6 @@ import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -656,7 +655,6 @@ function SidebarItem({
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
   const httpRequestActions = useHttpRequestActions();
-  const copyAsCurl = useCopyAsCurl(itemId);
   const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
@@ -785,25 +783,18 @@ function SidebarItem({
                 leftSlot: <Icon icon="sendHorizontal" />,
                 onSelect: () => sendRequest.mutate(itemId),
               },
-              {
-                key: 'copyCurl',
-                label: 'Copy as Curl',
-                leftSlot: <Icon icon="copy" />,
-                onSelect: copyAsCurl.mutate,
-              },
+              ...httpRequestActions.map((a) => ({
+                key: a.key,
+                label: a.label,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                leftSlot: <Icon icon={(a.icon as any) ?? 'empty'} />,
+                onSelect: async () => {
+                  const request = await getHttpRequest(itemId);
+                  if (request != null) await a.call(request);
+                },
+              })),
               { type: 'separator' },
             ]
-          : [];
-      const httpRequestActionItems: DropdownItem[] =
-        itemModel === 'http_request'
-          ? httpRequestActions.map((a) => ({
-              key: a.key,
-              label: a.label,
-              onSelect: async () => {
-                const request = await getHttpRequest(itemId);
-                if (request != null) await a.call(request);
-              },
-            }))
           : [];
       return [
         ...requestItems,
@@ -839,12 +830,10 @@ function SidebarItem({
           leftSlot: <Icon icon="trash" />,
           onSelect: () => deleteRequest.mutate(),
         },
-        ...httpRequestActionItems,
       ];
     }
   }, [
     child.children,
-    copyAsCurl.mutate,
     createDropdownItems,
     deleteFolder,
     deleteRequest,

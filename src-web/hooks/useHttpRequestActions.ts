@@ -17,20 +17,17 @@ export function useHttpRequestActions() {
     },
   });
 
-  console.log('HELLO', httpRequestActions.data);
-
   return (
     httpRequestActions.data?.flatMap((r) =>
       r.actions.map((a) => ({
         key: a.key,
         label: a.label,
+        icon: a.icon,
         call: async (httpRequest: HttpRequest) => {
           const payload: CallHttpRequestActionRequest = {
             key: a.key,
             pluginRefId: r.pluginRefId,
-            args: {
-              httpRequest,
-            },
+            args: { httpRequest },
           };
           await invokeCmd('cmd_call_http_request_action', { req: payload });
         },
