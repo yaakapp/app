@@ -32,13 +32,24 @@ pub enum InternalEventPayload {
 
     ExportHttpRequestRequest(ExportHttpRequestRequest),
     ExportHttpRequestResponse(ExportHttpRequestResponse),
-    
+
     SendHttpRequestRequest(SendHttpRequestRequest),
     SendHttpRequestResponse(SendHttpRequestResponse),
 
+    GetHttpRequestActionsRequest,
+    GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
+    CallHttpRequestActionRequest(CallHttpRequestActionRequest),
+
+    CopyTextRequest(CopyTextRequest),
+
+    RenderHttpRequestRequest(RenderHttpRequestRequest),
+    RenderHttpRequestResponse(RenderHttpRequestResponse),
+
+    ShowToastRequest(ShowToastRequest),
+
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
-    
+
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
     EmptyResponse(EmptyResponse),
@@ -120,6 +131,86 @@ pub struct SendHttpRequestRequest {
 #[ts(export)]
 pub struct SendHttpRequestResponse {
     pub http_response: HttpResponse,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CopyTextRequest {
+    pub text: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct RenderHttpRequestRequest {
+    pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct RenderHttpRequestResponse {
+    pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct ShowToastRequest {
+    pub message: String,
+    pub variant: ToastVariant,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum ToastVariant {
+    Custom,
+    Copied,
+    Success,
+    Info,
+    Warning,
+    Error,
+}
+
+impl Default for ToastVariant {
+    fn default() -> Self {
+        ToastVariant::Info
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct GetHttpRequestActionsResponse {
+    pub actions: Vec<HttpRequestAction>,
+    pub plugin_ref_id: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct HttpRequestAction {
+    pub key: String,
+    pub label: String,
+    pub icon: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallHttpRequestActionRequest {
+    pub key: String,
+    pub plugin_ref_id: String,
+    pub args: CallHttpRequestActionArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallHttpRequestActionArgs {
+    pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

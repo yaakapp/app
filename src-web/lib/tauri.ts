@@ -2,6 +2,7 @@ import type { InvokeArgs } from '@tauri-apps/api/core';
 import { invoke } from '@tauri-apps/api/core';
 
 type TauriCmd =
+  | 'cmd_call_http_request_action'
   | 'cmd_check_for_updates'
   | 'cmd_create_cookie_jar'
   | 'cmd_create_environment'
@@ -47,7 +48,6 @@ type TauriCmd =
   | 'cmd_metadata'
   | 'cmd_new_nested_window'
   | 'cmd_new_window'
-  | 'cmd_request_to_curl'
   | 'cmd_dismiss_notification'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'
@@ -62,6 +62,7 @@ type TauriCmd =
   | 'cmd_update_http_request'
   | 'cmd_update_settings'
   | 'cmd_update_workspace'
+  | 'cmd_http_request_actions'
   | 'cmd_write_file_dev';
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {
