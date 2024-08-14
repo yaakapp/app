@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveCookieJar } from './useActiveCookieJar';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCookieJars } from './useCookieJars';
 import { useKeyValue } from './useKeyValue';
 
@@ -11,11 +11,11 @@ const fallback: string[] = [];
 
 export function useRecentCookieJars() {
   const cookieJars = useCookieJars();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const [activeCookieJar] = useActiveCookieJar();
   const activeCookieJarId = activeCookieJar?.id ?? null;
   const kv = useKeyValue<string[]>({
-    key: kvKey(activeWorkspaceId ?? 'n/a'),
+    key: kvKey(activeWorkspace?.id ?? 'n/a'),
     namespace,
     fallback,
   });

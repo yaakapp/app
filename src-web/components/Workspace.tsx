@@ -5,7 +5,6 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useWindowSize } from 'react-use';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
 import { useFloatingSidebarHidden } from '../hooks/useFloatingSidebarHidden';
 import { useImportData } from '../hooks/useImportData';
 import { useShouldFloatSidebar } from '../hooks/useShouldFloatSidebar';
@@ -16,7 +15,6 @@ import { useWorkspaces } from '../hooks/useWorkspaces';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { HotKeyList } from './core/HotKeyList';
-import { InlineCode } from './core/InlineCode';
 import { FeedbackLink } from './core/Link';
 import { HStack } from './core/Stacks';
 import { CreateDropdown } from './CreateDropdown';
@@ -38,7 +36,6 @@ export default function Workspace() {
   useSyncWorkspaceRequestTitle();
   const workspaces = useWorkspaces();
   const activeWorkspace = useActiveWorkspace();
-  const activeWorkspaceId = useActiveWorkspaceId();
   const { setWidth, width, resetWidth } = useSidebarWidth();
   const [sidebarHidden, setSidebarHidden] = useSidebarHidden();
   const [floatingSidebarHidden, setFloatingSidebarHidden] = useFloatingSidebarHidden();
@@ -176,9 +173,8 @@ export default function Workspace() {
       {activeWorkspace == null ? (
         <div className="m-auto">
           <Banner color="warning" className="max-w-[30rem]">
-            The active workspace{' '}
-            <InlineCode className="text-warning">{activeWorkspaceId}</InlineCode> was not found.
-            Select a workspace from the header menu or report this bug to <FeedbackLink />
+            The active workspace was not found. Select a workspace from the header menu or report
+            this bug to <FeedbackLink />
           </Banner>
         </div>
       ) : activeRequest == null ? (

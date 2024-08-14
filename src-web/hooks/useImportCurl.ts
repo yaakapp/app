@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '../components/ToastContext';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCreateHttpRequest } from './useCreateHttpRequest';
 import { useRequestUpdateKey } from './useRequestUpdateKey';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
 
 export function useImportCurl() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const updateRequest = useUpdateAnyHttpRequest();
   const createRequest = useCreateHttpRequest();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
@@ -24,7 +24,7 @@ export function useImportCurl() {
     }) => {
       const request: Record<string, unknown> = await invokeCmd('cmd_curl_to_request', {
         command,
-        workspaceId,
+        workspaceId: workspace?.id,
       });
       delete request.id;
 

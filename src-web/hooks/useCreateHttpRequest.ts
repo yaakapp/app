@@ -4,11 +4,11 @@ import type { HttpRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 
 export function useCreateHttpRequest() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const [activeEnvironmentId] = useActiveEnvironmentId();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
@@ -16,7 +16,7 @@ export function useCreateHttpRequest() {
   return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
     mutationFn: (patch = {}) => {
-      if (workspaceId === null) {
+      if (workspace === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
       if (patch.sortPriority === undefined) {
@@ -29,7 +29,9 @@ export function useCreateHttpRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invokeCmd('cmd_create_http_request', { request: { workspaceId, ...patch } });
+      return invokeCmd('cmd_create_http_request', {
+        request: { workspaceId: workspace.id, ...patch },
+      });
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {

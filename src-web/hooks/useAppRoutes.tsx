@@ -1,10 +1,10 @@
+import type { Environment } from '@yaakapp/api';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Environment } from '@yaakapp/api';
 import { QUERY_COOKIE_JAR_ID } from './useActiveCookieJar';
 import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
 import { useActiveRequestId } from './useActiveRequestId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 
 export type RouteParamsWorkspace = {
   workspaceId: string;
@@ -52,7 +52,7 @@ export const routePaths = {
 };
 
 export function useAppRoutes() {
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const requestId = useActiveRequestId();
   const nav = useNavigate();
 
@@ -69,22 +69,22 @@ export function useAppRoutes() {
 
   const setEnvironment = useCallback(
     (environment: Environment | null) => {
-      if (activeWorkspaceId == null) {
+      if (activeWorkspace == null) {
         navigate('workspaces');
       } else if (requestId == null) {
         navigate('workspace', {
-          workspaceId: activeWorkspaceId,
+          workspaceId: activeWorkspace.id,
           environmentId: environment == null ? undefined : environment.id,
         });
       } else {
         navigate('request', {
-          workspaceId: activeWorkspaceId,
+          workspaceId: activeWorkspace.id,
           environmentId: environment == null ? undefined : environment.id,
           requestId,
         });
       }
     },
-    [navigate, activeWorkspaceId, requestId],
+    [navigate, activeWorkspace, requestId],
   );
 
   return {

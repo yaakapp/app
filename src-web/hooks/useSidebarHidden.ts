@@ -1,11 +1,11 @@
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useKeyValue } from './useKeyValue';
 
 export function useSidebarHidden() {
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const { set, value } = useKeyValue<boolean>({
     namespace: 'no_sync',
-    key: ['sidebar_hidden', activeWorkspaceId ?? 'n/a'],
+    key: ['sidebar_hidden', activeWorkspace?.id ?? 'n/a'],
     fallback: false,
   });
 

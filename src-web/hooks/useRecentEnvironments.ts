@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useEnvironments } from './useEnvironments';
 import { useKeyValue } from './useKeyValue';
 
@@ -11,10 +11,10 @@ const fallback: string[] = [];
 
 export function useRecentEnvironments() {
   const environments = useEnvironments();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const [activeEnvironmentId] = useActiveEnvironmentId();
   const kv = useKeyValue<string[]>({
-    key: kvKey(activeWorkspaceId ?? 'n/a'),
+    key: kvKey(activeWorkspace?.id ?? 'n/a'),
     namespace,
     fallback,
   });

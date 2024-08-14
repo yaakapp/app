@@ -17,33 +17,21 @@ export function useOpenWorkspace() {
       workspaceId: string;
       inNewWindow: boolean;
     }) => {
+      const environmentId = (await getRecentEnvironments(workspaceId))[0];
+      const requestId = (await getRecentRequests(workspaceId))[0];
+      const cookieJarId = (await getRecentCookieJars(workspaceId))[0];
+      const baseArgs = { workspaceId, environmentId, cookieJarId } as const;
       if (inNewWindow) {
-        const environmentId = (await getRecentEnvironments(workspaceId))[0];
-        const requestId = (await getRecentRequests(workspaceId))[0];
-        const cookieJarId = (await getRecentCookieJars(workspaceId))[0];
         const path =
           requestId != null
-            ? routes.paths.request({
-                workspaceId,
-                environmentId,
-                cookieJarId,
-                requestId,
-              })
-            : routes.paths.workspace({ workspaceId, environmentId });
+            ? routes.paths.request({ ...baseArgs, requestId })
+            : routes.paths.workspace({ ...baseArgs });
         await invokeCmd('cmd_new_window', { url: path });
       } else {
-        const environmentId = (await getRecentEnvironments(workspaceId))[0];
-        const requestId = (await getRecentRequests(workspaceId))[0];
-        const cookieJarId = (await getRecentCookieJars(workspaceId))[0];
         if (requestId != null) {
-          routes.navigate('request', {
-            workspaceId,
-            cookieJarId,
-            environmentId,
-            requestId,
-          });
+          routes.navigate('request', { ...baseArgs, requestId });
         } else {
-          routes.navigate('workspace', { workspaceId, environmentId });
+          routes.navigate('workspace', { ...baseArgs });
         }
       }
     },

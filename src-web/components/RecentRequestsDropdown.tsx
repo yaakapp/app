@@ -3,7 +3,7 @@ import { useMemo, useRef } from 'react';
 import { useKeyPressEvent } from 'react-use';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useHotKey } from '../hooks/useHotKey';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -18,7 +18,7 @@ import { HttpMethodTag } from './core/HttpMethodTag';
 export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'className'>) {
   const dropdownRef = useRef<DropdownRef>(null);
   const activeRequest = useActiveRequest();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const activeEnvironment = useActiveEnvironment();
   const routes = useAppRoutes();
   const allRecentRequestIds = useRecentRequests();
@@ -42,7 +42,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
   });
 
   const items = useMemo<DropdownItem[]>(() => {
-    if (activeWorkspaceId === null) return [];
+    if (activeWorkspace === null) return [];
 
     const recentRequestItems: DropdownItem[] = [];
     for (const id of recentRequestIds) {
@@ -58,7 +58,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
           routes.navigate('request', {
             requestId: request.id,
             environmentId: activeEnvironment?.id,
-            workspaceId: activeWorkspaceId,
+            workspaceId: activeWorkspace.id,
           });
         },
       });
@@ -76,7 +76,7 @@ export function RecentRequestsDropdown({ className }: Pick<ButtonProps, 'classNa
     }
 
     return recentRequestItems.slice(0, 20);
-  }, [activeWorkspaceId, activeEnvironment?.id, recentRequestIds, requests, routes]);
+  }, [activeWorkspace, activeEnvironment?.id, recentRequestIds, requests, routes]);
 
   return (
     <Dropdown ref={dropdownRef} items={items}>

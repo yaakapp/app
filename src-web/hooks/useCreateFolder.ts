@@ -3,12 +3,12 @@ import { trackEvent } from '../lib/analytics';
 import type { Folder } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveRequest } from './useActiveRequest';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { foldersQueryKey } from './useFolders';
 import { usePrompt } from './usePrompt';
 
 export function useCreateFolder() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const activeRequest = useActiveRequest();
   const queryClient = useQueryClient();
   const prompt = usePrompt();
@@ -16,7 +16,7 @@ export function useCreateFolder() {
   return useMutation<Folder, unknown, Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>>({
     mutationKey: ['create_folder'],
     mutationFn: async (patch) => {
-      if (workspaceId === null) {
+      if (workspace === null) {
         throw new Error("Cannot create folder when there's no active workspace");
       }
       patch.name =
@@ -32,7 +32,7 @@ export function useCreateFolder() {
         }));
       patch.sortPriority = patch.sortPriority || -Date.now();
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invokeCmd('cmd_create_folder', { workspaceId, ...patch });
+      return invokeCmd('cmd_create_folder', { workspaceId: workspace.id, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),
     onSuccess: async (request) => {

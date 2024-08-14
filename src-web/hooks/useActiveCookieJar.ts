@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCookieJars } from './useCookieJars';
 import { useKeyValue } from './useKeyValue';
 
@@ -41,7 +41,7 @@ export function useEnsureActiveCookieJar() {
 }
 
 export function useMigrateActiveCookieJarId() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const [, setActiveCookieJarId] = useActiveCookieJarId();
   const {
     set: setLegacyActiveCookieJarId,
@@ -49,7 +49,7 @@ export function useMigrateActiveCookieJarId() {
     isLoading: isLoadingLegacyActiveCookieJarId,
   } = useKeyValue<string | null>({
     namespace: 'global',
-    key: ['activeCookieJar', workspaceId ?? 'n/a'],
+    key: ['activeCookieJar', workspace?.id ?? 'n/a'],
     fallback: null,
   });
 
@@ -60,7 +60,7 @@ export function useMigrateActiveCookieJarId() {
     setActiveCookieJarId(legacyActiveCookieJarId);
     setLegacyActiveCookieJarId(null).catch(console.error);
   }, [
-    workspaceId,
+    workspace,
     isLoadingLegacyActiveCookieJarId,
     legacyActiveCookieJarId,
     setActiveCookieJarId,

@@ -4,11 +4,11 @@ import type { GrpcRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveRequest } from './useActiveRequest';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 
 export function useCreateGrpcRequest() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const [activeEnvironmentId] = useActiveEnvironmentId();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
@@ -20,12 +20,12 @@ export function useCreateGrpcRequest() {
   >({
     mutationKey: ['create_grpc_request'],
     mutationFn: (patch) => {
-      if (workspaceId === null) {
+      if (workspace === null) {
         throw new Error("Cannot create grpc request when there's no active workspace");
       }
       if (patch.sortPriority === undefined) {
         if (activeRequest != null) {
-          // Place above currently-active request
+          // Place above currently active request
           patch.sortPriority = activeRequest.sortPriority + 0.0001;
         } else {
           // Place at the very top
@@ -33,7 +33,11 @@ export function useCreateGrpcRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invokeCmd('cmd_create_grpc_request', { workspaceId, name: '', ...patch });
+      return invokeCmd('cmd_create_grpc_request', {
+        workspaceId: workspace.id,
+        name: '',
+        ...patch,
+      });
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {

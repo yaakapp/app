@@ -3,14 +3,14 @@ import type { Environment } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironmentId } from './useActiveEnvironmentId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { environmentsQueryKey } from './useEnvironments';
 import { usePrompt } from './usePrompt';
 
 export function useCreateEnvironment() {
   const [, setActiveEnvironmentId] = useActiveEnvironmentId();
   const prompt = usePrompt();
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const queryClient = useQueryClient();
 
   return useMutation<Environment, unknown, void>({
@@ -25,14 +25,18 @@ export function useCreateEnvironment() {
         placeholder: 'My Environment',
         defaultValue: 'My Environment',
       });
-      return invokeCmd('cmd_create_environment', { name, variables: [], workspaceId });
+      return invokeCmd('cmd_create_environment', {
+        name,
+        variables: [],
+        workspaceId: workspace?.id,
+      });
     },
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
-      if (workspaceId == null) return;
+      if (workspace == null) return;
       setActiveEnvironmentId(environment.id);
       queryClient.setQueryData<Environment[]>(
-        environmentsQueryKey({ workspaceId }),
+        environmentsQueryKey({ workspaceId: workspace.id }),
         (environments) => [...(environments ?? []), environment],
       );
     },

@@ -64,7 +64,6 @@ export function GlobalHooks() {
   }
 
   useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
-    console.log('PAYLOAD', payload);
     const { model, windowLabel } = payload;
     const queryKey =
       model.model === 'http_request'

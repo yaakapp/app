@@ -6,7 +6,7 @@ import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
@@ -73,7 +73,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   const activeEnvironment = useActiveEnvironment();
   const sendRequest = useSendAnyHttpRequest();
   const renameRequest = useRenameRequest(activeRequest?.id ?? null);
@@ -87,9 +87,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         label: 'Open Settings',
         action: 'settings.show',
         onSelect: async () => {
-          if (workspaceId == null) return;
+          if (workspace == null) return;
           await invokeCmd('cmd_new_nested_window', {
-            url: routes.paths.workspaceSettings({ workspaceId }),
+            url: routes.paths.workspaceSettings({ workspaceId: workspace.id }),
             label: 'settings',
             title: 'Yaak Settings',
           });
@@ -191,7 +191,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     routes.paths,
     sendRequest,
     setSidebarHidden,
-    workspaceId,
+    workspace,
   ]);
 
   const sortedRequests = useMemo(() => {
