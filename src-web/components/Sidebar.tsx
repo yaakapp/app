@@ -18,6 +18,7 @@ import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHotKey } from '../hooks/useHotKey';
+import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
@@ -34,6 +35,7 @@ import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { isResponseLoading } from '../lib/models';
+import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
@@ -653,6 +655,7 @@ function SidebarItem({
   const renameRequest = useRenameRequest(itemId);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
+  const httpRequestActions = useHttpRequestActions();
   const copyAsCurl = useCopyAsCurl(itemId);
   const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
@@ -791,6 +794,17 @@ function SidebarItem({
               { type: 'separator' },
             ]
           : [];
+      const httpRequestActionItems: DropdownItem[] =
+        itemModel === 'http_request'
+          ? httpRequestActions.map((a) => ({
+              key: a.key,
+              label: a.label,
+              onSelect: async () => {
+                const request = await getHttpRequest(itemId);
+                if (request != null) await a.call(request);
+              },
+            }))
+          : [];
       return [
         ...requestItems,
         {
@@ -825,6 +839,7 @@ function SidebarItem({
           leftSlot: <Icon icon="trash" />,
           onSelect: () => deleteRequest.mutate(),
         },
+        ...httpRequestActionItems,
       ];
     }
   }, [
@@ -835,6 +850,7 @@ function SidebarItem({
     deleteRequest,
     duplicateGrpcRequest,
     duplicateHttpRequest,
+    httpRequestActions,
     itemId,
     itemModel,
     itemName,

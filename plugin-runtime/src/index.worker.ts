@@ -1,11 +1,13 @@
 import {
   GetHttpRequestByIdResponse,
+  HttpRequestAction,
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
   SendHttpRequestResponse,
 } from '@yaakapp/api';
 import { YaakContext } from '@yaakapp/api/lib/plugins/context';
+import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/httpRequestAction';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
 import { readFileSync } from 'node:fs';
@@ -47,6 +49,10 @@ new Promise<void>(async (resolve, reject) => {
     return { pluginRefId, id: genId(), replyId, payload };
   }
 
+  function sendEmpty(replyId: string | null = null): string {
+    return sendPayload({ type: 'empty_response' }, replyId);
+  }
+
   function sendPayload(payload: InternalEventPayload, replyId: string | null = null): string {
     const event = buildEventToSend(payload, replyId);
     sendEvent(event);
@@ -82,6 +88,12 @@ new Promise<void>(async (resolve, reject) => {
   }
 
   const ctx: YaakContext = {
+    clipboard: {
+      async copyText(text) {
+        await sendAndWaitForReply({ type: 'copy_text_request', text });
+        // Will be an empty reply
+      },
+    },
     httpRequest: {
       async getById({ id }) {
         const payload = { type: 'get_http_request_by_id_request', id } as const;
@@ -151,13 +163,44 @@ new Promise<void>(async (resolve, reject) => {
         sendPayload(replyPayload, replyId);
         return;
       }
+
+      if (
+        payload.type === 'get_http_request_actions_request' &&
+        Array.isArray(mod.plugin?.httpRequestActions)
+      ) {
+        const reply: HttpRequestAction[] = mod.plugin.httpRequestActions.map(
+          (a: HttpRequestActionPlugin) => ({
+            key: a.key,
+            label: a.label,
+          }),
+        );
+        const replyPayload: InternalEventPayload = {
+          type: 'get_http_request_actions_response',
+          pluginRefId,
+          actions: reply,
+        };
+        sendPayload(replyPayload, replyId);
+        return;
+      }
+
+      if (
+        payload.type === 'call_http_request_action_request' &&
+        Array.isArray(mod.plugin?.httpRequestActions)
+      ) {
+        const action = mod.plugin.httpRequestActions.find((a) => a.key === payload.key);
+        if (typeof action?.onSelect === 'function') {
+          await action.onSelect(ctx, payload.args);
+          sendEmpty(replyId);
+          return;
+        }
+      }
     } catch (err) {
       console.log('Plugin call threw exception', payload.type, err);
       // TODO: Return errors to server
     }
 
     // No matches, so send back an empty response so the caller doesn't block forever
-    sendPayload({ type: 'empty_response' }, replyId);
+    sendEmpty(replyId);
   });
 
   resolve();

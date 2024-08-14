@@ -1,8 +1,5 @@
 use crate::error::Result;
-use crate::events::{
-    ExportHttpRequestRequest, ExportHttpRequestResponse, FilterRequest, FilterResponse
-    , ImportRequest, ImportResponse, InternalEvent, InternalEventPayload,
-};
+use crate::events::{CallHttpRequestActionRequest, ExportHttpRequestRequest, ExportHttpRequestResponse, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
 
 use crate::error::Error::PluginErr;
 use crate::nodejs::start_nodejs_plugin_runtime;
@@ -61,6 +58,29 @@ impl PluginManager {
             .send(&payload, source_event.plugin_ref_id.as_str(), reply_id)
             .await
     }
+    
+    pub async fn run_http_request_actions(&self) -> Result<Vec<GetHttpRequestActionsResponse>> {
+        let reply_events = self
+            .server
+            .send_and_wait(&InternalEventPayload::GetHttpRequestActionsRequest)
+            .await?;
+
+        let mut all_actions = Vec::new();
+        for event in reply_events {
+            if let InternalEventPayload::GetHttpRequestActionsResponse(resp) = event.payload {
+                all_actions.push(resp.clone());
+            }
+        }
+
+        Ok(all_actions)
+    }
+
+    pub async fn call_http_request_action(&self, req: CallHttpRequestActionRequest) -> Result<()> {
+        let plugin = self.server.plugin_by_ref_id(req.plugin_ref_id.as_str()).await?;
+        let event = plugin.build_event_to_send(&InternalEventPayload::CallHttpRequestActionRequest(req), None);
+        plugin.send(&event).await?;
+        Ok(())
+    }
 
     pub async fn run_import(&self, content: &str) -> Result<(ImportResponse, String)> {
         let reply_events = self
@@ -72,14 +92,11 @@ impl PluginManager {
 
         // TODO: Don't just return the first valid response
         for event in reply_events {
-            match event.payload {
-                InternalEventPayload::ImportResponse(resp) => {
-                    let ref_id = event.plugin_ref_id.as_str();
-                    let plugin = self.server.plugin_by_ref_id(ref_id).await?;
-                    let plugin_name = plugin.name().await;
-                    return Ok((resp, plugin_name));
-                }
-                _ => {}
+            if let InternalEventPayload::ImportResponse(resp) = event.payload {
+                let ref_id = event.plugin_ref_id.as_str();
+                let plugin = self.server.plugin_by_ref_id(ref_id).await?;
+                let plugin_name = plugin.name().await;
+                return Ok((resp, plugin_name));
             }
         }
 

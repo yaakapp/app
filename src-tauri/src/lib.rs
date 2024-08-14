@@ -21,6 +21,7 @@ use tauri::TitleBarStyle;
 use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
 use tauri::{Listener, Runtime};
 use tauri::{Manager, WindowEvent};
+use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 use tokio::sync::{watch, Mutex};
@@ -55,8 +56,8 @@ use yaak_models::queries::{
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
 };
 use yaak_plugin_runtime::events::{
-    FilterResponse, GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload,
-    SendHttpRequestResponse,
+    CallHttpRequestActionRequest, FilterResponse, GetHttpRequestActionsResponse,
+    GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, SendHttpRequestResponse,
 };
 
 mod analytics;
@@ -896,6 +897,27 @@ async fn cmd_request_to_curl(
 }
 
 #[tauri::command]
+async fn cmd_http_request_actions(
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<Vec<GetHttpRequestActionsResponse>, String> {
+    plugin_manager
+        .run_http_request_actions()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_call_http_request_action(
+    req: CallHttpRequestActionRequest,
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<(), String> {
+    plugin_manager
+        .call_http_request_action(req)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_curl_to_request(
     command: &str,
     plugin_manager: State<'_, PluginManager>,
@@ -1624,6 +1646,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            cmd_call_http_request_action,
             cmd_check_for_updates,
             cmd_create_cookie_jar,
             cmd_create_environment,
@@ -1642,6 +1665,7 @@ pub fn run() {
             cmd_delete_http_request,
             cmd_delete_http_response,
             cmd_delete_workspace,
+            cmd_dismiss_notification,
             cmd_duplicate_grpc_request,
             cmd_duplicate_http_request,
             cmd_export_data,
@@ -1656,6 +1680,7 @@ pub fn run() {
             cmd_get_workspace,
             cmd_grpc_go,
             cmd_grpc_reflect,
+            cmd_http_request_actions,
             cmd_import_data,
             cmd_list_cookie_jars,
             cmd_list_environments,
@@ -1670,7 +1695,6 @@ pub fn run() {
             cmd_new_nested_window,
             cmd_new_window,
             cmd_request_to_curl,
-            cmd_dismiss_notification,
             cmd_save_response,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
@@ -1915,9 +1939,16 @@ async fn handle_plugin_event<R: Runtime>(
     let event = match event.clone().payload {
         InternalEventPayload::GetHttpRequestByIdRequest(req) => {
             let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
-            InternalEventPayload::GetHttpRequestByIdResponse(GetHttpRequestByIdResponse {
-                http_request,
-            })
+            Some(InternalEventPayload::GetHttpRequestByIdResponse(
+                GetHttpRequestByIdResponse { http_request },
+            ))
+        }
+        InternalEventPayload::CopyTextRequest(req) => {
+            app_handle
+                .clipboard()
+                .write_text(req.text.as_str())
+                .expect("Failed to write text to clipboard");
+            None
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
             let webview_windows = app_handle.get_focused_window()?.webview_windows();
@@ -1964,10 +1995,12 @@ async fn handle_plugin_event<R: Runtime>(
                 Err(_e) => return None,
             };
 
-            InternalEventPayload::SendHttpRequestResponse(SendHttpRequestResponse { http_response })
+            Some(InternalEventPayload::SendHttpRequestResponse(
+                SendHttpRequestResponse { http_response },
+            ))
         }
-        _ => return None,
+        _ => None,
     };
 
-    Some(event)
+    event
 }
