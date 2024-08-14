@@ -4,6 +4,7 @@ import {
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
+  RenderHttpRequestResponse,
   SendHttpRequestResponse,
 } from '@yaakapp/api';
 import { YaakContext } from '@yaakapp/api/lib/plugins/context';
@@ -109,6 +110,11 @@ new Promise<void>(async (resolve, reject) => {
         const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(payload);
         return httpResponse;
       },
+      async render({ httpRequest }) {
+        const payload = { type: 'render_http_request_request', httpRequest } as const;
+        const result = await sendAndWaitForReply<RenderHttpRequestResponse>(payload);
+        return result.httpRequest;
+      },
     },
   };
 
@@ -175,8 +181,8 @@ new Promise<void>(async (resolve, reject) => {
         const reply: HttpRequestAction[] = mod.plugin.httpRequestActions.map(
           (a: HttpRequestActionPlugin) => ({
             ...a,
-            // Add everything except onSelect
             onSelect: undefined,
+            // Add everything except onSelect
           }),
         );
         const replyPayload: InternalEventPayload = {

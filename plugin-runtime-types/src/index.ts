@@ -42,6 +42,8 @@ export * from './gen/Model';
 export * from './gen/SendHttpRequestRequest';
 export * from './gen/ToastVariant';
 export * from './gen/ShowToastRequest';
+export * from './gen/RenderHttpRequestRequest';
+export * from './gen/RenderHttpRequestResponse';
 export * from './gen/SendHttpRequestResponse';
 export * from './gen/SendHttpRequestResponse';
 export * from './gen/Settings';

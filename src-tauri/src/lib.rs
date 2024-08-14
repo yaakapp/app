@@ -57,7 +57,8 @@ use yaak_models::queries::{
 };
 use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, GetHttpRequestActionsResponse,
-    GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, SendHttpRequestResponse,
+    GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, RenderHttpRequestResponse,
+    SendHttpRequestResponse,
 };
 
 mod analytics;
@@ -1924,8 +1925,37 @@ async fn handle_plugin_event<R: Runtime>(
             None
         }
         InternalEventPayload::ShowToastRequest(req) => {
-            app_handle.emit("show_toast", req).expect("Failed to emit show_toast");
+            app_handle
+                .emit("show_toast", req)
+                .expect("Failed to emit show_toast");
             None
+        }
+        InternalEventPayload::RenderHttpRequestRequest(req) => {
+            let webview_windows = app_handle.get_focused_window()?.webview_windows();
+            let w = match webview_windows.iter().next() {
+                None => return None,
+                Some((_, w)) => w,
+            };
+            let workspace = get_workspace(app_handle, req.http_request.workspace_id.as_str())
+                .await
+                .expect("Failed to get workspace for request");
+
+            let url = w.url().unwrap();
+            let mut query_pairs = url.query_pairs();
+            let environment_id = query_pairs
+                .find(|(k, _v)| k == "environment_id")
+                .map(|(_k, v)| v.to_string());
+            let environment = match environment_id {
+                None => None,
+                Some(id) => get_environment(w, id.as_str()).await.ok(),
+            };
+            let rendered_http_request =
+                render_request(&req.http_request, &workspace, environment.as_ref());
+            Some(InternalEventPayload::RenderHttpRequestResponse(
+                RenderHttpRequestResponse {
+                    http_request: rendered_http_request,
+                },
+            ))
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
             let webview_windows = app_handle.get_focused_window()?.webview_windows();

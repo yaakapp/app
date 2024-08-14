@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::events::{CallHttpRequestActionRequest, ExportHttpRequestRequest, ExportHttpRequestResponse, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
+use crate::events::{CallHttpRequestActionRequest, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
 
 use crate::error::Error::PluginErr;
 use crate::nodejs::start_nodejs_plugin_runtime;
@@ -9,7 +9,6 @@ use std::time::Duration;
 use tauri::{AppHandle, Runtime};
 use tokio::sync::mpsc;
 use tokio::sync::watch::Sender;
-use yaak_models::models::HttpRequest;
 
 pub struct PluginManager {
     kill_tx: Sender<bool>,

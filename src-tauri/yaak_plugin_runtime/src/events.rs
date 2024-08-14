@@ -42,6 +42,9 @@ pub enum InternalEventPayload {
 
     CopyTextRequest(CopyTextRequest),
 
+    RenderHttpRequestRequest(RenderHttpRequestRequest),
+    RenderHttpRequestResponse(RenderHttpRequestResponse),
+
     ShowToastRequest(ShowToastRequest),
 
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
@@ -135,6 +138,20 @@ pub struct SendHttpRequestResponse {
 #[ts(export)]
 pub struct CopyTextRequest {
     pub text: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct RenderHttpRequestRequest {
+    pub http_request: HttpRequest,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct RenderHttpRequestResponse {
+    pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
