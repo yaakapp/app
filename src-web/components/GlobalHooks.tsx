@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Model } from '@yaakapp/api';
 import { useEffect } from 'react';
+import { useEnsureActiveCookieJar, useMigrateActiveCookieJarId } from '../hooks/useActiveCookieJar';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { useCopy } from '../hooks/useCopy';
@@ -15,8 +16,8 @@ import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
-import { useMigrateActiveCookieJarId } from '../hooks/useMigrateActiveCookieJarId';
 import { useNotificationToast } from '../hooks/useNotificationToast';
+import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
@@ -39,13 +40,16 @@ export function GlobalHooks() {
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();
+  useRecentCookieJars();
   useRecentRequests();
 
   // Other useful things
   useSyncThemeToDocument();
   useNotificationToast();
   useActiveWorkspaceChangedToast();
+  useEnsureActiveCookieJar();
 
+  // TODO: Remove in future version
   useMigrateActiveCookieJarId();
 
   const toggleCommandPalette = useToggleCommandPalette();
@@ -60,6 +64,7 @@ export function GlobalHooks() {
   }
 
   useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
+    console.log('PAYLOAD', payload);
     const { model, windowLabel } = payload;
     const queryKey =
       model.model === 'http_request'

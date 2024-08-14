@@ -26,6 +26,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   ...buttonProps
 }: Props) {
   const workspaces = useWorkspaces();
+  console.log('WORKSPACES', workspaces);
   const activeWorkspace = useActiveWorkspace();
   const activeWorkspaceId = activeWorkspace?.id ?? null;
   const updateWorkspace = useUpdateWorkspace(activeWorkspaceId);

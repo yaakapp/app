@@ -9,14 +9,12 @@ export function cookieJarsQueryKey({ workspaceId }: { workspaceId: string }) {
 
 export function useCookieJars() {
   const workspaceId = useActiveWorkspaceId();
-  return (
-    useQuery({
-      enabled: workspaceId != null,
-      queryKey: cookieJarsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
-      queryFn: async () => {
-        if (workspaceId == null) return [];
-        return (await invokeCmd('cmd_list_cookie_jars', { workspaceId })) as CookieJar[];
-      },
-    }).data ?? []
-  );
+  return useQuery({
+    enabled: workspaceId != null,
+    queryKey: cookieJarsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
+    queryFn: async () => {
+      if (workspaceId == null) return [];
+      return (await invokeCmd('cmd_list_cookie_jars', { workspaceId })) as CookieJar[];
+    },
+  });
 }
