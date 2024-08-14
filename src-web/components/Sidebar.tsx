@@ -10,7 +10,6 @@ import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
-import { useCopyAsCurl } from '../hooks/useCopyAsCurl';
 import { useCreateDropdownItems } from '../hooks/useCreateDropdownItems';
 import { useDeleteFolder } from '../hooks/useDeleteFolder';
 import { useDeleteRequest } from '../hooks/useDeleteRequest';
@@ -18,6 +17,7 @@ import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
 import { useHotKey } from '../hooks/useHotKey';
+import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
 import { useKeyValue } from '../hooks/useKeyValue';
 import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
 import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
@@ -34,6 +34,7 @@ import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { isResponseLoading } from '../lib/models';
+import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
 import { HttpMethodTag } from './core/HttpMethodTag';
@@ -653,7 +654,7 @@ function SidebarItem({
   const renameRequest = useRenameRequest(itemId);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
-  const copyAsCurl = useCopyAsCurl(itemId);
+  const httpRequestActions = useHttpRequestActions();
   const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
@@ -782,12 +783,16 @@ function SidebarItem({
                 leftSlot: <Icon icon="sendHorizontal" />,
                 onSelect: () => sendRequest.mutate(itemId),
               },
-              {
-                key: 'copyCurl',
-                label: 'Copy as Curl',
-                leftSlot: <Icon icon="copy" />,
-                onSelect: copyAsCurl.mutate,
-              },
+              ...httpRequestActions.map((a) => ({
+                key: a.key,
+                label: a.label,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                leftSlot: <Icon icon={(a.icon as any) ?? 'empty'} />,
+                onSelect: async () => {
+                  const request = await getHttpRequest(itemId);
+                  if (request != null) await a.call(request);
+                },
+              })),
               { type: 'separator' },
             ]
           : [];
@@ -829,12 +834,12 @@ function SidebarItem({
     }
   }, [
     child.children,
-    copyAsCurl.mutate,
     createDropdownItems,
     deleteFolder,
     deleteRequest,
     duplicateGrpcRequest,
     duplicateHttpRequest,
+    httpRequestActions,
     itemId,
     itemModel,
     itemName,
