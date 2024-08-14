@@ -1,17 +1,15 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { trackEvent } from '../lib/analytics';
+import { useMutation } from '@tanstack/react-query';
 import type { Environment } from '@yaakapp/api';
+import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
-import { useAppRoutes } from './useAppRoutes';
-import { environmentsQueryKey } from './useEnvironments';
+import { useActiveEnvironment } from './useActiveEnvironment';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { usePrompt } from './usePrompt';
 
 export function useCreateEnvironment() {
-  const routes = useAppRoutes();
+  const [, setActiveEnvironmentId] = useActiveEnvironment();
   const prompt = usePrompt();
-  const workspaceId = useActiveWorkspaceId();
-  const queryClient = useQueryClient();
+  const workspace = useActiveWorkspace();
 
   return useMutation<Environment, unknown, void>({
     mutationKey: ['create_environment'],
@@ -25,16 +23,16 @@ export function useCreateEnvironment() {
         placeholder: 'My Environment',
         defaultValue: 'My Environment',
       });
-      return invokeCmd('cmd_create_environment', { name, variables: [], workspaceId });
+      return invokeCmd('cmd_create_environment', {
+        name,
+        variables: [],
+        workspaceId: workspace?.id,
+      });
     },
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
-      if (workspaceId == null) return;
-      routes.setEnvironment(environment);
-      queryClient.setQueryData<Environment[]>(
-        environmentsQueryKey({ workspaceId }),
-        (environments) => [...(environments ?? []), environment],
-      );
+      if (workspace == null) return;
+      setActiveEnvironmentId(environment.id);
     },
   });
 }

@@ -5,7 +5,7 @@ use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter};
+use tauri::{Emitter, Manager, Runtime, WebviewWindow};
 use yaak_models::queries::{get_key_value_raw, set_key_value_raw};
 
 // Check for updates every hour
@@ -42,16 +42,16 @@ impl YaakNotifier {
         }
     }
 
-    pub async fn seen(&mut self, app: &AppHandle, id: &str) -> Result<(), String> {
-        let mut seen = get_kv(app).await?;
+    pub async fn seen<R: Runtime>(&mut self, w: &WebviewWindow<R>, id: &str) -> Result<(), String> {
+        let mut seen = get_kv(w).await?;
         seen.push(id.to_string());
         debug!("Marked notification as seen {}", id);
         let seen_json = serde_json::to_string(&seen).map_err(|e| e.to_string())?;
-        set_key_value_raw(app, KV_NAMESPACE, KV_KEY, seen_json.as_str()).await;
+        set_key_value_raw(w, KV_NAMESPACE, KV_KEY, seen_json.as_str()).await;
         Ok(())
     }
 
-    pub async fn check(&mut self, app: &AppHandle) -> Result<(), String> {
+    pub async fn check<R: Runtime>(&mut self, w: &WebviewWindow<R>) -> Result<(), String> {
         let ignore_check = self.last_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
 
         if ignore_check {
@@ -60,8 +60,8 @@ impl YaakNotifier {
 
         self.last_check = SystemTime::now();
 
-        let num_launches = get_num_launches(app).await;
-        let info = app.package_info().clone();
+        let num_launches = get_num_launches(w).await;
+        let info = w.app_handle().package_info().clone();
         let req = reqwest::Client::default()
             .request(Method::GET, "https://notify.yaak.app/notifications")
             .query(&[
@@ -80,21 +80,21 @@ impl YaakNotifier {
             .map_err(|e| e.to_string())?;
 
         let age = notification.timestamp.signed_duration_since(Utc::now());
-        let seen = get_kv(app).await?;
+        let seen = get_kv(w).await?;
         if seen.contains(&notification.id) || (age > Duration::days(2)) {
             debug!("Already seen notification {}", notification.id);
             return Ok(());
         }
         debug!("Got notification {:?}", notification);
 
-        let _ = app.emit("notification", notification.clone());
+        let _ = w.emit("notification", notification.clone());
 
         Ok(())
     }
 }
 
-async fn get_kv(app: &AppHandle) -> Result<Vec<String>, String> {
-    match get_key_value_raw(app, "notifications", "seen").await {
+async fn get_kv<R: Runtime>(w: &WebviewWindow<R>) -> Result<Vec<String>, String> {
+    match get_key_value_raw(w, "notifications", "seen").await {
         None => Ok(Vec::new()),
         Some(v) => serde_json::from_str(&v.value).map_err(|e| e.to_string()),
     }

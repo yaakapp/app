@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { getKeyValue } from '../lib/keyValueStore';
 import { useActiveRequestId } from './useActiveRequestId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useKeyValue } from './useKeyValue';
 import { useRequests } from './useRequests';
 
@@ -11,11 +11,11 @@ const fallback: string[] = [];
 
 export function useRecentRequests() {
   const requests = useRequests();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const activeRequestId = useActiveRequestId();
 
   const kv = useKeyValue<string[]>({
-    key: kvKey(activeWorkspaceId ?? 'n/a'),
+    key: kvKey(activeWorkspace?.id ?? 'n/a'),
     namespace,
     fallback,
   });

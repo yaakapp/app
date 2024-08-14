@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
+import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import { Button } from '../components/core/Button';
 import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';
 import { useDialog } from '../components/DialogContext';
 import { ImportDataDialog } from '../components/ImportDataDialog';
-import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAlert } from './useAlert';
 import { useAppRoutes } from './useAppRoutes';
 
@@ -15,7 +15,7 @@ export function useImportData() {
   const routes = useAppRoutes();
   const dialog = useDialog();
   const alert = useAlert();
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
 
   const importData = async (filePath: string): Promise<boolean> => {
     const imported: {
@@ -26,7 +26,7 @@ export function useImportData() {
       grpcRequests: GrpcRequest[];
     } = await invokeCmd('cmd_import_data', {
       filePath,
-      workspaceId: activeWorkspaceId,
+      workspaceId: activeWorkspace?.id,
     });
 
     const importedWorkspace = imported.workspaces[0];

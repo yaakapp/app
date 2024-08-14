@@ -18,6 +18,6 @@ export function useSyncThemeToDocument() {
 }
 
 function emitBgChange(t: YaakTheme) {
-  if (t.background == null) return;
-  emit('yaak_bg_changed', t.background.hex()).catch(console.error);
+  if (t.surface == null) return;
+  emit('yaak_bg_changed', t.surface.hexNoAlpha()).catch(console.error);
 }

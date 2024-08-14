@@ -104,6 +104,15 @@ export class YaakColor {
     return rgbaToHex(r, g, b, a);
   }
 
+  hexNoAlpha(): string {
+    const h = this.hue;
+    const s = this.saturation;
+    const l = this.lightness;
+
+    const [r, g, b] = parseColor(`hsl(${h},${s}%,${l}%)`).rgb;
+    return rgbaToHexNoAlpha(r, g, b);
+  }
+
   private _lighten(mod: number): YaakColor {
     const c = this.clone();
     c.lightness = this.lightness + (100 - this.lightness) * mod;
@@ -123,6 +132,14 @@ function rgbaToHex(r: number, g: number, b: number, a: number): string {
     return hex.length === 1 ? `0${hex}` : hex;
   };
   return '#' + [toHex(r), toHex(g), toHex(b), toHex(a * 255)].join('').toUpperCase();
+}
+
+function rgbaToHexNoAlpha(r: number, g: number, b: number): string {
+  const toHex = (n: number): string => {
+    const hex = Number(Math.round(n)).toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+  };
+  return '#' + [toHex(r), toHex(g), toHex(b)].join('').toUpperCase();
 }
 
 function hexToRgba(hex: string): [number, number, number, number] {

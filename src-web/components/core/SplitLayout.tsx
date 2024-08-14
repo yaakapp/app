@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useActiveWorkspaceId } from '../../hooks/useActiveWorkspaceId';
+import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { clamp } from '../../lib/clamp';
 import { ResizeHandle } from '../ResizeHandle';
 
@@ -42,10 +42,13 @@ export function SplitLayout({
   minWidthPx = 10,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeWorkspace = useActiveWorkspace();
   const [verticalBasedOnSize, setVerticalBasedOnSize] = useState<boolean>(false);
-  const [widthRaw, setWidth] = useLocalStorage<number>(`${name}_width::${useActiveWorkspaceId()}`);
+  const [widthRaw, setWidth] = useLocalStorage<number>(
+    `${name}_width::${activeWorkspace?.id ?? 'n/a'}`,
+  );
   const [heightRaw, setHeight] = useLocalStorage<number>(
-    `${name}_height::${useActiveWorkspaceId()}`,
+    `${name}_height::${activeWorkspace?.id ?? 'n/a'}`,
   );
   const width = widthRaw ?? defaultRatio;
   let height = heightRaw ?? defaultRatio;

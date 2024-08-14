@@ -13,7 +13,6 @@ use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{Manager, RunEvent, Runtime, State};
 use tokio::fs::read_dir;
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
 use tonic::codegen::tokio_stream;
 use tonic::transport::Server;
 
@@ -30,8 +29,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     .await
                     .expect("Failed to read plugins dir");
                 let manager = PluginManager::new(&app, plugin_dirs).await;
-                let manager_state = Mutex::new(manager);
-                app.manage(manager_state);
+                app.manage(manager);
                 Ok(())
             })
         })
@@ -41,8 +39,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                 api.prevent_exit();
                 tauri::async_runtime::block_on(async move {
                     info!("Exiting plugin runtime due to app exit");
-                    let manager: State<Mutex<PluginManager>> = app.state();
-                    manager.lock().await.cleanup().await;
+                    let manager: State<PluginManager> = app.state();
+                    manager.cleanup().await;
                     exit(0);
                 });
             }
@@ -79,7 +77,7 @@ pub async fn start_server(
                     _ => {}
                 };
             }
-            server.unsubscribe(rx_id).await;
+            server.unsubscribe(rx_id.as_str()).await;
         });
     };
 

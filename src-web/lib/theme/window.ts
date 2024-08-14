@@ -310,7 +310,6 @@ export function completeTheme(theme: YaakTheme): YaakTheme {
 
   theme.border = theme.border ?? theme.surface?.lift(0.12);
   theme.borderSubtle = theme.borderSubtle ?? theme.border?.lower(0.08);
-  console.log('HELLO', { theme });
 
   theme.text = theme.text ?? theme.border?.lift(1).lower(0.2);
   theme.textSubtle = theme.textSubtle ?? theme.text?.lower(0.3);

@@ -1,16 +1,13 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { HttpRequest } from '@yaakapp/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import type { HttpRequest } from '@yaakapp/api';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
-import { httpRequestsQueryKey } from './useHttpRequests';
-import { httpResponsesQueryKey } from './useHttpResponses';
 
 export function useDeleteAnyHttpRequest() {
-  const queryClient = useQueryClient();
   const confirm = useConfirm();
 
   return useMutation<HttpRequest | null, string, string>({
@@ -33,15 +30,5 @@ export function useDeleteAnyHttpRequest() {
       return invokeCmd('cmd_delete_http_request', { requestId: id });
     },
     onSettled: () => trackEvent('http_request', 'delete'),
-    onSuccess: async (request) => {
-      // Was it cancelled?
-      if (request === null) return;
-
-      const { workspaceId, id: requestId } = request;
-      queryClient.setQueryData(httpResponsesQueryKey({ requestId }), []); // Responses were deleted
-      queryClient.setQueryData<HttpRequest[]>(httpRequestsQueryKey({ workspaceId }), (requests) =>
-        (requests ?? []).filter((r) => r.id !== requestId),
-      );
-    },
   });
 }
