@@ -17,6 +17,20 @@ export async function setKeyValue<T>({
   });
 }
 
+export async function getKeyValueRaw({
+  namespace = 'global',
+  key,
+}: {
+  namespace?: string;
+  key: string | string[];
+}) {
+  const kv = (await invokeCmd('cmd_get_key_value', {
+    namespace,
+    key: buildKeyValueKey(key),
+  })) as KeyValue | null;
+  return kv;
+}
+
 export async function getKeyValue<T>({
   namespace = 'global',
   key,
@@ -26,14 +40,11 @@ export async function getKeyValue<T>({
   key: string | string[];
   fallback: T;
 }) {
-  const kv = (await invokeCmd('cmd_get_key_value', {
-    namespace,
-    key: buildKeyValueKey(key),
-  })) as KeyValue | null;
+  const kv = await getKeyValueRaw({ namespace, key });
   return extractKeyValueOrFallback(kv, fallback);
 }
 
-function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
+export function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
   if (kv === null) return undefined;
   try {
     return JSON.parse(kv.value) as T;

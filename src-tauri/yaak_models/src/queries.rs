@@ -15,10 +15,10 @@ use sea_query::Keyword::CurrentTimestamp;
 use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, WebviewWindow, Wry};
+use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 
-pub async fn set_key_value_string(
-    mgr: &impl Manager<Wry>,
+pub async fn set_key_value_string<R: Runtime>(
+    mgr: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: &str,
@@ -27,8 +27,8 @@ pub async fn set_key_value_string(
     set_key_value_raw(mgr, namespace, key, &encoded.unwrap()).await
 }
 
-pub async fn set_key_value_int(
-    mgr: &impl Manager<Wry>,
+pub async fn set_key_value_int<R: Runtime>(
+    mgr: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: i32,
@@ -37,8 +37,8 @@ pub async fn set_key_value_int(
     set_key_value_raw(mgr, namespace, key, &encoded.unwrap()).await
 }
 
-pub async fn get_key_value_string(
-    mgr: &impl Manager<Wry>,
+pub async fn get_key_value_string<R: Runtime>(
+    mgr: &impl Manager<R>,
     namespace: &str,
     key: &str,
     default: &str,
@@ -58,8 +58,8 @@ pub async fn get_key_value_string(
     }
 }
 
-pub async fn get_key_value_int(
-    mgr: &impl Manager<Wry>,
+pub async fn get_key_value_int<R: Runtime>(
+    mgr: &impl Manager<R>,
     namespace: &str,
     key: &str,
     default: i32,
@@ -79,15 +79,15 @@ pub async fn get_key_value_int(
     }
 }
 
-pub async fn set_key_value_raw(
-    mgr: &impl Manager<Wry>,
+pub async fn set_key_value_raw<R: Runtime>(
+    w: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
-    let existing = get_key_value_raw(mgr, namespace, key).await;
+    let existing = get_key_value_raw(w, namespace, key).await;
 
-    let dbm = &*mgr.state::<SqliteConnection>();
+    let dbm = &*w.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::insert()
         .into_table(KeyValueIden::Table)
@@ -119,11 +119,11 @@ pub async fn set_key_value_raw(
     let kv = stmt
         .query_row(&*params.as_params(), |row| row.try_into())
         .expect("Failed to upsert KeyValue");
-    (kv, existing.is_none())
+    (emit_upserted_model(w, kv), existing.is_none())
 }
 
-pub async fn get_key_value_raw(
-    mgr: &impl Manager<Wry>,
+pub async fn get_key_value_raw<R: Runtime>(
+    mgr: &impl Manager<R>,
     namespace: &str,
     key: &str,
 ) -> Option<KeyValue> {
@@ -143,7 +143,7 @@ pub async fn get_key_value_raw(
         .ok()
 }
 
-pub async fn list_workspaces(mgr: &impl Manager<Wry>) -> Result<Vec<Workspace>> {
+pub async fn list_workspaces<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Workspace>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -155,7 +155,7 @@ pub async fn list_workspaces(mgr: &impl Manager<Wry>) -> Result<Vec<Workspace>> 
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn get_workspace(mgr: &impl Manager<Wry>, id: &str) -> Result<Workspace> {
+pub async fn get_workspace<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Workspace> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -167,7 +167,10 @@ pub async fn get_workspace(mgr: &impl Manager<Wry>, id: &str) -> Result<Workspac
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn upsert_workspace(window: &WebviewWindow, workspace: Workspace) -> Result<Workspace> {
+pub async fn upsert_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace: Workspace,
+) -> Result<Workspace> {
     let id = match workspace.id.as_str() {
         "" => generate_model_id(ModelType::TypeWorkspace),
         _ => workspace.id.to_string(),
@@ -222,7 +225,10 @@ pub async fn upsert_workspace(window: &WebviewWindow, workspace: Workspace) -> R
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn delete_workspace(window: &WebviewWindow, id: &str) -> Result<Workspace> {
+pub async fn delete_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<Workspace> {
     let workspace = get_workspace(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -241,7 +247,7 @@ pub async fn delete_workspace(window: &WebviewWindow, id: &str) -> Result<Worksp
     emit_deleted_model(window, workspace)
 }
 
-pub async fn get_cookie_jar(mgr: &impl Manager<Wry>, id: &str) -> Result<CookieJar> {
+pub async fn get_cookie_jar<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<CookieJar> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -254,8 +260,8 @@ pub async fn get_cookie_jar(mgr: &impl Manager<Wry>, id: &str) -> Result<CookieJ
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_cookie_jars(
-    mgr: &impl Manager<Wry>,
+pub async fn list_cookie_jars<R: Runtime>(
+    mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<CookieJar>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -270,7 +276,10 @@ pub async fn list_cookie_jars(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_cookie_jar(window: &WebviewWindow, id: &str) -> Result<CookieJar> {
+pub async fn delete_cookie_jar<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<CookieJar> {
     let cookie_jar = get_cookie_jar(window, id).await?;
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -284,13 +293,19 @@ pub async fn delete_cookie_jar(window: &WebviewWindow, id: &str) -> Result<Cooki
     emit_deleted_model(window, cookie_jar)
 }
 
-pub async fn duplicate_grpc_request(window: &WebviewWindow, id: &str) -> Result<GrpcRequest> {
+pub async fn duplicate_grpc_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcRequest> {
     let mut request = get_grpc_request(window, id).await?.clone();
     request.id = "".to_string();
     upsert_grpc_request(window, &request).await
 }
 
-pub async fn delete_grpc_request(window: &WebviewWindow, id: &str) -> Result<GrpcRequest> {
+pub async fn delete_grpc_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcRequest> {
     let req = get_grpc_request(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -304,8 +319,8 @@ pub async fn delete_grpc_request(window: &WebviewWindow, id: &str) -> Result<Grp
     emit_deleted_model(window, req)
 }
 
-pub async fn upsert_grpc_request(
-    window: &WebviewWindow,
+pub async fn upsert_grpc_request<R: Runtime>(
+    window: &WebviewWindow<R>,
     request: &GrpcRequest,
 ) -> Result<GrpcRequest> {
     let id = match request.id.as_str() {
@@ -346,7 +361,11 @@ pub async fn upsert_grpc_request(
             request.service.as_ref().map(|s| s.as_str()).into(),
             request.method.as_ref().map(|s| s.as_str()).into(),
             request.message.as_str().into(),
-            request .authentication_type .as_ref() .map(|s| s.as_str()) .into(),
+            request
+                .authentication_type
+                .as_ref()
+                .map(|s| s.as_str())
+                .into(),
             serde_json::to_string(&request.authentication)?.into(),
             serde_json::to_string(&request.metadata)?.into(),
         ])
@@ -376,7 +395,7 @@ pub async fn upsert_grpc_request(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_grpc_request(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcRequest> {
+pub async fn get_grpc_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<GrpcRequest> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -389,8 +408,8 @@ pub async fn get_grpc_request(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcR
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_grpc_requests(
-    mgr: &impl Manager<Wry>,
+pub async fn list_grpc_requests<R: Runtime>(
+    mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<GrpcRequest>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -405,8 +424,8 @@ pub async fn list_grpc_requests(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn upsert_grpc_connection(
-    window: &WebviewWindow,
+pub async fn upsert_grpc_connection<R: Runtime>(
+    window: &WebviewWindow<R>,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection> {
     let id = match connection.id.as_str() {
@@ -467,7 +486,10 @@ pub async fn upsert_grpc_connection(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_grpc_connection(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcConnection> {
+pub async fn get_grpc_connection<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<GrpcConnection> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -479,8 +501,8 @@ pub async fn get_grpc_connection(mgr: &impl Manager<Wry>, id: &str) -> Result<Gr
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_grpc_connections(
-    mgr: &impl Manager<Wry>,
+pub async fn list_grpc_connections<R: Runtime>(
+    mgr: &impl Manager<R>,
     request_id: &str,
 ) -> Result<Vec<GrpcConnection>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -497,7 +519,10 @@ pub async fn list_grpc_connections(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_grpc_connection(window: &WebviewWindow, id: &str) -> Result<GrpcConnection> {
+pub async fn delete_grpc_connection<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcConnection> {
     let resp = get_grpc_connection(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -512,14 +537,20 @@ pub async fn delete_grpc_connection(window: &WebviewWindow, id: &str) -> Result<
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_grpc_connections(window: &WebviewWindow, request_id: &str) -> Result<()> {
+pub async fn delete_all_grpc_connections<R: Runtime>(
+    window: &WebviewWindow<R>,
+    request_id: &str,
+) -> Result<()> {
     for r in list_grpc_connections(window, request_id).await? {
         delete_grpc_connection(window, &r.id).await?;
     }
     Ok(())
 }
 
-pub async fn upsert_grpc_event(window: &WebviewWindow, event: &GrpcEvent) -> Result<GrpcEvent> {
+pub async fn upsert_grpc_event<R: Runtime>(
+    window: &WebviewWindow<R>,
+    event: &GrpcEvent,
+) -> Result<GrpcEvent> {
     let id = match event.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcEvent),
         _ => event.id.to_string(),
@@ -575,7 +606,7 @@ pub async fn upsert_grpc_event(window: &WebviewWindow, event: &GrpcEvent) -> Res
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_grpc_event(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcEvent> {
+pub async fn get_grpc_event<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<GrpcEvent> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -587,8 +618,8 @@ pub async fn get_grpc_event(mgr: &impl Manager<Wry>, id: &str) -> Result<GrpcEve
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_grpc_events(
-    mgr: &impl Manager<Wry>,
+pub async fn list_grpc_events<R: Runtime>(
+    mgr: &impl Manager<R>,
     connection_id: &str,
 ) -> Result<Vec<GrpcEvent>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -605,8 +636,8 @@ pub async fn list_grpc_events(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn upsert_cookie_jar(
-    window: &WebviewWindow,
+pub async fn upsert_cookie_jar<R: Runtime>(
+    window: &WebviewWindow<R>,
     cookie_jar: &CookieJar,
 ) -> Result<CookieJar> {
     let id = match cookie_jar.id.as_str() {
@@ -653,8 +684,8 @@ pub async fn upsert_cookie_jar(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn list_environments(
-    mgr: &impl Manager<Wry>,
+pub async fn list_environments<R: Runtime>(
+    mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<Environment>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -671,7 +702,10 @@ pub async fn list_environments(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Environment> {
+pub async fn delete_environment<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<Environment> {
     let env = get_environment(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -686,7 +720,7 @@ pub async fn delete_environment(window: &WebviewWindow, id: &str) -> Result<Envi
     emit_deleted_model(window, env)
 }
 
-async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings> {
+async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -699,7 +733,7 @@ async fn get_settings(mgr: &impl Manager<Wry>) -> Result<Settings> {
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn get_or_create_settings(mgr: &impl Manager<Wry>) -> Settings {
+pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settings {
     if let Ok(settings) = get_settings(mgr).await {
         return settings;
     }
@@ -721,7 +755,10 @@ pub async fn get_or_create_settings(mgr: &impl Manager<Wry>) -> Settings {
         .expect("Failed to insert Settings")
 }
 
-pub async fn update_settings(window: &WebviewWindow, settings: Settings) -> Result<Settings> {
+pub async fn update_settings<R: Runtime>(
+    window: &WebviewWindow<R>,
+    settings: Settings,
+) -> Result<Settings> {
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -773,8 +810,8 @@ pub async fn update_settings(window: &WebviewWindow, settings: Settings) -> Resu
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn upsert_environment(
-    window: &WebviewWindow,
+pub async fn upsert_environment<R: Runtime>(
+    window: &WebviewWindow<R>,
     environment: Environment,
 ) -> Result<Environment> {
     let id = match environment.id.as_str() {
@@ -821,7 +858,7 @@ pub async fn upsert_environment(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_environment(mgr: &impl Manager<Wry>, id: &str) -> Result<Environment> {
+pub async fn get_environment<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Environment> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -834,7 +871,7 @@ pub async fn get_environment(mgr: &impl Manager<Wry>, id: &str) -> Result<Enviro
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn get_folder(mgr: &impl Manager<Wry>, id: &str) -> Result<Folder> {
+pub async fn get_folder<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Folder> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -847,7 +884,10 @@ pub async fn get_folder(mgr: &impl Manager<Wry>, id: &str) -> Result<Folder> {
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_folders(mgr: &impl Manager<Wry>, workspace_id: &str) -> Result<Vec<Folder>> {
+pub async fn list_folders<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<Folder>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -862,7 +902,7 @@ pub async fn list_folders(mgr: &impl Manager<Wry>, workspace_id: &str) -> Result
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder> {
+pub async fn delete_folder<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<Folder> {
     let folder = get_folder(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -877,7 +917,7 @@ pub async fn delete_folder(window: &WebviewWindow, id: &str) -> Result<Folder> {
     emit_deleted_model(window, folder)
 }
 
-pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder> {
+pub async fn upsert_folder<R: Runtime>(window: &WebviewWindow<R>, r: Folder) -> Result<Folder> {
     let id = match r.id.as_str() {
         "" => generate_model_id(ModelType::TypeFolder),
         _ => r.id.to_string(),
@@ -925,13 +965,19 @@ pub async fn upsert_folder(window: &WebviewWindow, r: Folder) -> Result<Folder> 
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn duplicate_http_request(window: &WebviewWindow, id: &str) -> Result<HttpRequest> {
+pub async fn duplicate_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpRequest> {
     let mut request = get_http_request(window, id).await?.clone();
     request.id = "".to_string();
     upsert_http_request(window, request).await
 }
 
-pub async fn upsert_http_request(window: &WebviewWindow, r: HttpRequest) -> Result<HttpRequest> {
+pub async fn upsert_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    r: HttpRequest,
+) -> Result<HttpRequest> {
     let id = match r.id.as_str() {
         "" => generate_model_id(ModelType::TypeHttpRequest),
         _ => r.id.to_string(),
@@ -1004,8 +1050,8 @@ pub async fn upsert_http_request(window: &WebviewWindow, r: HttpRequest) -> Resu
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn list_http_requests(
-    mgr: &impl Manager<Wry>,
+pub async fn list_http_requests<R: Runtime>(
+    mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<HttpRequest>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -1021,7 +1067,7 @@ pub async fn list_http_requests(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn get_http_request(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpRequest> {
+pub async fn get_http_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<HttpRequest> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -1034,7 +1080,10 @@ pub async fn get_http_request(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpR
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn delete_http_request(window: &WebviewWindow, id: &str) -> Result<HttpRequest> {
+pub async fn delete_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpRequest> {
     let req = get_http_request(window, id).await?;
 
     // DB deletes will cascade but this will delete the files
@@ -1051,9 +1100,30 @@ pub async fn delete_http_request(window: &WebviewWindow, id: &str) -> Result<Htt
     emit_deleted_model(window, req)
 }
 
+pub async fn create_default_http_response<R: Runtime>(
+    window: &WebviewWindow<R>,
+    request_id: &str,
+) -> Result<HttpResponse> {
+    create_http_response(
+        &window,
+        request_id,
+        0,
+        0,
+        "",
+        0,
+        None,
+        None,
+        None,
+        vec![],
+        None,
+        None,
+    )
+    .await
+}
+
 #[allow(clippy::too_many_arguments)]
-pub async fn create_http_response(
-    window: &WebviewWindow,
+pub async fn create_http_response<R: Runtime>(
+    window: &WebviewWindow<R>,
     request_id: &str,
     elapsed: i64,
     elapsed_headers: i64,
@@ -1146,8 +1216,8 @@ pub async fn cancel_pending_responses(app: &AppHandle) -> Result<()> {
     Ok(())
 }
 
-pub async fn update_response_if_id(
-    window: &WebviewWindow,
+pub async fn update_response_if_id<R: Runtime>(
+    window: &WebviewWindow<R>,
     response: &HttpResponse,
 ) -> Result<HttpResponse> {
     if response.id.is_empty() {
@@ -1157,8 +1227,8 @@ pub async fn update_response_if_id(
     }
 }
 
-pub async fn update_response(
-    window: &WebviewWindow,
+pub async fn update_response<R: Runtime>(
+    window: &WebviewWindow<R>,
     response: &HttpResponse,
 ) -> Result<HttpResponse> {
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -1211,7 +1281,10 @@ pub async fn update_response(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_http_response(mgr: &impl Manager<Wry>, id: &str) -> Result<HttpResponse> {
+pub async fn get_http_response<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<HttpResponse> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -1223,7 +1296,10 @@ pub async fn get_http_response(mgr: &impl Manager<Wry>, id: &str) -> Result<Http
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn delete_http_response(window: &WebviewWindow, id: &str) -> Result<HttpResponse> {
+pub async fn delete_http_response<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpResponse> {
     let resp = get_http_response(window, id).await?;
 
     // Delete the body file if it exists
@@ -1244,15 +1320,18 @@ pub async fn delete_http_response(window: &WebviewWindow, id: &str) -> Result<Ht
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_http_responses(window: &WebviewWindow, request_id: &str) -> Result<()> {
+pub async fn delete_all_http_responses<R: Runtime>(
+    window: &WebviewWindow<R>,
+    request_id: &str,
+) -> Result<()> {
     for r in list_responses(window, request_id, None).await? {
         delete_http_response(window, &r.id).await?;
     }
     Ok(())
 }
 
-pub async fn list_responses(
-    mgr: &impl Manager<Wry>,
+pub async fn list_responses<R: Runtime>(
+    mgr: &impl Manager<R>,
     request_id: &str,
     limit: Option<i64>,
 ) -> Result<Vec<HttpResponse>> {
@@ -1271,8 +1350,8 @@ pub async fn list_responses(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn list_responses_by_workspace_id(
-    mgr: &impl Manager<Wry>,
+pub async fn list_responses_by_workspace_id<R: Runtime>(
+    mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<HttpResponse>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -1288,7 +1367,7 @@ pub async fn list_responses_by_workspace_id(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn debug_pool(mgr: &impl Manager<Wry>) {
+pub async fn debug_pool<R: Runtime>(mgr: &impl Manager<R>) {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await;
     debug!("Debug database state: {:?}", db.state());
@@ -1310,7 +1389,7 @@ struct ModelPayload<M: Serialize + Clone> {
     pub window_label: String,
 }
 
-fn emit_upserted_model<M: Serialize + Clone>(window: &WebviewWindow, model: M) -> M {
+fn emit_upserted_model<M: Serialize + Clone, R: Runtime>(window: &WebviewWindow<R>, model: M) -> M {
     let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),
@@ -1320,7 +1399,10 @@ fn emit_upserted_model<M: Serialize + Clone>(window: &WebviewWindow, model: M) -
     model
 }
 
-fn emit_deleted_model<M: Serialize + Clone>(window: &WebviewWindow, model: M) -> Result<M> {
+fn emit_deleted_model<M: Serialize + Clone, R: Runtime>(
+    window: &WebviewWindow<R>,
+    model: M,
+) -> Result<M> {
     let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),

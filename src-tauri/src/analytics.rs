@@ -3,9 +3,11 @@ use std::fmt::Display;
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use tauri::{AppHandle, Manager};
+use tauri::{Manager, Runtime, WebviewWindow};
 
-use yaak_models::queries::{generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string};
+use yaak_models::queries::{
+    generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string,
+};
 
 use crate::is_dev;
 
@@ -36,7 +38,7 @@ pub enum AnalyticsResource {
 
 impl AnalyticsResource {
     pub fn from_str(s: &str) -> serde_json::Result<AnalyticsResource> {
-        return serde_json::from_str(format!("\"{s}\"").as_str());
+        serde_json::from_str(format!("\"{s}\"").as_str())
     }
 }
 
@@ -74,7 +76,7 @@ pub enum AnalyticsAction {
 
 impl AnalyticsAction {
     pub fn from_str(s: &str) -> serde_json::Result<AnalyticsAction> {
-        return serde_json::from_str(format!("\"{s}\"").as_str());
+        serde_json::from_str(format!("\"{s}\"").as_str())
     }
 }
 
@@ -96,19 +98,18 @@ pub struct LaunchEventInfo {
     pub num_launches: i32,
 }
 
-pub async fn track_launch_event(app: &AppHandle) -> LaunchEventInfo {
+pub async fn track_launch_event<R: Runtime>(w: &WebviewWindow<R>) -> LaunchEventInfo {
     let last_tracked_version_key = "last_tracked_version";
 
     let mut info = LaunchEventInfo::default();
 
-    info.num_launches = get_num_launches(app).await + 1;
-    info.previous_version =
-        get_key_value_string(app, NAMESPACE, last_tracked_version_key, "").await;
-    info.current_version = app.package_info().version.to_string();
+    info.num_launches = get_num_launches(w).await + 1;
+    info.previous_version = get_key_value_string(w, NAMESPACE, last_tracked_version_key, "").await;
+    info.current_version = w.package_info().version.to_string();
 
     if info.previous_version.is_empty() {
         track_event(
-            app,
+            w,
             AnalyticsResource::App,
             AnalyticsAction::LaunchFirst,
             None,
@@ -118,7 +119,7 @@ pub async fn track_launch_event(app: &AppHandle) -> LaunchEventInfo {
         info.launched_after_update = info.current_version != info.previous_version;
         if info.launched_after_update {
             track_event(
-                app,
+                w,
                 AnalyticsResource::App,
                 AnalyticsAction::LaunchUpdate,
                 Some(json!({ NUM_LAUNCHES_KEY: info.num_launches })),
@@ -129,7 +130,7 @@ pub async fn track_launch_event(app: &AppHandle) -> LaunchEventInfo {
 
     // Track a launch event in all cases
     track_event(
-        app,
+        w,
         AnalyticsResource::App,
         AnalyticsAction::Launch,
         Some(json!({ NUM_LAUNCHES_KEY: info.num_launches })),
@@ -139,27 +140,27 @@ pub async fn track_launch_event(app: &AppHandle) -> LaunchEventInfo {
     // Update key values
 
     set_key_value_string(
-        app,
+        w,
         NAMESPACE,
         last_tracked_version_key,
         info.current_version.as_str(),
     )
     .await;
-    set_key_value_int(app, NAMESPACE, NUM_LAUNCHES_KEY, info.num_launches).await;
+    set_key_value_int(w, NAMESPACE, NUM_LAUNCHES_KEY, info.num_launches).await;
 
     info
 }
 
-pub async fn track_event(
-    app_handle: &AppHandle,
+pub async fn track_event<R: Runtime>(
+    w: &WebviewWindow<R>,
     resource: AnalyticsResource,
     action: AnalyticsAction,
     attributes: Option<Value>,
 ) {
-    let id = get_id(app_handle).await;
+    let id = get_id(w).await;
     let event = format!("{}.{}", resource, action);
     let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
-    let info = app_handle.package_info();
+    let info = w.app_handle().package_info();
     let tz = datetime::sys_timezone().unwrap_or("unknown".to_string());
     let site = match is_dev() {
         true => "site_TkHWjoXwZPq3HfhERb",
@@ -177,7 +178,7 @@ pub async fn track_event(
         ("v", info.version.clone().to_string()),
         ("os", get_os().to_string()),
         ("tz", tz),
-        ("xy", get_window_size(app_handle)),
+        ("xy", get_window_size(w)),
     ];
     let req = reqwest::Client::builder()
         .build()
@@ -208,13 +209,8 @@ fn get_os() -> &'static str {
     }
 }
 
-fn get_window_size(app_handle: &AppHandle) -> String {
-    let window = match app_handle.webview_windows().into_values().next() {
-        Some(w) => w,
-        None => return "unknown".to_string(),
-    };
-
-    let current_monitor = match window.current_monitor() {
+fn get_window_size<R: Runtime>(w: &WebviewWindow<R>) -> String {
+    let current_monitor = match w.current_monitor() {
         Ok(Some(m)) => m,
         _ => return "unknown".to_string(),
     };
@@ -231,17 +227,17 @@ fn get_window_size(app_handle: &AppHandle) -> String {
     )
 }
 
-async fn get_id(app_handle: &AppHandle) -> String {
-    let id = get_key_value_string(app_handle, "analytics", "id", "").await;
+async fn get_id<R: Runtime>(w: &WebviewWindow<R>) -> String {
+    let id = get_key_value_string(w, "analytics", "id", "").await;
     if id.is_empty() {
         let new_id = generate_id();
-        set_key_value_string(app_handle, "analytics", "id", new_id.as_str()).await;
+        set_key_value_string(w, "analytics", "id", new_id.as_str()).await;
         new_id
     } else {
         id
     }
 }
 
-pub async fn get_num_launches(app: &AppHandle) -> i32 {
-    get_key_value_int(app, NAMESPACE, NUM_LAUNCHES_KEY, 0).await
+pub async fn get_num_launches<R: Runtime>(w: &WebviewWindow<R>) -> i32 {
+    get_key_value_int(w, NAMESPACE, NUM_LAUNCHES_KEY, 0).await
 }

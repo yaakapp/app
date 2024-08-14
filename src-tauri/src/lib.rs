@@ -16,17 +16,17 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use serde_json::{json, Value};
-use tauri::Listener;
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
 use tauri::{AppHandle, Emitter, LogicalSize, RunEvent, State, WebviewUrl, WebviewWindow};
+use tauri::{Listener, Runtime};
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
-use tokio::sync::Mutex;
+use tokio::sync::{watch, Mutex};
 
-use ::grpc::manager::{DynamicMessage, GrpcHandle};
-use ::grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
+use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
+use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
 use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::analytics::{AnalyticsAction, AnalyticsResource};
@@ -42,7 +42,7 @@ use yaak_models::models::{
     GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
 };
 use yaak_models::queries::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_http_response,
+    cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
     delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
     delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
     delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
@@ -54,7 +54,10 @@ use yaak_models::queries::{
     upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
 };
-use yaak_plugin_runtime::events::FilterResponse;
+use yaak_plugin_runtime::events::{
+    FilterResponse, GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload,
+    SendHttpRequestResponse,
+};
 
 mod analytics;
 mod export_resources;
@@ -96,11 +99,15 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 
 #[tauri::command]
 async fn cmd_dismiss_notification(
-    app: AppHandle,
+    window: WebviewWindow,
     notification_id: &str,
     yaak_notifier: State<'_, Mutex<YaakNotifier>>,
 ) -> Result<(), String> {
-    yaak_notifier.lock().await.seen(&app, notification_id).await
+    yaak_notifier
+        .lock()
+        .await
+        .seen(&window, notification_id)
+        .await
 }
 
 #[tauri::command]
@@ -135,17 +142,21 @@ async fn cmd_grpc_go(
     request_id: &str,
     environment_id: Option<&str>,
     proto_files: Vec<String>,
-    w: WebviewWindow,
+    window: WebviewWindow,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
-    let req = get_grpc_request(&w, request_id)
+    let req = get_grpc_request(&window, request_id)
         .await
         .map_err(|e| e.to_string())?;
     let environment = match environment_id {
-        Some(id) => Some(get_environment(&w, id).await.map_err(|e| e.to_string())?),
+        Some(id) => Some(
+            get_environment(&window, id)
+                .await
+                .map_err(|e| e.to_string())?,
+        ),
         None => None,
     };
-    let workspace = get_workspace(&w, &req.workspace_id)
+    let workspace = get_workspace(&window, &req.workspace_id)
         .await
         .map_err(|e| e.to_string())?;
     let mut metadata = HashMap::new();
@@ -199,7 +210,7 @@ async fn cmd_grpc_go(
     let conn = {
         let req = req.clone();
         upsert_grpc_connection(
-            &w,
+            &window,
             &GrpcConnection {
                 workspace_id: req.workspace_id,
                 request_id: req.id,
@@ -256,7 +267,7 @@ async fn cmd_grpc_go(
         Ok(c) => c,
         Err(err) => {
             upsert_grpc_connection(
-                &w,
+                &window,
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
@@ -282,7 +293,7 @@ async fn cmd_grpc_go(
 
     let cb = {
         let cancelled_rx = cancelled_rx.clone();
-        let w = w.clone();
+        let w = window.clone();
         let base_msg = base_msg.clone();
         let method_desc = method_desc.clone();
         let vars = vars.clone();
@@ -355,10 +366,10 @@ async fn cmd_grpc_go(
             }
         }
     };
-    let event_handler = w.listen_any(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
+    let event_handler = window.listen_any(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
     let grpc_listen = {
-        let w = w.clone();
+        let w = window.clone();
         let base_event = base_msg.clone();
         let req = req.clone();
         let vars = vars.clone();
@@ -603,7 +614,7 @@ async fn cmd_grpc_go(
     {
         let conn_id = conn_id.clone();
         tauri::async_runtime::spawn(async move {
-            let w = w.clone();
+            let w = window.clone();
             tokio::select! {
                 _ = grpc_listen => {
                     let events = list_grpc_events(&w, &conn_id)
@@ -691,7 +702,6 @@ async fn cmd_send_ephemeral_request(
         &response,
         environment,
         cookie_jar,
-        None,
         &mut cancel_rx,
     )
     .await
@@ -701,7 +711,7 @@ async fn cmd_send_ephemeral_request(
 async fn cmd_filter_response(
     w: WebviewWindow,
     response_id: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
+    plugin_manager: State<'_, PluginManager>,
     filter: &str,
 ) -> Result<FilterResponse, String> {
     let response = get_http_response(&w, response_id)
@@ -724,8 +734,6 @@ async fn cmd_filter_response(
 
     // TODO: Have plugins register their own content type (regex?)
     plugin_manager
-        .lock()
-        .await
         .run_filter(filter, &body, &content_type)
         .await
         .map_err(|e| e.to_string())
@@ -734,15 +742,13 @@ async fn cmd_filter_response(
 #[tauri::command]
 async fn cmd_import_data(
     w: WebviewWindow,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
+    plugin_manager: State<'_, PluginManager>,
     file_path: &str,
 ) -> Result<WorkspaceExportResources, String> {
     let file =
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     let (import_result, plugin_name) = plugin_manager
-        .lock()
-        .await
         .run_import(file_contents)
         .await
         .map_err(|e| e.to_string())?;
@@ -853,7 +859,7 @@ async fn cmd_import_data(
     );
 
     analytics::track_event(
-        &w.app_handle(),
+        &w,
         AnalyticsResource::App,
         AnalyticsAction::Import,
         Some(json!({ "plugin": plugin_name })),
@@ -867,7 +873,7 @@ async fn cmd_import_data(
 async fn cmd_request_to_curl(
     app: AppHandle,
     request_id: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
+    plugin_manager: State<'_, PluginManager>,
     environment_id: Option<&str>,
 ) -> Result<String, String> {
     let request = get_http_request(&app, request_id)
@@ -883,8 +889,6 @@ async fn cmd_request_to_curl(
     let rendered = render_request(&request, &workspace, environment.as_ref());
 
     let import_response = plugin_manager
-        .lock()
-        .await
         .run_export_curl(&rendered)
         .await
         .map_err(|e| e.to_string())?;
@@ -894,19 +898,19 @@ async fn cmd_request_to_curl(
 #[tauri::command]
 async fn cmd_curl_to_request(
     command: &str,
-    plugin_manager: State<'_, Mutex<PluginManager>>,
+    plugin_manager: State<'_, PluginManager>,
     workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<HttpRequest, String> {
-    let (import_result, plugin_name) = plugin_manager
-        .lock()
-        .await
-        .run_import(command)
-        .await
-        .map_err(|e| e.to_string())?;
+    let (import_result, plugin_name) = {
+        plugin_manager
+            .run_import(command)
+            .await
+            .map_err(|e| e.to_string())?
+    };
 
     analytics::track_event(
-        &w.app_handle(),
+        &w,
         AnalyticsResource::App,
         AnalyticsAction::Import,
         Some(json!({ "plugin": plugin_name })),
@@ -947,7 +951,7 @@ async fn cmd_export_data(
     f.sync_all().expect("Failed to sync");
 
     analytics::track_event(
-        &window.app_handle(),
+        &window,
         AnalyticsResource::App,
         AnalyticsAction::Export,
         None,
@@ -984,7 +988,6 @@ async fn cmd_send_http_request(
     window: WebviewWindow,
     environment_id: Option<&str>,
     cookie_jar_id: Option<&str>,
-    download_dir: Option<&str>,
     // NOTE: We receive the entire request because to account for the race
     //   condition where the user may have just edited a field before sending
     //   that has not yet been saved in the DB.
@@ -1010,28 +1013,9 @@ async fn cmd_send_http_request(
         None => None,
     };
 
-    let response = create_http_response(
-        &window,
-        &request.id,
-        0,
-        0,
-        "",
-        0,
-        None,
-        None,
-        None,
-        vec![],
-        None,
-        None,
-    )
-    .await
-    .expect("Failed to create response");
-
-    let download_path = if let Some(p) = download_dir {
-        Some(std::path::Path::new(p).to_path_buf())
-    } else {
-        None
-    };
+    let response = create_default_http_response(&window, &request.id)
+        .await
+        .map_err(|e| e.to_string())?;
 
     let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
     window.listen_any(
@@ -1047,16 +1031,15 @@ async fn cmd_send_http_request(
         &response,
         environment,
         cookie_jar,
-        download_path,
         &mut cancel_rx,
     )
     .await
 }
 
-async fn response_err(
+async fn response_err<R: Runtime>(
     response: &HttpResponse,
     error: String,
-    w: &WebviewWindow,
+    w: &WebviewWindow<R>,
 ) -> Result<HttpResponse, String> {
     warn!("Failed to send request: {}", error);
     let mut response = response.clone();
@@ -1080,7 +1063,7 @@ async fn cmd_track_event(
         AnalyticsAction::from_str(action),
     ) {
         (Ok(resource), Ok(action)) => {
-            analytics::track_event(&window.app_handle(), resource, action, attributes).await;
+            analytics::track_event(&window, resource, action, attributes).await;
         }
         (r, a) => {
             error!(
@@ -1635,9 +1618,8 @@ pub fn run() {
             let grpc_handle = GrpcHandle::new(&app.app_handle());
             app.manage(Mutex::new(grpc_handle));
 
-            // Add plugin manager
-            let grpc_handle = GrpcHandle::new(&app.app_handle());
-            app.manage(Mutex::new(grpc_handle));
+            let app_handle = app.app_handle().clone();
+            monitor_plugin_events(&app_handle);
 
             Ok(())
         })
@@ -1715,10 +1697,9 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    create_window(app_handle, "/");
-                    let h = app_handle.clone();
+                    let w = create_window(app_handle, "/");
                     tauri::async_runtime::spawn(async move {
-                        let info = analytics::track_launch_event(&h).await;
+                        let info = analytics::track_launch_event(&w).await;
                         debug!("Launched Yaak {:?}", info);
                     });
 
@@ -1743,10 +1724,12 @@ pub fn run() {
 
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
+                        let windows = h.webview_windows();
+                        let w = windows.values().next().unwrap();
                         tokio::time::sleep(Duration::from_millis(4000)).await;
-                        let val: State<'_, Mutex<YaakNotifier>> = h.state();
+                        let val: State<'_, Mutex<YaakNotifier>> = w.state();
                         let mut n = val.lock().await;
-                        if let Err(e) = n.check(&h).await {
+                        if let Err(e) = n.check(&w).await {
                             warn!("Failed to check for notifications {}", e)
                         }
                     });
@@ -1904,4 +1887,87 @@ fn safe_uri(endpoint: &str) -> String {
     } else {
         format!("http://{}", endpoint)
     }
+}
+
+fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
+    let app_handle = app_handle.clone();
+    tauri::async_runtime::spawn(async move {
+        let plugin_manager: State<'_, PluginManager> = app_handle.state();
+        let (_rx_id, mut rx) = plugin_manager.subscribe().await;
+
+        let app_handle = app_handle.clone();
+        while let Some(event) = rx.recv().await {
+            let payload = match handle_plugin_event(&app_handle, &event).await {
+                Some(e) => e,
+                None => continue,
+            };
+            if let Err(e) = plugin_manager.reply(&event, &payload).await {
+                warn!("Failed to reply to plugin manager: {}", e)
+            }
+        }
+    });
+}
+
+async fn handle_plugin_event<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    event: &InternalEvent,
+) -> Option<InternalEventPayload> {
+    let event = match event.clone().payload {
+        InternalEventPayload::GetHttpRequestByIdRequest(req) => {
+            let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
+            InternalEventPayload::GetHttpRequestByIdResponse(GetHttpRequestByIdResponse {
+                http_request,
+            })
+        }
+        InternalEventPayload::SendHttpRequestRequest(req) => {
+            let webview_windows = app_handle.get_focused_window()?.webview_windows();
+            let w = match webview_windows.iter().next() {
+                None => return None,
+                Some((_, w)) => w,
+            };
+
+            let url = w.url().unwrap();
+            let mut query_pairs = url.query_pairs();
+
+            let cookie_jar_id = query_pairs
+                .find(|(k, _v)| k == "cookie_jar_id")
+                .map(|(_k, v)| v.to_string());
+            let cookie_jar = match cookie_jar_id {
+                None => None,
+                Some(id) => get_cookie_jar(w, id.as_str()).await.ok(),
+            };
+
+            let environment_id = query_pairs
+                .find(|(k, _v)| k == "environment_id")
+                .map(|(_k, v)| v.to_string());
+            let environment = match environment_id {
+                None => None,
+                Some(id) => get_environment(w, id.as_str()).await.ok(),
+            };
+
+            let resp = create_default_http_response(w, req.http_request.id.as_str())
+                .await
+                .unwrap();
+
+            let result = send_http_request(
+                &w,
+                req.http_request,
+                &resp,
+                environment,
+                cookie_jar,
+                &mut watch::channel(false).1, // No-op cancel channel
+            )
+            .await;
+
+            let http_response = match result {
+                Ok(r) => r,
+                Err(_e) => return None,
+            };
+
+            InternalEventPayload::SendHttpRequestResponse(SendHttpRequestResponse { http_response })
+        }
+        _ => return None,
+    };
+
+    Some(event)
 }

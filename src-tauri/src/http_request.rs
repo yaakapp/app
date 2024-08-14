@@ -11,24 +11,25 @@ use crate::{render, response_err};
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
-use log::{error, info, warn};
+use log::{error, warn};
 use mime_guess::Mime;
 use reqwest::redirect::Policy;
 use reqwest::Method;
 use reqwest::{multipart, Url};
-use tauri::{Manager, WebviewWindow};
+use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
-use yaak_models::models::{Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader};
+use yaak_models::models::{
+    Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
+};
 use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
 
-pub async fn send_http_request(
-    window: &WebviewWindow,
+pub async fn send_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
     request: HttpRequest,
     response: &HttpResponse,
     environment: Option<Environment>,
     cookie_jar: Option<CookieJar>,
-    download_path: Option<PathBuf>,
     cancel_rx: &mut Receiver<bool>,
 ) -> Result<HttpResponse, String> {
     let environment_ref = environment.as_ref();
@@ -442,16 +443,6 @@ pub async fn send_http_request(
                 .await
                 .expect("Failed to update response");
 
-            // Copy response to the download path, if specified
-            match (download_path, response.body_path.clone()) {
-                (Some(dl_path), Some(body_path)) => {
-                    info!("Downloading response body to {}", dl_path.display());
-                    fs::copy(body_path, dl_path)
-                        .expect("Failed to copy file for response download");
-                }
-                _ => {}
-            };
-
             // Add cookie store if specified
             if let Some((cookie_store, mut cookie_jar)) = maybe_cookie_manager {
                 // let cookies = response_headers.get_all(SET_COOKIE).iter().map(|h| {
@@ -466,7 +457,8 @@ pub async fn send_http_request(
                     .unwrap()
                     .iter_any()
                     .map(|c| {
-                        let json_cookie = serde_json::to_value(&c).expect("Failed to serialize cookie");
+                        let json_cookie =
+                            serde_json::to_value(&c).expect("Failed to serialize cookie");
                         serde_json::from_value(json_cookie).expect("Failed to deserialize cookie")
                     })
                     .collect::<Vec<_>>();

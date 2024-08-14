@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+import type { Appearance } from '../lib/theme/appearance';
 import {
   getCSSAppearance,
   getWindowAppearance,
   subscribeToWindowAppearanceChange,
 } from '../lib/theme/appearance';
-import { type Appearance } from '../lib/theme/window';
 
 export function usePreferredAppearance() {
   const [preferredAppearance, setPreferredAppearance] = useState<Appearance>(getCSSAppearance());

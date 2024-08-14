@@ -4,9 +4,8 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
-import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveWorkspaceId } from '../hooks/useActiveWorkspaceId';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
@@ -56,8 +55,8 @@ const MAX_PER_GROUP = 8;
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [command, setCommand] = useDebouncedState<string>('', 150);
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
+  const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
   const routes = useAppRoutes();
-  const activeEnvironmentId = useActiveEnvironmentId();
   const workspaces = useWorkspaces();
   const environments = useEnvironments();
   const recentEnvironments = useRecentEnvironments();
@@ -68,12 +67,11 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const openWorkspace = useOpenWorkspace();
   const createWorkspace = useCreateWorkspace();
   const createHttpRequest = useCreateHttpRequest();
-  const { activeCookieJar } = useActiveCookieJar();
+  const [activeCookieJar] = useActiveCookieJar();
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
-  const workspaceId = useActiveWorkspaceId();
-  const activeEnvironment = useActiveEnvironment();
+  const workspace = useActiveWorkspace();
   const sendRequest = useSendAnyHttpRequest();
   const renameRequest = useRenameRequest(activeRequest?.id ?? null);
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
@@ -86,9 +84,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         label: 'Open Settings',
         action: 'settings.show',
         onSelect: async () => {
-          if (workspaceId == null) return;
+          if (workspace == null) return;
           await invokeCmd('cmd_new_nested_window', {
-            url: routes.paths.workspaceSettings({ workspaceId }),
+            url: routes.paths.workspaceSettings({ workspaceId: workspace.id }),
             label: 'settings',
             title: 'Yaak Settings',
           });
@@ -190,7 +188,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     routes.paths,
     sendRequest,
     setSidebarHidden,
-    workspaceId,
+    workspace,
   ]);
 
   const sortedRequests = useMemo(() => {
@@ -271,7 +269,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           return routes.navigate('request', {
             workspaceId: r.workspaceId,
             requestId: r.id,
-            environmentId: activeEnvironmentId ?? undefined,
+            environmentId: activeEnvironment?.id,
           });
         },
       });
@@ -290,7 +288,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       environmentGroup.items.push({
         key: `switch-environment-${e.id}`,
         label: e.name,
-        onSelect: () => routes.setEnvironment(e),
+        onSelect: () => setActiveEnvironmentId(e.id),
       });
     }
 
@@ -313,9 +311,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     workspaceCommands,
     sortedRequests,
     routes,
-    activeEnvironmentId,
+    activeEnvironment,
     sortedEnvironments,
-    activeEnvironment?.id,
+    setActiveEnvironmentId,
     sortedWorkspaces,
     openWorkspace,
   ]);

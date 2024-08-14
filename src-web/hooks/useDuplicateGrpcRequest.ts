@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
+import type { GrpcRequest } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { setKeyValue } from '../lib/keyValueStore';
-import type { GrpcRequest } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveEnvironmentId } from './useActiveEnvironmentId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveEnvironment } from './useActiveEnvironment';
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 import { protoFilesArgs, useGrpcProtoFiles } from './useGrpcProtoFiles';
 
@@ -15,8 +15,8 @@ export function useDuplicateGrpcRequest({
   id: string | null;
   navigateAfter: boolean;
 }) {
-  const activeWorkspaceId = useActiveWorkspaceId();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const activeWorkspace = useActiveWorkspace();
+  const [activeEnvironment] = useActiveEnvironment();
   const routes = useAppRoutes();
   const protoFiles = useGrpcProtoFiles(id);
   return useMutation<GrpcRequest, string>({
@@ -30,11 +30,11 @@ export function useDuplicateGrpcRequest({
       // Also copy proto files to new request
       await setKeyValue({ ...protoFilesArgs(request.id), value: protoFiles.value ?? [] });
 
-      if (navigateAfter && activeWorkspaceId !== null) {
+      if (navigateAfter && activeWorkspace !== null) {
         routes.navigate('request', {
-          workspaceId: activeWorkspaceId,
+          workspaceId: activeWorkspace.id,
           requestId: request.id,
-          environmentId: activeEnvironmentId ?? undefined,
+          environmentId: activeEnvironment?.id,
         });
       }
     },

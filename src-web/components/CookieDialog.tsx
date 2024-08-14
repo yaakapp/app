@@ -12,7 +12,7 @@ interface Props {
 
 export const CookieDialog = function ({ cookieJarId }: Props) {
   const updateCookieJar = useUpdateCookieJar(cookieJarId ?? null);
-  const cookieJars = useCookieJars();
+  const cookieJars = useCookieJars().data ?? [];
   const cookieJar = cookieJars.find((c) => c.id === cookieJarId);
 
   if (cookieJar == null) {

@@ -1,4 +1,11 @@
-import { ImportResponse, InternalEvent, InternalEventPayload } from '@yaakapp/api';
+import {
+  GetHttpRequestByIdResponse,
+  ImportResponse,
+  InternalEvent,
+  InternalEventPayload,
+  SendHttpRequestResponse,
+} from '@yaakapp/api';
+import { YaakContext } from '@yaakapp/api/lib/plugins/context';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
 import { readFileSync } from 'node:fs';
@@ -7,7 +14,7 @@ import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
 
 new Promise<void>(async (resolve, reject) => {
-  const { pluginDir /*, pluginRefId*/ } = workerData;
+  const { pluginDir, pluginRefId } = workerData;
   const pathPkg = path.join(pluginDir, 'package.json');
 
   // NOTE: Use POSIX join because require() needs forward slash
@@ -33,8 +40,64 @@ new Promise<void>(async (resolve, reject) => {
 
   console.log('Plugin initialized', pkg.name, capabilities, Object.keys(mod));
 
+  function buildEventToSend(
+    payload: InternalEventPayload,
+    replyId: string | null = null,
+  ): InternalEvent {
+    return { pluginRefId, id: genId(), replyId, payload };
+  }
+
+  function sendPayload(payload: InternalEventPayload, replyId: string | null = null): string {
+    const event = buildEventToSend(payload, replyId);
+    sendEvent(event);
+    return event.id;
+  }
+
+  function sendEvent(event: InternalEvent) {
+    parentPort!.postMessage(event);
+  }
+
+  async function sendAndWaitForReply<T extends Omit<InternalEventPayload, 'type'>>(
+    payload: InternalEventPayload,
+  ): Promise<T> {
+    // 1. Build event to send
+    const eventToSend = buildEventToSend(payload, null);
+
+    // 2. Spawn listener in background
+    const promise = new Promise<InternalEventPayload>(async (resolve) => {
+      const cb = (event: InternalEvent) => {
+        if (event.replyId === eventToSend.id) {
+          resolve(event.payload); // Not type-safe but oh well
+          parentPort!.off('message', cb); // Unlisten, now that we're done
+        }
+      };
+      parentPort!.on('message', cb);
+    });
+
+    // 3. Send the event after we start listening (to prevent race)
+    sendEvent(eventToSend);
+
+    // 4. Return the listener promise
+    return promise as unknown as Promise<T>;
+  }
+
+  const ctx: YaakContext = {
+    httpRequest: {
+      async getById({ id }) {
+        const payload = { type: 'get_http_request_by_id_request', id } as const;
+        const { httpRequest } = await sendAndWaitForReply<GetHttpRequestByIdResponse>(payload);
+        return httpRequest;
+      },
+      async send({ httpRequest }) {
+        const payload = { type: 'send_http_request_request', httpRequest } as const;
+        const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(payload);
+        return httpResponse;
+      },
+    },
+  };
+
   // Message comes into the plugin to be processed
-  parentPort!.on('message', async ({ payload, pluginRefId, id: replyId }: InternalEvent) => {
+  parentPort!.on('message', async ({ payload, id: replyId }: InternalEvent) => {
     console.log(`Received ${payload.type}`);
 
     try {
@@ -45,18 +108,18 @@ new Promise<void>(async (resolve, reject) => {
           version: pkg.version,
           capabilities,
         };
-        sendToServer({ id: genId(), pluginRefId, replyId, payload });
+        sendPayload(payload, replyId);
         return;
       }
 
       if (payload.type === 'import_request' && typeof mod.pluginHookImport === 'function') {
-        const reply: ImportResponse | null = await mod.pluginHookImport({}, payload.content);
+        const reply: ImportResponse | null = await mod.pluginHookImport(ctx, payload.content);
         if (reply != null) {
           const replyPayload: InternalEventPayload = {
             type: 'import_response',
             resources: reply?.resources,
           };
-          sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
+          sendPayload(replyPayload, replyId);
           return;
         } else {
           // Continue, to send back an empty reply
@@ -67,25 +130,25 @@ new Promise<void>(async (resolve, reject) => {
         payload.type === 'export_http_request_request' &&
         typeof mod.pluginHookExport === 'function'
       ) {
-        const reply: string = await mod.pluginHookExport({}, payload.httpRequest);
+        const reply: string = await mod.pluginHookExport(ctx, payload.httpRequest);
         const replyPayload: InternalEventPayload = {
           type: 'export_http_request_response',
           content: reply,
         };
-        sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
+        sendPayload(replyPayload, replyId);
         return;
       }
 
       if (payload.type === 'filter_request' && typeof mod.pluginHookResponseFilter === 'function') {
-        const reply: string = await mod.pluginHookResponseFilter(
-          {},
-          { filter: payload.filter, body: payload.content },
-        );
+        const reply: string = await mod.pluginHookResponseFilter(ctx, {
+          filter: payload.filter,
+          body: payload.content,
+        });
         const replyPayload: InternalEventPayload = {
           type: 'filter_response',
           content: reply,
         };
-        sendToServer({ id: genId(), pluginRefId, replyId, payload: replyPayload });
+        sendPayload(replyPayload, replyId);
         return;
       }
     } catch (err) {
@@ -94,19 +157,13 @@ new Promise<void>(async (resolve, reject) => {
     }
 
     // No matches, so send back an empty response so the caller doesn't block forever
-    const id = genId();
-    console.log('Sending nothing back to', id, { replyId });
-    sendToServer({ id, pluginRefId, replyId, payload: { type: 'empty_response' } });
+    sendPayload({ type: 'empty_response' }, replyId);
   });
 
   resolve();
 }).catch((err) => {
   console.log('failed to boot plugin', err);
 });
-
-function sendToServer(e: InternalEvent) {
-  parentPort!.postMessage(e);
-}
 
 function genId(len = 5): string {
   const alphabet = '01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

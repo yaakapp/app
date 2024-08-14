@@ -2053,30 +2053,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "grpc"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "dunce",
- "hyper 0.14.30",
- "hyper-rustls 0.24.2",
- "log",
- "md5",
- "prost 0.12.6",
- "prost-reflect",
- "prost-types 0.12.6",
- "serde",
- "serde_json",
- "tauri",
- "tauri-plugin-shell",
- "tokio",
- "tokio-stream",
- "tonic 0.10.2",
- "tonic-reflection",
- "uuid",
-]
-
-[[package]]
 name = "gtk"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6126,13 +6102,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "templates"
-version = "0.1.0"
-dependencies = [
- "log",
-]
-
-[[package]]
 name = "tendril"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7573,7 +7542,6 @@ dependencies = [
  "chrono",
  "cocoa",
  "datetime",
- "grpc",
  "hex_color",
  "http 1.1.0",
  "log",
@@ -7597,13 +7565,38 @@ dependencies = [
  "tauri-plugin-shell",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
- "templates",
  "thiserror",
  "tokio",
  "tokio-stream",
  "uuid",
+ "yaak_grpc",
  "yaak_models",
  "yaak_plugin_runtime",
+ "yaak_templates",
+]
+
+[[package]]
+name = "yaak_grpc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dunce",
+ "hyper 0.14.30",
+ "hyper-rustls 0.24.2",
+ "log",
+ "md5",
+ "prost 0.12.6",
+ "prost-reflect",
+ "prost-types 0.12.6",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin-shell",
+ "tokio",
+ "tokio-stream",
+ "tonic 0.10.2",
+ "tonic-reflection",
+ "uuid",
 ]
 
 [[package]]
@@ -7649,6 +7642,13 @@ dependencies = [
  "tonic-build",
  "ts-rs",
  "yaak_models",
+]
+
+[[package]]
+name = "yaak_templates"
+version = "0.1.0"
+dependencies = [
+ "log",
 ]
 
 [[package]]

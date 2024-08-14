@@ -9,7 +9,6 @@ class PlaceholderWidget extends WidgetType {
     readonly exists: boolean,
     readonly type: 'function' | 'variable' = 'variable',
   ) {
-    console.log('PLACEHOLDER', { name, value });
     super();
   }
 

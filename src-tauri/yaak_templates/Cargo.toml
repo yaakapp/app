@@ -1,5 +1,5 @@
 [package]
-name = "templates"
+name = "yaak_templates"
 version = "0.1.0"
 edition = "2021"
 

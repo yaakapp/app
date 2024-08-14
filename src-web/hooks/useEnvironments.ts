@@ -1,21 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Environment } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 
 export function environmentsQueryKey({ workspaceId }: { workspaceId: string }) {
   return ['environments', { workspaceId }];
 }
 
 export function useEnvironments() {
-  const workspaceId = useActiveWorkspaceId();
+  const workspace = useActiveWorkspace();
   return (
     useQuery({
-      enabled: workspaceId != null,
-      queryKey: environmentsQueryKey({ workspaceId: workspaceId ?? 'n/a' }),
+      enabled: workspace != null,
+      queryKey: environmentsQueryKey({ workspaceId: workspace?.id ?? 'n/a' }),
       queryFn: async () => {
-        if (workspaceId == null) return [];
-        return (await invokeCmd('cmd_list_environments', { workspaceId })) as Environment[];
+        if (workspace == null) return [];
+        return (await invokeCmd('cmd_list_environments', {
+          workspaceId: workspace.id,
+        })) as Environment[];
       },
     }).data ?? []
   );

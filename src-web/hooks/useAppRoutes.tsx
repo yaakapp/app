@@ -1,13 +1,15 @@
+import type { Environment } from '@yaakapp/api';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Environment } from '@yaakapp/api';
-import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironmentId';
+import { QUERY_COOKIE_JAR_ID } from './useActiveCookieJar';
+import { QUERY_ENVIRONMENT_ID } from './useActiveEnvironment';
 import { useActiveRequestId } from './useActiveRequestId';
-import { useActiveWorkspaceId } from './useActiveWorkspaceId';
+import { useActiveWorkspace } from './useActiveWorkspace';
 
 export type RouteParamsWorkspace = {
   workspaceId: string;
   environmentId?: string;
+  cookieJarId?: string;
 };
 
 export type RouteParamsRequest = RouteParamsWorkspace & {
@@ -22,34 +24,35 @@ export const routePaths = {
     return `/workspaces/${workspaceId}/settings`;
   },
   workspace(
-    { workspaceId, environmentId } = {
+    { workspaceId, environmentId, cookieJarId } = {
       workspaceId: ':workspaceId',
       environmentId: ':environmentId',
+      cookieJarId: ':cookieJarId',
     } as RouteParamsWorkspace,
   ) {
-    let path = `/workspaces/${workspaceId}`;
-    if (environmentId != null) {
-      path += `?${QUERY_ENVIRONMENT_ID}=${encodeURIComponent(environmentId)}`;
-    }
-    return path;
+    const path = `/workspaces/${workspaceId}`;
+    const params = new URLSearchParams();
+    if (environmentId != null) params.set(QUERY_ENVIRONMENT_ID, environmentId);
+    if (cookieJarId != null) params.set(QUERY_COOKIE_JAR_ID, cookieJarId);
+    return `${path}?${params}`;
   },
   request(
-    { workspaceId, environmentId, requestId } = {
+    { workspaceId, environmentId, requestId, cookieJarId } = {
       workspaceId: ':workspaceId',
       environmentId: ':environmentId',
       requestId: ':requestId',
     } as RouteParamsRequest,
   ) {
-    let path = `/workspaces/${workspaceId}/requests/${requestId}`;
-    if (environmentId != null) {
-      path += `?${QUERY_ENVIRONMENT_ID}=${encodeURIComponent(environmentId)}`;
-    }
-    return path;
+    const path = `/workspaces/${workspaceId}/requests/${requestId}`;
+    const params = new URLSearchParams();
+    if (environmentId != null) params.set(QUERY_ENVIRONMENT_ID, environmentId);
+    if (cookieJarId != null) params.set(QUERY_COOKIE_JAR_ID, cookieJarId);
+    return `${path}?${params}`;
   },
 };
 
 export function useAppRoutes() {
-  const activeWorkspaceId = useActiveWorkspaceId();
+  const activeWorkspace = useActiveWorkspace();
   const requestId = useActiveRequestId();
   const nav = useNavigate();
 
@@ -66,22 +69,22 @@ export function useAppRoutes() {
 
   const setEnvironment = useCallback(
     (environment: Environment | null) => {
-      if (activeWorkspaceId == null) {
+      if (activeWorkspace == null) {
         navigate('workspaces');
       } else if (requestId == null) {
         navigate('workspace', {
-          workspaceId: activeWorkspaceId,
+          workspaceId: activeWorkspace.id,
           environmentId: environment == null ? undefined : environment.id,
         });
       } else {
         navigate('request', {
-          workspaceId: activeWorkspaceId,
+          workspaceId: activeWorkspace.id,
           environmentId: environment == null ? undefined : environment.id,
           requestId,
         });
       }
     },
-    [navigate, activeWorkspaceId, requestId],
+    [navigate, activeWorkspace, requestId],
   );
 
   return {

@@ -87,7 +87,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   ref,
 ) {
   const s = useSettings();
-  const e = useActiveEnvironment();
+  const [e] = useActiveEnvironment();
   const w = useActiveWorkspace();
   const environment = autocompleteVariables ? e : null;
   const workspace = autocompleteVariables ? w : null;

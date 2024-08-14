@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use KeyAndValueRef::{Ascii, Binary};
 
-use grpc::{KeyAndValueRef, MetadataMap};
+use yaak_grpc::{KeyAndValueRef, MetadataMap};
 
 pub fn metadata_to_map(metadata: MetadataMap) -> HashMap<String, String> {
     let mut entries = HashMap::new();
