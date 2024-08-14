@@ -61,7 +61,7 @@ export function Sidebar({ className }: Props) {
   const [hidden, setHidden] = useSidebarHidden();
   const sidebarRef = useRef<HTMLLIElement>(null);
   const activeRequest = useActiveRequest();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const folders = useFolders();
   const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();

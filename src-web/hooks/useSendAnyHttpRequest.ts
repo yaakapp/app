@@ -10,7 +10,7 @@ import { useHttpRequests } from './useHttpRequests';
 export function useSendAnyHttpRequest() {
   const environment = useActiveEnvironment();
   const alert = useAlert();
-  const { activeCookieJar } = useActiveCookieJar();
+  const [activeCookieJar] = useActiveCookieJar();
   const requests = useHttpRequests();
   return useMutation<HttpResponse | null, string, string | null>({
     mutationKey: ['send_any_request'],

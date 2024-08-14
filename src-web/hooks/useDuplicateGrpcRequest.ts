@@ -16,7 +16,7 @@ export function useDuplicateGrpcRequest({
   navigateAfter: boolean;
 }) {
   const activeWorkspaceId = useActiveWorkspaceId();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const routes = useAppRoutes();
   const protoFiles = useGrpcProtoFiles(id);
   return useMutation<GrpcRequest, string>({

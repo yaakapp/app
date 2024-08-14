@@ -3,7 +3,7 @@ import { InlineCode } from '../components/core/InlineCode';
 import { useToast } from '../components/ToastContext';
 import { useActiveWorkspace } from './useActiveWorkspace';
 
-export function useAtiveWorkspaceChangedToast() {
+export function useActiveWorkspaceChangedToast() {
   const toast = useToast();
   const activeWorkspace = useActiveWorkspace();
   const [id, setId] = useState<string | null>(activeWorkspace?.id ?? null);

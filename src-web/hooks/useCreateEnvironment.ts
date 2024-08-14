@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { trackEvent } from '../lib/analytics';
 import type { Environment } from '@yaakapp/api';
+import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
+import { useActiveEnvironmentId } from './useActiveEnvironmentId';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
-import { useAppRoutes } from './useAppRoutes';
 import { environmentsQueryKey } from './useEnvironments';
 import { usePrompt } from './usePrompt';
 
 export function useCreateEnvironment() {
-  const routes = useAppRoutes();
+  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
   const prompt = usePrompt();
   const workspaceId = useActiveWorkspaceId();
   const queryClient = useQueryClient();
@@ -30,7 +30,7 @@ export function useCreateEnvironment() {
     onSettled: () => trackEvent('environment', 'create'),
     onSuccess: async (environment) => {
       if (workspaceId == null) return;
-      routes.setEnvironment(environment);
+      setActiveEnvironmentId(environment.id);
       queryClient.setQueryData<Environment[]>(
         environmentsQueryKey({ workspaceId }),
         (environments) => [...(environments ?? []), environment],

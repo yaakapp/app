@@ -13,7 +13,7 @@ import { useDialog } from './DialogContext';
 
 export function CookieDropdown() {
   const cookieJars = useCookieJars();
-  const { activeCookieJar, setActiveCookieJarId } = useActiveCookieJar();
+  const [activeCookieJar, setActiveCookieJarId] = useActiveCookieJar();
   const updateCookieJar = useUpdateCookieJar(activeCookieJar?.id ?? null);
   const deleteCookieJar = useDeleteCookieJar(activeCookieJar ?? null);
   const createCookieJar = useCreateCookieJar();

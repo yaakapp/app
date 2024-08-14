@@ -1,14 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { trackEvent } from '../lib/analytics';
 import type { CookieJar } from '../lib/models';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspaceId } from './useActiveWorkspaceId';
-import { cookieJarsQueryKey } from './useCookieJars';
 import { usePrompt } from './usePrompt';
 
 export function useCreateCookieJar() {
   const workspaceId = useActiveWorkspaceId();
-  const queryClient = useQueryClient();
   const prompt = usePrompt();
 
   return useMutation<CookieJar>({
@@ -28,11 +26,5 @@ export function useCreateCookieJar() {
       return invokeCmd('cmd_create_cookie_jar', { workspaceId, name });
     },
     onSettled: () => trackEvent('cookie_jar', 'create'),
-    onSuccess: async (cookieJar) => {
-      queryClient.setQueryData<CookieJar[]>(
-        cookieJarsQueryKey({ workspaceId: cookieJar.workspaceId }),
-        (items) => [...(items ?? []), cookieJar],
-      );
-    },
   });
 }

@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
-import { useAppRoutes } from '../hooks/useAppRoutes';
+import { useActiveEnvironmentId } from '../hooks/useActiveEnvironmentId';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -21,8 +21,8 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
 }: Props) {
   const environments = useEnvironments();
   const activeEnvironment = useActiveEnvironment();
+  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
   const dialog = useDialog();
-  const routes = useAppRoutes();
 
   const showEnvironmentDialog = useCallback(() => {
     dialog.toggle({
@@ -43,9 +43,9 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
           leftSlot: e.id === activeEnvironment?.id ? <Icon icon="check" /> : <Icon icon="empty" />,
           onSelect: async () => {
             if (e.id !== activeEnvironment?.id) {
-              routes.setEnvironment(e);
+              setActiveEnvironmentId(e.id);
             } else {
-              routes.setEnvironment(null);
+              setActiveEnvironmentId(null);
             }
           },
         }),
@@ -62,7 +62,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         onSelect: showEnvironmentDialog,
       },
     ],
-    [activeEnvironment?.id, environments, routes, showEnvironmentDialog],
+    [activeEnvironment?.id, environments, setActiveEnvironmentId, showEnvironmentDialog],
   );
 
   return (

@@ -5,7 +5,7 @@ import { useCopy } from './useCopy';
 
 export function useCopyAsCurl(requestId: string) {
   const copy = useCopy();
-  const environmentId = useActiveEnvironmentId();
+  const [environmentId] = useActiveEnvironmentId();
   return useMutation({
     mutationKey: ['copy_as_curl', requestId],
     mutationFn: async () => {

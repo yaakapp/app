@@ -12,7 +12,7 @@ const fallback: string[] = [];
 export function useRecentEnvironments() {
   const environments = useEnvironments();
   const activeWorkspaceId = useActiveWorkspaceId();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const kv = useKeyValue<string[]>({
     key: kvKey(activeWorkspaceId ?? 'n/a'),
     namespace,

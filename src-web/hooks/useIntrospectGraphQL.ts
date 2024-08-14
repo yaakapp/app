@@ -18,7 +18,7 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
   // Debounce the request because it can change rapidly and we don't
   // want to send so too many requests.
   const request = useDebouncedValue(baseRequest);
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const [refetchKey, setRefetchKey] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>();

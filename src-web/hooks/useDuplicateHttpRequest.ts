@@ -14,7 +14,7 @@ export function useDuplicateHttpRequest({
   navigateAfter: boolean;
 }) {
   const activeWorkspaceId = useActiveWorkspaceId();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const routes = useAppRoutes();
   return useMutation<HttpRequest, string>({
     mutationKey: ['duplicate_http_request', id],

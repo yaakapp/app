@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Model } from '@yaakapp/api';
 import { useEffect } from 'react';
-import { useAtiveWorkspaceChangedToast } from '../hooks/useAtiveWorkspaceChangedToast';
+import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { useCopy } from '../hooks/useCopy';
 import { environmentsQueryKey } from '../hooks/useEnvironments';
@@ -15,6 +15,7 @@ import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useMigrateActiveCookieJarId } from '../hooks/useMigrateActiveCookieJarId';
 import { useNotificationToast } from '../hooks/useNotificationToast';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -43,7 +44,9 @@ export function GlobalHooks() {
   // Other useful things
   useSyncThemeToDocument();
   useNotificationToast();
-  useAtiveWorkspaceChangedToast();
+  useActiveWorkspaceChangedToast();
+
+  useMigrateActiveCookieJarId();
 
   const toggleCommandPalette = useToggleCommandPalette();
   useHotKey('command_palette.toggle', toggleCommandPalette);

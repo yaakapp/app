@@ -1,23 +1,18 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export const QUERY_ENVIRONMENT_ID = 'environment_id';
+export const QUERY_COOKIE_JAR_ID = 'cookie_jar_id';
 
-export function useActiveEnvironmentId() {
+export function useActiveCookieJarId() {
   // NOTE: This query param is accessed from Rust side, so do not change
   const [params, setParams] = useSearchParams();
-  const id = params.get(QUERY_ENVIRONMENT_ID);
+  const id = params.get(QUERY_COOKIE_JAR_ID);
 
   const setId = useCallback(
-    (id: string | null) => {
+    (id: string) => {
       setParams((p) => {
         const existing = Object.fromEntries(p);
-        if (id == null) {
-          delete existing[QUERY_ENVIRONMENT_ID];
-        } else {
-          existing[QUERY_ENVIRONMENT_ID] = id;
-        }
-        return existing;
+        return { ...existing, [QUERY_COOKIE_JAR_ID]: id };
       });
     },
     [setParams],

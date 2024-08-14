@@ -9,7 +9,7 @@ import { useAppRoutes } from './useAppRoutes';
 
 export function useCreateGrpcRequest() {
   const workspaceId = useActiveWorkspaceId();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
 

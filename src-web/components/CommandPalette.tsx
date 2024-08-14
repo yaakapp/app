@@ -56,8 +56,9 @@ const MAX_PER_GROUP = 8;
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [command, setCommand] = useDebouncedState<string>('', 150);
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
+  const [, setActiveEnvironmentId] = useActiveEnvironmentId();
   const routes = useAppRoutes();
-  const activeEnvironmentId = useActiveEnvironmentId();
+  const [activeEnvironmentId] = useActiveEnvironmentId();
   const workspaces = useWorkspaces();
   const environments = useEnvironments();
   const recentEnvironments = useRecentEnvironments();
@@ -68,7 +69,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const openWorkspace = useOpenWorkspace();
   const createWorkspace = useCreateWorkspace();
   const createHttpRequest = useCreateHttpRequest();
-  const { activeCookieJar } = useActiveCookieJar();
+  const [activeCookieJar] = useActiveCookieJar();
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
@@ -290,7 +291,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       environmentGroup.items.push({
         key: `switch-environment-${e.id}`,
         label: e.name,
-        onSelect: () => routes.setEnvironment(e),
+        onSelect: () => setActiveEnvironmentId(e.id),
       });
     }
 
@@ -316,6 +317,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     activeEnvironmentId,
     sortedEnvironments,
     activeEnvironment?.id,
+    setActiveEnvironmentId,
     sortedWorkspaces,
     openWorkspace,
   ]);
