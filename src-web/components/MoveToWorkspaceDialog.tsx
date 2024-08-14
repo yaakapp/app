@@ -52,12 +52,12 @@ export function MoveToWorkspaceDialog({ onDone, request, activeWorkspaceId }: Pr
 
           if (request.model === 'http_request') {
             await updateHttpRequest.mutateAsync(args);
-            queryClient.invalidateQueries({
+            await queryClient.invalidateQueries({
               queryKey: httpRequestsQueryKey({ workspaceId: activeWorkspaceId }),
             });
           } else if (request.model === 'grpc_request') {
             await updateGrpcRequest.mutateAsync(args);
-            queryClient.invalidateQueries({
+            await queryClient.invalidateQueries({
               queryKey: grpcRequestsQueryKey({ workspaceId: activeWorkspaceId }),
             });
           }

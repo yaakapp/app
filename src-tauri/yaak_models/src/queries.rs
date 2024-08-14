@@ -18,7 +18,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 
 pub async fn set_key_value_string<R: Runtime>(
-    mgr: &impl Manager<R>,
+    mgr: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: &str,
@@ -28,7 +28,7 @@ pub async fn set_key_value_string<R: Runtime>(
 }
 
 pub async fn set_key_value_int<R: Runtime>(
-    mgr: &impl Manager<R>,
+    mgr: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: i32,
@@ -80,14 +80,14 @@ pub async fn get_key_value_int<R: Runtime>(
 }
 
 pub async fn set_key_value_raw<R: Runtime>(
-    mgr: &impl Manager<R>,
+    w: &WebviewWindow<R>,
     namespace: &str,
     key: &str,
     value: &str,
 ) -> (KeyValue, bool) {
-    let existing = get_key_value_raw(mgr, namespace, key).await;
+    let existing = get_key_value_raw(w, namespace, key).await;
 
-    let dbm = &*mgr.state::<SqliteConnection>();
+    let dbm = &*w.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::insert()
         .into_table(KeyValueIden::Table)
@@ -119,7 +119,7 @@ pub async fn set_key_value_raw<R: Runtime>(
     let kv = stmt
         .query_row(&*params.as_params(), |row| row.try_into())
         .expect("Failed to upsert KeyValue");
-    (kv, existing.is_none())
+    (emit_upserted_model(w, kv), existing.is_none())
 }
 
 pub async fn get_key_value_raw<R: Runtime>(
@@ -167,7 +167,10 @@ pub async fn get_workspace<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Resul
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn upsert_workspace<R: Runtime>(window: &WebviewWindow<R>, workspace: Workspace) -> Result<Workspace> {
+pub async fn upsert_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace: Workspace,
+) -> Result<Workspace> {
     let id = match workspace.id.as_str() {
         "" => generate_model_id(ModelType::TypeWorkspace),
         _ => workspace.id.to_string(),
@@ -222,7 +225,10 @@ pub async fn upsert_workspace<R: Runtime>(window: &WebviewWindow<R>, workspace: 
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn delete_workspace<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<Workspace> {
+pub async fn delete_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<Workspace> {
     let workspace = get_workspace(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -254,7 +260,10 @@ pub async fn get_cookie_jar<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Resu
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_cookie_jars<R: Runtime>(mgr: &impl Manager<R>, workspace_id: &str) -> Result<Vec<CookieJar>> {
+pub async fn list_cookie_jars<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<CookieJar>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -267,7 +276,10 @@ pub async fn list_cookie_jars<R: Runtime>(mgr: &impl Manager<R>, workspace_id: &
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_cookie_jar<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<CookieJar> {
+pub async fn delete_cookie_jar<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<CookieJar> {
     let cookie_jar = get_cookie_jar(window, id).await?;
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -281,13 +293,19 @@ pub async fn delete_cookie_jar<R: Runtime>(window: &WebviewWindow<R>, id: &str) 
     emit_deleted_model(window, cookie_jar)
 }
 
-pub async fn duplicate_grpc_request<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<GrpcRequest> {
+pub async fn duplicate_grpc_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcRequest> {
     let mut request = get_grpc_request(window, id).await?.clone();
     request.id = "".to_string();
     upsert_grpc_request(window, &request).await
 }
 
-pub async fn delete_grpc_request<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<GrpcRequest> {
+pub async fn delete_grpc_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcRequest> {
     let req = get_grpc_request(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -468,7 +486,10 @@ pub async fn upsert_grpc_connection<R: Runtime>(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_grpc_connection<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<GrpcConnection> {
+pub async fn get_grpc_connection<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<GrpcConnection> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -498,7 +519,10 @@ pub async fn list_grpc_connections<R: Runtime>(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_grpc_connection<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<GrpcConnection> {
+pub async fn delete_grpc_connection<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<GrpcConnection> {
     let resp = get_grpc_connection(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -513,14 +537,20 @@ pub async fn delete_grpc_connection<R: Runtime>(window: &WebviewWindow<R>, id: &
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_grpc_connections<R: Runtime>(window: &WebviewWindow<R>, request_id: &str) -> Result<()> {
+pub async fn delete_all_grpc_connections<R: Runtime>(
+    window: &WebviewWindow<R>,
+    request_id: &str,
+) -> Result<()> {
     for r in list_grpc_connections(window, request_id).await? {
         delete_grpc_connection(window, &r.id).await?;
     }
     Ok(())
 }
 
-pub async fn upsert_grpc_event<R: Runtime>(window: &WebviewWindow<R>, event: &GrpcEvent) -> Result<GrpcEvent> {
+pub async fn upsert_grpc_event<R: Runtime>(
+    window: &WebviewWindow<R>,
+    event: &GrpcEvent,
+) -> Result<GrpcEvent> {
     let id = match event.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcEvent),
         _ => event.id.to_string(),
@@ -672,7 +702,10 @@ pub async fn list_environments<R: Runtime>(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn delete_environment<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<Environment> {
+pub async fn delete_environment<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<Environment> {
     let env = get_environment(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -722,7 +755,10 @@ pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settin
         .expect("Failed to insert Settings")
 }
 
-pub async fn update_settings<R: Runtime>(window: &WebviewWindow<R>, settings: Settings) -> Result<Settings> {
+pub async fn update_settings<R: Runtime>(
+    window: &WebviewWindow<R>,
+    settings: Settings,
+) -> Result<Settings> {
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -848,7 +884,10 @@ pub async fn get_folder<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<F
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_folders<R: Runtime>(mgr: &impl Manager<R>, workspace_id: &str) -> Result<Vec<Folder>> {
+pub async fn list_folders<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<Folder>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -926,13 +965,19 @@ pub async fn upsert_folder<R: Runtime>(window: &WebviewWindow<R>, r: Folder) -> 
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn duplicate_http_request<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<HttpRequest> {
+pub async fn duplicate_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpRequest> {
     let mut request = get_http_request(window, id).await?.clone();
     request.id = "".to_string();
     upsert_http_request(window, request).await
 }
 
-pub async fn upsert_http_request<R: Runtime>(window: &WebviewWindow<R>, r: HttpRequest) -> Result<HttpRequest> {
+pub async fn upsert_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    r: HttpRequest,
+) -> Result<HttpRequest> {
     let id = match r.id.as_str() {
         "" => generate_model_id(ModelType::TypeHttpRequest),
         _ => r.id.to_string(),
@@ -1035,7 +1080,10 @@ pub async fn get_http_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Re
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn delete_http_request<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<HttpRequest> {
+pub async fn delete_http_request<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpRequest> {
     let req = get_http_request(window, id).await?;
 
     // DB deletes will cascade but this will delete the files
@@ -1233,7 +1281,10 @@ pub async fn update_response<R: Runtime>(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_http_response<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<HttpResponse> {
+pub async fn get_http_response<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<HttpResponse> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
@@ -1245,7 +1296,10 @@ pub async fn get_http_response<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> R
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn delete_http_response<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<HttpResponse> {
+pub async fn delete_http_response<R: Runtime>(
+    window: &WebviewWindow<R>,
+    id: &str,
+) -> Result<HttpResponse> {
     let resp = get_http_response(window, id).await?;
 
     // Delete the body file if it exists
@@ -1266,7 +1320,10 @@ pub async fn delete_http_response<R: Runtime>(window: &WebviewWindow<R>, id: &st
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_http_responses<R: Runtime>(window: &WebviewWindow<R>, request_id: &str) -> Result<()> {
+pub async fn delete_all_http_responses<R: Runtime>(
+    window: &WebviewWindow<R>,
+    request_id: &str,
+) -> Result<()> {
     for r in list_responses(window, request_id, None).await? {
         delete_http_response(window, &r.id).await?;
     }
@@ -1342,7 +1399,10 @@ fn emit_upserted_model<M: Serialize + Clone, R: Runtime>(window: &WebviewWindow<
     model
 }
 
-fn emit_deleted_model<M: Serialize + Clone, R: Runtime>(window: &WebviewWindow<R>, model: M) -> Result<M> {
+fn emit_deleted_model<M: Serialize + Clone, R: Runtime>(
+    window: &WebviewWindow<R>,
+    model: M,
+) -> Result<M> {
     let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),

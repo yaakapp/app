@@ -36,6 +36,9 @@ export function isResponseLoading(response: HttpResponse | GrpcConnection): bool
 }
 
 export function modelsEq(a: Model, b: Model) {
+  if (a.model != b.model) {
+    return false;
+  }
   if (a.model === 'key_value' && b.model === 'key_value') {
     return a.key === b.key && a.namespace === b.namespace;
   }

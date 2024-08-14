@@ -99,11 +99,15 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 
 #[tauri::command]
 async fn cmd_dismiss_notification(
-    app: AppHandle,
+    window: WebviewWindow,
     notification_id: &str,
     yaak_notifier: State<'_, Mutex<YaakNotifier>>,
 ) -> Result<(), String> {
-    yaak_notifier.lock().await.seen(&app, notification_id).await
+    yaak_notifier
+        .lock()
+        .await
+        .seen(&window, notification_id)
+        .await
 }
 
 #[tauri::command]
@@ -138,17 +142,21 @@ async fn cmd_grpc_go(
     request_id: &str,
     environment_id: Option<&str>,
     proto_files: Vec<String>,
-    w: WebviewWindow,
+    window: WebviewWindow,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
-    let req = get_grpc_request(&w, request_id)
+    let req = get_grpc_request(&window, request_id)
         .await
         .map_err(|e| e.to_string())?;
     let environment = match environment_id {
-        Some(id) => Some(get_environment(&w, id).await.map_err(|e| e.to_string())?),
+        Some(id) => Some(
+            get_environment(&window, id)
+                .await
+                .map_err(|e| e.to_string())?,
+        ),
         None => None,
     };
-    let workspace = get_workspace(&w, &req.workspace_id)
+    let workspace = get_workspace(&window, &req.workspace_id)
         .await
         .map_err(|e| e.to_string())?;
     let mut metadata = HashMap::new();
@@ -202,7 +210,7 @@ async fn cmd_grpc_go(
     let conn = {
         let req = req.clone();
         upsert_grpc_connection(
-            &w,
+            &window,
             &GrpcConnection {
                 workspace_id: req.workspace_id,
                 request_id: req.id,
@@ -259,7 +267,7 @@ async fn cmd_grpc_go(
         Ok(c) => c,
         Err(err) => {
             upsert_grpc_connection(
-                &w,
+                &window,
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
@@ -285,7 +293,7 @@ async fn cmd_grpc_go(
 
     let cb = {
         let cancelled_rx = cancelled_rx.clone();
-        let w = w.clone();
+        let w = window.clone();
         let base_msg = base_msg.clone();
         let method_desc = method_desc.clone();
         let vars = vars.clone();
@@ -358,10 +366,10 @@ async fn cmd_grpc_go(
             }
         }
     };
-    let event_handler = w.listen_any(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
+    let event_handler = window.listen_any(format!("grpc_client_msg_{}", conn.id).as_str(), cb);
 
     let grpc_listen = {
-        let w = w.clone();
+        let w = window.clone();
         let base_event = base_msg.clone();
         let req = req.clone();
         let vars = vars.clone();
@@ -606,7 +614,7 @@ async fn cmd_grpc_go(
     {
         let conn_id = conn_id.clone();
         tauri::async_runtime::spawn(async move {
-            let w = w.clone();
+            let w = window.clone();
             tokio::select! {
                 _ = grpc_listen => {
                     let events = list_grpc_events(&w, &conn_id)
@@ -851,7 +859,7 @@ async fn cmd_import_data(
     );
 
     analytics::track_event(
-        &w.app_handle(),
+        &w,
         AnalyticsResource::App,
         AnalyticsAction::Import,
         Some(json!({ "plugin": plugin_name })),
@@ -902,7 +910,7 @@ async fn cmd_curl_to_request(
     };
 
     analytics::track_event(
-        &w.app_handle(),
+        &w,
         AnalyticsResource::App,
         AnalyticsAction::Import,
         Some(json!({ "plugin": plugin_name })),
@@ -943,7 +951,7 @@ async fn cmd_export_data(
     f.sync_all().expect("Failed to sync");
 
     analytics::track_event(
-        &window.app_handle(),
+        &window,
         AnalyticsResource::App,
         AnalyticsAction::Export,
         None,
@@ -1055,7 +1063,7 @@ async fn cmd_track_event(
         AnalyticsAction::from_str(action),
     ) {
         (Ok(resource), Ok(action)) => {
-            analytics::track_event(&window.app_handle(), resource, action, attributes).await;
+            analytics::track_event(&window, resource, action, attributes).await;
         }
         (r, a) => {
             error!(
@@ -1689,10 +1697,9 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    create_window(app_handle, "/");
-                    let h = app_handle.clone();
+                    let w = create_window(app_handle, "/");
                     tauri::async_runtime::spawn(async move {
-                        let info = analytics::track_launch_event(&h).await;
+                        let info = analytics::track_launch_event(&w).await;
                         debug!("Launched Yaak {:?}", info);
                     });
 
@@ -1717,10 +1724,12 @@ pub fn run() {
 
                     let h = app_handle.clone();
                     tauri::async_runtime::spawn(async move {
+                        let windows = h.webview_windows();
+                        let w = windows.values().next().unwrap();
                         tokio::time::sleep(Duration::from_millis(4000)).await;
-                        let val: State<'_, Mutex<YaakNotifier>> = h.state();
+                        let val: State<'_, Mutex<YaakNotifier>> = w.state();
                         let mut n = val.lock().await;
-                        if let Err(e) = n.check(&h).await {
+                        if let Err(e) = n.check(&w).await {
                             warn!("Failed to check for notifications {}", e)
                         }
                     });

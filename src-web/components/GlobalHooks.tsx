@@ -27,6 +27,7 @@ import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { workspacesQueryKey } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
+import { extractKeyValue } from '../lib/keyValueStore';
 import { modelsEq } from '../lib/models';
 import { catppuccinMacchiato } from '../lib/theme/themes/catppuccin';
 import { githubLight } from '../lib/theme/themes/github';
@@ -103,21 +104,28 @@ export function GlobalHooks() {
       model.model,
     );
 
-    if (shouldIgnoreModel(model)) return;
+    if (shouldIgnoreModel(model, windowLabel)) return;
 
-    queryClient.setQueryData<Model[]>(queryKey, (values = []) => {
-      const index = values.findIndex((v) => modelsEq(v, model)) ?? -1;
-      if (index >= 0) {
-        return [...values.slice(0, index), model, ...values.slice(index + 1)];
-      } else {
-        return pushToFront ? [model, ...(values ?? [])] : [...(values ?? []), model];
+    queryClient.setQueryData(queryKey, (current: unknown) => {
+      if (model.model === 'key_value') {
+        // Special-case for KeyValue
+        return extractKeyValue(model);
+      }
+
+      if (Array.isArray(current)) {
+        const index = current.findIndex((v) => modelsEq(v, model)) ?? -1;
+        if (index >= 0) {
+          return [...current.slice(0, index), model, ...current.slice(index + 1)];
+        } else {
+          return pushToFront ? [model, ...(current ?? [])] : [...(current ?? []), model];
+        }
       }
     });
   });
 
   useListenToTauriEvent<ModelPayload>('deleted_model', ({ payload }) => {
-    const { model } = payload;
-    if (shouldIgnoreModel(model)) return;
+    const { model, windowLabel } = payload;
+    if (shouldIgnoreModel(model, windowLabel)) return;
 
     if (model.model === 'workspace') {
       queryClient.setQueryData(workspacesQueryKey(), removeById(model));
@@ -188,7 +196,11 @@ function removeById<T extends { id: string }>(model: T) {
   return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id);
 }
 
-const shouldIgnoreModel = (payload: Model) => {
+const shouldIgnoreModel = (payload: Model, windowLabel: string) => {
+  if (windowLabel === getCurrentWebviewWindow().label) {
+    // Never ignore same-window updates
+    return false;
+  }
   if (payload.model === 'key_value') {
     return payload.namespace === 'no_sync';
   }

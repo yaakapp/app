@@ -1,16 +1,14 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { trackEvent } from '../lib/analytics';
+import { useMutation } from '@tanstack/react-query';
 import type { Folder } from '@yaakapp/api';
+import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
-import { foldersQueryKey } from './useFolders';
 import { usePrompt } from './usePrompt';
 
 export function useCreateFolder() {
   const workspace = useActiveWorkspace();
   const activeRequest = useActiveRequest();
-  const queryClient = useQueryClient();
   const prompt = usePrompt();
 
   return useMutation<Folder, unknown, Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>>({
@@ -35,10 +33,5 @@ export function useCreateFolder() {
       return invokeCmd('cmd_create_folder', { workspaceId: workspace.id, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),
-    onSuccess: async (request) => {
-      await queryClient.invalidateQueries({
-        queryKey: foldersQueryKey({ workspaceId: request.workspaceId }),
-      });
-    },
   });
 }

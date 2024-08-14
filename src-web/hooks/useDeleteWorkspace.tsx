@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { Workspace } from '@yaakapp/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
@@ -6,11 +6,8 @@ import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
 import { useConfirm } from './useConfirm';
-import { httpRequestsQueryKey } from './useHttpRequests';
-import { workspacesQueryKey } from './useWorkspaces';
 
 export function useDeleteWorkspace(workspace: Workspace | null) {
-  const queryClient = useQueryClient();
   const activeWorkspace = useActiveWorkspace();
   const routes = useAppRoutes();
   const confirm = useConfirm();
@@ -36,16 +33,9 @@ export function useDeleteWorkspace(workspace: Workspace | null) {
       if (workspace === null) return;
 
       const { id: workspaceId } = workspace;
-      queryClient.setQueryData<Workspace[]>(workspacesQueryKey({}), (workspaces) =>
-        workspaces?.filter((workspace) => workspace.id !== workspaceId),
-      );
       if (workspaceId === activeWorkspace?.id) {
         routes.navigate('workspaces');
       }
-
-      // Also clean up other things that may have been deleted
-      queryClient.setQueryData(httpRequestsQueryKey({ workspaceId }), []);
-      await queryClient.invalidateQueries({ queryKey: httpRequestsQueryKey({ workspaceId }) });
     },
   });
 }
