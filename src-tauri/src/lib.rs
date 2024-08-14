@@ -1926,13 +1926,20 @@ async fn handle_plugin_event<R: Runtime>(
                 Some((_, w)) => w,
             };
 
-            let environment_id = w
-                .url()
-                .unwrap()
-                .query_pairs()
+            let url = w.url().unwrap();
+            let mut query_pairs = url.query_pairs();
+
+            let cookie_jar_id = query_pairs
+                .find(|(k, _v)| k == "cookie_jar_id")
+                .map(|(_k, v)| v.to_string());
+            let cookie_jar = match cookie_jar_id {
+                None => None,
+                Some(id) => get_cookie_jar(w, id.as_str()).await.ok(),
+            };
+
+            let environment_id = query_pairs
                 .find(|(k, _v)| k == "environment_id")
                 .map(|(_k, v)| v.to_string());
-            println!("ENVIRONENT ID {environment_id:?}");
             let environment = match environment_id {
                 None => None,
                 Some(id) => get_environment(w, id.as_str()).await.ok(),
@@ -1947,8 +1954,8 @@ async fn handle_plugin_event<R: Runtime>(
                 req.http_request,
                 &resp,
                 environment,
-                None,
-                &mut watch::channel(false).1,
+                cookie_jar,
+                &mut watch::channel(false).1, // No-op cancel channel
             )
             .await;
 
