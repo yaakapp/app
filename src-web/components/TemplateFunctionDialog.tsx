@@ -117,9 +117,12 @@ function TextArg({
   value: string;
   onChange: (v: string) => void;
 }) {
-  const handleChange = useCallback((value: string) => {
-    onChange(value === '' ? NULL : value);
-  }, []);
+  const handleChange = useCallback(
+    (value: string) => {
+      onChange(value === '' ? NULL : value);
+    },
+    [onChange],
+  );
 
   return (
     <PlainInput
@@ -151,7 +154,7 @@ function SelectArg({
       options={[
         ...arg.options.map((a) => ({
           label: a + (arg.defaultValue === a ? ' (default)' : ''),
-          value: a,
+          value: a === arg.defaultValue ? NULL : a,
         })),
       ]}
     />
