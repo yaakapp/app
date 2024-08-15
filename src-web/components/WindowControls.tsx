@@ -23,7 +23,7 @@ export function WindowControls({ className, onlyX }: Props) {
       {!onlyX && (
         <>
           <Button
-            className="!h-full px-4 text-text-subtle hocus:text hocus:bg-surface-highlight-secondary rounded-none"
+            className="!h-full px-4 text-text-subtle hocus:text hocus:bg-surface-highlight rounded-none"
             color="custom"
             onClick={() => getCurrentWebviewWindow().minimize()}
           >
