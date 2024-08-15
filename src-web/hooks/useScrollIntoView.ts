@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
-export function useScrollIntoView<T extends HTMLElement>(node: T | null, active: boolean) {
+export function useScrollIntoView<T extends HTMLElement>(node: T | null, enabled: boolean) {
   useEffect(() => {
-    if (active) {
-      node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (enabled) {
+      node?.scrollIntoView({ block: 'nearest' });
     }
-  }, [active, node]);
+  }, [enabled, node]);
 }

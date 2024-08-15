@@ -610,7 +610,6 @@ function SidebarItem({
   children,
 }: SidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
-  useScrollIntoView(ref.current, selected);
 
   const [, connectDrop] = useDrop<DragItem, void>(
     {
@@ -669,6 +668,8 @@ function SidebarItem({
   const [editing, setEditing] = useState<boolean>(false);
   const isActive = activeRequest?.id === itemId;
   const createDropdownItems = useCreateDropdownItems({ folderId: itemId });
+
+  useScrollIntoView(ref.current, isActive);
 
   const handleSubmitNameEdit = useCallback(
     (el: HTMLInputElement) => {
