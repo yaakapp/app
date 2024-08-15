@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { search } from 'fast-fuzzy';
 import type { KeyboardEvent, ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
@@ -23,6 +23,7 @@ import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useRequests } from '../hooks/useRequests';
+import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
@@ -445,8 +446,12 @@ function CommandPaletteItem({
   onClick: () => void;
   rightSlot?: ReactNode;
 }) {
+  const ref = useRef<HTMLButtonElement | null>(null);
+  useScrollIntoView(ref.current, active);
+
   return (
     <Button
+      ref={ref}
       onClick={onClick}
       tabIndex={active ? undefined : -1}
       rightSlot={rightSlot}
