@@ -25,10 +25,7 @@ class PlaceholderWidget extends WidgetType {
         ? 'x-theme-placeholder--primary'
         : 'x-theme-placeholder--info'
     }`;
-    elt.title =
-      this.option.type === 'unknown'
-        ? 'Variable not found in environment'
-        : this.option.value ?? '';
+    elt.title = this.option.type === 'unknown' ? '__NOT_FOUND__' : this.option.value ?? '';
     elt.textContent = this.option.label;
     if (this.option.onClick) {
       elt.addEventListener('click', this.option.onClick);

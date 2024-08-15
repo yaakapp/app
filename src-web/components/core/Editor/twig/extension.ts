@@ -1,7 +1,7 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { Environment, Workspace } from '@yaakapp/api';
+import type { Environment, EnvironmentVariable, Workspace } from '@yaakapp/api';
 import type { TemplateFunction } from '../../../../hooks/useTemplateFunctions';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
@@ -11,36 +11,42 @@ import { twigCompletion } from './completion';
 import { placeholders } from './placeholder';
 import { parser as twigParser } from './twig';
 
-export function twig(
-  base: LanguageSupport,
-  environment: Environment | null,
-  workspace: Workspace | null,
-  templateFunctions: TemplateFunction[],
-  autocomplete?: GenericCompletionConfig,
-) {
+export function twig({
+  base,
+  environment,
+  workspace,
+  templateFunctions,
+  autocomplete,
+  onClickFunction,
+  onClickVariable,
+}: {
+  base: LanguageSupport;
+  environment: Environment | null;
+  workspace: Workspace | null;
+  templateFunctions: TemplateFunction[];
+  autocomplete?: GenericCompletionConfig;
+  onClickFunction: (option: TemplateFunction) => void;
+  onClickVariable: (option: EnvironmentVariable) => void;
+}) {
   const language = mixLanguage(base);
   const allVariables = [...(workspace?.variables ?? []), ...(environment?.variables ?? [])];
 
   const variableOptions: TwigCompletionOption[] =
     allVariables
       .filter((v) => v.enabled)
-      .map((o) => ({
-        ...o,
+      .map((v) => ({
+        ...v,
         type: 'variable',
-        label: o.name,
-        onClick: () => {
-          console.log('CLICKED VARIABLE');
-        },
+        label: v.name,
+        onClick: () => onClickVariable(v),
       })) ?? [];
   const functionOptions: TwigCompletionOption[] =
-    templateFunctions.map((o) => ({
-      name: o.name,
+    templateFunctions.map((fn) => ({
+      name: fn.name,
       type: 'function',
       value: null,
-      label: o.name + '()',
-      onClick: () => {
-        console.log('CLICKED FUNCTION');
-      },
+      label: fn.name + '()',
+      onClick: () => onClickFunction(fn),
     })) ?? [];
 
   const options = [...variableOptions, ...functionOptions];

@@ -1,6 +1,7 @@
 import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
+import type { EnvironmentVariable } from '@yaakapp/api';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
@@ -18,7 +19,10 @@ import {
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 import { useSettings } from '../../../hooks/useSettings';
-import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
+import { type TemplateFunction, useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
+import { useDialog } from '../../DialogContext';
+import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
+import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
@@ -150,6 +154,31 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     cm.current?.view.dispatch({ effects: effect });
   }, [wrapLines]);
 
+  const dialog = useDialog();
+  const onClickFunction = useCallback(
+    (fn: TemplateFunction) => {
+      dialog.show({
+        id: 'template-function',
+        size: 'dynamic',
+        title: 'Configure Function',
+        render: ({ hide }) => <TemplateFunctionDialog templateFunction={fn} hide={hide} />,
+      });
+    },
+    [dialog],
+  );
+
+  const onClickVariable = useCallback(
+    (v: EnvironmentVariable) => {
+      dialog.show({
+        size: 'dynamic',
+        id: 'template-variable',
+        title: 'Configure Variable',
+        render: ({ hide }) => <TemplateVariableDialog variable={v} hide={hide} />,
+      });
+    },
+    [dialog],
+  );
+
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -161,9 +190,20 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       useTemplating,
       autocomplete,
       templateFunctions,
+      onClickFunction,
+      onClickVariable,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete, useTemplating, environment, workspace, templateFunctions]);
+  }, [
+    contentType,
+    autocomplete,
+    useTemplating,
+    environment,
+    workspace,
+    templateFunctions,
+    onClickFunction,
+    onClickVariable,
+  ]);
 
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback(
@@ -184,6 +224,8 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           environment,
           workspace,
           templateFunctions,
+          onClickVariable,
+          onClickFunction,
         });
 
         const state = EditorState.create({

@@ -33,7 +33,7 @@ import {
 import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import type { Environment, Workspace } from '@yaakapp/api';
+import type { Environment, EnvironmentVariable, Workspace } from '@yaakapp/api';
 import type { TemplateFunction } from '../../../hooks/useTemplateFunctions';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
@@ -83,10 +83,14 @@ export function getLanguageExtension({
   workspace,
   autocomplete,
   templateFunctions,
+  onClickVariable,
+  onClickFunction,
 }: {
   environment: Environment | null;
   workspace: Workspace | null;
   templateFunctions: TemplateFunction[];
+  onClickFunction: (option: TemplateFunction) => void;
+  onClickVariable: (option: EnvironmentVariable) => void;
 } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {
@@ -97,7 +101,15 @@ export function getLanguageExtension({
     return base;
   }
 
-  return twig(base, environment, workspace, templateFunctions, autocomplete);
+  return twig({
+    base,
+    environment,
+    workspace,
+    templateFunctions,
+    autocomplete,
+    onClickFunction,
+    onClickVariable,
+  });
 }
 
 export const baseExtensions = [
