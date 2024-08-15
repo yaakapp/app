@@ -1,17 +1,18 @@
 export interface TemplateFunctionArgBase {
   name: string;
-  defaultValue?: string;
   optional?: boolean;
   label?: string;
 }
 
 export interface TemplateFunctionSelectArg extends TemplateFunctionArgBase {
   type: 'select';
-  options: string[];
+  defaultValue?: string;
+  options: readonly string[];
 }
 
 export interface TemplateFunctionTextArg extends TemplateFunctionArgBase {
   type: 'text';
+  defaultValue?: string;
   placeholder?: string;
 }
 
@@ -33,7 +34,6 @@ export function useTemplateFunctions() {
           label: 'From',
           placeholder: '2023-23-12T04:03:03',
           optional: true,
-          defaultValue: '123',
         },
         {
           type: 'select',
@@ -41,7 +41,7 @@ export function useTemplateFunctions() {
           name: 'format',
           options: ['RFC3339', 'millis'],
           optional: true,
-          defaultValue: '123',
+          defaultValue: 'RFC3339',
         },
       ],
     },

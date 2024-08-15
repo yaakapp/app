@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import type { Tokens } from '../gen/Tokens';
 import { invokeCmd } from '../lib/tauri';
 
 export function useParseTemplate(template: string) {
-  return useQuery({
+  return useQuery<Tokens>({
     queryKey: ['parse_template', template],
-    queryFn: async () => {
-      console.log('PARSING', template);
-      const foo = await invokeCmd('cmd_parse_template', { template });
-      console.log('FOO', foo);
-      return foo;
-    },
+    queryFn: () => parseTemplate(template),
   });
+}
+
+export async function parseTemplate(template: string): Promise<Tokens> {
+  return invokeCmd('cmd_parse_template', { template });
 }

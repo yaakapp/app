@@ -1,28 +1,44 @@
-import { useState } from 'react';
-import { useParseTemplate } from '../hooks/useParseTemplate';
+import { useCallback, useState } from 'react';
+import type { FnArg } from '../gen/FnArg';
+import type { Tokens } from '../gen/Tokens';
 import type {
   TemplateFunction,
   TemplateFunctionArg,
   TemplateFunctionSelectArg,
   TemplateFunctionTextArg,
 } from '../hooks/useTemplateFunctions';
+import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
 import { Button } from './core/Button';
-import { Editor } from './core/Editor';
+import { InlineCode } from './core/InlineCode';
 import { PlainInput } from './core/PlainInput';
 import { Select } from './core/Select';
 import { VStack } from './core/Stacks';
 
+const NULL = '__NULL__';
+
 interface Props {
   templateFunction: TemplateFunction;
+  initialTokens: Tokens;
   hide: () => void;
 }
 
-export function TemplateFunctionDialog({ templateFunction, hide }: Props) {
+export function TemplateFunctionDialog({ templateFunction, hide, initialTokens }: Props) {
   const [argValues, setArgValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
+    const initialArgs =
+      initialTokens.tokens[0]?.type === 'tag' && initialTokens.tokens[0]?.val.type === 'fn'
+        ? initialTokens.tokens[0]?.val.args
+        : [];
     for (const arg of templateFunction.args) {
-      initial[arg.name] = arg.defaultValue ?? '';
+      const initialArg = initialArgs.find((a) => a.name === arg.name);
+      const initialArgValue =
+        initialArg?.value.type === 'str'
+          ? initialArg?.value.text
+          : // TODO: Implement variable-based args
+            '__NULL__';
+      initial[arg.name] = initialArgValue ?? NULL;
     }
+    console.log('INITIAL', initial);
     return initial;
   });
 
@@ -30,13 +46,31 @@ export function TemplateFunctionDialog({ templateFunction, hide }: Props) {
     setArgValues((v) => ({ ...v, [name]: value }));
   };
 
-  const renderedArgs = Object.entries(argValues)
-    .filter(([, v]) => !!v)
-    .map(([n, v]) => `${n}="${v.replaceAll('"', '\\"')}"`)
-    .join(', ');
-  const rendered = `\${[ ${templateFunction.name}(${renderedArgs}) ]}`;
+  const argTokens: FnArg[] = Object.keys(argValues).map((name) => ({
+    name,
+    value:
+      argValues[name] === NULL
+        ? { type: 'null' }
+        : {
+            type: 'str',
+            text: argValues[name] ?? '',
+          },
+  }));
 
-  useParseTemplate(rendered);
+  const tokens: Tokens = {
+    tokens: [
+      {
+        type: 'tag',
+        val: {
+          type: 'fn',
+          name: templateFunction.name,
+          args: argTokens,
+        },
+      },
+    ],
+  };
+
+  const rendered = useTemplateTokensToString(tokens);
 
   return (
     <VStack className="pb-3" space={4}>
@@ -64,13 +98,9 @@ export function TemplateFunctionDialog({ templateFunction, hide }: Props) {
           }
         })}
       </VStack>
-      <Editor
-        singleLine
-        heightMode="auto"
-        readOnly
-        defaultValue={rendered}
-        forceUpdateKey={rendered}
-      />
+      <InlineCode className="border border-info border-dashed px-3 py-2 text-info">
+        {rendered.data}
+      </InlineCode>
       <Button color="primary" onClick={hide}>
         Done
       </Button>
@@ -87,14 +117,18 @@ function TextArg({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const handleChange = useCallback((value: string) => {
+    onChange(value === '' ? NULL : value);
+  }, []);
+
   return (
     <PlainInput
       name={arg.name}
-      onChange={onChange}
-      defaultValue={value}
+      onChange={handleChange}
+      defaultValue={value === NULL ? '' : value}
       label={arg.label ?? arg.name}
       hideLabel={arg.label == null}
-      placeholder={arg.placeholder ?? ''}
+      placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
     />
   );
 }
@@ -114,10 +148,12 @@ function SelectArg({
       name={arg.name}
       onChange={onChange}
       value={value}
-      options={arg.options.map((a) => ({
-        label: a,
-        value: a,
-      }))}
+      options={[
+        ...arg.options.map((a) => ({
+          label: a + (arg.defaultValue === a ? ' (default)' : ''),
+          value: a,
+        })),
+      ]}
     />
   );
 }

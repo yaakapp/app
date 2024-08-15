@@ -1,4 +1,4 @@
-use crate::{FnArg, Parser, Token, Val};
+use crate::{FnArg, Parser, Token, Tokens, Val};
 use log::warn;
 use std::collections::HashMap;
 
@@ -15,15 +15,15 @@ pub fn parse_and_render(
 }
 
 pub fn render(
-    tokens: Vec<Token>,
+    tokens: Tokens,
     vars: &HashMap<String, String>,
     cb: Option<TemplateCallback>,
 ) -> String {
     let mut doc_str: Vec<String> = Vec::new();
 
-    for t in tokens {
+    for t in tokens.tokens {
         match t {
-            Token::Raw { text: text } => doc_str.push(text),
+            Token::Raw { text } => doc_str.push(text),
             Token::Tag { val } => doc_str.push(render_tag(val, &vars, cb)),
             Token::Eof => {}
         }
@@ -74,6 +74,7 @@ fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallb
                 None => "".into(),
             }
         }
+        Val::Null => "".into()
     }
 }
 

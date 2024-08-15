@@ -4,8 +4,13 @@ import { BetterMatchDecorator } from '../BetterMatchDecorator';
 import type { TwigCompletionOption } from './completion';
 
 class PlaceholderWidget extends WidgetType {
-  constructor(readonly option: TwigCompletionOption) {
+  #clickListenerCallback: () => void;
+
+  constructor(readonly option: TwigCompletionOption, readonly rawTag: string) {
     super();
+    this.#clickListenerCallback = () => {
+      this.option.onClick?.(this.rawTag);
+    };
   }
 
   eq(other: PlaceholderWidget) {
@@ -27,16 +32,12 @@ class PlaceholderWidget extends WidgetType {
     }`;
     elt.title = this.option.type === 'unknown' ? '__NOT_FOUND__' : this.option.value ?? '';
     elt.textContent = this.option.label;
-    if (this.option.onClick) {
-      elt.addEventListener('click', this.option.onClick);
-    }
+    elt.addEventListener('click', this.#clickListenerCallback);
     return elt;
   }
 
   destroy(dom: HTMLElement) {
-    if (this.option.onClick) {
-      dom.removeEventListener('click', this.option.onClick);
-    }
+    dom.removeEventListener('click', this.#clickListenerCallback);
     super.destroy(dom);
   }
 
@@ -75,7 +76,7 @@ export function placeholders(options: TwigCompletionOption[]) {
 
       return Decoration.replace({
         inclusive: true,
-        widget: new PlaceholderWidget(option),
+        widget: new PlaceholderWidget(option, match[0]),
       });
     },
   });

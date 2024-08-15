@@ -60,7 +60,7 @@ use yaak_plugin_runtime::events::{
     GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, RenderHttpRequestResponse,
     SendHttpRequestResponse,
 };
-use yaak_templates::{Parser, Token};
+use yaak_templates::{Parser, Tokens};
 
 mod analytics;
 mod export_resources;
@@ -101,9 +101,13 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 }
 
 #[tauri::command]
-async fn cmd_parse_template(template: &str) -> Result<Vec<Token>, ()> {
-    println!("PARSE TEMPLATE {template}");
+async fn cmd_parse_template(template: &str) -> Result<Tokens, ()> {
     Ok(Parser::new(template).parse())
+}
+
+#[tauri::command]
+async fn cmd_template_tokens_to_string(tokens: Tokens) -> Result<String, ()> {
+    Ok(tokens.to_string())
 }
 
 #[tauri::command]
@@ -1649,6 +1653,7 @@ pub fn run() {
             cmd_delete_workspace,
             cmd_dismiss_notification,
             cmd_parse_template,
+            cmd_template_tokens_to_string,
             cmd_duplicate_grpc_request,
             cmd_duplicate_http_request,
             cmd_export_data,

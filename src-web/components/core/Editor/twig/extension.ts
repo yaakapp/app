@@ -25,8 +25,8 @@ export function twig({
   workspace: Workspace | null;
   templateFunctions: TemplateFunction[];
   autocomplete?: GenericCompletionConfig;
-  onClickFunction: (option: TemplateFunction) => void;
-  onClickVariable: (option: EnvironmentVariable) => void;
+  onClickFunction: (option: TemplateFunction, rawTag: string) => void;
+  onClickVariable: (option: EnvironmentVariable, rawTag: string) => void;
 }) {
   const language = mixLanguage(base);
   const allVariables = [...(workspace?.variables ?? []), ...(environment?.variables ?? [])];
@@ -38,7 +38,7 @@ export function twig({
         ...v,
         type: 'variable',
         label: v.name,
-        onClick: () => onClickVariable(v),
+        onClick: (rawTag: string) => onClickVariable(v, rawTag),
       })) ?? [];
   const functionOptions: TwigCompletionOption[] =
     templateFunctions.map((fn) => ({
@@ -46,7 +46,7 @@ export function twig({
       type: 'function',
       value: null,
       label: fn.name + '()',
-      onClick: () => onClickFunction(fn),
+      onClick: (rawTag: string) => onClickFunction(fn, rawTag),
     })) ?? [];
 
   const options = [...variableOptions, ...functionOptions];

@@ -89,8 +89,8 @@ export function getLanguageExtension({
   environment: Environment | null;
   workspace: Workspace | null;
   templateFunctions: TemplateFunction[];
-  onClickFunction: (option: TemplateFunction) => void;
-  onClickVariable: (option: EnvironmentVariable) => void;
+  onClickFunction: (option: TemplateFunction, rawTag: string) => void;
+  onClickVariable: (option: EnvironmentVariable, rawTag: string) => void;
 } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {

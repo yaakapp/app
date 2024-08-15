@@ -8,7 +8,7 @@ export interface AppInfo {
   appLogDir: string;
 }
 
-const appInfo = await invokeCmd('cmd_metadata');
+const appInfo = (await invokeCmd('cmd_metadata')) as AppInfo;
 
 export function useAppInfo() {
   return appInfo;

@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
+import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useSettings } from '../../../hooks/useSettings';
 import { type TemplateFunction, useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { useDialog } from '../../DialogContext';
@@ -156,12 +157,15 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
   const dialog = useDialog();
   const onClickFunction = useCallback(
-    (fn: TemplateFunction) => {
+    async (fn: TemplateFunction, tagValue: string) => {
+      const initialTokens = await parseTemplate(tagValue);
       dialog.show({
         id: 'template-function',
-        size: 'dynamic',
+        size: 'sm',
         title: 'Configure Function',
-        render: ({ hide }) => <TemplateFunctionDialog templateFunction={fn} hide={hide} />,
+        render: ({ hide }) => (
+          <TemplateFunctionDialog templateFunction={fn} hide={hide} initialTokens={initialTokens} />
+        ),
       });
     },
     [dialog],

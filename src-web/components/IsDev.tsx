@@ -7,7 +7,7 @@ interface Props {
 
 export function IsDev({ children }: Props) {
   const appInfo = useAppInfo();
-  if (!appInfo?.isDev) {
+  if (!appInfo.isDev) {
     return null;
   }
 

@@ -1,25 +1,90 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
+use ts_rs::TS;
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Tokens {
+    pub tokens: Vec<Token>,
+}
+
+impl Display for Tokens {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = self
+            .tokens
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<String>>()
+            .join("");
+        write!(f, "{}", str)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub struct FnArg {
     pub name: String,
     pub value: Val,
 }
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+impl Display for FnArg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = format!("{}={}", self.name, self.value);
+        write!(f, "{}", str)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
+#[ts(export)]
 pub enum Val {
     Str { text: String },
     Var { name: String },
     Fn { name: String, args: Vec<FnArg> },
+    Null,
 }
 
-#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+impl Display for Val {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            Val::Str { text } => format!(r#""{}""#, text.to_string().replace(r#"""#, r#"\""#)),
+            Val::Var { name } => name.to_string(),
+            Val::Fn { name, args } => {
+                format!(
+                    "{name}({})",
+                    args.iter()
+                        .filter_map(|a| match a.value.clone() {
+                            Val::Null => None,
+                            _ => Some(a.to_string()),
+                        })
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                )
+            }
+            Val::Null => "null".to_string(),
+        };
+        write!(f, "{}", str)
+    }
+}
+
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
+#[ts(export)]
 pub enum Token {
     Raw { text: String },
     Tag { val: Val },
     Eof,
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            Token::Raw { text } => text.to_string(),
+            Token::Tag { val } => format!("${{[ {} ]}}", val.to_string()),
+            Token::Eof => "".to_string(),
+        };
+        write!(f, "{}", str)
+    }
 }
 
 // Template Syntax
@@ -46,7 +111,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Vec<Token> {
+    pub fn parse(&mut self) -> Tokens {
         let start_pos = self.pos;
 
         while self.pos < self.chars.len() {
@@ -69,7 +134,9 @@ impl Parser {
         }
 
         self.push_token(Token::Eof);
-        self.tokens.clone()
+        Tokens {
+            tokens: self.tokens.clone(),
+        }
     }
 
     fn parse_tag(&mut self) -> Option<Token> {
@@ -89,7 +156,7 @@ impl Parser {
             return None;
         }
 
-        Some(Token::Tag { val: val })
+        Some(Token::Tag { val })
     }
 
     #[allow(dead_code)]
@@ -107,7 +174,11 @@ impl Parser {
         if let Some((name, args)) = self.parse_fn() {
             Some(Val::Fn { name, args })
         } else if let Some(v) = self.parse_ident() {
-            Some(Val::Var { name: v })
+            if v == "null" {
+                Some(Val::Null)
+            } else {
+                Some(Val::Var { name: v })
+            }
         } else if let Some(v) = self.parse_string() {
             Some(Val::Str { text: v })
         } else {
@@ -187,7 +258,7 @@ impl Parser {
             }
         }
 
-        return Some(args);
+        Some(args)
     }
 
     fn parse_ident(&mut self) -> Option<String> {
@@ -213,7 +284,7 @@ impl Parser {
             return None;
         }
 
-        return Some(text);
+        Some(text)
     }
 
     fn parse_string(&mut self) -> Option<String> {
@@ -250,7 +321,7 @@ impl Parser {
             return None;
         }
 
-        return Some(text);
+        Some(text)
     }
 
     fn skip_whitespace(&mut self) {
@@ -309,13 +380,14 @@ impl Parser {
 
 #[cfg(test)]
 mod tests {
+    use crate::Val::Null;
     use crate::*;
 
     #[test]
     fn var_simple() {
         let mut p = Parser::new("${[ foo ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Var { name: "foo".into() }
@@ -329,7 +401,7 @@ mod tests {
     fn var_multiple_names_invalid() {
         let mut p = Parser::new("${[ foo bar ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Raw {
                     text: "${[ foo bar ]}".into()
@@ -343,7 +415,7 @@ mod tests {
     fn tag_string() {
         let mut p = Parser::new(r#"${[ "foo \"bar\" baz" ]}"#);
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Str {
@@ -359,7 +431,7 @@ mod tests {
     fn var_surrounded() {
         let mut p = Parser::new("Hello ${[ foo ]}!");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Raw {
                     text: "Hello ".to_string()
@@ -379,7 +451,7 @@ mod tests {
     fn fn_simple() {
         let mut p = Parser::new("${[ foo() ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -396,7 +468,7 @@ mod tests {
     fn fn_ident_arg() {
         let mut p = Parser::new("${[ foo(a=bar) ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -416,7 +488,7 @@ mod tests {
     fn fn_ident_args() {
         let mut p = Parser::new("${[ foo(a=bar,b = baz, c =qux ) ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -446,7 +518,7 @@ mod tests {
     fn fn_mixed_args() {
         let mut p = Parser::new(r#"${[ foo(aaa=bar,bb="baz \"hi\"", c=qux ) ]}"#);
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -478,7 +550,7 @@ mod tests {
     fn fn_nested() {
         let mut p = Parser::new("${[ foo(b=bar()) ]}");
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -501,7 +573,7 @@ mod tests {
     fn fn_nested_args() {
         let mut p = Parser::new(r#"${[ outer(a=inner(a=foo, b="i"), c="o") ]}"#);
         assert_eq!(
-            p.parse(),
+            p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Fn {
@@ -532,6 +604,103 @@ mod tests {
                 },
                 Token::Eof
             ]
+        );
+    }
+
+    #[test]
+    fn token_display_var() {
+        assert_eq!(
+            Val::Var {
+                name: "foo".to_string()
+            }
+            .to_string(),
+            "foo"
+        );
+    }
+
+    #[test]
+    fn token_display_str() {
+        assert_eq!(
+            Val::Str {
+                text: r#"Hello "You""#.to_string()
+            }
+            .to_string(),
+            r#""Hello \"You\"""#
+        );
+    }
+
+    #[test]
+    fn token_null_fn_arg() {
+        assert_eq!(
+            Val::Fn {
+                name: "fn".to_string(),
+                args: vec![
+                    FnArg {
+                        name: "n".to_string(),
+                        value: Null,
+                    },
+                    FnArg {
+                        name: "a".to_string(),
+                        value: Val::Str {
+                            text: "aaa".to_string()
+                        }
+                    }
+                ]
+            }
+            .to_string(),
+            r#"fn(a="aaa")"#
+        );
+    }
+
+    #[test]
+    fn token_display_fn() {
+        assert_eq!(
+            Token::Tag {
+                val: Val::Fn {
+                    name: "foo".to_string(),
+                    args: vec![
+                        FnArg {
+                            name: "arg".to_string(),
+                            value: Val::Str {
+                                text: "v".to_string()
+                            }
+                        },
+                        FnArg {
+                            name: "arg2".to_string(),
+                            value: Val::Var {
+                                name: "my_var".to_string()
+                            }
+                        }
+                    ]
+                }
+            }
+            .to_string(),
+            r#"${[ foo(arg="v", arg2=my_var) ]}"#
+        );
+    }
+
+    #[test]
+    fn tokens_display() {
+        assert_eq!(
+            Tokens {
+                tokens: vec![
+                    Token::Tag {
+                        val: Val::Var {
+                            name: "my_var".to_string()
+                        }
+                    },
+                    Token::Raw {
+                        text: " Some cool text ".to_string(),
+                    },
+                    Token::Tag {
+                        val: Val::Str {
+                            text: "Hello World".to_string()
+                        }
+                    }
+                ]
+            }
+            .to_string(),
+            r#"${[ my_var ]} Some cool text ${[ "Hello World" ]}"#
         );
     }
 }

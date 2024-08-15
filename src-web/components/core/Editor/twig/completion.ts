@@ -8,7 +8,7 @@ export interface TwigCompletionOption {
   label: string;
   type: 'function' | 'variable' | 'unknown';
   value: string | null;
-  onClick?: () => void;
+  onClick?: (rawTag: string) => void;
 }
 
 export interface TwigCompletionConfig {
