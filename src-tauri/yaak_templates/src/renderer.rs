@@ -23,19 +23,19 @@ pub fn render(
 
     for t in tokens {
         match t {
-            Token::Raw(s) => doc_str.push(s),
-            Token::Tag(val) => doc_str.push(render_tag(val, &vars, cb)),
+            Token::Raw { text: text } => doc_str.push(text),
+            Token::Tag { val } => doc_str.push(render_tag(val, &vars, cb)),
             Token::Eof => {}
         }
     }
 
-    return doc_str.join("");
+    doc_str.join("")
 }
 
 fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallback>) -> String {
     match val {
-        Val::Str(s) => s.into(),
-        Val::Var(name) => match vars.get(name.as_str()) {
+        Val::Str { text } => text.into(),
+        Val::Var { name } => match vars.get(name.as_str()) {
             Some(v) => v.to_string(),
             None => "".into(),
         },
@@ -46,14 +46,14 @@ fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallb
                 .map(|a| match a {
                     FnArg {
                         name,
-                        value: Val::Str(s),
-                    } => (name.to_string(), s.to_string()),
+                        value: Val::Str { text },
+                    } => (name.to_string(), text.to_string()),
                     FnArg {
                         name,
-                        value: Val::Var(i),
+                        value: Val::Var { name: var_name },
                     } => (
                         name.to_string(),
-                        vars.get(i.as_str()).unwrap_or(&empty).to_string(),
+                        vars.get(var_name.as_str()).unwrap_or(&empty).to_string(),
                     ),
                     FnArg { name, value: val } => {
                         (name.to_string(), render_tag(val.clone(), vars, cb))
@@ -64,7 +64,10 @@ fn render_tag(val: Val, vars: &HashMap<String, String>, cb: Option<TemplateCallb
                 Some(cb) => match cb(name.as_str(), resolved_args.clone()) {
                     Ok(s) => s,
                     Err(e) => {
-                        warn!("Failed to run template callback {}({:?}): {}", name, resolved_args, e);
+                        warn!(
+                            "Failed to run template callback {}({:?}): {}",
+                            name, resolved_args, e
+                        );
                         "".to_string()
                     }
                 },
@@ -147,7 +150,7 @@ mod tests {
             result.to_string()
         );
     }
-    
+
     #[test]
     fn render_fn_err() {
         let vars = HashMap::new();

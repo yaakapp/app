@@ -9,16 +9,16 @@ pub struct FnArg {
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Val {
-    Str(String),
-    Var(String),
+    Str { text: String },
+    Var { name: String },
     Fn { name: String, args: Vec<FnArg> },
 }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum Token {
-    Raw(String),
-    Tag(Val),
+    Raw { text: String },
+    Tag { val: Val },
     Eof,
 }
 
@@ -89,7 +89,7 @@ impl Parser {
             return None;
         }
 
-        Some(Token::Tag(val))
+        Some(Token::Tag { val: val })
     }
 
     #[allow(dead_code)]
@@ -107,9 +107,9 @@ impl Parser {
         if let Some((name, args)) = self.parse_fn() {
             Some(Val::Fn { name, args })
         } else if let Some(v) = self.parse_ident() {
-            Some(Val::Var(v))
+            Some(Val::Var { name: v })
         } else if let Some(v) = self.parse_string() {
-            Some(Val::Str(v))
+            Some(Val::Str { text: v })
         } else {
             None
         }
@@ -149,7 +149,7 @@ impl Parser {
         // Fn closed immediately
         self.skip_whitespace();
         if self.match_str(")") {
-            return Some(args)
+            return Some(args);
         }
 
         while self.pos < self.chars.len() {
@@ -278,7 +278,9 @@ impl Parser {
     fn push_token(&mut self, token: Token) {
         // Push any text we've accumulated
         if !self.curr_text.is_empty() {
-            let text_token = Token::Raw(self.curr_text.clone());
+            let text_token = Token::Raw {
+                text: self.curr_text.clone(),
+            };
             self.tokens.push(text_token);
             self.curr_text.clear();
         }
@@ -314,7 +316,12 @@ mod tests {
         let mut p = Parser::new("${[ foo ]}");
         assert_eq!(
             p.parse(),
-            vec![Token::Tag(Val::Var("foo".into())), Token::Eof]
+            vec![
+                Token::Tag {
+                    val: Val::Var { name: "foo".into() }
+                },
+                Token::Eof
+            ]
         );
     }
 
@@ -323,7 +330,12 @@ mod tests {
         let mut p = Parser::new("${[ foo bar ]}");
         assert_eq!(
             p.parse(),
-            vec![Token::Raw("${[ foo bar ]}".into()), Token::Eof]
+            vec![
+                Token::Raw {
+                    text: "${[ foo bar ]}".into()
+                },
+                Token::Eof
+            ]
         );
     }
 
@@ -332,7 +344,14 @@ mod tests {
         let mut p = Parser::new(r#"${[ "foo \"bar\" baz" ]}"#);
         assert_eq!(
             p.parse(),
-            vec![Token::Tag(Val::Str(r#"foo "bar" baz"#.into())), Token::Eof]
+            vec![
+                Token::Tag {
+                    val: Val::Str {
+                        text: r#"foo "bar" baz"#.into()
+                    }
+                },
+                Token::Eof
+            ]
         );
     }
 
@@ -342,9 +361,15 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Raw("Hello ".to_string()),
-                Token::Tag(Val::Var("foo".into())),
-                Token::Raw("!".to_string()),
+                Token::Raw {
+                    text: "Hello ".to_string()
+                },
+                Token::Tag {
+                    val: Val::Var { name: "foo".into() }
+                },
+                Token::Raw {
+                    text: "!".to_string()
+                },
                 Token::Eof,
             ]
         );
@@ -356,10 +381,12 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "foo".into(),
-                    args: Vec::new(),
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo".into(),
+                        args: Vec::new(),
+                    }
+                },
                 Token::Eof
             ]
         );
@@ -371,13 +398,15 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "foo".into(),
-                    args: vec![FnArg {
-                        name: "a".into(),
-                        value: Val::Var("bar".into())
-                    }],
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo".into(),
+                        args: vec![FnArg {
+                            name: "a".into(),
+                            value: Val::Var { name: "bar".into() }
+                        }],
+                    }
+                },
                 Token::Eof
             ]
         );
@@ -389,23 +418,25 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "foo".into(),
-                    args: vec![
-                        FnArg {
-                            name: "a".into(),
-                            value: Val::Var("bar".into())
-                        },
-                        FnArg {
-                            name: "b".into(),
-                            value: Val::Var("baz".into())
-                        },
-                        FnArg {
-                            name: "c".into(),
-                            value: Val::Var("qux".into())
-                        },
-                    ],
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo".into(),
+                        args: vec![
+                            FnArg {
+                                name: "a".into(),
+                                value: Val::Var { name: "bar".into() }
+                            },
+                            FnArg {
+                                name: "b".into(),
+                                value: Val::Var { name: "baz".into() }
+                            },
+                            FnArg {
+                                name: "c".into(),
+                                value: Val::Var { name: "qux".into() }
+                            },
+                        ],
+                    }
+                },
                 Token::Eof
             ]
         );
@@ -417,23 +448,27 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "foo".into(),
-                    args: vec![
-                        FnArg {
-                            name: "aaa".into(),
-                            value: Val::Var("bar".into())
-                        },
-                        FnArg {
-                            name: "bb".into(),
-                            value: Val::Str(r#"baz "hi""#.into())
-                        },
-                        FnArg {
-                            name: "c".into(),
-                            value: Val::Var("qux".into())
-                        },
-                    ],
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo".into(),
+                        args: vec![
+                            FnArg {
+                                name: "aaa".into(),
+                                value: Val::Var { name: "bar".into() }
+                            },
+                            FnArg {
+                                name: "bb".into(),
+                                value: Val::Str {
+                                    text: r#"baz "hi""#.into()
+                                }
+                            },
+                            FnArg {
+                                name: "c".into(),
+                                value: Val::Var { name: "qux".into() }
+                            },
+                        ],
+                    }
+                },
                 Token::Eof
             ]
         );
@@ -445,16 +480,18 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "foo".into(),
-                    args: vec![FnArg {
-                        name: "b".into(),
-                        value: Val::Fn {
-                            name: "bar".into(),
-                            args: vec![],
-                        }
-                    }],
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo".into(),
+                        args: vec![FnArg {
+                            name: "b".into(),
+                            value: Val::Fn {
+                                name: "bar".into(),
+                                args: vec![],
+                            }
+                        }],
+                    }
+                },
                 Token::Eof
             ]
         );
@@ -466,31 +503,33 @@ mod tests {
         assert_eq!(
             p.parse(),
             vec![
-                Token::Tag(Val::Fn {
-                    name: "outer".into(),
-                    args: vec![
-                        FnArg {
-                            name: "a".into(),
-                            value: Val::Fn {
-                                name: "inner".into(),
-                                args: vec![
-                                    FnArg {
-                                        name: "a".into(),
-                                        value: Val::Var("foo".into())
-                                    },
-                                    FnArg {
-                                        name: "b".into(),
-                                        value: Val::Str("i".into()),
-                                    },
-                                ],
-                            }
-                        },
-                        FnArg {
-                            name: "c".into(),
-                            value: Val::Str("o".into())
-                        },
-                    ],
-                }),
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "outer".into(),
+                        args: vec![
+                            FnArg {
+                                name: "a".into(),
+                                value: Val::Fn {
+                                    name: "inner".into(),
+                                    args: vec![
+                                        FnArg {
+                                            name: "a".into(),
+                                            value: Val::Var { name: "foo".into() }
+                                        },
+                                        FnArg {
+                                            name: "b".into(),
+                                            value: Val::Str { text: "i".into() },
+                                        },
+                                    ],
+                                }
+                            },
+                            FnArg {
+                                name: "c".into(),
+                                value: Val::Str { text: "o".into() }
+                            },
+                        ],
+                    }
+                },
                 Token::Eof
             ]
         );

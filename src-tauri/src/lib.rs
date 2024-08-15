@@ -60,7 +60,7 @@ use yaak_plugin_runtime::events::{
     GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, RenderHttpRequestResponse,
     SendHttpRequestResponse,
 };
-use yaak_templates::{parse_and_render, Parser, Token};
+use yaak_templates::{Parser, Token};
 
 mod analytics;
 mod export_resources;
@@ -102,6 +102,7 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 
 #[tauri::command]
 async fn cmd_parse_template(template: &str) -> Result<Vec<Token>, ()> {
+    println!("PARSE TEMPLATE {template}");
     Ok(Parser::new(template).parse())
 }
 
