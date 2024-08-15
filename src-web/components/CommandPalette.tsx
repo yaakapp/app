@@ -16,6 +16,7 @@ import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
+import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -56,6 +57,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [command, setCommand] = useDebouncedState<string>('', 150);
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(null);
   const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
+  const httpRequestActions = useHttpRequestActions();
   const routes = useAppRoutes();
   const workspaces = useWorkspaces();
   const environments = useEnvironments();
@@ -153,6 +155,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         label: 'Send Request',
         onSelect: () => sendRequest.mutateAsync(activeRequest.id),
       });
+      for (const a of httpRequestActions) {
+        commands.push({
+          key: a.key,
+          label: a.label,
+          onSelect: () => a.call(activeRequest),
+        });
+      }
     }
 
     if (activeRequest != null) {
@@ -184,6 +193,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     createWorkspace.mutate,
     deleteRequest.mutate,
     dialog,
+    httpRequestActions,
     renameRequest.mutate,
     routes.paths,
     sendRequest,
