@@ -25,6 +25,7 @@ import { useMoveToWorkspace } from '../hooks/useMoveToWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useRequests } from '../hooks/useRequests';
+import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSendManyRequests } from '../hooks/useSendFolder';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
@@ -578,8 +579,7 @@ type SidebarItemProps = {
   itemModel: string;
   itemPrefix: ReactNode;
   useProminentStyles?: boolean;
-  selected?: boolean;
-  draggable?: boolean;
+  selected: boolean;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onDragStart: (id: string) => void;
@@ -610,6 +610,7 @@ function SidebarItem({
   children,
 }: SidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
+  useScrollIntoView(ref.current, selected);
 
   const [, connectDrop] = useDrop<DragItem, void>(
     {
