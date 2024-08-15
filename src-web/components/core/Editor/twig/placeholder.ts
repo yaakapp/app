@@ -1,33 +1,46 @@
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
 import { BetterMatchDecorator } from '../BetterMatchDecorator';
+import type { TwigCompletionOption } from './completion';
 
 class PlaceholderWidget extends WidgetType {
-  constructor(
-    readonly name: string,
-    readonly value: string,
-    readonly exists: boolean,
-    readonly type: 'function' | 'variable' = 'variable',
-  ) {
+  constructor(readonly option: TwigCompletionOption) {
     super();
   }
 
   eq(other: PlaceholderWidget) {
-    return this.name == other.name && this.exists == other.exists;
+    return (
+      this.option.name == other.option.name &&
+      this.option.type == other.option.type &&
+      this.option.value === other.option.value
+    );
   }
 
   toDOM() {
     const elt = document.createElement('span');
     elt.className = `x-theme-placeholder placeholder ${
-      !this.exists
+      this.option.type === 'unknown'
         ? 'x-theme-placeholder--danger'
-        : this.type === 'variable'
+        : this.option.type === 'variable'
         ? 'x-theme-placeholder--primary'
         : 'x-theme-placeholder--info'
     }`;
-    elt.title = !this.exists ? 'Variable not found in active environment' : this.value ?? '';
-    elt.textContent = this.name;
+    elt.title =
+      this.option.type === 'unknown'
+        ? 'Variable not found in environment'
+        : this.option.value ?? '';
+    elt.textContent = this.option.label;
+    if (this.option.onClick) {
+      elt.addEventListener('click', this.option.onClick);
+    }
     return elt;
+  }
+
+  destroy(dom: HTMLElement) {
+    if (this.option.onClick) {
+      dom.removeEventListener('click', this.option.onClick);
+    }
+    super.destroy(dom);
   }
 
   ignoreEvent() {
@@ -35,7 +48,7 @@ class PlaceholderWidget extends WidgetType {
   }
 }
 
-export const placeholders = function (variables: { name: string; value?: string }[]) {
+export function placeholders(options: TwigCompletionOption[]) {
   const placeholderMatcher = new BetterMatchDecorator({
     regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
     decoration(match, view, matchStartPos) {
@@ -48,22 +61,24 @@ export const placeholders = function (variables: { name: string; value?: string 
         }
       }
 
-      const groupMatch = match[1];
-      if (groupMatch == null) {
+      const innerTagMatch = match[1];
+      if (innerTagMatch == null) {
         // Should never happen, but make TS happy
         console.warn('Group match was empty', match);
         return Decoration.replace({});
       }
 
-      const isFunction = groupMatch.includes('(');
+      // TODO: Replace this hacky match with a proper template parser
+      const name = innerTagMatch.match(/\s*(\w+)[(\s]*/)?.[1] ?? innerTagMatch;
+
+      let option = options.find((v) => v.name === name);
+      if (option == null) {
+        option = { type: 'unknown', name: innerTagMatch, value: null, label: innerTagMatch };
+      }
+
       return Decoration.replace({
         inclusive: true,
-        widget: new PlaceholderWidget(
-          groupMatch,
-          variables.find((v) => v.name === groupMatch)?.value ?? '',
-          isFunction ? true : variables.some((v) => v.name === groupMatch),
-          isFunction ? 'function' : 'variable',
-        ),
+        widget: new PlaceholderWidget(option),
       });
     },
   });
@@ -88,4 +103,4 @@ export const placeholders = function (variables: { name: string; value?: string 
         }),
     },
   );
-};
+}

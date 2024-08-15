@@ -3,8 +3,12 @@ import type { CompletionContext } from '@codemirror/autocomplete';
 const openTag = '${[ ';
 const closeTag = ' ]}';
 
-interface TwigCompletionOption {
+export interface TwigCompletionOption {
   name: string;
+  label: string;
+  type: 'function' | 'variable' | 'unknown';
+  value: string | null;
+  onClick?: () => void;
 }
 
 export interface TwigCompletionConfig {
@@ -41,12 +45,16 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
       from: toMatch.from,
       options: options
         .filter((v) => v.name.trim())
-        .map((v) => ({
-          label: toStartOfVariable ? `${openTag}${v.name}${closeTag}` : v.name,
-          apply: `${openTag}${v.name}${closeTag}`,
-          type: 'variable',
-          matchLen: matchLen,
-        }))
+        .map((v) => {
+          const innerLabel = v.type === 'function' ? `${v.name}()` : v.name;
+          const tagSyntax = openTag + innerLabel + closeTag;
+          return {
+            label: innerLabel,
+            apply: tagSyntax,
+            type: v.type === 'variable' ? 'variable' : 'function',
+            matchLen: matchLen,
+          };
+        })
         // Filter out exact matches
         .filter((o) => o.label !== toMatch.text),
     };

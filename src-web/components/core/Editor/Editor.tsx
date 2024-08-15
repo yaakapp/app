@@ -18,6 +18,7 @@ import {
 import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
 import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
 import { useSettings } from '../../../hooks/useSettings';
+import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
@@ -88,6 +89,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 ) {
   const s = useSettings();
   const [e] = useActiveEnvironment();
+  const templateFunctions = useTemplateFunctions();
   const w = useActiveWorkspace();
   const environment = autocompleteVariables ? e : null;
   const workspace = autocompleteVariables ? w : null;
@@ -158,9 +160,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       workspace,
       useTemplating,
       autocomplete,
+      templateFunctions,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete, useTemplating, environment, workspace]);
+  }, [contentType, autocomplete, useTemplating, environment, workspace, templateFunctions]);
 
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback(
@@ -180,6 +183,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           autocomplete,
           environment,
           workspace,
+          templateFunctions,
         });
 
         const state = EditorState.create({

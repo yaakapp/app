@@ -34,6 +34,7 @@ import { tags as t } from '@lezer/highlight';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
 import type { Environment, Workspace } from '@yaakapp/api';
+import type { TemplateFunction } from '../../../hooks/useTemplateFunctions';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
 import { text } from './text/extension';
@@ -81,10 +82,12 @@ export function getLanguageExtension({
   environment,
   workspace,
   autocomplete,
-}: { environment: Environment | null; workspace: Workspace | null } & Pick<
-  EditorProps,
-  'contentType' | 'useTemplating' | 'autocomplete'
->) {
+  templateFunctions,
+}: {
+  environment: Environment | null;
+  workspace: Workspace | null;
+  templateFunctions: TemplateFunction[];
+} & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {
     return graphql();
@@ -94,7 +97,7 @@ export function getLanguageExtension({
     return base;
   }
 
-  return twig(base, environment, workspace, autocomplete);
+  return twig(base, environment, workspace, templateFunctions, autocomplete);
 }
 
 export const baseExtensions = [

@@ -45,7 +45,7 @@ serde_json = { version = "1.0.116", features = ["raw_value"] }
 serde_yaml = "0.9.34"
 tauri = { workspace = true, features = ["unstable"] }
 tauri-plugin-shell = { workspace = true }
-tauri-plugin-clipboard-manager = "2.0.0-rc.0"
+tauri-plugin-clipboard-manager = "2.1.0-beta.7"
 tauri-plugin-dialog = "2.0.0-rc.0"
 tauri-plugin-fs = "2.0.0-rc.0"
 tauri-plugin-log = { version = "2.0.0-rc.0", features = ["colored"] }
