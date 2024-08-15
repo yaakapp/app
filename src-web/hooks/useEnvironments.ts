@@ -1,24 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
 import type { Environment } from '@yaakapp/api';
+import { atom, useAtom } from 'jotai/index';
+import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 
-export function environmentsQueryKey({ workspaceId }: { workspaceId: string }) {
-  return ['environments', { workspaceId }];
-}
+export const environmentsAtom = atom<Environment[]>([]);
 
 export function useEnvironments() {
+  const [items, setItems] = useAtom(environmentsAtom);
   const workspace = useActiveWorkspace();
-  return (
-    useQuery({
-      enabled: workspace != null,
-      queryKey: environmentsQueryKey({ workspaceId: workspace?.id ?? 'n/a' }),
-      queryFn: async () => {
-        if (workspace == null) return [];
-        return (await invokeCmd('cmd_list_environments', {
-          workspaceId: workspace.id,
-        })) as Environment[];
-      },
-    }).data ?? []
-  );
+
+  // Fetch new requests when workspace changes
+  useEffect(() => {
+    if (workspace == null) return;
+    invokeCmd<Environment[]>('cmd_list_environments', { workspaceId: workspace.id }).then(setItems);
+  }, [setItems, workspace]);
+
+  return items;
 }

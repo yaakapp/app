@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParseTemplate } from '../hooks/useParseTemplate';
 import type {
   TemplateFunction,
   TemplateFunctionArg,
@@ -34,6 +35,8 @@ export function TemplateFunctionDialog({ templateFunction, hide }: Props) {
     .map(([n, v]) => `${n}="${v.replaceAll('"', '\\"')}"`)
     .join(', ');
   const rendered = `\${[ ${templateFunction.name}(${renderedArgs}) ]}`;
+
+  useParseTemplate(rendered);
 
   return (
     <VStack className="pb-3" space={4}>

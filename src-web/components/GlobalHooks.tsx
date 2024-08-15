@@ -1,18 +1,19 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Model } from '@yaakapp/api';
+import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useEnsureActiveCookieJar, useMigrateActiveCookieJarId } from '../hooks/useActiveCookieJar';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
 import { cookieJarsQueryKey } from '../hooks/useCookieJars';
 import { useCopy } from '../hooks/useCopy';
-import { environmentsQueryKey } from '../hooks/useEnvironments';
+import { environmentsAtom } from '../hooks/useEnvironments';
 import { foldersQueryKey } from '../hooks/useFolders';
 import { grpcConnectionsQueryKey } from '../hooks/useGrpcConnections';
 import { grpcEventsQueryKey } from '../hooks/useGrpcEvents';
-import { grpcRequestsQueryKey } from '../hooks/useGrpcRequests';
+import { grpcRequestsAtom } from '../hooks/useGrpcRequests';
 import { useHotKey } from '../hooks/useHotKey';
-import { httpRequestsQueryKey } from '../hooks/useHttpRequests';
+import { httpRequestsAtom } from '../hooks/useHttpRequests';
 import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
@@ -25,7 +26,7 @@ import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsQueryKey, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
-import { workspacesQueryKey } from '../hooks/useWorkspaces';
+import { workspacesAtom } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import { extractKeyValue } from '../lib/keyValueStore';
 import { modelsEq } from '../lib/models';
@@ -64,25 +65,22 @@ export function GlobalHooks() {
     windowLabel: string;
   }
 
+  const setWorkspaces = useSetAtom(workspacesAtom);
+  const setHttpRequests = useSetAtom(httpRequestsAtom);
+  const setGrpcRequests = useSetAtom(grpcRequestsAtom);
+  const setEnvironments = useSetAtom(environmentsAtom);
+
   useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
     const { model, windowLabel } = payload;
     const queryKey =
-      model.model === 'http_request'
-        ? httpRequestsQueryKey(model)
-        : model.model === 'http_response'
+      model.model === 'http_response'
         ? httpResponsesQueryKey(model)
         : model.model === 'folder'
         ? foldersQueryKey(model)
-        : model.model === 'environment'
-        ? environmentsQueryKey(model)
         : model.model === 'grpc_connection'
         ? grpcConnectionsQueryKey(model)
         : model.model === 'grpc_event'
         ? grpcEventsQueryKey(model)
-        : model.model === 'grpc_request'
-        ? grpcRequestsQueryKey(model)
-        : model.model === 'workspace'
-        ? workspacesQueryKey(model)
         : model.model === 'key_value'
         ? keyValueQueryKey(model)
         : model.model === 'cookie_jar'
@@ -90,11 +88,6 @@ export function GlobalHooks() {
         : model.model === 'settings'
         ? settingsQueryKey()
         : null;
-
-    if (queryKey === null) {
-      console.log('Unrecognized updated model:', model);
-      return;
-    }
 
     if (model.model === 'http_request' && windowLabel !== getCurrentWebviewWindow().label) {
       wasUpdatedExternally(model.id);
@@ -106,21 +99,27 @@ export function GlobalHooks() {
 
     if (shouldIgnoreModel(model, windowLabel)) return;
 
-    queryClient.setQueryData(queryKey, (current: unknown) => {
-      if (model.model === 'key_value') {
-        // Special-case for KeyValue
-        return extractKeyValue(model);
-      }
-
-      if (Array.isArray(current)) {
-        const index = current.findIndex((v) => modelsEq(v, model)) ?? -1;
-        if (index >= 0) {
-          return [...current.slice(0, index), model, ...current.slice(index + 1)];
-        } else {
-          return pushToFront ? [model, ...(current ?? [])] : [...(current ?? []), model];
+    if (model.model === 'workspace') {
+      setWorkspaces(updateModelList(model, pushToFront));
+    } else if (model.model === 'http_request') {
+      setHttpRequests(updateModelList(model, pushToFront));
+    } else if (model.model === 'grpc_request') {
+      setGrpcRequests(updateModelList(model, pushToFront));
+    } else if (model.model === 'environment') {
+      setEnvironments(updateModelList(model, pushToFront));
+    } else if (queryKey != null) {
+      // TODO: Convert all models to use Jotai
+      queryClient.setQueryData(queryKey, (current: unknown) => {
+        if (model.model === 'key_value') {
+          // Special-case for KeyValue
+          return extractKeyValue(model);
         }
-      }
-    });
+
+        if (Array.isArray(current)) {
+          return updateModelList(model, pushToFront)(current);
+        }
+      });
+    }
   });
 
   useListenToTauriEvent<ModelPayload>('deleted_model', ({ payload }) => {
@@ -128,17 +127,17 @@ export function GlobalHooks() {
     if (shouldIgnoreModel(model, windowLabel)) return;
 
     if (model.model === 'workspace') {
-      queryClient.setQueryData(workspacesQueryKey(), removeById(model));
+      setWorkspaces(removeById(model));
     } else if (model.model === 'http_request') {
-      queryClient.setQueryData(httpRequestsQueryKey(model), removeById(model));
+      setHttpRequests(removeById(model));
     } else if (model.model === 'http_response') {
       queryClient.setQueryData(httpResponsesQueryKey(model), removeById(model));
     } else if (model.model === 'folder') {
       queryClient.setQueryData(foldersQueryKey(model), removeById(model));
     } else if (model.model === 'environment') {
-      queryClient.setQueryData(environmentsQueryKey(model), removeById(model));
+      setEnvironments(removeById(model));
     } else if (model.model === 'grpc_request') {
-      queryClient.setQueryData(grpcRequestsQueryKey(model), removeById(model));
+      setGrpcRequests(removeById(model));
     } else if (model.model === 'grpc_connection') {
       queryClient.setQueryData(grpcConnectionsQueryKey(model), removeById(model));
     } else if (model.model === 'grpc_event') {
@@ -192,8 +191,19 @@ export function GlobalHooks() {
   return null;
 }
 
+function updateModelList<T extends Model>(model: T, pushToFront: boolean) {
+  return (current: T[]): T[] => {
+    const index = current.findIndex((v) => modelsEq(v, model)) ?? -1;
+    if (index >= 0) {
+      return [...current.slice(0, index), model, ...current.slice(index + 1)];
+    } else {
+      return pushToFront ? [model, ...(current ?? [])] : [...(current ?? []), model];
+    }
+  };
+}
+
 function removeById<T extends { id: string }>(model: T) {
-  return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id);
+  return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id) ?? [];
 }
 
 const shouldIgnoreModel = (payload: Model, windowLabel: string) => {

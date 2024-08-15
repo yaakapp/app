@@ -1,24 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
 import type { HttpRequest } from '@yaakapp/api';
+import { atom, useAtom } from 'jotai';
+import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 
-export function httpRequestsQueryKey({ workspaceId }: { workspaceId: string }) {
-  return ['http_requests', { workspaceId }];
-}
+export const httpRequestsAtom = atom<HttpRequest[]>([]);
 
 export function useHttpRequests() {
+  const [items, setItems] = useAtom(httpRequestsAtom);
   const workspace = useActiveWorkspace();
-  return (
-    useQuery({
-      enabled: workspace != null,
-      queryKey: httpRequestsQueryKey({ workspaceId: workspace?.id ?? 'n/a' }),
-      queryFn: async () => {
-        if (workspace == null) return [];
-        return (await invokeCmd('cmd_list_http_requests', {
-          workspaceId: workspace.id,
-        })) as HttpRequest[];
-      },
-    }).data ?? []
-  );
+
+  useEffect(() => {
+    if (workspace == null) return;
+    invokeCmd<HttpRequest[]>('cmd_list_http_requests', { workspaceId: workspace.id }).then(
+      setItems,
+    );
+  }, [setItems, workspace]);
+
+  return items;
 }

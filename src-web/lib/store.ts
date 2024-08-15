@@ -52,6 +52,11 @@ export async function getWorkspace(id: string | null): Promise<Workspace | null>
   return workspace;
 }
 
+export async function listWorkspaces(): Promise<Workspace[]> {
+  const workspaces: Workspace[] = (await invokeCmd('cmd_list_workspaces')) ?? [];
+  return workspaces;
+}
+
 export async function getCookieJar(id: string | null): Promise<CookieJar | null> {
   if (id === null) return null;
   const cookieJar: CookieJar = (await invokeCmd('cmd_get_cookie_jar', { id })) ?? null;

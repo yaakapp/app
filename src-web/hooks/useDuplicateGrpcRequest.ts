@@ -1,12 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import type { GrpcRequest } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
-import { setKeyValue } from '../lib/keyValueStore';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
-import { protoFilesArgs, useGrpcProtoFiles } from './useGrpcProtoFiles';
+import { getGrpcProtoFiles, setGrpcProtoFiles } from './useGrpcProtoFiles';
 
 export function useDuplicateGrpcRequest({
   id,
@@ -18,7 +17,7 @@ export function useDuplicateGrpcRequest({
   const activeWorkspace = useActiveWorkspace();
   const [activeEnvironment] = useActiveEnvironment();
   const routes = useAppRoutes();
-  const protoFiles = useGrpcProtoFiles(id);
+
   return useMutation<GrpcRequest, string>({
     mutationKey: ['duplicate_grpc_request', id],
     mutationFn: async () => {
@@ -27,8 +26,11 @@ export function useDuplicateGrpcRequest({
     },
     onSettled: () => trackEvent('grpc_request', 'duplicate'),
     onSuccess: async (request) => {
+      if (id == null) return;
+
       // Also copy proto files to new request
-      await setKeyValue({ ...protoFilesArgs(request.id), value: protoFiles.value ?? [] });
+      const protoFiles = await getGrpcProtoFiles(id);
+      await setGrpcProtoFiles(request.id, protoFiles);
 
       if (navigateAfter && activeWorkspace !== null) {
         routes.navigate('request', {

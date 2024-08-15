@@ -1,17 +1,21 @@
-#[derive(Clone, PartialEq, Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FnArg {
     pub name: String,
     pub value: Val,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Val {
     Str(String),
     Var(String),
     Fn { name: String, args: Vec<FnArg> },
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag = "type")]
 pub enum Token {
     Raw(String),
     Tag(Val),

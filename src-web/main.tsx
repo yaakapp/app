@@ -1,9 +1,9 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { attachConsole } from '@tauri-apps/plugin-log';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { pdfjs } from 'react-pdf';
-import { attachConsole } from '@tauri-apps/plugin-log';
 import { App } from './components/App';
 import './main.css';
 

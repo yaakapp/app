@@ -43,12 +43,14 @@ type TauriCmd =
   | 'cmd_list_grpc_events'
   | 'cmd_list_grpc_requests'
   | 'cmd_list_http_requests'
+  | 'cmd_dismiss_notification'
+  | 'cmd_http_request_actions'
   | 'cmd_list_http_responses'
   | 'cmd_list_workspaces'
   | 'cmd_metadata'
   | 'cmd_new_nested_window'
   | 'cmd_new_window'
-  | 'cmd_dismiss_notification'
+  | 'cmd_parse_template'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'
   | 'cmd_send_http_request'
@@ -62,7 +64,6 @@ type TauriCmd =
   | 'cmd_update_http_request'
   | 'cmd_update_settings'
   | 'cmd_update_workspace'
-  | 'cmd_http_request_actions'
   | 'cmd_write_file_dev';
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {
