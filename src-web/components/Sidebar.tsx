@@ -872,9 +872,8 @@ function SidebarItem({
           className={classNames(
             'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md focus-visible:ring focus-visible:ring-border-focus outline-0',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-surface-highlight-secondary text',
-            !isActive &&
-              'text-text-subtle group-hover/item:text-text active:bg-surface-highlight-secondary',
+            isActive && 'bg-surface-highlight text',
+            !isActive && 'text-text-subtle group-hover/item:text-text active:bg-surface-highlight',
             selected && useProminentStyles && '!bg-surface-active',
           )}
         >

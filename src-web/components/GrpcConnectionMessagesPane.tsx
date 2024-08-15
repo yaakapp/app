@@ -188,7 +188,7 @@ function EventRow({
         className={classNames(
           'w-full grid grid-cols-[auto_minmax(0,3fr)_auto] gap-2 items-center text-left',
           'px-1.5 py-1 font-mono cursor-default group focus:outline-none rounded',
-          isActive && '!bg-surface-highlight-secondary !text',
+          isActive && '!bg-surface-highlight !text',
           'text-text-subtle hover:text',
         )}
       >
