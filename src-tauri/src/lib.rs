@@ -35,7 +35,7 @@ use crate::export_resources::{get_workspace_export_resources, WorkspaceExportRes
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
-use crate::render::{render_request, variables_from_environment};
+use crate::render::{render_request, render_template, variables_from_environment};
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
@@ -60,7 +60,7 @@ use yaak_plugin_runtime::events::{
     GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, RenderHttpRequestResponse,
     SendHttpRequestResponse,
 };
-use yaak_templates::{Parser, Tokens};
+use yaak_templates::{parse_and_render, Parser, Tokens};
 
 mod analytics;
 mod export_resources;
@@ -101,13 +101,35 @@ async fn cmd_metadata(app_handle: AppHandle) -> Result<AppMetaData, ()> {
 }
 
 #[tauri::command]
-async fn cmd_parse_template(template: &str) -> Result<Tokens, ()> {
+async fn cmd_parse_template(template: &str) -> Result<Tokens, String> {
     Ok(Parser::new(template).parse())
 }
 
 #[tauri::command]
-async fn cmd_template_tokens_to_string(tokens: Tokens) -> Result<String, ()> {
+async fn cmd_template_tokens_to_string(tokens: Tokens) -> Result<String, String> {
     Ok(tokens.to_string())
+}
+
+#[tauri::command]
+async fn cmd_render_template(
+    window: WebviewWindow,
+    template: &str,
+    workspace_id: &str,
+    environment_id: Option<&str>,
+) -> Result<String, String> {
+    let environment = match environment_id {
+        Some(id) => Some(
+            get_environment(&window, id)
+                .await
+                .map_err(|e| e.to_string())?,
+        ),
+        None => None,
+    };
+    let workspace = get_workspace(&window, &workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    let rendered = render_template(template, &workspace, environment.as_ref());
+    Ok(rendered)
 }
 
 #[tauri::command]
@@ -1654,6 +1676,7 @@ pub fn run() {
             cmd_dismiss_notification,
             cmd_parse_template,
             cmd_template_tokens_to_string,
+            cmd_render_template,
             cmd_duplicate_grpc_request,
             cmd_duplicate_http_request,
             cmd_export_data,

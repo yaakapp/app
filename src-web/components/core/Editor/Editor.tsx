@@ -16,8 +16,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
-import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
+import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useSettings } from '../../../hooks/useSettings';
 import { type TemplateFunction, useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
@@ -64,6 +63,8 @@ export interface EditorProps {
   actions?: ReactNode;
 }
 
+const emptyArray = [];
+
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
     readOnly,
@@ -93,11 +94,9 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   ref,
 ) {
   const s = useSettings();
-  const [e] = useActiveEnvironment();
   const templateFunctions = useTemplateFunctions();
-  const w = useActiveWorkspace();
-  const environment = autocompleteVariables ? e : null;
-  const workspace = autocompleteVariables ? w : null;
+  const allEnvironmentVariables = useActiveEnvironmentVariables();
+  const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyArray;
 
   if (s && wrapLines === undefined) {
     wrapLines = s.editorSoftWrap;
@@ -157,14 +156,23 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
 
   const dialog = useDialog();
   const onClickFunction = useCallback(
-    async (fn: TemplateFunction, tagValue: string) => {
+    async (fn: TemplateFunction, tagValue: string, startPos: number) => {
       const initialTokens = await parseTemplate(tagValue);
       dialog.show({
         id: 'template-function',
         size: 'sm',
         title: 'Configure Function',
         render: ({ hide }) => (
-          <TemplateFunctionDialog templateFunction={fn} hide={hide} initialTokens={initialTokens} />
+          <TemplateFunctionDialog
+            templateFunction={fn}
+            hide={hide}
+            initialTokens={initialTokens}
+            onChange={(insert) => {
+              cm.current?.view.dispatch({
+                changes: [{ from: startPos, to: startPos + tagValue.length, insert }],
+              });
+            }}
+          />
         ),
       });
     },
@@ -172,12 +180,24 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   );
 
   const onClickVariable = useCallback(
-    (v: EnvironmentVariable) => {
+    async (v: EnvironmentVariable, tagValue: string, startPos: number) => {
+      const initialTokens = await parseTemplate(tagValue);
       dialog.show({
         size: 'dynamic',
         id: 'template-variable',
         title: 'Configure Variable',
-        render: ({ hide }) => <TemplateVariableDialog variable={v} hide={hide} />,
+        render: ({ hide }) => (
+          <TemplateVariableDialog
+            definition={v}
+            hide={hide}
+            initialTokens={initialTokens}
+            onChange={(insert) => {
+              cm.current?.view.dispatch({
+                changes: [{ from: startPos, to: startPos + tagValue.length, insert }],
+              });
+            }}
+          />
+        ),
       });
     },
     [dialog],
@@ -189,8 +209,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({
       contentType,
-      environment,
-      workspace,
+      environmentVariables,
       useTemplating,
       autocomplete,
       templateFunctions,
@@ -202,8 +221,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     contentType,
     autocomplete,
     useTemplating,
-    environment,
-    workspace,
+    environmentVariables,
     templateFunctions,
     onClickFunction,
     onClickVariable,
@@ -225,8 +243,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           contentType,
           useTemplating,
           autocomplete,
-          environment,
-          workspace,
+          environmentVariables,
           templateFunctions,
           onClickVariable,
           onClickFunction,

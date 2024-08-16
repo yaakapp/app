@@ -31,9 +31,9 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
+import type { EnvironmentVariable } from '@yaakapp/api';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import type { Environment, EnvironmentVariable, Workspace } from '@yaakapp/api';
 import type { TemplateFunction } from '../../../hooks/useTemplateFunctions';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
@@ -79,18 +79,16 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
 export function getLanguageExtension({
   contentType,
   useTemplating = false,
-  environment,
-  workspace,
+  environmentVariables,
   autocomplete,
   templateFunctions,
   onClickVariable,
   onClickFunction,
 }: {
-  environment: Environment | null;
-  workspace: Workspace | null;
+  environmentVariables: EnvironmentVariable[];
   templateFunctions: TemplateFunction[];
-  onClickFunction: (option: TemplateFunction, rawTag: string) => void;
-  onClickVariable: (option: EnvironmentVariable, rawTag: string) => void;
+  onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
+  onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
 } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {
@@ -103,8 +101,7 @@ export function getLanguageExtension({
 
   return twig({
     base,
-    environment,
-    workspace,
+    environmentVariables,
     templateFunctions,
     autocomplete,
     onClickFunction,

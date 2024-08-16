@@ -1,29 +1,37 @@
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
+import { truncate } from '../../../../lib/truncate';
 import { BetterMatchDecorator } from '../BetterMatchDecorator';
 import type { TwigCompletionOption } from './completion';
 
-class PlaceholderWidget extends WidgetType {
-  #clickListenerCallback: () => void;
+const TAG_TRUNCATE_LEN = 30;
 
-  constructor(readonly option: TwigCompletionOption, readonly rawTag: string) {
+class TemplateTagWidget extends WidgetType {
+  readonly #clickListenerCallback: () => void;
+
+  constructor(
+    readonly option: TwigCompletionOption,
+    readonly rawTag: string,
+    readonly startPos: number,
+  ) {
     super();
     this.#clickListenerCallback = () => {
-      this.option.onClick?.(this.rawTag);
+      this.option.onClick?.(this.rawTag, this.startPos);
     };
   }
 
-  eq(other: PlaceholderWidget) {
+  eq(other: TemplateTagWidget) {
     return (
-      this.option.name == other.option.name &&
-      this.option.type == other.option.type &&
-      this.option.value === other.option.value
+      this.option.name === other.option.name &&
+      this.option.type === other.option.type &&
+      this.option.value === other.option.value &&
+      this.rawTag === other.rawTag
     );
   }
 
   toDOM() {
     const elt = document.createElement('span');
-    elt.className = `x-theme-templateTag placeholder ${
+    elt.className = `x-theme-templateTag template-tag ${
       this.option.type === 'unknown'
         ? 'x-theme-templateTag--danger'
         : this.option.type === 'variable'
@@ -31,7 +39,10 @@ class PlaceholderWidget extends WidgetType {
         : 'x-theme-templateTag--info'
     }`;
     elt.title = this.option.type === 'unknown' ? '__NOT_FOUND__' : this.option.value ?? '';
-    elt.textContent = this.option.label;
+    elt.textContent = truncate(
+      this.rawTag.replace('${[', '').replace(']}', '').trim(),
+      TAG_TRUNCATE_LEN,
+    );
     elt.addEventListener('click', this.#clickListenerCallback);
     return elt;
   }
@@ -46,9 +57,9 @@ class PlaceholderWidget extends WidgetType {
   }
 }
 
-export function placeholders(options: TwigCompletionOption[]) {
-  const placeholderMatcher = new BetterMatchDecorator({
-    regexp: /\$\{\[\s*([^\]\s]+)\s*]}/g,
+export function templateTags(options: TwigCompletionOption[]) {
+  const templateTagMatcher = new BetterMatchDecorator({
+    regexp: /\$\{\[\s*([^\]]+)\s*]}/g,
     decoration(match, view, matchStartPos) {
       const matchEndPos = matchStartPos + match[0].length - 1;
 
@@ -76,28 +87,28 @@ export function placeholders(options: TwigCompletionOption[]) {
 
       return Decoration.replace({
         inclusive: true,
-        widget: new PlaceholderWidget(option, match[0]),
+        widget: new TemplateTagWidget(option, match[0], matchStartPos),
       });
     },
   });
 
   return ViewPlugin.fromClass(
     class {
-      placeholders: DecorationSet;
+      decorations: DecorationSet;
 
       constructor(view: EditorView) {
-        this.placeholders = placeholderMatcher.createDeco(view);
+        this.decorations = templateTagMatcher.createDeco(view);
       }
 
       update(update: ViewUpdate) {
-        this.placeholders = placeholderMatcher.updateDeco(update, this.placeholders);
+        this.decorations = templateTagMatcher.updateDeco(update, this.decorations);
       }
     },
     {
-      decorations: (instance) => instance.placeholders,
+      decorations: (instance) => instance.decorations,
       provide: (plugin) =>
         EditorView.atomicRanges.of((view) => {
-          return view.plugin(plugin)?.placeholders || Decoration.none;
+          return view.plugin(plugin)?.decorations || Decoration.none;
         }),
     },
   );
