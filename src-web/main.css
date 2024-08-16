@@ -26,6 +26,13 @@
     @apply select-none cursor-default;
   }
 
+  input,
+  textarea {
+    &::placeholder {
+      @apply text-placeholder;
+    }
+  }
+
   .select-all * {
     /*@apply select-all;*/
   }

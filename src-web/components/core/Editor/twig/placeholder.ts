@@ -23,12 +23,12 @@ class PlaceholderWidget extends WidgetType {
 
   toDOM() {
     const elt = document.createElement('span');
-    elt.className = `x-theme-placeholder placeholder ${
+    elt.className = `x-theme-templateTag placeholder ${
       this.option.type === 'unknown'
-        ? 'x-theme-placeholder--danger'
+        ? 'x-theme-templateTag--danger'
         : this.option.type === 'variable'
-        ? 'x-theme-placeholder--primary'
-        : 'x-theme-placeholder--info'
+        ? 'x-theme-templateTag--primary'
+        : 'x-theme-templateTag--info'
     }`;
     elt.title = this.option.type === 'unknown' ? '__NOT_FOUND__' : this.option.value ?? '';
     elt.textContent = this.option.label;

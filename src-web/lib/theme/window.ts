@@ -39,7 +39,7 @@ export type YaakTheme = YaakColors & {
     appHeader: Partial<YaakColors>;
     button: Partial<YaakColors>;
     banner: Partial<YaakColors>;
-    placeholder: Partial<YaakColors>;
+    templateTag: Partial<YaakColors>;
     urlBar: Partial<YaakColors>;
     editor: Partial<YaakColors>;
     input: Partial<YaakColors>;
@@ -87,7 +87,7 @@ function themeVariables(theme?: Partial<YaakColors>, base?: CSSVariables): CSSVa
   return vars;
 }
 
-function placeholderColorVariables(color: YaakColor): Partial<CSSVariables> {
+function templateTagColorVariables(color: YaakColor): Partial<CSSVariables> {
   return {
     text: color.lift(0.6),
     textSubtle: color.lift(0.4),
@@ -201,14 +201,14 @@ function bannerCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | 
   );
 }
 
-function placeholderCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | null {
+function templateTagCSS(color: YaakColorKey, colors?: Partial<YaakColors>): string | null {
   const yaakColor = colors?.[color];
   if (yaakColor == null) {
     return null;
   }
 
   return [
-    variablesToCSS(`.x-theme-placeholder--${color}`, placeholderColorVariables(yaakColor)),
+    variablesToCSS(`.x-theme-templateTag--${color}`, templateTagColorVariables(yaakColor)),
   ].join('\n\n');
 }
 
@@ -254,7 +254,7 @@ export function getThemeCSS(theme: YaakTheme): string {
         bannerCSS(key as YaakColorKey, theme.components?.banner ?? colors),
       ),
       ...Object.keys(colors ?? {}).map((key) =>
-        placeholderCSS(key as YaakColorKey, theme.components?.placeholder ?? colors),
+        templateTagCSS(key as YaakColorKey, theme.components?.templateTag ?? colors),
       ),
     ].join('\n\n');
   } catch (err) {
