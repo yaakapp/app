@@ -1,24 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
 import type { GrpcRequest } from '@yaakapp/api';
+import { atom, useAtom } from 'jotai';
+import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 
-export function grpcRequestsQueryKey({ workspaceId }: { workspaceId: string }) {
-  return ['grpc_requests', { workspaceId }];
-}
+export const grpcRequestsAtom = atom<GrpcRequest[]>([]);
 
 export function useGrpcRequests() {
+  const [items, setItems] = useAtom(grpcRequestsAtom);
   const workspace = useActiveWorkspace();
-  return (
-    useQuery({
-      enabled: workspace != null,
-      queryKey: grpcRequestsQueryKey({ workspaceId: workspace?.id ?? 'n/a' }),
-      queryFn: async () => {
-        if (workspace == null) return [];
-        return (await invokeCmd('cmd_list_grpc_requests', {
-          workspaceId: workspace.id,
-        })) as GrpcRequest[];
-      },
-    }).data ?? []
-  );
+
+  // Fetch new requests when workspace changes
+  useEffect(() => {
+    if (workspace == null) return;
+    invokeCmd<GrpcRequest[]>('cmd_list_grpc_requests', { workspaceId: workspace.id }).then(
+      setItems,
+    );
+  }, [setItems, workspace]);
+
+  return items;
 }

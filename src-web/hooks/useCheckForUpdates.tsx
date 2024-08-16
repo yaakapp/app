@@ -18,7 +18,7 @@ export function useCheckForUpdates() {
           title: 'No Update Available',
           body: (
             <>
-              You are currently on the latest version <InlineCode>{appInfo?.version}</InlineCode>
+              You are currently on the latest version <InlineCode>{appInfo.version}</InlineCode>
             </>
           ),
         });

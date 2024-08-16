@@ -1,29 +1,57 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { Environment, Workspace } from '@yaakapp/api';
+import type { EnvironmentVariable } from '@yaakapp/api';
+import type { TemplateFunction } from '../../../../hooks/useTemplateFunctions';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { textLanguageName } from '../text/extension';
+import type { TwigCompletionOption } from './completion';
 import { twigCompletion } from './completion';
-import { placeholders } from './placeholder';
+import { templateTags } from './templateTags';
 import { parser as twigParser } from './twig';
 
-export function twig(
-  base: LanguageSupport,
-  environment: Environment | null,
-  workspace: Workspace | null,
-  autocomplete?: GenericCompletionConfig,
-) {
+export function twig({
+  base,
+  environmentVariables,
+  templateFunctions,
+  autocomplete,
+  onClickFunction,
+  onClickVariable,
+}: {
+  base: LanguageSupport;
+  environmentVariables: EnvironmentVariable[];
+  templateFunctions: TemplateFunction[];
+  autocomplete?: GenericCompletionConfig;
+  onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
+  onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
+}) {
   const language = mixLanguage(base);
-  const allVariables = [...(workspace?.variables ?? []), ...(environment?.variables ?? [])];
-  const variables = allVariables.filter((v) => v.enabled) ?? [];
-  const completions = twigCompletion({ options: variables });
+
+  const variableOptions: TwigCompletionOption[] =
+    environmentVariables.map((v) => ({
+      ...v,
+      type: 'variable',
+      label: v.name,
+      onClick: (rawTag: string, startPos: number) => onClickVariable(v, rawTag, startPos),
+    })) ?? [];
+  const functionOptions: TwigCompletionOption[] =
+    templateFunctions.map((fn) => ({
+      name: fn.name,
+      type: 'function',
+      value: null,
+      label: fn.name + '(' + fn.args.length + ')',
+      onClick: (rawTag: string, startPos: number) => onClickFunction(fn, rawTag, startPos),
+    })) ?? [];
+
+  const options = [...variableOptions, ...functionOptions];
+
+  const completions = twigCompletion({ options });
 
   return [
     language,
     base.support,
-    placeholders(variables),
+    templateTags(options),
     language.data.of({ autocomplete: completions }),
     base.language.data.of({ autocomplete: completions }),
     language.data.of({ autocomplete: genericCompletion(autocomplete) }),

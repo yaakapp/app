@@ -1,4 +1,4 @@
-import type { Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
+import type { Folder, GrpcRequest, HttpRequest, Model, Workspace } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
@@ -576,7 +576,7 @@ type SidebarItemProps = {
   itemId: string;
   itemName: string;
   itemFallbackName: string;
-  itemModel: string;
+  itemModel: Model['model'];
   itemPrefix: ReactNode;
   useProminentStyles?: boolean;
   selected: boolean;
@@ -658,8 +658,10 @@ function SidebarItem({
   const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
-  const latestHttpResponse = useLatestHttpResponse(itemId);
-  const latestGrpcConnection = useLatestGrpcConnection(itemId);
+  const latestHttpResponse = useLatestHttpResponse(itemModel === 'http_request' ? itemId : null);
+  const latestGrpcConnection = useLatestGrpcConnection(
+    itemModel === 'grpc_request' ? itemId : null,
+  );
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const workspaces = useWorkspaces();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();

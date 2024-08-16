@@ -13,6 +13,7 @@ export function useHttpResponses(requestId: string | null) {
       initialData: [],
       queryKey: httpResponsesQueryKey({ requestId: requestId ?? 'n/a' }),
       queryFn: async () => {
+        if (requestId == null) return [];
         return (await invokeCmd('cmd_list_http_responses', {
           requestId,
           limit: 200,

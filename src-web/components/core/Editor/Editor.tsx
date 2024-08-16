@@ -1,6 +1,7 @@
 import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
+import type { EnvironmentVariable } from '@yaakapp/api';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
@@ -15,9 +16,13 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useActiveEnvironment } from '../../../hooks/useActiveEnvironment';
-import { useActiveWorkspace } from '../../../hooks/useActiveWorkspace';
+import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
+import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useSettings } from '../../../hooks/useSettings';
+import { type TemplateFunction, useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
+import { useDialog } from '../../DialogContext';
+import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
+import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
 import { HStack } from '../Stacks';
 import './Editor.css';
@@ -58,6 +63,8 @@ export interface EditorProps {
   actions?: ReactNode;
 }
 
+const emptyVariables: EnvironmentVariable[] = [];
+
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
     readOnly,
@@ -87,10 +94,9 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   ref,
 ) {
   const s = useSettings();
-  const [e] = useActiveEnvironment();
-  const w = useActiveWorkspace();
-  const environment = autocompleteVariables ? e : null;
-  const workspace = autocompleteVariables ? w : null;
+  const templateFunctions = useTemplateFunctions();
+  const allEnvironmentVariables = useActiveEnvironmentVariables();
+  const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
 
   if (s && wrapLines === undefined) {
     wrapLines = s.editorSoftWrap;
@@ -148,19 +154,78 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     cm.current?.view.dispatch({ effects: effect });
   }, [wrapLines]);
 
+  const dialog = useDialog();
+  const onClickFunction = useCallback(
+    async (fn: TemplateFunction, tagValue: string, startPos: number) => {
+      const initialTokens = await parseTemplate(tagValue);
+      dialog.show({
+        id: 'template-function',
+        size: 'sm',
+        title: 'Configure Function',
+        render: ({ hide }) => (
+          <TemplateFunctionDialog
+            templateFunction={fn}
+            hide={hide}
+            initialTokens={initialTokens}
+            onChange={(insert) => {
+              cm.current?.view.dispatch({
+                changes: [{ from: startPos, to: startPos + tagValue.length, insert }],
+              });
+            }}
+          />
+        ),
+      });
+    },
+    [dialog],
+  );
+
+  const onClickVariable = useCallback(
+    async (v: EnvironmentVariable, tagValue: string, startPos: number) => {
+      const initialTokens = await parseTemplate(tagValue);
+      dialog.show({
+        size: 'dynamic',
+        id: 'template-variable',
+        title: 'Configure Variable',
+        render: ({ hide }) => (
+          <TemplateVariableDialog
+            definition={v}
+            hide={hide}
+            initialTokens={initialTokens}
+            onChange={(insert) => {
+              cm.current?.view.dispatch({
+                changes: [{ from: startPos, to: startPos + tagValue.length, insert }],
+              });
+            }}
+          />
+        ),
+      });
+    },
+    [dialog],
+  );
+
   // Update language extension when contentType changes
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({
       contentType,
-      environment,
-      workspace,
+      environmentVariables,
       useTemplating,
       autocomplete,
+      templateFunctions,
+      onClickFunction,
+      onClickVariable,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
-  }, [contentType, autocomplete, useTemplating, environment, workspace]);
+  }, [
+    contentType,
+    autocomplete,
+    useTemplating,
+    environmentVariables,
+    templateFunctions,
+    onClickFunction,
+    onClickVariable,
+  ]);
 
   // Initialize the editor when ref mounts
   const initEditorRef = useCallback(
@@ -178,8 +243,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           contentType,
           useTemplating,
           autocomplete,
-          environment,
-          workspace,
+          environmentVariables,
+          templateFunctions,
+          onClickVariable,
+          onClickFunction,
         });
 
         const state = EditorState.create({

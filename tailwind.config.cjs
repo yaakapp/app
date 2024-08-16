@@ -69,8 +69,7 @@ module.exports = {
     },
     colors: {
       transparent: 'transparent',
-
-      // placeholder: 'var(--fg-subtler)', // Now a component?
+      placeholder: 'var(--textSubtlest)',
       shadow: 'var(--shadow)',
       backdrop: 'var(--backdrop)',
       selection: 'var(--selection)',
