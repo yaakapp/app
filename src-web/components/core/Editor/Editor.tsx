@@ -63,7 +63,7 @@ export interface EditorProps {
   actions?: ReactNode;
 }
 
-const emptyArray = [];
+const emptyVariables: EnvironmentVariable[] = [];
 
 export const Editor = forwardRef<EditorView | undefined, EditorProps>(function Editor(
   {
@@ -96,7 +96,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   const s = useSettings();
   const templateFunctions = useTemplateFunctions();
   const allEnvironmentVariables = useActiveEnvironmentVariables();
-  const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyArray;
+  const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
 
   if (s && wrapLines === undefined) {
     wrapLines = s.editorSoftWrap;
