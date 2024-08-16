@@ -18,6 +18,7 @@ module.exports = {
     'plugin-runtime-types/**/*',
     'src-tauri/**/*',
     'plugins/**/*',
+    'tailwind.config.cjs',
   ],
   settings: {
     react: {
