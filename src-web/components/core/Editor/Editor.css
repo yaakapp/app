@@ -24,7 +24,7 @@
     }
 
     .cm-placeholder {
-      @apply text-text-subtlest;
+      @apply text-placeholder;
     }
 
     .cm-scroller {
@@ -60,12 +60,12 @@
       }
     }
 
-    .placeholder {
+    .template-tag {
       /* Colors */
       @apply bg-surface text-text-subtle border-border-subtle;
       @apply hover:border-border-subtle hover:text-text hover:bg-surface-highlight;
 
-      @apply border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
+      @apply inline border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
 
       -webkit-text-security: none;
     }

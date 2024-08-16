@@ -6,6 +6,7 @@ type TauriCmd =
   | 'cmd_check_for_updates'
   | 'cmd_create_cookie_jar'
   | 'cmd_create_environment'
+  | 'cmd_template_tokens_to_string'
   | 'cmd_create_folder'
   | 'cmd_create_grpc_request'
   | 'cmd_create_http_request'
@@ -21,6 +22,7 @@ type TauriCmd =
   | 'cmd_delete_http_request'
   | 'cmd_delete_http_response'
   | 'cmd_delete_workspace'
+  | 'cmd_dismiss_notification'
   | 'cmd_duplicate_grpc_request'
   | 'cmd_duplicate_http_request'
   | 'cmd_export_data'
@@ -35,6 +37,7 @@ type TauriCmd =
   | 'cmd_get_workspace'
   | 'cmd_grpc_go'
   | 'cmd_grpc_reflect'
+  | 'cmd_http_request_actions'
   | 'cmd_import_data'
   | 'cmd_list_cookie_jars'
   | 'cmd_list_environments'
@@ -48,7 +51,8 @@ type TauriCmd =
   | 'cmd_metadata'
   | 'cmd_new_nested_window'
   | 'cmd_new_window'
-  | 'cmd_dismiss_notification'
+  | 'cmd_parse_template'
+  | 'cmd_render_template'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'
   | 'cmd_send_http_request'
@@ -62,7 +66,6 @@ type TauriCmd =
   | 'cmd_update_http_request'
   | 'cmd_update_settings'
   | 'cmd_update_workspace'
-  | 'cmd_http_request_actions'
   | 'cmd_write_file_dev';
 
 export async function invokeCmd<T>(cmd: TauriCmd, args?: InvokeArgs): Promise<T> {

@@ -75,21 +75,21 @@ const decorator = function () {
 
   return ViewPlugin.fromClass(
     class {
-      placeholders: DecorationSet;
+      decorations: DecorationSet;
 
       constructor(view: EditorView) {
-        this.placeholders = placeholderMatcher.createDeco(view);
+        this.decorations = placeholderMatcher.createDeco(view);
       }
 
       update(update: ViewUpdate) {
-        this.placeholders = placeholderMatcher.updateDeco(update, this.placeholders);
+        this.decorations = placeholderMatcher.updateDeco(update, this.decorations);
       }
     },
     {
-      decorations: (instance) => instance.placeholders,
+      decorations: (instance) => instance.decorations,
       provide: (plugin) =>
         EditorView.bidiIsolatedRanges.of((view) => {
-          return view.plugin(plugin)?.placeholders || Decoration.none;
+          return view.plugin(plugin)?.decorations || Decoration.none;
         }),
     },
   );

@@ -29,7 +29,7 @@ export function useSyncWorkspaceRequestTitle() {
       newTitle += ` › ${fallbackRequestName(activeRequest)}`;
     }
 
-    if (appInfo?.isDev) {
+    if (appInfo.isDev) {
       newTitle = `[DEV] ${newTitle}`;
     }
 
@@ -40,5 +40,5 @@ export function useSyncWorkspaceRequestTitle() {
     } else {
       emit('yaak_title_changed', newTitle).catch(console.error);
     }
-  }, [activeEnvironment, activeRequest, activeWorkspace, appInfo?.isDev, osInfo.osType]);
+  }, [activeEnvironment, activeRequest, activeWorkspace, appInfo.isDev, osInfo.osType]);
 }

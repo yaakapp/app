@@ -14,7 +14,7 @@ export function useActiveEnvironment() {
 
 export const QUERY_ENVIRONMENT_ID = 'environment_id';
 
-export function useActiveEnvironmentId() {
+function useActiveEnvironmentId() {
   // NOTE: This query param is accessed from Rust side, so do not change
   const [params, setParams] = useSearchParams();
   const id = params.get(QUERY_ENVIRONMENT_ID);

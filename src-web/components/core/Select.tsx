@@ -84,7 +84,7 @@ export function Select<T extends string>({
             {options.map((o) => {
               if (o.type === 'separator') return null;
               return (
-                <option key={o.label} value={o.value}>
+                <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
               );

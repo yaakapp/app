@@ -73,7 +73,7 @@ export function SettingsDropdown() {
           leftSlot: <Icon icon="folderOutput" />,
           onSelect: () => exportData.mutate(),
         },
-        { type: 'separator', label: `Yaak v${appInfo?.version}` },
+        { type: 'separator', label: `Yaak v${appInfo.version}` },
         {
           key: 'update-check',
           label: 'Check for Updates',
@@ -92,7 +92,7 @@ export function SettingsDropdown() {
           label: 'Changelog',
           leftSlot: <Icon icon="cake" />,
           rightSlot: <Icon icon="externalLink" />,
-          onSelect: () => open(`https://yaak.app/changelog/${appInfo?.version}`),
+          onSelect: () => open(`https://yaak.app/changelog/${appInfo.version}`),
         },
       ]}
     >

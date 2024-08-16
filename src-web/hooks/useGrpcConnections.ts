@@ -13,6 +13,7 @@ export function useGrpcConnections(requestId: string | null) {
       initialData: [],
       queryKey: grpcConnectionsQueryKey({ requestId: requestId ?? 'n/a' }),
       queryFn: async () => {
+        if (requestId == null) return [];
         return (await invokeCmd('cmd_list_grpc_connections', {
           requestId,
           limit: 200,

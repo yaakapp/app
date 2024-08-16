@@ -1,10 +1,15 @@
-use std::collections::HashMap;
-use serde_json::Value;
 use crate::template_fns::timestamp;
-use yaak_templates::parse_and_render;
+use serde_json::Value;
+use std::collections::HashMap;
 use yaak_models::models::{
     Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
 };
+use yaak_templates::parse_and_render;
+
+pub fn render_template(template: &str, w: &Workspace, e: Option<&Environment>) -> String {
+    let vars = &variables_from_environment(w, e);
+    render(template, vars)
+}
 
 pub fn render_request(r: &HttpRequest, w: &Workspace, e: Option<&Environment>) -> HttpRequest {
     let r = r.clone();

@@ -117,9 +117,9 @@ export function SettingsGeneral() {
 
       <Heading size={2}>App Info</Heading>
       <KeyValueRows>
-        <KeyValueRow label="Version" value={appInfo?.version} />
-        <KeyValueRow label="Data Directory" value={appInfo?.appDataDir} />
-        <KeyValueRow label="Logs Directory" value={appInfo?.appLogDir} />
+        <KeyValueRow label="Version" value={appInfo.version} />
+        <KeyValueRow label="Data Directory" value={appInfo.appDataDir} />
+        <KeyValueRow label="Logs Directory" value={appInfo.appLogDir} />
       </KeyValueRows>
     </VStack>
   );
