@@ -54,7 +54,7 @@ export function useTemplateFunctions() {
             { name: 'Unix (ms)', value: 'unix_millis' },
           ],
           optional: true,
-          defaultValue: 'RFC3339',
+          defaultValue: 'rfc3339',
         },
       ],
     },
