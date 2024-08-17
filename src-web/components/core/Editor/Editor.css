@@ -216,26 +216,33 @@
   @apply shadow-lg bg-surface rounded text-text-subtle border border-border-subtle z-50 pointer-events-auto text-editor;
 
   .cm-completionIcon {
-    @apply italic font-mono;
+    @apply font-mono opacity-80 italic;
 
     &::after {
-      content: 'x' !important; /* Default (eg. for GraphQL) */
+      content: 'a' !important; /* Default (eg. for GraphQL) */
+    }
+
+    &.cm-completionIcon-function::after {
+      content: 'f' !important;
+      @apply text-info;
+    }
+
+    &.cm-completionIcon-variable::after {
+      content: 'x' !important;
+      @apply text-primary;
+    }
+
+    &.cm-completionIcon-constant::after {
+      content: 'c' !important;
+      @apply text-notice;
     }
 
     &.cm-completionIcon-class::after {
       content: 'o' !important;
     }
 
-    &.cm-completionIcon-constant::after {
-      content: 'c' !important;
-    }
-
     &.cm-completionIcon-enum::after {
       content: 'e' !important;
-    }
-
-    &.cm-completionIcon-function::after {
-      content: 'z' !important;
     }
 
     &.cm-completionIcon-interface::after {
@@ -259,15 +266,11 @@
     }
 
     &.cm-completionIcon-text::after {
-      content: 'x' !important;
+      content: 't' !important;
     }
 
     &.cm-completionIcon-type::after {
       content: 't' !important;
-    }
-
-    &.cm-completionIcon-variable::after {
-      content: 'x' !important;
     }
   }
 
