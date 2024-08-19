@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::events::{CallHttpRequestActionRequest, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
+use crate::events::{CallHttpRequestActionRequest, CallTemplateFunctionRequest, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
 
 use crate::error::Error::PluginErr;
 use crate::nodejs::start_nodejs_plugin_runtime;
@@ -74,9 +74,32 @@ impl PluginManager {
         Ok(all_actions)
     }
 
+    pub async fn run_template_functions(&self) -> Result<Vec<GetTemplateFunctionsResponse>> {
+        let reply_events = self
+            .server
+            .send_and_wait(&InternalEventPayload::GetTemplateFunctionsRequest)
+            .await?;
+
+        let mut all_actions = Vec::new();
+        for event in reply_events {
+            if let InternalEventPayload::GetTemplateFunctionsResponse(resp) = event.payload {
+                all_actions.push(resp.clone());
+            }
+        }
+
+        Ok(all_actions)
+    }
+
     pub async fn call_http_request_action(&self, req: CallHttpRequestActionRequest) -> Result<()> {
         let plugin = self.server.plugin_by_ref_id(req.plugin_ref_id.as_str()).await?;
         let event = plugin.build_event_to_send(&InternalEventPayload::CallHttpRequestActionRequest(req), None);
+        plugin.send(&event).await?;
+        Ok(())
+    }
+
+    pub async fn call_template_function(&self, req: CallTemplateFunctionRequest) -> Result<()> {
+        let plugin = self.server.plugin_by_ref_id(req.plugin_ref_id.as_str()).await?;
+        let event = plugin.build_event_to_send(&InternalEventPayload::CallTemplateFunctionRequest(req), None);
         plugin.send(&event).await?;
         Ok(())
     }

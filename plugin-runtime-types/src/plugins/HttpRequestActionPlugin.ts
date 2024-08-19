@@ -1,7 +1,7 @@
 import { CallHttpRequestActionArgs } from '../gen/CallHttpRequestActionArgs';
 import { HttpRequestAction } from '../gen/HttpRequestAction';
-import { YaakContext } from './context';
+import { Context } from './Context';
 
 export type HttpRequestActionPlugin = HttpRequestAction & {
-  onSelect(ctx: YaakContext, args: CallHttpRequestActionArgs): Promise<void> | void;
+  onSelect(ctx: Context, args: CallHttpRequestActionArgs): Promise<void> | void;
 };
