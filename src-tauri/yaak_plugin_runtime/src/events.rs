@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -17,8 +18,7 @@ pub struct InternalEvent {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(tag = "type")]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export)]
 pub enum InternalEventPayload {
     BootRequest(BootRequest),
@@ -39,6 +39,10 @@ pub enum InternalEventPayload {
     GetHttpRequestActionsRequest,
     GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
     CallHttpRequestActionRequest(CallHttpRequestActionRequest),
+
+    GetTemplateFunctionsRequest,
+    GetTemplateFunctionsResponse(GetTemplateFunctionsResponse),
+    CallTemplateFunctionRequest(CallTemplateFunctionRequest),
 
     CopyTextRequest(CopyTextRequest),
 
@@ -177,6 +181,110 @@ pub enum ToastVariant {
 impl Default for ToastVariant {
     fn default() -> Self {
         ToastVariant::Info
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct GetTemplateFunctionsResponse {
+    pub functions: Vec<TemplateFunction>,
+    pub plugin_ref_id: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunction {
+    pub name: String,
+    pub args: Vec<TemplateFunctionArg>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case", tag = "type")]
+#[ts(export)]
+pub enum TemplateFunctionArg {
+    Text(TemplateFunctionTextArg),
+    Select(TemplateFunctionSelectArg),
+    HttpRequest(TemplateFunctionHttpRequestArg),
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionBaseArg {
+    pub name: String,
+    #[ts(optional = nullable)]
+    pub optional: Option<bool>,
+    #[ts(optional = nullable)]
+    pub label: Option<String>,
+    #[ts(optional = nullable)]
+    pub default_value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionTextArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
+    #[ts(optional = nullable)]
+    pub placeholder: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionHttpRequestArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionSelectArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
+    pub options: Vec<TemplateFunctionSelectOption>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionSelectOption {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallTemplateFunctionRequest {
+    pub name: String,
+    pub plugin_ref_id: String,
+    pub args: CallTemplateFunctionArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallTemplateFunctionArgs {
+    pub purpose: CallTemplateFunctionPurpose,
+    pub values: HashMap<String, String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case", tag = "type")]
+#[ts(export)]
+pub enum CallTemplateFunctionPurpose {
+    Send,
+    Preview,
+}
+
+impl Default for CallTemplateFunctionPurpose{
+    fn default() -> Self {
+        CallTemplateFunctionPurpose::Preview
     }
 }
 

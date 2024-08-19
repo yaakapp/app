@@ -6,9 +6,11 @@ import {
   InternalEventPayload,
   RenderHttpRequestResponse,
   SendHttpRequestResponse,
+  TemplateFunction,
 } from '@yaakapp/api';
-import { YaakContext } from '@yaakapp/api/lib/plugins/context';
+import { Context } from '@yaakapp/api';
 import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/httpRequestAction';
+import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
 import { readFileSync } from 'node:fs';
@@ -88,7 +90,7 @@ new Promise<void>(async (resolve, reject) => {
     return promise as unknown as Promise<T>;
   }
 
-  const ctx: YaakContext = {
+  const ctx: Context = {
     clipboard: {
       async copyText(text) {
         await sendAndWaitForReply({ type: 'copy_text_request', text });
@@ -181,8 +183,8 @@ new Promise<void>(async (resolve, reject) => {
         const reply: HttpRequestAction[] = mod.plugin.httpRequestActions.map(
           (a: HttpRequestActionPlugin) => ({
             ...a,
-            onSelect: undefined,
             // Add everything except onSelect
+            onSelect: undefined,
           }),
         );
         const replyPayload: InternalEventPayload = {
@@ -195,12 +197,44 @@ new Promise<void>(async (resolve, reject) => {
       }
 
       if (
+        payload.type === 'get_template_functions_request' &&
+        Array.isArray(mod.plugin?.templateFunctions)
+      ) {
+        const reply: TemplateFunction[] = mod.plugin.templateFunctions.map(
+          (a: TemplateFunctionPlugin) => ({
+            ...a,
+            // Add everything except render
+            onRender: undefined,
+          }),
+        );
+        const replyPayload: InternalEventPayload = {
+          type: 'get_template_functions_response',
+          pluginRefId,
+          functions: reply,
+        };
+        sendPayload(replyPayload, replyId);
+        return;
+      }
+
+      if (
         payload.type === 'call_http_request_action_request' &&
         Array.isArray(mod.plugin?.httpRequestActions)
       ) {
         const action = mod.plugin.httpRequestActions.find((a) => a.key === payload.key);
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
+          sendEmpty(replyId);
+          return;
+        }
+      }
+
+      if (
+        payload.type === 'call_template_function_request' &&
+        Array.isArray(mod.plugin?.templateFunctions)
+      ) {
+        const action = mod.plugin.templateFunctions.find((a) => a.name === payload.name);
+        if (typeof action?.onRender() === 'function') {
+          await action.onRender(ctx, payload.args);
           sendEmpty(replyId);
           return;
         }

@@ -3,7 +3,7 @@ import { Folder } from '../gen/Folder';
 import { HttpRequest } from '../gen/HttpRequest';
 import { Workspace } from '../gen/Workspace';
 import { AtLeast } from '../helpers';
-import { YaakContext } from './context';
+import { Context } from './Context';
 
 export type ImportPluginResponse = null | {
   workspaces: AtLeast<Workspace, 'name' | 'id' | 'model'>[];
@@ -15,5 +15,5 @@ export type ImportPluginResponse = null | {
 export type ImporterPlugin = {
   name: string;
   description?: string;
-  onImport(ctx: YaakContext, args: { text: string }): Promise<ImportPluginResponse>;
+  onImport(ctx: Context, args: { text: string }): Promise<ImportPluginResponse>;
 };

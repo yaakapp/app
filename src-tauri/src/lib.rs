@@ -57,10 +57,10 @@ use yaak_models::queries::{
 };
 use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, GetHttpRequestActionsResponse,
-    GetHttpRequestByIdResponse, InternalEvent, InternalEventPayload, RenderHttpRequestResponse,
-    SendHttpRequestResponse,
+    GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, InternalEvent, InternalEventPayload,
+    RenderHttpRequestResponse, SendHttpRequestResponse,
 };
-use yaak_templates::{parse_and_render, Parser, Tokens};
+use yaak_templates::{Parser, Tokens};
 
 mod analytics;
 mod export_resources;
@@ -128,7 +128,7 @@ async fn cmd_render_template(
     let workspace = get_workspace(&window, &workspace_id)
         .await
         .map_err(|e| e.to_string())?;
-    let rendered = render_template(template, &workspace, environment.as_ref());
+    let rendered = render_template(template, &workspace, environment.as_ref()).await;
     Ok(rendered)
 }
 
@@ -195,7 +195,7 @@ async fn cmd_grpc_go(
         .await
         .map_err(|e| e.to_string())?;
     let mut metadata = HashMap::new();
-    let vars = variables_from_environment(&workspace, environment.as_ref());
+    let vars = variables_from_environment(&workspace, environment.as_ref()).await;
 
     // Add rest of metadata
     for h in req.clone().metadata {
@@ -207,8 +207,8 @@ async fn cmd_grpc_go(
             continue;
         }
 
-        let name = render::render(&h.name, &vars);
-        let value = render::render(&h.value, &vars);
+        let name = render::render(&h.name, &vars).await;
+        let value = render::render(&h.value, &vars).await;
 
         metadata.insert(name, value);
     }
@@ -229,15 +229,15 @@ async fn cmd_grpc_go(
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let username = render::render(raw_username, &vars);
-            let password = render::render(raw_password, &vars);
+            let username = render::render(raw_username, &vars).await;
+            let password = render::render(raw_password, &vars).await;
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
             metadata.insert("Authorization".to_string(), format!("Basic {}", encoded));
         } else if b == "bearer" {
             let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, &vars);
+            let token = render::render(raw_token, &vars).await;
             metadata.insert("Authorization".to_string(), format!("Bearer {token}"));
         }
     }
@@ -355,7 +355,10 @@ async fn cmd_grpc_go(
                     let w = w.clone();
                     let base_msg = base_msg.clone();
                     let method_desc = method_desc.clone();
-                    let msg = render::render(raw_msg.as_str(), &vars);
+                    let vars = vars.clone();
+                    let msg = tauri::async_runtime::block_on(async move {
+                        render::render(raw_msg.as_str(), &vars).await
+                    });
                     let d_msg: DynamicMessage = match deserialize_message(msg.as_str(), method_desc)
                     {
                         Ok(d_msg) => d_msg,
@@ -413,7 +416,7 @@ async fn cmd_grpc_go(
         } else {
             req.message
         };
-        let msg = render::render(&raw_msg, &vars);
+        let msg = render::render(&raw_msg, &vars).await;
 
         upsert_grpc_event(
             &w,
@@ -733,7 +736,7 @@ async fn cmd_send_ephemeral_request(
 
     send_http_request(
         &window,
-        request,
+        &request,
         &response,
         environment,
         cookie_jar,
@@ -915,6 +918,16 @@ async fn cmd_http_request_actions(
 }
 
 #[tauri::command]
+async fn cmd_template_functions(
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<Vec<GetTemplateFunctionsResponse>, String> {
+    plugin_manager
+        .run_template_functions()
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_call_http_request_action(
     req: CallHttpRequestActionRequest,
     plugin_manager: State<'_, PluginManager>,
@@ -1057,7 +1070,7 @@ async fn cmd_send_http_request(
 
     send_http_request(
         &window,
-        request.clone(),
+        &request,
         &response,
         environment,
         cookie_jar,
@@ -1692,6 +1705,7 @@ pub fn run() {
             cmd_grpc_go,
             cmd_grpc_reflect,
             cmd_http_request_actions,
+            cmd_template_functions,
             cmd_import_data,
             cmd_list_cookie_jars,
             cmd_list_environments,
@@ -1986,7 +2000,7 @@ async fn handle_plugin_event<R: Runtime>(
                 Some(id) => get_environment(w, id.as_str()).await.ok(),
             };
             let rendered_http_request =
-                render_request(&req.http_request, &workspace, environment.as_ref());
+                render_request(&req.http_request, &workspace, environment.as_ref()).await;
             Some(InternalEventPayload::RenderHttpRequestResponse(
                 RenderHttpRequestResponse {
                     http_request: rendered_http_request,
@@ -2025,7 +2039,7 @@ async fn handle_plugin_event<R: Runtime>(
 
             let result = send_http_request(
                 &w,
-                req.http_request,
+                &req.http_request,
                 &resp,
                 environment,
                 cookie_jar,

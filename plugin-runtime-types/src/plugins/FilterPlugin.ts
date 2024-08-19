@@ -1,13 +1,13 @@
-import { YaakContext } from './context';
+import { Context } from './Context';
 
 export type FilterPluginResponse = string[];
 
 export type FilterPlugin = {
   name: string;
   description?: string;
-  canFilter(ctx: YaakContext, args: { mimeType: string }): Promise<boolean>;
+  canFilter(ctx: Context, args: { mimeType: string }): Promise<boolean>;
   onFilter(
-    ctx: YaakContext,
+    ctx: Context,
     args: { payload: string; mimeType: string },
   ): Promise<FilterPluginResponse>;
 };

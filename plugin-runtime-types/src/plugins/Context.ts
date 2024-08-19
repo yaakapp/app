@@ -6,7 +6,7 @@ import { SendHttpRequestRequest } from '../gen/SendHttpRequestRequest';
 import { SendHttpRequestResponse } from '../gen/SendHttpRequestResponse';
 import { ShowToastRequest } from '../gen/ShowToastRequest';
 
-export type YaakContext = {
+export type Context = {
   clipboard: {
     copyText(text: string): void;
   };

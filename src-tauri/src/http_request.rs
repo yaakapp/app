@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
@@ -6,8 +7,8 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::render::variables_from_environment;
-use crate::{render, response_err};
+use crate::render::render_request;
+use crate::response_err;
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
@@ -16,6 +17,7 @@ use mime_guess::Mime;
 use reqwest::redirect::Policy;
 use reqwest::Method;
 use reqwest::{multipart, Url};
+use serde_json::Value;
 use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
@@ -26,19 +28,18 @@ use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_j
 
 pub async fn send_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
-    request: HttpRequest,
+    request: &HttpRequest,
     response: &HttpResponse,
     environment: Option<Environment>,
     cookie_jar: Option<CookieJar>,
     cancel_rx: &mut Receiver<bool>,
 ) -> Result<HttpResponse, String> {
-    let environment_ref = environment.as_ref();
     let workspace = get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
-    let vars = variables_from_environment(&workspace, environment_ref);
+    let rendered_request = render_request(&request, &workspace, environment.as_ref()).await;
 
-    let mut url_string = render::render(&request.url, &vars);
+    let mut url_string = rendered_request.url;
 
     url_string = ensure_proto(&url_string);
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
@@ -115,7 +116,7 @@ pub async fn send_http_request<R: Runtime>(
         }
     };
 
-    let m = Method::from_bytes(request.method.to_uppercase().as_bytes())
+    let m = Method::from_bytes(rendered_request.method.to_uppercase().as_bytes())
         .expect("Failed to create method");
     let mut request_builder = client.request(m, url);
 
@@ -138,7 +139,7 @@ pub async fn send_http_request<R: Runtime>(
     //     );
     // }
 
-    for h in request.headers {
+    for h in rendered_request.headers {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
         }
@@ -147,17 +148,14 @@ pub async fn send_http_request<R: Runtime>(
             continue;
         }
 
-        let name = render::render(&h.name, &vars);
-        let value = render::render(&h.value, &vars);
-
-        let header_name = match HeaderName::from_bytes(name.as_bytes()) {
+        let header_name = match HeaderName::from_bytes(h.name.as_bytes()) {
             Ok(n) => n,
             Err(e) => {
                 error!("Failed to create header name: {}", e);
                 continue;
             }
         };
-        let header_value = match HeaderValue::from_str(value.as_str()) {
+        let header_value = match HeaderValue::from_str(h.value.as_str()) {
             Ok(n) => n,
             Err(e) => {
                 error!("Failed to create header value: {}", e);
@@ -168,23 +166,21 @@ pub async fn send_http_request<R: Runtime>(
         headers.insert(header_name, header_value);
     }
 
-    if let Some(b) = &request.authentication_type {
+    if let Some(b) = &rendered_request.authentication_type {
         let empty_value = &serde_json::to_value("").unwrap();
-        let a = request.authentication;
+        let a = rendered_request.authentication;
 
         if b == "basic" {
-            let raw_username = a
+            let username = a
                 .get("username")
                 .unwrap_or(empty_value)
                 .as_str()
-                .unwrap_or("");
-            let raw_password = a
+                .unwrap_or_default();
+            let password = a
                 .get("password")
                 .unwrap_or(empty_value)
                 .as_str()
-                .unwrap_or("");
-            let username = render::render(raw_username, &vars);
-            let password = render::render(raw_password, &vars);
+                .unwrap_or_default();
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
@@ -193,8 +189,11 @@ pub async fn send_http_request<R: Runtime>(
                 HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),
             );
         } else if b == "bearer" {
-            let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, &vars);
+            let token = a
+                .get("token")
+                .unwrap_or(empty_value)
+                .as_str()
+                .unwrap_or_default();
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
@@ -203,56 +202,38 @@ pub async fn send_http_request<R: Runtime>(
     }
 
     let mut query_params = Vec::new();
-    for p in request.url_parameters {
+    for p in rendered_request.url_parameters {
         if !p.enabled || p.name.is_empty() {
             continue;
         }
-        query_params.push((
-            render::render(&p.name, &vars),
-            render::render(&p.value, &vars),
-        ));
+        query_params.push((p.name, p.value));
     }
     request_builder = request_builder.query(&query_params);
 
-    if let Some(body_type) = &request.body_type {
-        let empty_string = &serde_json::to_value("").unwrap();
-        let empty_bool = &serde_json::to_value(false).unwrap();
-        let request_body = request.body;
-
+    let request_body = rendered_request.body;
+    if let Some(body_type) = &rendered_request.body_type {
         if request_body.contains_key("text") {
-            let raw_text = request_body
-                .get("text")
-                .unwrap_or(empty_string)
-                .as_str()
-                .unwrap_or("");
-            let body = render::render(raw_text, &vars);
-            request_builder = request_builder.body(body);
+            let body = get_str_h(&request_body, "text");
+            request_builder = request_builder.body(body.to_owned());
         } else if body_type == "application/x-www-form-urlencoded"
             && request_body.contains_key("form")
         {
             let mut form_params = Vec::new();
             let form = request_body.get("form");
             if let Some(f) = form {
-                for p in f.as_array().unwrap_or(&Vec::new()) {
-                    let enabled = p
-                        .get("enabled")
-                        .unwrap_or(empty_bool)
-                        .as_bool()
-                        .unwrap_or(false);
-                    let name = p
-                        .get("name")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
-                    if !enabled || name.is_empty() {
-                        continue;
+                match f.as_array() {
+                    None => {}
+                    Some(a) => {
+                        for p in a {
+                            let enabled = get_bool(p, "enabled");
+                            let name = get_str(p, "name");
+                            if !enabled || name.is_empty() {
+                                continue;
+                            }
+                            let value = get_str(p, "value");
+                            form_params.push((name, value));
+                        }
                     }
-                    let value = p
-                        .get("value")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
-                    form_params.push((render::render(name, &vars), render::render(value, &vars)));
                 }
             }
             request_builder = request_builder.form(&form_params);
@@ -274,77 +255,59 @@ pub async fn send_http_request<R: Runtime>(
         } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
             let mut multipart_form = multipart::Form::new();
             if let Some(form_definition) = request_body.get("form") {
-                for p in form_definition.as_array().unwrap_or(&Vec::new()) {
-                    let enabled = p
-                        .get("enabled")
-                        .unwrap_or(empty_bool)
-                        .as_bool()
-                        .unwrap_or(false);
-                    let name_raw = p
-                        .get("name")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
+                match form_definition.as_array() {
+                    None => {}
+                    Some(fd) => {
+                        for p in fd {
+                            let enabled = get_bool(p, "enabled");
+                            let name = get_str(p, "name").to_string();
 
-                    if !enabled || name_raw.is_empty() {
-                        continue;
-                    }
-
-                    let file_path = p
-                        .get("file")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
-                    let value_raw = p
-                        .get("value")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
-
-                    let name = render::render(name_raw, &vars);
-                    let mut part = if file_path.is_empty() {
-                        multipart::Part::text(render::render(value_raw, &vars))
-                    } else {
-                        match fs::read(file_path) {
-                            Ok(f) => multipart::Part::bytes(f),
-                            Err(e) => {
-                                return response_err(response, e.to_string(), window).await;
+                            if !enabled || name.is_empty() {
+                                continue;
                             }
+
+                            let file_path = get_str(p, "file").to_owned();
+                            let value = get_str(p, "value").to_owned();
+
+                            let mut part = if file_path.is_empty() {
+                                multipart::Part::text(value.clone())
+                            } else {
+                                match fs::read(file_path.clone()) {
+                                    Ok(f) => multipart::Part::bytes(f),
+                                    Err(e) => {
+                                        return response_err(response, e.to_string(), window).await;
+                                    }
+                                }
+                            };
+
+                            let content_type = get_str(p, "contentType");
+
+                            // Set or guess mimetype
+                            if !content_type.is_empty() {
+                                part = part.mime_str(content_type).map_err(|e| e.to_string())?;
+                            } else if !file_path.is_empty() {
+                                let default_mime =
+                                    Mime::from_str("application/octet-stream").unwrap();
+                                let mime =
+                                    mime_guess::from_path(file_path.clone()).first_or(default_mime);
+                                part = part
+                                    .mime_str(mime.essence_str())
+                                    .map_err(|e| e.to_string())?;
+                            }
+
+                            // Set file path if not empty
+                            if !file_path.is_empty() {
+                                let filename = PathBuf::from(file_path)
+                                    .file_name()
+                                    .unwrap_or_default()
+                                    .to_string_lossy()
+                                    .to_string();
+                                part = part.file_name(filename);
+                            }
+
+                            multipart_form = multipart_form.part(name, part);
                         }
-                    };
-
-                    let ct_raw = p
-                        .get("contentType")
-                        .unwrap_or(empty_string)
-                        .as_str()
-                        .unwrap_or_default();
-
-                    // Set or guess mimetype
-                    if !ct_raw.is_empty() {
-                        let content_type = render::render(ct_raw, &vars);
-                        part = part
-                            .mime_str(content_type.as_str())
-                            .map_err(|e| e.to_string())?;
-                    } else if !file_path.is_empty() {
-                        let default_mime = Mime::from_str("application/octet-stream").unwrap();
-                        let mime = mime_guess::from_path(file_path).first_or(default_mime);
-                        part = part
-                            .mime_str(mime.essence_str())
-                            .map_err(|e| e.to_string())?;
                     }
-
-                    // Set fil path if not empty
-                    if !file_path.is_empty() {
-                        let filename = PathBuf::from(file_path)
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_str()
-                            .unwrap_or_default()
-                            .to_string();
-                        part = part.file_name(filename);
-                    }
-
-                    multipart_form = multipart_form.part(name, part);
                 }
             }
             headers.remove("Content-Type"); // reqwest will add this automatically
@@ -495,4 +458,25 @@ fn ensure_proto(url_str: &str) -> String {
     }
 
     format!("http://{url_str}")
+}
+
+fn get_bool(v: &Value, key: &str) -> bool {
+    match v.get(key) {
+        None => false,
+        Some(v) => v.as_bool().unwrap_or_default(),
+    }
+}
+
+fn get_str<'a>(v: &'a Value, key: &str) -> &'a str {
+    match v.get(key) {
+        None => "",
+        Some(v) => v.as_str().unwrap_or_default(),
+    }
+}
+
+fn get_str_h<'a>(v: &'a HashMap<String, Value>, key: &str) -> &'a str {
+    match v.get(key) {
+        None => "",
+        Some(v) => v.as_str().unwrap_or_default(),
+    }
 }

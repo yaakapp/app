@@ -58,6 +58,7 @@ type TauriCmd =
   | 'cmd_send_http_request'
   | 'cmd_set_key_value'
   | 'cmd_set_update_mode'
+  | 'cmd_template_functions'
   | 'cmd_track_event'
   | 'cmd_update_cookie_jar'
   | 'cmd_update_environment'
