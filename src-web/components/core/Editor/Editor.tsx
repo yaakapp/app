@@ -1,7 +1,7 @@
 import { defaultKeymap } from '@codemirror/commands';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
-import type { EnvironmentVariable } from '@yaakapp/api';
+import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
 import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
@@ -19,7 +19,7 @@ import {
 import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useSettings } from '../../../hooks/useSettings';
-import { type TemplateFunction, useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
+import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { useDialog } from '../../DialogContext';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';

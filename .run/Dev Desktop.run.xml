@@ -7,6 +7,7 @@
     </scripts>
     <node-interpreter value="project" />
     <envs>
+      <env name="RUST_BACKTRACE" value="1" />
     </envs>
     <method v="2" />
   </configuration>

@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::render::render_request;
+use crate::render::render_http_request;
 use crate::response_err;
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
@@ -37,7 +37,13 @@ pub async fn send_http_request<R: Runtime>(
     let workspace = get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
-    let rendered_request = render_request(&request, &workspace, environment.as_ref()).await;
+    let rendered_request = render_http_request(
+        window.app_handle(),
+        &request,
+        &workspace,
+        environment.as_ref(),
+    )
+    .await;
 
     let mut url_string = rendered_request.url;
 

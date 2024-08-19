@@ -56,7 +56,7 @@ new Promise<void>(async (resolve, reject) => {
     return sendPayload({ type: 'empty_response' }, replyId);
   }
 
-  function sendPayload(payload: InternalEventPayload, replyId: string | null = null): string {
+  function sendPayload(payload: InternalEventPayload, replyId: string | null): string {
     const event = buildEventToSend(payload, replyId);
     sendEvent(event);
     return event.id;
@@ -233,9 +233,10 @@ new Promise<void>(async (resolve, reject) => {
         Array.isArray(mod.plugin?.templateFunctions)
       ) {
         const action = mod.plugin.templateFunctions.find((a) => a.name === payload.name);
-        if (typeof action?.onRender() === 'function') {
-          await action.onRender(ctx, payload.args);
-          sendEmpty(replyId);
+        if (typeof action?.onRender === 'function') {
+          const result = await action.onRender(ctx, payload.args);
+          console.log('GOT VALUE', result);
+          sendPayload({ type: 'call_template_function_response', value: result ?? null }, replyId);
           return;
         }
       }

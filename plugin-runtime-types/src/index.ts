@@ -8,6 +8,7 @@ export * from './gen/CallHttpRequestActionArgs';
 export * from './gen/CallTemplateFunctionPurpose';
 export * from './gen/CallHttpRequestActionRequest';
 export * from './gen/CallTemplateFunctionRequest';
+export * from './gen/CallTemplateFunctionResponse';
 export * from './gen/CallTemplateFunctionArgs';
 export * from './gen/Cookie';
 export * from './gen/CookieDomain';
