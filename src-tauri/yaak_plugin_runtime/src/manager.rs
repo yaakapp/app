@@ -169,9 +169,10 @@ impl PluginManager {
         content: &str,
         content_type: &str,
     ) -> Result<FilterResponse> {
-        let plugin_name = match content_type {
-            "application/json" => "filter-jsonpath",
-            _ => "filter-xpath",
+        let plugin_name = if content_type.to_lowercase().contains("json") {
+            "filter-jsonpath"
+        } else {
+            "filter-xpath"
         };
 
         let event = self

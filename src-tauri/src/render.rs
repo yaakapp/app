@@ -1,8 +1,11 @@
 use crate::template_callback::PluginTemplateCallback;
-use serde_json::Value;
+use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 use tauri::{AppHandle, Manager, Runtime};
-use yaak_models::models::{Environment, EnvironmentVariable, GrpcMetadataEntry, GrpcRequest, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace};
+use yaak_models::models::{
+    Environment, EnvironmentVariable, GrpcMetadataEntry, GrpcRequest, HttpRequest,
+    HttpRequestHeader, HttpUrlParameter, Workspace,
+};
 use yaak_templates::{parse_and_render, TemplateCallback};
 
 pub async fn render_template<R: Runtime>(
@@ -36,17 +39,12 @@ pub async fn render_grpc_request<R: Runtime>(
 
     let mut authentication = HashMap::new();
     for (k, v) in r.authentication.clone() {
-        let v = if v.is_string() {
-            render(v.as_str().unwrap(), vars, cb).await
-        } else {
-            v.to_string()
-        };
-        authentication.insert(render(k.as_str(), vars, cb).await, Value::from(v));
+        authentication.insert(k, render_json_value(v, vars, cb).await);
     }
 
     let url = render(r.url.as_str(), vars, cb).await;
 
-    GrpcRequest{
+    GrpcRequest {
         url,
         metadata,
         authentication,
@@ -83,22 +81,12 @@ pub async fn render_http_request<R: Runtime>(
 
     let mut body = HashMap::new();
     for (k, v) in r.body.clone() {
-        let v = if v.is_string() {
-            render(v.as_str().unwrap(), vars, cb).await
-        } else {
-            v.to_string()
-        };
-        body.insert(render(k.as_str(), vars, cb).await, Value::from(v));
+        body.insert(k, render_json_value(v, vars, cb).await);
     }
 
     let mut authentication = HashMap::new();
     for (k, v) in r.authentication.clone() {
-        let v = if v.is_string() {
-            render(v.as_str().unwrap(), vars, cb).await
-        } else {
-            v.to_string()
-        };
-        authentication.insert(render(k.as_str(), vars, cb).await, Value::from(v));
+        authentication.insert(k, render_json_value(v, vars, cb).await);
     }
 
     let url = render(r.url.clone().as_str(), vars, cb).await;
@@ -172,4 +160,104 @@ fn add_variable_to_map(
     }
 
     map
+}
+
+pub async fn render_json_value<T: TemplateCallback>(
+    v: Value,
+    vars: &HashMap<String, String>,
+    cb: &T,
+) -> Value {
+    match v {
+        Value::String(s) => json!(render(s.as_str(), vars, cb).await),
+        Value::Array(a) => {
+            let mut new_a = Vec::new();
+            for v in a {
+                new_a.push(Box::pin(render_json_value(v, vars, cb)).await)
+            }
+            json!(new_a)
+        }
+        Value::Object(o) => {
+            let mut new_o = Map::new();
+            for (k, v) in o {
+                let key = Box::pin(render(k.as_str(), vars, cb)).await;
+                let value = Box::pin(render_json_value(v, vars, cb)).await;
+                new_o.insert(key, value);
+            }
+            json!(new_o)
+        }
+        v => v,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+    use std::collections::HashMap;
+    use yaak_templates::TemplateCallback;
+
+    struct EmptyCB {}
+
+    impl TemplateCallback for EmptyCB {
+        async fn run(
+            &self,
+            _fn_name: &str,
+            _args: HashMap<String, String>,
+        ) -> Result<String, String> {
+            todo!()
+        }
+    }
+
+    #[tokio::test]
+    async fn render_json_value_string() {
+        let v = json!("${[a]}");
+        let mut vars = HashMap::new();
+        vars.insert("a".to_string(), "aaa".to_string());
+
+        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        assert_eq!(result, json!("aaa"))
+    }
+
+    #[tokio::test]
+    async fn render_json_value_array() {
+        let v = json!(["${[a]}", "${[a]}"]);
+        let mut vars = HashMap::new();
+        vars.insert("a".to_string(), "aaa".to_string());
+
+        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        assert_eq!(result, json!(["aaa", "aaa"]))
+    }
+
+    #[tokio::test]
+    async fn render_json_value_object() {
+        let v = json!({"${[a]}": "${[a]}"});
+        let mut vars = HashMap::new();
+        vars.insert("a".to_string(), "aaa".to_string());
+
+        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        assert_eq!(result, json!({"aaa": "aaa"}))
+    }
+
+    #[tokio::test]
+    async fn render_json_value_nested() {
+        let v = json!([
+            123,
+            {"${[a]}": "${[a]}"},
+            null,
+            "${[a]}",
+            false,
+            {"x": ["${[a]}"]}
+        ]);
+        let mut vars = HashMap::new();
+        vars.insert("a".to_string(), "aaa".to_string());
+
+        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        assert_eq!(result, json!([
+            123,
+            {"aaa": "aaa"},
+            null,
+            "aaa",
+            false,
+            {"x": ["aaa"]}
+        ]))
+    }
 }

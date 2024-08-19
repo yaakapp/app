@@ -57,7 +57,7 @@ export const RecentResponsesDropdown = function ResponsePane({
           key: 'clear-all',
           label: `Delete ${responses.length} ${pluralize('Response', responses.length)}`,
           onSelect: deleteAllResponses.mutate,
-          hidden: responses.length <= 1,
+          hidden: responses.length === 0,
           disabled: responses.length === 0,
         },
         { type: 'separator' },

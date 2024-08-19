@@ -7,6 +7,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 
+const ENABLE_REACT_QUERY_DEVTOOLS = false;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -20,7 +22,7 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools buttonPosition="bottom-left" />
+      {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools buttonPosition="bottom-left" />}
       <MotionConfig transition={{ duration: 0.1 }}>
         <HelmetProvider>
           <DndProvider backend={HTML5Backend}>

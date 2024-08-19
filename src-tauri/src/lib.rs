@@ -52,14 +52,14 @@ use yaak_models::queries::{
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
     get_or_create_settings, get_workspace, list_cookie_jars, list_environments, list_folders,
     list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
-    list_responses, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
-    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    list_http_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
 };
 use yaak_plugin_runtime::events::{
-    CallHttpRequestActionRequest, FilterResponse, GetHttpRequestActionsResponse,
-    GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, InternalEvent, InternalEventPayload,
-    RenderHttpRequestResponse, SendHttpRequestResponse,
+    CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
+    GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
+    InternalEvent, InternalEventPayload, RenderHttpRequestResponse, SendHttpRequestResponse,
 };
 use yaak_templates::{Parser, Tokens};
 
@@ -1496,7 +1496,7 @@ async fn cmd_list_http_responses(
     limit: Option<i64>,
     w: WebviewWindow,
 ) -> Result<Vec<HttpResponse>, String> {
-    list_responses(&w, request_id, limit)
+    list_http_responses(&w, request_id, limit)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1960,12 +1960,6 @@ async fn handle_plugin_event<R: Runtime>(
     event: &InternalEvent,
 ) -> Option<InternalEventPayload> {
     let event = match event.clone().payload {
-        InternalEventPayload::GetHttpRequestByIdRequest(req) => {
-            let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
-            Some(InternalEventPayload::GetHttpRequestByIdResponse(
-                GetHttpRequestByIdResponse { http_request },
-            ))
-        }
         InternalEventPayload::CopyTextRequest(req) => {
             app_handle
                 .clipboard()
@@ -1978,6 +1972,21 @@ async fn handle_plugin_event<R: Runtime>(
                 .emit("show_toast", req)
                 .expect("Failed to emit show_toast");
             None
+        }
+        InternalEventPayload::FindHttpResponsesRequest(req) => {
+            let http_responses =
+                list_http_responses(app_handle, req.request_id.as_str(), req.limit)
+                    .await
+                    .unwrap_or_default();
+            Some(InternalEventPayload::FindHttpResponsesResponse(
+                FindHttpResponsesResponse { http_responses },
+            ))
+        }
+        InternalEventPayload::GetHttpRequestByIdRequest(req) => {
+            let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
+            Some(InternalEventPayload::GetHttpRequestByIdResponse(
+                GetHttpRequestByIdResponse { http_request },
+            ))
         }
         InternalEventPayload::RenderHttpRequestRequest(req) => {
             let webview_windows = app_handle.get_focused_window()?.webview_windows();

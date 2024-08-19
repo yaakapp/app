@@ -23,7 +23,7 @@ import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
-import { settingsQueryKey, useSettings } from '../hooks/useSettings';
+import { settingsAtom, useSettings } from '../hooks/useSettings';
 import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { workspacesAtom } from '../hooks/useWorkspaces';
@@ -65,6 +65,7 @@ export function GlobalHooks() {
     windowLabel: string;
   }
 
+  const setSettings = useSetAtom(settingsAtom);
   const setWorkspaces = useSetAtom(workspacesAtom);
   const setHttpRequests = useSetAtom(httpRequestsAtom);
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
@@ -85,8 +86,6 @@ export function GlobalHooks() {
         ? keyValueQueryKey(model)
         : model.model === 'cookie_jar'
         ? cookieJarsQueryKey(model)
-        : model.model === 'settings'
-        ? settingsQueryKey()
         : null;
 
     if (model.model === 'http_request' && windowLabel !== getCurrentWebviewWindow().label) {
@@ -107,6 +106,8 @@ export function GlobalHooks() {
       setGrpcRequests(updateModelList(model, pushToFront));
     } else if (model.model === 'environment') {
       setEnvironments(updateModelList(model, pushToFront));
+    } else if (model.model === 'settings') {
+      setSettings(model);
     } else if (queryKey != null) {
       // TODO: Convert all models to use Jotai
       queryClient.setQueryData(queryKey, (current: unknown) => {
@@ -146,8 +147,6 @@ export function GlobalHooks() {
       queryClient.setQueryData(keyValueQueryKey(model), undefined);
     } else if (model.model === 'cookie_jar') {
       queryClient.setQueryData(cookieJarsQueryKey(model), undefined);
-    } else if (model.model === 'settings') {
-      queryClient.setQueryData(settingsQueryKey(), undefined);
     }
   });
 

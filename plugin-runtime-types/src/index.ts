@@ -23,6 +23,8 @@ export * from './gen/ExportHttpRequestResponse';
 export * from './gen/FilterRequest';
 export * from './gen/FilterResponse';
 export * from './gen/Folder';
+export * from './gen/FindHttpResponsesRequest';
+export * from './gen/FindHttpResponsesResponse';
 export * from './gen/GetHttpRequestActionsResponse';
 export * from './gen/GetHttpRequestByIdRequest';
 export * from './gen/GetHttpRequestByIdResponse';

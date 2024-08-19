@@ -1,4 +1,5 @@
 import {
+  FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
   HttpRequestAction,
   ImportResponse,
@@ -17,6 +18,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
+import { text } from '../../src-web/components/core/Editor/text/extension';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir, pluginRefId } = workerData;
@@ -99,6 +101,13 @@ new Promise<void>(async (resolve, reject) => {
     toast: {
       async show(args) {
         await sendAndWaitForReply({ type: 'show_toast_request', ...args });
+      },
+    },
+    httpResponse: {
+      async find(args) {
+        const payload = { type: 'find_http_responses_request', ...args } as const;
+        const { httpResponses } = await sendAndWaitForReply<FindHttpResponsesResponse>(payload);
+        return httpResponses;
       },
     },
     httpRequest: {

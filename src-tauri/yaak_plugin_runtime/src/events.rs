@@ -54,6 +54,9 @@ pub enum InternalEventPayload {
 
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
+    
+    FindHttpResponsesRequest(FindHttpResponsesRequest),
+    FindHttpResponsesResponse(FindHttpResponsesResponse),
 
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
@@ -345,6 +348,21 @@ pub struct GetHttpRequestByIdRequest {
 #[ts(export)]
 pub struct GetHttpRequestByIdResponse {
     pub http_request: Option<HttpRequest>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct FindHttpResponsesRequest {
+    pub request_id: String,
+    pub limit: Option<i64>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct FindHttpResponsesResponse {
+    pub http_responses: Vec<HttpResponse>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
