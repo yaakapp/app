@@ -1,15 +1,16 @@
-import { useCallback, useMemo, useState } from 'react';
-import type { FnArg } from '../gen/FnArg';
-import type { Tokens } from '../gen/Tokens';
-import { useHttpRequests } from '../hooks/useHttpRequests';
-import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import type {
   TemplateFunction,
   TemplateFunctionArg,
   TemplateFunctionHttpRequestArg,
   TemplateFunctionSelectArg,
   TemplateFunctionTextArg,
-} from '../hooks/useTemplateFunctions';
+} from '@yaakapp/api';
+import { useCallback, useMemo, useState } from 'react';
+import type { FnArg } from '../gen/FnArg';
+import type { Tokens } from '../gen/Tokens';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useHttpRequests } from '../hooks/useHttpRequests';
+import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Button } from './core/Button';
@@ -86,7 +87,8 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
     hide();
   };
 
-  const rendered = useRenderTemplate(tagText.data ?? '');
+  const debouncedTagText = useDebouncedValue(tagText.data ?? '', 200);
+  const rendered = useRenderTemplate(debouncedTagText);
 
   return (
     <VStack className="pb-3" space={4}>

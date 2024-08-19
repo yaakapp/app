@@ -1,3 +1,5 @@
+import { FindHttpResponsesRequest } from '../gen/FindHttpResponsesRequest';
+import { FindHttpResponsesResponse } from '../gen/FindHttpResponsesResponse';
 import { GetHttpRequestByIdRequest } from '../gen/GetHttpRequestByIdRequest';
 import { GetHttpRequestByIdResponse } from '../gen/GetHttpRequestByIdResponse';
 import { RenderHttpRequestRequest } from '../gen/RenderHttpRequestRequest';
@@ -17,5 +19,8 @@ export type Context = {
     send(args: SendHttpRequestRequest): Promise<SendHttpRequestResponse['httpResponse']>;
     getById(args: GetHttpRequestByIdRequest): Promise<GetHttpRequestByIdResponse['httpRequest']>;
     render(args: RenderHttpRequestRequest): Promise<RenderHttpRequestResponse['httpRequest']>;
+  };
+  httpResponse: {
+    find(args: FindHttpResponsesRequest): Promise<FindHttpResponsesResponse['httpResponses']>;
   };
 };

@@ -59,7 +59,7 @@ class TemplateTagWidget extends WidgetType {
 
 export function templateTags(options: TwigCompletionOption[]) {
   const templateTagMatcher = new BetterMatchDecorator({
-    regexp: /\$\{\[\s*([^\]]+)\s*]}/g,
+    regexp: /\$\{\[\s*(.+)(?!]})\s*]}/g,
     decoration(match, view, matchStartPos) {
       const matchEndPos = matchStartPos + match[0].length - 1;
 

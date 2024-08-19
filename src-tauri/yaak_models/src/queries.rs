@@ -720,6 +720,8 @@ pub async fn delete_environment<R: Runtime>(
     emit_deleted_model(window, env)
 }
 
+const SETTINGS_ID: &str = "default";
+
 async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -727,7 +729,7 @@ async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
     let (sql, params) = Query::select()
         .from(SettingsIden::Table)
         .column(Asterisk)
-        .cond_where(Expr::col(SettingsIden::Id).eq("default"))
+        .cond_where(Expr::col(SettingsIden::Id).eq(SETTINGS_ID))
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
@@ -744,7 +746,7 @@ pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settin
     let (sql, params) = Query::insert()
         .into_table(SettingsIden::Table)
         .columns([SettingsIden::Id])
-        .values_panic(["default".into()])
+        .values_panic([SETTINGS_ID.into()])
         .returning_all()
         .build_rusqlite(SqliteQueryBuilder);
 
@@ -1324,13 +1326,13 @@ pub async fn delete_all_http_responses<R: Runtime>(
     window: &WebviewWindow<R>,
     request_id: &str,
 ) -> Result<()> {
-    for r in list_responses(window, request_id, None).await? {
+    for r in list_http_responses(window, request_id, None).await? {
         delete_http_response(window, &r.id).await?;
     }
     Ok(())
 }
 
-pub async fn list_responses<R: Runtime>(
+pub async fn list_http_responses<R: Runtime>(
     mgr: &impl Manager<R>,
     request_id: &str,
     limit: Option<i64>,
