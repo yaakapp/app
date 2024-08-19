@@ -50,6 +50,7 @@ async fn render_tag<T: TemplateCallback>(
             Some(v) => v.to_string(),
             None => "".into(),
         },
+        Val::Bool { value } => value.to_string(),
         Val::Fn { name, args } => {
             let empty = "".to_string();
             let mut resolved_args: HashMap<String, String> = HashMap::new();

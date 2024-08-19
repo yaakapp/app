@@ -3,13 +3,22 @@ import type { CompletionContext } from '@codemirror/autocomplete';
 const openTag = '${[ ';
 const closeTag = ' ]}';
 
-export interface TwigCompletionOption {
+export type TwigCompletionOptionVariable = {
+  type: 'variable';
+};
+
+export type TwigCompletionOptionFunction = {
+  args: { name: string }[];
+  type: 'function';
+};
+
+export type TwigCompletionOption = (TwigCompletionOptionFunction | TwigCompletionOptionVariable) & {
   name: string;
   label: string;
-  type: 'function' | 'variable' | 'unknown';
+  onClick: (rawTag: string, startPos: number) => void;
   value: string | null;
-  onClick?: (rawTag: string, startPos: number) => void;
-}
+  invalid?: boolean;
+};
 
 export interface TwigCompletionConfig {
   options: TwigCompletionOption[];
@@ -46,10 +55,9 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
       options: options
         .filter((v) => v.name.trim())
         .map((v) => {
-          const innerLabel = v.type === 'function' ? `${v.name}()` : v.name;
-          const tagSyntax = openTag + innerLabel + closeTag;
+          const tagSyntax = openTag + v.label + closeTag;
           return {
-            label: innerLabel,
+            label: v.label,
             apply: tagSyntax,
             type: v.type === 'variable' ? 'variable' : 'function',
             matchLen: matchLen,

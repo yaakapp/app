@@ -1,4 +1,3 @@
-import type { EnvironmentVariable } from '@yaakapp/api';
 import { useCallback, useMemo, useState } from 'react';
 import type { Tokens } from '../gen/Tokens';
 import { useActiveEnvironmentVariables } from '../hooks/useActiveEnvironmentVariables';
@@ -10,7 +9,6 @@ import { Select } from './core/Select';
 import { VStack } from './core/Stacks';
 
 interface Props {
-  definition: EnvironmentVariable;
   initialTokens: Tokens;
   hide: () => void;
   onChange: (rawTag: string) => void;

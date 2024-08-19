@@ -56,6 +56,7 @@ export * from './gen/ShowToastRequest';
 export * from './gen/TemplateFunction';
 export * from './gen/TemplateFunctionArg';
 export * from './gen/TemplateFunctionBaseArg';
+export * from './gen/TemplateFunctionCheckboxArg';
 export * from './gen/TemplateFunctionHttpRequestArg';
 export * from './gen/TemplateFunctionSelectArg';
 export * from './gen/TemplateFunctionSelectOption';

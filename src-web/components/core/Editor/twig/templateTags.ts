@@ -1,10 +1,7 @@
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
-import { truncate } from '../../../../lib/truncate';
 import { BetterMatchDecorator } from '../BetterMatchDecorator';
 import type { TwigCompletionOption } from './completion';
-
-const TAG_TRUNCATE_LEN = 30;
 
 class TemplateTagWidget extends WidgetType {
   readonly #clickListenerCallback: () => void;
@@ -32,17 +29,15 @@ class TemplateTagWidget extends WidgetType {
   toDOM() {
     const elt = document.createElement('span');
     elt.className = `x-theme-templateTag template-tag ${
-      this.option.type === 'unknown'
+      this.option.invalid
         ? 'x-theme-templateTag--danger'
         : this.option.type === 'variable'
         ? 'x-theme-templateTag--primary'
         : 'x-theme-templateTag--info'
     }`;
-    elt.title = this.option.type === 'unknown' ? '__NOT_FOUND__' : this.option.value ?? '';
-    elt.textContent = truncate(
-      this.rawTag.replace('${[', '').replace(']}', '').trim(),
-      TAG_TRUNCATE_LEN,
-    );
+    elt.title = this.option.invalid ? 'Not Found' : this.option.value ?? '';
+    elt.setAttribute('data-tag-type', this.option.type);
+    elt.textContent = this.option.label;
     elt.addEventListener('click', this.#clickListenerCallback);
     return elt;
   }
@@ -57,7 +52,10 @@ class TemplateTagWidget extends WidgetType {
   }
 }
 
-export function templateTags(options: TwigCompletionOption[]) {
+export function templateTags(
+  options: TwigCompletionOption[],
+  onClickMissingVariable: (name: string, rawTag: string, startPos: number) => void,
+) {
   const templateTagMatcher = new BetterMatchDecorator({
     regexp: /\$\{\[\s*(.+)(?!]})\s*]}/g,
     decoration(match, view, matchStartPos) {
@@ -82,7 +80,14 @@ export function templateTags(options: TwigCompletionOption[]) {
 
       let option = options.find((v) => v.name === name);
       if (option == null) {
-        option = { type: 'unknown', name: innerTagMatch, value: null, label: innerTagMatch };
+        option = {
+          invalid: true,
+          type: 'variable',
+          name: innerTagMatch,
+          value: null,
+          label: innerTagMatch,
+          onClick: () => onClickMissingVariable(name, match[0], matchStartPos),
+        };
       }
 
       return Decoration.replace({
