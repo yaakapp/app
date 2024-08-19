@@ -1,6 +1,7 @@
 import type {
   TemplateFunction,
   TemplateFunctionArg,
+  TemplateFunctionCheckboxArg,
   TemplateFunctionHttpRequestArg,
   TemplateFunctionSelectArg,
   TemplateFunctionTextArg,
@@ -14,6 +15,7 @@ import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
 import { Button } from './core/Button';
+import { Checkbox } from './core/Checkbox';
 import { InlineCode } from './core/InlineCode';
 import { PlainInput } from './core/PlainInput';
 import { Select } from './core/Select';
@@ -29,7 +31,7 @@ interface Props {
 }
 
 export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, onChange }: Props) {
-  const [argValues, setArgValues] = useState<Record<string, string>>(() => {
+  const [argValues, setArgValues] = useState<Record<string, string | boolean>>(() => {
     const initial: Record<string, string> = {};
     const initialArgs =
       initialTokens.tokens[0]?.type === 'tag' && initialTokens.tokens[0]?.val.type === 'fn'
@@ -48,20 +50,20 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
     return initial;
   });
 
-  const setArgValue = useCallback((name: string, value: string) => {
+  const setArgValue = useCallback((name: string, value: string | boolean) => {
     setArgValues((v) => ({ ...v, [name]: value }));
   }, []);
 
   const tokens: Tokens = useMemo(() => {
+    console.log('HELLO', argValues);
     const argTokens: FnArg[] = Object.keys(argValues).map((name) => ({
       name,
       value:
         argValues[name] === NULL_ARG
           ? { type: 'null' }
-          : {
-              type: 'str',
-              text: argValues[name] ?? '',
-            },
+          : typeof argValues[name] === 'boolean'
+          ? { type: 'bool', value: argValues[name] }
+          : { type: 'str', text: argValues[name] ?? '' },
     }));
 
     return {
@@ -101,7 +103,7 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
                   key={i}
                   arg={a}
                   onChange={(v) => setArgValue(a.name, v)}
-                  value={argValues[a.name] ?? '__ERROR__'}
+                  value={argValues[a.name] ? String(argValues[a.name]) : '__ERROR__'}
                 />
               );
             case 'text':
@@ -110,7 +112,16 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
                   key={i}
                   arg={a}
                   onChange={(v) => setArgValue(a.name, v)}
-                  value={argValues[a.name] ?? '__ERROR__'}
+                  value={argValues[a.name] ? String(argValues[a.name]) : '__ERROR__'}
+                />
+              );
+            case 'checkbox':
+              return (
+                <CheckboxArg
+                  key={i}
+                  arg={a}
+                  onChange={(v) => setArgValue(a.name, v)}
+                  value={argValues[a.name] !== undefined ? argValues[a.name] === true : false}
                 />
               );
             case 'http_request':
@@ -119,7 +130,7 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
                   key={i}
                   arg={a}
                   onChange={(v) => setArgValue(a.name, v)}
-                  value={argValues[a.name] ?? '__ERROR__'}
+                  value={argValues[a.name] ? String(argValues[a.name]) : '__ERROR__'}
                 />
               );
           }
@@ -208,6 +219,25 @@ function HttpRequestArg({
           value: r.id,
         })),
       ]}
+    />
+  );
+}
+
+function CheckboxArg({
+  arg,
+  onChange,
+  value,
+}: {
+  arg: TemplateFunctionCheckboxArg;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <Checkbox
+      onChange={onChange}
+      checked={value}
+      title={arg.label ?? arg.name}
+      hideLabel={arg.label == null}
     />
   );
 }

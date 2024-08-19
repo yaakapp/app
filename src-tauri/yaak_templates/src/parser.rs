@@ -40,6 +40,7 @@ impl Display for FnArg {
 pub enum Val {
     Str { text: String },
     Var { name: String },
+    Bool { value: bool },
     Fn { name: String, args: Vec<FnArg> },
     Null,
 }
@@ -49,6 +50,7 @@ impl Display for Val {
         let str = match self {
             Val::Str { text } => format!(r#""{}""#, text.to_string().replace(r#"""#, r#"\""#)),
             Val::Var { name } => name.to_string(),
+            Val::Bool { value } => value.to_string(),
             Val::Fn { name, args } => {
                 format!(
                     "{name}({})",
@@ -176,6 +178,10 @@ impl Parser {
         } else if let Some(v) = self.parse_ident() {
             if v == "null" {
                 Some(Val::Null)
+            } else if v == "true" {
+                Some(Val::Bool { value: true })
+            } else if v == "false" {
+                Some(Val::Bool { value: false })
             } else {
                 Some(Val::Var { name: v })
             }
@@ -398,6 +404,23 @@ mod tests {
     }
 
     #[test]
+    fn var_boolean() {
+        let mut p = Parser::new("${[ true ]}${[ false ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Tag {
+                    val: Val::Bool { value: true },
+                },
+                Token::Tag {
+                    val: Val::Bool { value: false },
+                },
+                Token::Eof
+            ]
+        );
+    }
+
+    #[test]
     fn var_multiple_names_invalid() {
         let mut p = Parser::new("${[ foo bar ]}");
         assert_eq!(
@@ -516,7 +539,7 @@ mod tests {
 
     #[test]
     fn fn_mixed_args() {
-        let mut p = Parser::new(r#"${[ foo(aaa=bar,bb="baz \"hi\"", c=qux ) ]}"#);
+        let mut p = Parser::new(r#"${[ foo(aaa=bar,bb="baz \"hi\"", c=qux, z=true ) ]}"#);
         assert_eq!(
             p.parse().tokens,
             vec![
@@ -537,6 +560,10 @@ mod tests {
                             FnArg {
                                 name: "c".into(),
                                 value: Val::Var { name: "qux".into() }
+                            },
+                            FnArg {
+                                name: "z".into(),
+                                value: Val::Bool { value: true }
                             },
                         ],
                     }

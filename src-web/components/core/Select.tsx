@@ -38,6 +38,8 @@ export function Select<T extends string>({
   const osInfo = useOsInfo();
   const [focused, setFocused] = useState<boolean>(false);
   const id = `input-${name}`;
+  const isInvalidSelection = options.find((o) => 'value' in o && o.value === value) == null;
+
   return (
     <div
       className={classNames(
@@ -67,6 +69,7 @@ export function Select<T extends string>({
             'pl-2',
             'border',
             focused ? 'border-border-focus' : 'border-border',
+            isInvalidSelection && 'border-danger',
             size === 'xs' && 'h-xs',
             size === 'sm' && 'h-sm',
             size === 'md' && 'h-md',
@@ -81,6 +84,7 @@ export function Select<T extends string>({
             onBlur={() => setFocused(false)}
             className={classNames('pr-7 w-full outline-none bg-transparent')}
           >
+            {isInvalidSelection && <option value={'__NONE__'}>-- Select an Option --</option>}
             {options.map((o) => {
               if (o.type === 'separator') return null;
               return (

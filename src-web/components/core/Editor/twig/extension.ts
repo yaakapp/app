@@ -1,8 +1,7 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { EnvironmentVariable } from '@yaakapp/api';
-import type { TemplateFunction } from '../../../../hooks/useTemplateFunctions';
+import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { textLanguageName } from '../text/extension';
@@ -18,6 +17,7 @@ export function twig({
   autocomplete,
   onClickFunction,
   onClickVariable,
+  onClickMissingVariable,
 }: {
   base: LanguageSupport;
   environmentVariables: EnvironmentVariable[];
@@ -25,6 +25,7 @@ export function twig({
   autocomplete?: GenericCompletionConfig;
   onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
+  onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
 }) {
   const language = mixLanguage(base);
 
@@ -35,14 +36,23 @@ export function twig({
       label: v.name,
       onClick: (rawTag: string, startPos: number) => onClickVariable(v, rawTag, startPos),
     })) ?? [];
+
   const functionOptions: TwigCompletionOption[] =
-    templateFunctions.map((fn) => ({
-      name: fn.name,
-      type: 'function',
-      value: null,
-      label: fn.name + '(' + fn.args.length + ')',
-      onClick: (rawTag: string, startPos: number) => onClickFunction(fn, rawTag, startPos),
-    })) ?? [];
+    templateFunctions.map((fn) => {
+      const shortArgs =
+        fn.args
+          .slice(0, 2)
+          .map((a) => a.name)
+          .join(', ') + (fn.args.length > 2 ? ', …' : '');
+      return {
+        name: fn.name,
+        type: 'function',
+        args: fn.args.map((a) => ({ name: a.name })),
+        value: null,
+        label: `${fn.name}(${shortArgs})`,
+        onClick: (rawTag: string, startPos: number) => onClickFunction(fn, rawTag, startPos),
+      };
+    }) ?? [];
 
   const options = [...variableOptions, ...functionOptions];
 
@@ -51,7 +61,7 @@ export function twig({
   return [
     language,
     base.support,
-    templateTags(options),
+    templateTags(options, onClickMissingVariable),
     language.data.of({ autocomplete: completions }),
     base.language.data.of({ autocomplete: completions }),
     language.data.of({ autocomplete: genericCompletion(autocomplete) }),

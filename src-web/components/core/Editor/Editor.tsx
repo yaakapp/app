@@ -180,7 +180,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   );
 
   const onClickVariable = useCallback(
-    async (v: EnvironmentVariable, tagValue: string, startPos: number) => {
+    async (_v: EnvironmentVariable, tagValue: string, startPos: number) => {
       const initialTokens = await parseTemplate(tagValue);
       dialog.show({
         size: 'dynamic',
@@ -188,7 +188,29 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         title: 'Configure Variable',
         render: ({ hide }) => (
           <TemplateVariableDialog
-            definition={v}
+            hide={hide}
+            initialTokens={initialTokens}
+            onChange={(insert) => {
+              cm.current?.view.dispatch({
+                changes: [{ from: startPos, to: startPos + tagValue.length, insert }],
+              });
+            }}
+          />
+        ),
+      });
+    },
+    [dialog],
+  );
+
+  const onClickMissingVariable = useCallback(
+    async (_name: string, tagValue: string, startPos: number) => {
+      const initialTokens = await parseTemplate(tagValue);
+      dialog.show({
+        size: 'dynamic',
+        id: 'template-variable',
+        title: 'Configure Variable',
+        render: ({ hide }) => (
+          <TemplateVariableDialog
             hide={hide}
             initialTokens={initialTokens}
             onChange={(insert) => {
@@ -215,6 +237,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       templateFunctions,
       onClickFunction,
       onClickVariable,
+      onClickMissingVariable,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [
@@ -225,6 +248,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     templateFunctions,
     onClickFunction,
     onClickVariable,
+    onClickMissingVariable,
   ]);
 
   // Initialize the editor when ref mounts
@@ -247,6 +271,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           templateFunctions,
           onClickVariable,
           onClickFunction,
+          onClickMissingVariable,
         });
 
         const state = EditorState.create({
@@ -358,7 +383,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           justifyContent="end"
           className={classNames(
             'absolute bottom-2 left-0 right-0',
-            'pointer-events-none', // No pointer events so we don't block the editor
+            'pointer-events-none', // No pointer events, so we don't block the editor
           )}
         >
           {decoratedActions}

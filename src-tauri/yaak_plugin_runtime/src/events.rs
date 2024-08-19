@@ -54,7 +54,7 @@ pub enum InternalEventPayload {
 
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
-    
+
     FindHttpResponsesRequest(FindHttpResponsesRequest),
     FindHttpResponsesResponse(FindHttpResponsesResponse),
 
@@ -210,6 +210,7 @@ pub struct TemplateFunction {
 pub enum TemplateFunctionArg {
     Text(TemplateFunctionTextArg),
     Select(TemplateFunctionSelectArg),
+    Checkbox(TemplateFunctionCheckboxArg),
     HttpRequest(TemplateFunctionHttpRequestArg),
 }
 
@@ -251,6 +252,14 @@ pub struct TemplateFunctionSelectArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
     pub options: Vec<TemplateFunctionSelectOption>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct TemplateFunctionCheckboxArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

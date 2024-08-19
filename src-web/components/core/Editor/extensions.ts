@@ -31,10 +31,9 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
-import type { EnvironmentVariable } from '@yaakapp/api';
+import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
 import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
-import type { TemplateFunction } from '../../../hooks/useTemplateFunctions';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
 import { text } from './text/extension';
@@ -84,11 +83,13 @@ export function getLanguageExtension({
   templateFunctions,
   onClickVariable,
   onClickFunction,
+  onClickMissingVariable,
 }: {
   environmentVariables: EnvironmentVariable[];
   templateFunctions: TemplateFunction[];
   onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
+  onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
 } & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType === 'application/graphql') {
@@ -106,6 +107,7 @@ export function getLanguageExtension({
     autocomplete,
     onClickFunction,
     onClickVariable,
+    onClickMissingVariable,
   });
 }
 

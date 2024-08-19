@@ -1,4 +1,5 @@
 import {
+  Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
   HttpRequestAction,
@@ -9,7 +10,6 @@ import {
   SendHttpRequestResponse,
   TemplateFunction,
 } from '@yaakapp/api';
-import { Context } from '@yaakapp/api';
 import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/httpRequestAction';
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
@@ -18,7 +18,6 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
-import { text } from '../../src-web/components/core/Editor/text/extension';
 
 new Promise<void>(async (resolve, reject) => {
   const { pluginDir, pluginRefId } = workerData;
@@ -244,7 +243,6 @@ new Promise<void>(async (resolve, reject) => {
         const action = mod.plugin.templateFunctions.find((a) => a.name === payload.name);
         if (typeof action?.onRender === 'function') {
           const result = await action.onRender(ctx, payload.args);
-          console.log('GOT VALUE', result);
           sendPayload({ type: 'call_template_function_response', value: result ?? null }, replyId);
           return;
         }
