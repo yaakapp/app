@@ -4,26 +4,28 @@ use std::collections::HashMap;
 use std::future::Future;
 
 pub trait TemplateCallback {
-    fn run(&self, fn_name: &str, args: HashMap<String, String>) -> impl Future<Output = Result<String, String>> + Send;
+    fn run(
+        &self,
+        fn_name: &str,
+        args: HashMap<String, String>,
+    ) -> impl Future<Output = Result<String, String>> + Send;
 }
 
-pub async fn parse_and_render<T>(
+pub async fn parse_and_render<T: TemplateCallback>(
     template: &str,
     vars: &HashMap<String, String>,
-    cb: &Box<T>,
-) -> String
-where
-    T: TemplateCallback,
-{
+    cb: &T,
+) -> String {
     let mut p = Parser::new(template);
     let tokens = p.parse();
     render(tokens, vars, cb).await
 }
 
-pub async fn render<T>(tokens: Tokens, vars: &HashMap<String, String>, cb: &Box<T>) -> String
-where
-    T: TemplateCallback,
-{
+pub async fn render<T: TemplateCallback>(
+    tokens: Tokens,
+    vars: &HashMap<String, String>,
+    cb: &T,
+) -> String {
     let mut doc_str: Vec<String> = Vec::new();
 
     for t in tokens.tokens {
@@ -37,10 +39,11 @@ where
     doc_str.join("")
 }
 
-async fn render_tag<T>(val: Val, vars: &HashMap<String, String>, cb: &Box<T>) -> String
-where
-    T: TemplateCallback,
-{
+async fn render_tag<T: TemplateCallback>(
+    val: Val,
+    vars: &HashMap<String, String>,
+    cb: &T,
+) -> String {
     match val {
         Val::Str { text } => text.into(),
         Val::Var { name } => match vars.get(name.as_str()) {
@@ -94,14 +97,18 @@ mod tests {
     struct EmptyCB {}
 
     impl TemplateCallback for EmptyCB {
-        async fn run(&self, _fn_name: &str, _args: HashMap<String, String>) -> Result<String, String>{
+        async fn run(
+            &self,
+            _fn_name: &str,
+            _args: HashMap<String, String>,
+        ) -> Result<String, String> {
             todo!()
         }
     }
 
     #[tokio::test]
     async fn render_empty() {
-        let empty_cb = Box::new(EmptyCB {});
+        let empty_cb = EmptyCB {};
         let template = "";
         let vars = HashMap::new();
         let result = "";
@@ -113,7 +120,7 @@ mod tests {
 
     #[tokio::test]
     async fn render_text_only() {
-        let empty_cb = Box::new(EmptyCB {});
+        let empty_cb = EmptyCB {};
         let template = "Hello World!";
         let vars = HashMap::new();
         let result = "Hello World!";
@@ -125,7 +132,7 @@ mod tests {
 
     #[tokio::test]
     async fn render_simple() {
-        let empty_cb = Box::new(EmptyCB {});
+        let empty_cb = EmptyCB {};
         let template = "${[ foo ]}";
         let vars = HashMap::from([("foo".to_string(), "bar".to_string())]);
         let result = "bar";
@@ -137,7 +144,7 @@ mod tests {
 
     #[tokio::test]
     async fn render_surrounded() {
-        let empty_cb = Box::new(EmptyCB {});
+        let empty_cb = EmptyCB {};
         let template = "hello ${[ word ]} world!";
         let vars = HashMap::from([("word".to_string(), "cruel".to_string())]);
         let result = "hello cruel world!";
@@ -168,10 +175,7 @@ mod tests {
                 ))
             }
         }
-        assert_eq!(
-            parse_and_render(template, &vars, &Box::new(CB {})).await,
-            result
-        );
+        assert_eq!(parse_and_render(template, &vars, &CB {}).await, result);
     }
 
     #[tokio::test]
@@ -195,7 +199,7 @@ mod tests {
         }
 
         assert_eq!(
-            parse_and_render(template, &vars, &Box::new(CB {})).await,
+            parse_and_render(template, &vars, &CB {}).await,
             result.to_string()
         );
     }
@@ -218,7 +222,7 @@ mod tests {
         }
 
         assert_eq!(
-            parse_and_render(template, &vars, &Box::new(CB {})).await,
+            parse_and_render(template, &vars, &CB {}).await,
             result.to_string()
         );
     }

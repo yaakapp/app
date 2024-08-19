@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use ts_rs::TS;
 
 use yaak_models::models::{
@@ -36,13 +36,14 @@ pub enum InternalEventPayload {
     SendHttpRequestRequest(SendHttpRequestRequest),
     SendHttpRequestResponse(SendHttpRequestResponse),
 
-    GetHttpRequestActionsRequest,
+    GetHttpRequestActionsRequest(GetHttpRequestActionsRequest),
     GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
     CallHttpRequestActionRequest(CallHttpRequestActionRequest),
 
     GetTemplateFunctionsRequest,
     GetTemplateFunctionsResponse(GetTemplateFunctionsResponse),
     CallTemplateFunctionRequest(CallTemplateFunctionRequest),
+    CallTemplateFunctionResponse(CallTemplateFunctionResponse),
 
     CopyTextRequest(CopyTextRequest),
 
@@ -262,8 +263,14 @@ pub struct TemplateFunctionSelectOption {
 #[ts(export)]
 pub struct CallTemplateFunctionRequest {
     pub name: String,
-    pub plugin_ref_id: String,
     pub args: CallTemplateFunctionArgs,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallTemplateFunctionResponse {
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -282,11 +289,16 @@ pub enum CallTemplateFunctionPurpose {
     Preview,
 }
 
-impl Default for CallTemplateFunctionPurpose{
+impl Default for CallTemplateFunctionPurpose {
     fn default() -> Self {
         CallTemplateFunctionPurpose::Preview
     }
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default)]
+#[ts(export)]
+pub struct GetHttpRequestActionsRequest {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]

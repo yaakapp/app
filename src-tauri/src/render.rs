@@ -1,80 +1,126 @@
-use crate::template_fns::timestamp;
+use crate::template_callback::PluginTemplateCallback;
 use serde_json::Value;
 use std::collections::HashMap;
-use yaak_models::models::{
-    Environment, EnvironmentVariable, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace,
-};
+use tauri::{AppHandle, Manager, Runtime};
+use yaak_models::models::{Environment, EnvironmentVariable, GrpcMetadataEntry, GrpcRequest, HttpRequest, HttpRequestHeader, HttpUrlParameter, Workspace};
 use yaak_templates::{parse_and_render, TemplateCallback};
 
-pub async fn render_template(template: &str, w: &Workspace, e: Option<&Environment>) -> String {
-    let vars = &variables_from_environment(w, e).await;
-    render(template, vars).await
+pub async fn render_template<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    template: &str,
+    w: &Workspace,
+    e: Option<&Environment>,
+) -> String {
+    let cb = &*app_handle.state::<PluginTemplateCallback>();
+    let vars = &variables_from_environment(w, e, cb).await;
+    render(template, vars, cb).await
 }
 
-pub async fn render_request(
+pub async fn render_grpc_request<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    r: &GrpcRequest,
+    w: &Workspace,
+    e: Option<&Environment>,
+) -> GrpcRequest {
+    let cb = &*app_handle.state::<PluginTemplateCallback>();
+    let vars = &variables_from_environment(w, e, cb).await;
+
+    let mut metadata = Vec::new();
+    for p in r.metadata.clone() {
+        metadata.push(GrpcMetadataEntry {
+            enabled: p.enabled,
+            name: render(p.name.as_str(), vars, cb).await,
+            value: render(p.value.as_str(), vars, cb).await,
+        })
+    }
+
+    let mut authentication = HashMap::new();
+    for (k, v) in r.authentication.clone() {
+        let v = if v.is_string() {
+            render(v.as_str().unwrap(), vars, cb).await
+        } else {
+            v.to_string()
+        };
+        authentication.insert(render(k.as_str(), vars, cb).await, Value::from(v));
+    }
+
+    let url = render(r.url.as_str(), vars, cb).await;
+
+    GrpcRequest{
+        url,
+        metadata,
+        authentication,
+        ..r.to_owned()
+    }
+}
+
+pub async fn render_http_request<R: Runtime>(
+    app_handle: &AppHandle<R>,
     r: &HttpRequest,
     w: &Workspace,
     e: Option<&Environment>,
 ) -> HttpRequest {
-    let r = r.clone();
-    let vars = &variables_from_environment(w, e).await;
+    let cb = &*app_handle.state::<PluginTemplateCallback>();
+    let vars = &variables_from_environment(w, e, cb).await;
 
     let mut url_parameters = Vec::new();
-    for p in r.url_parameters {
+    for p in r.url_parameters.clone() {
         url_parameters.push(HttpUrlParameter {
             enabled: p.enabled,
-            name: render(p.name.as_str(), vars).await,
-            value: render(p.value.as_str(), vars).await,
+            name: render(p.name.as_str(), vars, cb).await,
+            value: render(p.value.as_str(), vars, cb).await,
         })
     }
 
     let mut headers = Vec::new();
-    for p in r.headers {
+    for p in r.headers.clone() {
         headers.push(HttpRequestHeader {
             enabled: p.enabled,
-            name: render(p.name.as_str(), vars).await,
-            value: render(p.value.as_str(), vars).await,
+            name: render(p.name.as_str(), vars, cb).await,
+            value: render(p.value.as_str(), vars, cb).await,
         })
     }
 
     let mut body = HashMap::new();
-    for (k, v) in r.body {
+    for (k, v) in r.body.clone() {
         let v = if v.is_string() {
-            render(v.as_str().unwrap(), vars).await
+            render(v.as_str().unwrap(), vars, cb).await
         } else {
             v.to_string()
         };
-        body.insert(render(k.as_str(), vars).await, Value::from(v));
+        body.insert(render(k.as_str(), vars, cb).await, Value::from(v));
     }
 
     let mut authentication = HashMap::new();
-    for (k, v) in r.authentication {
+    for (k, v) in r.authentication.clone() {
         let v = if v.is_string() {
-            render(v.as_str().unwrap(), vars).await
+            render(v.as_str().unwrap(), vars, cb).await
         } else {
             v.to_string()
         };
-        authentication.insert(render(k.as_str(), vars).await, Value::from(v));
+        authentication.insert(render(k.as_str(), vars, cb).await, Value::from(v));
     }
 
+    let url = render(r.url.clone().as_str(), vars, cb).await;
     HttpRequest {
-        url: render(r.url.as_str(), vars).await,
+        url,
         url_parameters,
         headers,
         body,
         authentication,
-        ..r
+        ..r.to_owned()
     }
 }
 
-pub async fn recursively_render_variables<'s>(
+pub async fn recursively_render_variables<'s, T: TemplateCallback>(
     m: &HashMap<String, String>,
     render_count: usize,
+    cb: &T,
 ) -> HashMap<String, String> {
     let mut did_render = false;
     let mut new_map = m.clone();
     for (k, v) in m.clone() {
-        let rendered = Box::pin(render(v.as_str(), m)).await;
+        let rendered = Box::pin(render(v.as_str(), m, cb)).await;
         if rendered != v {
             did_render = true
         }
@@ -82,15 +128,16 @@ pub async fn recursively_render_variables<'s>(
     }
 
     if did_render && render_count <= 3 {
-        new_map = Box::pin(recursively_render_variables(&new_map, render_count + 1)).await;
+        new_map = Box::pin(recursively_render_variables(&new_map, render_count + 1, cb)).await;
     }
 
     new_map
 }
 
-pub async fn variables_from_environment(
+pub async fn variables_from_environment<T: TemplateCallback>(
     workspace: &Workspace,
     environment: Option<&Environment>,
+    cb: &T,
 ) -> HashMap<String, String> {
     let mut variables = HashMap::new();
     variables = add_variable_to_map(variables, &workspace.variables);
@@ -99,23 +146,15 @@ pub async fn variables_from_environment(
         variables = add_variable_to_map(variables, &e.variables);
     }
 
-    recursively_render_variables(&variables, 0).await
+    recursively_render_variables(&variables, 0, cb).await
 }
 
-pub async fn render(template: &str, vars: &HashMap<String, String>) -> String {
-    parse_and_render(template, vars, &Box::new(PluginTemplateCallback::default())).await
-}
-
-#[derive(Default)]
-struct PluginTemplateCallback {}
-
-impl TemplateCallback for PluginTemplateCallback {
-    async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String, String> {
-        match fn_name {
-            "timestamp" => timestamp(args),
-            _ => Err(format!("Unknown template function {fn_name}")),
-        }
-    }
+pub async fn render<T: TemplateCallback>(
+    template: &str,
+    vars: &HashMap<String, String>,
+    cb: &T,
+) -> String {
+    parse_and_render(template, vars, cb).await
 }
 
 fn add_variable_to_map(

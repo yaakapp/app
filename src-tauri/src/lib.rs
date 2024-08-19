@@ -35,7 +35,8 @@ use crate::export_resources::{get_workspace_export_resources, WorkspaceExportRes
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
-use crate::render::{render_request, render_template, variables_from_environment};
+use crate::render::{render_grpc_request, render_http_request, render_template};
+use crate::template_callback::PluginTemplateCallback;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
@@ -70,7 +71,7 @@ mod notifications;
 mod render;
 #[cfg(target_os = "macos")]
 mod tauri_plugin_mac_window;
-mod template_fns;
+mod template_callback;
 mod updates;
 mod window_menu;
 
@@ -128,7 +129,13 @@ async fn cmd_render_template(
     let workspace = get_workspace(&window, &workspace_id)
         .await
         .map_err(|e| e.to_string())?;
-    let rendered = render_template(template, &workspace, environment.as_ref()).await;
+    let rendered = render_template(
+        window.app_handle(),
+        template,
+        &workspace,
+        environment.as_ref(),
+    )
+    .await;
     Ok(rendered)
 }
 
@@ -180,9 +187,6 @@ async fn cmd_grpc_go(
     window: WebviewWindow,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<String, String> {
-    let req = get_grpc_request(&window, request_id)
-        .await
-        .map_err(|e| e.to_string())?;
     let environment = match environment_id {
         Some(id) => Some(
             get_environment(&window, id)
@@ -191,13 +195,17 @@ async fn cmd_grpc_go(
         ),
         None => None,
     };
+    let req = get_grpc_request(&window, request_id)
+        .await
+        .map_err(|e| e.to_string())?;
     let workspace = get_workspace(&window, &req.workspace_id)
         .await
         .map_err(|e| e.to_string())?;
+    let req =
+        render_grpc_request(window.app_handle(), &req, &workspace, environment.as_ref()).await;
     let mut metadata = HashMap::new();
-    let vars = variables_from_environment(&workspace, environment.as_ref()).await;
 
-    // Add rest of metadata
+    // Add the rest of metadata
     for h in req.clone().metadata {
         if h.name.is_empty() && h.value.is_empty() {
             continue;
@@ -207,10 +215,7 @@ async fn cmd_grpc_go(
             continue;
         }
 
-        let name = render::render(&h.name, &vars).await;
-        let value = render::render(&h.value, &vars).await;
-
-        metadata.insert(name, value);
+        metadata.insert(h.name, h.value);
     }
 
     if let Some(b) = &req.authentication_type {
@@ -219,25 +224,22 @@ async fn cmd_grpc_go(
         let a = req.authentication;
 
         if b == "basic" {
-            let raw_username = a
+            let username = a
                 .get("username")
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let raw_password = a
+            let password = a
                 .get("password")
                 .unwrap_or(empty_value)
                 .as_str()
                 .unwrap_or("");
-            let username = render::render(raw_username, &vars).await;
-            let password = render::render(raw_password, &vars).await;
 
             let auth = format!("{username}:{password}");
             let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
             metadata.insert("Authorization".to_string(), format!("Basic {}", encoded));
         } else if b == "bearer" {
-            let raw_token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
-            let token = render::render(raw_token, &vars).await;
+            let token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
             metadata.insert("Authorization".to_string(), format!("Bearer {token}"));
         }
     }
@@ -331,7 +333,6 @@ async fn cmd_grpc_go(
         let w = window.clone();
         let base_msg = base_msg.clone();
         let method_desc = method_desc.clone();
-        let vars = vars.clone();
 
         move |ev: tauri::Event| {
             if *cancelled_rx.borrow() {
@@ -351,14 +352,10 @@ async fn cmd_grpc_go(
             };
 
             match serde_json::from_str::<IncomingMsg>(ev.payload()) {
-                Ok(IncomingMsg::Message(raw_msg)) => {
+                Ok(IncomingMsg::Message(msg)) => {
                     let w = w.clone();
                     let base_msg = base_msg.clone();
                     let method_desc = method_desc.clone();
-                    let vars = vars.clone();
-                    let msg = tauri::async_runtime::block_on(async move {
-                        render::render(raw_msg.as_str(), &vars).await
-                    });
                     let d_msg: DynamicMessage = match deserialize_message(msg.as_str(), method_desc)
                     {
                         Ok(d_msg) => d_msg,
@@ -410,13 +407,11 @@ async fn cmd_grpc_go(
         let w = window.clone();
         let base_event = base_msg.clone();
         let req = req.clone();
-        let vars = vars.clone();
-        let raw_msg = if req.message.is_empty() {
+        let msg = if req.message.is_empty() {
             "{}".to_string()
         } else {
             req.message
         };
-        let msg = render::render(&raw_msg, &vars).await;
 
         upsert_grpc_event(
             &w,
@@ -772,7 +767,7 @@ async fn cmd_filter_response(
 
     // TODO: Have plugins register their own content type (regex?)
     plugin_manager
-        .run_filter(filter, &body, &content_type)
+        .filter_data(filter, &body, &content_type)
         .await
         .map_err(|e| e.to_string())
 }
@@ -787,7 +782,7 @@ async fn cmd_import_data(
         read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     let (import_result, plugin_name) = plugin_manager
-        .run_import(file_contents)
+        .import_data(file_contents)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -912,7 +907,7 @@ async fn cmd_http_request_actions(
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<Vec<GetHttpRequestActionsResponse>, String> {
     plugin_manager
-        .run_http_request_actions()
+        .get_http_request_actions()
         .await
         .map_err(|e| e.to_string())
 }
@@ -922,7 +917,7 @@ async fn cmd_template_functions(
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<Vec<GetTemplateFunctionsResponse>, String> {
     plugin_manager
-        .run_template_functions()
+        .get_template_functions()
         .await
         .map_err(|e| e.to_string())
 }
@@ -947,7 +942,7 @@ async fn cmd_curl_to_request(
 ) -> Result<HttpRequest, String> {
     let (import_result, plugin_name) = {
         plugin_manager
-            .run_import(command)
+            .import_data(command)
             .await
             .map_err(|e| e.to_string())?
     };
@@ -1661,6 +1656,10 @@ pub fn run() {
             let grpc_handle = GrpcHandle::new(&app.app_handle());
             app.manage(Mutex::new(grpc_handle));
 
+            // Plugin template callback
+            let plugin_cb = PluginTemplateCallback::new(app.app_handle().clone());
+            app.manage(plugin_cb);
+
             let app_handle = app.app_handle().clone();
             monitor_plugin_events(&app_handle);
 
@@ -1999,8 +1998,13 @@ async fn handle_plugin_event<R: Runtime>(
                 None => None,
                 Some(id) => get_environment(w, id.as_str()).await.ok(),
             };
-            let rendered_http_request =
-                render_request(&req.http_request, &workspace, environment.as_ref()).await;
+            let rendered_http_request = render_http_request(
+                app_handle,
+                &req.http_request,
+                &workspace,
+                environment.as_ref(),
+            )
+            .await;
             Some(InternalEventPayload::RenderHttpRequestResponse(
                 RenderHttpRequestResponse {
                     http_request: rendered_http_request,

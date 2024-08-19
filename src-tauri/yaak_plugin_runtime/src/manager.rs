@@ -1,5 +1,11 @@
 use crate::error::Result;
-use crate::events::{CallHttpRequestActionRequest, CallTemplateFunctionRequest, FilterRequest, FilterResponse, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse, ImportRequest, ImportResponse, InternalEvent, InternalEventPayload};
+use crate::events::{
+    CallHttpRequestActionRequest, CallTemplateFunctionArgs, CallTemplateFunctionPurpose,
+    CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
+    GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
+    ImportRequest, ImportResponse, InternalEvent, InternalEventPayload,
+};
+use std::collections::HashMap;
 
 use crate::error::Error::PluginErr;
 use crate::nodejs::start_nodejs_plugin_runtime;
@@ -57,11 +63,13 @@ impl PluginManager {
             .send(&payload, source_event.plugin_ref_id.as_str(), reply_id)
             .await
     }
-    
-    pub async fn run_http_request_actions(&self) -> Result<Vec<GetHttpRequestActionsResponse>> {
+
+    pub async fn get_http_request_actions(&self) -> Result<Vec<GetHttpRequestActionsResponse>> {
         let reply_events = self
             .server
-            .send_and_wait(&InternalEventPayload::GetHttpRequestActionsRequest)
+            .send_and_wait(&InternalEventPayload::GetHttpRequestActionsRequest(
+                GetHttpRequestActionsRequest {},
+            ))
             .await?;
 
         let mut all_actions = Vec::new();
@@ -74,7 +82,7 @@ impl PluginManager {
         Ok(all_actions)
     }
 
-    pub async fn run_template_functions(&self) -> Result<Vec<GetTemplateFunctionsResponse>> {
+    pub async fn get_template_functions(&self) -> Result<Vec<GetTemplateFunctionsResponse>> {
         let reply_events = self
             .server
             .send_and_wait(&InternalEventPayload::GetTemplateFunctionsRequest)
@@ -91,20 +99,47 @@ impl PluginManager {
     }
 
     pub async fn call_http_request_action(&self, req: CallHttpRequestActionRequest) -> Result<()> {
-        let plugin = self.server.plugin_by_ref_id(req.plugin_ref_id.as_str()).await?;
-        let event = plugin.build_event_to_send(&InternalEventPayload::CallHttpRequestActionRequest(req), None);
+        let plugin = self
+            .server
+            .plugin_by_ref_id(req.plugin_ref_id.as_str())
+            .await?;
+        let event = plugin.build_event_to_send(
+            &InternalEventPayload::CallHttpRequestActionRequest(req),
+            None,
+        );
         plugin.send(&event).await?;
         Ok(())
     }
 
-    pub async fn call_template_function(&self, req: CallTemplateFunctionRequest) -> Result<()> {
-        let plugin = self.server.plugin_by_ref_id(req.plugin_ref_id.as_str()).await?;
-        let event = plugin.build_event_to_send(&InternalEventPayload::CallTemplateFunctionRequest(req), None);
-        plugin.send(&event).await?;
-        Ok(())
+    pub async fn call_template_function(
+        &self,
+        fn_name: &str,
+        args: HashMap<String, String>,
+    ) -> Result<Option<String>> {
+        let req = CallTemplateFunctionRequest {
+            name: fn_name.to_string(),
+            args: CallTemplateFunctionArgs {
+                purpose: CallTemplateFunctionPurpose::Preview,
+                values: args,
+            },
+        };
+
+        let events = self
+            .server
+            .send_and_wait(&InternalEventPayload::CallTemplateFunctionRequest(req))
+            .await?;
+
+        let value = events.into_iter().find_map(|e| match e.payload {
+            InternalEventPayload::CallTemplateFunctionResponse(CallTemplateFunctionResponse {
+                value,
+            }) => value,
+            _ => None,
+        });
+
+        Ok(value)
     }
 
-    pub async fn run_import(&self, content: &str) -> Result<(ImportResponse, String)> {
+    pub async fn import_data(&self, content: &str) -> Result<(ImportResponse, String)> {
         let reply_events = self
             .server
             .send_and_wait(&InternalEventPayload::ImportRequest(ImportRequest {
@@ -113,19 +148,22 @@ impl PluginManager {
             .await?;
 
         // TODO: Don't just return the first valid response
-        for event in reply_events {
-            if let InternalEventPayload::ImportResponse(resp) = event.payload {
-                let ref_id = event.plugin_ref_id.as_str();
-                let plugin = self.server.plugin_by_ref_id(ref_id).await?;
+        let result = reply_events.into_iter().find_map(|e| match e.payload {
+            InternalEventPayload::ImportResponse(resp) => Some((resp, e.plugin_ref_id)),
+            _ => None,
+        });
+
+        match result {
+            None => Err(PluginErr("No import responses found".to_string())),
+            Some((resp, ref_id)) => {
+                let plugin = self.server.plugin_by_ref_id(ref_id.as_str()).await?;
                 let plugin_name = plugin.name().await;
-                return Ok((resp, plugin_name));
+                Ok((resp, plugin_name))
             }
         }
-
-        Err(PluginErr("No import responses found".to_string()))
     }
 
-    pub async fn run_filter(
+    pub async fn filter_data(
         &self,
         filter: &str,
         content: &str,
