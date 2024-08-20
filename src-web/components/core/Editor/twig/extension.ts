@@ -41,9 +41,9 @@ export function twig({
     templateFunctions.map((fn) => {
       const shortArgs =
         fn.args
-          .slice(0, 2)
+          .slice(0, 1)
           .map((a) => a.name)
-          .join(', ') + (fn.args.length > 2 ? ', …' : '');
+          .join(', ') + (fn.args.length > 1 ? ', …' : '');
       return {
         name: fn.name,
         type: 'function',

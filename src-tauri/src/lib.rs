@@ -1974,10 +1974,13 @@ async fn handle_plugin_event<R: Runtime>(
             None
         }
         InternalEventPayload::FindHttpResponsesRequest(req) => {
-            let http_responses =
-                list_http_responses(app_handle, req.request_id.as_str(), req.limit)
-                    .await
-                    .unwrap_or_default();
+            let http_responses = list_http_responses(
+                app_handle,
+                req.request_id.as_str(),
+                req.limit.map(|l| l as i64),
+            )
+            .await
+            .unwrap_or_default();
             Some(InternalEventPayload::FindHttpResponsesResponse(
                 FindHttpResponsesResponse { http_responses },
             ))
