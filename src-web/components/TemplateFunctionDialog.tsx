@@ -9,6 +9,7 @@ import type {
 import { useCallback, useMemo, useState } from 'react';
 import type { FnArg } from '../gen/FnArg';
 import type { Tokens } from '../gen/Tokens';
+import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRenderTemplate } from '../hooks/useRenderTemplate';
@@ -207,6 +208,7 @@ function HttpRequestArg({
   onChange: (v: string) => void;
 }) {
   const httpRequests = useHttpRequests();
+  const activeRequest = useActiveRequest();
   return (
     <Select
       label={arg.label ?? arg.name}
@@ -214,10 +216,12 @@ function HttpRequestArg({
       onChange={onChange}
       value={value}
       options={[
-        ...httpRequests.map((r) => ({
-          label: fallbackRequestName(r),
-          value: r.id,
-        })),
+        ...httpRequests
+          .filter((r) => r.id != activeRequest?.id)
+          .map((r) => ({
+            label: fallbackRequestName(r),
+            value: r.id,
+          })),
       ]}
     />
   );
