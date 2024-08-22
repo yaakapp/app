@@ -39,11 +39,12 @@ export function twig({
 
   const functionOptions: TwigCompletionOption[] =
     templateFunctions.map((fn) => {
+      const NUM_ARGS = 2;
       const shortArgs =
         fn.args
-          .slice(0, 1)
+          .slice(0, NUM_ARGS)
           .map((a) => a.name)
-          .join(', ') + (fn.args.length > 1 ? ', …' : '');
+          .join(', ') + (fn.args.length > NUM_ARGS ? ', …' : '');
       return {
         name: fn.name,
         type: 'function',

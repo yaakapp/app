@@ -24,7 +24,7 @@ use tauri::{Manager, WindowEvent};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
-use tokio::sync::{watch, Mutex};
+use tokio::sync::Mutex;
 
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
 use yaak_grpc::{deserialize_message, serialize_message, Code, ServiceDefinition};
@@ -1992,11 +1992,7 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::RenderHttpRequestRequest(req) => {
-            let webview_windows = app_handle.get_focused_window()?.webview_windows();
-            let w = match webview_windows.iter().next() {
-                None => return None,
-                Some((_, w)) => w,
-            };
+            let w = get_focused_window_no_lock(app_handle)?;
             let workspace = get_workspace(app_handle, req.http_request.workspace_id.as_str())
                 .await
                 .expect("Failed to get workspace for request");
@@ -2008,7 +2004,7 @@ async fn handle_plugin_event<R: Runtime>(
                 .map(|(_k, v)| v.to_string());
             let environment = match environment_id {
                 None => None,
-                Some(id) => get_environment(w, id.as_str()).await.ok(),
+                Some(id) => get_environment(&w, id.as_str()).await.ok(),
             };
             let rendered_http_request = render_http_request(
                 app_handle,
@@ -2024,12 +2020,7 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
-            let webview_windows = app_handle.get_focused_window()?.webview_windows();
-            let w = match webview_windows.iter().next() {
-                None => return None,
-                Some((_, w)) => w,
-            };
-
+            let w = get_focused_window_no_lock(app_handle)?;
             let url = w.url().unwrap();
             let mut query_pairs = url.query_pairs();
 
@@ -2038,7 +2029,7 @@ async fn handle_plugin_event<R: Runtime>(
                 .map(|(_k, v)| v.to_string());
             let cookie_jar = match cookie_jar_id {
                 None => None,
-                Some(id) => get_cookie_jar(w, id.as_str()).await.ok(),
+                Some(id) => get_cookie_jar(app_handle, id.as_str()).await.ok(),
             };
 
             let environment_id = query_pairs
@@ -2046,10 +2037,10 @@ async fn handle_plugin_event<R: Runtime>(
                 .map(|(_k, v)| v.to_string());
             let environment = match environment_id {
                 None => None,
-                Some(id) => get_environment(w, id.as_str()).await.ok(),
+                Some(id) => get_environment(app_handle, id.as_str()).await.ok(),
             };
 
-            let resp = create_default_http_response(w, req.http_request.id.as_str())
+            let resp = create_default_http_response(app_handle, req.http_request.id.as_str())
                 .await
                 .unwrap();
 
@@ -2059,7 +2050,7 @@ async fn handle_plugin_event<R: Runtime>(
                 &resp,
                 environment,
                 cookie_jar,
-                &mut watch::channel(false).1, // No-op cancel channel
+                &mut tokio::sync::watch::channel(false).1, // No-op cancel channel
             )
             .await;
 
@@ -2076,4 +2067,17 @@ async fn handle_plugin_event<R: Runtime>(
     };
 
     event
+}
+
+// app_handle.get_focused_window locks, so this one is a non-locking version, safe for use in async context
+fn get_focused_window_no_lock<R: Runtime>(app_handle: &AppHandle<R>) -> Option<WebviewWindow<R>> {
+    app_handle
+        .windows()
+        .iter()
+        .find(|w| w.1.is_focused().unwrap_or(false))
+        .map(|w| w.1.clone())?
+        .webview_windows()
+        .iter()
+        .next()
+        .map(|(_, w)| w.to_owned())
 }

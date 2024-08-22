@@ -214,13 +214,13 @@ impl PluginRuntimeGrpcServer {
         let msg = format!("Failed to find plugin for {plugin_name}");
         Err(PluginNotFoundErr(msg))
     }
-    
+
     pub async fn send(&self, payload: &InternalEventPayload, plugin_ref_id: &str, reply_id: Option<String>)-> Result<()> {
         let plugin = self.plugin_by_ref_id(plugin_ref_id).await?;
         let event = plugin.build_event_to_send(payload, reply_id);
         plugin.send(&event).await
     }
-        
+
 
     pub async fn send_to_plugin(
         &self,
