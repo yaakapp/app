@@ -56,15 +56,14 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
   }, []);
 
   const tokens: Tokens = useMemo(() => {
-    console.log('HELLO', argValues);
     const argTokens: FnArg[] = Object.keys(argValues).map((name) => ({
       name,
       value:
         argValues[name] === NULL_ARG
           ? { type: 'null' }
           : typeof argValues[name] === 'boolean'
-          ? { type: 'bool', value: argValues[name] }
-          : { type: 'str', text: argValues[name] ?? '' },
+          ? { type: 'bool', value: argValues[name] === true }
+          : { type: 'str', text: String(argValues[name] ?? '') },
     }));
 
     return {
