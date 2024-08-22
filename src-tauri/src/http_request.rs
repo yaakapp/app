@@ -9,6 +9,7 @@ use std::time::Duration;
 
 use crate::render::render_http_request;
 use crate::response_err;
+use crate::template_callback::PluginTemplateCallback;
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
@@ -37,11 +38,13 @@ pub async fn send_http_request<R: Runtime>(
     let workspace = get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
+    let cb = &*window.app_handle().state::<PluginTemplateCallback>();
+    let cb = cb.for_send();
     let rendered_request = render_http_request(
-        window.app_handle(),
         &request,
         &workspace,
         environment.as_ref(),
+        &cb,
     )
     .await;
 

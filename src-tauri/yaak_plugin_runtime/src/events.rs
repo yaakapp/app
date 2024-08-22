@@ -171,7 +171,7 @@ pub struct ShowToastRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[ts(export)]
 pub enum ToastVariant {
     Custom,
@@ -294,7 +294,7 @@ pub struct CallTemplateFunctionArgs {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case", tag = "type")]
+#[serde(rename_all = "snake_case")]
 #[ts(export)]
 pub enum CallTemplateFunctionPurpose {
     Send,
