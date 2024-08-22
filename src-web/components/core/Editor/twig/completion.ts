@@ -55,10 +55,10 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
       options: options
         .filter((v) => v.name.trim())
         .map((v) => {
-          const tagSyntax = openTag + v.label + closeTag;
+          const inner = v.type === 'function' ? `${v.name}()` : v.name;
           return {
             label: v.label,
-            apply: tagSyntax,
+            apply: openTag + inner + closeTag,
             type: v.type === 'variable' ? 'variable' : 'function',
             matchLen: matchLen,
           };
