@@ -115,11 +115,12 @@ impl PluginManager {
         &self,
         fn_name: &str,
         args: HashMap<String, String>,
+        purpose: CallTemplateFunctionPurpose,
     ) -> Result<Option<String>> {
         let req = CallTemplateFunctionRequest {
             name: fn_name.to_string(),
             args: CallTemplateFunctionArgs {
-                purpose: CallTemplateFunctionPurpose::Preview,
+                purpose,
                 values: args,
             },
         };

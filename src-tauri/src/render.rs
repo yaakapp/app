@@ -52,13 +52,12 @@ pub async fn render_grpc_request<R: Runtime>(
     }
 }
 
-pub async fn render_http_request<R: Runtime>(
-    app_handle: &AppHandle<R>,
+pub async fn render_http_request(
     r: &HttpRequest,
     w: &Workspace,
     e: Option<&Environment>,
+    cb: &PluginTemplateCallback,
 ) -> HttpRequest {
-    let cb = &*app_handle.state::<PluginTemplateCallback>();
     let vars = &variables_from_environment(w, e, cb).await;
 
     let mut url_parameters = Vec::new();

@@ -2006,11 +2006,12 @@ async fn handle_plugin_event<R: Runtime>(
                 None => None,
                 Some(id) => get_environment(&w, id.as_str()).await.ok(),
             };
+            let cb = &*app_handle.state::<PluginTemplateCallback>();
             let rendered_http_request = render_http_request(
-                app_handle,
                 &req.http_request,
                 &workspace,
                 environment.as_ref(),
+                cb,
             )
             .await;
             Some(InternalEventPayload::RenderHttpRequestResponse(

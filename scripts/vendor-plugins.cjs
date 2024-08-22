@@ -1,16 +1,16 @@
-const {readdirSync, cpSync} = require("node:fs");
-const path = require("node:path");
-const {execSync} = require("node:child_process");
+const { readdirSync, cpSync } = require('node:fs');
+const path = require('node:path');
+const { execSync } = require('node:child_process');
 const pluginsDir = process.env.YAAK_PLUGINS_DIR;
 if (!pluginsDir) {
-  console.log("YAAK_PLUGINS_DIR is not set");
+  console.log('YAAK_PLUGINS_DIR is not set');
   process.exit(1);
 }
 
 console.log('Installing Yaak plugins dependencies', pluginsDir);
-execSync('npm ci', {cwd: pluginsDir});
+execSync('npm ci', { cwd: pluginsDir });
 console.log('Building Yaak plugins', pluginsDir);
-execSync('npm run build', {cwd: pluginsDir});
+execSync('npm run build', { cwd: pluginsDir });
 
 console.log('Copying Yaak plugins to', pluginsDir);
 
