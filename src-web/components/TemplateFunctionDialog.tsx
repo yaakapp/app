@@ -136,7 +136,7 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
           }
         })}
       </VStack>
-      <InlineCode className="select-text cursor-text">{rendered.data}</InlineCode>
+      <InlineCode className="select-text cursor-text">{rendered.data || <>&nbsp;</>}</InlineCode>
       <Button color="primary" onClick={handleDone}>
         Done
       </Button>

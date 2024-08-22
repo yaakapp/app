@@ -48,7 +48,7 @@ pub enum Val {
 impl Display for Val {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = match self {
-            Val::Str { text } => format!(r#""{}""#, text.to_string().replace(r#"""#, r#"\""#)),
+            Val::Str { text } => format!("'{}'", text.to_string().replace("'", "\'")),
             Val::Var { name } => name.to_string(),
             Val::Bool { value } => value.to_string(),
             Val::Fn { name, args } => {
@@ -297,7 +297,7 @@ impl Parser {
         let start_pos = self.pos;
 
         let mut text = String::new();
-        if !self.match_str("\"") {
+        if !self.match_str("'") {
             return None;
         }
 
@@ -308,7 +308,7 @@ impl Parser {
                 '\\' => {
                     text.push(self.next_char());
                 }
-                '"' => {
+                '\'' => {
                     found_closing = true;
                     break;
                 }
@@ -436,13 +436,13 @@ mod tests {
 
     #[test]
     fn tag_string() {
-        let mut p = Parser::new(r#"${[ "foo \"bar\" baz" ]}"#);
+        let mut p = Parser::new(r#"${[ 'foo \'bar\' baz' ]}"#);
         assert_eq!(
             p.parse().tokens,
             vec![
                 Token::Tag {
                     val: Val::Str {
-                        text: r#"foo "bar" baz"#.into()
+                        text: r#"foo 'bar' baz"#.into()
                     }
                 },
                 Token::Eof
@@ -539,7 +539,7 @@ mod tests {
 
     #[test]
     fn fn_mixed_args() {
-        let mut p = Parser::new(r#"${[ foo(aaa=bar,bb="baz \"hi\"", c=qux, z=true ) ]}"#);
+        let mut p = Parser::new(r#"${[ foo(aaa=bar,bb='baz \'hi\'', c=qux, z=true ) ]}"#);
         assert_eq!(
             p.parse().tokens,
             vec![
@@ -554,7 +554,7 @@ mod tests {
                             FnArg {
                                 name: "bb".into(),
                                 value: Val::Str {
-                                    text: r#"baz "hi""#.into()
+                                    text: r#"baz 'hi'"#.into()
                                 }
                             },
                             FnArg {
@@ -598,7 +598,7 @@ mod tests {
 
     #[test]
     fn fn_nested_args() {
-        let mut p = Parser::new(r#"${[ outer(a=inner(a=foo, b="i"), c="o") ]}"#);
+        let mut p = Parser::new(r#"${[ outer(a=inner(a=foo, b='i'), c='o') ]}"#);
         assert_eq!(
             p.parse().tokens,
             vec![
@@ -649,10 +649,10 @@ mod tests {
     fn token_display_str() {
         assert_eq!(
             Val::Str {
-                text: r#"Hello "You""#.to_string()
+                text: "Hello 'You'".to_string()
             }
             .to_string(),
-            r#""Hello \"You\"""#
+            "'Hello \'You\''"
         );
     }
 
@@ -675,7 +675,7 @@ mod tests {
                 ]
             }
             .to_string(),
-            r#"fn(a="aaa")"#
+            r#"fn(a='aaa')"#
         );
     }
 
@@ -702,7 +702,7 @@ mod tests {
                 }
             }
             .to_string(),
-            r#"${[ foo(arg="v", arg2=my_var) ]}"#
+            r#"${[ foo(arg='v', arg2=my_var) ]}"#
         );
     }
 
@@ -727,7 +727,7 @@ mod tests {
                 ]
             }
             .to_string(),
-            r#"${[ my_var ]} Some cool text ${[ "Hello World" ]}"#
+            r#"${[ my_var ]} Some cool text ${[ 'Hello World' ]}"#
         );
     }
 }
