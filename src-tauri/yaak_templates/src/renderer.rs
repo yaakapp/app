@@ -158,7 +158,7 @@ mod tests {
     #[tokio::test]
     async fn render_valid_fn() {
         let vars = HashMap::new();
-        let template = r#"${[ say_hello(a="John", b="Kate") ]}"#;
+        let template = r#"${[ say_hello(a='John', b='Kate') ]}"#;
         let result = r#"say_hello: 2, Some("John") Some("Kate")"#;
 
         struct CB {}
