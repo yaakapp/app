@@ -2040,7 +2040,7 @@ async fn handle_plugin_event<R: Runtime>(
                 Some(id) => get_environment(app_handle, id.as_str()).await.ok(),
             };
 
-            let resp = create_default_http_response(app_handle, req.http_request.id.as_str())
+            let resp = create_default_http_response(&w, req.http_request.id.as_str())
                 .await
                 .unwrap();
 
