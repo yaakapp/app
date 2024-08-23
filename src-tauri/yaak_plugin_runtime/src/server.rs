@@ -9,7 +9,7 @@ use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tonic::{Request, Response, Status, Streaming};
 
-use crate::error::Error::{NoPluginsErr, PluginNotFoundErr};
+use crate::error::Error::PluginNotFoundErr;
 use crate::error::Result;
 use crate::events::{BootRequest, BootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
@@ -187,14 +187,11 @@ impl PluginRuntimeGrpcServer {
     pub async fn plugin_by_ref_id(&self, ref_id: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
         if plugins.is_empty() {
-            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
+            return Err(PluginNotFoundErr(ref_id.into()));
         }
 
         match plugins.get(ref_id) {
-            None => {
-                let msg = format!("Failed to find plugin for id {ref_id}");
-                Err(PluginNotFoundErr(msg))
-            }
+            None => Err(PluginNotFoundErr(ref_id.into())),
             Some(p) => Ok(p.to_owned()),
         }
     }
@@ -202,7 +199,7 @@ impl PluginRuntimeGrpcServer {
     pub async fn plugin_by_name(&self, plugin_name: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
         if plugins.is_empty() {
-            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
+            return Err(PluginNotFoundErr(plugin_name.into()));
         }
 
         for p in plugins.values() {
@@ -211,16 +208,19 @@ impl PluginRuntimeGrpcServer {
             }
         }
 
-        let msg = format!("Failed to find plugin for {plugin_name}");
-        Err(PluginNotFoundErr(msg))
+        Err(PluginNotFoundErr(plugin_name.into()))
     }
 
-    pub async fn send(&self, payload: &InternalEventPayload, plugin_ref_id: &str, reply_id: Option<String>)-> Result<()> {
+    pub async fn send(
+        &self,
+        payload: &InternalEventPayload,
+        plugin_ref_id: &str,
+        reply_id: Option<String>,
+    ) -> Result<()> {
         let plugin = self.plugin_by_ref_id(plugin_ref_id).await?;
         let event = plugin.build_event_to_send(payload, reply_id);
         plugin.send(&event).await
     }
-
 
     pub async fn send_to_plugin(
         &self,
@@ -229,7 +229,7 @@ impl PluginRuntimeGrpcServer {
     ) -> Result<InternalEvent> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
         if plugins.is_empty() {
-            return Err(NoPluginsErr("Send failed because no plugins exist".into()));
+            return Err(PluginNotFoundErr(plugin_name.into()));
         }
 
         let mut plugin = None;
@@ -246,10 +246,7 @@ impl PluginRuntimeGrpcServer {
                 plugin.send(&event).await?;
                 Ok(event)
             }
-            None => {
-                let msg = format!("Failed to find plugin for {plugin_name}");
-                Err(PluginNotFoundErr(msg))
-            }
+            None => Err(PluginNotFoundErr(plugin_name.into())),
         }
     }
 
