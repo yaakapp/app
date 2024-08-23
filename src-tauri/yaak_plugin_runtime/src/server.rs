@@ -53,7 +53,11 @@ impl PluginHandle {
     }
 
     pub async fn send(&self, event: &InternalEvent) -> Result<()> {
-        info!("Sending event {} {:?}", event.id, self.name().await);
+        info!(
+            "Sending event to plugin {} {:?}",
+            event.id,
+            self.name().await
+        );
         self.to_plugin_tx
             .lock()
             .await
@@ -90,9 +94,9 @@ impl PluginRuntimeGrpcServer {
 
     pub async fn subscribe(&self) -> (String, Receiver<InternalEvent>) {
         let (tx, rx) = mpsc::channel(128);
-        let id = generate_id();
-        self.subscribers.lock().await.insert(id.clone(), tx);
-        (id, rx)
+        let rx_id = generate_id();
+        self.subscribers.lock().await.insert(rx_id.clone(), tx);
+        (rx_id, rx)
     }
 
     pub async fn unsubscribe(&self, rx_id: &str) {
@@ -394,7 +398,7 @@ impl PluginRuntime for PluginRuntimeGrpcServer {
                         for tx in subscribers.values() {
                             // Emit event to the channel for server to handle
                             if let Err(e) = tx.try_send(event.clone()) {
-                                println!("Failed to send to server channel. Receiver probably isn't listening: {:?}", e);
+                                println!("Failed to send to server channel (n={}). Receiver probably isn't listening: {:?}", subscribers.len(), e);
                             }
                         }
 

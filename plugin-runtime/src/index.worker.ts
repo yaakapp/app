@@ -64,6 +64,9 @@ new Promise<void>(async (resolve, reject) => {
   }
 
   function sendEvent(event: InternalEvent) {
+    if (event.payload.type !== 'empty_response') {
+      console.log('Sending event to app', event.id, event.payload.type);
+    }
     parentPort!.postMessage(event);
   }
 
@@ -77,8 +80,8 @@ new Promise<void>(async (resolve, reject) => {
     const promise = new Promise<InternalEventPayload>(async (resolve) => {
       const cb = (event: InternalEvent) => {
         if (event.replyId === eventToSend.id) {
-          resolve(event.payload); // Not type-safe but oh well
           parentPort!.off('message', cb); // Unlisten, now that we're done
+          resolve(event.payload); // Not type-safe but oh well
         }
       };
       parentPort!.on('message', cb);
@@ -110,18 +113,18 @@ new Promise<void>(async (resolve, reject) => {
       },
     },
     httpRequest: {
-      async getById({ id }) {
-        const payload = { type: 'get_http_request_by_id_request', id } as const;
+      async getById(args) {
+        const payload = { type: 'get_http_request_by_id_request', ...args } as const;
         const { httpRequest } = await sendAndWaitForReply<GetHttpRequestByIdResponse>(payload);
         return httpRequest;
       },
-      async send({ httpRequest }) {
-        const payload = { type: 'send_http_request_request', httpRequest } as const;
+      async send(args) {
+        const payload = { type: 'send_http_request_request', ...args } as const;
         const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(payload);
         return httpResponse;
       },
-      async render({ httpRequest }) {
-        const payload = { type: 'render_http_request_request', httpRequest } as const;
+      async render(args) {
+        const payload = { type: 'render_http_request_request', ...args } as const;
         const result = await sendAndWaitForReply<RenderHttpRequestResponse>(payload);
         return result.httpRequest;
       },
@@ -130,8 +133,6 @@ new Promise<void>(async (resolve, reject) => {
 
   // Message comes into the plugin to be processed
   parentPort!.on('message', async ({ payload, id: replyId }: InternalEvent) => {
-    console.log(`Received ${payload.type}`);
-
     try {
       if (payload.type === 'boot_request') {
         const payload: InternalEventPayload = {
