@@ -1,4 +1,5 @@
 import { defaultKeymap } from '@codemirror/commands';
+import { forceParsing } from '@codemirror/language';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { keymap, placeholder as placeholderExt, tooltips } from '@codemirror/view';
 import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
@@ -297,6 +298,12 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         });
 
         view = new EditorView({ state, parent: container });
+
+        // For large documents, the parser may parse the max number of lines and fail to add
+        // things like fold markers because of it.
+        // This forces it to parse more but keeps the timeout to the default of 100ms.
+        forceParsing(view, 9e6, 100);
+
         cm.current = { view, languageCompartment };
         if (autoFocus) {
           view.focus();
