@@ -155,7 +155,7 @@ impl PluginManager {
         });
 
         match result {
-            None => Err(PluginErr("No import responses found".to_string())),
+            None => Err(PluginErr("No importers found for file contents".to_string())),
             Some((resp, ref_id)) => {
                 let plugin = self.server.plugin_by_ref_id(ref_id.as_str()).await?;
                 let plugin_name = plugin.name().await;
