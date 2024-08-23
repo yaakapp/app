@@ -1942,24 +1942,21 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
         let plugin_manager: State<'_, PluginManager> = app_handle.state();
         let (_rx_id, mut rx) = plugin_manager.subscribe().await;
 
-        let app_handle = app_handle.clone();
         while let Some(event) = rx.recv().await {
-            let payload = match handle_plugin_event(&app_handle, &event).await {
-                Some(e) => e,
-                None => continue,
-            };
-            if let Err(e) = plugin_manager.reply(&event, &payload).await {
-                warn!("Failed to reply to plugin manager: {}", e)
-            }
+            let app_handle = app_handle.clone();
+
+            // We might have recursive back-and-forth calls between app and plugin, so we don't
+            // want to block here
+            tauri::async_runtime::spawn(async move {
+                handle_plugin_event(&app_handle, &event).await;
+            });
         }
     });
 }
 
-async fn handle_plugin_event<R: Runtime>(
-    app_handle: &AppHandle<R>,
-    event: &InternalEvent,
-) -> Option<InternalEventPayload> {
-    let event = match event.clone().payload {
+async fn handle_plugin_event<R: Runtime>(app_handle: &AppHandle<R>, event: &InternalEvent) {
+    info!("Got event to app {}", event.id);
+    let response_event: Option<InternalEventPayload> = match event.clone().payload {
         InternalEventPayload::CopyTextRequest(req) => {
             app_handle
                 .clipboard()
@@ -1992,7 +1989,7 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::RenderHttpRequestRequest(req) => {
-            let w = get_focused_window_no_lock(app_handle)?;
+            let w = get_focused_window_no_lock(app_handle).expect("No focused window");
             let workspace = get_workspace(app_handle, req.http_request.workspace_id.as_str())
                 .await
                 .expect("Failed to get workspace for request");
@@ -2007,13 +2004,8 @@ async fn handle_plugin_event<R: Runtime>(
                 Some(id) => get_environment(&w, id.as_str()).await.ok(),
             };
             let cb = &*app_handle.state::<PluginTemplateCallback>();
-            let rendered_http_request = render_http_request(
-                &req.http_request,
-                &workspace,
-                environment.as_ref(),
-                cb,
-            )
-            .await;
+            let rendered_http_request =
+                render_http_request(&req.http_request, &workspace, environment.as_ref(), cb).await;
             Some(InternalEventPayload::RenderHttpRequestResponse(
                 RenderHttpRequestResponse {
                     http_request: rendered_http_request,
@@ -2021,7 +2013,7 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
-            let w = get_focused_window_no_lock(app_handle)?;
+            let w = get_focused_window_no_lock(app_handle).expect("No focused window");
             let url = w.url().unwrap();
             let mut query_pairs = url.query_pairs();
 
@@ -2057,7 +2049,7 @@ async fn handle_plugin_event<R: Runtime>(
 
             let http_response = match result {
                 Ok(r) => r,
-                Err(_e) => return None,
+                Err(_e) => return,
             };
 
             Some(InternalEventPayload::SendHttpRequestResponse(
@@ -2067,7 +2059,12 @@ async fn handle_plugin_event<R: Runtime>(
         _ => None,
     };
 
-    event
+    if let Some(e) = response_event {
+        let plugin_manager: State<'_, PluginManager> = app_handle.state();
+        if let Err(e) = plugin_manager.reply(&event, &e).await {
+            warn!("Failed to reply to plugin manager: {}", e)
+        }
+    }
 }
 
 // app_handle.get_focused_window locks, so this one is a non-locking version, safe for use in async context

@@ -1,23 +1,23 @@
 use std::collections::HashMap;
 use tauri::{AppHandle, Manager};
-use yaak_plugin_runtime::events::CallTemplateFunctionPurpose;
+use yaak_plugin_runtime::events::RenderPurpose;
 use yaak_plugin_runtime::manager::PluginManager;
 use yaak_templates::TemplateCallback;
 
 #[derive(Clone)]
 pub struct PluginTemplateCallback {
     app_handle: AppHandle,
-    purpose: CallTemplateFunctionPurpose,
+    purpose: RenderPurpose,
 }
 
 impl PluginTemplateCallback {
     pub fn new(app_handle: AppHandle) -> PluginTemplateCallback {
-        PluginTemplateCallback { app_handle, purpose: CallTemplateFunctionPurpose::Preview }
+        PluginTemplateCallback { app_handle, purpose: RenderPurpose::Preview }
     }
 
     pub fn for_send(&self) -> PluginTemplateCallback {
         let mut v = self.clone();
-        v.purpose = CallTemplateFunctionPurpose::Send;
+        v.purpose = RenderPurpose::Send;
         v
     }
 }

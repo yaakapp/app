@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::events::{
-    CallHttpRequestActionRequest, CallTemplateFunctionArgs, CallTemplateFunctionPurpose,
+    CallHttpRequestActionRequest, CallTemplateFunctionArgs, RenderPurpose,
     CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
     GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload,
@@ -115,7 +115,7 @@ impl PluginManager {
         &self,
         fn_name: &str,
         args: HashMap<String, String>,
-        purpose: CallTemplateFunctionPurpose,
+        purpose: RenderPurpose,
     ) -> Result<Option<String>> {
         let req = CallTemplateFunctionRequest {
             name: fn_name.to_string(),

@@ -153,6 +153,7 @@ pub struct CopyTextRequest {
 #[ts(export)]
 pub struct RenderHttpRequestRequest {
     pub http_request: HttpRequest,
+    pub purpose: RenderPurpose,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -289,21 +290,21 @@ pub struct CallTemplateFunctionResponse {
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
 pub struct CallTemplateFunctionArgs {
-    pub purpose: CallTemplateFunctionPurpose,
+    pub purpose: RenderPurpose,
     pub values: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[ts(export)]
-pub enum CallTemplateFunctionPurpose {
+pub enum RenderPurpose {
     Send,
     Preview,
 }
 
-impl Default for CallTemplateFunctionPurpose {
+impl Default for RenderPurpose {
     fn default() -> Self {
-        CallTemplateFunctionPurpose::Preview
+        RenderPurpose::Preview
     }
 }
 
