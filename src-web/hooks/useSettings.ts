@@ -1,6 +1,6 @@
+import type { Settings } from '@yaakapp/api';
 import { useAtomValue } from 'jotai';
 import { atom } from 'jotai/index';
-import type { Settings } from '../lib/models/Settings';
 import { getSettings } from '../lib/store';
 
 const settings = await getSettings();

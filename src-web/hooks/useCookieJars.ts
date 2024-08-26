@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { CookieJar } from '../lib/models';
+import type { CookieJar } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
 

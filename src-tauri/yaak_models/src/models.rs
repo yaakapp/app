@@ -23,6 +23,7 @@ pub struct Settings {
     pub interface_scale: i32,
     pub editor_font_size: i32,
     pub editor_soft_wrap: bool,
+    pub telemetry: bool,
     pub open_workspace_new_window: Option<bool>,
 }
 
@@ -43,6 +44,7 @@ pub enum SettingsIden {
     InterfaceScale,
     EditorFontSize,
     EditorSoftWrap,
+    Telemetry,
     OpenWorkspaceNewWindow,
 }
 
@@ -64,6 +66,7 @@ impl<'s> TryFrom<&Row<'s>> for Settings {
             interface_scale: r.get("interface_scale")?,
             editor_font_size: r.get("editor_font_size")?,
             editor_soft_wrap: r.get("editor_soft_wrap")?,
+            telemetry: r.get("telemetry")?,
             open_workspace_new_window: r.get("open_workspace_new_window")?,
         })
     }

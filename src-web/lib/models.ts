@@ -1,9 +1,4 @@
-import type { GrpcConnection, HttpResponse, HttpResponseHeader, Model } from '@yaakapp/api';
-import type { Cookie } from './models/Cookie';
-import type { CookieJar } from './models/CookieJar';
-import type { Settings } from './models/Settings';
-
-export type { CookieJar, Cookie, Settings };
+import type { Cookie, GrpcConnection, HttpResponse, HttpResponseHeader, Model } from '@yaakapp/api';
 
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';

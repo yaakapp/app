@@ -77,6 +77,12 @@ export function SettingsGeneral() {
           { label: 'New Window', value: 'new' },
         ]}
       />
+      <Checkbox
+        checked={settings.telemetry}
+        title="Send Usage Statistics"
+        onChange={(telemetry) => updateSettings.mutate({ telemetry })}
+      />
+
       <Separator className="my-4" />
 
       <Heading size={2}>
