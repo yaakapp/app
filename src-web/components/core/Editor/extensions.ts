@@ -68,7 +68,7 @@ const syntaxExtensions: Record<string, LanguageSupport> = {
   'application/graphql': graphqlLanguageSupport(),
   'application/json': json(),
   'application/javascript': javascript(),
-  'text/html': xml(), // HTML as xml because HTML is oddly slow
+  'text/html': xml(), // HTML as XML because HTML is oddly slow
   'application/xml': xml(),
   'text/xml': xml(),
   url: url(),

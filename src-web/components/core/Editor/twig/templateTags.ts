@@ -1,6 +1,8 @@
+import { syntaxTree } from '@codemirror/language';
+import type { Range } from '@codemirror/state';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
-import { Decoration, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
-import { BetterMatchDecorator } from '../BetterMatchDecorator';
+import { Decoration, ViewPlugin, WidgetType } from '@codemirror/view';
+import { EditorView } from 'codemirror';
 import type { TwigCompletionOption } from './completion';
 
 class TemplateTagWidget extends WidgetType {
@@ -22,7 +24,8 @@ class TemplateTagWidget extends WidgetType {
       this.option.name === other.option.name &&
       this.option.type === other.option.type &&
       this.option.value === other.option.value &&
-      this.rawTag === other.rawTag
+      this.rawTag === other.rawTag &&
+      this.startPos === other.startPos
     );
   }
 
@@ -55,69 +58,81 @@ class TemplateTagWidget extends WidgetType {
   }
 }
 
-export function templateTags(
+function templateTags(
+  view: EditorView,
   options: TwigCompletionOption[],
   onClickMissingVariable: (name: string, rawTag: string, startPos: number) => void,
-) {
-  const templateTagMatcher = new BetterMatchDecorator({
-    regexp: /\$\{\[\s*(.+)(?!]})\s*]}/g,
-    decoration(match, view, matchStartPos) {
-      const matchEndPos = matchStartPos + match[0].length - 1;
+): DecorationSet {
+  const widgets: Range<Decoration>[] = [];
+  for (const { from, to } of view.visibleRanges) {
+    syntaxTree(view.state).iterate({
+      from,
+      to,
+      enter: (node) => {
+        if (node.name == 'Tag') {
+          // Don't decorate if the cursor is inside the match
+          for (const r of view.state.selection.ranges) {
+            if (r.from > node.from && r.to < node.to) {
+              return;
+            }
+          }
 
-      // Don't decorate if the cursor is inside the match
-      for (const r of view.state.selection.ranges) {
-        if (r.from > matchStartPos && r.to <= matchEndPos) {
-          return Decoration.replace({});
+          const rawTag = view.state.doc.sliceString(node.from, node.to);
+
+          // TODO: Search `node.tree` instead of using Regex here
+          const inner = rawTag.replace(/^\$\{\[\s*/, '').replace(/\s*]}$/, '');
+          const name = inner.match(/(\w+)[(]/)?.[1] ?? inner;
+          let option = options.find((v) => v.name === name);
+          if (option == null) {
+            option = {
+              invalid: true,
+              type: 'variable',
+              name: inner,
+              value: null,
+              label: inner,
+              onClick: () => onClickMissingVariable(name, rawTag, node.from),
+            };
+          }
+          const widget = new TemplateTagWidget(option, rawTag, node.from);
+          const deco = Decoration.replace({ widget, inclusive: true });
+          widgets.push(deco.range(node.from, node.to));
         }
-      }
+      },
+    });
+  }
+  return Decoration.set(widgets);
+}
 
-      const innerTagMatch = match[1];
-      if (innerTagMatch == null) {
-        // Should never happen, but make TS happy
-        console.warn('Group match was empty', match);
-        return Decoration.replace({});
-      }
-
-      // TODO: Replace this hacky match with a proper template parser
-      const name = innerTagMatch.match(/\s*(\w+)[(\s]*/)?.[1] ?? innerTagMatch;
-
-      let option = options.find((v) => v.name === name);
-      if (option == null) {
-        option = {
-          invalid: true,
-          type: 'variable',
-          name: innerTagMatch,
-          value: null,
-          label: innerTagMatch,
-          onClick: () => onClickMissingVariable(name, match[0], matchStartPos),
-        };
-      }
-
-      return Decoration.replace({
-        inclusive: true,
-        widget: new TemplateTagWidget(option, match[0], matchStartPos),
-      });
-    },
-  });
-
+export function templateTagsPlugin(
+  options: TwigCompletionOption[],
+  onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void,
+) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
 
       constructor(view: EditorView) {
-        this.decorations = templateTagMatcher.createDeco(view);
+        this.decorations = templateTags(view, options, onClickMissingVariable);
       }
 
       update(update: ViewUpdate) {
-        this.decorations = templateTagMatcher.updateDeco(update, this.decorations);
+        this.decorations = templateTags(update.view, options, onClickMissingVariable);
       }
     },
     {
-      decorations: (instance) => instance.decorations,
+      decorations: (v) => v.decorations,
       provide: (plugin) =>
         EditorView.atomicRanges.of((view) => {
           return view.plugin(plugin)?.decorations || Decoration.none;
         }),
+
+      eventHandlers: {
+        mousedown: (e) => {
+          const target = e.target as HTMLElement;
+          if (target.classList.contains('template-tag')) console.log('CLICKED TEMPLATE TAG');
+          // return toggleBoolean(view, view.posAtDOM(target));
+        },
+      },
     },
   );
 }

@@ -7,7 +7,7 @@ import { genericCompletion } from '../genericCompletion';
 import { textLanguageName } from '../text/extension';
 import type { TwigCompletionOption } from './completion';
 import { twigCompletion } from './completion';
-import { templateTags } from './templateTags';
+import { templateTagsPlugin } from './templateTags';
 import { parser as twigParser } from './twig';
 
 export function twig({
@@ -62,7 +62,7 @@ export function twig({
   return [
     language,
     base.support,
-    templateTags(options, onClickMissingVariable),
+    templateTagsPlugin(options, onClickMissingVariable),
     language.data.of({ autocomplete: completions }),
     base.language.data.of({ autocomplete: completions }),
     language.data.of({ autocomplete: genericCompletion(autocomplete) }),
