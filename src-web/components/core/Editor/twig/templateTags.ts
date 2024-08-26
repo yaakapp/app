@@ -68,7 +68,7 @@ function templateTags(
     syntaxTree(view.state).iterate({
       from,
       to,
-      enter: (node) => {
+      enter(node) {
         if (node.name == 'Tag') {
           // Don't decorate if the cursor is inside the match
           for (const r of view.state.selection.ranges) {
@@ -83,6 +83,7 @@ function templateTags(
           const inner = rawTag.replace(/^\$\{\[\s*/, '').replace(/\s*]}$/, '');
           const name = inner.match(/(\w+)[(]/)?.[1] ?? inner;
           let option = options.find((v) => v.name === name);
+
           if (option == null) {
             option = {
               invalid: true,
@@ -93,6 +94,7 @@ function templateTags(
               onClick: () => onClickMissingVariable(name, rawTag, node.from),
             };
           }
+
           const widget = new TemplateTagWidget(option, rawTag, node.from);
           const deco = Decoration.replace({ widget, inclusive: true });
           widgets.push(deco.range(node.from, node.to));
@@ -120,14 +122,16 @@ export function templateTagsPlugin(
       }
     },
     {
-      decorations: (v) => v.decorations,
-      provide: (plugin) =>
-        EditorView.atomicRanges.of((view) => {
+      decorations(v) {
+        return v.decorations;
+      },
+      provide(plugin) {
+        return EditorView.atomicRanges.of((view) => {
           return view.plugin(plugin)?.decorations || Decoration.none;
-        }),
-
+        });
+      },
       eventHandlers: {
-        mousedown: (e) => {
+        mousedown(e) {
           const target = e.target as HTMLElement;
           if (target.classList.contains('template-tag')) console.log('CLICKED TEMPLATE TAG');
           // return toggleBoolean(view, view.posAtDOM(target));
