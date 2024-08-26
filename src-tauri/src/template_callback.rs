@@ -27,6 +27,14 @@ impl PluginTemplateCallback {
 
 impl TemplateCallback for PluginTemplateCallback {
     async fn run(&self, fn_name: &str, args: HashMap<String, String>) -> Result<String, String> {
+        // The beta named the function `Response` but was changed in stable.
+        // Keep this here for a while because there's no easy way to migrate
+        let fn_name = if fn_name == "Response" {
+            "response"
+        } else {
+            fn_name
+        };
+        
         let plugin_manager = self.app_handle.state::<PluginManager>();
         let function = plugin_manager
             .get_template_functions()

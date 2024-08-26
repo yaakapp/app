@@ -81,9 +81,15 @@ function templateTags(
 
           // TODO: Search `node.tree` instead of using Regex here
           const inner = rawTag.replace(/^\$\{\[\s*/, '').replace(/\s*]}$/, '');
-          const name = inner.match(/(\w+)[(]/)?.[1] ?? inner;
-          let option = options.find((v) => v.name === name);
+          let name = inner.match(/(\w+)[(]/)?.[1] ?? inner;
 
+          // The beta named the function `Response` but was changed in stable.
+          // Keep this here for a while because there's no easy way to migrate
+          if (name === 'Response') {
+            name = 'response';
+          }
+
+          let option = options.find((v) => v.name === name);
           if (option == null) {
             option = {
               invalid: true,
