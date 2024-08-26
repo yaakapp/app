@@ -5,9 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri::{Manager, Runtime, WebviewWindow};
 
-use yaak_models::queries::{
-    generate_id, get_key_value_int, get_key_value_string, set_key_value_int, set_key_value_string,
-};
+use yaak_models::queries::{generate_id, get_key_value_int, get_key_value_string, get_or_create_settings, set_key_value_int, set_key_value_string};
 
 use crate::is_dev;
 
@@ -157,6 +155,7 @@ pub async fn track_event<R: Runtime>(
     action: AnalyticsAction,
     attributes: Option<Value>,
 ) {
+    
     let id = get_id(w).await;
     let event = format!("{}.{}", resource, action);
     let attributes_json = attributes.unwrap_or("{}".to_string().into()).to_string();
@@ -186,9 +185,15 @@ pub async fn track_event<R: Runtime>(
         .get(format!("{base_url}/t/e"))
         .query(&params);
 
+    let settings = get_or_create_settings(w).await;
+    if !settings.telemetry {
+        info!("Track event (disabled): {}", event);
+        return
+    }
+
     // Disable analytics actual sending in dev
     if is_dev() {
-        debug!("track: {} {}", event, attributes_json);
+        debug!("Track event: {} {}", event, attributes_json);
         return;
     }
 

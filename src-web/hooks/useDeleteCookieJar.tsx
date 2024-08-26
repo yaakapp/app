@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
+import type { CookieJar } from '@yaakapp/api';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
-import type { CookieJar } from '../lib/models';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
 
