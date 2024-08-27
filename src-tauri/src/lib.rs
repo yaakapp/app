@@ -2062,20 +2062,28 @@ async fn handle_plugin_event<R: Runtime>(app_handle: &AppHandle<R>, event: &Inte
     if let Some(e) = response_event {
         let plugin_manager: State<'_, PluginManager> = app_handle.state();
         if let Err(e) = plugin_manager.reply(&event, &e).await {
-            warn!("Failed to reply to plugin manager: {}", e)
+            warn!("Failed to reply to plugin manager: {:?}", e)
         }
     }
 }
 
 // app_handle.get_focused_window locks, so this one is a non-locking version, safe for use in async context
 fn get_focused_window_no_lock<R: Runtime>(app_handle: &AppHandle<R>) -> Option<WebviewWindow<R>> {
+    // TODO: Getting the focused window doesn't seem to work on Windows, so
+    //   we'll need to pass the window label into plugin events instead.
+    if app_handle.webview_windows().len() == 1 {
+        debug!("Returning only webview window");
+        let w = app_handle
+            .webview_windows()
+            .iter()
+            .next()
+            .map(|w| w.1.clone());
+        return w;
+    }
+
     app_handle
-        .windows()
-        .iter()
-        .find(|w| w.1.is_focused().unwrap_or(false))
-        .map(|w| w.1.clone())?
         .webview_windows()
         .iter()
-        .next()
-        .map(|(_, w)| w.to_owned())
+        .find(|w| w.1.is_focused().unwrap_or(false))
+        .map(|w| w.1.clone())
 }
