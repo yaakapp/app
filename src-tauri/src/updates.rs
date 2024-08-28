@@ -2,9 +2,11 @@ use std::fmt::{Display, Formatter};
 use std::time::SystemTime;
 
 use log::info;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
+use tokio::task::block_in_place;
+use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::is_dev;
 
@@ -49,6 +51,7 @@ impl YaakUpdater {
             last_update_check: SystemTime::UNIX_EPOCH,
         }
     }
+
     pub async fn force_check(
         &mut self,
         app_handle: &AppHandle,
@@ -58,8 +61,22 @@ impl YaakUpdater {
 
         info!("Checking for updates mode={}", mode);
 
+        let h = app_handle.clone();
         let update_check_result = app_handle
             .updater_builder()
+            .on_before_exit(move || {
+                // Kill plugin manager before exit or NSIS installer will fail to replace sidecar
+                // while it's running.
+                // NOTE: This is only called on Windows
+                let h = h.clone();
+                block_in_place(|| {
+                    tauri::async_runtime::block_on(async move {
+                        info!("Shutting down plugin manager before update");
+                        let plugin_manager = h.state::<PluginManager>();
+                        plugin_manager.cleanup().await;
+                    });
+                });
+            })
             .header("X-Update-Mode", mode.to_string())?
             .build()?
             .check()
