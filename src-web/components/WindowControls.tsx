@@ -57,7 +57,7 @@ export function WindowControls({ className, onlyX }: Props) {
       )}
       <Button
         color="custom"
-        className="!h-full px-4 text-text-subtle rounded-none hocus:bg-fg-danger hocus:text"
+        className="!h-full px-4 text-text-subtle rounded-none hocus:bg-danger hocus:text"
         onClick={() => getCurrentWebviewWindow().close()}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
