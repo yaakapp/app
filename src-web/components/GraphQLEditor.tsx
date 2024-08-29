@@ -128,7 +128,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
   return (
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto]">
       <Editor
-        contentType="application/graphql"
+        language="graphql"
         defaultValue={query ?? ''}
         format={formatGraphQL}
         heightMode="auto"
@@ -144,7 +144,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         </Separator>
         <Editor
           format={tryFormatJson}
-          contentType="application/json"
+          language="json"
           defaultValue={JSON.stringify(variables, null, 2)}
           heightMode="auto"
           onChange={handleChangeVariables}

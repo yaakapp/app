@@ -42,7 +42,7 @@ export interface EditorProps {
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';
-  contentType?: string | null;
+  language?: 'javascript' | 'json' | 'html' | 'xml' | 'graphql' | 'url' | 'pairs' | 'text';
   forceUpdateKey?: string | number;
   autoFocus?: boolean;
   autoSelect?: boolean;
@@ -71,7 +71,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     readOnly,
     type = 'text',
     heightMode,
-    contentType,
+    language = 'text',
     autoFocus,
     autoSelect,
     placeholder,
@@ -226,12 +226,12 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [dialog],
   );
 
-  // Update language extension when contentType changes
+  // Update the language extension when the language changes
   useEffect(() => {
     if (cm.current === null) return;
     const { view, languageCompartment } = cm.current;
     const ext = getLanguageExtension({
-      contentType,
+      language,
       environmentVariables,
       useTemplating,
       autocomplete,
@@ -242,7 +242,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [
-    contentType,
+    language,
     autocomplete,
     useTemplating,
     environmentVariables,
@@ -265,7 +265,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       try {
         const languageCompartment = new Compartment();
         const langExt = getLanguageExtension({
-          contentType,
+          language,
           useTemplating,
           autocomplete,
           environmentVariables,

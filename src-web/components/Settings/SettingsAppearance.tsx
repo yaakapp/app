@@ -198,7 +198,7 @@ export function SettingsAppearance() {
             '};',
           ].join('\n')}
           heightMode="auto"
-          contentType="application/javascript"
+          language="javascript"
         />
       </VStack>
     </VStack>

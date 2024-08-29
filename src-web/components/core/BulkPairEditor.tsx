@@ -36,7 +36,7 @@ export function BulkPairEditor({
       forceUpdateKey={forceUpdateKey}
       placeholder={`${namePlaceholder ?? 'name'}: ${valuePlaceholder ?? 'value'}`}
       defaultValue={pairsText}
-      contentType="pairs"
+      language="pairs"
       onChange={handleChange}
     />
   );
