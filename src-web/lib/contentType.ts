@@ -14,3 +14,12 @@ export function languageFromContentType(contentType: string | null): EditorProps
     return 'text';
   }
 }
+
+export function isJSON(text: string): boolean {
+  try {
+    JSON.parse(text);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
