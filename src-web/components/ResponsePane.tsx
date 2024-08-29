@@ -1,3 +1,4 @@
+import type { HttpRequest } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useMemo } from 'react';
@@ -5,7 +6,6 @@ import { createGlobalState } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import type { HttpRequest } from '@yaakapp/api';
 import { isResponseLoading } from '../lib/models';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
@@ -23,11 +23,10 @@ import { ResponseHeaders } from './ResponseHeaders';
 import { ResponseInfo } from './ResponseInfo';
 import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
+import { HTMLOrTextViewer } from './responseViewers/HTMLOrTextViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
-import { TextViewer } from './responseViewers/TextViewer';
 import { VideoViewer } from './responseViewers/VideoViewer';
-import { WebPageViewer } from './responseViewers/WebPageViewer';
 
 interface Props {
   style?: CSSProperties;
@@ -171,13 +170,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <PdfViewer response={activeResponse} />
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
-                ) : viewMode === 'pretty' && contentType?.includes('html') ? (
-                  <WebPageViewer response={activeResponse} />
                 ) : (
                   // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
                   //   <JsonAttributeTree attrValue={activeResponse} />
-                  <TextViewer
-                    className="-mr-2 bg-surface" // Pull to the right
+                  <HTMLOrTextViewer
+                    textViewerClassName="-mr-2 bg-surface" // Pull to the right
                     response={activeResponse}
                     pretty={viewMode === 'pretty'}
                   />
