@@ -32,7 +32,7 @@ import {
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
-import { graphql, graphqlLanguageSupport } from 'cm6-graphql';
+import { graphql } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
 import type { EditorProps } from './index';
 import { pairs } from './pairs/extension';
@@ -64,19 +64,19 @@ export const syntaxHighlightStyle = HighlightStyle.define([
 
 const syntaxTheme = EditorView.theme({}, { dark: true });
 
-const syntaxExtensions: Record<string, LanguageSupport> = {
-  'application/graphql': graphqlLanguageSupport(),
-  'application/json': json(),
-  'application/javascript': javascript(),
-  'text/html': xml(), // HTML as XML because HTML is oddly slow
-  'application/xml': xml(),
-  'text/xml': xml(),
+const syntaxExtensions: Record<NonNullable<EditorProps['language']>, LanguageSupport | null> = {
+  graphql: null,
+  json: json(),
+  javascript: javascript(),
+  html: xml(), // HTML as XML because HTML is oddly slow
+  xml: xml(),
   url: url(),
   pairs: pairs(),
+  text: text(),
 };
 
 export function getLanguageExtension({
-  contentType,
+  language,
   useTemplating = false,
   environmentVariables,
   autocomplete,
@@ -90,12 +90,12 @@ export function getLanguageExtension({
   onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
   onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
-} & Pick<EditorProps, 'contentType' | 'useTemplating' | 'autocomplete'>) {
-  const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
-  if (justContentType === 'application/graphql') {
+} & Pick<EditorProps, 'language' | 'useTemplating' | 'autocomplete'>) {
+  if (language === 'graphql') {
     return graphql();
   }
-  const base = syntaxExtensions[justContentType] ?? text();
+
+  const base = syntaxExtensions[language ?? 'text'] ?? text();
   if (!useTemplating) {
     return base;
   }

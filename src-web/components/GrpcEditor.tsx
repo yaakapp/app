@@ -185,7 +185,7 @@ export function GrpcEditor({
   return (
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto_auto_minmax(0,auto)]">
       <Editor
-        contentType="application/json"
+        language="json"
         autocompleteVariables
         useTemplating
         forceUpdateKey={request.id}

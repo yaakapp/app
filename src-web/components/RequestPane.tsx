@@ -12,6 +12,7 @@ import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
+import { languageFromContentType } from '../lib/contentType';
 import { tryFormatJson } from '../lib/formatters';
 import {
   AUTH_TYPE_BASIC,
@@ -355,7 +356,7 @@ export const RequestPane = memo(function RequestPane({
                   placeholder="..."
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  contentType="application/json"
+                  language="json"
                   onChange={handleBodyTextChange}
                   format={tryFormatJson}
                 />
@@ -367,7 +368,7 @@ export const RequestPane = memo(function RequestPane({
                   placeholder="..."
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  contentType="text/xml"
+                  language="xml"
                   onChange={handleBodyTextChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_GRAPHQL ? (
@@ -402,6 +403,7 @@ export const RequestPane = memo(function RequestPane({
                   forceUpdateKey={forceUpdateKey}
                   useTemplating
                   autocompleteVariables
+                  language={languageFromContentType(contentType)}
                   placeholder="..."
                   heightMode={fullHeight ? 'full' : 'auto'}
                   defaultValue={`${activeRequest.body?.text ?? ''}`}

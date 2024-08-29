@@ -1,3 +1,4 @@
+import type { HttpResponse } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
@@ -8,8 +9,8 @@ import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useSaveResponse } from '../../hooks/useSaveResponse';
 import { useToggle } from '../../hooks/useToggle';
+import { languageFromContentType } from '../../lib/contentType';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
-import type { HttpResponse } from '@yaakapp/api';
 import { CopyButton } from '../CopyButton';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
@@ -62,6 +63,8 @@ export function TextViewer({ response, pretty, className }: Props) {
       setFilterText('');
     }
   }, [isSearching, setFilterText]);
+
+  console.log('HELLO', contentType);
 
   const isJson = contentType?.includes('json');
   const isXml = contentType?.includes('xml') || contentType?.includes('html');
@@ -176,7 +179,7 @@ export function TextViewer({ response, pretty, className }: Props) {
       className={className}
       forceUpdateKey={body}
       defaultValue={body}
-      contentType={contentType}
+      language={languageFromContentType(contentType)}
       actions={actions}
       extraExtensions={extraExtensions}
     />

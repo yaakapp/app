@@ -14,7 +14,7 @@ export type InputProps = Omit<
 > &
   Pick<
     EditorProps,
-    | 'contentType'
+    | 'language'
     | 'useTemplating'
     | 'autocomplete'
     | 'forceUpdateKey'

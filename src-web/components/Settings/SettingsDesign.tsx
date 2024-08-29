@@ -117,7 +117,7 @@ export function SettingsDesign() {
           '};',
         ].join('\n')}
         heightMode="auto"
-        contentType="application/javascript"
+        language="javascript"
       />
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap gap-1">
