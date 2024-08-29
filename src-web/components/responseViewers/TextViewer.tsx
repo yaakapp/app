@@ -9,7 +9,7 @@ import { useFilterResponse } from '../../hooks/useFilterResponse';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { useSaveResponse } from '../../hooks/useSaveResponse';
 import { useToggle } from '../../hooks/useToggle';
-import { languageFromContentType } from '../../lib/contentType';
+import { isJSON, languageFromContentType } from '../../lib/contentType';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import { CopyButton } from '../CopyButton';
 import { Banner } from '../core/Banner';
@@ -46,9 +46,15 @@ export function TextViewer({ response, pretty, className }: Props) {
     [setFilterTextMap, response],
   );
 
-  const saveResponse = useSaveResponse(response);
-  const contentType = useContentTypeFromHeaders(response.headers);
   const rawBody = useResponseBodyText(response);
+  const saveResponse = useSaveResponse(response);
+  let language = languageFromContentType(useContentTypeFromHeaders(response.headers));
+
+  // A lot of APIs return JSON with `text/html` content type, so interpret as JSON if so
+  if (language === 'html' && isJSON(rawBody.data ?? '')) {
+    language = 'json';
+  }
+
   const isSearching = filterText != null;
 
   const filteredResponse = useFilterResponse({
@@ -64,11 +70,7 @@ export function TextViewer({ response, pretty, className }: Props) {
     }
   }, [isSearching, setFilterText]);
 
-  console.log('HELLO', contentType);
-
-  const isJson = contentType?.includes('json');
-  const isXml = contentType?.includes('xml') || contentType?.includes('html');
-  const canFilter = isJson || isXml;
+  const canFilter = language === 'json' || language === 'xml' || language === 'html';
 
   const actions = useMemo<ReactNode[]>(() => {
     const nodes: ReactNode[] = [];
@@ -85,7 +87,7 @@ export function TextViewer({ response, pretty, className }: Props) {
             autoFocus
             containerClassName="bg-surface"
             size="sm"
-            placeholder={isJson ? 'JSONPath expression' : 'XPath expression'}
+            placeholder={language === 'json' ? 'JSONPath expression' : 'XPath expression'}
             label="Filter expression"
             name="filter"
             defaultValue={filterText}
@@ -112,8 +114,8 @@ export function TextViewer({ response, pretty, className }: Props) {
     canFilter,
     filterText,
     filteredResponse.error,
-    isJson,
     isSearching,
+    language,
     response.id,
     setFilterText,
     toggleSearch,
@@ -156,9 +158,9 @@ export function TextViewer({ response, pretty, className }: Props) {
   }
 
   const formattedBody =
-    pretty && contentType?.includes('json')
+    pretty && language === 'json'
       ? tryFormatJson(rawBody.data)
-      : pretty && contentType?.includes('xml')
+      : pretty && (language === 'xml' || language === 'html')
       ? tryFormatXml(rawBody.data)
       : rawBody.data;
 
@@ -179,7 +181,7 @@ export function TextViewer({ response, pretty, className }: Props) {
       className={className}
       forceUpdateKey={body}
       defaultValue={body}
-      language={languageFromContentType(contentType)}
+      language={language}
       actions={actions}
       extraExtensions={extraExtensions}
     />
