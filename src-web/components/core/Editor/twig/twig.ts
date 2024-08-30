@@ -16,4 +16,3 @@ export const parser = LRParser.deserialize({
   topRules: {"Template":[0,1]},
   tokenPrec: 0
 })
-

@@ -3,16 +3,17 @@ import {LRParser} from "@lezer/lr"
 import {highlight} from "./highlight"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "!jOQOPOOQYOPOOOTOPOOOeOQO'#CbQOOOOOQ`OPOOQ]OPOOOjOPO,58|OrOQO'#CcOwOPO1G.hOOOO,58},58}OOOO-E6a-E6a",
-  stateData: "!S~OQQORPO~OSUOTTOXRO~OYVO~OZWOWUa~OYYO~OZWOWUi~OQR~",
-  goto: "dWPPPPPPX^VSPTUQXVRZX",
-  nodeNames: "⚠ url Protocol Host Port Path Query",
-  maxTerm: 11,
+  states: "$UOQOPOOOYOPO'#ChOhOPO'#ChQOOOOOOmOQO'#CeOuOPO'#CaO!QOSO'#CdOOOO,59S,59SO!VOPO,59SO!_OPO,59SO!jOPO,59SOOOO,59P,59POOOO-E6c-E6cO!xOPO,59OOOOO1G.n1G.nO#QOPO1G.nO#YOPO1G.nO#eOSO'#CfO#jOPO1G.jOOOO7+$Y7+$YO#rOPO7+$YOOOO,59Q,59QOOOO-E6d-E6dOOOO<<Gt<<Gt",
+  stateData: "$Q~OQQORPO~OSXO]SO^UOZ[X~ORYO~OUZOVZO~O]SOZTX^TX~O_]O~O^UOZ[a~O]SO^UOZ[a~OS`O]SO^UOZ[a~O`aOZWa~O^UOZ[i~O]SO^UOZ[i~O_eO~O`aOZWi~O^UOZ[q~OQRUVU~",
+  goto: "!Z]PPPPP^PPhw!QP!WQWPS_XYRd`QVPU^WXYSc_`RgdWTPXY`R[TQb]RfbRRO",
+  nodeNames: "⚠ Program Protocol Host Port Path Placeholder PathSegment Query",
+  maxTerm: 16,
   propSources: [highlight],
   skippedNodes: [0],
-  repeatNodeCount: 1,
-  tokenData: "%[~RYvwq}!Ov!O!Pv!P!Q!_!Q![!y![!]#u!a!b$T!c!}$Y#R#Sv#T#o$Y~vOZ~P{URP}!Ov!O!Pv!Q![v!c!}v#R#Sv#T#ov~!dVT~}!O!_!O!P!_!P!Q!_!Q![!_!c!}!_#R#S!_#T#o!_R#QVYQRP}!Ov!O!Pv!Q![!y!_!`#g!c!}!y#R#Sv#T#o!yQ#lRYQ!Q![#g!c!}#g#T#o#g~#xP!Q![#{~$QPS~!Q![#{~$YOX~R$aWYQRP}!Ov!O!Pv!Q![!y![!]$y!_!`#g!c!}$Y#R#Sv#T#o$YP$|P!P!Q%PP%SP!P!Q%VP%[OQP",
-  tokenizers: [0, 1],
-  topRules: {"url":[0,1]},
-  tokenPrec: 47
+  repeatNodeCount: 2,
+  tokenData: "+h~RdOs!atv!avw#Ow}!a}!O#i!O!P#i!P!Q$o!Q![$t![!]&|!]!a!a!a!b)Z!b!c!a!c!})`!}#R!a#R#S#i#S#T!a#T#o)`#o;'S!a;'S;=`!x<%lO!aQ!fUVQOs!at!P!a!Q!a!a!b;'S!a;'S;=`!x<%lO!aQ!{P;=`<%l!aR#VU`PVQOs!at!P!a!Q!a!a!b;'S!a;'S;=`!x<%lO!aR#p_RPVQOs!at}!a}!O#i!O!P#i!Q![#i![!a!a!b!c!a!c!}#i!}#R!a#R#S#i#S#T!a#T#o#i#o;'S!a;'S;=`!x<%lO!a~$tO]~V$}a_SRPVQOs!at}!a}!O#i!O!P#i!Q![$t![!_!a!_!`&S!`!a!a!b!c!a!c!}$t!}#R!a#R#S#i#S#T!a#T#o$t#o;'S!a;'S;=`!x<%lO!aU&ZZ_SVQOs!at!P!a!Q![&S![!a!a!b!c!a!c!}&S!}#T!a#T#o&S#o;'S!a;'S;=`!x<%lO!aR'RXVQOs'ntv'nvw!aw!P'n!Q![(e![!a'n!b;'S'n;'S;=`(_<%lO'nQ'uWUQVQOs'ntv'nvw!aw!P'n!Q!a'n!b;'S'n;'S;=`(_<%lO'nQ(bP;=`<%l'nR(nXSPUQVQOs'ntv'nvw!aw!P'n!Q![(e![!a'n!b;'S'n;'S;=`(_<%lO'n~)`O^~V)ib_SRPVQOs!at}!a}!O#i!O!P#i!Q![$t![!]*q!]!_!a!_!`&S!`!a!a!b!c!a!c!})`!}#R!a#R#S#i#S#T!a#T#o)`#o;'S!a;'S;=`!x<%lO!aR*vVVQOs!at!P!a!P!Q+]!Q!a!a!b;'S!a;'S;=`!x<%lO!aP+`P!P!Q+cP+hOQP",
+  tokenizers: [0, 1, 2],
+  topRules: {"Program":[0,1]},
+  tokenPrec: 134,
+  termNames: {"0":"⚠","1":"@top","2":"Protocol","3":"Host","4":"Port","5":"Path","6":"Placeholder","7":"PathSegment","8":"Query","9":"(\"/\" (Placeholder | PathSegment))+","10":"(\"&\" queryPair)+","11":"␄","12":"url","13":"\"/\"","14":"\"?\"","15":"queryPair","16":"\"&\""}
 })

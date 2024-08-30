@@ -3,17 +3,17 @@ import {LRParser} from "@lezer/lr"
 import {highlight} from "./highlight"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "!QQQOPOOOYOQO'#CaO_OPO'#CaQQOPOOOOOO,58{,58{OdOQO,58{OOOO-E6_-E6_OOOO1G.g1G.g",
-  stateData: "i~OQQORPO~OSSO~ORTO~OSVO~O",
-  goto: "]UPPPPPVQRORUR",
+  states: "zQQOPOOOVOQO'#CaQQOPOOO[OSO,58{OOOO-E6_-E6_OaOQO1G.gOOOO7+$R7+$R",
+  stateData: "f~OQPO~ORRO~OSTO~OVUO~O",
+  goto: "]UPPPPPVQQORSQ",
   nodeNames: "⚠ pairs Key Sep Value",
-  maxTerm: 6,
+  maxTerm: 7,
   propSources: [highlight],
   skippedNodes: [0],
   repeatNodeCount: 1,
-  tokenData: "#oRRVOYhYZ!UZ![h![!]#[!];'Sh;'S;=`#U<%lOhRoVQPSQOYhYZ!UZ![h![!]!m!];'Sh;'S;=`#U<%lOhP!ZSQPO![!U!];'S!U;'S;=`!g<%lO!UP!jP;=`<%l!UQ!rSSQOY!mZ;'S!m;'S;=`#O<%lO!mQ#RP;=`<%l!mR#XP;=`<%lhR#cSRPSQOY!mZ;'S!m;'S;=`#O<%lO!m",
-  tokenizers: [0, 1],
+  tokenData: "$]VRVOYhYZ#[Z![h![!]#o!];'Sh;'S;=`#U<%lOhToVQPSSOYhYZ!UZ![h![!]!m!];'Sh;'S;=`#U<%lOhP!ZSQPO![!U!];'S!U;'S;=`!g<%lO!UP!jP;=`<%l!US!rSSSOY!mZ;'S!m;'S;=`#O<%lO!mS#RP;=`<%l!mT#XP;=`<%lhR#cSVQQPO![!U!];'S!U;'S;=`!g<%lO!UV#vVRQSSOYhYZ!UZ![h![!]!m!];'Sh;'S;=`#U<%lOh",
+  tokenizers: [0, 1, 2],
   topRules: {"pairs":[0,1]},
-  tokenPrec: 0
+  tokenPrec: 0,
+  termNames: {"0":"⚠","1":"@top","2":"Key","3":"Sep","4":"Value","5":"(Key Sep Value \"\\n\")+","6":"␄","7":"\"\\n\""}
 })
-

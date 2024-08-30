@@ -1,8 +1,8 @@
-@top pairs { (Key? Sep Value)* }
+@top pairs { (Key Sep Value "\n")* }
 
 @tokens {
   Sep { ":" }
-  Key { ![:]+ }
+  Key { ":"? ![:]+ }
   Value { ![\n]+ }
 }
 

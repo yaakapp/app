@@ -19,7 +19,8 @@
     }
 
     .cm-line {
-      @apply w-full; /* Important! Ensure it spans the entire width */
+      @apply w-full;
+      /* Important! Ensure it spans the entire width */
       @apply w-full text-text pl-1 pr-1.5;
     }
 
@@ -169,9 +170,14 @@
   }
 }
 
-.cm-wrapper.cm-readonly .cm-editor {
-  .cm-cursor {
-    @apply border-danger !important;
+/* Cursor and mouse cursor for readonly mode */
+.cm-wrapper.cm-readonly {
+  .cm-editor .cm-cursor {
+    @apply hidden !important;
+  }
+
+  &.cm-singleline .cm-line {
+    @apply cursor-default;
   }
 }
 

@@ -344,6 +344,7 @@ export const RequestPane = memo(function RequestPane({
               <UrlParametersEditor
                 forceUpdateKey={forceUpdateKey}
                 urlParameters={activeRequest.urlParameters}
+                url={activeRequest.url}
                 onChange={handleUrlParametersChange}
               />
             </TabContent>
