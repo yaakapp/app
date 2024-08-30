@@ -135,8 +135,8 @@ impl YaakUpdater {
             UpdateMode::Beta => MAX_UPDATE_CHECK_HOURS_BETA,
             UpdateMode::Alpha => MAX_UPDATE_CHECK_HOURS_ALPHA,
         } * (60 * 60);
-        let last_update_ago = self.last_update_check.elapsed().unwrap().as_secs();
-        let ignore_check = last_update_ago < update_period_seconds;
+        let seconds_since_last_check = self.last_update_check.elapsed().unwrap().as_secs();
+        let ignore_check = seconds_since_last_check < update_period_seconds;
         if ignore_check {
             return Ok(false);
         }
