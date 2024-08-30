@@ -41,7 +41,7 @@ use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
     CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Settings, Workspace,
+    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin, Settings, Workspace,
 };
 use yaak_models::queries::{
     cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
@@ -52,9 +52,9 @@ use yaak_models::queries::{
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
     get_or_create_settings, get_workspace, list_cookie_jars, list_environments, list_folders,
     list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
-    list_http_responses, list_workspaces, set_key_value_raw, update_response_if_id,
+    list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
     update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_workspace,
+    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
 };
 use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
@@ -1150,6 +1150,19 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
+async fn cmd_create_plugin(name: &str, w: WebviewWindow) -> Result<Plugin, String> {
+    upsert_plugin(
+        &w,
+        Plugin {
+            name: name.to_string(),
+            ..Default::default()
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn cmd_update_cookie_jar(
     cookie_jar: CookieJar,
     w: WebviewWindow,
@@ -1392,10 +1405,9 @@ async fn cmd_list_grpc_requests(
     workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<Vec<GrpcRequest>, String> {
-    let requests = list_grpc_requests(&w, workspace_id)
+    list_grpc_requests(&w, workspace_id)
         .await
-        .map_err(|e| e.to_string())?;
-    Ok(requests)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1403,11 +1415,9 @@ async fn cmd_list_http_requests(
     workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<Vec<HttpRequest>, String> {
-    let requests = list_http_requests(&w, workspace_id)
+    list_http_requests(&w, workspace_id)
         .await
-        .expect("Failed to find requests");
-    // .map_err(|e| e.to_string())
-    Ok(requests)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1415,11 +1425,14 @@ async fn cmd_list_environments(
     workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<Vec<Environment>, String> {
-    let environments = list_environments(&w, workspace_id)
+    list_environments(&w, workspace_id)
         .await
-        .expect("Failed to find environments");
+        .map_err(|e| e.to_string())
+}
 
-    Ok(environments)
+#[tauri::command]
+async fn cmd_list_plugins(w: WebviewWindow) -> Result<Vec<Plugin>, String> {
+    list_plugins(&w).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1673,6 +1686,7 @@ pub fn run() {
             cmd_create_folder,
             cmd_create_grpc_request,
             cmd_create_http_request,
+            cmd_create_plugin,
             cmd_create_workspace,
             cmd_curl_to_request,
             cmd_delete_all_grpc_connections,
@@ -1714,6 +1728,7 @@ pub fn run() {
             cmd_list_grpc_requests,
             cmd_list_http_requests,
             cmd_list_http_responses,
+            cmd_list_plugins,
             cmd_list_workspaces,
             cmd_metadata,
             cmd_new_nested_window,

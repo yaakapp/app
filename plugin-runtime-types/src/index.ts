@@ -63,3 +63,4 @@ export * from './gen/TemplateFunctionSelectOption';
 export * from './gen/TemplateFunctionTextArg';
 export * from './gen/ToastVariant';
 export * from './gen/Workspace';
+export * from './gen/Plugin';
