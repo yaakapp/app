@@ -22,6 +22,7 @@ export type InputProps = Omit<
     | 'autoSelect'
     | 'autocompleteVariables'
     | 'onKeyDown'
+    | 'readOnly'
   > & {
     name: string;
     type?: 'text' | 'password';
@@ -68,6 +69,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     size = 'md',
     type = 'text',
     validate,
+    readOnly,
     ...props
   }: InputProps,
   ref,
@@ -77,9 +79,10 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
   const [focused, setFocused] = useState(false);
 
   const handleFocus = useCallback(() => {
+    if (readOnly) return;
     setFocused(true);
     onFocus?.();
-  }, [onFocus]);
+  }, [onFocus, readOnly]);
 
   const handleBlur = useCallback(() => {
     setFocused(false);
@@ -179,6 +182,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             className={editorClassName}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            readOnly={readOnly}
             {...props}
           />
         </HStack>
