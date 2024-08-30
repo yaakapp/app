@@ -47,6 +47,10 @@ export const syntaxHighlightStyle = HighlightStyle.define([
     fontStyle: 'italic',
   },
   {
+    tag: [t.emphasis],
+    textDecoration: 'underline',
+  },
+  {
     tag: [t.paren, t.bracket, t.brace],
     color: 'var(--textSubtle)',
   },

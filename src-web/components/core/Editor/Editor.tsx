@@ -39,6 +39,7 @@ export { formatSdl } from 'format-graphql';
 export interface EditorProps {
   id?: string;
   readOnly?: boolean;
+  disabled?: boolean;
   type?: 'text' | 'password';
   className?: string;
   heightMode?: 'auto' | 'full';

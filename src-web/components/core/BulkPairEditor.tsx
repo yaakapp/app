@@ -42,12 +42,13 @@ export function BulkPairEditor({
   );
 }
 
-function lineToPair(l: string): PairEditorProps['pairs'][0] {
-  const [name, ...values] = l.split(':');
+function lineToPair(line: string): PairEditorProps['pairs'][0] {
+  const [, name, value] = line.match(/^(:?[^:]+):\s+([^$]*)/) ?? [];
+
   const pair: PairEditorProps['pairs'][0] = {
     enabled: true,
     name: (name ?? '').trim(),
-    value: values.join(':').trim(),
+    value: (value ?? '').trim(),
   };
   return pair;
 }

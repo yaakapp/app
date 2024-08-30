@@ -41,6 +41,7 @@ export type Pair = {
   value: string;
   contentType?: string;
   isFile?: boolean;
+  readOnlyName?: boolean;
 };
 
 type PairContainer = {
@@ -254,8 +255,8 @@ function PairEditorRow({
   valueAutocomplete,
   valueAutocompleteVariables,
   valuePlaceholder,
-  valueValidate,
   valueType,
+  valueValidate,
 }: PairEditorRowProps) {
   const { id } = pairContainer;
   const ref = useRef<HTMLDivElement>(null);
@@ -374,6 +375,7 @@ function PairEditorRow({
           ref={nameInputRef}
           hideLabel
           useTemplating
+          readOnly={pairContainer.pair.readOnlyName}
           size="sm"
           require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
           validate={nameValidate}
@@ -476,7 +478,14 @@ function PairEditorRow({
         </RadioDropdown>
       ) : (
         <Dropdown
-          items={[{ key: 'delete', label: 'Delete', onSelect: handleDelete, variant: 'danger' }]}
+          items={[
+            {
+              key: 'delete',
+              label: 'Delete',
+              onSelect: handleDelete,
+              variant: 'danger',
+            },
+          ]}
         >
           <IconButton
             iconSize="sm"
