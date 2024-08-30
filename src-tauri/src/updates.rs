@@ -10,7 +10,9 @@ use yaak_plugin_runtime::manager::PluginManager;
 
 use crate::is_dev;
 
-const MAX_UPDATE_CHECK_HOURS: u64 = 24;
+const MAX_UPDATE_CHECK_HOURS_STABLE: u64 = 12;
+const MAX_UPDATE_CHECK_HOURS_BETA: u64 = 3;
+const MAX_UPDATE_CHECK_HOURS_ALPHA: u64 = 1;
 
 // Create updater struct
 pub struct YaakUpdater {
@@ -128,8 +130,13 @@ impl YaakUpdater {
         app_handle: &AppHandle,
         mode: UpdateMode,
     ) -> Result<bool, tauri_plugin_updater::Error> {
-        let ignore_check = self.last_update_check.elapsed().unwrap().as_secs()
-            < (MAX_UPDATE_CHECK_HOURS * 60 * 60);
+        let update_period_seconds = match mode {
+            UpdateMode::Stable => MAX_UPDATE_CHECK_HOURS_STABLE,
+            UpdateMode::Beta => MAX_UPDATE_CHECK_HOURS_BETA,
+            UpdateMode::Alpha => MAX_UPDATE_CHECK_HOURS_ALPHA,
+        } * (60 * 60);
+        let last_update_ago = self.last_update_check.elapsed().unwrap().as_secs();
+        let ignore_check = last_update_ago < update_period_seconds;
         if ignore_check {
             return Ok(false);
         }
