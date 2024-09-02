@@ -18,6 +18,7 @@ export function twig({
   onClickFunction,
   onClickVariable,
   onClickMissingVariable,
+  onClickPathParameter,
 }: {
   base: LanguageSupport;
   environmentVariables: EnvironmentVariable[];
@@ -26,6 +27,7 @@ export function twig({
   onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
   onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
+  onClickPathParameter: (name: string) => void;
 }) {
   const language = mixLanguage(base);
 
@@ -62,11 +64,11 @@ export function twig({
   return [
     language,
     base.support,
-    templateTagsPlugin(options, onClickMissingVariable),
     language.data.of({ autocomplete: completions }),
     base.language.data.of({ autocomplete: completions }),
     language.data.of({ autocomplete: genericCompletion(autocomplete) }),
     base.language.data.of({ autocomplete: genericCompletion(autocomplete) }),
+    templateTagsPlugin(options, onClickMissingVariable, onClickPathParameter),
   ];
 }
 

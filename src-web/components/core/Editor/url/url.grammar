@@ -1,6 +1,4 @@
-@top Program { url }
-
-url { Protocol? Host Port? Path? Query? }
+@top url { Protocol? Host Port? Path? Query? }
 
 Path { ("/" (Placeholder | PathSegment))+ }
 

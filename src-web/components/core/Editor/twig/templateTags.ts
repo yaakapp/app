@@ -2,8 +2,41 @@ import { syntaxTree } from '@codemirror/language';
 import type { Range } from '@codemirror/state';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, ViewPlugin, WidgetType } from '@codemirror/view';
+import type { SyntaxNodeRef } from '@lezer/common';
 import { EditorView } from 'codemirror';
 import type { TwigCompletionOption } from './completion';
+
+class PathPlaceholderWidget extends WidgetType {
+  readonly #clickListenerCallback: () => void;
+
+  constructor(readonly rawText: string, readonly startPos: number, readonly onClick: () => void) {
+    super();
+    this.#clickListenerCallback = () => {
+      this.onClick?.();
+    };
+  }
+
+  eq(other: PathPlaceholderWidget) {
+    return this.startPos === other.startPos && this.rawText === other.rawText;
+  }
+
+  toDOM() {
+    const elt = document.createElement('span');
+    elt.className = `x-theme-templateTag x-theme-templateTag--secondary template-tag`;
+    elt.textContent = this.rawText;
+    elt.addEventListener('click', this.#clickListenerCallback);
+    return elt;
+  }
+
+  destroy(dom: HTMLElement) {
+    dom.removeEventListener('click', this.#clickListenerCallback);
+    super.destroy(dom);
+  }
+
+  ignoreEvent() {
+    return false;
+  }
+}
 
 class TemplateTagWidget extends WidgetType {
   readonly #clickListenerCallback: () => void;
@@ -62,20 +95,41 @@ function templateTags(
   view: EditorView,
   options: TwigCompletionOption[],
   onClickMissingVariable: (name: string, rawTag: string, startPos: number) => void,
+  onClickPathParameter: (name: string) => void,
 ): DecorationSet {
   const widgets: Range<Decoration>[] = [];
   for (const { from, to } of view.visibleRanges) {
-    syntaxTree(view.state).iterate({
+    const tree = syntaxTree(view.state);
+    tree.iterate({
       from,
       to,
       enter(node) {
-        if (node.name == 'Tag') {
-          // Don't decorate if the cursor is inside the match
-          for (const r of view.state.selection.ranges) {
-            if (r.from > node.from && r.to < node.to) {
-              return;
+        if (node.name === 'Text') {
+          // Find the `url` node and then jump into it to find the placeholders
+          for (let i = node.from; i < node.to; i++) {
+            const innerTree = syntaxTree(view.state).resolveInner(i);
+            if (innerTree.node.name === 'url') {
+              innerTree.toTree().iterate({
+                enter(node) {
+                  if (node.name !== 'Placeholder') return;
+                  if (isSelectionInsideNode(view, node)) return;
+
+                  const globalFrom = innerTree.node.from + node.from;
+                  const globalTo = innerTree.node.from + node.to;
+                  const rawText = view.state.doc.sliceString(globalFrom, globalTo);
+                  const onClick = () => onClickPathParameter(rawText);
+                  const widget = new PathPlaceholderWidget(rawText, globalFrom, onClick);
+                  const deco = Decoration.replace({ widget, inclusive: false });
+                  console.log('ADDED WIDGET', globalFrom, node, rawText);
+                  widgets.push(deco.range(globalFrom, globalTo));
+                },
+              });
+              break;
             }
           }
+        } else if (node.name === 'Tag') {
+          // Don't decorate if the cursor is inside the match
+          if (isSelectionInsideNode(view, node)) return;
 
           const rawTag = view.state.doc.sliceString(node.from, node.to);
 
@@ -114,17 +168,28 @@ function templateTags(
 export function templateTagsPlugin(
   options: TwigCompletionOption[],
   onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void,
+  onClickPathParameter: (name: string) => void,
 ) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
 
       constructor(view: EditorView) {
-        this.decorations = templateTags(view, options, onClickMissingVariable);
+        this.decorations = templateTags(
+          view,
+          options,
+          onClickMissingVariable,
+          onClickPathParameter,
+        );
       }
 
       update(update: ViewUpdate) {
-        this.decorations = templateTags(update.view, options, onClickMissingVariable);
+        this.decorations = templateTags(
+          update.view,
+          options,
+          onClickMissingVariable,
+          onClickPathParameter,
+        );
       }
     },
     {
@@ -145,4 +210,11 @@ export function templateTagsPlugin(
       },
     },
   );
+}
+
+function isSelectionInsideNode(view: EditorView, node: SyntaxNodeRef) {
+  for (const r of view.state.selection.ranges) {
+    if (r.from > node.from && r.to < node.to) return true;
+  }
+  return false;
 }
