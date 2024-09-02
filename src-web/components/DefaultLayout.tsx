@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { DialogProvider, Dialogs } from './DialogContext';
 import { GlobalHooks } from './GlobalHooks';
-import { RequestPaneProvider } from './RequestPaneContext';
+import { RequestEditorProvider } from './RequestEditorContext';
 import { ToastProvider, Toasts } from './ToastContext';
 
 export function DefaultLayout() {
@@ -12,7 +12,7 @@ export function DefaultLayout() {
   return (
     <DialogProvider>
       <ToastProvider>
-        <RequestPaneProvider>
+        <RequestEditorProvider>
           <>
             {/* Must be inside all the providers, so they have access to them */}
             <Toasts />
@@ -30,7 +30,7 @@ export function DefaultLayout() {
             <Outlet />
           </motion.div>
           <GlobalHooks />
-        </RequestPaneProvider>
+        </RequestEditorProvider>
       </ToastProvider>
     </DialogProvider>
   );

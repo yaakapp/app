@@ -1,5 +1,4 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { attachConsole } from '@tauri-apps/plugin-log';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -17,8 +16,6 @@ const osType = type();
 if (osType !== 'macos') {
   await getCurrentWebviewWindow().setDecorations(false);
 }
-
-await attachConsole();
 
 window.addEventListener('keydown', (e) => {
   // Hack to not go back in history on backspace. Check for document body

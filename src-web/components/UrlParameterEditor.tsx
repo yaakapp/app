@@ -1,8 +1,9 @@
 import type { HttpRequest } from '@yaakapp/api';
-import { useCallback } from 'react';
+import type { PairEditorRef } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { VStack } from './core/Stacks';
-import { useRequestPane } from './RequestPaneContext';
+import { useOnFocusParamValue } from './RequestEditorContext';
+import { useRef } from 'react';
 
 type Props = {
   forceUpdateKey: string;
@@ -11,15 +12,24 @@ type Props = {
 };
 
 export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) {
-  const { onFocusParamValue } = useRequestPane();
-  onFocusParamValue(
-    useCallback((index: number) => {
-      console.log('FOCUSED IN COMPONENT', index);
-    }, []),
+  const pairEditor = useRef<PairEditorRef>(null);
+
+  useOnFocusParamValue(
+    (name) => {
+      const pairIndex = pairs.findIndex((p) => p.name === name);
+      if (pairIndex >= 0) {
+        pairEditor.current?.focusValue(pairIndex);
+      } else {
+        console.log("Couldn't find pair to focus", { name, pairs });
+      }
+    },
+    [pairs],
   );
+
   return (
     <VStack className="h-full">
       <PairOrBulkEditor
+        ref={pairEditor}
         preferenceName="url_parameters"
         valueAutocompleteVariables
         nameAutocompleteVariables
