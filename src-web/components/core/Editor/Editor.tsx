@@ -22,6 +22,7 @@ import { parseTemplate } from '../../../hooks/useParseTemplate';
 import { useSettings } from '../../../hooks/useSettings';
 import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { useDialog } from '../../DialogContext';
+import { useRequestEditor } from '../../RequestEditorContext';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';
@@ -227,9 +228,13 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [dialog],
   );
 
-  const onClickPathParameter = useCallback(async (name: string) => {
-    console.log('TODO: Focus', name, 'in params tab');
-  }, []);
+  const { focusParamValue } = useRequestEditor();
+  const onClickPathParameter = useCallback(
+    async (name: string) => {
+      focusParamValue(name);
+    },
+    [focusParamValue],
+  );
 
   // Update the language extension when the language changes
   useEffect(() => {

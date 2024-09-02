@@ -1,6 +1,15 @@
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Fragment,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { XYCoord } from 'react-dnd';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuid } from 'uuid';
@@ -15,6 +24,10 @@ import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
 import { Input } from './Input';
 import { RadioDropdown } from './RadioDropdown';
+
+export interface PairEditorRef {
+  focusValue(index: number): void;
+}
 
 export type PairEditorProps = {
   pairs: Pair[];
@@ -49,24 +62,28 @@ type PairContainer = {
   id: string;
 };
 
-export function PairEditor({
-  className,
-  forceUpdateKey,
-  nameAutocomplete,
-  nameAutocompleteVariables,
-  namePlaceholder,
-  nameValidate,
-  valueType,
-  onChange,
-  noScroll,
-  pairs: originalPairs,
-  valueAutocomplete,
-  valueAutocompleteVariables,
-  valuePlaceholder,
-  valueValidate,
-  allowFileValues,
-}: PairEditorProps) {
-  const [forceFocusPairId, setForceFocusPairId] = useState<string | null>(null);
+export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function PairEditor(
+  {
+    className,
+    forceUpdateKey,
+    nameAutocomplete,
+    nameAutocompleteVariables,
+    namePlaceholder,
+    nameValidate,
+    valueType,
+    onChange,
+    noScroll,
+    pairs: originalPairs,
+    valueAutocomplete,
+    valueAutocompleteVariables,
+    valuePlaceholder,
+    valueValidate,
+    allowFileValues,
+  }: PairEditorProps,
+  ref,
+) {
+  const [forceFocusNamePairId, setForceFocusNamePairId] = useState<string | null>(null);
+  const [forceFocusValuePairId, setForceFocusValuePairId] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pairs, setPairs] = useState<PairContainer[]>(() => {
     // Remove empty headers on initial render
@@ -74,6 +91,13 @@ export function PairEditor({
     const pairs = nonEmpty.map((pair) => newPairContainer(pair));
     return [...pairs, newPairContainer()];
   });
+
+  useImperativeHandle(ref, () => ({
+    focusValue(index: number) {
+      const id = pairs[index]?.id ?? 'n/a';
+      setForceFocusValuePairId(id);
+    },
+  }));
 
   useEffect(() => {
     // Remove empty headers on initial render
@@ -135,17 +159,18 @@ export function PairEditor({
       if (focusPrevious) {
         const index = pairs.findIndex((p) => p.id === pair.id);
         const id = pairs[index - 1]?.id ?? null;
-        setForceFocusPairId(id);
+        setForceFocusNamePairId(id);
       }
       return setPairsAndSave((oldPairs) => oldPairs.filter((p) => p.id !== pair.id));
     },
-    [setPairsAndSave, setForceFocusPairId, pairs],
+    [setPairsAndSave, setForceFocusNamePairId, pairs],
   );
 
   const handleFocus = useCallback(
     (pair: PairContainer) =>
       setPairs((pairs) => {
-        setForceFocusPairId(null); // Remove focus override when something focused
+        setForceFocusNamePairId(null); // Remove focus override when something focused
+        setForceFocusValuePairId(null); // Remove focus override when something focused
         const isLast = pair.id === pairs[pairs.length - 1]?.id;
         return isLast ? [...pairs, newPairContainer()] : pairs;
       }),
@@ -185,7 +210,8 @@ export function PairEditor({
               nameAutocompleteVariables={nameAutocompleteVariables}
               valueAutocompleteVariables={valueAutocompleteVariables}
               valueType={valueType}
-              forceFocusPairId={forceFocusPairId}
+              forceFocusNamePairId={forceFocusNamePairId}
+              forceFocusValuePairId={forceFocusValuePairId}
               forceUpdateKey={forceUpdateKey}
               nameAutocomplete={nameAutocomplete}
               valueAutocomplete={valueAutocomplete}
@@ -204,7 +230,7 @@ export function PairEditor({
       })}
     </div>
   );
-}
+});
 
 enum ItemTypes {
   ROW = 'pair-row',
@@ -213,7 +239,8 @@ enum ItemTypes {
 type PairEditorRowProps = {
   className?: string;
   pairContainer: PairContainer;
-  forceFocusPairId?: string | null;
+  forceFocusNamePairId?: string | null;
+  forceFocusValuePairId?: string | null;
   onMove: (id: string, side: 'above' | 'below') => void;
   onEnd: (id: string) => void;
   onChange: (pair: PairContainer) => void;
@@ -239,7 +266,8 @@ type PairEditorRowProps = {
 function PairEditorRow({
   allowFileValues,
   className,
-  forceFocusPairId,
+  forceFocusNamePairId,
+  forceFocusValuePairId,
   forceUpdateKey,
   isLast,
   nameAutocomplete,
@@ -262,12 +290,19 @@ function PairEditorRow({
   const ref = useRef<HTMLDivElement>(null);
   const prompt = usePrompt();
   const nameInputRef = useRef<EditorView>(null);
+  const valueInputRef = useRef<EditorView>(null);
 
   useEffect(() => {
-    if (forceFocusPairId === pairContainer.id) {
+    if (forceFocusNamePairId === pairContainer.id) {
       nameInputRef.current?.focus();
     }
-  }, [forceFocusPairId, pairContainer.id]);
+  }, [forceFocusNamePairId, pairContainer.id]);
+
+  useEffect(() => {
+    if (forceFocusValuePairId === pairContainer.id) {
+      valueInputRef.current?.focus();
+    }
+  }, [forceFocusValuePairId, pairContainer.id]);
 
   const handleChangeEnabled = useMemo(
     () => (enabled: boolean) => onChange({ id, pair: { ...pairContainer.pair, enabled } }),
@@ -400,6 +435,7 @@ function PairEditorRow({
             />
           ) : (
             <Input
+              ref={valueInputRef}
               hideLabel
               useTemplating
               size="sm"

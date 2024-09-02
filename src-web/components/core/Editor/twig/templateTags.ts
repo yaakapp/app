@@ -120,7 +120,6 @@ function templateTags(
                   const onClick = () => onClickPathParameter(rawText);
                   const widget = new PathPlaceholderWidget(rawText, globalFrom, onClick);
                   const deco = Decoration.replace({ widget, inclusive: false });
-                  console.log('ADDED WIDGET', globalFrom, node, rawText);
                   widgets.push(deco.range(globalFrom, globalTo));
                 },
               });
@@ -200,13 +199,6 @@ export function templateTagsPlugin(
         return EditorView.atomicRanges.of((view) => {
           return view.plugin(plugin)?.decorations || Decoration.none;
         });
-      },
-      eventHandlers: {
-        mousedown(e) {
-          const target = e.target as HTMLElement;
-          if (target.classList.contains('template-tag')) console.log('CLICKED TEMPLATE TAG');
-          // return toggleBoolean(view, view.posAtDOM(target));
-        },
       },
     },
   );
