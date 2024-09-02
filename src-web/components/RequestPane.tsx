@@ -42,6 +42,7 @@ import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
+import { useOnFocusParamsTab } from './RequestEditorContext';
 import { useToast } from './ToastContext';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
@@ -54,6 +55,10 @@ interface Props {
 }
 
 const useActiveTab = createGlobalState<string>('body');
+const TAB_BODY = 'body';
+const TAB_PARAMS = 'params';
+const TAB_HEADERS = 'headers';
+const TAB_AUTH = 'auth';
 
 export const RequestPane = memo(function RequestPane({
   style,
@@ -94,7 +99,8 @@ export const RequestPane = memo(function RequestPane({
     const placeholderNames = Array.from(activeRequest.url.matchAll(/\/(:[^/]+)/g)).map(
       (m) => m[1] ?? '',
     );
-    const items: Pair[] = [...activeRequest.urlParameters];
+    const nonEmptyParameters = activeRequest.urlParameters.filter((p) => p.name || p.value);
+    const items: Pair[] = [...nonEmptyParameters];
     for (const name of placeholderNames) {
       const index = items.findIndex((p) => p.name === name);
       if (index >= 0) {
@@ -114,7 +120,7 @@ export const RequestPane = memo(function RequestPane({
   const tabs: TabItem[] = useMemo(
     () => [
       {
-        value: 'body',
+        value: TAB_BODY,
         options: {
           value: activeRequest.bodyType,
           items: [
@@ -180,16 +186,16 @@ export const RequestPane = memo(function RequestPane({
         },
       },
       {
-        value: 'params',
+        value: TAB_PARAMS,
         label: (
           <div className="flex items-center">
             Params
-            <CountBadge count={urlParameterPairs.filter((p) => p.name).length} />
+            <CountBadge count={urlParameterPairs.length} />
           </div>
         ),
       },
       {
-        value: 'headers',
+        value: TAB_HEADERS,
         label: (
           <div className="flex items-center">
             Headers
@@ -198,7 +204,7 @@ export const RequestPane = memo(function RequestPane({
         ),
       },
       {
-        value: 'auth',
+        value: TAB_AUTH,
         label: 'Auth',
         options: {
           value: activeRequest.authenticationType,
@@ -291,6 +297,10 @@ export const RequestPane = memo(function RequestPane({
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
   const importCurl = useImportCurl();
+
+  useOnFocusParamsTab(() => {
+    setActiveTab(TAB_PARAMS);
+  });
 
   return (
     <div
