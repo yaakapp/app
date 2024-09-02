@@ -1,5 +1,4 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { attachConsole } from '@tauri-apps/plugin-log';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

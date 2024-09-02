@@ -227,6 +227,10 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [dialog],
   );
 
+  const onClickPathParameter = useCallback(async (name: string) => {
+    console.log('TODO: Focus', name, 'in params tab');
+  }, []);
+
   // Update the language extension when the language changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -240,6 +244,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       onClickFunction,
       onClickVariable,
       onClickMissingVariable,
+      onClickPathParameter,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [
@@ -251,6 +256,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     onClickFunction,
     onClickVariable,
     onClickMissingVariable,
+    onClickPathParameter,
   ]);
 
   // Initialize the editor when ref mounts
@@ -274,6 +280,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           onClickVariable,
           onClickFunction,
           onClickMissingVariable,
+          onClickPathParameter,
         });
 
         const state = EditorState.create({

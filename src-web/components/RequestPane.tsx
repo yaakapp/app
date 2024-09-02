@@ -34,6 +34,7 @@ import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
 import type { GenericCompletionOption } from './core/Editor/genericCompletion';
 import { InlineCode } from './core/InlineCode';
+import type { Pair } from './core/PairEditor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
@@ -88,6 +89,27 @@ export const RequestPane = memo(function RequestPane({
   );
 
   const toast = useToast();
+
+  const { urlParameterPairs, urlParametersKey } = useMemo(() => {
+    const placeholderNames = Array.from(activeRequest.url.matchAll(/\/(:[^/]+)/g)).map(
+      (m) => m[1] ?? '',
+    );
+    const items: Pair[] = [...activeRequest.urlParameters];
+    for (const name of placeholderNames) {
+      const index = items.findIndex((p) => p.name === name);
+      if (index >= 0) {
+        items[index]!.readOnlyName = true;
+      } else {
+        items.push({
+          name,
+          value: '',
+          enabled: true,
+          readOnlyName: true,
+        });
+      }
+    }
+    return { urlParameterPairs: items, urlParametersKey: placeholderNames.join(',') };
+  }, [activeRequest.url, activeRequest.urlParameters]);
 
   const tabs: TabItem[] = useMemo(
     () => [
@@ -162,7 +184,7 @@ export const RequestPane = memo(function RequestPane({
         label: (
           <div className="flex items-center">
             Params
-            <CountBadge count={activeRequest.urlParameters.filter((p) => p.name).length} />
+            <CountBadge count={urlParameterPairs.filter((p) => p.name).length} />
           </div>
         ),
       },
@@ -212,11 +234,11 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.bodyType,
       activeRequest.headers,
       activeRequest.method,
-      activeRequest.urlParameters,
       activeRequestId,
       handleContentTypeChange,
       toast,
       updateRequest,
+      urlParameterPairs,
     ],
   );
 
@@ -342,9 +364,8 @@ export const RequestPane = memo(function RequestPane({
             </TabContent>
             <TabContent value="params">
               <UrlParametersEditor
-                forceUpdateKey={forceUpdateKey}
-                urlParameters={activeRequest.urlParameters}
-                url={activeRequest.url}
+                forceUpdateKey={forceUpdateKey + urlParametersKey}
+                pairs={urlParameterPairs}
                 onChange={handleUrlParametersChange}
               />
             </TabContent>
