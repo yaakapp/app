@@ -1,6 +1,8 @@
 import type { HttpRequest } from '@yaakapp/api';
+import { useCallback } from 'react';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { VStack } from './core/Stacks';
+import { useRequestPane } from './RequestPaneContext';
 
 type Props = {
   forceUpdateKey: string;
@@ -9,6 +11,12 @@ type Props = {
 };
 
 export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) {
+  const { onFocusParamValue } = useRequestPane();
+  onFocusParamValue(
+    useCallback((index: number) => {
+      console.log('FOCUSED IN COMPONENT', index);
+    }, []),
+  );
   return (
     <VStack className="h-full">
       <PairOrBulkEditor
