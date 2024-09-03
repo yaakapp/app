@@ -1,8 +1,8 @@
 import type { HttpRequest } from '@yaakapp/api';
+import { useRequestEditorEvent } from '../hooks/useRequestEditor';
 import type { PairEditorRef } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { VStack } from './core/Stacks';
-import { useOnFocusParamValue } from './RequestEditorContext';
 import { useRef } from 'react';
 
 type Props = {
@@ -14,7 +14,8 @@ type Props = {
 export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) {
   const pairEditor = useRef<PairEditorRef>(null);
 
-  useOnFocusParamValue(
+  useRequestEditorEvent(
+    'focus_http_request_param_value',
     (name) => {
       const pairIndex = pairs.findIndex((p) => p.name === name);
       if (pairIndex >= 0) {

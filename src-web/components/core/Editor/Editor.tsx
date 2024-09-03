@@ -19,10 +19,10 @@ import {
 } from 'react';
 import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
+import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
 import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { useDialog } from '../../DialogContext';
-import { useRequestEditor } from '../../RequestEditorContext';
 import { TemplateFunctionDialog } from '../../TemplateFunctionDialog';
 import { TemplateVariableDialog } from '../../TemplateVariableDialog';
 import { IconButton } from '../IconButton';

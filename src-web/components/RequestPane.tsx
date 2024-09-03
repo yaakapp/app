@@ -8,6 +8,7 @@ import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
+import { useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
@@ -42,7 +43,6 @@ import { FormMultipartEditor } from './FormMultipartEditor';
 import { FormUrlencodedEditor } from './FormUrlencodedEditor';
 import { GraphQLEditor } from './GraphQLEditor';
 import { HeadersEditor } from './HeadersEditor';
-import { useOnFocusParamsTab } from './RequestEditorContext';
 import { useToast } from './ToastContext';
 import { UrlBar } from './UrlBar';
 import { UrlParametersEditor } from './UrlParameterEditor';
@@ -298,7 +298,7 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
   const importCurl = useImportCurl();
 
-  useOnFocusParamsTab(() => {
+  useRequestEditorEvent('focus_http_request_params_tab', () => {
     setActiveTab(TAB_PARAMS);
   });
 
