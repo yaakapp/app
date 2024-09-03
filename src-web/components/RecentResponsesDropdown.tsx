@@ -1,4 +1,5 @@
 import type { HttpResponse } from '@yaakapp/api';
+import { useCopyHttpResponse } from '../hooks/useCopyHttpResponse';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import { useSaveResponse } from '../hooks/useSaveResponse';
@@ -8,7 +9,6 @@ import { Icon } from './core/Icon';
 import { IconButton } from './core/IconButton';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
-import { useCopyHttpResponse } from './useCopyHttpResponse';
 
 interface Props {
   responses: HttpResponse[];
