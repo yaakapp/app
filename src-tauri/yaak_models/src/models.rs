@@ -20,7 +20,7 @@ pub struct Settings {
     pub theme_light: String,
     pub update_channel: String,
     pub interface_font_size: i32,
-    pub interface_scale: i32,
+    pub interface_scale: f32,
     pub editor_font_size: i32,
     pub editor_soft_wrap: bool,
     pub telemetry: bool,
