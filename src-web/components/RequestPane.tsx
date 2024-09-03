@@ -298,7 +298,7 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
   const importCurl = useImportCurl();
 
-  useRequestEditorEvent('focus_http_request_params_tab', () => {
+  useRequestEditorEvent('request_pane.focus_tab', () => {
     setActiveTab(TAB_PARAMS);
   });
 
