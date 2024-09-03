@@ -154,20 +154,15 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             </Banner>
           ) : (
             <Tabs
+              key={activeRequest.id} // Freshen tabs on request change
               value={activeTab}
               onChangeValue={setActiveTab}
-              label="Response"
               tabs={tabs}
+              label="Response"
               className="ml-3 mr-3 mb-3"
               tabListClassName="mt-1.5"
             >
-              <TabContent value="headers">
-                <ResponseHeaders response={activeResponse} />
-              </TabContent>
-              <TabContent value="info">
-                <ResponseInfo response={activeResponse} />
-              </TabContent>
-              <TabContent value="body">
+              <TabContent value={TAB_BODY}>
                 {!activeResponse.contentLength ? (
                   <div className="pb-2 h-full">
                     <EmptyStateText>Empty Body</EmptyStateText>
@@ -191,6 +186,12 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                     pretty={viewMode === 'pretty'}
                   />
                 )}
+              </TabContent>
+              <TabContent value={TAB_HEADERS}>
+                <ResponseHeaders response={activeResponse} />
+              </TabContent>
+              <TabContent value={TAB_INFO}>
+                <ResponseInfo response={activeResponse} />
               </TabContent>
             </Tabs>
           )}
