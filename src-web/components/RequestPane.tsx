@@ -8,6 +8,7 @@ import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
+import { useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
@@ -34,6 +35,7 @@ import { CountBadge } from './core/CountBadge';
 import { Editor } from './core/Editor';
 import type { GenericCompletionOption } from './core/Editor/genericCompletion';
 import { InlineCode } from './core/InlineCode';
+import type { Pair } from './core/PairEditor';
 import type { TabItem } from './core/Tabs/Tabs';
 import { TabContent, Tabs } from './core/Tabs/Tabs';
 import { EmptyStateText } from './EmptyStateText';
@@ -52,7 +54,14 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<string>('body');
+const useActiveTab = createGlobalState<Record<string, string>>({});
+
+const TAB_BODY = 'body';
+const TAB_PARAMS = 'params';
+const TAB_HEADERS = 'headers';
+const TAB_AUTH = 'auth';
+
+const DEFAULT_TAB = TAB_BODY;
 
 export const RequestPane = memo(function RequestPane({
   style,
@@ -63,7 +72,7 @@ export const RequestPane = memo(function RequestPane({
   const requests = useRequests();
   const activeRequestId = activeRequest.id;
   const updateRequest = useUpdateAnyHttpRequest();
-  const [activeTab, setActiveTab] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
@@ -89,10 +98,27 @@ export const RequestPane = memo(function RequestPane({
 
   const toast = useToast();
 
+  const { urlParameterPairs, urlParametersKey } = useMemo(() => {
+    const placeholderNames = Array.from(activeRequest.url.matchAll(/\/(:[^/]+)/g)).map(
+      (m) => m[1] ?? '',
+    );
+    const nonEmptyParameters = activeRequest.urlParameters.filter((p) => p.name || p.value);
+    const items: Pair[] = [...nonEmptyParameters];
+    for (const name of placeholderNames) {
+      const index = items.findIndex((p) => p.name === name);
+      if (index >= 0) {
+        items[index]!.readOnlyName = true;
+      } else {
+        items.push({ name, value: '', enabled: true, readOnlyName: true });
+      }
+    }
+    return { urlParameterPairs: items, urlParametersKey: placeholderNames.join(',') };
+  }, [activeRequest.url, activeRequest.urlParameters]);
+
   const tabs: TabItem[] = useMemo(
     () => [
       {
-        value: 'body',
+        value: TAB_BODY,
         options: {
           value: activeRequest.bodyType,
           items: [
@@ -158,16 +184,16 @@ export const RequestPane = memo(function RequestPane({
         },
       },
       {
-        value: 'params',
+        value: TAB_PARAMS,
         label: (
           <div className="flex items-center">
             Params
-            <CountBadge count={activeRequest.urlParameters.filter((p) => p.name).length} />
+            <CountBadge count={urlParameterPairs.length} />
           </div>
         ),
       },
       {
-        value: 'headers',
+        value: TAB_HEADERS,
         label: (
           <div className="flex items-center">
             Headers
@@ -176,7 +202,7 @@ export const RequestPane = memo(function RequestPane({
         ),
       },
       {
-        value: 'auth',
+        value: TAB_AUTH,
         label: 'Auth',
         options: {
           value: activeRequest.authenticationType,
@@ -212,11 +238,11 @@ export const RequestPane = memo(function RequestPane({
       activeRequest.bodyType,
       activeRequest.headers,
       activeRequest.method,
-      activeRequest.urlParameters,
       activeRequestId,
       handleContentTypeChange,
       toast,
       updateRequest,
+      urlParameterPairs,
     ],
   );
 
@@ -270,6 +296,18 @@ export const RequestPane = memo(function RequestPane({
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
   const importCurl = useImportCurl();
 
+  const activeTab = activeTabs[activeRequestId] ?? DEFAULT_TAB;
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
+    },
+    [activeRequest.id, setActiveTabs],
+  );
+
+  useRequestEditorEvent('request_pane.focus_tab', () => {
+    setActiveTab(TAB_PARAMS);
+  });
+
   return (
     <div
       style={style}
@@ -316,13 +354,14 @@ export const RequestPane = memo(function RequestPane({
             isLoading={isLoading}
           />
           <Tabs
+            key={activeRequest.id} // Freshen tabs on request change
             value={activeTab}
             label="Request"
             onChangeValue={setActiveTab}
             tabs={tabs}
             tabListClassName="mt-2 !mb-1.5"
           >
-            <TabContent value="auth">
+            <TabContent value={TAB_AUTH}>
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
                 <BasicAuth key={forceUpdateKey} request={activeRequest} />
               ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
@@ -333,22 +372,21 @@ export const RequestPane = memo(function RequestPane({
                 </EmptyStateText>
               )}
             </TabContent>
-            <TabContent value="headers">
+            <TabContent value={TAB_HEADERS}>
               <HeadersEditor
                 forceUpdateKey={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
             </TabContent>
-            <TabContent value="params">
+            <TabContent value={TAB_PARAMS}>
               <UrlParametersEditor
-                forceUpdateKey={forceUpdateKey}
-                urlParameters={activeRequest.urlParameters}
-                url={activeRequest.url}
+                forceUpdateKey={forceUpdateKey + urlParametersKey}
+                pairs={urlParameterPairs}
                 onChange={handleUrlParametersChange}
               />
             </TabContent>
-            <TabContent value="body">
+            <TabContent value={TAB_BODY}>
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
                   forceUpdateKey={forceUpdateKey}

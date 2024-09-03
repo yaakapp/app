@@ -27,7 +27,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             tauri::async_runtime::block_on(async move {
                 let plugin_dirs = read_plugins_dir(&plugins_dir)
                     .await
-                    .expect("Failed to read plugins dir");
+                    .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str());
                 let manager = PluginManager::new(&app, plugin_dirs).await;
                 app.manage(manager);
                 Ok(())

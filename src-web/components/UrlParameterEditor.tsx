@@ -1,40 +1,36 @@
 import type { HttpRequest } from '@yaakapp/api';
-import { useMemo } from 'react';
-import type { Pair } from './core/PairEditor';
+import { useRequestEditorEvent } from '../hooks/useRequestEditor';
+import type { PairEditorRef } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { VStack } from './core/Stacks';
+import { useRef } from 'react';
 
 type Props = {
   forceUpdateKey: string;
-  urlParameters: HttpRequest['headers'];
+  pairs: HttpRequest['headers'];
   onChange: (headers: HttpRequest['urlParameters']) => void;
-  url: string;
 };
 
-export function UrlParametersEditor({ urlParameters, forceUpdateKey, onChange, url }: Props) {
-  const placeholderNames = Array.from(url.matchAll(/\/(:[^/]+)/g)).map((m) => m[1] ?? '');
+export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) {
+  const pairEditor = useRef<PairEditorRef>(null);
 
-  const pairs = useMemo(() => {
-    const items: Pair[] = [...urlParameters];
-    for (const name of placeholderNames) {
-      const index = items.findIndex((p) => p.name === name);
-      if (index >= 0) {
-        items[index]!.readOnlyName = true;
+  useRequestEditorEvent(
+    'request_params.focus_value',
+    (name) => {
+      const pairIndex = pairs.findIndex((p) => p.name === name);
+      if (pairIndex >= 0) {
+        pairEditor.current?.focusValue(pairIndex);
       } else {
-        items.push({
-          name,
-          value: '',
-          enabled: true,
-          readOnlyName: true,
-        });
+        console.log("Couldn't find pair to focus", { name, pairs });
       }
-    }
-    return items;
-  }, [placeholderNames, urlParameters]);
+    },
+    [pairs],
+  );
 
   return (
     <VStack className="h-full">
       <PairOrBulkEditor
+        ref={pairEditor}
         preferenceName="url_parameters"
         valueAutocompleteVariables
         nameAutocompleteVariables
@@ -42,7 +38,7 @@ export function UrlParametersEditor({ urlParameters, forceUpdateKey, onChange, u
         valuePlaceholder="Value"
         pairs={pairs}
         onChange={onChange}
-        forceUpdateKey={forceUpdateKey + placeholderNames.join(':')}
+        forceUpdateKey={forceUpdateKey}
       />
     </VStack>
   );

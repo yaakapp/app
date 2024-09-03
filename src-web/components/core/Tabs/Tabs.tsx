@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { Icon } from '../Icon';
 import type { RadioDropdownProps } from '../RadioDropdown';
 import { RadioDropdown } from '../RadioDropdown';
@@ -39,31 +39,23 @@ export function Tabs({
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const handleTabChange = useCallback(
-    (value: string) => {
-      const tabs = ref.current?.querySelectorAll<HTMLDivElement>(`[data-tab]`);
-      for (const tab of tabs ?? []) {
-        const v = tab.getAttribute('data-tab');
-        if (v === value) {
-          tab.setAttribute('tabindex', '-1');
-          tab.setAttribute('data-state', 'active');
-          tab.setAttribute('aria-hidden', 'false');
-          tab.style.display = 'block';
-        } else {
-          tab.setAttribute('data-state', 'inactive');
-          tab.setAttribute('aria-hidden', 'true');
-          tab.style.display = 'none';
-        }
-      }
-      onChangeValue(value);
-    },
-    [onChangeValue],
-  );
-
+  // Update tabs when value changes
   useEffect(() => {
-    if (value === undefined) return;
-    handleTabChange(value);
-  }, [handleTabChange, value]);
+    const tabs = ref.current?.querySelectorAll<HTMLDivElement>(`[data-tab]`);
+    for (const tab of tabs ?? []) {
+      const v = tab.getAttribute('data-tab');
+      if (v === value) {
+        tab.setAttribute('tabindex', '-1');
+        tab.setAttribute('data-state', 'active');
+        tab.setAttribute('aria-hidden', 'false');
+        tab.style.display = 'block';
+      } else {
+        tab.setAttribute('data-state', 'inactive');
+        tab.setAttribute('aria-hidden', 'true');
+        tab.style.display = 'none';
+      }
+    }
+  }, [value]);
 
   return (
     <div
@@ -103,7 +95,7 @@ export function Tabs({
                   onChange={t.options.onChange}
                 >
                   <button
-                    onClick={isActive ? undefined : () => handleTabChange(t.value)}
+                    onClick={isActive ? undefined : () => onChangeValue(t.value)}
                     className={btnClassName}
                   >
                     {option && 'shortLabel' in option
@@ -121,7 +113,7 @@ export function Tabs({
               return (
                 <button
                   key={t.value}
-                  onClick={() => handleTabChange(t.value)}
+                  onClick={() => onChangeValue(t.value)}
                   className={btnClassName}
                 >
                   {t.label}

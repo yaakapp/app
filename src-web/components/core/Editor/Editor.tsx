@@ -19,6 +19,7 @@ import {
 } from 'react';
 import { useActiveEnvironmentVariables } from '../../../hooks/useActiveEnvironmentVariables';
 import { parseTemplate } from '../../../hooks/useParseTemplate';
+import { useRequestEditor } from '../../../hooks/useRequestEditor';
 import { useSettings } from '../../../hooks/useSettings';
 import { useTemplateFunctions } from '../../../hooks/useTemplateFunctions';
 import { useDialog } from '../../DialogContext';
@@ -227,6 +228,14 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [dialog],
   );
 
+  const { focusParamValue } = useRequestEditor();
+  const onClickPathParameter = useCallback(
+    async (name: string) => {
+      focusParamValue(name);
+    },
+    [focusParamValue],
+  );
+
   // Update the language extension when the language changes
   useEffect(() => {
     if (cm.current === null) return;
@@ -240,6 +249,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       onClickFunction,
       onClickVariable,
       onClickMissingVariable,
+      onClickPathParameter,
     });
     view.dispatch({ effects: languageCompartment.reconfigure(ext) });
   }, [
@@ -251,6 +261,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     onClickFunction,
     onClickVariable,
     onClickMissingVariable,
+    onClickPathParameter,
   ]);
 
   // Initialize the editor when ref mounts
@@ -274,6 +285,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           onClickVariable,
           onClickFunction,
           onClickMissingVariable,
+          onClickPathParameter,
         });
 
         const state = EditorState.create({

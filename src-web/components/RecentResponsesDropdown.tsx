@@ -1,4 +1,5 @@
 import type { HttpResponse } from '@yaakapp/api';
+import { useCopyHttpResponse } from '../hooks/useCopyHttpResponse';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';
 import { useSaveResponse } from '../hooks/useSaveResponse';
@@ -25,6 +26,7 @@ export const RecentResponsesDropdown = function ResponsePane({
   const deleteAllResponses = useDeleteHttpResponses(activeResponse?.requestId);
   const latestResponseId = responses[0]?.id ?? 'n/a';
   const saveResponse = useSaveResponse(activeResponse);
+  const copyResponse = useCopyHttpResponse(activeResponse);
 
   return (
     <Dropdown
@@ -34,6 +36,14 @@ export const RecentResponsesDropdown = function ResponsePane({
           label: 'Save to File',
           onSelect: saveResponse.mutate,
           leftSlot: <Icon icon="save" />,
+          hidden: responses.length === 0,
+          disabled: responses.length === 0,
+        },
+        {
+          key: 'copy',
+          label: 'Copy to Clipboard',
+          onSelect: copyResponse.mutate,
+          leftSlot: <Icon icon="copy" />,
           hidden: responses.length === 0,
           disabled: responses.length === 0,
         },

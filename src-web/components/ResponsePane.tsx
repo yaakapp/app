@@ -1,7 +1,7 @@
 import type { HttpRequest } from '@yaakapp/api';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
@@ -34,18 +34,30 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<string>('body');
+const useActiveTab = createGlobalState<Record<string, string>>({});
+
+const TAB_BODY = 'body';
+const TAB_HEADERS = 'headers';
+const TAB_INFO = 'info';
+const DEFAULT_TAB = TAB_BODY;
 
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
   const { activeResponse, setPinnedResponseId, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
-  const [activeTab, setActiveTab] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useActiveTab();
   const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
+  const activeTab = activeTabs[activeRequest.id] ?? DEFAULT_TAB;
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
+    },
+    [activeRequest.id, setActiveTabs],
+  );
 
   const tabs = useMemo<TabItem[]>(
     () => [
       {
-        value: 'body',
+        value: TAB_BODY,
         label: 'Preview Mode',
         options: {
           value: viewMode,
@@ -57,6 +69,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         },
       },
       {
+        value: TAB_HEADERS,
         label: (
           <div className="flex items-center">
             Headers
@@ -65,11 +78,10 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             />
           </div>
         ),
-        value: 'headers',
       },
       {
+        value: TAB_INFO,
         label: 'Info',
-        value: 'info',
       },
     ],
     [activeResponse?.headers, contentType, setViewMode, viewMode],
@@ -142,20 +154,15 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             </Banner>
           ) : (
             <Tabs
+              key={activeRequest.id} // Freshen tabs on request change
               value={activeTab}
               onChangeValue={setActiveTab}
-              label="Response"
               tabs={tabs}
+              label="Response"
               className="ml-3 mr-3 mb-3"
               tabListClassName="mt-1.5"
             >
-              <TabContent value="headers">
-                <ResponseHeaders response={activeResponse} />
-              </TabContent>
-              <TabContent value="info">
-                <ResponseInfo response={activeResponse} />
-              </TabContent>
-              <TabContent value="body">
+              <TabContent value={TAB_BODY}>
                 {!activeResponse.contentLength ? (
                   <div className="pb-2 h-full">
                     <EmptyStateText>Empty Body</EmptyStateText>
@@ -179,6 +186,12 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                     pretty={viewMode === 'pretty'}
                   />
                 )}
+              </TabContent>
+              <TabContent value={TAB_HEADERS}>
+                <ResponseHeaders response={activeResponse} />
+              </TabContent>
+              <TabContent value={TAB_INFO}>
+                <ResponseInfo response={activeResponse} />
               </TabContent>
             </Tabs>
           )}

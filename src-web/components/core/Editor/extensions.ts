@@ -88,12 +88,14 @@ export function getLanguageExtension({
   onClickVariable,
   onClickFunction,
   onClickMissingVariable,
+  onClickPathParameter,
 }: {
   environmentVariables: EnvironmentVariable[];
   templateFunctions: TemplateFunction[];
   onClickFunction: (option: TemplateFunction, tagValue: string, startPos: number) => void;
   onClickVariable: (option: EnvironmentVariable, tagValue: string, startPos: number) => void;
   onClickMissingVariable: (name: string, tagValue: string, startPos: number) => void;
+  onClickPathParameter: (name: string) => void;
 } & Pick<EditorProps, 'language' | 'useTemplating' | 'autocomplete'>) {
   if (language === 'graphql') {
     return graphql();
@@ -112,6 +114,7 @@ export function getLanguageExtension({
     onClickFunction,
     onClickVariable,
     onClickMissingVariable,
+    onClickPathParameter,
   });
 }
 
