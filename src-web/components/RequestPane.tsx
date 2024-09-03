@@ -54,11 +54,13 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<string>('body');
+const useActiveTab = createGlobalState<Record<string, string>>({});
+
 const TAB_BODY = 'body';
 const TAB_PARAMS = 'params';
 const TAB_HEADERS = 'headers';
 const TAB_AUTH = 'auth';
+const DEFAULT_TAB = TAB_BODY;
 
 export const RequestPane = memo(function RequestPane({
   style,
@@ -69,7 +71,7 @@ export const RequestPane = memo(function RequestPane({
   const requests = useRequests();
   const activeRequestId = activeRequest.id;
   const updateRequest = useUpdateAnyHttpRequest();
-  const [activeTab, setActiveTab] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
@@ -297,6 +299,14 @@ export const RequestPane = memo(function RequestPane({
   const isLoading = useIsResponseLoading(activeRequestId ?? null);
   const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
   const importCurl = useImportCurl();
+
+  const activeTab = activeTabs[activeRequestId] ?? DEFAULT_TAB;
+  const setActiveTab = useCallback(
+    (tab: string) => {
+      setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
+    },
+    [activeRequest.id, setActiveTabs],
+  );
 
   useRequestEditorEvent('request_pane.focus_tab', () => {
     setActiveTab(TAB_PARAMS);

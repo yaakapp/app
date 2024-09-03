@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
-import { memo, useCallback, useEffect, useRef } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { Icon } from '../Icon';
 import type { RadioDropdownProps } from '../RadioDropdown';
 import { RadioDropdown } from '../RadioDropdown';
@@ -59,11 +59,6 @@ export function Tabs({
     },
     [onChangeValue],
   );
-
-  useEffect(() => {
-    if (value === undefined) return;
-    handleTabChange(value);
-  }, [handleTabChange, value]);
 
   return (
     <div
