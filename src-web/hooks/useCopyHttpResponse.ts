@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import type { HttpResponse } from '@yaakapp/api';
-import { useCopy } from '../hooks/useCopy';
+import { useCopy } from './useCopy';
 import { getResponseBodyText } from '../lib/responseBody';
 
 export function useCopyHttpResponse(response: HttpResponse) {
