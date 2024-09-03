@@ -60,6 +60,7 @@ const TAB_BODY = 'body';
 const TAB_PARAMS = 'params';
 const TAB_HEADERS = 'headers';
 const TAB_AUTH = 'auth';
+
 const DEFAULT_TAB = TAB_BODY;
 
 export const RequestPane = memo(function RequestPane({
@@ -108,12 +109,7 @@ export const RequestPane = memo(function RequestPane({
       if (index >= 0) {
         items[index]!.readOnlyName = true;
       } else {
-        items.push({
-          name,
-          value: '',
-          enabled: true,
-          readOnlyName: true,
-        });
+        items.push({ name, value: '', enabled: true, readOnlyName: true });
       }
     }
     return { urlParameterPairs: items, urlParametersKey: placeholderNames.join(',') };
@@ -358,13 +354,14 @@ export const RequestPane = memo(function RequestPane({
             isLoading={isLoading}
           />
           <Tabs
+            key={activeRequest.id} // Freshen tabs on request change
             value={activeTab}
             label="Request"
             onChangeValue={setActiveTab}
             tabs={tabs}
             tabListClassName="mt-2 !mb-1.5"
           >
-            <TabContent value="auth">
+            <TabContent value={TAB_AUTH}>
               {activeRequest.authenticationType === AUTH_TYPE_BASIC ? (
                 <BasicAuth key={forceUpdateKey} request={activeRequest} />
               ) : activeRequest.authenticationType === AUTH_TYPE_BEARER ? (
@@ -375,21 +372,21 @@ export const RequestPane = memo(function RequestPane({
                 </EmptyStateText>
               )}
             </TabContent>
-            <TabContent value="headers">
+            <TabContent value={TAB_HEADERS}>
               <HeadersEditor
                 forceUpdateKey={`${forceUpdateHeaderEditorKey}::${forceUpdateKey}`}
                 headers={activeRequest.headers}
                 onChange={handleHeadersChange}
               />
             </TabContent>
-            <TabContent value="params">
+            <TabContent value={TAB_PARAMS}>
               <UrlParametersEditor
                 forceUpdateKey={forceUpdateKey + urlParametersKey}
                 pairs={urlParameterPairs}
                 onChange={handleUrlParametersChange}
               />
             </TabContent>
-            <TabContent value="body">
+            <TabContent value={TAB_BODY}>
               {activeRequest.bodyType === BODY_TYPE_JSON ? (
                 <Editor
                   forceUpdateKey={forceUpdateKey}
