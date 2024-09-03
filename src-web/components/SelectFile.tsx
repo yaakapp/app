@@ -9,22 +9,24 @@ import { HStack } from './core/Stacks';
 type Props = ButtonProps & {
   onChange: (value: { filePath: string | null; contentType: string | null }) => void;
   filePath: string | null;
+  directory?: boolean;
   inline?: boolean;
 };
 
 // Special character to insert ltr text in rtl element
 const rtlEscapeChar = <>&#x200E;</>;
 
-export function SelectFile({ onChange, filePath, inline, className }: Props) {
+export function SelectFile({ onChange, filePath, inline, className, directory }: Props) {
   const handleClick = async () => {
     const selected = await open({
       title: 'Select File',
       multiple: false,
+      directory,
     });
     if (selected == null) return;
 
     const filePath = selected.path;
-    const contentType = typeof filePath === 'string' && filePath ? mime.getType(filePath) : null;
+    const contentType = filePath ? mime.getType(filePath) : null;
     onChange({ filePath, contentType });
   };
 

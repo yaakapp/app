@@ -6,10 +6,8 @@ import { invokeCmd } from '../lib/tauri';
 export function useCreatePlugin() {
   return useMutation<void, unknown, Partial<Plugin>>({
     mutationKey: ['create_plugin'],
-    mutationFn: async (patch = {}) => {
-      await invokeCmd('cmd_create_plugin', {
-        name: patch.name,
-      });
+    mutationFn: async (patch) => {
+      await invokeCmd('cmd_create_plugin', patch);
     },
     onSettled: () => trackEvent('plugin', 'create'),
   });

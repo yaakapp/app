@@ -1150,11 +1150,11 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
-async fn cmd_create_plugin(name: &str, w: WebviewWindow) -> Result<Plugin, String> {
+async fn cmd_create_plugin(file_path: &str, w: WebviewWindow) -> Result<Plugin, String> {
     upsert_plugin(
         &w,
         Plugin {
-            name: name.to_string(),
+            uri: format!("file://{file_path}"),
             ..Default::default()
         },
     )
@@ -1899,7 +1899,8 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             return;
         }
 
-        match event.id().0.as_str() {
+        let event_id = event.id().0.as_str();
+        match event_id {
             "quit" => exit(0),
             "close" => w.close().unwrap(),
             "zoom_reset" => w.emit("zoom_reset", true).unwrap(),
