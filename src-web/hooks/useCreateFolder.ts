@@ -2,13 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import type { Folder } from '@yaakapp/api';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
-import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { usePrompt } from './usePrompt';
 
 export function useCreateFolder() {
   const workspace = useActiveWorkspace();
-  const activeRequest = useActiveRequest();
   const prompt = usePrompt();
 
   return useMutation<Folder, unknown, Partial<Pick<Folder, 'name' | 'sortPriority' | 'folderId'>>>({
@@ -29,7 +27,6 @@ export function useCreateFolder() {
           placeholder: 'Name',
         }));
       patch.sortPriority = patch.sortPriority || -Date.now();
-      patch.folderId = patch.folderId || activeRequest?.folderId;
       return invokeCmd('cmd_create_folder', { workspaceId: workspace.id, ...patch });
     },
     onSettled: () => trackEvent('folder', 'create'),

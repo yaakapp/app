@@ -13,7 +13,7 @@ export function useCreateDropdownItems({
 }: {
   hideFolder?: boolean;
   hideIcons?: boolean;
-  folderId?: string;
+  folderId?: string | null;
 } = {}): DropdownItem[] {
   const createHttpRequest = useCreateHttpRequest();
   const createGrpcRequest = useCreateGrpcRequest();
