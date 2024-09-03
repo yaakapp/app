@@ -3,8 +3,8 @@ import type { DependencyList } from 'react';
 import { useCallback, useEffect } from 'react';
 
 type EventDataMap = {
-  focus_http_request_param_value: string;
-  focus_http_request_params_tab: undefined;
+  'request_params.focus_value': string;
+  'request_pane.focus_tab': undefined;
 };
 
 export function useRequestEditorEvent<
@@ -22,13 +22,13 @@ export function useRequestEditorEvent<
 
 export function useRequestEditor() {
   const focusParamsTab = useCallback(() => {
-    emitter.emit('focus_http_request_params_tab', undefined);
+    emitter.emit('request_pane.focus_tab', undefined);
   }, []);
 
   const focusParamValue = useCallback(
     (name: string) => {
       focusParamsTab();
-      setTimeout(() => emitter.emit('focus_http_request_param_value', name), 50);
+      setTimeout(() => emitter.emit('request_params.focus_value', name), 50);
     },
     [focusParamsTab],
   );

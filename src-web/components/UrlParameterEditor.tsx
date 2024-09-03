@@ -15,7 +15,7 @@ export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) 
   const pairEditor = useRef<PairEditorRef>(null);
 
   useRequestEditorEvent(
-    'focus_http_request_param_value',
+    'request_params.focus_value',
     (name) => {
       const pairIndex = pairs.findIndex((p) => p.name === name);
       if (pairIndex >= 0) {
