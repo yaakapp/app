@@ -168,15 +168,16 @@ export function GlobalHooks() {
     document.documentElement.style.setProperty('--editor-font-size', `${editorFontSize}px`);
   }, [settings]);
 
-  // Handle Zoom. Note, Mac handles it in app menu, so need to also handle keyboard
+  // Handle Zoom.
+  // Note, Mac handles it in the app menu, so need to also handle keyboard
   // shortcuts for Windows/Linux
   const zoom = useZoom();
-  useHotKey('app.zoom_in', () => zoom.zoomIn);
-  useListenToTauriEvent('zoom_in', () => zoom.zoomIn);
-  useHotKey('app.zoom_out', () => zoom.zoomOut);
-  useListenToTauriEvent('zoom_out', () => zoom.zoomOut);
-  useHotKey('app.zoom_reset', () => zoom.zoomReset);
-  useListenToTauriEvent('zoom_reset', () => zoom.zoomReset);
+  useHotKey('app.zoom_in', zoom.zoomIn);
+  useListenToTauriEvent('zoom_in', zoom.zoomIn);
+  useHotKey('app.zoom_out', zoom.zoomOut);
+  useListenToTauriEvent('zoom_out', zoom.zoomOut);
+  useHotKey('app.zoom_reset', zoom.zoomReset);
+  useListenToTauriEvent('zoom_reset', zoom.zoomReset);
 
   const copy = useCopy();
   useListenToTauriEvent('generate_theme_css', () => {
