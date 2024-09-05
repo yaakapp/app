@@ -46,3 +46,8 @@ export function modelsEq(a: Model, b: Model) {
 export function getContentTypeHeader(headers: HttpResponseHeader[]): string | null {
   return headers.find((h) => h.name.toLowerCase() === 'content-type')?.value ?? null;
 }
+
+export function getCharsetFromContentType(headers: HttpResponseHeader[]): string | null {
+  const contentType = getContentTypeHeader(headers);
+  return contentType?.match(/charset=([^ ;]+)/)?.[1] ?? null;
+}

@@ -1,9 +1,18 @@
-import { readFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { readFile } from '@tauri-apps/plugin-fs';
 import type { HttpResponse } from '@yaakapp/api';
+import { getCharsetFromContentType } from './models';
 
 export async function getResponseBodyText(response: HttpResponse): Promise<string | null> {
   if (response.bodyPath) {
-    return await readTextFile(response.bodyPath);
+    const bytes = await readFile(response.bodyPath);
+    const charset = getCharsetFromContentType(response.headers);
+
+    try {
+      return new TextDecoder(charset ?? 'utf-8', { fatal: true }).decode(bytes);
+    } catch (_) {
+      // Failed to decode as text, so return null
+      return null;
+    }
   }
   return null;
 }
