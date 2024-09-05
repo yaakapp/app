@@ -18,8 +18,8 @@ pub struct InternalEvent {
 #[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export)]
 pub enum InternalEventPayload {
-    BootRequest(BootRequest),
-    BootResponse(BootResponse),
+    BootRequest(PluginBootRequest),
+    BootResponse(PluginBootResponse),
 
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
@@ -68,14 +68,14 @@ pub struct EmptyResponse {}
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct BootRequest {
+pub struct PluginBootRequest {
     pub dir: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct BootResponse {
+pub struct PluginBootResponse {
     pub name: String,
     pub version: String,
     pub capabilities: Vec<String>,

@@ -1,4 +1,3 @@
-use log::info;
 use rand::distributions::{Alphanumeric, DistString};
 use std::collections::HashMap;
 use std::pin::Pin;
@@ -11,7 +10,7 @@ use tonic::{Request, Response, Status, Streaming};
 
 use crate::error::Error::PluginNotFoundErr;
 use crate::error::Result;
-use crate::events::{BootRequest, BootResponse, InternalEvent, InternalEventPayload};
+use crate::events::{PluginBootRequest, PluginBootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
 use plugin_runtime::EventStreamEvent;
 use yaak_models::queries::generate_id;
@@ -28,7 +27,7 @@ pub struct PluginHandle {
     dir: String,
     to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
     ref_id: String,
-    boot_resp: Arc<Mutex<Option<BootResponse>>>,
+    boot_resp: Arc<Mutex<Option<PluginBootResponse>>>,
 }
 
 impl PluginHandle {
@@ -37,6 +36,11 @@ impl PluginHandle {
             None => "__NOT_BOOTED__".to_string(),
             Some(r) => r.name.to_owned(),
         }
+    }
+    
+    pub async fn info(&self) -> Option<PluginBootResponse> {
+        let resp = &*self.boot_resp.lock().await;
+        resp.clone()
     }
 
     pub fn build_event_to_send(
@@ -53,11 +57,11 @@ impl PluginHandle {
     }
 
     pub async fn send(&self, event: &InternalEvent) -> Result<()> {
-        info!(
-            "Sending event to plugin {} {:?}",
-            event.id,
-            self.name().await
-        );
+        // info!(
+        //     "Sending event to plugin {} {:?}",
+        //     event.id,
+        //     self.name().await
+        // );
         self.to_plugin_tx
             .lock()
             .await
@@ -68,7 +72,7 @@ impl PluginHandle {
         Ok(())
     }
 
-    pub async fn boot(&self, resp: &BootResponse) {
+    pub async fn boot(&self, resp: &PluginBootResponse) {
         let mut boot_resp = self.boot_resp.lock().await;
         *boot_resp = Some(resp.clone());
     }
@@ -120,7 +124,7 @@ impl PluginRuntimeGrpcServer {
         };
     }
 
-    pub async fn boot_plugin(&self, id: &str, resp: &BootResponse) {
+    pub async fn boot_plugin(&self, id: &str, resp: &PluginBootResponse) {
         match self.plugin_ref_to_plugin.lock().await.get(id) {
             None => {
                 println!("Tried booting non-existing plugin {}", id);
@@ -151,61 +155,27 @@ impl PluginRuntimeGrpcServer {
         plugin_handle
     }
 
-    // pub async fn callback(
-    //     &self,
-    //     source_event: InternalEvent,
-    //     payload: InternalEventPayload,
-    // ) -> Result<InternalEvent> {
-    //     let reply_id = match source_event.clone().reply_id {
-    //         None => {
-    //             let msg = format!("Source event missing reply Id {:?}", source_event.clone());
-    //             return Err(MissingCallbackIdErr(msg));
-    //         }
-    //         Some(id) => id,
-    //     };
-    //
-    //     let callbacks = self.callbacks.lock().await;
-    //     let plugin_name = match callbacks.get(reply_id.as_str()) {
-    //         None => {
-    //             let msg = format!("Callback not found {:?}", source_event);
-    //             return Err(MissingCallbackErr(msg));
-    //         }
-    //         Some(n) => n,
-    //     };
-    //
-    //     let plugins = self.plugins.lock().await;
-    //     let plugin = match plugins.get(plugin_name) {
-    //         None => {
-    //             let msg = format!(
-    //                 "Plugin not found {plugin_name}. Choices were {:?}",
-    //                 plugins.keys()
-    //             );
-    //             return Err(UnknownPluginErr(msg));
-    //         }
-    //         Some(n) => n,
-    //     };
-    //
-    //     plugin.send(&payload, Some(reply_id)).await
-    // }
-
     pub async fn plugin_by_ref_id(&self, ref_id: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
-        if plugins.is_empty() {
-            return Err(PluginNotFoundErr(ref_id.into()));
-        }
-
         match plugins.get(ref_id) {
             None => Err(PluginNotFoundErr(ref_id.into())),
             Some(p) => Ok(p.to_owned()),
         }
     }
+    
+    pub async fn plugin_by_dir(&self, dir: &str) -> Result<PluginHandle> {
+        let plugins = self.plugin_ref_to_plugin.lock().await;
+        for p in plugins.values() {
+            if p.dir == dir {
+                return Ok(p.to_owned());
+            }
+        }
+
+        Err(PluginNotFoundErr(dir.into()))
+    }
 
     pub async fn plugin_by_name(&self, plugin_name: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
-        if plugins.is_empty() {
-            return Err(PluginNotFoundErr(plugin_name.into()));
-        }
-
         for p in plugins.values() {
             if p.name().await == plugin_name {
                 return Ok(p.to_owned());
@@ -341,7 +311,7 @@ impl PluginRuntimeGrpcServer {
             plugin_ids.push(plugin.clone().ref_id);
 
             let event = plugin.build_event_to_send(
-                &InternalEventPayload::BootRequest(BootRequest {
+                &InternalEventPayload::BootRequest(PluginBootRequest {
                     dir: dir.to_string(),
                 }),
                 None,

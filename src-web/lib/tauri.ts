@@ -54,6 +54,7 @@ type TauriCmd =
   | 'cmd_new_nested_window'
   | 'cmd_new_window'
   | 'cmd_parse_template'
+  | 'cmd_plugin_info'
   | 'cmd_render_template'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'

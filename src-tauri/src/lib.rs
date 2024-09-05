@@ -1,6 +1,5 @@
 extern crate core;
 #[cfg(target_os = "macos")]
-#[macro_use]
 extern crate objc;
 
 use std::collections::HashMap;
@@ -50,8 +49,8 @@ use yaak_models::queries::{
     delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
     generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
     get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_workspace, list_cookie_jars, list_environments, list_folders,
-    list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
+    get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments,
+    list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
     list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
     update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
@@ -59,7 +58,8 @@ use yaak_models::queries::{
 use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
-    InternalEvent, InternalEventPayload, RenderHttpRequestResponse, SendHttpRequestResponse,
+    InternalEvent, InternalEventPayload, PluginBootResponse, RenderHttpRequestResponse,
+    SendHttpRequestResponse,
 };
 use yaak_templates::{Parser, Tokens};
 
@@ -77,6 +77,9 @@ mod window_menu;
 
 const DEFAULT_WINDOW_WIDTH: f64 = 1100.0;
 const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
+
+const MIN_WINDOW_WIDTH: f64 = 300.0;
+const MIN_WINDOW_HEIGHT: f64 = 300.0;
 
 #[derive(serde::Serialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -1150,11 +1153,12 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
-async fn cmd_create_plugin(file_path: &str, w: WebviewWindow) -> Result<Plugin, String> {
+async fn cmd_create_plugin(directory: &str, url: Option<String>, w: WebviewWindow) -> Result<Plugin, String> {
     upsert_plugin(
         &w,
         Plugin {
-            uri: format!("file://{file_path}"),
+            directory: directory.into(),
+            url,
             ..Default::default()
         },
     )
@@ -1433,6 +1437,19 @@ async fn cmd_list_environments(
 #[tauri::command]
 async fn cmd_list_plugins(w: WebviewWindow) -> Result<Vec<Plugin>, String> {
     list_plugins(&w).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_plugin_info(
+    id: &str,
+    w: WebviewWindow,
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<PluginBootResponse, String> {
+    let plugin = get_plugin(&w, id).await.map_err(|e| e.to_string())?;
+    plugin_manager
+        .get_plugin_info(plugin.directory.as_str())
+        .await
+        .ok_or("Failed to find plugin info".to_string())
 }
 
 #[tauri::command]
@@ -1729,6 +1746,7 @@ pub fn run() {
             cmd_list_http_requests,
             cmd_list_http_responses,
             cmd_list_plugins,
+            cmd_plugin_info,
             cmd_list_workspaces,
             cmd_metadata,
             cmd_new_nested_window,
@@ -1830,6 +1848,7 @@ fn create_nested_window(
     .title(title)
     .parent(&window)
     .unwrap()
+    .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
     .inner_size(DEFAULT_WINDOW_WIDTH * 0.7, DEFAULT_WINDOW_HEIGHT * 0.9);
 
     // Add macOS-only things
@@ -1840,7 +1859,7 @@ fn create_nested_window(
             .title_bar_style(TitleBarStyle::Overlay);
     }
 
-    // Add non-MacOS things
+    // Add non-macOS things
     #[cfg(not(target_os = "macos"))]
     {
         win_builder = win_builder.decorations(false);
@@ -1873,7 +1892,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 100.0 + random::<f64>() * 30.0,
                 100.0 + random::<f64>() * 30.0,
             )
-            .min_inner_size(300.0, 300.0)
+            .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
             .title(handle.package_info().name.to_string());
 
     // Add macOS-only things
@@ -1971,7 +1990,7 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
 }
 
 async fn handle_plugin_event<R: Runtime>(app_handle: &AppHandle<R>, event: &InternalEvent) {
-    info!("Got event to app {}", event.id);
+    // info!("Got event to app {}", event.id);
     let response_event: Option<InternalEventPayload> = match event.clone().payload {
         InternalEventPayload::CopyTextRequest(req) => {
             app_handle

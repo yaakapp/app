@@ -713,9 +713,8 @@ pub struct Plugin {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub checked_at: Option<NaiveDateTime>,
-    pub name: String,
-    pub version: String,
-    pub uri: String,
+    pub directory: String,
+    pub url: Option<String>,
     pub enabled: bool,
 }
 
@@ -728,9 +727,8 @@ pub enum PluginIden {
     CreatedAt,
     UpdatedAt,
     CheckedAt,
-    Name,
-    Version,
-    Uri,
+    Directory,
+    Url,
     Enabled,
 }
 
@@ -744,9 +742,8 @@ impl<'s> TryFrom<&Row<'s>> for Plugin {
             created_at: r.get("created_at")?,
             updated_at: r.get("updated_at")?,
             checked_at: r.get("checked_at")?,
-            name: r.get("name")?,
-            version: r.get("version")?,
-            uri: r.get("uri")?,
+            url: r.get("url")?,
+            directory: r.get("directory")?,
             enabled: r.get("enabled")?,
         })
     }

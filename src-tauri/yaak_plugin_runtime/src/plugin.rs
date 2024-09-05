@@ -15,21 +15,30 @@ use tokio::fs::read_dir;
 use tokio::net::TcpListener;
 use tonic::codegen::tokio_stream;
 use tonic::transport::Server;
+use yaak_models::queries::list_plugins;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("yaak_plugin_runtime")
-        .setup(|app, _| {
-            let plugins_dir = app
+        .setup(|app_handle, _| {
+            let plugins_dir = app_handle
                 .path()
                 .resolve("plugins", BaseDirectory::Resource)
                 .expect("failed to resolve plugin directory resource");
 
             tauri::async_runtime::block_on(async move {
-                let plugin_dirs = read_plugins_dir(&plugins_dir)
+                let bundled_plugin_dirs = read_plugins_dir(&plugins_dir)
                     .await
                     .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str());
-                let manager = PluginManager::new(&app, plugin_dirs).await;
-                app.manage(manager);
+
+                let plugins = list_plugins(app_handle).await.unwrap_or_default();
+                let installed_plugin_dirs = plugins
+                    .iter()
+                    .map(|p| p.directory.to_owned())
+                    .collect::<Vec<String>>();
+
+                let plugin_dirs = [installed_plugin_dirs, bundled_plugin_dirs].concat();
+                let manager = PluginManager::new(&app_handle, plugin_dirs).await;
+                app_handle.manage(manager);
                 Ok(())
             })
         })

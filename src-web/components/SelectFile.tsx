@@ -11,21 +11,29 @@ type Props = ButtonProps & {
   filePath: string | null;
   directory?: boolean;
   inline?: boolean;
+  noun?: string;
 };
 
 // Special character to insert ltr text in rtl element
 const rtlEscapeChar = <>&#x200E;</>;
 
-export function SelectFile({ onChange, filePath, inline, className, directory }: Props) {
+export function SelectFile({
+  onChange,
+  filePath,
+  inline,
+  className,
+  directory,
+  noun,
+  size = 'sm',
+  ...props
+}: Props) {
   const handleClick = async () => {
-    const selected = await open({
+    const filePath = await open({
       title: 'Select File',
       multiple: false,
       directory,
     });
-    if (selected == null) return;
-
-    const filePath = selected.path;
+    if (filePath == null) return;
     const contentType = filePath ? mime.getType(filePath) : null;
     onChange({ filePath, contentType });
   };
@@ -34,31 +42,41 @@ export function SelectFile({ onChange, filePath, inline, className, directory }:
     onChange({ filePath: null, contentType: null });
   };
 
+  const itemLabel = noun ?? (directory ? 'Folder' : 'File');
+  const selectOrChange = (filePath ? 'Change ' : 'Select ') + itemLabel;
+
   return (
-    <HStack space={1.5} className="group relative justify-stretch">
+    <HStack space={1.5} className="group relative justify-stretch overflow-hidden">
       <Button
         className={classNames(className, 'font-mono text-xs rtl', inline && 'w-full')}
         color="secondary"
-        size="sm"
         onClick={handleClick}
+        size={size}
+        {...props}
       >
         {rtlEscapeChar}
-        {inline ? <>{filePath || 'Select File'}</> : <>Select File</>}
+        {inline ? filePath || selectOrChange : selectOrChange}
       </Button>
       {!inline && (
         <>
           {filePath && (
             <IconButton
-              size="sm"
+              size={size}
               variant="border"
               icon="x"
-              title="Unset File"
+              title={'Unset ' + itemLabel}
               onClick={handleClear}
             />
           )}
-          <div className="text-sm font-mono truncate rtl pr-3 text">
+          <div
+            className={classNames(
+              'font-mono truncate rtl pl-1.5 pr-3 text-text',
+              size === 'xs' && 'text-xs',
+              size === 'sm' && 'text-sm',
+            )}
+          >
             {rtlEscapeChar}
-            {filePath ?? 'No file selected'}
+            {filePath ?? `No ${itemLabel.toLowerCase()} selected`}
           </div>
         </>
       )}

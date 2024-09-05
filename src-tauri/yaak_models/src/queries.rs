@@ -872,6 +872,22 @@ pub async fn get_environment<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Res
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
+pub async fn get_plugin<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str
+) -> Result<Plugin> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::select()
+        .from(PluginIden::Table)
+        .column(Asterisk)
+        .cond_where(Expr::col(EnvironmentIden::Id).eq(id))
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+}
+
 pub async fn list_plugins<R: Runtime>(
     mgr: &impl Manager<R>,
 ) -> Result<Vec<Plugin>> {
@@ -881,7 +897,7 @@ pub async fn list_plugins<R: Runtime>(
     let (sql, params) = Query::select()
         .from(PluginIden::Table)
         .column(Asterisk)
-        .order_by(PluginIden::Name, Order::Asc)
+        .order_by(PluginIden::CreatedAt, Order::Desc)
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
@@ -906,9 +922,8 @@ pub async fn upsert_plugin<R: Runtime>(
             PluginIden::CreatedAt,
             PluginIden::UpdatedAt,
             PluginIden::CheckedAt,
-            PluginIden::Name,
-            PluginIden::Uri,
-            PluginIden::Version,
+            PluginIden::Directory,
+            PluginIden::Url,
             PluginIden::Enabled,
         ])
         .values_panic([
@@ -916,9 +931,8 @@ pub async fn upsert_plugin<R: Runtime>(
             CurrentTimestamp.into(),
             CurrentTimestamp.into(),
             plugin.checked_at.into(),
-            plugin.name.into(),
-            plugin.uri.into(),
-            plugin.version.into(),
+            plugin.directory.into(),
+            plugin.url.into(),
             plugin.enabled.into(),
         ])
         .on_conflict(
@@ -926,8 +940,8 @@ pub async fn upsert_plugin<R: Runtime>(
                 .update_columns([
                     PluginIden::UpdatedAt,
                     PluginIden::CheckedAt,
-                    PluginIden::Uri,
-                    PluginIden::Version,
+                    PluginIden::Directory,
+                    PluginIden::Url,
                     PluginIden::Enabled,
                 ])
                 .to_owned(),
