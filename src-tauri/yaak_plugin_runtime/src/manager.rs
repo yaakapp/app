@@ -1,9 +1,9 @@
 use crate::error::Result;
 use crate::events::{
-    CallHttpRequestActionRequest, CallTemplateFunctionArgs, RenderPurpose,
+    PluginBootResponse, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
     CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
     GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
-    ImportRequest, ImportResponse, InternalEvent, InternalEventPayload,
+    ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
 };
 use std::collections::HashMap;
 
@@ -62,6 +62,10 @@ impl PluginManager {
         self.server
             .send(&payload, source_event.plugin_ref_id.as_str(), reply_id)
             .await
+    }
+
+    pub async fn get_plugin_info(&self, dir: &str) -> Option<PluginBootResponse> {
+        self.server.plugin_by_dir(dir).await.ok()?.info().await
     }
 
     pub async fn get_http_request_actions(&self) -> Result<Vec<GetHttpRequestActionsResponse>> {
@@ -155,7 +159,9 @@ impl PluginManager {
         });
 
         match result {
-            None => Err(PluginErr("No importers found for file contents".to_string())),
+            None => Err(PluginErr(
+                "No importers found for file contents".to_string(),
+            )),
             Some((resp, ref_id)) => {
                 let plugin = self.server.plugin_by_ref_id(ref_id.as_str()).await?;
                 let plugin_name = plugin.name().await;

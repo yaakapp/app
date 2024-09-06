@@ -8,7 +8,8 @@ import type { GrpcRequest } from "./GrpcRequest";
 import type { HttpRequest } from "./HttpRequest";
 import type { HttpResponse } from "./HttpResponse";
 import type { KeyValue } from "./KeyValue";
+import type { Plugin } from "./Plugin";
 import type { Settings } from "./Settings";
 import type { Workspace } from "./Workspace";
 
-export type Model = Environment | Folder | GrpcConnection | GrpcEvent | GrpcRequest | HttpRequest | HttpResponse | KeyValue | Workspace | CookieJar | Settings;
+export type Model = Environment | Folder | GrpcConnection | GrpcEvent | GrpcRequest | HttpRequest | HttpResponse | KeyValue | Workspace | CookieJar | Settings | Plugin;

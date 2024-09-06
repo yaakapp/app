@@ -10,13 +10,15 @@ import { HeaderSize } from '../HeaderSize';
 import { WindowControls } from '../WindowControls';
 import { SettingsAppearance } from './SettingsAppearance';
 import { SettingsGeneral } from './SettingsGeneral';
+import { SettingsPlugins } from './SettingsPlugins';
 
 enum Tab {
   General = 'general',
   Appearance = 'appearance',
+  Plugins = 'plugins',
 }
 
-const tabs = [Tab.General, Tab.Appearance];
+const tabs = [Tab.General, Tab.Appearance, Tab.Plugins];
 
 export const Settings = () => {
   const osInfo = useOsInfo();
@@ -57,6 +59,9 @@ export const Settings = () => {
         </TabContent>
         <TabContent value={Tab.Appearance} className="pt-3 overflow-y-auto h-full px-4">
           <SettingsAppearance />
+        </TabContent>
+        <TabContent value={Tab.Plugins} className="pt-3 overflow-y-auto h-full px-4">
+          <SettingsPlugins />
         </TabContent>
       </Tabs>
     </div>

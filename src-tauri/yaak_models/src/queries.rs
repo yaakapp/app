@@ -1,12 +1,7 @@
 use std::fs;
 
 use crate::error::Result;
-use crate::models::{
-    CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
-    GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest,
-    HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
-    ModelType, Settings, SettingsIden, Workspace, WorkspaceIden,
-};
+use crate::models::{CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection, GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden};
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
@@ -848,7 +843,7 @@ pub async fn upsert_environment<R: Runtime>(
             serde_json::to_string(&environment.variables)?.into(),
         ])
         .on_conflict(
-            OnConflict::column(GrpcEventIden::Id)
+            OnConflict::column(EnvironmentIden::Id)
                 .update_columns([
                     EnvironmentIden::UpdatedAt,
                     EnvironmentIden::Name,
@@ -875,6 +870,88 @@ pub async fn get_environment<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Res
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+}
+
+pub async fn get_plugin<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str
+) -> Result<Plugin> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::select()
+        .from(PluginIden::Table)
+        .column(Asterisk)
+        .cond_where(Expr::col(EnvironmentIden::Id).eq(id))
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+}
+
+pub async fn list_plugins<R: Runtime>(
+    mgr: &impl Manager<R>,
+) -> Result<Vec<Plugin>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::select()
+        .from(PluginIden::Table)
+        .column(Asterisk)
+        .order_by(PluginIden::CreatedAt, Order::Desc)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn upsert_plugin<R: Runtime>(
+    window: &WebviewWindow<R>,
+    plugin: Plugin,
+) -> Result<Plugin> {
+    let id = match plugin.id.as_str() {
+        "" => generate_model_id(ModelType::TypePlugin),
+        _ => plugin.id.to_string(),
+    };
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::insert()
+        .into_table(PluginIden::Table)
+        .columns([
+            PluginIden::Id,
+            PluginIden::CreatedAt,
+            PluginIden::UpdatedAt,
+            PluginIden::CheckedAt,
+            PluginIden::Directory,
+            PluginIden::Url,
+            PluginIden::Enabled,
+        ])
+        .values_panic([
+            id.as_str().into(),
+            CurrentTimestamp.into(),
+            CurrentTimestamp.into(),
+            plugin.checked_at.into(),
+            plugin.directory.into(),
+            plugin.url.into(),
+            plugin.enabled.into(),
+        ])
+        .on_conflict(
+            OnConflict::column(PluginIden::Id)
+                .update_columns([
+                    PluginIden::UpdatedAt,
+                    PluginIden::CheckedAt,
+                    PluginIden::Directory,
+                    PluginIden::Url,
+                    PluginIden::Enabled,
+                ])
+                .to_owned(),
+        )
+        .returning_all()
+        .build_rusqlite(SqliteQueryBuilder);
+
+    let mut stmt = db.prepare(sql.as_str())?;
+    let m = stmt.query_row(&*params.as_params(), |row| row.try_into())?;
+    Ok(emit_upserted_model(window, m))
 }
 
 pub async fn get_folder<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Folder> {
