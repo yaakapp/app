@@ -2,8 +2,6 @@ export type * from './plugins';
 export type * from './themes';
 
 // TODO: The next ts-rs release includes the ability to put everything in 1 file!
-export * from './gen/BootRequest';
-export * from './gen/BootResponse';
 export * from './gen/CallHttpRequestActionArgs';
 export * from './gen/CallHttpRequestActionRequest';
 export * from './gen/CallTemplateFunctionRequest';
