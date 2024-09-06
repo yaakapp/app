@@ -74,7 +74,7 @@
   "devDependencies": {
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tanstack/react-query-devtools": "^5.45.1",
-    "@tauri-apps/cli": "^2.0.0-rc.2",
+    "@tauri-apps/cli": "^2.0.0-rc.12",
     "@types/node": "^18.7.10",
     "@types/papaparse": "^5.3.7",
     "@types/parse-color": "^1.0.1",
