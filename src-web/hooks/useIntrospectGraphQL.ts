@@ -1,6 +1,6 @@
 import type { HttpRequest } from '@yaakapp/api';
 import type { IntrospectionQuery } from 'graphql';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import { getResponseBodyText } from '../lib/responseBody';
@@ -28,8 +28,6 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
     fallback: null,
     namespace: 'global',
   });
-
-  const introspectionInterval = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const fetchIntrospection = async () => {
@@ -63,16 +61,9 @@ export function useIntrospectGraphQL(baseRequest: HttpRequest) {
       await setIntrospection(data);
     };
 
-    const runIntrospection = () => {
-      fetchIntrospection()
-        .catch((e) => setError(e.message))
-        .finally(() => setIsLoading(false));
-    };
-
-    // Do it again on an interval
-    clearInterval(introspectionInterval.current);
-    introspectionInterval.current = setInterval(runIntrospection, 1000 * 60);
-    runIntrospection(); // Run immediately
+    fetchIntrospection()
+      .catch((e) => setError(e.message))
+      .finally(() => setIsLoading(false));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request.id, request.url, request.method, refetchKey, activeEnvironment?.id]);
