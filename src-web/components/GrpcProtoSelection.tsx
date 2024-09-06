@@ -45,10 +45,9 @@ export function GrpcProtoSelection({ requestId }: Props) {
               multiple: true,
               filters: [{ name: 'Proto Files', extensions: ['proto'] }],
             });
-            if (selected == null) {
-              return;
-            }
-            const newFiles = selected.map((f) => f.path).filter((p) => !protoFiles.includes(p));
+            if (selected == null) return;
+
+            const newFiles = selected.filter((p) => !protoFiles.includes(p));
             await protoFilesKv.set([...protoFiles, ...newFiles]);
             await grpc.reflect.refetch();
           }}

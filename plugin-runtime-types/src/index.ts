@@ -43,6 +43,8 @@ export * from './gen/InternalEvent';
 export * from './gen/InternalEventPayload';
 export * from './gen/KeyValue';
 export * from './gen/Model';
+export * from './gen/PluginBootRequest';
+export * from './gen/PluginBootResponse';
 export * from './gen/RenderHttpRequestRequest';
 export * from './gen/RenderHttpRequestResponse';
 export * from './gen/RenderPurpose';
