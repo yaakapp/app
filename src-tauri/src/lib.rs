@@ -845,16 +845,33 @@ async fn cmd_import_data(
         imported_resources.environments.len()
     );
 
-    for mut v in resources.folders {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-        let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
-        imported_resources.folders.push(x.clone());
+    // Folders can foreign-key to themselves, so we need to import from
+    // the top of the tree to the bottom to avoid foreign key conflicts.
+    // We do this by looping until we've imported them all, only importing if:
+    //  - The parent folder has been imported
+    //  - The folder hasn't already been imported
+    // The loop exits when imported.len == to_import.len
+    while imported_resources.folders.len() < resources.folders.len() {
+        for mut v in resources.folders.clone() {
+            v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
+            v.workspace_id = maybe_gen_id(
+                v.workspace_id.as_str(),
+                ModelType::TypeWorkspace,
+                &mut id_map,
+            );
+            v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+            if let Some(fid) = v.folder_id.clone() {
+                let imported_parent = imported_resources.folders.iter().find(|f| f.id == fid);
+                if imported_parent.is_none() {
+                    continue;
+                }
+            }
+            if let Some(_) = imported_resources.folders.iter().find(|f| f.id == v.id) {
+                continue;
+            }
+            let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
+            imported_resources.folders.push(x.clone());
+        }
     }
     info!("Imported {} folders", imported_resources.folders.len());
 
