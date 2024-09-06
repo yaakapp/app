@@ -1,6 +1,5 @@
 extern crate core;
 #[cfg(target_os = "macos")]
-#[macro_use]
 extern crate objc;
 
 use std::collections::HashMap;
@@ -842,16 +841,46 @@ async fn cmd_import_data(
         imported_resources.environments.len()
     );
 
-    for mut v in resources.folders {
-        v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
-        v.workspace_id = maybe_gen_id(
-            v.workspace_id.as_str(),
-            ModelType::TypeWorkspace,
-            &mut id_map,
-        );
-        v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
-        let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
-        imported_resources.folders.push(x.clone());
+    // Folders can foreign-key to themselves, so we need to import from
+    // the top of the tree to the bottom to avoid foreign key conflicts.
+    // We do this by looping until we've imported them all, only importing if:
+    //  - The parent folder has been imported
+    //  - The folder hasn't already been imported
+    // The loop exits when imported.len == to_import.len
+    while imported_resources.folders.len() < resources.folders.len() {
+        for mut v in resources.folders.clone() {
+            v.id = maybe_gen_id(v.id.as_str(), ModelType::TypeFolder, &mut id_map);
+            v.workspace_id = maybe_gen_id(
+                v.workspace_id.as_str(),
+                ModelType::TypeWorkspace,
+                &mut id_map,
+            );
+            v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+            if let Some(fid) = v.folder_id.clone() {
+                let imported_parent = imported_resources.folders.iter().find(|f| f.id == fid);
+                if imported_parent.is_none() {
+                    // The referencing folder hasn't been imported yet, so continue to try again later
+                    println!(
+                        "SKIPPING FOLDER {} {} {} {}",
+                        v.name, v.id, v.workspace_id, fid
+                    );
+                    continue;
+                }
+            }
+            if let Some(imported_folder) = imported_resources.folders.iter().find(|f| f.id == v.id) {
+                println!(
+                    "ALREADY IMPORTED {} {} {} {:?}",
+                    v.name, v.id, v.workspace_id, imported_folder.folder_id
+                );
+                continue;
+            }
+            println!(
+                "WRITING FOLDER {} {} {} {:?}",
+                v.name, v.id, v.workspace_id, v.folder_id
+            );
+            let x = upsert_folder(&w, v).await.map_err(|e| e.to_string())?;
+            imported_resources.folders.push(x.clone());
+        }
     }
     info!("Imported {} folders", imported_resources.folders.len());
 
@@ -863,6 +892,10 @@ async fn cmd_import_data(
             &mut id_map,
         );
         v.folder_id = maybe_gen_id_opt(v.folder_id, ModelType::TypeFolder, &mut id_map);
+        println!(
+            "WRITING REQ {} {} {} {:?}",
+            v.name, v.id, v.workspace_id, v.folder_id
+        );
         let x = upsert_http_request(&w, v)
             .await
             .map_err(|e| e.to_string())?;

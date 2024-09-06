@@ -17,14 +17,13 @@ const rtlEscapeChar = <>&#x200E;</>;
 
 export function SelectFile({ onChange, filePath, inline, className }: Props) {
   const handleClick = async () => {
-    const selected = await open({
+    const filePath = await open({
       title: 'Select File',
       multiple: false,
     });
-    if (selected == null) return;
+    if (filePath == null) return;
 
-    const filePath = selected.path;
-    const contentType = typeof filePath === 'string' && filePath ? mime.getType(filePath) : null;
+    const contentType = filePath ? mime.getType(filePath) : null;
     onChange({ filePath, contentType });
   };
 
