@@ -9,7 +9,7 @@ export type { Context } from './Context';
 /**
  * The global structure of a Yaak plugin
  */
-export type Plugin = {
+export type PluginDefinition = {
   importer?: ImporterPlugin;
   theme?: ThemePlugin;
   filter?: FilterPlugin;

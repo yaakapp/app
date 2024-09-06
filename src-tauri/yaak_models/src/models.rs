@@ -655,6 +655,7 @@ pub struct GrpcEvent {
     pub request_id: String,
     pub connection_id: String,
     pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
     pub content: String,
     pub event_type: GrpcEventType,
     pub metadata: HashMap<String, String>,
@@ -693,11 +694,57 @@ impl<'s> TryFrom<&Row<'s>> for GrpcEvent {
             request_id: r.get("request_id")?,
             connection_id: r.get("connection_id")?,
             created_at: r.get("created_at")?,
+            updated_at: r.get("updated_at")?,
             content: r.get("content")?,
             event_type: serde_json::from_str(event_type.as_str()).unwrap_or_default(),
             metadata: serde_json::from_str(metadata.as_str()).unwrap_or_default(),
             status: r.get("status")?,
             error: r.get("error")?,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Plugin {
+    pub id: String,
+    #[ts(type = "\"plugin\"")]
+    pub model: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub checked_at: Option<NaiveDateTime>,
+    pub directory: String,
+    pub url: Option<String>,
+    pub enabled: bool,
+}
+
+#[derive(Iden)]
+pub enum PluginIden {
+    #[iden = "plugins"]
+    Table,
+    Id,
+    Model,
+    CreatedAt,
+    UpdatedAt,
+    CheckedAt,
+    Directory,
+    Url,
+    Enabled,
+}
+
+impl<'s> TryFrom<&Row<'s>> for Plugin {
+    type Error = rusqlite::Error;
+
+    fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
+        Ok(Plugin {
+            id: r.get("id")?,
+            model: r.get("model")?,
+            created_at: r.get("created_at")?,
+            updated_at: r.get("updated_at")?,
+            checked_at: r.get("checked_at")?,
+            url: r.get("url")?,
+            directory: r.get("directory")?,
+            enabled: r.get("enabled")?,
         })
     }
 }
@@ -758,6 +805,7 @@ pub enum ModelType {
     TypeGrpcRequest,
     TypeHttpRequest,
     TypeHttpResponse,
+    TypePlugin,
     TypeWorkspace,
 }
 
@@ -772,6 +820,7 @@ impl ModelType {
             ModelType::TypeGrpcRequest => "gr",
             ModelType::TypeHttpRequest => "rq",
             ModelType::TypeHttpResponse => "rs",
+            ModelType::TypePlugin => "pg",
             ModelType::TypeWorkspace => "wk",
         }
         .to_string()

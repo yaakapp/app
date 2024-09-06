@@ -18,6 +18,7 @@ import { httpResponsesQueryKey } from '../hooks/useHttpResponses';
 import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useNotificationToast } from '../hooks/useNotificationToast';
+import { pluginsAtom } from '../hooks/usePlugins';
 import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -67,6 +68,7 @@ export function GlobalHooks() {
 
   const setSettings = useSetAtom(settingsAtom);
   const setWorkspaces = useSetAtom(workspacesAtom);
+  const setPlugins = useSetAtom(pluginsAtom);
   const setHttpRequests = useSetAtom(httpRequestsAtom);
   const setGrpcRequests = useSetAtom(grpcRequestsAtom);
   const setEnvironments = useSetAtom(environmentsAtom);
@@ -100,6 +102,8 @@ export function GlobalHooks() {
 
     if (model.model === 'workspace') {
       setWorkspaces(updateModelList(model, pushToFront));
+    } else if (model.model === 'plugin') {
+      setPlugins(updateModelList(model, pushToFront));
     } else if (model.model === 'http_request') {
       setHttpRequests(updateModelList(model, pushToFront));
     } else if (model.model === 'grpc_request') {
@@ -129,6 +133,8 @@ export function GlobalHooks() {
 
     if (model.model === 'workspace') {
       setWorkspaces(removeById(model));
+    } else if (model.model === 'plugin') {
+      setPlugins(removeById(model));
     } else if (model.model === 'http_request') {
       setHttpRequests(removeById(model));
     } else if (model.model === 'http_response') {

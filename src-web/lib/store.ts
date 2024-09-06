@@ -4,6 +4,7 @@ import type {
   Folder,
   GrpcRequest,
   HttpRequest,
+  Plugin,
   Settings,
   Workspace,
 } from '@yaakapp/api';
@@ -61,6 +62,11 @@ export async function getWorkspace(id: string | null): Promise<Workspace | null>
 export async function listWorkspaces(): Promise<Workspace[]> {
   const workspaces: Workspace[] = (await invokeCmd('cmd_list_workspaces')) ?? [];
   return workspaces;
+}
+
+export async function listPlugins(): Promise<Plugin[]> {
+  const plugins: Plugin[] = (await invokeCmd('cmd_list_plugins')) ?? [];
+  return plugins;
 }
 
 export async function getCookieJar(id: string | null): Promise<CookieJar | null> {

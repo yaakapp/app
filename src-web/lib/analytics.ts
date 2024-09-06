@@ -13,6 +13,7 @@ export type TrackResource =
   | 'http_request'
   | 'http_response'
   | 'key_value'
+  | 'plugin'
   | 'setting'
   | 'sidebar'
   | 'theme'

@@ -2,10 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use ts_rs::TS;
 
-use yaak_models::models::{
-    CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest,
-    HttpResponse, KeyValue, Settings, Workspace,
-};
+use yaak_models::models::{CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Plugin, Settings, Workspace};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -21,8 +18,8 @@ pub struct InternalEvent {
 #[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export)]
 pub enum InternalEventPayload {
-    BootRequest(BootRequest),
-    BootResponse(BootResponse),
+    BootRequest(PluginBootRequest),
+    BootResponse(PluginBootResponse),
 
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
@@ -71,14 +68,14 @@ pub struct EmptyResponse {}
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct BootRequest {
+pub struct PluginBootRequest {
     pub dir: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct BootResponse {
+pub struct PluginBootResponse {
     pub name: String,
     pub version: String,
     pub capabilities: Vec<String>,
@@ -401,4 +398,5 @@ pub enum Model {
     Workspace(Workspace),
     CookieJar(CookieJar),
     Settings(Settings),
+    Plugin(Plugin),
 }

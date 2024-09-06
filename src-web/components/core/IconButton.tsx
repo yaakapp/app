@@ -58,9 +58,9 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(function IconButt
         '!px-0',
         color === 'custom' && 'text-text-subtle',
         color === 'default' && 'text-text-subtle',
-        size === 'md' && 'w-9',
-        size === 'sm' && 'w-8',
-        size === 'xs' && 'w-6',
+        size === 'md' && 'w-md',
+        size === 'sm' && 'w-sm',
+        size === 'xs' && 'w-xs',
         size === '2xs' && 'w-5',
       )}
       {...props}

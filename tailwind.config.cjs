@@ -1,6 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
-const height = {
+const sizes = {
+  '2xs': '1.25rem',
   xs: '1.8rem',
   sm: '2.0rem',
   md: '2.5rem',
@@ -18,8 +19,10 @@ module.exports = {
       fontSize: {
         xs: '0.8rem',
       },
-      height,
-      minHeight: height,
+      height: sizes,
+      width: sizes,
+      minHeight: sizes,
+      minWidth: sizes,
       lineHeight: {
         // HACK: Minus 2 to account for borders inside inputs
         xs: 'calc(1.75rem - 2px)',

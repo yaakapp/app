@@ -28,6 +28,7 @@ pub enum AnalyticsResource {
     HttpRequest,
     HttpResponse,
     KeyValue,
+    Plugin,
     Setting,
     Sidebar,
     Theme,
