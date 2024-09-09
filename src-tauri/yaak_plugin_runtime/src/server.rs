@@ -1,7 +1,7 @@
-use rand::distributions::{Alphanumeric, DistString};
 use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
+use log::warn;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::{mpsc, Mutex};
 use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
@@ -10,8 +10,10 @@ use tonic::{Request, Response, Status, Streaming};
 
 use crate::error::Error::PluginNotFoundErr;
 use crate::error::Result;
-use crate::events::{PluginBootRequest, PluginBootResponse, InternalEvent, InternalEventPayload};
+use crate::events::{InternalEvent, InternalEventPayload, PluginBootRequest, PluginBootResponse};
+use crate::handle::PluginHandle;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
+use crate::util::gen_id;
 use plugin_runtime::EventStreamEvent;
 use yaak_models::queries::generate_id;
 
@@ -21,62 +23,6 @@ pub mod plugin_runtime {
 
 type ResponseStream =
     Pin<Box<dyn Stream<Item = std::result::Result<EventStreamEvent, Status>> + Send>>;
-
-#[derive(Clone)]
-pub struct PluginHandle {
-    dir: String,
-    to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
-    ref_id: String,
-    boot_resp: Arc<Mutex<Option<PluginBootResponse>>>,
-}
-
-impl PluginHandle {
-    pub async fn name(&self) -> String {
-        match &*self.boot_resp.lock().await {
-            None => "__NOT_BOOTED__".to_string(),
-            Some(r) => r.name.to_owned(),
-        }
-    }
-    
-    pub async fn info(&self) -> Option<PluginBootResponse> {
-        let resp = &*self.boot_resp.lock().await;
-        resp.clone()
-    }
-
-    pub fn build_event_to_send(
-        &self,
-        payload: &InternalEventPayload,
-        reply_id: Option<String>,
-    ) -> InternalEvent {
-        InternalEvent {
-            id: gen_id(),
-            plugin_ref_id: self.ref_id.clone(),
-            reply_id,
-            payload: payload.clone(),
-        }
-    }
-
-    pub async fn send(&self, event: &InternalEvent) -> Result<()> {
-        // info!(
-        //     "Sending event to plugin {} {:?}",
-        //     event.id,
-        //     self.name().await
-        // );
-        self.to_plugin_tx
-            .lock()
-            .await
-            .send(Ok(EventStreamEvent {
-                event: serde_json::to_string(&event)?,
-            }))
-            .await?;
-        Ok(())
-    }
-
-    pub async fn boot(&self, resp: &PluginBootResponse) {
-        let mut boot_resp = self.boot_resp.lock().await;
-        *boot_resp = Some(resp.clone());
-    }
-}
 
 #[derive(Clone)]
 pub struct PluginRuntimeGrpcServer {
@@ -94,6 +40,15 @@ impl PluginRuntimeGrpcServer {
             subscribers: Arc::new(Mutex::new(HashMap::new())),
             plugin_dirs,
         }
+    }
+
+    pub async fn plugins(&self) -> Vec<PluginHandle> {
+        self.plugin_ref_to_plugin
+            .lock()
+            .await
+            .iter()
+            .map(|p| p.1.to_owned())
+            .collect::<Vec<PluginHandle>>()
     }
 
     pub async fn subscribe(&self) -> (String, Receiver<InternalEvent>) {
@@ -115,23 +70,15 @@ impl PluginRuntimeGrpcServer {
 
     pub async fn remove_plugin(&self, id: &str) {
         match self.plugin_ref_to_plugin.lock().await.remove(id) {
-            None => {
-                println!("Tried to remove non-existing plugin {}", id);
-            }
-            Some(plugin) => {
-                println!("Removed plugin {} {}", id, plugin.name().await);
-            }
+            None => println!("Tried to remove non-existing plugin {}", id),
+            Some(plugin) => println!("Removed plugin {} {}", id, plugin.name().await),
         };
     }
 
     pub async fn boot_plugin(&self, id: &str, resp: &PluginBootResponse) {
         match self.plugin_ref_to_plugin.lock().await.get(id) {
-            None => {
-                println!("Tried booting non-existing plugin {}", id);
-            }
-            Some(plugin) => {
-                plugin.clone().boot(resp).await;
-            }
+            None => println!("Tried booting non-existing plugin {}", id),
+            Some(plugin) => plugin.clone().boot(resp).await,
         }
     }
 
@@ -162,7 +109,7 @@ impl PluginRuntimeGrpcServer {
             Some(p) => Ok(p.to_owned()),
         }
     }
-    
+
     pub async fn plugin_by_dir(&self, dir: &str) -> Result<PluginHandle> {
         let plugins = self.plugin_ref_to_plugin.lock().await;
         for p in plugins.values() {
@@ -299,6 +246,14 @@ impl PluginRuntimeGrpcServer {
         Ok(events)
     }
 
+    pub async fn reload_plugins(&self) {
+        for (_, plugin) in self.plugin_ref_to_plugin.lock().await.clone() {
+            if let Err(e) = plugin.reload().await {
+                warn!("Failed to reload plugin {} {}", plugin.dir, e)
+            }
+        }
+    }
+
     async fn load_plugins(
         &self,
         to_plugin_tx: mpsc::Sender<tonic::Result<EventStreamEvent>>,
@@ -395,8 +350,4 @@ impl PluginRuntime for PluginRuntimeGrpcServer {
             Box::pin(out_stream) as Self::EventStreamStream
         ))
     }
-}
-
-fn gen_id() -> String {
-    Alphanumeric.sample_string(&mut rand::thread_rng(), 5)
 }

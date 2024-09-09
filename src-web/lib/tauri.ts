@@ -56,6 +56,7 @@ type TauriCmd =
   | 'cmd_parse_template'
   | 'cmd_plugin_info'
   | 'cmd_render_template'
+  | 'cmd_reload_plugins'
   | 'cmd_save_response'
   | 'cmd_send_ephemeral_request'
   | 'cmd_send_http_request'

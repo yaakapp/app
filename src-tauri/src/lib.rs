@@ -11,6 +11,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use base64::Engine;
+use chrono::Utc;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
@@ -61,6 +62,7 @@ use yaak_plugin_runtime::events::{
     InternalEvent, InternalEventPayload, PluginBootResponse, RenderHttpRequestResponse,
     SendHttpRequestResponse,
 };
+use yaak_plugin_runtime::handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -1170,7 +1172,11 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
-async fn cmd_create_plugin(directory: &str, url: Option<String>, w: WebviewWindow) -> Result<Plugin, String> {
+async fn cmd_create_plugin(
+    directory: &str,
+    url: Option<String>,
+    w: WebviewWindow,
+) -> Result<Plugin, String> {
     upsert_plugin(
         &w,
         Plugin {
@@ -1457,6 +1463,12 @@ async fn cmd_list_plugins(w: WebviewWindow) -> Result<Vec<Plugin>, String> {
 }
 
 #[tauri::command]
+async fn cmd_reload_plugins(plugin_manager: State<'_, PluginManager>) -> Result<(), String> {
+    plugin_manager.reload_all().await;
+    Ok(())
+}
+
+#[tauri::command]
 async fn cmd_plugin_info(
     id: &str,
     w: WebviewWindow,
@@ -1734,9 +1746,6 @@ pub fn run() {
             cmd_delete_http_response,
             cmd_delete_workspace,
             cmd_dismiss_notification,
-            cmd_parse_template,
-            cmd_template_tokens_to_string,
-            cmd_render_template,
             cmd_duplicate_grpc_request,
             cmd_duplicate_http_request,
             cmd_export_data,
@@ -1752,7 +1761,6 @@ pub fn run() {
             cmd_grpc_go,
             cmd_grpc_reflect,
             cmd_http_request_actions,
-            cmd_template_functions,
             cmd_import_data,
             cmd_list_cookie_jars,
             cmd_list_environments,
@@ -1763,16 +1771,21 @@ pub fn run() {
             cmd_list_http_requests,
             cmd_list_http_responses,
             cmd_list_plugins,
-            cmd_plugin_info,
             cmd_list_workspaces,
             cmd_metadata,
             cmd_new_nested_window,
             cmd_new_window,
+            cmd_parse_template,
+            cmd_plugin_info,
+            cmd_reload_plugins,
+            cmd_render_template,
             cmd_save_response,
             cmd_send_ephemeral_request,
             cmd_send_http_request,
             cmd_set_key_value,
             cmd_set_update_mode,
+            cmd_template_functions,
+            cmd_template_tokens_to_string,
             cmd_track_event,
             cmd_update_cookie_jar,
             cmd_update_environment,
@@ -1996,17 +2009,25 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
 
         while let Some(event) = rx.recv().await {
             let app_handle = app_handle.clone();
+            let plugin = plugin_manager
+                .get_plugin(event.plugin_ref_id.as_str())
+                .await
+                .unwrap();
 
             // We might have recursive back-and-forth calls between app and plugin, so we don't
             // want to block here
             tauri::async_runtime::spawn(async move {
-                handle_plugin_event(&app_handle, &event).await;
+                handle_plugin_event(&app_handle, &event, &plugin).await;
             });
         }
     });
 }
 
-async fn handle_plugin_event<R: Runtime>(app_handle: &AppHandle<R>, event: &InternalEvent) {
+async fn handle_plugin_event<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    event: &InternalEvent,
+    plugin_handle: &PluginHandle,
+) {
     // info!("Got event to app {}", event.id);
     let response_event: Option<InternalEventPayload> = match event.clone().payload {
         InternalEventPayload::CopyTextRequest(req) => {
@@ -2063,6 +2084,27 @@ async fn handle_plugin_event<R: Runtime>(app_handle: &AppHandle<R>, event: &Inte
                     http_request: rendered_http_request,
                 },
             ))
+        }
+        InternalEventPayload::ReloadResponse(_) => {
+            let w = get_focused_window_no_lock(app_handle).expect("No focused window");
+            let plugins = list_plugins(&w).await.unwrap();
+            for plugin in plugins {
+                if plugin.directory != plugin_handle.dir {
+                    continue;
+                }
+                
+                upsert_plugin(
+                    &w,
+                    Plugin {
+                        // TODO: Add reloaded_at field to use instead
+                        updated_at: Utc::now().naive_utc(),
+                        ..plugin
+                    },
+                )
+                .await
+                .unwrap();
+            }
+            None
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
             let w = get_focused_window_no_lock(app_handle).expect("No focused window");
@@ -2124,7 +2166,6 @@ fn get_focused_window_no_lock<R: Runtime>(app_handle: &AppHandle<R>) -> Option<W
     // TODO: Getting the focused window doesn't seem to work on Windows, so
     //   we'll need to pass the window label into plugin events instead.
     if app_handle.webview_windows().len() == 1 {
-        debug!("Returning only webview window");
         let w = app_handle
             .webview_windows()
             .iter()

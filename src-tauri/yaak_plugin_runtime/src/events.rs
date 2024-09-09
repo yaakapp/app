@@ -2,7 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use ts_rs::TS;
 
-use yaak_models::models::{CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest, HttpResponse, KeyValue, Plugin, Settings, Workspace};
+use yaak_models::models::{
+    CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest,
+    HttpResponse, KeyValue, Plugin, Settings, Workspace,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -20,6 +23,9 @@ pub struct InternalEvent {
 pub enum InternalEventPayload {
     BootRequest(PluginBootRequest),
     BootResponse(PluginBootResponse),
+
+    ReloadRequest(EmptyResponse),
+    ReloadResponse(EmptyResponse),
 
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
