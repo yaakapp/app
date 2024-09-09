@@ -17,8 +17,6 @@ export function useActiveWorkspaceChangedToast() {
     // Don't notify on the first load
     if (id === null) return;
 
-    console.log('HELLO?', activeWorkspace?.id, id, window.location);
-
     toast.show({
       id: 'workspace-changed',
       timeout: 3000,

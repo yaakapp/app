@@ -60,7 +60,7 @@ use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
     InternalEvent, InternalEventPayload, PluginBootResponse, RenderHttpRequestResponse,
-    SendHttpRequestResponse,
+    SendHttpRequestResponse, ShowToastRequest, ToastVariant,
 };
 use yaak_plugin_runtime::handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
@@ -2092,7 +2092,7 @@ async fn handle_plugin_event<R: Runtime>(
                 if plugin.directory != plugin_handle.dir {
                     continue;
                 }
-                
+
                 upsert_plugin(
                     &w,
                     Plugin {
@@ -2104,6 +2104,14 @@ async fn handle_plugin_event<R: Runtime>(
                 .await
                 .unwrap();
             }
+            let toast_event = plugin_handle.build_event_to_send(
+                &InternalEventPayload::ShowToastRequest(ShowToastRequest {
+                    message: "Plugin Reloaded".to_string(),
+                    variant: ToastVariant::Info,
+                }),
+                None,
+            );
+            Box::pin(handle_plugin_event(app_handle, &toast_event, plugin_handle)).await;
             None
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
