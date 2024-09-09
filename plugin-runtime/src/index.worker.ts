@@ -14,7 +14,7 @@ import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestAct
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
-import { readFileSync, watch } from 'node:fs';
+import { Stats, readFileSync, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
@@ -100,8 +100,9 @@ async function initialize() {
     await reloadModule();
     return sendPayload({ type: 'reload_response' }, null);
   };
-  watch(path.join(pathMod), cb);
-  watch(path.join(pathPkg), cb);
+
+  watchFile(pathMod, cb);
+  watchFile(pathPkg, cb);
 
   const ctx: Context = {
     clipboard: {
@@ -296,5 +297,25 @@ function prefixStdout(s: string) {
       newText += util.format(s, lines[i]) + '\n';
     }
     return newText.trimEnd();
+  });
+}
+
+const watchedFiles: Record<string, Stats> = {};
+
+/**
+ * Watch a file and trigger callback on change.
+ *
+ * We also track the stat for each file because fs.watch will
+ * trigger a "change" event when the access date changes
+ */
+function watchFile(filepath: string, cb: (filepath: string) => void) {
+  watch(filepath, (_event, _name) => {
+    const stat = statSync(filepath);
+    if (stat.mtimeMs !== watchedFiles[filepath]?.mtimeMs) {
+      cb(filepath);
+    } else {
+      console.log('SKIPPING SAME FILE STAT', filepath, stat);
+    }
+    watchedFiles[filepath] = stat;
   });
 }

@@ -2104,9 +2104,10 @@ async fn handle_plugin_event<R: Runtime>(
                 .await
                 .unwrap();
             }
+            let plugin_name = plugin_handle.info().await.unwrap().name;
             let toast_event = plugin_handle.build_event_to_send(
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
-                    message: "Plugin Reloaded".to_string(),
+                    message: format!("Reloaded plugin {}", plugin_name),
                     variant: ToastVariant::Info,
                 }),
                 None,
