@@ -10,34 +10,31 @@ import {
   SendHttpRequestResponse,
   TemplateFunction,
 } from '@yaakapp/api';
-import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/httpRequestAction';
+import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
-import { readFileSync } from 'node:fs';
+import { readFileSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
 
-new Promise<void>(async (resolve, reject) => {
+async function initialize() {
   const { pluginDir, pluginRefId } = workerData;
   const pathPkg = path.join(pluginDir, 'package.json');
 
-  // NOTE: Use POSIX join because require() needs forward slash
   const pathMod = path.posix.join(pluginDir, 'build', 'index.js');
-
-  let pkg: { [x: string]: any };
-  try {
-    pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
-  } catch (err) {
-    // TODO: Do something better here
-    reject(err);
-    return;
+  async function importModule() {
+    const id = require.resolve(pathMod);
+    delete require.cache[id];
+    return require(id);
   }
+
+  const pkg = JSON.parse(readFileSync(pathPkg, 'utf8'));
 
   prefixStdout(`[plugin][${pkg.name}] %s`);
 
-  const mod = (await import(pathMod)).default ?? {};
+  let mod = await importModule();
 
   const capabilities: string[] = [];
   if (typeof mod.pluginHookExport === 'function') capabilities.push('export');
@@ -93,6 +90,18 @@ new Promise<void>(async (resolve, reject) => {
     // 4. Return the listener promise
     return promise as unknown as Promise<T>;
   }
+
+  async function reloadModule() {
+    mod = await importModule();
+  }
+
+  // Reload plugin if JS or package.json changes
+  const cb = async () => {
+    await reloadModule();
+    return sendPayload({ type: 'reload_response' }, null);
+  };
+  watch(path.join(pathMod), cb);
+  watch(path.join(pathPkg), cb);
 
   const ctx: Context = {
     clipboard: {
@@ -248,6 +257,10 @@ new Promise<void>(async (resolve, reject) => {
           return;
         }
       }
+
+      if (payload.type === 'reload_request') {
+        await reloadModule();
+      }
     } catch (err) {
       console.log('Plugin call threw exception', payload.type, err);
       // TODO: Return errors to server
@@ -256,9 +269,9 @@ new Promise<void>(async (resolve, reject) => {
     // No matches, so send back an empty response so the caller doesn't block forever
     sendEmpty(replyId);
   });
+}
 
-  resolve();
-}).catch((err) => {
+initialize().catch((err) => {
   console.log('failed to boot plugin', err);
 });
 

@@ -45,6 +45,8 @@ export * from './gen/KeyValue';
 export * from './gen/Model';
 export * from './gen/PluginBootRequest';
 export * from './gen/PluginBootResponse';
+export * from './gen/PluginReloadRequest';
+export * from './gen/PluginReloadResponse';
 export * from './gen/RenderHttpRequestRequest';
 export * from './gen/RenderHttpRequestResponse';
 export * from './gen/RenderPurpose';

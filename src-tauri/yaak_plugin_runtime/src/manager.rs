@@ -15,6 +15,7 @@ use std::time::Duration;
 use tauri::{AppHandle, Runtime};
 use tokio::sync::mpsc;
 use tokio::sync::watch::Sender;
+use crate::handle::PluginHandle;
 
 pub struct PluginManager {
     kill_tx: Sender<bool>,
@@ -36,6 +37,10 @@ impl PluginManager {
             .expect("Failed to start plugin runtime");
 
         PluginManager { kill_tx, server }
+    }
+
+    pub async fn reload_all(&self) {
+        self.server.reload_plugins().await
     }
 
     pub async fn subscribe(&self) -> (String, mpsc::Receiver<InternalEvent>) {
@@ -66,6 +71,10 @@ impl PluginManager {
 
     pub async fn get_plugin_info(&self, dir: &str) -> Option<PluginBootResponse> {
         self.server.plugin_by_dir(dir).await.ok()?.info().await
+    }
+
+    pub async fn get_plugin(&self, ref_id: &str) -> Result<PluginHandle> {
+        self.server.plugin_by_ref_id(ref_id).await
     }
 
     pub async fn get_http_request_actions(&self) -> Result<Vec<GetHttpRequestActionsResponse>> {
