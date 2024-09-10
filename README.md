@@ -1,21 +1,21 @@
-# Yaak Network Toolkit
+# Yaak API Client
 
-The most fun you'll ever have working with APIs.
+Yaak is a desktop API client for organizing and executing REST, GraphQL, and gRPC
+requests.
 
-## Common Commands
+## Feedback and Bug Reports
 
-```sh
-# Start dev app
-npm run tauri-dev
+Please [Create an Issue](https://github.com/yaakapp/app/issues/new) for bug reports and
+submit all other feedback to [feedback.yaak.app](https://feedback.yaak.app).
 
-# Migration commands
-cd src-tauri
-cargo sqlx migrate add ${MIGRATION_NAME}
-cargo sqlx migrate run --database-url 'sqlite://db.sqlite?mode=rw'
-cargo sqlx prepare --database-url 'sqlite://db.sqlite'
-```
+## Contribution Policy
 
-## Add App->Plugin API
+Yaak was initially closed-source, with no plans of every becoming open
+(see [Blog Post](https://yaak.app/blog/why-not-open-source)). However, Open source does
+offer many benefits:
 
-- Add event in `events.rs`
-- Add handler to `index.worker.ts`
+- Full transparency over what is happening
+- Code can be audited
+- Users can help identify and fix bugs
+
+For these reasons, Yaak is now open source but only accepting contributions for bug fixes.

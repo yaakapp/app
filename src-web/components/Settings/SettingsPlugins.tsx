@@ -8,6 +8,7 @@ import { Checkbox } from '../core/Checkbox';
 import { IconButton } from '../core/IconButton';
 import { InlineCode } from '../core/InlineCode';
 import { HStack } from '../core/Stacks';
+import { EmptyStateText } from '../EmptyStateText';
 import { SelectFile } from '../SelectFile';
 
 export function SettingsPlugins() {
@@ -17,21 +18,31 @@ export function SettingsPlugins() {
   const refreshPlugins = useRefreshPlugins();
   return (
     <div className="grid grid-rows-[minmax(0,1fr)_auto] h-full">
-      <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
-        <thead>
-          <tr>
-            <th></th>
-            <th className="py-2 text-left">Plugin</th>
-            <th className="py-2 text-right">Version</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-surface-highlight">
-          {plugins.map((p) => (
-            <PluginInfo key={p.id} plugin={p} />
-          ))}
-        </tbody>
-      </table>
+      {plugins.length === 0 ? (
+        <div className="pb-4">
+          <EmptyStateText className="text-center">
+            Plugins extend the functionality of Yaak.
+            <br />
+            Add your first plugin to get started.
+          </EmptyStateText>
+        </div>
+      ) : (
+        <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
+          <thead>
+            <tr>
+              <th></th>
+              <th className="py-2 text-left">Plugin</th>
+              <th className="py-2 text-right">Version</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-surface-highlight">
+            {plugins.map((p) => (
+              <PluginInfo key={p.id} plugin={p} />
+            ))}
+          </tbody>
+        </table>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
