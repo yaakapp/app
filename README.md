@@ -5,6 +5,15 @@ requests. It's built using [Tauri](https://tauri.app), [Rust](https://www.rust-l
 
 ![screenshot](https://github.com/user-attachments/assets/f18e963f-0b68-4ecb-b8b8-cb71aa9aec02)
 
+## Developer setup
+
+Once you have Rust installed ([guide](https://rustup.rs)), run:
+
+    cargo install sqlx-cli
+
+Then you should be able to run this command without err:
+
+    make
 
 ## Feedback and Bug Reports
 
