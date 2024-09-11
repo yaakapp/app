@@ -204,7 +204,7 @@ pub async fn send_http_request<R: Runtime>(
                 .unwrap_or_default();
 
             let auth = format!("{username}:{password}");
-            let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
+            let encoded = base64::engine::general_purpose::STANDARD.encode(auth);
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),
