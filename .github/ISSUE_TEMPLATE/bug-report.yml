@@ -1,5 +1,5 @@
 name: Bug Report
-description: File a bug report.
+description: "Something isn't working properly in Yaak"
 title: "[Bug]: "
 labels: ["bug", "triage"]
 assignees:
@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report 🤗
   - type: textarea
     id: what-happened
     attributes:
