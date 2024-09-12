@@ -1,7 +1,7 @@
 name: Bug Report
 description: "Something isn't working properly in Yaak"
 title: "[Bug]: "
-labels: ["bug", "triage"]
+labels: ["bug", "needs triage"]
 assignees:
   - gschier
 body:
