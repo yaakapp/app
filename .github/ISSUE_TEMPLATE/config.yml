@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Feature Requests, Questions, etc.
+  - name: Feature Request, Question, etc.
     url: https://feedback.yaak.app
-    about: Report everything else to the feedback board 👉🏼
+    about: Report all non-bugs to the feedback board 👉🏼
