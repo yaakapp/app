@@ -13,7 +13,7 @@ submit all other feedback to [feedback.yaak.app](https://feedback.yaak.app).
 
 ## Contribution Policy
 
-Yaak was initially closed-source, with no plans of ever becoming open
+Yaak was initially closed-source, with no plan of ever becoming open
 (see [Blog Post](https://yaak.app/blog/why-not-open-source)). However, Open source does
 offer many benefits:
 
