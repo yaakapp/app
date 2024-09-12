@@ -52,13 +52,16 @@ export function TemplateVariableDialog({ hide, onChange, initialTokens }: Props)
       <VStack space={2}>
         <Select
           name="variable"
-          label="Variable"
+          label="Select Variable"
           value={selectedVariableName}
           options={variables.map((v) => ({ label: v.name, value: v.name }))}
           onChange={setSelectedVariableName}
         />
       </VStack>
-      <InlineCode className="select-text cursor-text">{rendered.data}</InlineCode>
+      <VStack>
+        <div className="text-sm text-text-subtle">Render Preview</div>
+        <InlineCode className="select-text cursor-text">{rendered.data}</InlineCode>
+      </VStack>
       <Button color="primary" onClick={handleDone}>
         Done
       </Button>

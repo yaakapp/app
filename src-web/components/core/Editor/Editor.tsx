@@ -188,7 +188,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
       dialog.show({
         size: 'dynamic',
         id: 'template-variable',
-        title: 'Configure Variable',
+        title: 'Change Variable',
         render: ({ hide }) => (
           <TemplateVariableDialog
             hide={hide}
