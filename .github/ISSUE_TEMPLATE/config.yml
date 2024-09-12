@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Public Feedback Board
+  - name: Feature Requests, Questions, etc.
     url: https://feedback.yaak.app
-    about: Suggest features, ask questions, etc.
+    about: Please report everything else to the public feedback board
