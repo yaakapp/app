@@ -7,7 +7,7 @@ import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
-import { useParseQuerystring } from '../hooks/useParseQuerystring';
+import { useImportQuerystring } from '../hooks/useImportQuerystring';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequests } from '../hooks/useRequests';
@@ -297,7 +297,7 @@ export const RequestPane = memo(function RequestPane({
   const isLoading = useIsResponseLoading(activeRequestId);
   const { updateKey } = useRequestUpdateKey(activeRequestId);
   const importCurl = useImportCurl();
-  const parseQuerystring = useParseQuerystring(activeRequestId);
+  const importQuerystring = useImportQuerystring(activeRequestId);
 
   const activeTab = activeTabs[activeRequestId] ?? DEFAULT_TAB;
   const setActiveTab = useCallback(
@@ -327,7 +327,7 @@ export const RequestPane = memo(function RequestPane({
               if (text.startsWith('curl ')) {
                 importCurl.mutate({ overwriteRequestId: activeRequestId, command: text });
               } else {
-                parseQuerystring.mutate(text);
+                importQuerystring.mutate(text);
               }
             }}
             autocomplete={{

@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import type { HttpUrlParameter } from '@yaakapp/api';
 import { useToast } from '../components/ToastContext';
+import { pluralize } from '../lib/pluralize';
 import { getHttpRequest } from '../lib/store';
 import { useRequestEditor } from './useRequestEditor';
 import { useUpdateAnyHttpRequest } from './useUpdateAnyHttpRequest';
 
-export function useParseQuerystring(requestId: string) {
+export function useImportQuerystring(requestId: string) {
   const updateRequest = useUpdateAnyHttpRequest();
   const toast = useToast();
   const [, { focusParamsTab, forceParamsRefresh, forceUrlRefresh }] = useRequestEditor();
@@ -14,7 +15,7 @@ export function useParseQuerystring(requestId: string) {
     mutationKey: ['parse_query_string'],
     mutationFn: async (url: string) => {
       const [baseUrl, querystring] = url.split('?');
-      if (!querystring) return;
+      if (querystring == null) return;
 
       const request = await getHttpRequest(requestId);
       if (request == null) return;
@@ -46,11 +47,13 @@ export function useParseQuerystring(requestId: string) {
         },
       });
 
-      toast.show({
-        id: 'querystring-imported',
-        variant: 'info',
-        message: 'Imported query params from URL',
-      });
+      if (additionalUrlParameters.length > 0) {
+        toast.show({
+          id: 'querystring-imported',
+          variant: 'info',
+          message: `Imported ${additionalUrlParameters.length} ${pluralize('param', additionalUrlParameters.length)} from URL`,
+        });
+      }
 
       focusParamsTab();
       forceUrlRefresh();
