@@ -24,8 +24,8 @@ pub enum InternalEventPayload {
     BootRequest(PluginBootRequest),
     BootResponse(PluginBootResponse),
 
-    ReloadRequest(EmptyResponse),
-    ReloadResponse(EmptyResponse),
+    ReloadRequest(EmptyPayload),
+    ReloadResponse(EmptyPayload),
 
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
@@ -39,14 +39,21 @@ pub enum InternalEventPayload {
     SendHttpRequestRequest(SendHttpRequestRequest),
     SendHttpRequestResponse(SendHttpRequestResponse),
 
-    GetHttpRequestActionsRequest(GetHttpRequestActionsRequest),
+    // Request Actions
+    GetHttpRequestActionsRequest(EmptyPayload),
     GetHttpRequestActionsResponse(GetHttpRequestActionsResponse),
     CallHttpRequestActionRequest(CallHttpRequestActionRequest),
 
+    // Template Functions
     GetTemplateFunctionsRequest,
     GetTemplateFunctionsResponse(GetTemplateFunctionsResponse),
     CallTemplateFunctionRequest(CallTemplateFunctionRequest),
     CallTemplateFunctionResponse(CallTemplateFunctionResponse),
+    
+    GetAuthMiddlewareRequest(GetAuthMiddlewareRequest),
+    GetAuthMiddlewareResponse(GetAuthMiddlewareResponse),
+    CallAuthMiddlewareRequest(CallAuthMiddlewareRequest),
+    CallAuthMiddlewareResponse(CallAuthMiddlewareResponse),
 
     CopyTextRequest(CopyTextRequest),
 
@@ -63,13 +70,13 @@ pub enum InternalEventPayload {
 
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
-    EmptyResponse(EmptyResponse),
+    EmptyResponse(EmptyPayload),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default)]
 #[ts(export, type = "{}")]
-pub struct EmptyResponse {}
+pub struct EmptyPayload {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -195,6 +202,42 @@ impl Default for ToastVariant {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
+pub struct GetAuthMiddlewareRequest {
+    pub url: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct GetAuthMiddlewareResponse {
+    pub auth_middleware: Vec<AuthMiddleware>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct AuthMiddleware {
+    pub name: String,
+    pub args: Vec<FormInput>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallAuthMiddlewareRequest {
+    pub todo: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct CallAuthMiddlewareResponse {
+    pub todo: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
 pub struct GetTemplateFunctionsResponse {
     pub functions: Vec<TemplateFunction>,
     pub plugin_ref_id: String,
@@ -205,23 +248,23 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export)]
 pub struct TemplateFunction {
     pub name: String,
-    pub args: Vec<TemplateFunctionArg>,
+    pub args: Vec<FormInput>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export)]
-pub enum TemplateFunctionArg {
-    Text(TemplateFunctionTextArg),
-    Select(TemplateFunctionSelectArg),
-    Checkbox(TemplateFunctionCheckboxArg),
-    HttpRequest(TemplateFunctionHttpRequestArg),
+pub enum FormInput {
+    Text(FormInputText),
+    Select(FormInputSelect),
+    Checkbox(FormInputCheckbox),
+    HttpRequest(FormInputHttpRequest),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct TemplateFunctionBaseArg {
+pub struct FormInputBase {
     pub name: String,
     #[ts(optional = nullable)]
     pub optional: Option<bool>,
@@ -234,9 +277,9 @@ pub struct TemplateFunctionBaseArg {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct TemplateFunctionTextArg {
+pub struct FormInputText {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
     #[ts(optional = nullable)]
     pub placeholder: Option<String>,
 }
@@ -244,34 +287,34 @@ pub struct TemplateFunctionTextArg {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct TemplateFunctionHttpRequestArg {
+pub struct FormInputHttpRequest {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
+    pub base: FormInputBase,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct TemplateFunctionSelectArg {
+pub struct FormInputSelect {
     #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
-    pub options: Vec<TemplateFunctionSelectOption>,
+    pub base: FormInputBase,
+    pub options: Vec<FormInputSelectOption>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct TemplateFunctionCheckboxArg {
-    #[serde(flatten)]
-    pub base: TemplateFunctionBaseArg,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default, rename_all = "camelCase")]
-#[ts(export)]
-pub struct TemplateFunctionSelectOption {
+pub struct FormInputSelectOption {
     pub name: String,
     pub value: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export)]
+pub struct FormInputCheckbox {
+    #[serde(flatten)]
+    pub base: FormInputBase,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

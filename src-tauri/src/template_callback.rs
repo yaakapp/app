@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use tauri::{AppHandle, Manager};
-use yaak_plugin_runtime::events::{RenderPurpose, TemplateFunctionArg};
+use yaak_plugin_runtime::events::{RenderPurpose, FormInput};
 use yaak_plugin_runtime::manager::PluginManager;
 use yaak_templates::TemplateCallback;
 
@@ -50,10 +50,10 @@ impl TemplateCallback for PluginTemplateCallback {
         // Fill in default values for all args
         for a_def in function.args {
             let base = match a_def {
-                TemplateFunctionArg::Text(a) => a.base,
-                TemplateFunctionArg::Select(a) => a.base,
-                TemplateFunctionArg::Checkbox(a) => a.base,
-                TemplateFunctionArg::HttpRequest(a) => a.base,
+                FormInput::Text(a) => a.base,
+                FormInput::Select(a) => a.base,
+                FormInput::Checkbox(a) => a.base,
+                FormInput::HttpRequest(a) => a.base,
             };
             if let None = args_with_defaults.get(base.name.as_str()) {
                 args_with_defaults.insert(base.name, base.default_value.unwrap_or_default());

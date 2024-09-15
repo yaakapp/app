@@ -1,4 +1,4 @@
-use crate::events::{EmptyResponse, InternalEvent, InternalEventPayload, PluginBootResponse};
+use crate::events::{EmptyPayload, InternalEvent, InternalEventPayload, PluginBootResponse};
 use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
 use std::sync::Arc;
@@ -39,7 +39,7 @@ impl PluginHandle {
     }
 
     pub async fn reload(&self) -> crate::error::Result<()> {
-        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest(EmptyResponse{}), None);
+        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest(EmptyPayload {}), None);
         self.send(&event).await
     }
 
