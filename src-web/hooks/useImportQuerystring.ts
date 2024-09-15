@@ -12,7 +12,7 @@ export function useImportQuerystring(requestId: string) {
   const [, { focusParamsTab, forceParamsRefresh, forceUrlRefresh }] = useRequestEditor();
 
   return useMutation({
-    mutationKey: ['parse_query_string'],
+    mutationKey: ['import_querystring'],
     mutationFn: async (url: string) => {
       const [baseUrl, querystring] = url.split('?');
       if (querystring == null) return;
@@ -56,8 +56,13 @@ export function useImportQuerystring(requestId: string) {
       }
 
       focusParamsTab();
-      forceUrlRefresh();
-      forceParamsRefresh();
+
+      // Wait for request to update, then refresh the UI
+      // TODO: Somehow make this deterministic
+      setTimeout(() => {
+        forceUrlRefresh();
+        forceParamsRefresh();
+      }, 100);
     },
   });
 }
