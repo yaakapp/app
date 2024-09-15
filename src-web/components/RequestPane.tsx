@@ -7,8 +7,9 @@ import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useImportCurl } from '../hooks/useImportCurl';
 import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
+import { useImportQuerystring } from '../hooks/useImportQuerystring';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
-import { useRequestEditorEvent } from '../hooks/useRequestEditor';
+import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequests } from '../hooks/useRequests';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
@@ -75,6 +76,7 @@ export const RequestPane = memo(function RequestPane({
   const [activeTabs, setActiveTabs] = useActiveTab();
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
+  const [{ urlKey }] = useRequestEditor();
   const contentType = useContentTypeFromHeaders(activeRequest.headers);
 
   const handleContentTypeChange = useCallback(
@@ -292,9 +294,10 @@ export const RequestPane = memo(function RequestPane({
     [activeRequestId, updateRequest],
   );
 
-  const isLoading = useIsResponseLoading(activeRequestId ?? null);
-  const { updateKey } = useRequestUpdateKey(activeRequestId ?? null);
+  const isLoading = useIsResponseLoading(activeRequestId);
+  const { updateKey } = useRequestUpdateKey(activeRequestId);
   const importCurl = useImportCurl();
+  const importQuerystring = useImportQuerystring(activeRequestId);
 
   const activeTab = activeTabs[activeRequestId] ?? DEFAULT_TAB;
   const setActiveTab = useCallback(
@@ -316,15 +319,16 @@ export const RequestPane = memo(function RequestPane({
       {activeRequest && (
         <>
           <UrlBar
-            key={forceUpdateKey}
+            key={forceUpdateKey + urlKey}
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onPaste={(command) => {
-              if (!command.startsWith('curl ')) {
-                return;
+            onPaste={(text) => {
+              if (text.startsWith('curl ')) {
+                importCurl.mutate({ overwriteRequestId: activeRequestId, command: text });
+              } else {
+                importQuerystring.mutate(text);
               }
-              importCurl.mutate({ overwriteRequestId: activeRequestId, command });
             }}
             autocomplete={{
               minMatch: 3,
@@ -338,7 +342,7 @@ export const RequestPane = memo(function RequestPane({
                             ({
                               type: 'constant',
                               label: r.url,
-                            } as GenericCompletionOption),
+                            }) as GenericCompletionOption,
                         ),
                     ]
                   : [

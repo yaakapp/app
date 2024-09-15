@@ -228,7 +228,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     [dialog],
   );
 
-  const { focusParamValue } = useRequestEditor();
+  const [, { focusParamValue }] = useRequestEditor();
   const onClickPathParameter = useCallback(
     async (name: string) => {
       focusParamValue(name);

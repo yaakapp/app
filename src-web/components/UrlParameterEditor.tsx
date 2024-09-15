@@ -1,5 +1,5 @@
 import type { HttpRequest } from '@yaakapp/api';
-import { useRequestEditorEvent } from '../hooks/useRequestEditor';
+import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import type { PairEditorRef } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 import { VStack } from './core/Stacks';
@@ -13,6 +13,7 @@ type Props = {
 
 export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) {
   const pairEditor = useRef<PairEditorRef>(null);
+  const [{ urlParametersKey }] = useRequestEditor();
 
   useRequestEditorEvent(
     'request_params.focus_value',
@@ -38,7 +39,7 @@ export function UrlParametersEditor({ pairs, forceUpdateKey, onChange }: Props) 
         valuePlaceholder="Value"
         pairs={pairs}
         onChange={onChange}
-        forceUpdateKey={forceUpdateKey}
+        forceUpdateKey={forceUpdateKey + urlParametersKey}
       />
     </VStack>
   );
