@@ -42,7 +42,7 @@ export function useImportQuerystring(requestId: string) {
       await updateRequest.mutateAsync({
         id: requestId,
         update: {
-          url: baseUrl ?? request.url,
+          url: baseUrl ?? '',
           urlParameters,
         },
       });
