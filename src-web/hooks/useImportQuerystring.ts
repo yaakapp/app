@@ -14,12 +14,13 @@ export function useImportQuerystring(requestId: string) {
   return useMutation({
     mutationKey: ['import_querystring'],
     mutationFn: async (url: string) => {
-      const [baseUrl, querystring] = url.split('?');
-      if (querystring == null) return;
+      const [baseUrl, ...rest] = url.split('?');
+      if (rest.length === 0) return;
 
       const request = await getHttpRequest(requestId);
       if (request == null) return;
 
+      const querystring = rest.join('?');
       const parsedParams = Array.from(new URLSearchParams(querystring).entries());
       const additionalUrlParameters: HttpUrlParameter[] = parsedParams.map(
         ([name, value]): HttpUrlParameter => ({
@@ -33,7 +34,7 @@ export function useImportQuerystring(requestId: string) {
       for (const newParam of additionalUrlParameters) {
         const index = urlParameters.findIndex((p) => p.name === newParam.name);
         if (index >= 0) {
-          urlParameters[index]!.value = newParam.value;
+          urlParameters[index]!.value = decodeURIComponent(newParam.value);
         } else {
           urlParameters.push(newParam);
         }
