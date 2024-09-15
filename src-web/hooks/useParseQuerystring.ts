@@ -13,8 +13,8 @@ export function useParseQuerystring(requestId: string) {
   return useMutation({
     mutationKey: ['parse_query_string'],
     mutationFn: async (url: string) => {
-      const [baseUrl, querystring] = url.split('?') || null;
-      if (querystring == null) return;
+      const [baseUrl, querystring] = url.split('?');
+      if (!querystring) return;
 
       const request = await getHttpRequest(requestId);
       if (request == null) return;
