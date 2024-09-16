@@ -474,6 +474,6 @@ function getExtensions({
 
 const placeholderElFromText = (text: string) => {
   const el = document.createElement('div');
-  el.innerHTML = text.replace('\n', '<br/>');
+  el.innerHTML = text.replaceAll('\n', '<br/>');
   return el;
 };
