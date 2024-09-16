@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { useIsFullscreen } from '../hooks/useIsFullscreen';
 import { useOsInfo } from '../hooks/useOsInfo';
+import { useSettings } from '../hooks/useSettings';
 
 interface HeaderSizeProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
@@ -16,17 +17,22 @@ export function HeaderSize({
   ignoreStoplights,
   ...props
 }: HeaderSizeProps) {
+  const settings = useSettings();
   const platform = useOsInfo();
   const fullscreen = useIsFullscreen();
   const stoplightsVisible = platform?.osType === 'macos' && !fullscreen && !ignoreStoplights;
   return (
     <div
       data-tauri-drag-region
-      style={style}
+      style={{
+        ...style,
+        // Add padding for macOS stoplights, but keep it the same width (account for the interface scale)
+        paddingLeft: stoplightsVisible ? 72 / settings.interfaceScale : undefined,
+      }}
       className={classNames(
         className,
         'pt-[1px] w-full border-b border-border-subtle min-w-0',
-        stoplightsVisible ? 'pl-20 pr-1' : 'pl-1',
+        stoplightsVisible ? 'pr-1' : 'pl-1',
         size === 'md' && 'h-[27px]',
         size === 'lg' && 'h-[38px]',
       )}
