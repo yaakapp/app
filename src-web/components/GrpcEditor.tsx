@@ -6,8 +6,10 @@ import {
   handleRefresh,
   jsonCompletion,
   jsonSchemaLinter,
-  updateSchema,
+  // eslint-disable-next-line import/named
   stateExtensions,
+  // eslint-disable-next-line import/named
+  updateSchema,
 } from 'codemirror-json-schema';
 import { useEffect, useMemo, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
@@ -136,10 +138,10 @@ export function GrpcEditor({
             reflectionLoading
               ? 'secondary'
               : reflectionUnavailable
-              ? 'info'
-              : reflectionError
-              ? 'danger'
-              : 'secondary'
+                ? 'info'
+                : reflectionError
+                  ? 'danger'
+                  : 'secondary'
           }
           isLoading={reflectionLoading}
           onClick={() => {
@@ -160,14 +162,14 @@ export function GrpcEditor({
           {reflectionLoading
             ? 'Inspecting Schema'
             : reflectionUnavailable
-            ? 'Select Proto Files'
-            : reflectionError
-            ? 'Server Error'
-            : protoFiles.length > 0
-            ? count('File', protoFiles.length)
-            : services != null && protoFiles.length === 0
-            ? 'Schema Detected'
-            : 'Select Schema'}
+              ? 'Select Proto Files'
+              : reflectionError
+                ? 'Server Error'
+                : protoFiles.length > 0
+                  ? count('File', protoFiles.length)
+                  : services != null && protoFiles.length === 0
+                    ? 'Schema Detected'
+                    : 'Select Schema'}
         </Button>
       </div>,
     ],

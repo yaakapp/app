@@ -9,7 +9,8 @@ export async function getResponseBodyText(response: HttpResponse): Promise<strin
 
     try {
       return new TextDecoder(charset ?? 'utf-8', { fatal: true }).decode(bytes);
-    } catch (_) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
       // Failed to decode as text, so return null
       return null;
     }

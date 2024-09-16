@@ -19,7 +19,8 @@ export function isJSON(text: string): boolean {
   try {
     JSON.parse(text);
     return true;
-  } catch (_) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     return false;
   }
 }

@@ -55,7 +55,8 @@ export const UrlBar = memo(function UrlBar({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    isLoading ? onCancel() : onSend();
+    if (isLoading) onCancel();
+    else onSend();
   };
 
   return (

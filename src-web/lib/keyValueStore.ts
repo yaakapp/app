@@ -49,6 +49,7 @@ export function extractKeyValue<T>(kv: KeyValue | null): T | undefined {
   try {
     return JSON.parse(kv.value) as T;
   } catch (err) {
+    console.log('Failed to parse kv value', kv.value, err);
     return undefined;
   }
 }

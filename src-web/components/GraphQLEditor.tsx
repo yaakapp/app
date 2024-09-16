@@ -37,6 +37,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
       const variables = p.variables;
       const operationName = p.operationName;
       return { query, variables, operationName };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       return { query: '' };
     }
@@ -46,6 +47,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     (b: GraphQLBody) => {
       try {
         onChange?.(JSON.stringify(b, null, 2));
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         // Meh, not much we can do here
       }
@@ -62,6 +64,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     (variables: string) => {
       try {
         handleChange({ query, variables: JSON.parse(variables || '{}') });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         // Don't do anything if invalid JSON. The user probably hasn't finished
         // typing yet.

@@ -243,7 +243,7 @@ export function Sidebar({ className }: Props) {
       await setHidden(false);
     }
 
-    // Select 0 index on focus if none selected
+    // Select 0th index on focus if none selected
     focusActiveRequest(
       selectedTree != null && selectedId != null
         ? { forced: { id: selectedId, tree: selectedTree } }
@@ -310,7 +310,7 @@ export function Sidebar({ className }: Props) {
       let hoveredIndex = dragIndex + (side === 'above' ? 0 : 1);
 
       if (hoveredItem?.model === 'folder' && side === 'below' && !isCollapsed(hoveredItem.id)) {
-        // Move into folder if it's open and we're moving below it
+        // Move into the folder if it's open and we're moving below it
         hoveredTree = hoveredTree?.children.find((n) => n.item.id === id) ?? null;
         hoveredIndex = 0;
       }
@@ -814,11 +814,10 @@ function SidebarItem({
           hotKeyAction: 'http_request.duplicate',
           hotKeyLabelOnly: true, // Would trigger for every request (bad)
           leftSlot: <Icon icon="copy" />,
-          onSelect: () => {
+          onSelect: () =>
             itemModel === 'http_request'
               ? duplicateHttpRequest.mutate()
-              : duplicateGrpcRequest.mutate();
-          },
+              : duplicateGrpcRequest.mutate(),
         },
         {
           key: 'moveWorkspace',

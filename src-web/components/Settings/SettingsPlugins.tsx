@@ -88,7 +88,6 @@ export function SettingsPlugins() {
 
 function PluginInfo({ plugin }: { plugin: Plugin }) {
   const pluginInfo = usePluginInfo(plugin.id);
-  if (pluginInfo.data == null) return null;
   return (
     <tr className="group">
       <td className="pr-2">

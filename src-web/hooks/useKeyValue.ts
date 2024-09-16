@@ -14,8 +14,7 @@ export function keyValueQueryKey({
   return ['key_value', { namespace, key: buildKeyValueKey(key) }];
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function useKeyValue<T extends Object | null>({
+export function useKeyValue<T extends object | boolean | number | string | null>({
   namespace = DEFAULT_NAMESPACE,
   key,
   fallback,

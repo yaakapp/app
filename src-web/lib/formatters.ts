@@ -8,7 +8,8 @@ export function tryFormatJson(text: string, pretty = true): string {
   try {
     if (pretty) return JSON.stringify(JSON.parse(text), null, INDENT);
     else return JSON.stringify(JSON.parse(text));
-  } catch (_) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     return text;
   }
 }
@@ -18,7 +19,8 @@ export function tryFormatXml(text: string): string {
 
   try {
     return xmlFormat(text, { throwOnFailure: true, strictMode: false, indentation: INDENT });
-  } catch (_) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     return text;
   }
 }

@@ -89,6 +89,7 @@ export function ExportDataDialog({
                   }
                 />
               </td>
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions,jsx-a11y/click-events-have-key-events */}
               <td
                 className="py-1 pl-4 text whitespace-nowrap overflow-x-auto hide-scrollbars"
                 onClick={() => setSelectedWorkspaces((prev) => ({ ...prev, [w.id]: !prev[w.id] }))}

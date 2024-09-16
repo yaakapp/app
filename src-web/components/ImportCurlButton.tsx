@@ -40,7 +40,7 @@ export function ImportCurlButton() {
             await clear(); // Clear the clipboard so the button goes away
             setClipboardText('');
           } catch (e) {
-            // Nothing
+            console.log('Failed to import curl', e);
           } finally {
             setIsLoading(false);
           }

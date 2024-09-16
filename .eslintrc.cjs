@@ -19,6 +19,7 @@ module.exports = {
     'src-tauri/**/*',
     'plugins/**/*',
     'tailwind.config.cjs',
+    'vite.config.ts',
   ],
   settings: {
     react: {
