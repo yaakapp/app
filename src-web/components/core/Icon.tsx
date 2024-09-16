@@ -39,6 +39,7 @@ const icons = {
   folderOutput: lucide.FolderOutputIcon,
   gripVertical: lucide.GripVerticalIcon,
   hand: lucide.HandIcon,
+  help: lucide.CircleHelpIcon,
   house: lucide.HomeIcon,
   info: lucide.InfoIcon,
   keyboard: lucide.KeyboardIcon,
@@ -54,7 +55,6 @@ const icons = {
   plug: lucide.Plug,
   plus: lucide.PlusIcon,
   plusCircle: lucide.PlusCircleIcon,
-  question: lucide.ShieldQuestionIcon,
   refresh: lucide.RefreshCwIcon,
   save: lucide.SaveIcon,
   search: lucide.SearchIcon,
@@ -70,6 +70,7 @@ const icons = {
   update: lucide.RefreshCcwIcon,
   upload: lucide.UploadIcon,
   x: lucide.XIcon,
+  _unknown: lucide.ShieldAlertIcon,
 
   empty: (props: HTMLAttributes<HTMLSpanElement>) => <span {...props} />,
 };
@@ -83,7 +84,7 @@ export interface IconProps {
 }
 
 export const Icon = memo(function Icon({ icon, spin, size = 'md', className, title }: IconProps) {
-  const Component = icons[icon] ?? icons.question;
+  const Component = icons[icon] ?? icons._unknown;
   return (
     <Component
       title={title}

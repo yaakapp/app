@@ -1,4 +1,5 @@
 import type { Plugin } from '@yaakapp/api';
+import { open } from '@tauri-apps/plugin-shell';
 import React from 'react';
 import { useCreatePlugin } from '../../hooks/useCreatePlugin';
 import { usePluginInfo } from '../../hooks/usePluginInfo';
@@ -71,6 +72,12 @@ export function SettingsPlugins() {
               title="Reload plugins"
               spin={refreshPlugins.isPending}
               onClick={() => refreshPlugins.mutate()}
+            />
+            <IconButton
+              size="sm"
+              icon="help"
+              title="View documentation"
+              onClick={() => open('https://feedback.yaak.app/help/articles/6911763-quick-start')}
             />
           </HStack>
         </footer>
