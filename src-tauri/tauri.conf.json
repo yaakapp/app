@@ -6,7 +6,9 @@
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev:js",
     "devUrl": "http://localhost:1420",
-    "frontendDist": "../dist"
+    "frontendDist": "../dist",
+    "publisher": "Yaak",
+    "copyright": "Yaak"
   },
   "app": {
     "withGlobalTauri": false,

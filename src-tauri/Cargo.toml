@@ -1,11 +1,11 @@
 [workspace]
 members = ["yaak_grpc", "yaak_templates", "yaak_plugin_runtime", "yaak_models"]
 
-
 [package]
 name = "yaak-app"
 version = "0.0.0"
 edition = "2021"
+authors = ["Gregory Schier"]
 
 # Produce a library for mobile support
 [lib]

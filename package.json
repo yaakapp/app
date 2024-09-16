@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yaakapp/app.git"
+  },
   "scripts": {
     "start": "npm run tauri-dev:desktop",
     "tauri-dev:desktop": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
