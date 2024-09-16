@@ -2,13 +2,13 @@
   "productName": "Yaak",
   "version": "0.0.0",
   "identifier": "app.yaak.desktop",
+  "publisher": "Yaak",
+  "copyright": "Yaak",
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev:js",
     "devUrl": "http://localhost:1420",
-    "frontendDist": "../dist",
-    "publisher": "Yaak",
-    "copyright": "Yaak"
+    "frontendDist": "../dist"
   },
   "app": {
     "withGlobalTauri": false,
@@ -40,6 +40,10 @@
     }
   },
   "bundle": {
+    "publisher": "Yaak",
+    "licence": "MIT",
+    "copyright": "Yaak",
+    "homepage": "https://yaak.app",
     "active": true,
     "category": "DeveloperTool",
     "externalBin": [
