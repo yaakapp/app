@@ -39,7 +39,7 @@
     "@react-hook/resize-observer": "^2.0.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tanstack/react-query": "^5.55.4",
-    "@tauri-apps/api": "^2.0.0-rc.4",
+    "@tauri-apps/api": "^2.0.0-rc.5",
     "@tauri-apps/plugin-clipboard-manager": "^2.0.0-rc.2",
     "@tauri-apps/plugin-dialog": "^2.0.0-rc.1",
     "@tauri-apps/plugin-fs": "^2.0.0-rc.2",
@@ -78,7 +78,7 @@
   "devDependencies": {
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tanstack/react-query-devtools": "^5.55.4",
-    "@tauri-apps/cli": "^2.0.0-rc.14",
+    "@tauri-apps/cli": "^2.0.0-rc.16",
     "@types/node": "^22.5.4",
     "@types/papaparse": "^5.3.14",
     "@types/parse-color": "^1.0.3",
