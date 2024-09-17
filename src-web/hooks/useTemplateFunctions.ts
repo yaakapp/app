@@ -5,7 +5,6 @@ import { invokeCmd } from '../lib/tauri';
 export function useTemplateFunctions() {
   const result = useQuery({
     queryKey: ['template_functions'],
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       const responses = (await invokeCmd(
         'cmd_template_functions',

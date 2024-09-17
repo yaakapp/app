@@ -21,11 +21,11 @@ pub struct InternalEvent {
 #[serde(rename_all = "snake_case", tag = "type")]
 #[ts(export)]
 pub enum InternalEventPayload {
-    BootRequest(PluginBootRequest),
-    BootResponse(PluginBootResponse),
+    BootRequest(BootRequest),
+    BootResponse(BootResponse),
 
-    ReloadRequest(EmptyResponse),
-    ReloadResponse(EmptyResponse),
+    ReloadRequest,
+    ReloadResponse,
 
     ImportRequest(ImportRequest),
     ImportResponse(ImportResponse),
@@ -63,25 +63,20 @@ pub enum InternalEventPayload {
 
     /// Returned when a plugin doesn't get run, just so the server
     /// has something to listen for
-    EmptyResponse(EmptyResponse),
+    EmptyResponse,
 }
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-#[serde(default)]
-#[ts(export, type = "{}")]
-pub struct EmptyResponse {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct PluginBootRequest {
+pub struct BootRequest {
     pub dir: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export)]
-pub struct PluginBootResponse {
+pub struct BootResponse {
     pub name: String,
     pub version: String,
     pub capabilities: Vec<String>,

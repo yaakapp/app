@@ -10,6 +10,7 @@ use std::time::Duration;
 use crate::render::render_http_request;
 use crate::response_err;
 use crate::template_callback::PluginTemplateCallback;
+use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use http::header::{ACCEPT, USER_AGENT};
 use http::{HeaderMap, HeaderName, HeaderValue};
@@ -204,7 +205,7 @@ pub async fn send_http_request<R: Runtime>(
                 .unwrap_or_default();
 
             let auth = format!("{username}:{password}");
-            let encoded = base64::engine::general_purpose::STANDARD.encode(auth);
+            let encoded = BASE64_STANDARD.encode(auth);
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),

@@ -1,4 +1,4 @@
-use crate::events::{EmptyResponse, InternalEvent, InternalEventPayload, PluginBootResponse};
+use crate::events::{BootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
 use std::sync::Arc;
@@ -9,7 +9,7 @@ pub struct PluginHandle {
     pub ref_id: String,
     pub dir: String,
     pub(crate) to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
-    pub(crate) boot_resp: Arc<Mutex<Option<PluginBootResponse>>>,
+    pub(crate) boot_resp: Arc<Mutex<Option<BootResponse>>>,
 }
 
 impl PluginHandle {
@@ -20,7 +20,7 @@ impl PluginHandle {
         }
     }
 
-    pub async fn info(&self) -> Option<PluginBootResponse> {
+    pub async fn info(&self) -> Option<BootResponse> {
         let resp = &*self.boot_resp.lock().await;
         resp.clone()
     }
@@ -39,7 +39,7 @@ impl PluginHandle {
     }
 
     pub async fn reload(&self) -> crate::error::Result<()> {
-        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest(EmptyResponse{}), None);
+        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
         self.send(&event).await
     }
 
@@ -59,7 +59,7 @@ impl PluginHandle {
         Ok(())
     }
 
-    pub async fn boot(&self, resp: &PluginBootResponse) {
+    pub async fn boot(&self, resp: &BootResponse) {
         let mut boot_resp = self.boot_resp.lock().await;
         *boot_resp = Some(resp.clone());
     }

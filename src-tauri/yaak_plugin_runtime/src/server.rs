@@ -10,7 +10,7 @@ use tonic::{Request, Response, Status, Streaming};
 
 use crate::error::Error::PluginNotFoundErr;
 use crate::error::Result;
-use crate::events::{InternalEvent, InternalEventPayload, PluginBootRequest, PluginBootResponse};
+use crate::events::{InternalEvent, InternalEventPayload, BootRequest, BootResponse};
 use crate::handle::PluginHandle;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
 use crate::util::gen_id;
@@ -75,7 +75,7 @@ impl PluginRuntimeGrpcServer {
         };
     }
 
-    pub async fn boot_plugin(&self, id: &str, resp: &PluginBootResponse) {
+    pub async fn boot_plugin(&self, id: &str, resp: &BootResponse) {
         match self.plugin_ref_to_plugin.lock().await.get(id) {
             None => println!("Tried booting non-existing plugin {}", id),
             Some(plugin) => plugin.clone().boot(resp).await,
@@ -266,7 +266,7 @@ impl PluginRuntimeGrpcServer {
             plugin_ids.push(plugin.clone().ref_id);
 
             let event = plugin.build_event_to_send(
-                &InternalEventPayload::BootRequest(PluginBootRequest {
+                &InternalEventPayload::BootRequest(BootRequest {
                     dir: dir.to_string(),
                 }),
                 None,

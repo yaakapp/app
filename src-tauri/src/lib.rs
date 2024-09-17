@@ -59,7 +59,7 @@ use yaak_models::queries::{
 use yaak_plugin_runtime::events::{
     CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
-    InternalEvent, InternalEventPayload, PluginBootResponse, RenderHttpRequestResponse,
+    InternalEvent, InternalEventPayload, BootResponse, RenderHttpRequestResponse,
     SendHttpRequestResponse, ShowToastRequest, ToastVariant,
 };
 use yaak_plugin_runtime::handle::PluginHandle;
@@ -1473,7 +1473,7 @@ async fn cmd_plugin_info(
     id: &str,
     w: WebviewWindow,
     plugin_manager: State<'_, PluginManager>,
-) -> Result<PluginBootResponse, String> {
+) -> Result<BootResponse, String> {
     let plugin = get_plugin(&w, id).await.map_err(|e| e.to_string())?;
     plugin_manager
         .get_plugin_info(plugin.directory.as_str())
@@ -2085,7 +2085,7 @@ async fn handle_plugin_event<R: Runtime>(
                 },
             ))
         }
-        InternalEventPayload::ReloadResponse(_) => {
+        InternalEventPayload::ReloadResponse => {
             let w = get_focused_window_no_lock(app_handle).expect("No focused window");
             let plugins = list_plugins(&w).await.unwrap();
             for plugin in plugins {

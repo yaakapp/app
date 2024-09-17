@@ -313,8 +313,6 @@ function watchFile(filepath: string, cb: (filepath: string) => void) {
     const stat = statSync(filepath);
     if (stat.mtimeMs !== watchedFiles[filepath]?.mtimeMs) {
       cb(filepath);
-    } else {
-      console.log('SKIPPING SAME FILE STAT', filepath, stat);
     }
     watchedFiles[filepath] = stat;
   });

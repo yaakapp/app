@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::events::{
-    PluginBootResponse, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
+    BootResponse, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
     CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
     GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
@@ -69,7 +69,7 @@ impl PluginManager {
             .await
     }
 
-    pub async fn get_plugin_info(&self, dir: &str) -> Option<PluginBootResponse> {
+    pub async fn get_plugin_info(&self, dir: &str) -> Option<BootResponse> {
         self.server.plugin_by_dir(dir).await.ok()?.info().await
     }
 
@@ -204,7 +204,7 @@ impl PluginManager {
 
         match event.payload {
             InternalEventPayload::FilterResponse(resp) => Ok(resp),
-            InternalEventPayload::EmptyResponse(_) => {
+            InternalEventPayload::EmptyResponse => {
                 Err(PluginErr("Filter returned empty".to_string()))
             }
             e => Err(PluginErr(format!("Export returned invalid event {:?}", e))),
