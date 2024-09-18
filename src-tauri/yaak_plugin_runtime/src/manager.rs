@@ -151,18 +151,11 @@ impl PluginManager {
         self.remove_plugin(&plugin).await
     }
 
-    pub async fn reload_plugin(&self, plugin: &PluginHandle) -> Result<()> {
-        self.send_to_plugin_and_wait(&plugin, &InternalEventPayload::ReloadRequest)
-            .await?;
-        Ok(())
-    }
-
     async fn remove_plugin(&self, plugin: &PluginHandle) -> Result<()> {
         let mut plugins = self.plugins.lock().await;
 
         // Terminate the plugin
-        self.send_to_plugin_and_wait(&plugin, &InternalEventPayload::TerminateRequest)
-            .await?;
+        plugin.terminate().await?;
 
         // Remove the plugin from the list
         let pos = plugins.iter().position(|p| p.ref_id == plugin.ref_id);
@@ -211,12 +204,10 @@ impl PluginManager {
         app_handle: &AppHandle<R>,
     ) -> Result<()> {
         // 1. Remove all plugins
-        {
-            let plugins = self.plugins.lock().await.clone();
-            for p in plugins.iter() {
-                self.remove_plugin(p).await?;
-            }
-        };
+        let plugins = { self.plugins.lock().await.clone() };
+        for p in plugins.iter() {
+            self.remove_plugin(p).await?;
+        }
 
         // 2. Recreate all plugins
         let dirs = self.list_plugin_dirs(app_handle).await;

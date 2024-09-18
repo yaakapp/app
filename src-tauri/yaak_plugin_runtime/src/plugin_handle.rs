@@ -43,6 +43,16 @@ impl PluginHandle {
         }
     }
 
+    pub async fn reload(&self) -> Result<()> {
+        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
+        self.send(&event).await
+    }
+
+    pub async fn terminate(&self) -> Result<()> {
+        let event = self.build_event_to_send(&InternalEventPayload::TerminateRequest, None);
+        self.send(&event).await
+    }
+
     pub async fn send(&self, event: &InternalEvent) -> Result<()> {
         self.to_plugin_tx
             .lock()

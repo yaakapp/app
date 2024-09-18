@@ -26,7 +26,7 @@ pub enum InternalEventPayload {
 
     ReloadRequest,
     ReloadResponse,
-    
+
     TerminateRequest,
     TerminateResponse,
 

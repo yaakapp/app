@@ -33,7 +33,6 @@ const plugins: Record<string, PluginHandle> = {};
         await plugin.terminate();
         console.log('Terminated plugin worker', pluginEvent.pluginRefId);
         delete plugins[pluginEvent.pluginRefId];
-        continue;
       }
 
       plugin.sendToWorker(pluginEvent);
