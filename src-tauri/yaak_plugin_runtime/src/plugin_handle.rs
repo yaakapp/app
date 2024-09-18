@@ -1,3 +1,4 @@
+use crate::error::Result;
 use crate::events::{BootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
@@ -13,6 +14,17 @@ pub struct PluginHandle {
 }
 
 impl PluginHandle {
+    pub fn new(dir: &str, tx: mpsc::Sender<tonic::Result<EventStreamEvent>>) -> Self {
+        let ref_id = gen_id();
+
+        PluginHandle {
+            ref_id: ref_id.clone(),
+            dir: dir.to_string(),
+            to_plugin_tx: Arc::new(Mutex::new(tx)),
+            boot_resp: Arc::new(Mutex::new(None)),
+        }
+    }
+
     pub async fn name(&self) -> String {
         match &*self.boot_resp.lock().await {
             None => "__NOT_BOOTED__".to_string(),
@@ -38,25 +50,29 @@ impl PluginHandle {
         }
     }
 
-    pub async fn reload(&self) -> crate::error::Result<()> {
+    pub async fn reload(&self) -> Result<()> {
         let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
         self.send(&event).await
     }
 
-    pub async fn send(&self, event: &InternalEvent) -> crate::error::Result<()> {
-        // info!(
-        //     "Sending event to plugin {} {:?}",
-        //     event.id,
-        //     self.name().await
-        // );
+    pub async fn send(&self, event: &InternalEvent) -> Result<()> {
         self.to_plugin_tx
             .lock()
             .await
             .send(Ok(EventStreamEvent {
-                event: serde_json::to_string(&event)?,
+                event: serde_json::to_string(event)?,
             }))
             .await?;
         Ok(())
+    }
+
+    pub async fn send_payload(
+        &self,
+        payload: &InternalEventPayload,
+        reply_id: Option<String>,
+    ) -> Result<()> {
+        let event = self.build_event_to_send(payload, reply_id);
+        self.send(&event).await
     }
 
     pub async fn boot(&self, resp: &BootResponse) {

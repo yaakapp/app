@@ -74,7 +74,7 @@ impl YaakUpdater {
                     tauri::async_runtime::block_on(async move {
                         info!("Shutting down plugin manager before update");
                         let plugin_manager = h.state::<PluginManager>();
-                        plugin_manager.cleanup().await;
+                        plugin_manager.terminate().await;
                     });
                 });
             })

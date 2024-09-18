@@ -62,7 +62,7 @@ use yaak_plugin_runtime::events::{
     InternalEvent, InternalEventPayload, RenderHttpRequestResponse, SendHttpRequestResponse,
     ShowToastRequest, ToastVariant,
 };
-use yaak_plugin_runtime::handle::PluginHandle;
+use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -1176,6 +1176,7 @@ async fn cmd_install_plugin(
     directory: &str,
     url: Option<String>,
     plugin_manager: State<'_, PluginManager>,
+    app_handle: AppHandle,
     w: WebviewWindow,
 ) -> Result<Plugin, String> {
     let plugin = upsert_plugin(
@@ -1189,7 +1190,10 @@ async fn cmd_install_plugin(
     .await
     .map_err(|e| e.to_string())?;
 
-    plugin_manager.reload_all().await;
+    plugin_manager
+        .reload_all(&app_handle)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(plugin)
 }
@@ -1483,8 +1487,14 @@ async fn cmd_list_plugins(w: WebviewWindow) -> Result<Vec<Plugin>, String> {
 }
 
 #[tauri::command]
-async fn cmd_reload_plugins(plugin_manager: State<'_, PluginManager>) -> Result<(), String> {
-    plugin_manager.reload_all().await;
+async fn cmd_reload_plugins(
+    app_handle: AppHandle,
+    plugin_manager: State<'_, PluginManager>,
+) -> Result<(), String> {
+    plugin_manager
+        .reload_all(&app_handle)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -1739,8 +1749,7 @@ pub fn run() {
             let plugin_cb = PluginTemplateCallback::new(app.app_handle().clone());
             app.manage(plugin_cb);
 
-            let app_handle = app.app_handle().clone();
-            monitor_plugin_events(&app_handle);
+            monitor_plugin_events(&app.app_handle().clone());
 
             Ok(())
         })
@@ -2031,7 +2040,7 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
         while let Some(event) = rx.recv().await {
             let app_handle = app_handle.clone();
             let plugin = plugin_manager
-                .get_plugin(event.plugin_ref_id.as_str())
+                .get_plugin_by_ref_id(event.plugin_ref_id.as_str())
                 .await
                 .unwrap();
 
