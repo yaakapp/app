@@ -9,7 +9,11 @@ import type { TwigCompletionOption } from './completion';
 class PathPlaceholderWidget extends WidgetType {
   readonly #clickListenerCallback: () => void;
 
-  constructor(readonly rawText: string, readonly startPos: number, readonly onClick: () => void) {
+  constructor(
+    readonly rawText: string,
+    readonly startPos: number,
+    readonly onClick: () => void,
+  ) {
     super();
     this.#clickListenerCallback = () => {
       this.onClick?.();
@@ -68,10 +72,10 @@ class TemplateTagWidget extends WidgetType {
       this.option.invalid
         ? 'x-theme-templateTag--danger'
         : this.option.type === 'variable'
-        ? 'x-theme-templateTag--primary'
-        : 'x-theme-templateTag--info'
+          ? 'x-theme-templateTag--primary'
+          : 'x-theme-templateTag--info'
     }`;
-    elt.title = this.option.invalid ? 'Not Found' : this.option.value ?? '';
+    elt.title = this.option.invalid ? 'Not Found' : (this.option.value ?? '');
     elt.setAttribute('data-tag-type', this.option.type);
     elt.textContent =
       this.option.type === 'variable'
@@ -134,7 +138,7 @@ function templateTags(
 
           // TODO: Search `node.tree` instead of using Regex here
           const inner = rawTag.replace(/^\$\{\[\s*/, '').replace(/\s*]}$/, '');
-          let name = inner.match(/(\w+)[(]/)?.[1] ?? inner;
+          let name = inner.match(/([\w.]+)[(]/)?.[1] ?? inner;
 
           // The beta named the function `Response` but was changed in stable.
           // Keep this here for a while because there's no easy way to migrate

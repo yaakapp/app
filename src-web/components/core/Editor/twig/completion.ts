@@ -1,4 +1,4 @@
-import type { CompletionContext } from '@codemirror/autocomplete';
+import type { Completion, CompletionContext } from '@codemirror/autocomplete';
 
 const openTag = '${[ ';
 const closeTag = ' ]}';
@@ -7,12 +7,20 @@ export type TwigCompletionOptionVariable = {
   type: 'variable';
 };
 
+export type TwigCompletionOptionNamespace = {
+  type: 'namespace';
+};
+
 export type TwigCompletionOptionFunction = {
   args: { name: string }[];
   type: 'function';
 };
 
-export type TwigCompletionOption = (TwigCompletionOptionFunction | TwigCompletionOptionVariable) & {
+export type TwigCompletionOption = (
+  | TwigCompletionOptionFunction
+  | TwigCompletionOptionVariable
+  | TwigCompletionOptionNamespace
+) & {
   name: string;
   label: string;
   onClick: (rawTag: string, startPos: number) => void;
@@ -25,12 +33,13 @@ export interface TwigCompletionConfig {
 }
 
 const MIN_MATCH_VAR = 1;
-const MIN_MATCH_NAME = 2;
+const MIN_MATCH_NAME = 1;
 
 export function twigCompletion({ options }: TwigCompletionConfig) {
   return function completions(context: CompletionContext) {
-    const toStartOfName = context.matchBefore(/\w*/);
-    const toStartOfVariable = context.matchBefore(/\$\{?\[?\s*\w*/);
+    const toStartOfName = context.matchBefore(/[\w_.]*/);
+    const toStartOfNamespacedName = context.matchBefore(/[\w_.]*/);
+    const toStartOfVariable = context.matchBefore(/\$\{?\[?\s*[\w_]*/);
     const toMatch = toStartOfVariable ?? toStartOfName ?? null;
 
     if (toMatch === null) return null;
@@ -47,22 +56,46 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
       return null;
     }
 
+    const completions: Completion[] = options
+      .map((o): Completion => {
+        const optionSegments = o.name.split('.');
+        const matchSegments = toStartOfNamespacedName!.text.split('.');
+        // const prefix = toStartOfNamespacedName!.text
+        //   .split('.')
+        //   .slice(0, matchSegments.length)
+        //   .join('.');
+
+        // // Remove anything that doesn't start with the prefixed text
+        // if (!o.name.startsWith(prefix)) {
+        //   return null;
+        // }
+
+        // If not on the last segment, only complete the namespace
+        if (matchSegments.length < optionSegments.length) {
+          return {
+            label: optionSegments.slice(0, matchSegments.length).join('.'),
+            apply: optionSegments.slice(0, matchSegments.length).join('.'),
+            type: 'namespace',
+          };
+        }
+
+        // If on the last segment, wrap the entire tag
+        const inner = o.type === 'function' ? `${o.name}()` : o.name;
+        return {
+          label: o.name,
+          apply: openTag + inner + closeTag,
+          type: o.type === 'variable' ? 'variable' : 'function',
+        };
+      })
+      .filter((v) => v != null);
+
     // TODO: Figure out how to make autocomplete stay open if opened explicitly. It sucks when you explicitly
     //  open it, then it closes when you type the next character.
     return {
       validFor: () => true, // Not really sure why this is all it needs
       from: toMatch.from,
-      options: options
-        .filter((v) => v.name.trim())
-        .map((v) => {
-          const inner = v.type === 'function' ? `${v.name}()` : v.name;
-          return {
-            label: v.label,
-            apply: openTag + inner + closeTag,
-            type: v.type === 'variable' ? 'variable' : 'function',
-            matchLen: matchLen,
-          };
-        })
+      matchLen,
+      options: completions
         // Filter out exact matches
         .filter((o) => o.label !== toMatch.text),
     };

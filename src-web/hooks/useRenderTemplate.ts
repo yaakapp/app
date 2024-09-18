@@ -8,6 +8,7 @@ export function useRenderTemplate(template: string) {
   const environmentId = useActiveEnvironment()[0]?.id ?? null;
   return useQuery<string>({
     placeholderData: (prev) => prev, // Keep previous data on refetch
+    refetchOnWindowFocus: false,
     queryKey: ['render_template', template],
     queryFn: () => renderTemplate({ template, workspaceId, environmentId }),
   });

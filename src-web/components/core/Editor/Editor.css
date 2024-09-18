@@ -242,6 +242,11 @@
       @apply text-primary;
     }
 
+    &.cm-completionIcon-namespace::after {
+      content: 'n' !important;
+      @apply text-warning;
+    }
+
     &.cm-completionIcon-constant::after {
       content: 'c' !important;
       @apply text-notice;
@@ -265,10 +270,6 @@
 
     &.cm-completionIcon-method::after {
       content: 'm' !important;
-    }
-
-    &.cm-completionIcon-namespace::after {
-      content: 'n' !important;
     }
 
     &.cm-completionIcon-property::after {
