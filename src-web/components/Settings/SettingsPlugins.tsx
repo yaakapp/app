@@ -1,7 +1,8 @@
 import type { Plugin } from '@yaakapp/api';
 import { open } from '@tauri-apps/plugin-shell';
 import React from 'react';
-import { useCreatePlugin } from '../../hooks/useCreatePlugin';
+import { useInstallPlugin } from '../../hooks/useInstallPlugin';
+import { useUninstallPlugin } from '../../hooks/useUninstallPlugin';
 import { usePluginInfo } from '../../hooks/usePluginInfo';
 import { usePlugins, useRefreshPlugins } from '../../hooks/usePlugins';
 import { Button } from '../core/Button';
@@ -15,7 +16,7 @@ import { SelectFile } from '../SelectFile';
 export function SettingsPlugins() {
   const [directory, setDirectory] = React.useState<string | null>(null);
   const plugins = usePlugins();
-  const createPlugin = useCreatePlugin();
+  const createPlugin = useInstallPlugin();
   const refreshPlugins = useRefreshPlugins();
   return (
     <div className="grid grid-rows-[minmax(0,1fr)_auto] h-full">
@@ -88,6 +89,7 @@ export function SettingsPlugins() {
 
 function PluginInfo({ plugin }: { plugin: Plugin }) {
   const pluginInfo = usePluginInfo(plugin.id);
+  const deletePlugin = useUninstallPlugin(plugin.id);
   return (
     <tr className="group">
       <td className="pr-2">
@@ -105,6 +107,7 @@ function PluginInfo({ plugin }: { plugin: Plugin }) {
           icon="trash"
           title="Uninstall plugin"
           className="text-text-subtlest"
+          onClick={() => deletePlugin.mutate()}
         />
       </td>
     </tr>

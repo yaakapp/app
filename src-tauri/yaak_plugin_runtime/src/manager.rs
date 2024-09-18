@@ -6,7 +6,6 @@ use crate::events::{
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
 };
 use std::collections::HashMap;
-
 use crate::error::Error::PluginErr;
 use crate::nodejs::start_nodejs_plugin_runtime;
 use crate::plugin::start_server;
@@ -37,6 +36,15 @@ impl PluginManager {
             .expect("Failed to start plugin runtime");
 
         PluginManager { kill_tx, server }
+    }
+
+    pub async fn uninstall(&self, dir: &str) {
+        let plugin = match self.server.plugin_by_dir(dir).await {
+            Ok(p) => p,
+            Err(_) => return,
+        };
+
+        self.server.remove_plugin(plugin.ref_id.as_str()).await
     }
 
     pub async fn reload_all(&self) {

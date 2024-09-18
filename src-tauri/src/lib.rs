@@ -47,9 +47,9 @@ use yaak_models::queries::{
     cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
     delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
     delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_workspace, duplicate_grpc_request, duplicate_http_request,
-    generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection,
-    get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
+    delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request,
+    duplicate_http_request, generate_model_id, get_cookie_jar, get_environment, get_folder,
+    get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
     get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments,
     list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
     list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
@@ -57,10 +57,10 @@ use yaak_models::queries::{
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
 };
 use yaak_plugin_runtime::events::{
-    CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
+    BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
-    InternalEvent, InternalEventPayload, BootResponse, RenderHttpRequestResponse,
-    SendHttpRequestResponse, ShowToastRequest, ToastVariant,
+    InternalEvent, InternalEventPayload, RenderHttpRequestResponse, SendHttpRequestResponse,
+    ShowToastRequest, ToastVariant,
 };
 use yaak_plugin_runtime::handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
@@ -1172,12 +1172,13 @@ async fn cmd_create_workspace(name: &str, w: WebviewWindow) -> Result<Workspace,
 }
 
 #[tauri::command]
-async fn cmd_create_plugin(
+async fn cmd_install_plugin(
     directory: &str,
     url: Option<String>,
+    plugin_manager: State<'_, PluginManager>,
     w: WebviewWindow,
 ) -> Result<Plugin, String> {
-    upsert_plugin(
+    let plugin = upsert_plugin(
         &w,
         Plugin {
             directory: directory.into(),
@@ -1186,7 +1187,26 @@ async fn cmd_create_plugin(
         },
     )
     .await
-    .map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())?;
+
+    plugin_manager.reload_all().await;
+
+    Ok(plugin)
+}
+
+#[tauri::command]
+async fn cmd_uninstall_plugin(
+    plugin_id: &str,
+    plugin_manager: State<'_, PluginManager>,
+    w: WebviewWindow,
+) -> Result<Plugin, String> {
+    let plugin = delete_plugin(&w, plugin_id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    plugin_manager.uninstall(plugin.directory.as_str()).await;
+
+    Ok(plugin)
 }
 
 #[tauri::command]
@@ -1732,7 +1752,7 @@ pub fn run() {
             cmd_create_folder,
             cmd_create_grpc_request,
             cmd_create_http_request,
-            cmd_create_plugin,
+            cmd_install_plugin,
             cmd_create_workspace,
             cmd_curl_to_request,
             cmd_delete_all_grpc_connections,
@@ -1744,6 +1764,7 @@ pub fn run() {
             cmd_delete_grpc_request,
             cmd_delete_http_request,
             cmd_delete_http_response,
+            cmd_uninstall_plugin,
             cmd_delete_workspace,
             cmd_dismiss_notification,
             cmd_duplicate_grpc_request,

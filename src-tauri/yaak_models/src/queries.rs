@@ -954,6 +954,21 @@ pub async fn upsert_plugin<R: Runtime>(
     Ok(emit_upserted_model(window, m))
 }
 
+pub async fn delete_plugin<R: Runtime>(window: &WebviewWindow<R>, id: &str) -> Result<Plugin> {
+    let plugin = get_plugin(window, id).await?;
+
+    let dbm = &*window.app_handle().state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::delete()
+        .from_table(PluginIden::Table)
+        .cond_where(Expr::col(PluginIden::Id).eq(id))
+        .build_rusqlite(SqliteQueryBuilder);
+    db.execute(sql.as_str(), &*params.as_params())?;
+
+    emit_deleted_model(window, plugin)
+}
+
 pub async fn get_folder<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Folder> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();

@@ -1,7 +1,7 @@
+use log::warn;
 use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::Arc;
-use log::warn;
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::{mpsc, Mutex};
 use tonic::codegen::tokio_stream::wrappers::ReceiverStream;
@@ -10,7 +10,7 @@ use tonic::{Request, Response, Status, Streaming};
 
 use crate::error::Error::PluginNotFoundErr;
 use crate::error::Result;
-use crate::events::{InternalEvent, InternalEventPayload, BootRequest, BootResponse};
+use crate::events::{BootRequest, BootResponse, InternalEvent, InternalEventPayload};
 use crate::handle::PluginHandle;
 use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntime;
 use crate::util::gen_id;
