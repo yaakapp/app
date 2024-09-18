@@ -38,7 +38,6 @@ const MIN_MATCH_NAME = 1;
 export function twigCompletion({ options }: TwigCompletionConfig) {
   return function completions(context: CompletionContext) {
     const toStartOfName = context.matchBefore(/[\w_.]*/);
-    const toStartOfNamespacedName = context.matchBefore(/[\w_.]*/);
     const toStartOfVariable = context.matchBefore(/\$\{?\[?\s*[\w_]*/);
     const toMatch = toStartOfVariable ?? toStartOfName ?? null;
 
@@ -58,7 +57,7 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
 
     const completions: Completion[] = options
       .map((o): Completion => {
-        const matchSegments = toStartOfNamespacedName!.text.split('.');
+        const matchSegments = toStartOfName!.text.split('.');
         const optionSegments = o.name.split('.');
 
         // If not on the last segment, only complete the namespace
