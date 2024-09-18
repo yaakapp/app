@@ -58,17 +58,8 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
 
     const completions: Completion[] = options
       .map((o): Completion => {
-        const optionSegments = o.name.split('.');
         const matchSegments = toStartOfNamespacedName!.text.split('.');
-        // const prefix = toStartOfNamespacedName!.text
-        //   .split('.')
-        //   .slice(0, matchSegments.length)
-        //   .join('.');
-
-        // // Remove anything that doesn't start with the prefixed text
-        // if (!o.name.startsWith(prefix)) {
-        //   return null;
-        // }
+        const optionSegments = o.name.split('.');
 
         // If not on the last segment, only complete the namespace
         if (matchSegments.length < optionSegments.length) {
