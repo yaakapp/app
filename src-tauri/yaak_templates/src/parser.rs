@@ -195,7 +195,7 @@ impl Parser {
     fn parse_fn(&mut self) -> Option<(String, Vec<FnArg>)> {
         let start_pos = self.pos;
 
-        let name = match self.parse_ident() {
+        let name = match self.parse_fn_name() {
             Some(v) => v,
             None => {
                 self.pos = start_pos;
@@ -274,6 +274,32 @@ impl Parser {
         while self.pos < self.chars.len() {
             let ch = self.peek_char();
             if ch.is_alphanumeric() || ch == '_' {
+                text.push(ch);
+                self.pos += 1;
+            } else {
+                break;
+            }
+
+            if start_pos == self.pos {
+                panic!("Parser stuck!");
+            }
+        }
+
+        if text.is_empty() {
+            self.pos = start_pos;
+            return None;
+        }
+
+        Some(text)
+    }
+    
+    fn parse_fn_name(&mut self) -> Option<String> {
+        let start_pos = self.pos;
+
+        let mut text = String::new();
+        while self.pos < self.chars.len() {
+            let ch = self.peek_char();
+            if ch.is_alphanumeric() || ch == '_' || ch == '.' {
                 text.push(ch);
                 self.pos += 1;
             } else {
@@ -479,6 +505,23 @@ mod tests {
                 Token::Tag {
                     val: Val::Fn {
                         name: "foo".into(),
+                        args: Vec::new(),
+                    }
+                },
+                Token::Eof
+            ]
+        );
+    }
+    
+    #[test]
+    fn fn_dot_name() {
+        let mut p = Parser::new("${[ foo.bar.baz() ]}");
+        assert_eq!(
+            p.parse().tokens,
+            vec![
+                Token::Tag {
+                    val: Val::Fn {
+                        name: "foo.bar.baz".into(),
                         args: Vec::new(),
                     }
                 },
