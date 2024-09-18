@@ -1506,9 +1506,12 @@ async fn cmd_plugin_info(
 ) -> Result<BootResponse, String> {
     let plugin = get_plugin(&w, id).await.map_err(|e| e.to_string())?;
     plugin_manager
-        .get_plugin_info(plugin.directory.as_str())
+        .get_plugin_by_dir(plugin.directory.as_str())
         .await
-        .ok_or("Failed to find plugin info".to_string())
+        .ok_or("Failed to find plugin info".to_string())?
+        .info()
+        .await
+        .ok_or("Failed to find plugin".to_string())
 }
 
 #[tauri::command]
@@ -2123,21 +2126,15 @@ async fn handle_plugin_event<R: Runtime>(
                     continue;
                 }
 
-                upsert_plugin(
-                    &w,
-                    Plugin {
-                        // TODO: Add reloaded_at field to use instead
-                        updated_at: Utc::now().naive_utc(),
-                        ..plugin
-                    },
-                )
-                .await
-                .unwrap();
+                let new_plugin = Plugin {
+                    updated_at: Utc::now().naive_utc(), // TODO: Add reloaded_at field to use instead
+                    ..plugin
+                };
+                upsert_plugin(&w, new_plugin).await.unwrap();
             }
-            let plugin_name = plugin_handle.info().await.unwrap().name;
             let toast_event = plugin_handle.build_event_to_send(
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
-                    message: format!("Reloaded plugin {}", plugin_name),
+                    message: format!("Reloaded plugin {}", plugin_handle.dir),
                     variant: ToastVariant::Info,
                 }),
                 None,

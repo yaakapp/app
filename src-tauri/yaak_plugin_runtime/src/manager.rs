@@ -1,7 +1,7 @@
-use crate::error::Error::{ClientNotInitializedErr, PluginErr, PluginNotFoundErr};
+use crate::error::Error::{ClientNotInitializedErr, PluginErr, PluginNotFoundErr, UnknownEventErr};
 use crate::error::Result;
 use crate::events::{
-    BootRequest, BootResponse, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
+    BootRequest, CallHttpRequestActionRequest, CallTemplateFunctionArgs,
     CallTemplateFunctionRequest, CallTemplateFunctionResponse, FilterRequest, FilterResponse,
     GetHttpRequestActionsRequest, GetHttpRequestActionsResponse, GetTemplateFunctionsResponse,
     ImportRequest, ImportResponse, InternalEvent, InternalEventPayload, RenderPurpose,
@@ -148,19 +148,20 @@ impl PluginManager {
     }
 
     pub async fn add_plugin(&self, dir: &str) -> Result<()> {
-        let plugin = {
-            let foo = self.server.app_to_plugin_events_tx.lock().await;
-            let tx = match &*foo {
-                None => return Err(ClientNotInitializedErr),
-                Some(tx) => tx,
-            };
-            let ph = PluginHandle::new(dir, tx.clone());
-            self.plugins.lock().await.push(ph.clone());
-            ph
+        let maybe_tx = self.server.app_to_plugin_events_tx.lock().await;
+        let tx = match &*maybe_tx {
+            None => return Err(ClientNotInitializedErr),
+            Some(tx) => tx,
         };
+        let ph = PluginHandle::new(dir, tx.clone());
+        self.plugins.lock().await.push(ph.clone());
+        let plugin = self
+            .get_plugin_by_dir(dir)
+            .await
+            .ok_or(PluginNotFoundErr(dir.to_string()))?;
 
         // Boot the plugin
-        let result = self
+        let event = self
             .send_to_plugin_and_wait(
                 &plugin,
                 &InternalEventPayload::BootRequest(BootRequest {
@@ -169,10 +170,12 @@ impl PluginManager {
             )
             .await?;
 
-        match result.payload {
-            InternalEventPayload::BootResponse(resp) => plugin.boot(&resp).await,
-            _ => {}
+        let resp = match event.payload {
+            InternalEventPayload::BootResponse(resp) => resp,
+            _ => return Err(UnknownEventErr),
         };
+
+        plugin.set_boot_response(&resp).await;
 
         Ok(())
     }
@@ -230,10 +233,6 @@ impl PluginManager {
         plugin.send(&event).await
     }
 
-    pub async fn get_plugin_info(&self, dir: &str) -> Option<BootResponse> {
-        self.get_plugin_by_dir(dir).await?.info().await
-    }
-
     pub async fn get_plugin_by_ref_id(&self, ref_id: &str) -> Option<PluginHandle> {
         self.plugins
             .lock()
@@ -254,7 +253,7 @@ impl PluginManager {
 
     pub async fn get_plugin_by_name(&self, name: &str) -> Option<PluginHandle> {
         for plugin in self.plugins.lock().await.iter().cloned() {
-            let info = self.get_plugin_info(plugin.dir.as_str()).await?;
+            let info = plugin.info().await?;
             if info.name == name {
                 return Some(plugin);
             }
@@ -429,8 +428,8 @@ impl PluginManager {
                     .get_plugin_by_ref_id(ref_id.as_str())
                     .await
                     .ok_or(PluginNotFoundErr(ref_id))?;
-                let plugin_name = plugin.name().await;
-                Ok((resp, plugin_name))
+                let info = plugin.info().await.unwrap();
+                Ok((resp, info.name))
             }
         }
     }

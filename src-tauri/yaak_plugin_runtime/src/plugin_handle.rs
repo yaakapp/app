@@ -25,13 +25,6 @@ impl PluginHandle {
         }
     }
 
-    pub async fn name(&self) -> String {
-        match &*self.boot_resp.lock().await {
-            None => "__NOT_BOOTED__".to_string(),
-            Some(r) => r.name.to_owned(),
-        }
-    }
-
     pub async fn info(&self) -> Option<BootResponse> {
         let resp = &*self.boot_resp.lock().await;
         resp.clone()
@@ -75,7 +68,7 @@ impl PluginHandle {
         self.send(&event).await
     }
 
-    pub async fn boot(&self, resp: &BootResponse) {
+    pub async fn set_boot_response(&self, resp: &BootResponse) {
         let mut boot_resp = self.boot_resp.lock().await;
         *boot_resp = Some(resp.clone());
     }

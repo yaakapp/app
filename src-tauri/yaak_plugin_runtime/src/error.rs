@@ -31,6 +31,9 @@ pub enum Error {
     
     #[error("Client not initialized error")]
     ClientNotInitializedErr,
+    
+    #[error("Unknown event received")]
+    UnknownEventErr,
 }
 
 impl Into<String> for Error {
