@@ -91,7 +91,7 @@ impl PluginManager {
                     Ok(_) => {
                         info!("Plugin runtime client connected!");
                         plugin_manager
-                            .reload_all(&app_handle)
+                            .initialize_all_plugins(&app_handle)
                             .await
                             .expect("Failed to reload plugins");
                     }
@@ -143,11 +143,37 @@ impl PluginManager {
         plugin_dirs
     }
 
-    pub async fn uninstall(&self, _dir: &str) {
-        todo!()
+    pub async fn uninstall(&self, dir: &str) -> Result<()> {
+        let plugin = self
+            .get_plugin_by_dir(dir)
+            .await
+            .ok_or(PluginNotFoundErr(dir.to_string()))?;
+        self.remove_plugin(&plugin).await
     }
 
-    pub async fn add_plugin(&self, dir: &str) -> Result<()> {
+    pub async fn reload_plugin(&self, plugin: &PluginHandle) -> Result<()> {
+        self.send_to_plugin_and_wait(&plugin, &InternalEventPayload::ReloadRequest)
+            .await?;
+        Ok(())
+    }
+
+    async fn remove_plugin(&self, plugin: &PluginHandle) -> Result<()> {
+        let mut plugins = self.plugins.lock().await;
+
+        // Terminate the plugin
+        self.send_to_plugin_and_wait(&plugin, &InternalEventPayload::TerminateRequest)
+            .await?;
+
+        // Remove the plugin from the list
+        let pos = plugins.iter().position(|p| p.ref_id == plugin.ref_id);
+        if let Some(pos) = pos {
+            plugins.remove(pos);
+        }
+
+        Ok(())
+    }
+
+    pub async fn add_plugin_by_dir(&self, dir: &str) -> Result<()> {
         let maybe_tx = self.server.app_to_plugin_events_tx.lock().await;
         let tx = match &*maybe_tx {
             None => return Err(ClientNotInitializedErr),
@@ -180,20 +206,22 @@ impl PluginManager {
         Ok(())
     }
 
-    pub async fn reload_all<R: Runtime>(&self, app_handle: &AppHandle<R>) -> Result<()> {
-        // 1. Terminate all plugins
+    pub async fn initialize_all_plugins<R: Runtime>(
+        &self,
+        app_handle: &AppHandle<R>,
+    ) -> Result<()> {
+        // 1. Remove all plugins
         {
-            let mut plugins = self.plugins.lock().await;
-            for _p in plugins.iter() {
-                // p.terminate();
+            let plugins = self.plugins.lock().await.clone();
+            for p in plugins.iter() {
+                self.remove_plugin(p).await?;
             }
-            plugins.clear();
         };
 
-        // 2. recreate all plugins
+        // 2. Recreate all plugins
         let dirs = self.list_plugin_dirs(app_handle).await;
         for dir in dirs.iter() {
-            self.add_plugin(dir).await?;
+            self.add_plugin_by_dir(dir).await?;
         }
 
         info!("RELOAD ALL PLUGINS {}", self.plugins.lock().await.len());

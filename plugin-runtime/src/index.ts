@@ -22,10 +22,17 @@ const plugins: Record<string, PluginHandle> = {};
         plugins[pluginEvent.pluginRefId] = plugin;
       }
 
-      // Once booted, forward all events to plugin's worker
+      // Once booted, forward all events to the plugin worker
       const plugin = plugins[pluginEvent.pluginRefId];
       if (!plugin) {
         console.warn('Failed to get plugin for event by', pluginEvent.pluginRefId);
+        continue;
+      }
+
+      if (pluginEvent.payload.type === 'terminate_request') {
+        await plugin.terminate();
+        console.log('Terminated plugin worker', pluginEvent.pluginRefId);
+        delete plugins[pluginEvent.pluginRefId];
         continue;
       }
 

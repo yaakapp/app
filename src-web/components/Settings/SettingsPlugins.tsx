@@ -6,7 +6,6 @@ import { useUninstallPlugin } from '../../hooks/useUninstallPlugin';
 import { usePluginInfo } from '../../hooks/usePluginInfo';
 import { usePlugins, useRefreshPlugins } from '../../hooks/usePlugins';
 import { Button } from '../core/Button';
-import { Checkbox } from '../core/Checkbox';
 import { IconButton } from '../core/IconButton';
 import { InlineCode } from '../core/InlineCode';
 import { HStack } from '../core/Stacks';
@@ -32,7 +31,6 @@ export function SettingsPlugins() {
         <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">
           <thead>
             <tr>
-              <th></th>
               <th className="py-2 text-left">Plugin</th>
               <th className="py-2 text-right">Version</th>
               <th></th>
@@ -92,12 +90,7 @@ function PluginInfo({ plugin }: { plugin: Plugin }) {
   const deletePlugin = useUninstallPlugin(plugin.id);
   return (
     <tr className="group">
-      <td className="pr-2">
-        <Checkbox hideLabel checked={true} title="foo" onChange={() => null} />
-      </td>
-      <td className="py-2 select-text cursor-text w-full">
-        <InlineCode>{pluginInfo.data?.name}</InlineCode>
-      </td>
+      <td className="py-2 select-text cursor-text w-full">{pluginInfo.data?.name}</td>
       <td className="py-2 select-text cursor-text text-right">
         <InlineCode>{pluginInfo.data?.version}</InlineCode>
       </td>

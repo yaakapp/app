@@ -12,6 +12,12 @@ export function usePlugins() {
   return useAtomValue(pluginsAtom);
 }
 
+export function usePluginsKey() {
+  return useAtomValue(pluginsAtom)
+    .map((p) => p.id + p.updatedAt)
+    .join(',');
+}
+
 /**
  * Reload all plugins and refresh the list of plugins
  */

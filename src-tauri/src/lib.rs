@@ -1176,9 +1176,13 @@ async fn cmd_install_plugin(
     directory: &str,
     url: Option<String>,
     plugin_manager: State<'_, PluginManager>,
-    app_handle: AppHandle,
     w: WebviewWindow,
 ) -> Result<Plugin, String> {
+    plugin_manager
+        .add_plugin_by_dir(&directory)
+        .await
+        .map_err(|e| e.to_string())?;
+
     let plugin = upsert_plugin(
         &w,
         Plugin {
@@ -1189,11 +1193,6 @@ async fn cmd_install_plugin(
     )
     .await
     .map_err(|e| e.to_string())?;
-
-    plugin_manager
-        .reload_all(&app_handle)
-        .await
-        .map_err(|e| e.to_string())?;
 
     Ok(plugin)
 }
@@ -1208,7 +1207,10 @@ async fn cmd_uninstall_plugin(
         .await
         .map_err(|e| e.to_string())?;
 
-    plugin_manager.uninstall(plugin.directory.as_str()).await;
+    plugin_manager
+        .uninstall(plugin.directory.as_str())
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(plugin)
 }
@@ -1492,7 +1494,7 @@ async fn cmd_reload_plugins(
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<(), String> {
     plugin_manager
-        .reload_all(&app_handle)
+        .initialize_all_plugins(&app_handle)
         .await
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -2038,14 +2040,20 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
     let app_handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
         let plugin_manager: State<'_, PluginManager> = app_handle.state();
-        let (_rx_id, mut rx) = plugin_manager.subscribe().await;
+        let (rx_id, mut rx) = plugin_manager.subscribe().await;
 
         while let Some(event) = rx.recv().await {
             let app_handle = app_handle.clone();
-            let plugin = plugin_manager
+            let plugin = match plugin_manager
                 .get_plugin_by_ref_id(event.plugin_ref_id.as_str())
                 .await
-                .unwrap();
+            {
+                None => {
+                    warn!("Failed to get plugin for event {:?}", event);
+                    continue;
+                }
+                Some(p) => p,
+            };
 
             // We might have recursive back-and-forth calls between app and plugin, so we don't
             // want to block here
@@ -2053,6 +2061,7 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
                 handle_plugin_event(&app_handle, &event, &plugin).await;
             });
         }
+        plugin_manager.unsubscribe(rx_id.as_str()).await;
     });
 }
 
