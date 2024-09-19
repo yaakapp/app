@@ -78,9 +78,9 @@ class TemplateTagWidget extends WidgetType {
     elt.title = this.option.invalid ? 'Not Found' : (this.option.value ?? '');
     elt.setAttribute('data-tag-type', this.option.type);
     elt.textContent =
-      this.option.type === 'variable'
-        ? this.option.name
-        : `${this.option.name}(${this.option.args.length ? '…' : ''})`;
+      this.option.type === 'function'
+        ? `${this.option.name}(${this.option.args.length ? '…' : ''})`
+        : this.option.name;
     elt.addEventListener('click', this.#clickListenerCallback);
     return elt;
   }
