@@ -3,6 +3,7 @@ use crate::events::{BootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
 use std::sync::Arc;
+use log::info;
 use tokio::sync::{mpsc, Mutex};
 
 #[derive(Clone)]
@@ -44,11 +45,13 @@ impl PluginHandle {
     }
 
     pub async fn reload(&self) -> Result<()> {
+        info!("Reloading plugin {}", self.dir);
         let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
         self.send(&event).await
     }
 
     pub async fn terminate(&self) -> Result<()> {
+        info!("Terminating plugin {}", self.dir);
         let event = self.build_event_to_send(&InternalEventPayload::TerminateRequest, None);
         self.send(&event).await
     }

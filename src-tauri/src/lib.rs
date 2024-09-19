@@ -82,6 +82,7 @@ const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
 
 const MIN_WINDOW_WIDTH: f64 = 300.0;
 const MIN_WINDOW_HEIGHT: f64 = 300.0;
+const MAIN_WINDOW_PREFIX: &str = "main_";
 
 #[derive(serde::Serialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -1944,7 +1945,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     handle.set_menu(menu).expect("Failed to set app menu");
 
     let window_num = handle.webview_windows().len();
-    let label = format!("main_{}", window_num);
+    let label = format!("{MAIN_WINDOW_PREFIX}{window_num}");
     info!("Create new window label={label}");
     let mut win_builder =
         tauri::WebviewWindowBuilder::new(handle, label, WebviewUrl::App(url.into()))
@@ -2104,19 +2105,19 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::RenderHttpRequestRequest(req) => {
-            let w = get_focused_window_no_lock(app_handle).expect("No focused window");
+            let window = get_focused_window_no_lock(app_handle).expect("No focused window");
             let workspace = get_workspace(app_handle, req.http_request.workspace_id.as_str())
                 .await
                 .expect("Failed to get workspace for request");
 
-            let url = w.url().unwrap();
+            let url = window.url().unwrap();
             let mut query_pairs = url.query_pairs();
             let environment_id = query_pairs
                 .find(|(k, _v)| k == "environment_id")
                 .map(|(_k, v)| v.to_string());
             let environment = match environment_id {
                 None => None,
-                Some(id) => get_environment(&w, id.as_str()).await.ok(),
+                Some(id) => get_environment(&window, id.as_str()).await.ok(),
             };
             let cb = &*app_handle.state::<PluginTemplateCallback>();
             let rendered_http_request =
@@ -2128,8 +2129,8 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::ReloadResponse => {
-            let w = get_focused_window_no_lock(app_handle).expect("No focused window");
-            let plugins = list_plugins(&w).await.unwrap();
+            let window = get_focused_window_no_lock(app_handle).expect("No focused window");
+            let plugins = list_plugins(&window).await.unwrap();
             for plugin in plugins {
                 if plugin.directory != plugin_handle.dir {
                     continue;
@@ -2139,7 +2140,7 @@ async fn handle_plugin_event<R: Runtime>(
                     updated_at: Utc::now().naive_utc(), // TODO: Add reloaded_at field to use instead
                     ..plugin
                 };
-                upsert_plugin(&w, new_plugin).await.unwrap();
+                upsert_plugin(&window, new_plugin).await.unwrap();
             }
             let toast_event = plugin_handle.build_event_to_send(
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
@@ -2210,18 +2211,25 @@ async fn handle_plugin_event<R: Runtime>(
 fn get_focused_window_no_lock<R: Runtime>(app_handle: &AppHandle<R>) -> Option<WebviewWindow<R>> {
     // TODO: Getting the focused window doesn't seem to work on Windows, so
     //   we'll need to pass the window label into plugin events instead.
-    if app_handle.webview_windows().len() == 1 {
-        let w = app_handle
-            .webview_windows()
-            .iter()
-            .next()
-            .map(|w| w.1.clone());
-        return w;
-    }
-
-    app_handle
+    let main_windows = app_handle
         .webview_windows()
         .iter()
-        .find(|w| w.1.is_focused().unwrap_or(false))
-        .map(|w| w.1.clone())
+        .filter_map(|(_, w)| {
+            if w.label().starts_with(MAIN_WINDOW_PREFIX) {
+                Some(w.to_owned())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<WebviewWindow<R>>>();
+    
+    if main_windows.len() == 1 {
+        return main_windows.iter().next().map(|w| w.clone())
+    }
+
+    main_windows
+        .iter()
+        .cloned()
+        .find(|w| w.is_focused().unwrap_or(false))
+        .map(|w| w.clone())
 }

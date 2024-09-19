@@ -167,6 +167,7 @@ impl PluginManager {
     }
 
     pub async fn add_plugin_by_dir(&self, dir: &str) -> Result<()> {
+        info!("Adding plugin by dir {dir}");
         let maybe_tx = self.server.app_to_plugin_events_tx.lock().await;
         let tx = match &*maybe_tx {
             None => return Err(ClientNotInitializedErr),
@@ -195,7 +196,7 @@ impl PluginManager {
         };
 
         plugin.set_boot_response(&resp).await;
-
+        
         Ok(())
     }
 
@@ -203,19 +204,20 @@ impl PluginManager {
         &self,
         app_handle: &AppHandle<R>,
     ) -> Result<()> {
-        // 1. Remove all plugins
-        let plugins = { self.plugins.lock().await.clone() };
-        for p in plugins.iter() {
-            self.remove_plugin(p).await?;
+        for dir in self.list_plugin_dirs(app_handle).await {
+            match self.get_plugin_by_dir(dir.as_str()).await {
+                None => {
+                    if let Err(e) = self.add_plugin_by_dir(dir.as_str()).await {
+                        warn!("Failed to add plugin {dir} {e:?}");
+                    }
+                }
+                Some(plugin) => {
+                    if let Err(e) = plugin.reload().await {
+                        warn!("Failed to reload plugin {dir} {e:?}");
+                    }
+                }
+            }
         }
-
-        // 2. Recreate all plugins
-        let dirs = self.list_plugin_dirs(app_handle).await;
-        for dir in dirs.iter() {
-            self.add_plugin_by_dir(dir).await?;
-        }
-
-        info!("RELOAD ALL PLUGINS {}", self.plugins.lock().await.len());
 
         Ok(())
     }
