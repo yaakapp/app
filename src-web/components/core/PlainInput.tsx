@@ -59,7 +59,7 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
   const inputClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
-    'px-1.5 text-xs font-mono cursor-text',
+    'px-2 text-xs font-mono cursor-text',
   );
 
   const isValid = useMemo(() => {

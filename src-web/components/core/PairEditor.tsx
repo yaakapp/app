@@ -23,6 +23,7 @@ import { Icon } from './Icon';
 import { IconButton } from './IconButton';
 import type { InputProps } from './Input';
 import { Input } from './Input';
+import { PlainInput } from './PlainInput';
 import { RadioDropdown } from './RadioDropdown';
 
 export interface PairEditorRef {
@@ -172,7 +173,14 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
         setForceFocusNamePairId(null); // Remove focus override when something focused
         setForceFocusValuePairId(null); // Remove focus override when something focused
         const isLast = pair.id === pairs[pairs.length - 1]?.id;
-        return isLast ? [...pairs, newPairContainer()] : pairs;
+        if (isLast) {
+          const newPair = newPairContainer();
+          const prevPair = pairs[pairs.length - 1];
+          setForceFocusNamePairId(prevPair?.id ?? null);
+          return [...pairs, newPair];
+        } else {
+          return pairs;
+        }
       }),
     [],
   );
@@ -192,7 +200,7 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
         'pb-2 mb-auto h-full',
         !noScroll && 'overflow-y-auto max-h-full',
         // Move over the width of the drag handle
-        '-ml-3',
+        '-ml-3 -mr-2 pr-2',
         // Pad to make room for the drag divider
         'pt-0.5',
       )}
@@ -224,6 +232,7 @@ export const PairEditor = forwardRef<PairEditorRef, PairEditorProps>(function Pa
               onDelete={handleDelete}
               onEnd={handleEnd}
               onMove={handleMove}
+              index={i}
             />
           </Fragment>
         );
@@ -248,6 +257,7 @@ type PairEditorRowProps = {
   onFocus?: (pair: PairContainer) => void;
   onSubmit?: (pair: PairContainer) => void;
   isLast?: boolean;
+  index: number;
 } & Pick<
   PairEditorProps,
   | 'nameAutocomplete'
@@ -270,6 +280,7 @@ function PairEditorRow({
   forceFocusValuePairId,
   forceUpdateKey,
   isLast,
+  index,
   nameAutocomplete,
   nameAutocompleteVariables,
   namePlaceholder,
@@ -406,25 +417,39 @@ function PairEditorRow({
           'gap-0.5 grid-cols-1 grid-rows-2',
         )}
       >
-        <Input
-          ref={nameInputRef}
-          hideLabel
-          useTemplating
-          readOnly={pairContainer.pair.readOnlyName}
-          size="sm"
-          require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
-          validate={nameValidate}
-          forceUpdateKey={forceUpdateKey}
-          containerClassName={classNames(isLast && 'border-dashed')}
-          defaultValue={pairContainer.pair.name}
-          label="Name"
-          name="name"
-          onChange={handleChangeName}
-          onFocus={handleFocus}
-          placeholder={namePlaceholder ?? 'name'}
-          autocomplete={nameAutocomplete}
-          autocompleteVariables={nameAutocompleteVariables}
-        />
+        {isLast ? (
+          // Use PlainInput for last ones because there's a unique bug where clicking below
+          // the Codemirror input focuses it.
+          <PlainInput
+            hideLabel
+            size="sm"
+            containerClassName={classNames(isLast && 'border-dashed')}
+            label="Name"
+            name={`name[${index}]`}
+            onFocus={handleFocus}
+            placeholder={namePlaceholder ?? 'name'}
+          />
+        ) : (
+          <Input
+            ref={nameInputRef}
+            hideLabel
+            useTemplating
+            readOnly={pairContainer.pair.readOnlyName}
+            size="sm"
+            require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
+            validate={nameValidate}
+            forceUpdateKey={forceUpdateKey}
+            containerClassName={classNames(isLast && 'border-dashed')}
+            defaultValue={pairContainer.pair.name}
+            label="Name"
+            name={`name[${index}]`}
+            onChange={handleChangeName}
+            onFocus={handleFocus}
+            placeholder={namePlaceholder ?? 'name'}
+            autocomplete={nameAutocomplete}
+            autocompleteVariables={nameAutocompleteVariables}
+          />
+        )}
         <div className="w-full grid grid-cols-[minmax(0,1fr)_auto] gap-1 items-center">
           {pairContainer.pair.isFile ? (
             <SelectFile
@@ -432,6 +457,18 @@ function PairEditorRow({
               size="xs"
               filePath={pairContainer.pair.value}
               onChange={handleChangeValueFile}
+            />
+          ) : isLast ? (
+            // Use PlainInput for last ones because there's a unique bug where clicking below
+            // the Codemirror input focuses it.
+            <PlainInput
+              hideLabel
+              size="sm"
+              containerClassName={classNames(isLast && 'border-dashed')}
+              label="Value"
+              name={`value[${index}]`}
+              onFocus={handleFocus}
+              placeholder={valuePlaceholder ?? 'value'}
             />
           ) : (
             <Input
@@ -444,7 +481,7 @@ function PairEditorRow({
               forceUpdateKey={forceUpdateKey}
               defaultValue={pairContainer.pair.value}
               label="Value"
-              name="value"
+              name={`value[${index}]`}
               onChange={handleChangeValueText}
               onFocus={handleFocus}
               type={isLast ? 'text' : valueType}
