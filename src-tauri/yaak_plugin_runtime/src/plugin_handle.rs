@@ -44,12 +44,6 @@ impl PluginHandle {
         }
     }
 
-    pub async fn reload(&self) -> Result<()> {
-        info!("Reloading plugin {}", self.dir);
-        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
-        self.send(&event).await
-    }
-
     pub async fn terminate(&self) -> Result<()> {
         info!("Terminating plugin {}", self.dir);
         let event = self.build_event_to_send(&InternalEventPayload::TerminateRequest, None);
