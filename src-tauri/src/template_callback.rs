@@ -34,7 +34,7 @@ impl TemplateCallback for PluginTemplateCallback {
         } else {
             fn_name
         };
-        
+
         let plugin_manager = self.app_handle.state::<PluginManager>();
         let function = plugin_manager
             .get_template_functions()
@@ -46,7 +46,7 @@ impl TemplateCallback for PluginTemplateCallback {
             .ok_or("")?;
 
         let mut args_with_defaults = args.clone();
-        
+
         // Fill in default values for all args
         for a_def in function.args {
             let base = match a_def {

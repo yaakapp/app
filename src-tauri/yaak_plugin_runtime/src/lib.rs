@@ -4,5 +4,5 @@ pub mod manager;
 mod nodejs;
 pub mod plugin;
 mod server;
-pub mod handle;
+pub mod plugin_handle;
 mod util;

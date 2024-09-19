@@ -155,6 +155,14 @@ async function initialize() {
         return;
       }
 
+      if (payload.type === 'terminate_request') {
+        const payload: InternalEventPayload = {
+          type: 'terminate_response',
+        };
+        sendPayload(payload, replyId);
+        return;
+      }
+
       if (payload.type === 'import_request' && typeof mod.pluginHookImport === 'function') {
         const reply: ImportResponse | null = await mod.pluginHookImport(ctx, payload.content);
         if (reply != null) {

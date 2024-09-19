@@ -39,7 +39,7 @@ pub async fn start_nodejs_plugin_runtime<R: Runtime>(
         .args(&[plugin_runtime_main]);
 
     let (mut child_rx, child) = cmd.spawn()?;
-    println!("Spawned plugin runtime");
+    info!("Spawned plugin runtime");
 
     let mut kill_rx = kill_rx.clone();
 

@@ -1,7 +1,9 @@
+use crate::error::Result;
 use crate::events::{BootResponse, InternalEvent, InternalEventPayload};
 use crate::server::plugin_runtime::EventStreamEvent;
 use crate::util::gen_id;
 use std::sync::Arc;
+use log::info;
 use tokio::sync::{mpsc, Mutex};
 
 #[derive(Clone)]
@@ -13,10 +15,14 @@ pub struct PluginHandle {
 }
 
 impl PluginHandle {
-    pub async fn name(&self) -> String {
-        match &*self.boot_resp.lock().await {
-            None => "__NOT_BOOTED__".to_string(),
-            Some(r) => r.name.to_owned(),
+    pub fn new(dir: &str, tx: mpsc::Sender<tonic::Result<EventStreamEvent>>) -> Self {
+        let ref_id = gen_id();
+
+        PluginHandle {
+            ref_id: ref_id.clone(),
+            dir: dir.to_string(),
+            to_plugin_tx: Arc::new(Mutex::new(tx)),
+            boot_resp: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -38,28 +44,33 @@ impl PluginHandle {
         }
     }
 
-    pub async fn reload(&self) -> crate::error::Result<()> {
-        let event = self.build_event_to_send(&InternalEventPayload::ReloadRequest, None);
+    pub async fn terminate(&self) -> Result<()> {
+        info!("Terminating plugin {}", self.dir);
+        let event = self.build_event_to_send(&InternalEventPayload::TerminateRequest, None);
         self.send(&event).await
     }
 
-    pub async fn send(&self, event: &InternalEvent) -> crate::error::Result<()> {
-        // info!(
-        //     "Sending event to plugin {} {:?}",
-        //     event.id,
-        //     self.name().await
-        // );
+    pub async fn send(&self, event: &InternalEvent) -> Result<()> {
         self.to_plugin_tx
             .lock()
             .await
             .send(Ok(EventStreamEvent {
-                event: serde_json::to_string(&event)?,
+                event: serde_json::to_string(event)?,
             }))
             .await?;
         Ok(())
     }
 
-    pub async fn boot(&self, resp: &BootResponse) {
+    pub async fn send_payload(
+        &self,
+        payload: &InternalEventPayload,
+        reply_id: Option<String>,
+    ) -> Result<()> {
+        let event = self.build_event_to_send(payload, reply_id);
+        self.send(&event).await
+    }
+
+    pub async fn set_boot_response(&self, resp: &BootResponse) {
         let mut boot_resp = self.boot_resp.lock().await;
         *boot_resp = Some(resp.clone());
     }

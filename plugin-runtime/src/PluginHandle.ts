@@ -18,6 +18,10 @@ export class PluginHandle {
     this.#worker.postMessage(event);
   }
 
+  async terminate() {
+    await this.#worker.terminate();
+  }
+
   #createWorker(): Worker {
     const workerPath = process.env.YAAK_WORKER_PATH ?? path.join(__dirname, 'index.worker.cjs');
     const worker = new Worker(workerPath, {

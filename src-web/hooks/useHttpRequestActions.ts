@@ -5,12 +5,13 @@ import type {
   HttpRequest,
 } from '@yaakapp/api';
 import { invokeCmd } from '../lib/tauri';
-import { usePlugins } from './usePlugins';
+import { usePluginsKey } from './usePlugins';
 
 export function useHttpRequestActions() {
-  const plugins = usePlugins();
+  const pluginsKey = usePluginsKey();
+
   const httpRequestActions = useQuery({
-    queryKey: ['http_request_actions', plugins.map((p) => p.updatedAt)],
+    queryKey: ['http_request_actions', pluginsKey],
     refetchOnWindowFocus: false,
     queryFn: async () => {
       const responses = (await invokeCmd(
