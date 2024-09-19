@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useEnvironments } from '../hooks/useEnvironments';
 import type { ButtonProps } from './core/Button';
 import { Button } from './core/Button';
@@ -19,6 +20,7 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   ...buttonProps
 }: Props) {
   const environments = useEnvironments();
+  const activeWorkspace = useActiveWorkspace();
   const [activeEnvironment, setActiveEnvironmentId] = useActiveEnvironment();
   const dialog = useDialog();
 
@@ -63,6 +65,26 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
     [activeEnvironment?.id, environments, setActiveEnvironmentId, showEnvironmentDialog],
   );
 
+  const hasWorkspaceVars =
+    (activeWorkspace?.variables ?? []).filter((v) => v.enabled && (v.name || v.value)).length > 0;
+
+  if (environments.length === 0) {
+    return (
+      <Button
+        size="sm"
+        className={classNames(
+          className,
+          'text !px-2 truncate',
+          !hasWorkspaceVars && 'text-text-subtlest italic',
+        )}
+        onClick={showEnvironmentDialog}
+        {...buttonProps}
+      >
+        Environment
+      </Button>
+    );
+  }
+
   return (
     <Dropdown items={items}>
       <Button
@@ -70,11 +92,11 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
         className={classNames(
           className,
           'text !px-2 truncate',
-          activeEnvironment == null && 'text-text-subtlest italic',
+          !activeEnvironment && !hasWorkspaceVars && 'text-text-subtlest italic',
         )}
         {...buttonProps}
       >
-        {activeEnvironment?.name ?? 'Environment'}
+        {activeEnvironment?.name ?? (hasWorkspaceVars ? 'Environment' : 'No Environment')}
       </Button>
     </Dropdown>
   );
