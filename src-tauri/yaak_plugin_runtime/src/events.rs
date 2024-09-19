@@ -9,7 +9,7 @@ use yaak_models::models::{
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct InternalEvent {
     pub id: String,
     pub plugin_ref_id: String,
@@ -19,7 +19,7 @@ pub struct InternalEvent {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub enum InternalEventPayload {
     BootRequest(BootRequest),
     BootResponse(BootResponse),
@@ -71,14 +71,14 @@ pub enum InternalEventPayload {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct BootRequest {
     pub dir: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct BootResponse {
     pub name: String,
     pub version: String,
@@ -87,21 +87,21 @@ pub struct BootResponse {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ImportRequest {
     pub content: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ImportResponse {
     pub resources: ImportResources,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct FilterRequest {
     pub content: String,
     pub filter: String,
@@ -109,49 +109,49 @@ pub struct FilterRequest {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct FilterResponse {
     pub content: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ExportHttpRequestRequest {
     pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ExportHttpRequestResponse {
     pub content: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct SendHttpRequestRequest {
     pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct SendHttpRequestResponse {
     pub http_response: HttpResponse,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CopyTextRequest {
     pub text: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct RenderHttpRequestRequest {
     pub http_request: HttpRequest,
     pub purpose: RenderPurpose,
@@ -159,14 +159,14 @@ pub struct RenderHttpRequestRequest {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct RenderHttpRequestResponse {
     pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ShowToastRequest {
     pub message: String,
     pub variant: ToastVariant,
@@ -174,7 +174,7 @@ pub struct ShowToastRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub enum ToastVariant {
     Custom,
     Copied,
@@ -192,7 +192,7 @@ impl Default for ToastVariant {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct GetTemplateFunctionsResponse {
     pub functions: Vec<TemplateFunction>,
     pub plugin_ref_id: String,
@@ -200,7 +200,7 @@ pub struct GetTemplateFunctionsResponse {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunction {
     pub name: String,
     pub args: Vec<TemplateFunctionArg>,
@@ -208,7 +208,7 @@ pub struct TemplateFunction {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub enum TemplateFunctionArg {
     Text(TemplateFunctionTextArg),
     Select(TemplateFunctionSelectArg),
@@ -218,7 +218,7 @@ pub enum TemplateFunctionArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionBaseArg {
     pub name: String,
     #[ts(optional = nullable)]
@@ -231,7 +231,7 @@ pub struct TemplateFunctionBaseArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionTextArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
@@ -241,7 +241,7 @@ pub struct TemplateFunctionTextArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionHttpRequestArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
@@ -249,7 +249,7 @@ pub struct TemplateFunctionHttpRequestArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionSelectArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
@@ -258,7 +258,7 @@ pub struct TemplateFunctionSelectArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionCheckboxArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
@@ -266,7 +266,7 @@ pub struct TemplateFunctionCheckboxArg {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct TemplateFunctionSelectOption {
     pub name: String,
     pub value: String,
@@ -274,7 +274,7 @@ pub struct TemplateFunctionSelectOption {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CallTemplateFunctionRequest {
     pub name: String,
     pub args: CallTemplateFunctionArgs,
@@ -282,14 +282,14 @@ pub struct CallTemplateFunctionRequest {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CallTemplateFunctionResponse {
     pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CallTemplateFunctionArgs {
     pub purpose: RenderPurpose,
     pub values: HashMap<String, String>,
@@ -297,7 +297,7 @@ pub struct CallTemplateFunctionArgs {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub enum RenderPurpose {
     Send,
     Preview,
@@ -311,12 +311,12 @@ impl Default for RenderPurpose {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default)]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct GetHttpRequestActionsRequest {}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct GetHttpRequestActionsResponse {
     pub actions: Vec<HttpRequestAction>,
     pub plugin_ref_id: String,
@@ -324,7 +324,7 @@ pub struct GetHttpRequestActionsResponse {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct HttpRequestAction {
     pub key: String,
     pub label: String,
@@ -333,7 +333,7 @@ pub struct HttpRequestAction {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CallHttpRequestActionRequest {
     pub key: String,
     pub plugin_ref_id: String,
@@ -342,28 +342,28 @@ pub struct CallHttpRequestActionRequest {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct CallHttpRequestActionArgs {
     pub http_request: HttpRequest,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct GetHttpRequestByIdRequest {
     pub id: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct GetHttpRequestByIdResponse {
     pub http_request: Option<HttpRequest>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct FindHttpResponsesRequest {
     pub request_id: String,
     pub limit: Option<i32>,
@@ -371,14 +371,14 @@ pub struct FindHttpResponsesRequest {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct FindHttpResponsesResponse {
     pub http_responses: Vec<HttpResponse>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub struct ImportResources {
     pub workspaces: Vec<Workspace>,
     pub environments: Vec<Environment>,
@@ -389,7 +389,7 @@ pub struct ImportResources {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", untagged)]
-#[ts(export)]
+#[ts(export, export_to="events.ts")]
 pub enum Model {
     Environment(Environment),
     Folder(Folder),
