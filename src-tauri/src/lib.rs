@@ -11,6 +11,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use base64::Engine;
+use base64::prelude::BASE64_STANDARD;
 use chrono::Utc;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
@@ -242,7 +243,7 @@ async fn cmd_grpc_go(
                 .unwrap_or("");
 
             let auth = format!("{username}:{password}");
-            let encoded = base64::engine::general_purpose::STANDARD_NO_PAD.encode(auth);
+            let encoded = BASE64_STANDARD.encode(auth);
             metadata.insert("Authorization".to_string(), format!("Basic {}", encoded));
         } else if b == "bearer" {
             let token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or("");
