@@ -2,7 +2,7 @@ import type { FormEvent } from 'react';
 import { useCallback, useState } from 'react';
 import { Button } from '../components/core/Button';
 import type { InputProps } from '../components/core/Input';
-import { Input } from '../components/core/Input';
+import { PlainInput } from '../components/core/PlainInput';
 import { HStack } from '../components/core/Stacks';
 
 export interface PromptProps {
@@ -41,7 +41,7 @@ export function Prompt({
       className="grid grid-rows-[auto_auto] grid-cols-[minmax(0,1fr)] gap-4 mb-4"
       onSubmit={handleSubmit}
     >
-      <Input
+      <PlainInput
         hideLabel
         autoSelect
         require={require}
