@@ -36,6 +36,7 @@ export function HeaderSize({
       }}
       className={classNames(
         className,
+        'select-none',
         'pt-[1px] w-full border-b border-border-subtle min-w-0',
         stoplightsVisible ? 'pr-1' : 'pl-1',
         size === 'md' && 'h-[27px]',
