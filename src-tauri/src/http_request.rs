@@ -498,6 +498,10 @@ fn replace_path_placeholder(p: &HttpUrlParameter, url: &str) -> String {
     if !p.enabled {
         return url.to_string();
     }
+    
+    if !p.name.starts_with(":") {
+        return url.to_string();
+    }
 
     let re = regex::Regex::new(format!("(/){}([/?#]|$)", p.name).as_str()).unwrap();
     let result = re
