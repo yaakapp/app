@@ -205,14 +205,14 @@ impl PluginManager {
         app_handle: &AppHandle<R>,
     ) -> Result<()> {
         for dir in self.list_plugin_dirs(app_handle).await {
+            // First remove the plugin if it exists
             if let Some(plugin) = self.get_plugin_by_dir(dir.as_str()).await {
-                // First remove the plugin if it exists
                 if let Err(e) = self.remove_plugin(&plugin).await {
                     warn!("Failed to remove plugin {dir} {e:?}");
                 }
-                if let Err(e) = self.add_plugin_by_dir(dir.as_str()).await {
-                    warn!("Failed to add plugin {dir} {e:?}");
-                }
+            }
+            if let Err(e) = self.add_plugin_by_dir(dir.as_str()).await {
+                warn!("Failed to add plugin {dir} {e:?}");
             }
         }
 
