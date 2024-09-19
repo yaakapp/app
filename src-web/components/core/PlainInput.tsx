@@ -32,6 +32,7 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
     size = 'md',
     type = 'text',
     validate,
+    autoSelect,
     ...props
   }: PlainInputProps,
   ref,
@@ -39,11 +40,15 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
   const [obscured, setObscured] = useStateWithDeps(type === 'password', [type]);
   const [currentValue, setCurrentValue] = useState(defaultValue ?? '');
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFocus = useCallback(() => {
     setFocused(true);
+    if (autoSelect) {
+      inputRef.current?.select();
+    }
     onFocus?.();
-  }, [onFocus]);
+  }, [autoSelect, onFocus]);
 
   const handleBlur = useCallback(() => {
     setFocused(false);
