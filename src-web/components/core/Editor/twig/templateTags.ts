@@ -165,6 +165,10 @@ function templateTags(
       },
     });
   }
+
+  // Widgets must be sorted start to end
+  widgets.sort((a, b) => a.from - b.from);
+
   return Decoration.set(widgets);
 }
 
