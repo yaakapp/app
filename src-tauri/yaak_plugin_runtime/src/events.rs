@@ -169,25 +169,41 @@ pub struct RenderHttpRequestResponse {
 #[ts(export, export_to="events.ts")]
 pub struct ShowToastRequest {
     pub message: String,
-    pub variant: ToastVariant,
+    #[ts(optional = nullable)]
+    pub color: Option<Color>,
+    #[ts(optional = nullable)]
+    pub icon: Option<Icon>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[ts(export, export_to="events.ts")]
-pub enum ToastVariant {
+pub enum Color {
     Custom,
-    Copied,
-    Success,
+    Default,
+    Primary,
+    Secondary,
     Info,
+    Success,
+    Notice,
     Warning,
-    Error,
+    Danger,
 }
 
-impl Default for ToastVariant {
+impl Default for Color {
     fn default() -> Self {
-        ToastVariant::Info
+        Color::Default
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+#[ts(export, export_to="events.ts")]
+pub enum Icon {
+    Copy,
+    Info,
+    CheckCircle,
+    AlertTriangle,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

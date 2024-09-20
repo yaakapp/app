@@ -6,7 +6,7 @@ import { createGlobalState } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
-import { isResponseLoading } from '../lib/models';
+import { isResponseLoading } from '../lib/model_util';
 import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';

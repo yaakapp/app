@@ -1,12 +1,12 @@
+import { AnimatePresence } from 'framer-motion';
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
-import type { ShowToastRequest } from '../../plugin-runtime-types/src';
+import type { ShowToastRequest } from '@yaakapp/api';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { generateId } from '../lib/generateId';
 import type { ToastProps } from './core/Toast';
 import { Toast } from './core/Toast';
-import { generateId } from '../lib/generateId';
 import { Portal } from './Portal';
-import { AnimatePresence } from 'framer-motion';
 
 type ToastEntry = {
   id?: string;
@@ -93,7 +93,7 @@ export const Toasts = () => {
   const { toasts } = useContext(ToastContext);
   return (
     <Portal name="toasts">
-      <div className="absolute right-0 bottom-0 z-10">
+      <div className="absolute right-0 bottom-0 z-20">
         <AnimatePresence>
           {toasts.map((props: PrivateToastEntry) => (
             <ToastInstance key={props.id} {...props} />

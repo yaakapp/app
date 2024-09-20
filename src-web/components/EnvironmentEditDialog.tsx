@@ -67,7 +67,7 @@ export const EnvironmentEditDialog = function ({ initialEnvironment }: Props) {
                   iconSize="md"
                   color="custom"
                   title="Add sub environment"
-                  icon="plusCircle"
+                  icon="plus_circle"
                   iconClassName="text-text-subtlest group-hover:text-text-subtle"
                   className="group"
                   onClick={handleCreateEnvironment}
@@ -177,7 +177,7 @@ const EnvironmentEditor = function ({
           <IconButton
             iconClassName="text-text-subtlest"
             size="sm"
-            icon={valueVisibility.value ? 'eye' : 'eyeClosed'}
+            icon={valueVisibility.value ? 'eye' : 'eye_closed'}
             title={valueVisibility.value ? 'Hide Values' : 'Reveal Values'}
             onClick={() => {
               return valueVisibility.set((v) => !v);

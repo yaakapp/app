@@ -108,6 +108,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={classes}
       disabled={disabled || isLoading}
       onClick={onClick}
+      onDoubleClick={(e) => {
+        // Kind of a hack? This prevents double-clicks from going through buttons. For example, when
+        // double-clicking the workspace header to toggle window maximization
+        e.stopPropagation();
+      }}
       title={fullTitle}
       {...props}
     >
@@ -126,7 +131,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         {children}
       </div>
       {rightSlot && <div className="ml-1">{rightSlot}</div>}
-      {forDropdown && <Icon icon="chevronDown" size={size} className="ml-1 -mr-1" />}
+      {forDropdown && <Icon icon="chevron_down" size={size} className="ml-1 -mr-1" />}
     </button>
   );
 });

@@ -30,7 +30,7 @@ import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { workspacesAtom } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
 import { extractKeyValue } from '../lib/keyValueStore';
-import { modelsEq } from '../lib/models';
+import { modelsEq } from '../lib/model_util';
 import { catppuccinMacchiato } from '../lib/theme/themes/catppuccin';
 import { githubLight } from '../lib/theme/themes/github';
 import { hotdogStandDefault } from '../lib/theme/themes/hotdog-stand';
@@ -79,16 +79,16 @@ export function GlobalHooks() {
       model.model === 'http_response'
         ? httpResponsesQueryKey(model)
         : model.model === 'folder'
-        ? foldersQueryKey(model)
-        : model.model === 'grpc_connection'
-        ? grpcConnectionsQueryKey(model)
-        : model.model === 'grpc_event'
-        ? grpcEventsQueryKey(model)
-        : model.model === 'key_value'
-        ? keyValueQueryKey(model)
-        : model.model === 'cookie_jar'
-        ? cookieJarsQueryKey(model)
-        : null;
+          ? foldersQueryKey(model)
+          : model.model === 'grpc_connection'
+            ? grpcConnectionsQueryKey(model)
+            : model.model === 'grpc_event'
+              ? grpcEventsQueryKey(model)
+              : model.model === 'key_value'
+                ? keyValueQueryKey(model)
+                : model.model === 'cookie_jar'
+                  ? cookieJarsQueryKey(model)
+                  : null;
 
     if (model.model === 'http_request' && windowLabel !== getCurrentWebviewWindow().label) {
       wasUpdatedExternally(model.id);

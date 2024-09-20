@@ -28,7 +28,7 @@ import {
   BODY_TYPE_NONE,
   BODY_TYPE_OTHER,
   BODY_TYPE_XML,
-} from '../lib/models';
+} from '../lib/model_util';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
 import { BinaryFileEditor } from './BinaryFileEditor';

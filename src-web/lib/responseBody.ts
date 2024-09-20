@@ -1,6 +1,6 @@
 import { readFile } from '@tauri-apps/plugin-fs';
 import type { HttpResponse } from '@yaakapp/api';
-import { getCharsetFromContentType } from './models';
+import { getCharsetFromContentType } from './model_util';
 
 export async function getResponseBodyText(response: HttpResponse): Promise<string | null> {
   if (response.bodyPath) {

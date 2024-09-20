@@ -7,7 +7,7 @@ import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp/api';
-import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/models';
+import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/model_util';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';
 import { Button } from './core/Button';
@@ -218,7 +218,7 @@ export function GrpcConnectionSetupPane({
             <Button
               size="sm"
               variant="border"
-              rightSlot={<Icon className="text-text-subtlest" size="sm" icon="chevronDown" />}
+              rightSlot={<Icon className="text-text-subtlest" size="sm" icon="chevron_down" />}
               disabled={isStreaming || services == null}
               className={classNames(
                 'font-mono text-editor min-w-[5rem] !ring-0',
@@ -254,7 +254,7 @@ export function GrpcConnectionSetupPane({
                 title={isStreaming ? 'Connect' : 'Send'}
                 hotkeyAction="grpc_request.send"
                 onClick={isStreaming ? handleSend : handleConnect}
-                icon={isStreaming ? 'sendHorizontal' : 'arrowUpDown'}
+                icon={isStreaming ? 'send_horizontal' : 'arrow_up_down'}
               />
             </>
           ) : (
@@ -269,8 +269,8 @@ export function GrpcConnectionSetupPane({
                 isStreaming
                   ? 'x'
                   : methodType.includes('streaming')
-                  ? 'arrowUpDown'
-                  : 'sendHorizontal'
+                    ? 'arrow_up_down'
+                    : 'send_horizontal'
               }
             />
           )}

@@ -1,12 +1,14 @@
-import { FindHttpResponsesRequest } from '../gen/FindHttpResponsesRequest';
-import { FindHttpResponsesResponse } from '../gen/FindHttpResponsesResponse';
-import { GetHttpRequestByIdRequest } from '../gen/GetHttpRequestByIdRequest';
-import { GetHttpRequestByIdResponse } from '../gen/GetHttpRequestByIdResponse';
-import { RenderHttpRequestRequest } from '../gen/RenderHttpRequestRequest';
-import { RenderHttpRequestResponse } from '../gen/RenderHttpRequestResponse';
-import { SendHttpRequestRequest } from '../gen/SendHttpRequestRequest';
-import { SendHttpRequestResponse } from '../gen/SendHttpRequestResponse';
-import { ShowToastRequest } from '../gen/ShowToastRequest';
+import {
+  FindHttpResponsesRequest,
+  FindHttpResponsesResponse,
+  GetHttpRequestByIdRequest,
+  GetHttpRequestByIdResponse,
+  RenderHttpRequestRequest,
+  RenderHttpRequestResponse,
+  SendHttpRequestRequest,
+  SendHttpRequestResponse,
+  ShowToastRequest,
+} from '../gen/events';
 
 export type Context = {
   clipboard: {

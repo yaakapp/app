@@ -1,7 +1,4 @@
-import { Environment } from '../gen/Environment';
-import { Folder } from '../gen/Folder';
-import { HttpRequest } from '../gen/HttpRequest';
-import { Workspace } from '../gen/Workspace';
+import { Environment, Folder, HttpRequest, Workspace } from '../gen/model_util';
 import { AtLeast } from '../helpers';
 import { Context } from './Context';
 

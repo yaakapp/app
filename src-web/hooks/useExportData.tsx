@@ -33,7 +33,7 @@ export function useExportData() {
             activeWorkspace={activeWorkspace}
             onSuccess={() => {
               toast.show({
-                variant: 'success',
+                color: 'success',
                 message: 'Data export successful',
               });
             }}

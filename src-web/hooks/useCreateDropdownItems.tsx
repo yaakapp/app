@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { DropdownItem } from '../components/core/Dropdown';
 import { Icon } from '../components/core/Icon';
-import { BODY_TYPE_GRAPHQL } from '../lib/models';
+import { BODY_TYPE_GRAPHQL } from '../lib/model_util';
 import { useCreateFolder } from './useCreateFolder';
 import { useCreateGrpcRequest } from './useCreateGrpcRequest';
 import { useCreateHttpRequest } from './useCreateHttpRequest';

@@ -26,6 +26,8 @@ export type CallTemplateFunctionRequest = { name: string, args: CallTemplateFunc
 
 export type CallTemplateFunctionResponse = { value: string | null, };
 
+export type Color = "custom" | "default" | "primary" | "secondary" | "info" | "success" | "notice" | "warning" | "danger";
+
 export type CopyTextRequest = { text: string, };
 
 export type ExportHttpRequestRequest = { httpRequest: HttpRequest, };
@@ -52,6 +54,8 @@ export type GetTemplateFunctionsResponse = { functions: Array<TemplateFunction>,
 
 export type HttpRequestAction = { key: string, label: string, icon: string | null, };
 
+export type Icon = "copy" | "info" | "check_circle" | "alert_triangle";
+
 export type ImportRequest = { content: string, };
 
 export type ImportResources = { workspaces: Array<Workspace>, environments: Array<Environment>, folders: Array<Folder>, httpRequests: Array<HttpRequest>, grpcRequests: Array<GrpcRequest>, };
@@ -74,7 +78,7 @@ export type SendHttpRequestRequest = { httpRequest: HttpRequest, };
 
 export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
-export type ShowToastRequest = { message: string, variant: ToastVariant, };
+export type ShowToastRequest = { message: string, color?: Color | null, icon?: Icon | null, };
 
 export type TemplateFunction = { name: string, args: Array<TemplateFunctionArg>, };
 
@@ -91,5 +95,3 @@ export type TemplateFunctionSelectArg = { options: Array<TemplateFunctionSelectO
 export type TemplateFunctionSelectOption = { name: string, value: string, };
 
 export type TemplateFunctionTextArg = { placeholder?: string | null, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
-
-export type ToastVariant = "custom" | "copied" | "success" | "info" | "warning" | "error";

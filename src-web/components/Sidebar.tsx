@@ -34,7 +34,7 @@ import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { isResponseLoading } from '../lib/models';
+import { isResponseLoading } from '../lib/model_util';
 import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
 import { ContextMenu } from './core/Dropdown';
@@ -433,32 +433,31 @@ export function Sidebar({ className }: Props) {
       onBlur={handleBlur}
       tabIndex={hidden ? -1 : 0}
       onContextMenu={handleMainContextMenu}
-      className={classNames(
-        className,
-        'h-full pb-3 overflow-y-scroll overflow-x-visible hide-scrollbars pt-2',
-      )}
+      className={classNames(className, 'h-full grid grid-rows-[minmax(0,1fr)_auto]')}
     >
-      <ContextMenu
-        triggerPosition={showMainContextMenu}
-        items={mainContextMenuItems}
-        onClose={() => setShowMainContextMenu(null)}
-      />
-      <SidebarItems
-        treeParentMap={treeParentMap}
-        activeId={activeRequest?.id ?? null}
-        selectedId={selectedId}
-        selectedTree={selectedTree}
-        isCollapsed={isCollapsed}
-        tree={tree}
-        focused={hasFocus}
-        draggingId={draggingId}
-        onSelect={handleSelect}
-        hoveredIndex={hoveredIndex}
-        hoveredTree={hoveredTree}
-        handleMove={handleMove}
-        handleEnd={handleEnd}
-        handleDragStart={handleDragStart}
-      />
+      <div className="pb-3 overflow-x-visible overflow-y-scroll pt-2">
+        <ContextMenu
+          triggerPosition={showMainContextMenu}
+          items={mainContextMenuItems}
+          onClose={() => setShowMainContextMenu(null)}
+        />
+        <SidebarItems
+          treeParentMap={treeParentMap}
+          activeId={activeRequest?.id ?? null}
+          selectedId={selectedId}
+          selectedTree={selectedTree}
+          isCollapsed={isCollapsed}
+          tree={tree}
+          focused={hasFocus}
+          draggingId={draggingId}
+          onSelect={handleSelect}
+          hoveredIndex={hoveredIndex}
+          hoveredTree={hoveredTree}
+          handleMove={handleMove}
+          handleEnd={handleEnd}
+          handleDragStart={handleDragStart}
+        />
+      </div>
     </aside>
   );
 }
@@ -741,7 +740,7 @@ function SidebarItem({
         {
           key: 'sendAll',
           label: 'Send All',
-          leftSlot: <Icon icon="sendHorizontal" />,
+          leftSlot: <Icon icon="send_horizontal" />,
           onSelect: () => sendManyRequests.mutate(child.children.map((c) => c.item.id)),
         },
         {
@@ -784,7 +783,7 @@ function SidebarItem({
                 label: 'Send',
                 hotKeyAction: 'http_request.send',
                 hotKeyLabelOnly: true, // Already bound in URL bar
-                leftSlot: <Icon icon="sendHorizontal" />,
+                leftSlot: <Icon icon="send_horizontal" />,
                 onSelect: () => sendRequest.mutate(itemId),
               },
               ...httpRequestActions.map((a) => ({
@@ -822,7 +821,7 @@ function SidebarItem({
         {
           key: 'moveWorkspace',
           label: 'Move',
-          leftSlot: <Icon icon="arrowRightCircle" />,
+          leftSlot: <Icon icon="arrow_right_circle" />,
           hidden: workspaces.length <= 1,
           onSelect: moveToWorkspace.mutate,
         },
@@ -882,7 +881,7 @@ function SidebarItem({
           {itemModel === 'folder' && (
             <Icon
               size="sm"
-              icon="chevronRight"
+              icon="chevron_right"
               className={classNames(
                 'text-text-subtlest',
                 'transition-transform',
