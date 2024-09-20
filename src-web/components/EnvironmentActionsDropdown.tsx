@@ -68,23 +68,6 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
   const hasWorkspaceVars =
     (activeWorkspace?.variables ?? []).filter((v) => v.enabled && (v.name || v.value)).length > 0;
 
-  if (environments.length === 0) {
-    return (
-      <Button
-        size="sm"
-        className={classNames(
-          className,
-          'text !px-2 truncate',
-          !hasWorkspaceVars && 'text-text-subtlest italic',
-        )}
-        onClick={showEnvironmentDialog}
-        {...buttonProps}
-      >
-        Environment
-      </Button>
-    );
-  }
-
   return (
     <Dropdown items={items}>
       <Button
@@ -94,6 +77,9 @@ export const EnvironmentActionsDropdown = memo(function EnvironmentActionsDropdo
           'text !px-2 truncate',
           !activeEnvironment && !hasWorkspaceVars && 'text-text-subtlest italic',
         )}
+        // If no environments, the button simply opens the dialog.
+        // NOTE: We don't create a new button because we want to reuse the hotkey from the menu items
+        onClick={environments.length === 0 ? showEnvironmentDialog : undefined}
         {...buttonProps}
       >
         {activeEnvironment?.name ?? (hasWorkspaceVars ? 'Environment' : 'No Environment')}
