@@ -191,7 +191,7 @@ export const ContextMenu = forwardRef<DropdownRef, ContextMenuProps>(function Co
 
   return (
     <Menu
-      isOpen // Always open because we return null if not
+      isOpen={true} // Always open because we return null if not
       className={className}
       ref={ref}
       items={items}
@@ -361,29 +361,38 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
   }>(() => {
     if (triggerShape == null) return { containerStyles: {}, triangleStyles: null };
 
+    const menuMarginY = 5;
     const docRect = document.documentElement.getBoundingClientRect();
     const width = triggerShape.right - triggerShape.left;
     const heightAbove = triggerShape.top;
     const heightBelow = docRect.height - triggerShape.bottom;
-    const hSpaceRemaining = docRect.width - triggerShape.left;
-    const top = triggerShape.bottom + 5;
-    const onRight = hSpaceRemaining < 200;
-    const upsideDown = heightAbove > heightBelow && heightBelow < 200;
+    const horizontalSpaceRemaining = docRect.width - triggerShape.left;
+    const top = triggerShape.bottom;
+    const onRight = horizontalSpaceRemaining < 200;
+    const upsideDown = heightBelow < heightAbove && heightBelow < items.length * 25 + 20 + 200;
     const triggerWidth = triggerShape.right - triggerShape.left;
     const containerStyles = {
-      top: !upsideDown ? top : undefined,
-      bottom: upsideDown ? docRect.height - top : undefined,
+      top: !upsideDown ? top + menuMarginY : undefined,
+      bottom: upsideDown
+        ? docRect.height - top - (triggerShape.top - triggerShape.bottom) + menuMarginY
+        : undefined,
       right: onRight ? docRect.width - triggerShape.right : undefined,
       left: !onRight ? triggerShape.left : undefined,
       minWidth: fullWidth ? triggerWidth : undefined,
       maxWidth: '40rem',
     };
-    const size = { top: '-0.2rem', width: '0.4rem', height: '0.4rem' };
-    const triangleStyles = onRight
-      ? { right: width / 2, marginRight: '-0.2rem', ...size }
-      : { left: width / 2, marginLeft: '-0.2rem', ...size };
+    const triangleStyles: CSSProperties = {
+      width: '0.4rem',
+      height: '0.4rem',
+      ...(onRight
+        ? { right: width / 2, marginRight: '-0.2rem' }
+        : { left: width / 2, marginLeft: '-0.2rem' }),
+      ...(upsideDown
+        ? { bottom: '-0.2rem', rotate: '225deg' }
+        : { top: '-0.2rem', rotate: '45deg' }),
+    };
     return { containerStyles, triangleStyles };
-  }, [fullWidth, triggerShape]);
+  }, [fullWidth, items.length, triggerShape]);
 
   const filteredItems = useMemo(
     () => items.filter((i) => getNodeText(i.label).toLowerCase().includes(filter.toLowerCase())),
@@ -415,7 +424,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
           ),
       )}
       {isOpen && (
-        <Overlay open variant="transparent" portalName="dropdown" zIndex={50}>
+        <Overlay open={true} variant="transparent" portalName="dropdown" zIndex={50}>
           <div className="x-theme-menu">
             <div tabIndex={-1} aria-hidden className="fixed inset-0 z-30" onClick={handleClose} />
             <motion.div
@@ -433,7 +442,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                 <span
                   aria-hidden
                   style={triangleStyles}
-                  className="bg-surface absolute rotate-45 border-border-subtle border-t border-l"
+                  className="bg-surface absolute border-border-subtle border-t border-l"
                 />
               )}
               {containerStyles && (
@@ -443,7 +452,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
                   className={classNames(
                     className,
                     'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
-                    'border-border-subtle overflow-auto mb-1 mx-0.5',
+                    'border-border-subtle overflow-auto mx-0.5',
                   )}
                 >
                   {filter && (

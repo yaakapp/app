@@ -1,7 +1,7 @@
 import type { Cookie } from '@yaakapp/api';
 import { useCookieJars } from '../hooks/useCookieJars';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
-import { cookieDomain } from '../lib/models';
+import { cookieDomain } from '../lib/model_util';
 import { Banner } from './core/Banner';
 import { IconButton } from './core/IconButton';
 import { InlineCode } from './core/InlineCode';

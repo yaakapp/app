@@ -64,13 +64,13 @@ export function SettingsDropdown() {
         {
           key: 'import-data',
           label: 'Import Data',
-          leftSlot: <Icon icon="folderInput" />,
+          leftSlot: <Icon icon="folder_input" />,
           onSelect: () => importData.mutate(),
         },
         {
           key: 'export-data',
           label: 'Export Data',
-          leftSlot: <Icon icon="folderOutput" />,
+          leftSlot: <Icon icon="folder_output" />,
           onSelect: () => exportData.mutate(),
         },
         { type: 'separator', label: `Yaak v${appInfo.version}` },
@@ -84,14 +84,14 @@ export function SettingsDropdown() {
           key: 'feedback',
           label: 'Feedback',
           leftSlot: <Icon icon="chat" />,
-          rightSlot: <Icon icon="externalLink" />,
+          rightSlot: <Icon icon="external_link" />,
           onSelect: () => open('https://yaak.app/roadmap'),
         },
         {
           key: 'changelog',
           label: 'Changelog',
           leftSlot: <Icon icon="cake" />,
-          rightSlot: <Icon icon="externalLink" />,
+          rightSlot: <Icon icon="external_link" />,
           onSelect: () => open(`https://yaak.app/changelog/${appInfo.version}`),
         },
       ]}

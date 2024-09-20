@@ -21,7 +21,7 @@ export function ResponseInfo({ response }: Props) {
               <IconButton
                 iconSize="sm"
                 className="inline-block w-auto ml-1 !h-auto opacity-50 hover:opacity-100"
-                icon="externalLink"
+                icon="external_link"
                 onClick={() => open(response.url)}
                 title="Open in browser"
               />

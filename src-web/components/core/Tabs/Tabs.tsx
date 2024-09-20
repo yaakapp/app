@@ -100,10 +100,10 @@ export function Tabs({
                   >
                     {option && 'shortLabel' in option
                       ? option.shortLabel
-                      : option?.label ?? 'Unknown'}
+                      : (option?.label ?? 'Unknown')}
                     <Icon
                       size="sm"
-                      icon="chevronDown"
+                      icon="chevron_down"
                       className={classNames('ml-1', isActive ? 'text-text-subtle' : 'opacity-50')}
                     />
                   </button>

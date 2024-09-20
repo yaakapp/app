@@ -51,7 +51,7 @@ export function useImportQuerystring(requestId: string) {
       if (additionalUrlParameters.length > 0) {
         toast.show({
           id: 'querystring-imported',
-          variant: 'info',
+          color: 'info',
           message: `Imported ${additionalUrlParameters.length} ${pluralize('param', additionalUrlParameters.length)} from URL`,
         });
       }

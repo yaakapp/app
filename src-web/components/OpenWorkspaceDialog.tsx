@@ -42,7 +42,7 @@ export function OpenWorkspaceDialog({ hide, workspace }: Props) {
         <Button
           className="focus"
           color="secondary"
-          rightSlot={<Icon icon="externalLink" />}
+          rightSlot={<Icon icon="external_link" />}
           onClick={() => {
             hide();
             openWorkspace.mutate({ workspaceId: workspace.id, inNewWindow: true });

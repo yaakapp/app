@@ -6,7 +6,7 @@ import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
 import type { GrpcEvent, GrpcRequest } from '@yaakapp/api';
-import { isResponseLoading } from '../lib/models';
+import { isResponseLoading } from '../lib/model_util';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import { Icon } from './core/Icon';
@@ -197,34 +197,34 @@ function EventRow({
             eventType === 'server_message'
               ? 'text-info'
               : eventType === 'client_message'
-              ? 'text-primary'
-              : eventType === 'error' || (status != null && status > 0)
-              ? 'text-danger'
-              : eventType === 'connection_end'
-              ? 'text-success'
-              : 'text-text-subtle'
+                ? 'text-primary'
+                : eventType === 'error' || (status != null && status > 0)
+                  ? 'text-danger'
+                  : eventType === 'connection_end'
+                    ? 'text-success'
+                    : 'text-text-subtle'
           }
           title={
             eventType === 'server_message'
               ? 'Server message'
               : eventType === 'client_message'
-              ? 'Client message'
-              : eventType === 'error' || (status != null && status > 0)
-              ? 'Error'
-              : eventType === 'connection_end'
-              ? 'Connection response'
-              : undefined
+                ? 'Client message'
+                : eventType === 'error' || (status != null && status > 0)
+                  ? 'Error'
+                  : eventType === 'connection_end'
+                    ? 'Connection response'
+                    : undefined
           }
           icon={
             eventType === 'server_message'
-              ? 'arrowBigDownDash'
+              ? 'arrow_big_down_dash'
               : eventType === 'client_message'
-              ? 'arrowBigUpDash'
-              : eventType === 'error' || (status != null && status > 0)
-              ? 'alert'
-              : eventType === 'connection_end'
-              ? 'check'
-              : 'info'
+                ? 'arrow_big_up_dash'
+                : eventType === 'error' || (status != null && status > 0)
+                  ? 'alert_triangle'
+                  : eventType === 'connection_end'
+                    ? 'check'
+                    : 'info'
           }
         />
         <div className={classNames('w-full truncate text-xs')}>

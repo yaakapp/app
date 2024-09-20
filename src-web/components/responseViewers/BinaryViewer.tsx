@@ -1,6 +1,6 @@
 import { useSaveResponse } from '../../hooks/useSaveResponse';
 import type { HttpResponse } from '@yaakapp/api';
-import { getContentTypeHeader } from '../../lib/models';
+import { getContentTypeHeader } from '../../lib/model_util';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
 import { InlineCode } from '../core/InlineCode';

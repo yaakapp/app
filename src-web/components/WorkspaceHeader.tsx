@@ -26,7 +26,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
         <CookieDropdown />
         <HStack>
           <WorkspaceActionsDropdown />
-          <Icon icon="chevronRight" className="text-text-subtle" />
+          <Icon icon="chevron_right" className="text-text-subtle" />
           <EnvironmentActionsDropdown className="w-auto pointer-events-auto" />
         </HStack>
       </HStack>

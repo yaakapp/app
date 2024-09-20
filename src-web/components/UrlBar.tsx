@@ -37,7 +37,7 @@ export const UrlBar = memo(function UrlBar({
   onCancel,
   onMethodChange,
   onPaste,
-  submitIcon = 'sendHorizontal',
+  submitIcon = 'send_horizontal',
   autocomplete,
   rightSlot,
   isLoading,

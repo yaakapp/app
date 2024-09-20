@@ -55,7 +55,7 @@ export function RecentConnectionsDropdown({
     >
       <IconButton
         title="Show connection history"
-        icon={activeConnection?.id === latestConnectionId ? 'chevronDown' : 'pin'}
+        icon={activeConnection?.id === latestConnectionId ? 'chevron_down' : 'pin'}
         className="ml-auto"
         size="sm"
         iconSize="md"

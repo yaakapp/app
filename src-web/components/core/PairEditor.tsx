@@ -397,7 +397,7 @@ function PairEditorRow({
             'justify-center opacity-0 group-hover:opacity-70',
           )}
         >
-          <Icon size="sm" icon="gripVertical" className="pointer-events-none" />
+          <Icon size="sm" icon="grip_vertical" className="pointer-events-none" />
         </div>
       ) : (
         <span className="w-3" />
@@ -545,7 +545,7 @@ function PairEditorRow({
           <IconButton
             iconSize="sm"
             size="xs"
-            icon={isLast ? 'empty' : 'chevronDown'}
+            icon={isLast ? 'empty' : 'chevron_down'}
             title="Select form data type"
           />
         </RadioDropdown>
@@ -563,7 +563,7 @@ function PairEditorRow({
           <IconButton
             iconSize="sm"
             size="xs"
-            icon={isLast ? 'empty' : 'chevronDown'}
+            icon={isLast ? 'empty' : 'chevron_down'}
             title="Select form data type"
           />
         </Dropdown>

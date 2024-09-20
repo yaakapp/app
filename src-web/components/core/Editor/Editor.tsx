@@ -346,7 +346,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
           key="format"
           size="sm"
           title="Reformat contents"
-          icon="magicWand"
+          icon="magic_wand"
           variant="border"
           className={classNames(actionClassName)}
           onClick={() => {

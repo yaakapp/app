@@ -39,7 +39,7 @@ export function useImportCurl() {
       }
 
       toast.show({
-        variant: 'success',
+        color: 'success',
         message: `${verb} request from Curl`,
       });
     },

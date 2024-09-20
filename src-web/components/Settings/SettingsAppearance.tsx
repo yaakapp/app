@@ -38,18 +38,18 @@ const icons: IconProps['icon'][] = [
   'info',
   'box',
   'update',
-  'alert',
-  'arrowBigRightDash',
+  'alert_triangle',
+  'arrow_big_right_dash',
   'download',
   'copy',
-  'magicWand',
+  'magic_wand',
   'settings',
   'trash',
   'sparkles',
   'pencil',
   'paste',
   'search',
-  'sendHorizontal',
+  'send_horizontal',
 ];
 
 export function SettingsAppearance() {

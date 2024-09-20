@@ -10,8 +10,8 @@ use std::process::exit;
 use std::str::FromStr;
 use std::time::Duration;
 
-use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
+use base64::Engine;
 use chrono::Utc;
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
@@ -59,9 +59,9 @@ use yaak_models::queries::{
 };
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
-    GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse,
+    GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
     InternalEvent, InternalEventPayload, RenderHttpRequestResponse, SendHttpRequestResponse,
-    ShowToastRequest, ToastVariant,
+    ShowToastRequest,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
@@ -2146,7 +2146,8 @@ async fn handle_plugin_event<R: Runtime>(
             let toast_event = plugin_handle.build_event_to_send(
                 &InternalEventPayload::ShowToastRequest(ShowToastRequest {
                     message: format!("Reloaded plugin {}", plugin_handle.dir),
-                    variant: ToastVariant::Info,
+                    icon: Some(Icon::Info),
+                    ..Default::default()
                 }),
                 None,
             );
@@ -2223,9 +2224,9 @@ fn get_focused_window_no_lock<R: Runtime>(app_handle: &AppHandle<R>) -> Option<W
             }
         })
         .collect::<Vec<WebviewWindow<R>>>();
-    
+
     if main_windows.len() == 1 {
-        return main_windows.iter().next().map(|w| w.clone())
+        return main_windows.iter().next().map(|w| w.clone());
     }
 
     main_windows

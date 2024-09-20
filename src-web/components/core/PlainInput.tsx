@@ -143,7 +143,7 @@ export const PlainInput = forwardRef<HTMLInputElement, PlainInputProps>(function
             className="mr-0.5 group/obscure !h-auto my-0.5"
             iconClassName="text-text-subtle group-hover/obscure:text"
             iconSize="sm"
-            icon={obscured ? 'eye' : 'eyeClosed'}
+            icon={obscured ? 'eye' : 'eye_closed'}
             onClick={() => setObscured((o) => !o)}
           />
         )}
