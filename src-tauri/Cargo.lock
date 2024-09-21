@@ -5030,9 +5030,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.125"
+version = "1.0.128"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83c8e735a073ccf5be70aa8066aa984eaf2fa000db6c8d0100ae605b366d31ed"
+checksum = "6ff5456707a1de34e7e37f2a6fd3d3f808c318259cbd01ab6377795054b483d8"
 dependencies = [
  "itoa 1.0.11",
  "memchr",
@@ -7654,6 +7654,7 @@ dependencies = [
  "yaak_grpc",
  "yaak_models",
  "yaak_plugin_runtime",
+ "yaak_sync",
  "yaak_templates",
 ]
 
@@ -7722,6 +7723,21 @@ dependencies = [
  "tokio",
  "tonic 0.12.1",
  "tonic-build",
+ "ts-rs",
+ "yaak_models",
+]
+
+[[package]]
+name = "yaak_sync"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "hex",
+ "serde",
+ "serde_json",
+ "sha1",
+ "thiserror",
  "ts-rs",
  "yaak_models",
 ]

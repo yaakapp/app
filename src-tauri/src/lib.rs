@@ -2,7 +2,7 @@ extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
@@ -64,6 +64,8 @@ use yaak_plugin_runtime::events::{
     ShowToastRequest,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
+use yaak_sync::sync::model_to_sync_object;
+use yaak_sync::sync_object::{SyncObject, SyncObjectMetadata};
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -210,7 +212,7 @@ async fn cmd_grpc_go(
         .map_err(|e| e.to_string())?;
     let req =
         render_grpc_request(window.app_handle(), &req, &workspace, environment.as_ref()).await;
-    let mut metadata = HashMap::new();
+    let mut metadata = BTreeMap::new();
 
     // Add the rest of metadata
     for h in req.clone().metadata {
@@ -1649,6 +1651,21 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
+async fn cmd_get_sync_stage(
+    window: WebviewWindow,
+    workspace_id: &str,
+) -> Result<Vec<SyncObjectMetadata>, String> {
+    let resources = get_workspace_export_resources(&window, vec![workspace_id]).await;
+    let mut sync_object_metadata: Vec<SyncObjectMetadata> = Vec::new();
+    for m in resources.resources.http_requests {
+        let so = model_to_sync_object(m).map_err(|e| e.to_string())?;
+        sync_object_metadata.push(so.metadata);
+    }
+
+    Ok(sync_object_metadata)
+}
+
+#[tauri::command]
 async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
     create_window(&app_handle, url);
     Ok(())
@@ -1794,6 +1811,7 @@ pub fn run() {
             cmd_get_http_request,
             cmd_get_key_value,
             cmd_get_settings,
+            cmd_get_sync_stage,
             cmd_get_workspace,
             cmd_grpc_go,
             cmd_grpc_reflect,

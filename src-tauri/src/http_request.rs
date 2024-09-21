@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::fs;
 use std::fs::{create_dir_all, File};
 use std::io::Write;
@@ -487,7 +487,7 @@ fn get_str<'a>(v: &'a Value, key: &str) -> &'a str {
     }
 }
 
-fn get_str_h<'a>(v: &'a HashMap<String, Value>, key: &str) -> &'a str {
+fn get_str_h<'a>(v: &'a BTreeMap<String, Value>, key: &str) -> &'a str {
     match v.get(key) {
         None => "",
         Some(v) => v.as_str().unwrap_or_default(),
@@ -498,7 +498,7 @@ fn replace_path_placeholder(p: &HttpUrlParameter, url: &str) -> String {
     if !p.enabled {
         return url.to_string();
     }
-    
+
     if !p.name.starts_with(":") {
         return url.to_string();
     }

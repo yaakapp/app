@@ -1,5 +1,5 @@
 [workspace]
-members = ["yaak_grpc", "yaak_templates", "yaak_plugin_runtime", "yaak_models"]
+members = ["yaak_grpc", "yaak_templates", "yaak_plugin_runtime", "yaak_models", "yaak_sync"]
 
 [package]
 name = "yaak-app"
@@ -30,9 +30,10 @@ yaak_grpc = { path = "yaak_grpc" }
 yaak_templates = { path = "yaak_templates" }
 yaak_plugin_runtime = { workspace = true }
 yaak_models = { workspace = true }
+yaak_sync = { workspace = true }
 anyhow = "1.0.86"
 base64 = "0.22.0"
-chrono = { version = "0.4.31", features = ["serde"] }
+chrono = { workspace = true, features = ["serde"] }
 datetime = "0.5.2"
 hex_color = "3.0.0"
 http = "1"
@@ -41,10 +42,10 @@ rand = "0.8.5"
 regex = "1.10.2"
 reqwest = { version = "0.12.4", features = ["multipart", "cookies", "gzip", "brotli", "deflate", "json", "native-tls-alpn"] }
 reqwest_cookie_store = "0.8.0"
-serde = { version = "1.0.198", features = ["derive"] }
-serde_json = { version = "1.0.116", features = ["raw_value"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["raw_value"] }
 serde_yaml = "0.9.34"
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["devtools", "protocol-asset"] }
 tauri-plugin-shell = { workspace = true }
 tauri-plugin-clipboard-manager = "2.1.0-beta.7"
 tauri-plugin-dialog = "2.0.0-rc.7"
@@ -56,12 +57,18 @@ tauri-plugin-window-state = "2.0.0-rc.5"
 tokio = { version = "1.36.0", features = ["sync"] }
 tokio-stream = "0.1.15"
 uuid = "1.7.0"
-thiserror = "1.0.61"
+thiserror = { workspace = true }
 mime_guess = "2.0.5"
 urlencoding = "2.1.3"
 
 [workspace.dependencies]
 yaak_models = { path = "yaak_models" }
+yaak_sync = { path = "yaak_sync" }
 yaak_plugin_runtime = { path = "yaak_plugin_runtime" }
+chrono = "0.4.31"
+serde = "1.0.198"
+serde_json = "1.0.128"
+tauri = "2.0.0-rc.15"
 tauri-plugin-shell = "2.0.0-rc.3"
-tauri = { version = "2.0.0-rc.15", features = ["devtools", "protocol-asset"] }
+thiserror = "1.0.61"
+ts-rs = "10.0.0"

@@ -1,12 +1,13 @@
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
-import type { ToastProps } from './core/Toast';
+import { useDialog } from './DialogContext';
+import { SyncCheckpointDialog } from './SyncCheckpointDialog';
 import { useToast } from './ToastContext';
 
 export function SyncMenu() {
-  // const workspace = useActiveWorkspace();
   const toast = useToast();
+  const dialog = useDialog();
   return (
     <Dropdown
       fullWidth
@@ -16,24 +17,12 @@ export function SyncMenu() {
           label: 'Manage Branches',
           leftSlot: <Icon icon="git_branch" />,
           onSelect() {
-            const variants: NonNullable<ToastProps['color']>[] = [
-              'warning',
-              'danger',
-              'success',
-              'notice',
-              'info',
-              'default',
-              'secondary',
-            ];
-            for (const variant of variants) {
-              toast.show({
-                id: 'manage-branches' + variant,
-                color: variant,
-                timeout: null,
-                message:
-                  'TODO: Implement branch manager. THis is a really lyong toast, so get used to some extra space.',
-              });
-            }
+            toast.show({
+              id: 'manage-branches',
+              icon: 'info',
+              color: 'notice',
+              message: 'TODO: Implement branch manager',
+            });
           },
         },
         { type: 'separator', label: 'master' },
@@ -41,6 +30,14 @@ export function SyncMenu() {
           key: 'checkpoint',
           label: 'Create Checkpoint',
           leftSlot: <Icon icon="git_commit_vertical" />,
+          onSelect() {
+            dialog.show({
+              id: 'sync-checkpoint',
+              size: 'dynamic',
+              title: 'Sync Checkpoint',
+              render: () => <SyncCheckpointDialog />,
+            });
+          },
         },
       ]}
     >
