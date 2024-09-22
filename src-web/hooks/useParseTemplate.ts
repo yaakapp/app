@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Tokens } from '../gen/Tokens';
 import { invokeCmd } from '../lib/tauri';
+import type { Tokens } from '@yaakapp-internal/template';
 
 export function useParseTemplate(template: string) {
   return useQuery<Tokens>({

@@ -3,7 +3,7 @@ use std::fmt::Display;
 use ts_rs::TS;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[ts(export, export_to="parser.ts")]
 pub struct Tokens {
     pub tokens: Vec<Token>,
 }
@@ -21,7 +21,7 @@ impl Display for Tokens {
 }
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[ts(export, export_to="parser.ts")]
 pub struct FnArg {
     pub name: String,
     pub value: Val,
@@ -36,7 +36,7 @@ impl Display for FnArg {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export)]
+#[ts(export, export_to="parser.ts")]
 pub enum Val {
     Str { text: String },
     Var { name: String },
@@ -71,7 +71,7 @@ impl Display for Val {
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", tag = "type")]
-#[ts(export)]
+#[ts(export, export_to="parser.ts")]
 pub enum Token {
     Raw { text: String },
     Tag { val: Val },
@@ -292,7 +292,7 @@ impl Parser {
 
         Some(text)
     }
-    
+
     fn parse_fn_name(&mut self) -> Option<String> {
         let start_pos = self.pos;
 
@@ -512,7 +512,7 @@ mod tests {
             ]
         );
     }
-    
+
     #[test]
     fn fn_dot_name() {
         let mut p = Parser::new("${[ foo.bar.baz() ]}");

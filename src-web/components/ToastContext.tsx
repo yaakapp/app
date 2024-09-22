@@ -1,7 +1,7 @@
+import type { ShowToastRequest } from '@yaakapp-internal/plugin';
 import { AnimatePresence } from 'framer-motion';
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
-import type { ShowToastRequest } from '@yaakapp/api';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { generateId } from '../lib/generateId';
 import type { ToastProps } from './core/Toast';

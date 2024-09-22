@@ -1,4 +1,4 @@
-import type { Cookie } from '@yaakapp/api';
+import type { Cookie } from '@yaakapp-internal/models';
 import { useCookieJars } from '../hooks/useCookieJars';
 import { useUpdateCookieJar } from '../hooks/useUpdateCookieJar';
 import { cookieDomain } from '../lib/model_util';

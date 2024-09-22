@@ -1,7 +1,8 @@
 import type { LanguageSupport } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 import { parseMixed } from '@lezer/common';
-import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
+import type { EnvironmentVariable } from '@yaakapp-internal/models';
+import type { TemplateFunction } from '@yaakapp-internal/plugin';
 import type { GenericCompletionConfig } from '../genericCompletion';
 import { genericCompletion } from '../genericCompletion';
 import { textLanguageName } from '../text/extension';

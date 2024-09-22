@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { CookieJar } from '@yaakapp/api';
+import type { CookieJar } from '@yaakapp-internal/models';
 import { getCookieJar } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

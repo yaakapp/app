@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { GrpcConnection } from '@yaakapp/api';
+import type { GrpcConnection } from '@yaakapp-internal/models';
 import { invokeCmd } from '../lib/tauri';
 
 export function grpcConnectionsQueryKey({ requestId }: { requestId: string }) {

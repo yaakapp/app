@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { HttpRequest } from '@yaakapp/api';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

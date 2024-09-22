@@ -1,4 +1,4 @@
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import { useCopyHttpResponse } from '../hooks/useCopyHttpResponse';
 import { useDeleteHttpResponse } from '../hooks/useDeleteHttpResponse';
 import { useDeleteHttpResponses } from '../hooks/useDeleteHttpResponses';

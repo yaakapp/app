@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { GrpcRequest } from '@yaakapp/api';
+import type { GrpcRequest } from '@yaakapp-internal/models';
 import { getGrpcRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

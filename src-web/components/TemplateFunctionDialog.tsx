@@ -5,10 +5,9 @@ import type {
   TemplateFunctionHttpRequestArg,
   TemplateFunctionSelectArg,
   TemplateFunctionTextArg,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/plugin';
+import type { FnArg, Tokens } from '@yaakapp-internal/template';
 import { useCallback, useMemo, useState } from 'react';
-import type { FnArg } from '../gen/FnArg';
-import type { Tokens } from '../gen/Tokens';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useHttpRequests } from '../hooks/useHttpRequests';
@@ -62,8 +61,8 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
         argValues[name] === NULL_ARG
           ? { type: 'null' }
           : typeof argValues[name] === 'boolean'
-          ? { type: 'bool', value: argValues[name] === true }
-          : { type: 'str', text: String(argValues[name] ?? '') },
+            ? { type: 'bool', value: argValues[name] === true }
+            : { type: 'str', text: String(argValues[name] ?? '') },
     }));
 
     return {

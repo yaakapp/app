@@ -1,4 +1,4 @@
-import type { HttpRequest } from '@yaakapp/api';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import type { IntrospectionQuery } from 'graphql';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildClientSchema, getIntrospectionQuery } from '../components/core/Editor';

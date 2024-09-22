@@ -1,4 +1,4 @@
-import { CallTemplateFunctionArgs, TemplateFunction } from '../gen/events';
+import { CallTemplateFunctionArgs, TemplateFunction } from '..';
 import { Context } from './Context';
 
 export type TemplateFunctionPlugin = TemplateFunction & {

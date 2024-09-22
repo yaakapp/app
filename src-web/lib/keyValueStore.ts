@@ -1,4 +1,4 @@
-import type { KeyValue } from '@yaakapp/api';
+import type { KeyValue } from '@yaakapp-internal/models';
 import { invokeCmd } from './tauri';
 
 export async function setKeyValue<T>({

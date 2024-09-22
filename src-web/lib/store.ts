@@ -7,7 +7,7 @@ import type {
   Plugin,
   Settings,
   Workspace,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/models';
 import { invokeCmd } from './tauri';
 
 export async function getSettings(): Promise<Settings> {

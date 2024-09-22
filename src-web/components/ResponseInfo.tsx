@@ -1,5 +1,5 @@
 import { open } from '@tauri-apps/plugin-shell';
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import { IconButton } from './core/IconButton';
 import { KeyValueRow, KeyValueRows } from './core/KeyValueRow';
 

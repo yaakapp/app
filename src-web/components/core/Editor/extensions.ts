@@ -31,7 +31,8 @@ import {
   rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
-import type { EnvironmentVariable, TemplateFunction } from '@yaakapp/api';
+import type { EnvironmentVariable } from '@yaakapp-internal/models';
+import type { TemplateFunction } from '@yaakapp-internal/plugin';
 import { graphql } from 'cm6-graphql';
 import { EditorView } from 'codemirror';
 import type { EditorProps } from './index';

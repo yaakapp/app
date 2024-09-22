@@ -1,4 +1,4 @@
-import type { Environment } from '@yaakapp/api';
+import type { Environment } from '@yaakapp-internal/models';
 import { atom, useAtom } from 'jotai/index';
 import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';

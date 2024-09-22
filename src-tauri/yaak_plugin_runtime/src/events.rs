@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use ts_rs::TS;
 
 use yaak_models::models::{
-    CookieJar, Environment, Folder, GrpcConnection, GrpcEvent, GrpcRequest, HttpRequest,
-    HttpResponse, KeyValue, Plugin, Settings, Workspace,
+    Environment, Folder, GrpcRequest, HttpRequest,
+    HttpResponse, Workspace,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -401,22 +401,4 @@ pub struct ImportResources {
     pub folders: Vec<Folder>,
     pub http_requests: Vec<HttpRequest>,
     pub grpc_requests: Vec<GrpcRequest>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase", untagged)]
-#[ts(export, export_to="events.ts")]
-pub enum Model {
-    Environment(Environment),
-    Folder(Folder),
-    GrpcConnection(GrpcConnection),
-    GrpcEvent(GrpcEvent),
-    GrpcRequest(GrpcRequest),
-    HttpRequest(HttpRequest),
-    HttpResponse(HttpResponse),
-    KeyValue(KeyValue),
-    Workspace(Workspace),
-    CookieJar(CookieJar),
-    Settings(Settings),
-    Plugin(Plugin),
 }

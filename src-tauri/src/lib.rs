@@ -2,7 +2,7 @@ extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap};
 use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
@@ -210,7 +210,7 @@ async fn cmd_grpc_go(
         .map_err(|e| e.to_string())?;
     let req =
         render_grpc_request(window.app_handle(), &req, &workspace, environment.as_ref()).await;
-    let mut metadata = HashMap::new();
+    let mut metadata = BTreeMap::new();
 
     // Add the rest of metadata
     for h in req.clone().metadata {
@@ -794,9 +794,9 @@ async fn cmd_import_data(
         .map_err(|e| e.to_string())?;
 
     let mut imported_resources = WorkspaceExportResources::default();
-    let mut id_map: HashMap<String, String> = HashMap::new();
+    let mut id_map: BTreeMap<String, String> = BTreeMap::new();
 
-    fn maybe_gen_id(id: &str, model: ModelType, ids: &mut HashMap<String, String>) -> String {
+    fn maybe_gen_id(id: &str, model: ModelType, ids: &mut BTreeMap<String, String>) -> String {
         if !id.starts_with("GENERATE_ID::") {
             return id.to_string();
         }
@@ -814,7 +814,7 @@ async fn cmd_import_data(
     fn maybe_gen_id_opt(
         id: Option<String>,
         model: ModelType,
-        ids: &mut HashMap<String, String>,
+        ids: &mut BTreeMap<String, String>,
     ) -> Option<String> {
         match id {
             Some(id) => Some(maybe_gen_id(id.as_str(), model, ids)),

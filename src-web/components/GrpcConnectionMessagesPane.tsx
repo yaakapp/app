@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useGrpcEvents } from '../hooks/useGrpcEvents';
 import { usePinnedGrpcConnection } from '../hooks/usePinnedGrpcConnection';
 import { useStateWithDeps } from '../hooks/useStateWithDeps';
-import type { GrpcEvent, GrpcRequest } from '@yaakapp/api';
+import type { GrpcEvent, GrpcRequest } from '@yaakapp-internal/models';
 import { isResponseLoading } from '../lib/model_util';
 import { Banner } from './core/Banner';
 import { Button } from './core/Button';

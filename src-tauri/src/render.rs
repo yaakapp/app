@@ -1,6 +1,6 @@
 use crate::template_callback::PluginTemplateCallback;
 use serde_json::{json, Map, Value};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use tauri::{AppHandle, Manager, Runtime};
 use yaak_models::models::{
     Environment, EnvironmentVariable, GrpcMetadataEntry, GrpcRequest, HttpRequest,
@@ -37,7 +37,7 @@ pub async fn render_grpc_request<R: Runtime>(
         })
     }
 
-    let mut authentication = HashMap::new();
+    let mut authentication = BTreeMap::new();
     for (k, v) in r.authentication.clone() {
         authentication.insert(k, render_json_value(v, vars, cb).await);
     }
@@ -78,12 +78,12 @@ pub async fn render_http_request(
         })
     }
 
-    let mut body = HashMap::new();
+    let mut body = BTreeMap::new();
     for (k, v) in r.body.clone() {
         body.insert(k, render_json_value(v, vars, cb).await);
     }
 
-    let mut authentication = HashMap::new();
+    let mut authentication = BTreeMap::new();
     for (k, v) in r.authentication.clone() {
         authentication.insert(k, render_json_value(v, vars, cb).await);
     }
@@ -250,13 +250,16 @@ mod tests {
         vars.insert("a".to_string(), "aaa".to_string());
 
         let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
-        assert_eq!(result, json!([
-            123,
-            {"aaa": "aaa"},
-            null,
-            "aaa",
-            false,
-            {"x": ["aaa"]}
-        ]))
+        assert_eq!(
+            result,
+            json!([
+                123,
+                {"aaa": "aaa"},
+                null,
+                "aaa",
+                false,
+                {"x": ["aaa"]}
+            ])
+        )
     }
 }

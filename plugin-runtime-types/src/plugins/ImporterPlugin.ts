@@ -1,4 +1,4 @@
-import { Environment, Folder, HttpRequest, Workspace } from '../gen/model_util';
+import { Environment, Folder, HttpRequest, Workspace } from '..';
 import { AtLeast } from '../helpers';
 import { Context } from './Context';
 

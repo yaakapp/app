@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import type { Model } from '@yaakapp/api';
+import type { AnyModel } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useEnsureActiveCookieJar, useMigrateActiveCookieJarId } from '../hooks/useActiveCookieJar';
@@ -62,7 +62,7 @@ export function GlobalHooks() {
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
   interface ModelPayload {
-    model: Model;
+    model: AnyModel;
     windowLabel: string;
   }
 
@@ -94,7 +94,7 @@ export function GlobalHooks() {
       wasUpdatedExternally(model.id);
     }
 
-    const pushToFront = (['http_response', 'grpc_connection'] as Model['model'][]).includes(
+    const pushToFront = (['http_response', 'grpc_connection'] as AnyModel['model'][]).includes(
       model.model,
     );
 
@@ -197,7 +197,7 @@ export function GlobalHooks() {
   return null;
 }
 
-function updateModelList<T extends Model>(model: T, pushToFront: boolean) {
+function updateModelList<T extends AnyModel>(model: T, pushToFront: boolean) {
   return (current: T[]): T[] => {
     const index = current.findIndex((v) => modelsEq(v, model)) ?? -1;
     if (index >= 0) {
@@ -212,7 +212,7 @@ function removeById<T extends { id: string }>(model: T) {
   return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id) ?? [];
 }
 
-const shouldIgnoreModel = (payload: Model, windowLabel: string) => {
+const shouldIgnoreModel = (payload: AnyModel, windowLabel: string) => {
   if (windowLabel === getCurrentWebviewWindow().label) {
     // Never ignore same-window updates
     return false;

@@ -1,7 +1,7 @@
 import { save } from '@tauri-apps/plugin-dialog';
 import { useCallback, useMemo, useState } from 'react';
 import slugify from 'slugify';
-import type { Workspace } from '@yaakapp/api';
+import type { Workspace } from '@yaakapp-internal/models';
 import { count } from '../lib/pluralize';
 import { invokeCmd } from '../lib/tauri';
 import { Button } from './core/Button';

@@ -1,4 +1,4 @@
-import type { ShowToastRequest } from '@yaakapp/api';
+import type { ShowToastRequest } from '@yaakapp-internal/plugin';
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';

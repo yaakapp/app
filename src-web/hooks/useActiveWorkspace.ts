@@ -1,4 +1,4 @@
-import type { Workspace } from '@yaakapp/api';
+import type { Workspace } from '@yaakapp-internal/models';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import type { RouteParamsWorkspace } from './useAppRoutes';

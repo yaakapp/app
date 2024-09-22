@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { GetTemplateFunctionsResponse } from '@yaakapp/api';
+import type { GetTemplateFunctionsResponse } from '@yaakapp-internal/plugin';
 import { invokeCmd } from '../lib/tauri';
 import { usePluginsKey } from './usePlugins';
 

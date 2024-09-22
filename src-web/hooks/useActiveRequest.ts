@@ -1,4 +1,4 @@
-import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
+import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import { useActiveRequestId } from './useActiveRequestId';
 import { useRequests } from './useRequests';
 
