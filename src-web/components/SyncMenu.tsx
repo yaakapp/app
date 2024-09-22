@@ -33,7 +33,7 @@ export function SyncMenu() {
           onSelect() {
             dialog.show({
               id: 'sync-checkpoint',
-              size: 'dynamic',
+              size: 'lg',
               title: 'Sync Checkpoint',
               render: () => <SyncCheckpointDialog />,
             });
