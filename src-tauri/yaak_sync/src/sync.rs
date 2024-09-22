@@ -1,39 +1,76 @@
 use crate::error;
-use crate::sync_object::{SyncObject, SyncObjectMetadata};
+use crate::sync_object::{SyncModel, SyncObject, SyncObjectMetadata};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use chrono::NaiveDateTime;
 use error::Result;
 use hex;
-use serde::Serialize;
 use serde_json::to_vec_pretty;
 use sha1::{Digest, Sha1};
 
-pub fn model_to_sync_object<M: Serialize>(m: M) -> Result<SyncObject> {
+pub fn model_to_sync_object(m: SyncModel) -> Result<SyncObject> {
     let v = serde_json::to_value(&m)?;
     let v = v.as_object().unwrap().to_owned();
+    let hash = model_hash(&m);
 
-    // Extract these fields to store on the sync object
-    let model: String = serde_json::from_value(v.get("model").unwrap().to_owned())?;
-    let id: String = serde_json::from_value(v.get("id").unwrap().to_owned())?;
-    let created_at: NaiveDateTime = serde_json::from_value(v.get("createdAt").unwrap().to_owned())?;
-    let updated_at: NaiveDateTime = serde_json::from_value(v.get("updatedAt").unwrap().to_owned())?;
+    let metadata = match m {
+        SyncModel::Workspace(m) => SyncObjectMetadata {
+            hash,
+            id: m.id,
+            model: m.model,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            workspace_id: None,
+            folder_id: None,
+            name: Some(m.name),
+        },
+        SyncModel::Environment(m) => SyncObjectMetadata {
+            hash,
+            id: m.id,
+            model: m.model,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            workspace_id: Some(m.workspace_id),
+            folder_id: None,
+            name: Some(m.name),
+        },
+        SyncModel::Folder(m) => SyncObjectMetadata {
+            hash,
+            id: m.id,
+            model: m.model,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            workspace_id: Some(m.workspace_id),
+            folder_id: m.folder_id,
+            name: Some(m.name),
+        },
+        SyncModel::HttpRequest(m) => SyncObjectMetadata {
+            hash,
+            id: m.id,
+            model: m.model,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            workspace_id: Some(m.workspace_id),
+            folder_id: m.folder_id,
+            name: Some(m.name),
+        },
+        SyncModel::GrpcRequest(m) => SyncObjectMetadata {
+            hash,
+            id: m.id,
+            model: m.model,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            workspace_id: Some(m.workspace_id),
+            folder_id: m.folder_id,
+            name: Some(m.name),
+        },
+    };
 
     let data = BASE64_STANDARD.encode(to_vec_pretty(&v)?);
 
-    Ok(SyncObject {
-        data,
-        metadata: SyncObjectMetadata {
-            hash: model_hash(m),
-            id,
-            model,
-            created_at,
-            updated_at,
-        },
-    })
+    Ok(SyncObject { data, metadata })
 }
 
-pub fn model_hash<M: Serialize>(m: M) -> String {
+pub fn model_hash(m: &SyncModel) -> String {
     let value = serde_json::to_value(&m).unwrap();
     let mut value = value.as_object().unwrap().to_owned();
 
@@ -51,6 +88,7 @@ pub fn model_hash<M: Serialize>(m: M) -> String {
 #[cfg(test)]
 mod tests {
     use crate::sync::{model_hash, model_to_sync_object};
+    use crate::sync_object::SyncModel;
     use chrono::{TimeDelta, Utc};
     use serde_json::json;
     use std::collections::BTreeMap;
@@ -65,9 +103,11 @@ mod tests {
         auth.insert("bar".into(), json!("bar"));
         HttpRequest {
             id: "req_123".to_string(),
-            model: "http_request".to_string(),
+            name: "My Request".to_string(),
             created_at: Utc::now().sub(TimeDelta::seconds(1234567)).naive_utc(),
             updated_at: Utc::now().naive_utc(),
+            workspace_id: "wk_123".to_string(),
+            folder_id: Some("fl_345".to_string()),
             authentication: auth,
             ..Default::default()
         }
@@ -75,7 +115,7 @@ mod tests {
 
     #[test]
     fn test_debug() {
-        let so = model_to_sync_object(debug_http_request()).unwrap();
+        let so = model_to_sync_object(SyncModel::HttpRequest(debug_http_request())).unwrap();
         println!("{}", serde_json::to_string_pretty(&so.metadata).unwrap());
     }
 
@@ -83,8 +123,8 @@ mod tests {
     fn test_model_hash_determinism() {
         for _i in 1..1000 {
             assert_eq!(
-                model_hash(debug_http_request()),
-                model_hash(debug_http_request()),
+                model_hash(&SyncModel::HttpRequest(debug_http_request())),
+                model_hash(&SyncModel::HttpRequest(debug_http_request())),
             );
         }
     }
@@ -95,7 +135,10 @@ mod tests {
         let mut r2 = r1.clone();
         r2.updated_at = r2.updated_at.add(TimeDelta::seconds(999));
 
-        assert_eq!(model_hash(r1), model_hash(r2),);
+        assert_eq!(
+            model_hash(&SyncModel::HttpRequest(r1)),
+            model_hash(&SyncModel::HttpRequest(r2)),
+        );
     }
 
     #[test]
@@ -104,6 +147,9 @@ mod tests {
         let mut r2 = r1.clone();
         r2.name = "Different".to_string();
 
-        assert_ne!(model_hash(r1), model_hash(r2),);
+        assert_ne!(
+            model_hash(&SyncModel::HttpRequest(r1)),
+            model_hash(&SyncModel::HttpRequest(r2)),
+        );
     }
 }
