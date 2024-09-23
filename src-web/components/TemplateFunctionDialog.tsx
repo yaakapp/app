@@ -13,7 +13,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { InlineCode } from './core/InlineCode';
@@ -217,7 +217,7 @@ function HttpRequestArg({
         ...httpRequests
           .filter((r) => r.id != activeRequest?.id)
           .map((r) => ({
-            label: fallbackRequestName(r),
+            label: resolvedModelName(r),
             value: r.id,
           })),
       ]}

@@ -39,7 +39,7 @@ import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
 import { useWorkspaces } from '../hooks/useWorkspaces';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { isResponseLoading } from '../lib/model_util';
 import { getHttpRequest } from '../lib/store';
 import type { DropdownItem } from './core/Dropdown';
@@ -527,7 +527,7 @@ function SidebarItems({
               itemName={child.item.name}
               itemFallbackName={
                 child.item.model === 'http_request' || child.item.model === 'grpc_request'
-                  ? fallbackRequestName(child.item)
+                  ? resolvedModelName(child.item)
                   : 'New Folder'
               }
               itemModel={child.item.model}

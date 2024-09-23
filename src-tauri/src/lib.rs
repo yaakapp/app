@@ -1652,11 +1652,10 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_get_sync_stage(
-    window: WebviewWindow,
-    workspace_id: &str,
-) -> Result<Stage, String> {
-    let stage = generate_stage(&window.app_handle(), workspace_id).await?;
+async fn cmd_get_sync_stage(window: WebviewWindow, workspace_id: &str) -> Result<Stage, String> {
+    let stage = generate_stage(&window.app_handle(), workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(stage)
 }
 

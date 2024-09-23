@@ -2,27 +2,25 @@ import classNames from 'classnames';
 import { Icon } from './Icon';
 import { HStack } from './Stacks';
 
-interface Props {
-  checked: boolean;
+export interface CheckboxProps {
+  checked: boolean | 'indeterminate';
   title: string;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
   inputWrapperClassName?: string;
-  indeterminate?: boolean;
   hideLabel?: boolean;
 }
 
 export function Checkbox({
   checked,
-  indeterminate,
   onChange,
   className,
   inputWrapperClassName,
   disabled,
   title,
   hideLabel,
-}: Props) {
+}: CheckboxProps) {
   return (
     <HStack
       as="label"
@@ -41,7 +39,10 @@ export function Checkbox({
           onChange={() => onChange(!checked)}
         />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Icon size="sm" icon={indeterminate ? 'minus' : checked ? 'check' : 'empty'} />
+          <Icon
+            size="sm"
+            icon={checked === 'indeterminate' ? 'minus' : checked ? 'check' : 'empty'}
+          />
         </div>
       </div>
       {!hideLabel && title}

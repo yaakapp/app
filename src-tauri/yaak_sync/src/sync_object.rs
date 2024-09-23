@@ -6,7 +6,7 @@ use yaak_models::models::{Environment, Folder, GrpcRequest, HttpRequest, Workspa
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "sync.ts")]
 #[serde(default, rename_all = "camelCase")]
-pub struct Object {
+pub struct SyncObject {
     pub metadata: SyncObjectMetadata,
     pub data: String,
 }
@@ -24,8 +24,9 @@ pub struct SyncObjectMetadata {
     pub workspace_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "snake_case", tag = "type")]
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export, export_to = "sync.ts")]
+#[serde(rename_all = "snake_case", untagged)]
 pub enum SyncModel {
     Workspace(Workspace),
     Environment(Environment),

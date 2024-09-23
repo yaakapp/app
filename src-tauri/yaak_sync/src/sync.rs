@@ -1,14 +1,12 @@
-use crate::error;
-use crate::sync_object::{SyncModel, Object, SyncObjectMetadata};
+use crate::sync_object::{SyncModel, SyncObject, SyncObjectMetadata};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
-use error::Result;
 use hex;
 use serde_json::to_vec_pretty;
 use sha1::{Digest, Sha1};
 
-pub fn model_to_sync_object(m: SyncModel) -> Result<Object> {
-    let v = serde_json::to_value(&m)?;
+pub fn model_to_sync_object(m: SyncModel) -> SyncObject {
+    let v = serde_json::to_value(&m).unwrap();
     let v = v.as_object().unwrap().to_owned();
     let hash = model_hash(&m);
 
@@ -65,9 +63,8 @@ pub fn model_to_sync_object(m: SyncModel) -> Result<Object> {
         },
     };
 
-    let data = BASE64_STANDARD.encode(to_vec_pretty(&v)?);
-
-    Ok(Object { data, metadata })
+    let data = BASE64_STANDARD.encode(to_vec_pretty(&v).unwrap());
+    SyncObject { data, metadata }
 }
 
 pub fn model_hash(m: &SyncModel) -> String {
@@ -115,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_debug() {
-        let so = model_to_sync_object(SyncModel::HttpRequest(debug_http_request())).unwrap();
+        let so = model_to_sync_object(SyncModel::HttpRequest(debug_http_request()));
         println!("{}", serde_json::to_string_pretty(&so.metadata).unwrap());
     }
 

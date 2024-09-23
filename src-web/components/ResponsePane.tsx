@@ -117,9 +117,11 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
           >
             {activeResponse && (
               <HStack
-                as="p"
                 space={2}
-                className="whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm"
+                className={classNames(
+                  'select-none cursor-default',
+                  'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
+                )}
               >
                 <StatusTag showReason response={activeResponse} />
                 {activeResponse.elapsed > 0 && (

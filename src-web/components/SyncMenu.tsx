@@ -34,7 +34,7 @@ export function SyncMenu() {
             dialog.show({
               id: 'sync-checkpoint',
               size: 'lg',
-              title: 'Sync Checkpoint',
+              title: 'Commit Changes',
               render: () => <SyncCheckpointDialog />,
             });
           },
