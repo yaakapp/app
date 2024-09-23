@@ -24,6 +24,7 @@ async function initialize() {
   const pathPkg = path.join(pluginDir, 'package.json');
 
   const pathMod = path.posix.join(pluginDir, 'build', 'index.js');
+
   async function importModule() {
     const id = require.resolve(pathMod);
     delete require.cache[id];
@@ -247,7 +248,9 @@ async function initialize() {
         payload.type === 'call_http_request_action_request' &&
         Array.isArray(mod.plugin?.httpRequestActions)
       ) {
-        const action = mod.plugin.httpRequestActions.find((a) => a.key === payload.key);
+        const action = mod.plugin.httpRequestActions.find(
+          (a: HttpRequestActionPlugin) => a.key === payload.key,
+        );
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
           sendEmpty(replyId);
@@ -259,7 +262,9 @@ async function initialize() {
         payload.type === 'call_template_function_request' &&
         Array.isArray(mod.plugin?.templateFunctions)
       ) {
-        const action = mod.plugin.templateFunctions.find((a) => a.name === payload.name);
+        const action = mod.plugin.templateFunctions.find(
+          (a: TemplateFunctionPlugin) => a.name === payload.name,
+        );
         if (typeof action?.onRender === 'function') {
           const result = await action.onRender(ctx, payload.args);
           sendPayload({ type: 'call_template_function_response', value: result ?? null }, replyId);
