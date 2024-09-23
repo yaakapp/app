@@ -1,16 +1,33 @@
-import type { SyncObject } from '@yaakapp-internal/sync';
+import type { StageObject, SyncObject, SyncStatus } from '@yaakapp-internal/sync';
 import { Fragment, useMemo, useState } from 'react';
 import { useSyncStage } from '../hooks/useSyncStage';
 import { resolvedModelName } from '../lib/resolvedModelName';
+import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
 import { Checkbox } from './core/Checkbox';
+import { Editor } from './core/Editor';
+import { SplitLayout } from './core/SplitLayout';
+import { HStack } from './core/Stacks';
 
-interface TreeNode extends SyncObject {
+interface TreeNode {
   children: TreeNode[];
+  object: SyncObject;
+  status: SyncStatus;
 }
 
 export function SyncCheckpointDialog() {
   const stage = useSyncStage();
+
+  const [addedIds, setAddedIds] = useState<Record<string, boolean>>(() => {
+    const s: Record<string, boolean> = {};
+    // By default, add all files that are already tracked
+    for (const o of stage.data?.objects ?? []) {
+      if (o.status !== 'untracked') {
+        s[o.object.metadata.id] = true;
+      }
+    }
+    return s;
+  });
 
   const tree: TreeNode | null = useMemo(() => {
     const objects = stage.data?.objects ?? [];
@@ -19,31 +36,21 @@ export function SyncCheckpointDialog() {
       return null;
     }
 
-    const buildNode = (parentObject: SyncObject): TreeNode => {
+    const buildNode = (parent: StageObject): TreeNode => {
       const children = objects
         .filter(({ object: { metadata } }) =>
           metadata.folder_id != null
-            ? metadata.folder_id === parentObject.metadata.id
-            : metadata.workspace_id === parentObject.metadata.id,
+            ? metadata.folder_id === parent.object.metadata.id
+            : metadata.workspace_id === parent.object.metadata.id,
         )
         .map((object) => {
-          return buildNode(object.object);
+          return buildNode(object);
         });
-      return { ...parentObject, children };
+      return { ...parent, children };
     };
 
-    return buildNode(root.object);
+    return buildNode(root);
   }, [stage.data]);
-
-  if (tree == null) {
-    return null;
-  }
-
-  return <SyncCheckpoint tree={tree} />;
-}
-
-function SyncCheckpoint({ tree }: { tree: TreeNode }) {
-  const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
   const toggle = (node: TreeNode) => {
     setAddedIds((currentAddedIds) => {
@@ -55,9 +62,40 @@ function SyncCheckpoint({ tree }: { tree: TreeNode }) {
     });
   };
 
+  if (tree == null) {
+    return null;
+  }
+
   return (
-    <div className="w-full mb-auto min-w-full max-w-full">
-      <TreeNodeChildren node={tree} depth={0} onToggle={toggle} state={addedIds} />
+    <div className="h-[80vh] w-[40rem] max-w-[100vw] flex flex-col gap-3 mb-auto pb-2">
+      <SplitLayout
+        name="commit"
+        layout="vertical"
+        defaultRatio={0.25}
+        firstSlot={({ style }) => (
+          <div style={style} className="h-full overflow-y-auto">
+            <TreeNodeChildren node={tree} depth={0} onToggle={toggle} state={addedIds} />
+          </div>
+        )}
+        secondSlot={({ style }) => (
+          <div style={style} className="grid grid-rows-[minmax(0,1fr)_auto] gap-3 h-full">
+            <div className="bg-surface-highlight border border-border rounded-md overflow-hidden">
+              <Editor
+                className="!text-base font-sans h-full rounded-md"
+                placeholder="Commit message..."
+              />
+            </div>
+            <HStack justifyContent="end" space={2}>
+              <Button color="secondary" size="sm">
+                Commit
+              </Button>
+              <Button color="secondary" size="sm">
+                Commit and Push
+              </Button>
+            </HStack>
+          </div>
+        )}
+      />
     </div>
   );
 }
@@ -73,29 +111,29 @@ function TreeNodeChildren({
   state: Record<string, boolean>;
   onToggle: (node: TreeNode) => void;
 }) {
-  if (node === null || node.children.length === 0) return null;
+  if (node === null) return null;
 
   const indent = new Array(depth + 1).join(' ');
+  const checked = nodeCheckedStatus(node, state);
   return (
     <>
-      {node.children.map((childNode) => {
-        const checked = nodeCheckedStatus(childNode, state);
+      <div className="flex">
+        <pre aria-hidden className="whitespace-pre inline">
+          {indent}
+        </pre>
+        <div className="flex gap-3 w-full">
+          <Checkbox
+            className="w-full hover:bg-surface-highlight"
+            checked={checked}
+            title={resolvedModelName(JSON.parse(atob(node.object.data)))}
+            onChange={() => onToggle(node)}
+          />
+        </div>
+      </div>
 
+      {node.children.map((childNode) => {
         return (
-          <Fragment key={childNode.metadata.id}>
-            <div className="flex">
-              <pre aria-hidden className="whitespace-pre inline">
-                {indent}
-              </pre>
-              <div className="flex gap-3 w-full">
-                <Checkbox
-                  className="w-full hover:bg-surface-highlight"
-                  checked={checked}
-                  title={resolvedModelName(JSON.parse(atob(node.data)))}
-                  onChange={() => onToggle(childNode)}
-                />
-              </div>
-            </div>
+          <Fragment key={childNode.object.metadata.id}>
             <TreeNodeChildren
               node={childNode}
               depth={depth + 1}
@@ -117,13 +155,13 @@ function nodeCheckedStatus(
   let leavesChecked = 0;
 
   if (node.children.length === 0) {
-    return state[node.metadata.id] ?? false;
+    return state[node.object.metadata.id] ?? false;
   }
 
   const visitChildren = (n: TreeNode) => {
     if (n.children.length === 0) {
       leavesVisited += 1;
-      const checked = state[n.metadata.id] ?? false;
+      const checked = state[n.object.metadata.id] ?? false;
       if (checked) leavesChecked += 1;
     }
     for (const child of n.children) {
@@ -144,7 +182,7 @@ function nodeCheckedStatus(
 
 function setCheckedOnChildren(node: TreeNode, state: Record<string, boolean>, checked: boolean) {
   if (node.children.length === 0) {
-    state[node.metadata.id] = checked;
+    state[node.object.metadata.id] = checked;
   }
 
   for (const child of node.children) {

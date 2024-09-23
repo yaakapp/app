@@ -6,8 +6,8 @@ export interface CheckboxProps {
   checked: boolean | 'indeterminate';
   title: string;
   onChange: (checked: boolean) => void;
-  disabled?: boolean;
   className?: string;
+  disabled?: boolean;
   inputWrapperClassName?: string;
   hideLabel?: boolean;
 }

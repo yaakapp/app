@@ -28,12 +28,12 @@ export function SyncMenu() {
         { type: 'separator', label: 'master' },
         {
           key: 'checkpoint',
-          label: 'Create Checkpoint',
+          label: 'Commit Changes',
           leftSlot: <Icon icon="git_commit_vertical" />,
           onSelect() {
             dialog.show({
-              id: 'sync-checkpoint',
-              size: 'lg',
+              id: 'commit-changes',
+              size: 'dynamic',
               title: 'Commit Changes',
               render: () => <SyncCheckpointDialog />,
             });

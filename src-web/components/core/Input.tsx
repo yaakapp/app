@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { EditorProps } from './Editor';
@@ -8,43 +8,39 @@ import { Editor } from './Editor';
 import { IconButton } from './IconButton';
 import { HStack } from './Stacks';
 
-export type InputProps = Omit<
-  HTMLAttributes<HTMLInputElement>,
-  'onChange' | 'onFocus' | 'onKeyDown' | 'onPaste'
-> &
-  Pick<
-    EditorProps,
-    | 'language'
-    | 'useTemplating'
-    | 'autocomplete'
-    | 'forceUpdateKey'
-    | 'autoFocus'
-    | 'autoSelect'
-    | 'autocompleteVariables'
-    | 'onKeyDown'
-    | 'readOnly'
-  > & {
-    name: string;
-    type?: 'text' | 'password';
-    label: string;
-    hideLabel?: boolean;
-    labelPosition?: 'top' | 'left';
-    labelClassName?: string;
-    containerClassName?: string;
-    onChange?: (value: string) => void;
-    onFocus?: () => void;
-    onBlur?: () => void;
-    onPaste?: (value: string) => void;
-    defaultValue?: string;
-    leftSlot?: ReactNode;
-    rightSlot?: ReactNode;
-    size?: 'xs' | 'sm' | 'md' | 'auto';
-    className?: string;
-    placeholder: string;
-    validate?: boolean | ((v: string) => boolean);
-    require?: boolean;
-    wrapLines?: boolean;
-  };
+export type InputProps = Pick<
+  EditorProps,
+  | 'language'
+  | 'useTemplating'
+  | 'autocomplete'
+  | 'forceUpdateKey'
+  | 'autoFocus'
+  | 'autoSelect'
+  | 'autocompleteVariables'
+  | 'onKeyDown'
+  | 'readOnly'
+> & {
+  name?: string;
+  type?: 'text' | 'password';
+  label: string;
+  hideLabel?: boolean;
+  labelPosition?: 'top' | 'left';
+  labelClassName?: string;
+  containerClassName?: string;
+  onChange?: (value: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onPaste?: (value: string) => void;
+  defaultValue?: string;
+  leftSlot?: ReactNode;
+  rightSlot?: ReactNode;
+  size?: 'xs' | 'sm' | 'md' | 'auto';
+  className?: string;
+  placeholder: string;
+  validate?: boolean | ((v: string) => boolean);
+  require?: boolean;
+  wrapLines?: boolean;
+};
 
 export const Input = forwardRef<EditorView | undefined, InputProps>(function Input(
   {
@@ -57,7 +53,6 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     labelClassName,
     labelPosition = 'top',
     leftSlot,
-    name,
     onBlur,
     onChange,
     onFocus,
@@ -89,7 +84,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     onBlur?.();
   }, [onBlur]);
 
-  const id = `input-${name}`;
+  const id = `input-${label}`;
   const editorClassName = classNames(
     className,
     '!bg-transparent min-w-0 h-auto w-full focus:outline-none placeholder:text-placeholder',
