@@ -1,71 +1,7 @@
-use crate::sync_object::{SyncModel, SyncObject, SyncObjectMetadata};
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
 use hex;
 use serde_json::to_vec_pretty;
 use sha1::{Digest, Sha1};
-
-pub fn model_to_sync_object(m: SyncModel) -> SyncObject {
-    let v = serde_json::to_value(&m).unwrap();
-    let v = v.as_object().unwrap().to_owned();
-    let hash = model_hash(&m);
-
-    let metadata = match m {
-        SyncModel::Workspace(m) => SyncObjectMetadata {
-            hash,
-            id: m.id,
-            model: m.model,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            workspace_id: None,
-            folder_id: None,
-            name: Some(m.name),
-        },
-        SyncModel::Environment(m) => SyncObjectMetadata {
-            hash,
-            id: m.id,
-            model: m.model,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            workspace_id: Some(m.workspace_id),
-            folder_id: None,
-            name: Some(m.name),
-        },
-        SyncModel::Folder(m) => SyncObjectMetadata {
-            hash,
-            id: m.id,
-            model: m.model,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            workspace_id: Some(m.workspace_id),
-            folder_id: m.folder_id,
-            name: Some(m.name),
-        },
-        SyncModel::HttpRequest(m) => SyncObjectMetadata {
-            hash,
-            id: m.id,
-            model: m.model,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            workspace_id: Some(m.workspace_id),
-            folder_id: m.folder_id,
-            name: Some(m.name),
-        },
-        SyncModel::GrpcRequest(m) => SyncObjectMetadata {
-            hash,
-            id: m.id,
-            model: m.model,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-            workspace_id: Some(m.workspace_id),
-            folder_id: m.folder_id,
-            name: Some(m.name),
-        },
-    };
-
-    let data = BASE64_STANDARD.encode(to_vec_pretty(&v).unwrap());
-    SyncObject { data, metadata }
-}
+use yaak_models::models::SyncModel;
 
 pub fn model_hash(m: &SyncModel) -> String {
     let value = serde_json::to_value(&m).unwrap();
@@ -84,13 +20,12 @@ pub fn model_hash(m: &SyncModel) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::sync::{model_hash, model_to_sync_object};
-    use crate::sync_object::SyncModel;
+    use crate::sync::model_hash;
     use chrono::{TimeDelta, Utc};
     use serde_json::json;
     use std::collections::BTreeMap;
     use std::ops::{Add, Sub};
-    use yaak_models::models::HttpRequest;
+    use yaak_models::models::{HttpRequest, SyncModel};
 
     fn debug_http_request() -> HttpRequest {
         let mut auth = BTreeMap::new();
@@ -108,12 +43,6 @@ mod tests {
             authentication: auth,
             ..Default::default()
         }
-    }
-
-    #[test]
-    fn test_debug() {
-        let so = model_to_sync_object(SyncModel::HttpRequest(debug_http_request()));
-        println!("{}", serde_json::to_string_pretty(&so.metadata).unwrap());
     }
 
     #[test]

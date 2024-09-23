@@ -1,10 +1,11 @@
 import classNames from 'classnames';
+import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 import { HStack } from './Stacks';
 
 export interface CheckboxProps {
   checked: boolean | 'indeterminate';
-  title: string;
+  title: ReactNode;
   onChange: (checked: boolean) => void;
   className?: string;
   disabled?: boolean;

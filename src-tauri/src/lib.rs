@@ -64,9 +64,7 @@ use yaak_plugin_runtime::events::{
     ShowToastRequest,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
-use yaak_sync::sync::model_to_sync_object;
-use yaak_sync::sync_object::{SyncModel, SyncObjectMetadata};
-use yaak_sync::sync_stage::{generate_stage, Stage};
+use yaak_sync::diff::{calculate_sync_objects, SyncDiff};
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -1652,11 +1650,13 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_get_sync_stage(window: WebviewWindow, workspace_id: &str) -> Result<Stage, String> {
-    let stage = generate_stage(&window.app_handle(), workspace_id)
+async fn cmd_get_sync_stage(
+    window: WebviewWindow,
+    workspace_id: &str,
+) -> Result<Vec<SyncDiff>, String> {
+    calculate_sync_objects(&window.app_handle(), workspace_id)
         .await
-        .map_err(|e| e.to_string())?;
-    Ok(stage)
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -1874,11 +1874,14 @@ pub fn run() {
                     ..
                 } => {
                     let h = app_handle.clone();
-                    // Run update check whenever window is focused
+                    // Run update check whenever the window is focused
                     tauri::async_runtime::spawn(async move {
-                        let val: State<'_, Mutex<YaakUpdater>> = h.state();
                         let update_mode = get_update_mode(&h).await;
-                        _ = val.lock().await.check(&h, update_mode).await;
+                        let updater: State<'_, Mutex<YaakUpdater>> = h.state();
+                        let mut updater = updater.lock().await;
+                        if let Err(e) = updater.check(&h, update_mode).await {
+                            warn!("Failed to check for updates {e:?}");
+                        }
                     });
 
                     let h = app_handle.clone();
@@ -2006,10 +2009,12 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
             "open_feedback" => {
-                _ = webview_window
+                if let Err(e) = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.app/roadmap", None)
+                    .open("https://yaak.app/roadmap", None) {
+                   warn!("Failed to open feedback {e:?}");
+                }
             }
 
             // Commands for development

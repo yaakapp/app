@@ -33,7 +33,8 @@ export function SyncMenu() {
           onSelect() {
             dialog.show({
               id: 'commit-changes',
-              size: 'dynamic',
+              size: 'full',
+              className: '!max-h-[min(80vh,40rem)] !max-w-[min(50rem,90vw)]',
               title: 'Commit Changes',
               render: () => <SyncCheckpointDialog />,
             });

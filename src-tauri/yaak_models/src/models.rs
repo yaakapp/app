@@ -745,6 +745,31 @@ impl<'s> TryFrom<&Row<'s>> for GrpcEvent {
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
+pub struct SyncCommit {
+    #[ts(type = "\"sync_commit\"")]
+    pub model: String,
+    pub id: String,
+    pub created_at: NaiveDateTime,
+
+    pub object_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
+pub struct SyncObject {
+    #[ts(type = "\"sync_object\"")]
+    pub model: String,
+    pub created_at: NaiveDateTime,
+
+    pub model_hash: String,
+    pub model_id: String,
+    pub data: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
 pub struct Plugin {
     #[ts(type = "\"plugin\"")]
     pub model: String,
@@ -887,4 +912,27 @@ pub enum AnyModel {
     Settings(Settings),
     KeyValue(KeyValue),
     Workspace(Workspace),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case", untagged)]
+pub enum SyncModel {
+    Workspace(Workspace),
+    Environment(Environment),
+    Folder(Folder),
+    HttpRequest(HttpRequest),
+    GrpcRequest(GrpcRequest),
+}
+
+
+impl SyncModel {
+    pub fn model_id(&self) -> String {
+        match self {
+            SyncModel::Workspace(m) => m.to_owned().id,
+            SyncModel::Environment(m) => m.to_owned().id,
+            SyncModel::Folder(m) => m.to_owned().id,
+            SyncModel::HttpRequest(m) => m.to_owned().id,
+            SyncModel::GrpcRequest(m) => m.to_owned().id,
+        }
+    }
 }
