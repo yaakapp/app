@@ -17,12 +17,14 @@
   "scripts": {
     "app-build": "tauri build",
     "app-dev": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
-    "tauri-before-build": "npm run --workspaces --if-present build",
+    "tauri-before-build": "npm run vendor && npm run --workspaces --if-present build",
     "tauri-before-dev": "npm run --workspaces --if-present dev",
+    "tauri": "tauri",
     "lint": "npm run --workspaces --if-present lint",
-    "build:vendor-protoc": "node scripts/vendor-protoc.cjs",
-    "build:vendor-plugins": "node scripts/vendor-plugins.cjs",
-    "build:vendor-node": "node scripts/vendor-node.cjs",
+    "vendor": "run-p vendor:*",
+    "vendor:vendor-protoc": "node scripts/vendor-protoc.cjs",
+    "vendor:vendor-plugins": "node scripts/vendor-plugins.cjs",
+    "vendor:vendor-node": "node scripts/vendor-node.cjs",
     "replace-version": "node scripts/replace-version.cjs"
   },
   "devDependencies": {
