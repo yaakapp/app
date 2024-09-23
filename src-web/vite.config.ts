@@ -30,6 +30,10 @@ export default defineConfig(async () => ({
       ],
     }),
   ],
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+  },
   clearScreen: false,
   server: {
     port: 1420,
