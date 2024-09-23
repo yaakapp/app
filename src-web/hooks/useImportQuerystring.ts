@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { HttpUrlParameter } from '@yaakapp/api';
+import type { HttpUrlParameter } from '@yaakapp-internal/models';
 import { useToast } from '../components/ToastContext';
 import { pluralize } from '../lib/pluralize';
 import { getHttpRequest } from '../lib/store';

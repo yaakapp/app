@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Folder } from '@yaakapp/api';
+import type { Folder } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { getFolder } from '../lib/store';

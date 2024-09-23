@@ -1,5 +1,5 @@
 import { readFile } from '@tauri-apps/plugin-fs';
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import { getCharsetFromContentType } from './model_util';
 
 export async function getResponseBodyText(response: HttpResponse): Promise<string | null> {

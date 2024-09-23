@@ -1,4 +1,4 @@
-import type { HttpRequest } from '@yaakapp/api';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import type { PairEditorRef } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';

@@ -15,7 +15,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useAlert } from '../hooks/useAlert';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { tryFormatJson } from '../lib/formatters';
-import type { GrpcRequest } from '@yaakapp/api';
+import type { GrpcRequest } from '@yaakapp-internal/models';
 import { count } from '../lib/pluralize';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';

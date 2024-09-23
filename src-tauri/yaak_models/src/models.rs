@@ -15,7 +15,7 @@ pub struct Settings {
     pub id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    
+
     pub appearance: String,
     pub editor_font_size: i32,
     pub editor_soft_wrap: bool,
@@ -37,7 +37,7 @@ pub enum SettingsIden {
     Id,
     CreatedAt,
     UpdatedAt,
-    
+
     Appearance,
     EditorFontSize,
     EditorSoftWrap,
@@ -104,7 +104,7 @@ pub enum WorkspaceIden {
     Id,
     CreatedAt,
     UpdatedAt,
-    
+
     Description,
     Name,
     SettingFollowRedirects,
@@ -180,7 +180,7 @@ pub struct CookieJar {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
-    
+
     pub cookies: Vec<Cookie>,
     pub name: String,
 }
@@ -194,7 +194,7 @@ pub enum CookieJarIden {
     WorkspaceId,
     CreatedAt,
     UpdatedAt,
-    
+
     Cookies,
     Name,
 }
@@ -226,7 +226,7 @@ pub struct Environment {
     pub workspace_id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    
+
     pub name: String,
     pub variables: Vec<EnvironmentVariable>,
 }
@@ -240,7 +240,7 @@ pub enum EnvironmentIden {
     CreatedAt,
     UpdatedAt,
     WorkspaceId,
-    
+
     Name,
     Variables,
 }
@@ -284,7 +284,7 @@ pub struct Folder {
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
     pub folder_id: Option<String>,
-    
+
     pub name: String,
     pub sort_priority: f32,
 }
@@ -299,7 +299,7 @@ pub enum FolderIden {
     FolderId,
     CreatedAt,
     UpdatedAt,
-    
+
     Name,
     SortPriority,
 }
@@ -380,7 +380,7 @@ pub enum HttpRequestIden {
     UpdatedAt,
     WorkspaceId,
     FolderId,
-    
+
     Authentication,
     AuthenticationType,
     Body,
@@ -441,7 +441,7 @@ pub struct HttpResponse {
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
     pub request_id: String,
-    
+
     pub body_path: Option<String>,
     pub content_length: Option<i32>,
     pub elapsed: i32,
@@ -465,7 +465,7 @@ pub enum HttpResponseIden {
     UpdatedAt,
     WorkspaceId,
     RequestId,
-    
+
     BodyPath,
     ContentLength,
     Elapsed,
@@ -560,7 +560,7 @@ pub enum GrpcRequestIden {
     UpdatedAt,
     WorkspaceId,
     FolderId,
-    
+
     Authentication,
     AuthenticationType,
     Message,
@@ -609,7 +609,7 @@ pub struct GrpcConnection {
     pub updated_at: NaiveDateTime,
     pub workspace_id: String,
     pub request_id: String,
-    
+
     pub elapsed: i32,
     pub error: Option<String>,
     pub method: String,
@@ -629,7 +629,7 @@ pub enum GrpcConnectionIden {
     UpdatedAt,
     WorkspaceId,
     RequestId,
-    
+
     Elapsed,
     Error,
     Method,
@@ -692,7 +692,7 @@ pub struct GrpcEvent {
     pub workspace_id: String,
     pub request_id: String,
     pub connection_id: String,
-    
+
     pub content: String,
     pub error: Option<String>,
     pub event_type: GrpcEventType,
@@ -711,7 +711,7 @@ pub enum GrpcEventIden {
     WorkspaceId,
     RequestId,
     ConnectionId,
-    
+
     Content,
     Error,
     EventType,
@@ -751,7 +751,7 @@ pub struct Plugin {
     pub id: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    
+
     pub checked_at: Option<NaiveDateTime>,
     pub directory: String,
     pub enabled: bool,
@@ -766,7 +766,7 @@ pub enum PluginIden {
     Id,
     CreatedAt,
     UpdatedAt,
-    
+
     CheckedAt,
     Directory,
     Enabled,
@@ -798,7 +798,7 @@ pub struct KeyValue {
     pub model: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
-    
+
     pub key: String,
     pub namespace: String,
     pub value: String,
@@ -811,7 +811,7 @@ pub enum KeyValueIden {
     Model,
     CreatedAt,
     UpdatedAt,
-    
+
     Key,
     Namespace,
     Value,
@@ -869,4 +869,22 @@ impl ModelType {
         }
         .to_string()
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", untagged)]
+#[ts(export, export_to = "models.ts")]
+pub enum AnyModel {
+    CookieJar(CookieJar),
+    Environment(Environment),
+    Folder(Folder),
+    GrpcConnection(GrpcConnection),
+    GrpcEvent(GrpcEvent),
+    GrpcRequest(GrpcRequest),
+    HttpRequest(HttpRequest),
+    HttpResponse(HttpResponse),
+    Plugin(Plugin),
+    Settings(Settings),
+    KeyValue(KeyValue),
+    Workspace(Workspace),
 }

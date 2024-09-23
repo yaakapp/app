@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Folder } from '@yaakapp/api';
+import type { Folder } from '@yaakapp-internal/models';
 import { getFolder } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

@@ -1,4 +1,4 @@
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
@@ -161,8 +161,8 @@ export function TextViewer({ response, pretty, className }: Props) {
     pretty && language === 'json'
       ? tryFormatJson(rawBody.data)
       : pretty && (language === 'xml' || language === 'html')
-      ? tryFormatXml(rawBody.data)
-      : rawBody.data;
+        ? tryFormatXml(rawBody.data)
+        : rawBody.data;
 
   let body;
   if (isSearching && filterText?.length > 0) {

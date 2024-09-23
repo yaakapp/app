@@ -1,4 +1,4 @@
-import type { HttpRequest, HttpResponse } from '@yaakapp/api';
+import type { HttpRequest, HttpResponse } from '@yaakapp-internal/models';
 import { useHttpResponses } from './useHttpResponses';
 import { useKeyValue } from './useKeyValue';
 import { useLatestHttpResponse } from './useLatestHttpResponse';

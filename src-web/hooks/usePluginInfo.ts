@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { BootResponse } from '@yaakapp/api';
+import type { BootResponse } from '@yaakapp-internal/plugin';
 import { invokeCmd } from '../lib/tauri';
 
 export function usePluginInfo(id: string) {

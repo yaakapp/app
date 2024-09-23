@@ -1,4 +1,4 @@
-import type { Plugin } from '@yaakapp/api';
+import type { Plugin } from '@yaakapp-internal/models';
 import { open } from '@tauri-apps/plugin-shell';
 import React from 'react';
 import { useInstallPlugin } from '../../hooks/useInstallPlugin';

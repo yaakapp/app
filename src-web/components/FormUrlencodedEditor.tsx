@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { HttpRequest } from '@yaakapp/api';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import type { Pair, PairEditorProps } from './core/PairEditor';
 import { PairOrBulkEditor } from './core/PairOrBulkEditor';
 

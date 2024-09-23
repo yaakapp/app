@@ -6,7 +6,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useRef, useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { useDebouncedState } from '../../hooks/useDebouncedState';
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import './PdfViewer.css';
 
 interface Props {

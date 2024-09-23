@@ -1,4 +1,4 @@
-import type { HttpResponse } from '@yaakapp/api';
+import type { HttpResponse } from '@yaakapp-internal/models';
 import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { isJSON, languageFromContentType } from '../../lib/contentType';

@@ -1,5 +1,5 @@
 {
-  "name": "@yaak/plugin-runtime",
+  "name": "@yaakapp-internal/plugin-runtime",
   "scripts": {
     "dev": "nodemon",
     "build": "run-p build:*",

@@ -250,13 +250,16 @@ mod tests {
         vars.insert("a".to_string(), "aaa".to_string());
 
         let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
-        assert_eq!(result, json!([
-            123,
-            {"aaa": "aaa"},
-            null,
-            "aaa",
-            false,
-            {"x": ["aaa"]}
-        ]))
+        assert_eq!(
+            result,
+            json!([
+                123,
+                {"aaa": "aaa"},
+                null,
+                "aaa",
+                false,
+                {"x": ["aaa"]}
+            ])
+        )
     }
 }

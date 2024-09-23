@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { GrpcRequest } from '@yaakapp/api';
+import type { GrpcRequest } from '@yaakapp-internal/models';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';

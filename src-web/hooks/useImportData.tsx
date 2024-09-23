@@ -1,5 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Environment, Folder, GrpcRequest, HttpRequest, Workspace } from '@yaakapp/api';
+import type {
+  Environment,
+  Folder,
+  GrpcRequest,
+  HttpRequest,
+  Workspace,
+} from '@yaakapp-internal/models';
 import { Button } from '../components/core/Button';
 import { FormattedError } from '../components/core/FormattedError';
 import { VStack } from '../components/core/Stacks';

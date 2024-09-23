@@ -10,7 +10,7 @@ const sizes = {
 /** @type {import("tailwindcss").Config} */
 module.exports = {
   darkMode: ['class', '[data-resolved-appearance="dark"]'],
-  content: ['./index.html', './src-web/**/*.{html,js,jsx,ts,tsx}'],
+  content: ['./index.html', './**/*.{html,js,jsx,ts,tsx}'],
   theme: {
     extend: {
       opacity: {
