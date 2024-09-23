@@ -1,10 +1,9 @@
-import type { SyncModel, SyncObject } from '@yaakapp-internal/sync';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import type { SyncObject } from '@yaakapp-internal/sync';
+import { Fragment, useMemo, useState } from 'react';
 import { useSyncStage } from '../hooks/useSyncStage';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import type { CheckboxProps } from './core/Checkbox';
 import { Checkbox } from './core/Checkbox';
-import { InlineCode } from './core/InlineCode';
 
 interface TreeNode extends SyncObject {
   children: TreeNode[];
