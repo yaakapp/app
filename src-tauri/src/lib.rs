@@ -2,7 +2,7 @@ extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
@@ -66,6 +66,7 @@ use yaak_plugin_runtime::events::{
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_sync::sync::model_to_sync_object;
 use yaak_sync::sync_object::{SyncModel, SyncObjectMetadata};
+use yaak_sync::sync_stage::{generate_stage, Stage};
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -1654,15 +1655,9 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 async fn cmd_get_sync_stage(
     window: WebviewWindow,
     workspace_id: &str,
-) -> Result<Vec<SyncObjectMetadata>, String> {
-    let resources = get_workspace_export_resources(&window, vec![workspace_id]).await;
-    let mut sync_object_metadata: Vec<SyncObjectMetadata> = Vec::new();
-    for m in resources.resources.http_requests {
-        let so = model_to_sync_object(SyncModel::HttpRequest(m)).map_err(|e| e.to_string())?;
-        sync_object_metadata.push(so.metadata);
-    }
-
-    Ok(sync_object_metadata)
+) -> Result<Stage, String> {
+    let stage = generate_stage(&window.app_handle(), workspace_id).await?;
+    Ok(stage)
 }
 
 #[tauri::command]
