@@ -9,7 +9,8 @@ thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
-ts-rs = { workspace = true}
+ts-rs = { workspace = true }
+tauri = { workspace = true }
 sha1 = "0.10.6"
 hex = "0.4.3"
 base64 = "0.22.1"

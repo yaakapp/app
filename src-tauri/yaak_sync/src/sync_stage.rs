@@ -1,8 +1,9 @@
-use crate::sync_object::SyncObjectMetadata;
+use tauri::Runtime;
+use crate::sync_object::SyncObject;
 
 pub struct SyncStage {
     status: SyncStatus,
-    id: SyncObjectMetadata,
+    object: SyncObject,
 }
 
 pub enum SyncStatus {
@@ -11,3 +12,7 @@ pub enum SyncStatus {
     Modified,
     Staged,
 }
+
+// pub async fn generate_stage<R: Runtime>(app_handle: &AppHandle<R>) -> Result<SyncStage, String> {
+//     
+// }

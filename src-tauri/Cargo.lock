@@ -7737,6 +7737,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha1",
+ "tauri",
  "thiserror",
  "ts-rs",
  "yaak_models",
