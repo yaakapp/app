@@ -7,9 +7,9 @@
     "target": "es2021",
     "lib": ["es2021"],
     "noImplicitAny": false,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "build",
     "baseUrl": ".",
     "paths": {
       "*": [
@@ -19,6 +19,6 @@
     }
   },
   "include": [
-    "src/**/*"
+    "src"
   ]
 }

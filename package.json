@@ -7,12 +7,13 @@
     "url": "git+https://github.com/yaakapp/app.git"
   },
   "workspaces": [
-    "src-tauri/yaak_plugin_runtime",
-    "src-tauri/yaak_models",
-    "src-tauri/yaak_templates",
-    "src-web",
     "plugin-runtime",
-    "plugin-runtime-types"
+    "plugin-runtime-types",
+    "src-tauri/yaak_models",
+    "src-tauri/yaak_plugin_runtime",
+    "src-tauri/yaak_sync",
+    "src-tauri/yaak_templates",
+    "src-web"
   ],
   "scripts": {
     "app-build": "tauri build",
