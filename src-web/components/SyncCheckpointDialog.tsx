@@ -77,7 +77,7 @@ export function SyncCheckpointDialog() {
       <SplitLayout
         name="commit"
         layout="vertical"
-        defaultRatio={0.25}
+        defaultRatio={0.3}
         firstSlot={({ style }) => (
           <div style={style} className="h-full overflow-y-auto -ml-1">
             <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} state={addedIds} />
