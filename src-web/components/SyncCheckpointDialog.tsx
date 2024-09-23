@@ -73,34 +73,36 @@ export function SyncCheckpointDialog() {
   }
 
   return (
-    <SplitLayout
-      name="commit"
-      layout="vertical"
-      defaultRatio={0.25}
-      firstSlot={({ style }) => (
-        <div style={style} className="h-full overflow-y-auto -ml-1">
-          <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} state={addedIds} />
-        </div>
-      )}
-      secondSlot={({ style }) => (
-        <div style={style} className="grid grid-rows-[minmax(0,1fr)_auto] gap-3 pb-2">
-          <div className="bg-surface-highlight border border-border rounded-md overflow-hidden">
-            <Editor
-              className="!text-base font-sans h-full rounded-md"
-              placeholder="Commit message..."
-            />
+    <div className="grid grid-rows-1 h-full">
+      <SplitLayout
+        name="commit"
+        layout="vertical"
+        defaultRatio={0.25}
+        firstSlot={({ style }) => (
+          <div style={style} className="h-full overflow-y-auto -ml-1">
+            <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} state={addedIds} />
           </div>
-          <HStack justifyContent="end" space={2}>
-            <Button color="secondary" size="sm">
-              Commit
-            </Button>
-            <Button color="secondary" size="sm">
-              Commit and Push
-            </Button>
-          </HStack>
-        </div>
-      )}
-    />
+        )}
+        secondSlot={({ style }) => (
+          <div style={style} className="grid grid-rows-[minmax(0,1fr)_auto] gap-3 pb-2">
+            <div className="bg-surface-highlight border border-border rounded-md overflow-hidden">
+              <Editor
+                className="!text-base font-sans h-full rounded-md"
+                placeholder="Commit message..."
+              />
+            </div>
+            <HStack justifyContent="end" space={2}>
+              <Button color="secondary" size="sm">
+                Commit
+              </Button>
+              <Button color="secondary" size="sm">
+                Commit and Push
+              </Button>
+            </HStack>
+          </div>
+        )}
+      />
+    </div>
   );
 }
 
