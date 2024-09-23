@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict } from 'date-fns';
 import { useDeleteGrpcConnection } from '../hooks/useDeleteGrpcConnection';
 import { useDeleteGrpcConnections } from '../hooks/useDeleteGrpcConnections';
-import type { GrpcConnection } from '@yaakapp/api';
+import type { GrpcConnection } from '@yaakapp-internal/models';
 import { count } from '../lib/pluralize';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';

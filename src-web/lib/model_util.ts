@@ -1,4 +1,10 @@
-import type { Cookie, GrpcConnection, HttpResponse, HttpResponseHeader, Model } from '@yaakapp/api';
+import type {
+  AnyModel,
+  Cookie,
+  GrpcConnection,
+  HttpResponse,
+  HttpResponseHeader,
+} from '@yaakapp-internal/models';
 
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
@@ -30,7 +36,7 @@ export function isResponseLoading(response: HttpResponse | GrpcConnection): bool
   return response.elapsed === 0;
 }
 
-export function modelsEq(a: Model, b: Model) {
+export function modelsEq(a: AnyModel, b: AnyModel) {
   if (a.model != b.model) {
     return false;
   }

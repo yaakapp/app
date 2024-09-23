@@ -1,6 +1,6 @@
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
 import { useUpdateAnyHttpRequest } from '../hooks/useUpdateAnyHttpRequest';
-import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
+import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import { Input } from './core/Input';
 import { VStack } from './core/Stacks';
 

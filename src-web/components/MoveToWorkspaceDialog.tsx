@@ -1,4 +1,4 @@
-import type { GrpcRequest, HttpRequest } from '@yaakapp/api';
+import type { GrpcRequest, HttpRequest } from '@yaakapp-internal/models';
 import React, { useState } from 'react';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';

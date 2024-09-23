@@ -8,7 +8,7 @@ import {
   SendHttpRequestRequest,
   SendHttpRequestResponse,
   ShowToastRequest,
-} from '../gen/events';
+} from '..';
 
 export type Context = {
   clipboard: {

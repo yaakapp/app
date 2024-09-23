@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Settings } from '@yaakapp/api';
+import type { Settings } from '@yaakapp-internal/models';
 import { getSettings } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

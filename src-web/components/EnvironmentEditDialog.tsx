@@ -9,7 +9,7 @@ import { useKeyValue } from '../hooks/useKeyValue';
 import { usePrompt } from '../hooks/usePrompt';
 import { useUpdateEnvironment } from '../hooks/useUpdateEnvironment';
 import { useUpdateWorkspace } from '../hooks/useUpdateWorkspace';
-import type { Environment, Workspace } from '@yaakapp/api';
+import type { Environment, Workspace } from '@yaakapp-internal/models';
 import { Button } from './core/Button';
 import { ContextMenu } from './core/Dropdown';
 import type {

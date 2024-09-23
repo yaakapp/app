@@ -1,4 +1,4 @@
-import type { Workspace } from '@yaakapp/api';
+import type { Workspace } from '@yaakapp-internal/models';
 import { atom, useAtomValue } from 'jotai';
 import { listWorkspaces } from '../lib/store';
 

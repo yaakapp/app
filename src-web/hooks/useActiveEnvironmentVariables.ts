@@ -1,4 +1,4 @@
-import type { EnvironmentVariable } from '@yaakapp/api';
+import type { EnvironmentVariable } from '@yaakapp-internal/models';
 import { useMemo } from 'react';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveWorkspace } from './useActiveWorkspace';

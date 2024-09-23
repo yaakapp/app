@@ -1,4 +1,4 @@
-import type { GrpcRequest } from '@yaakapp/api';
+import type { GrpcRequest } from '@yaakapp-internal/models';
 import { atom, useAtom } from 'jotai';
 import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';

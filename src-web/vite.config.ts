@@ -1,7 +1,7 @@
+import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { internalIpV4 } from 'internal-ip';
 import { createRequire } from 'node:module';
-import path from 'node:path';
 import { defineConfig, normalizePath } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import svgr from 'vite-plugin-svgr';
@@ -42,9 +42,6 @@ export default defineConfig(async () => ({
           port: 1421,
         }
       : undefined,
-    watch: {
-      ignored: ['**/src-tauri/**', '**/designs/**', '**/plugins/**'],
-    },
   },
   envPrefix: ['VITE_', 'TAURI_'],
 }));

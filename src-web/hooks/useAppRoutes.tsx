@@ -1,4 +1,4 @@
-import type { Environment } from '@yaakapp/api';
+import type { Environment } from '@yaakapp-internal/models';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QUERY_COOKIE_JAR_ID } from './useActiveCookieJar';

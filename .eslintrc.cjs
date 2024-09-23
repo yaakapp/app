@@ -17,9 +17,8 @@ module.exports = {
     'plugin-runtime/**/*',
     'plugin-runtime-types/**/*',
     'src-tauri/**/*',
-    'plugins/**/*',
-    'tailwind.config.cjs',
-    'vite.config.ts',
+    'src-web/tailwind.config.cjs',
+    'src-web/vite.config.ts',
   ],
   settings: {
     react: {

@@ -1,4 +1,4 @@
-import { CallHttpRequestActionArgs, HttpRequestAction } from '../gen/events';
+import { CallHttpRequestActionArgs, HttpRequestAction } from '..';
 import { Context } from './Context';
 
 export type HttpRequestActionPlugin = HttpRequestAction & {

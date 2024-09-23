@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2021",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "useDefineForClassFields": true,
     "allowJs": false,
     "skipLibCheck": true,
@@ -18,8 +22,10 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src-web",
-    "src-web/modules.d.ts",
+    "."
+  ],
+  "exclude": [
+    "vite.config.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

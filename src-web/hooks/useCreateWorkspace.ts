@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Workspace } from '@yaakapp/api';
+import type { Workspace } from '@yaakapp-internal/models';
 import { invokeCmd } from '../lib/tauri';
 import { useAppRoutes } from './useAppRoutes';
 import { usePrompt } from './usePrompt';

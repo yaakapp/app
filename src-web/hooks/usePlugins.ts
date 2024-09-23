@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Plugin } from '@yaakapp/api';
+import type { Plugin } from '@yaakapp-internal/models';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import { minPromiseMillis } from '../lib/minPromiseMillis';
 import { listPlugins } from '../lib/store';

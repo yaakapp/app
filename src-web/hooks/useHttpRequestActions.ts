@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import type { HttpRequest } from '@yaakapp-internal/models';
 import type {
   CallHttpRequestActionRequest,
   GetHttpRequestActionsResponse,
-  HttpRequest,
-} from '@yaakapp/api';
+} from '@yaakapp-internal/plugin';
 import { invokeCmd } from '../lib/tauri';
 import { usePluginsKey } from './usePlugins';
 

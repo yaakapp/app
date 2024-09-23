@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Environment } from '@yaakapp/api';
+import type { Environment } from '@yaakapp-internal/models';
 import { getEnvironment } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 

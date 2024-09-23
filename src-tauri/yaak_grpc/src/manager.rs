@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -75,7 +75,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
-        metadata: HashMap<String, String>,
+        metadata: BTreeMap<String, String>,
     ) -> Result<Response<DynamicMessage>, StreamError> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
@@ -102,7 +102,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<DynamicMessage>,
-        metadata: HashMap<String, String>,
+        metadata: BTreeMap<String, String>,
     ) -> Result<Response<Streaming<DynamicMessage>>, StreamError> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
@@ -122,7 +122,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         stream: ReceiverStream<DynamicMessage>,
-        metadata: HashMap<String, String>,
+        metadata: BTreeMap<String, String>,
     ) -> Result<Response<DynamicMessage>, StreamError> {
         let method = &self.method(&service, &method)?;
         let mut client = tonic::client::Grpc::with_origin(self.conn.clone(), self.uri.clone());
@@ -146,7 +146,7 @@ impl GrpcConnection {
         service: &str,
         method: &str,
         message: &str,
-        metadata: HashMap<String, String>,
+        metadata: BTreeMap<String, String>,
     ) -> Result<Response<Streaming<DynamicMessage>>, StreamError> {
         let method = &self.method(&service, &method)?;
         let input_message = method.input();
@@ -170,12 +170,12 @@ impl GrpcConnection {
 
 pub struct GrpcHandle {
     app_handle: AppHandle,
-    pools: HashMap<String, DescriptorPool>,
+    pools: BTreeMap<String, DescriptorPool>,
 }
 
 impl GrpcHandle {
     pub fn new(app_handle: &AppHandle) -> Self {
-        let pools = HashMap::new();
+        let pools = BTreeMap::new();
         Self {
             pools,
             app_handle: app_handle.clone(),
@@ -268,7 +268,7 @@ impl GrpcHandle {
     }
 }
 
-fn decorate_req<T>(metadata: HashMap<String, String>, req: &mut Request<T>) -> Result<(), String> {
+fn decorate_req<T>(metadata: BTreeMap<String, String>, req: &mut Request<T>) -> Result<(), String> {
     for (k, v) in metadata {
         req.metadata_mut().insert(
             MetadataKey::from_str(k.as_str()).map_err(|e| e.to_string())?,

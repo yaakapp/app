@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import type { Workspace } from '@yaakapp/api';
+import type { Workspace } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';

@@ -1,4 +1,10 @@
-import type { Folder, GrpcRequest, HttpRequest, Model, Workspace } from '@yaakapp/api';
+import type {
+  AnyModel,
+  Folder,
+  GrpcRequest,
+  HttpRequest,
+  Workspace,
+} from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import React, { Fragment, useCallback, useMemo, useRef, useState } from 'react';
@@ -575,7 +581,7 @@ type SidebarItemProps = {
   itemId: string;
   itemName: string;
   itemFallbackName: string;
-  itemModel: Model['model'];
+  itemModel: AnyModel['model'];
   itemPrefix: ReactNode;
   useProminentStyles?: boolean;
   selected: boolean;

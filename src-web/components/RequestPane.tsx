@@ -1,4 +1,4 @@
-import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp/api';
+import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
