@@ -1,7 +1,6 @@
 {
   "name": "@yaakapp-internal/plugin-runtime",
   "scripts": {
-    "dev": "nodemon",
     "build": "run-p build:*",
     "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=build/index.cjs",
     "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=build/index.worker.cjs",
@@ -16,8 +15,6 @@
   "devDependencies": {
     "@types/intercept-stdout": "^0.1.3",
     "grpc-tools": "^1.12.4",
-    "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2",
     "ts-proto": "^2.2.0"
   }
 }
