@@ -32,7 +32,7 @@
     "classnames": "^2.5.1",
     "cm6-graphql": "^0.0.9",
     "codemirror": "^6.0.1",
-    "codemirror-json-schema": "^0.7.8",
+    "codemirror-json-schema": "^0.6.1",
     "date-fns": "^3.6.0",
     "eventemitter3": "^5.0.1",
     "fast-fuzzy": "^1.12.0",
