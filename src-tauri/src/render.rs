@@ -15,7 +15,7 @@ pub async fn render_template<R: Runtime>(
     e: Option<&Environment>,
 ) -> String {
     let cb = &*app_handle.state::<PluginTemplateCallback>();
-    let vars = &variables_from_environment(w, e, cb).await;
+    let vars = &make_vars_hashmap(w, e);
     render(template, vars, cb).await
 }
 
@@ -26,7 +26,7 @@ pub async fn render_grpc_request<R: Runtime>(
     e: Option<&Environment>,
 ) -> GrpcRequest {
     let cb = &*app_handle.state::<PluginTemplateCallback>();
-    let vars = &variables_from_environment(w, e, cb).await;
+    let vars = &make_vars_hashmap(w, e);
 
     let mut metadata = Vec::new();
     for p in r.metadata.clone() {
@@ -58,7 +58,7 @@ pub async fn render_http_request(
     e: Option<&Environment>,
     cb: &PluginTemplateCallback,
 ) -> HttpRequest {
-    let vars = &variables_from_environment(w, e, cb).await;
+    let vars = &make_vars_hashmap(w, e);
 
     let mut url_parameters = Vec::new();
     for p in r.url_parameters.clone() {
@@ -99,32 +99,9 @@ pub async fn render_http_request(
     }
 }
 
-pub async fn recursively_render_variables<'s, T: TemplateCallback>(
-    m: &HashMap<String, String>,
-    render_count: usize,
-    cb: &T,
-) -> HashMap<String, String> {
-    let mut did_render = false;
-    let mut new_map = m.clone();
-    for (k, v) in m.clone() {
-        let rendered = Box::pin(render(v.as_str(), m, cb)).await;
-        if rendered != v {
-            did_render = true
-        }
-        new_map.insert(k, rendered);
-    }
-
-    if did_render && render_count <= 3 {
-        new_map = Box::pin(recursively_render_variables(&new_map, render_count + 1, cb)).await;
-    }
-
-    new_map
-}
-
-pub async fn variables_from_environment<T: TemplateCallback>(
+pub fn make_vars_hashmap(
     workspace: &Workspace,
     environment: Option<&Environment>,
-    cb: &T,
 ) -> HashMap<String, String> {
     let mut variables = HashMap::new();
     variables = add_variable_to_map(variables, &workspace.variables);
@@ -133,7 +110,7 @@ pub async fn variables_from_environment<T: TemplateCallback>(
         variables = add_variable_to_map(variables, &e.variables);
     }
 
-    recursively_render_variables(&variables, 0, cb).await
+    variables
 }
 
 pub async fn render<T: TemplateCallback>(
