@@ -291,8 +291,8 @@ impl PluginManager {
     }
 
     async fn send_and_wait(&self, payload: &InternalEventPayload) -> Result<Vec<InternalEvent>> {
-        self.send_to_plugins_and_wait(payload, self.plugins.lock().await.clone())
-            .await
+        let plugins = { self.plugins.lock().await.clone() };
+        self.send_to_plugins_and_wait(payload, plugins).await
     }
 
     async fn send_to_plugins_and_wait(
