@@ -1,10 +1,12 @@
+import { lazy } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
 import { DefaultLayout } from './DefaultLayout';
 import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 import RouteError from './RouteError';
-import { Settings } from './Settings/Settings';
-import Workspace from './Workspace';
+
+const LazyWorkspace = lazy(() => import('./Workspace'));
+const LazySettings = lazy(() => import('./Settings/Settings'));
 
 const router = createBrowserRouter([
   {
@@ -24,14 +26,14 @@ const router = createBrowserRouter([
         path: routePaths.workspace({
           workspaceId: ':workspaceId',
         }),
-        element: <Workspace />,
+        element: <LazyWorkspace />,
       },
       {
         path: routePaths.request({
           workspaceId: ':workspaceId',
           requestId: ':requestId',
         }),
-        element: <Workspace />,
+        element: <LazyWorkspace />,
       },
       {
         path: '/workspaces/:workspaceId/environments/:environmentId/requests/:requestId',
@@ -41,7 +43,7 @@ const router = createBrowserRouter([
         path: routePaths.workspaceSettings({
           workspaceId: ':workspaceId',
         }),
-        element: <Settings />,
+        element: <LazySettings />,
       },
     ],
   },
