@@ -53,7 +53,6 @@ impl PluginRuntime for PluginRuntimeServerImpl {
         let (to_plugin_tx, to_plugin_rx) = mpsc::channel::<tonic::Result<EventStreamEvent>>(128);
         let mut app_to_plugin_events_tx = self.app_to_plugin_events_tx.lock().await;
         *app_to_plugin_events_tx = Some(to_plugin_tx);
-        println!("GRPC CLIENT CONNECTED");
 
         let plugin_to_app_events_tx = self.plugin_to_app_events_tx.clone();
         let client_disconnect_tx = self.client_disconnect_tx.clone();

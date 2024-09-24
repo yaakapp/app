@@ -214,12 +214,10 @@ function HttpRequestArg({
       onChange={onChange}
       value={value}
       options={[
-        ...httpRequests
-          .filter((r) => r.id != activeRequest?.id)
-          .map((r) => ({
-            label: fallbackRequestName(r),
-            value: r.id,
-          })),
+        ...httpRequests.map((r) => ({
+          label: fallbackRequestName(r) + (activeRequest?.id === r.id ? ' (current)' : ''),
+          value: r.id,
+        })),
       ]}
     />
   );
