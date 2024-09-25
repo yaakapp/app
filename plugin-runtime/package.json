@@ -2,8 +2,8 @@
   "name": "@yaakapp-internal/plugin-runtime",
   "scripts": {
     "build": "run-p build:*",
-    "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=build/index.cjs",
-    "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=build/index.worker.cjs",
+    "build:main": "esbuild src/index.ts --bundle --platform=node --outfile=../src-tauri/vendored/plugin-runtime/index.cjs",
+    "build:worker": "esbuild src/index.worker.ts --bundle --platform=node --outfile=../src-tauri/vendored/plugin-runtime/index.worker.cjs",
     "build:proto": "grpc_tools_node_protoc --ts_proto_out=src/gen --ts_proto_opt=outputServices=nice-grpc,outputServices=generic-definitions,useExactTypes=false --proto_path=../proto ../proto/plugins/*.proto"
   },
   "dependencies": {

@@ -126,7 +126,7 @@ impl PluginManager {
     pub async fn list_plugin_dirs<R: Runtime>(&self, app_handle: &AppHandle<R>) -> Vec<String> {
         let plugins_dir = app_handle
             .path()
-            .resolve("plugins", BaseDirectory::Resource)
+            .resolve("vendored/plugins", BaseDirectory::Resource)
             .expect("failed to resolve plugin directory resource");
 
         let bundled_plugin_dirs = read_plugins_dir(&plugins_dir)

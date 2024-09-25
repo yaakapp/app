@@ -22,7 +22,7 @@ pub async fn start_nodejs_plugin_runtime<R: Runtime>(
 ) -> Result<()> {
     let plugin_runtime_main = app
         .path()
-        .resolve("plugin-runtime", BaseDirectory::Resource)?
+        .resolve("vendored/plugin-runtime", BaseDirectory::Resource)?
         .join("index.cjs");
 
     // HACK: Remove UNC prefix for Windows paths to pass to sidecar
