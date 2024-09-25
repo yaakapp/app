@@ -1,12 +1,9 @@
 import { emit, listen } from '@tauri-apps/api/event';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { ModelPayload } from './components/GlobalHooks';
 import { getSettings } from './lib/store';
-import type {
-  Appearance} from './lib/theme/appearance';
-import {
-  getCSSAppearance,
-  subscribeToPreferredAppearance,
-} from './lib/theme/appearance';
+import type { Appearance } from './lib/theme/appearance';
+import { getCSSAppearance, subscribeToPreferredAppearance } from './lib/theme/appearance';
 import { getResolvedTheme } from './lib/theme/themes';
 import type { YaakTheme } from './lib/theme/window';
 import { addThemeStylesToDocument, setThemeOnDocument } from './lib/theme/window';
@@ -18,7 +15,15 @@ subscribeToPreferredAppearance(async (a) => {
   preferredAppearance = a;
   await configureTheme();
 });
-configureTheme().catch(console.error);
+
+configureTheme().then(
+  async () => {
+    // To prevent theme flashing, the backend hides new windows by default, so we
+    // need to show it here, after configuring the theme for the first time.
+    await getCurrentWebviewWindow().show();
+  },
+  (err) => console.log('Failed to configure theme', err),
+);
 
 // Listen for settings changes, the re-compute theme
 listen<ModelPayload>('upserted_model', async (event) => {
