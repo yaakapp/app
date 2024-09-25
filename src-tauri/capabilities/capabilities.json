@@ -35,12 +35,12 @@
     "core:window:allow-is-fullscreen",
     "core:window:allow-maximize",
     "core:window:allow-minimize",
-    "core:window:allow-toggle-maximize",
     "core:window:allow-set-decorations",
     "core:window:allow-set-title",
     "core:window:allow-start-dragging",
-    "core:window:allow-unmaximize",
     "core:window:allow-theme",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-unmaximize",
     "clipboard-manager:allow-read-text",
     "clipboard-manager:allow-write-text"
   ]

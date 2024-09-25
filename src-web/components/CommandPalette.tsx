@@ -1,11 +1,10 @@
 import classNames from 'classnames';
 import { search } from 'fast-fuzzy';
 import type { KeyboardEvent, ReactNode } from 'react';
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveEnvironment } from '../hooks/useActiveEnvironment';
 import { useActiveRequest } from '../hooks/useActiveRequest';
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCreateEnvironment } from '../hooks/useCreateEnvironment';
 import { useCreateGrpcRequest } from '../hooks/useCreateGrpcRequest';
@@ -17,6 +16,7 @@ import { useEnvironments } from '../hooks/useEnvironments';
 import type { HotkeyAction } from '../hooks/useHotKey';
 import { useHotKey } from '../hooks/useHotKey';
 import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
+import { useOpenSettings } from '../hooks/useOpenSettings';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -28,7 +28,6 @@ import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useWorkspaces } from '../hooks/useWorkspaces';
 import { fallbackRequestName } from '../lib/fallbackRequestName';
-import { invokeCmd } from '../lib/tauri';
 import { CookieDialog } from './CookieDialog';
 import { Button } from './core/Button';
 import { Heading } from './core/Heading';
@@ -74,11 +73,11 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const createGrpcRequest = useCreateGrpcRequest();
   const createEnvironment = useCreateEnvironment();
   const dialog = useDialog();
-  const workspace = useActiveWorkspace();
   const sendRequest = useSendAnyHttpRequest();
   const renameRequest = useRenameRequest(activeRequest?.id ?? null);
   const deleteRequest = useDeleteRequest(activeRequest?.id ?? null);
   const [, setSidebarHidden] = useSidebarHidden();
+  const openSettings = useOpenSettings();
 
   const workspaceCommands = useMemo<CommandPaletteItem[]>(() => {
     const commands: CommandPaletteItem[] = [
@@ -86,14 +85,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         key: 'settings.open',
         label: 'Open Settings',
         action: 'settings.show',
-        onSelect: async () => {
-          if (workspace == null) return;
-          await invokeCmd('cmd_new_nested_window', {
-            url: routes.paths.workspaceSettings({ workspaceId: workspace.id }),
-            label: 'settings',
-            title: 'Yaak Settings',
-          });
-        },
+        onSelect: openSettings.mutate,
       },
       {
         key: 'app.create',
@@ -195,11 +187,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     deleteRequest.mutate,
     dialog,
     httpRequestActions,
+    openSettings.mutate,
     renameRequest.mutate,
-    routes.paths,
     sendRequest,
     setSidebarHidden,
-    workspace,
   ]);
 
   const sortedRequests = useMemo(() => {
