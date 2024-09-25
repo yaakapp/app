@@ -30,7 +30,7 @@ export function useImportQuerystring(requestId: string) {
         }),
       );
 
-      const urlParameters: HttpUrlParameter[] = [...request.urlParameters];
+      const urlParameters: HttpUrlParameter[] = [];
       for (const newParam of additionalUrlParameters) {
         const index = urlParameters.findIndex((p) => p.name === newParam.name);
         if (index >= 0) {

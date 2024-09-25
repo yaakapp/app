@@ -323,10 +323,11 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onPaste={(text) => {
+            onPasteOverwrite={(text) => {
               if (text.startsWith('curl ')) {
                 importCurl.mutate({ overwriteRequestId: activeRequestId, command: text });
               } else {
+                // Only import query if pasted text contains entire querystring
                 importQuerystring.mutate(text);
               }
             }}

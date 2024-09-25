@@ -35,6 +35,7 @@ export type InputProps = Omit<
     onFocus?: () => void;
     onBlur?: () => void;
     onPaste?: (value: string) => void;
+    onPasteOverwrite?: (value: string) => void;
     defaultValue?: string;
     leftSlot?: ReactNode;
     rightSlot?: ReactNode;
@@ -62,6 +63,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
     onChange,
     onFocus,
     onPaste,
+    onPasteOverwrite,
     placeholder,
     require,
     rightSlot,
@@ -179,6 +181,7 @@ export const Input = forwardRef<EditorView | undefined, InputProps>(function Inp
             placeholder={placeholder}
             onChange={handleChange}
             onPaste={onPaste}
+            onPasteOverwrite={onPasteOverwrite}
             className={editorClassName}
             onFocus={handleFocus}
             onBlur={handleBlur}
