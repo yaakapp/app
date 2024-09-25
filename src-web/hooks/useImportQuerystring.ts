@@ -14,13 +14,14 @@ export function useImportQuerystring(requestId: string) {
   return useMutation({
     mutationKey: ['import_querystring'],
     mutationFn: async (url: string) => {
-      const [baseUrl, ...rest] = url.split('?');
-      if (rest.length === 0) return;
+      const split = url.split(/\?(.*)/s);
+      const baseUrl = split[0] ?? '';
+      const querystring = split[1] ?? '';
+      if (!querystring) return;
 
       const request = await getHttpRequest(requestId);
       if (request == null) return;
 
-      const querystring = rest.join('?');
       const parsedParams = Array.from(new URLSearchParams(querystring).entries());
       const urlParameters: HttpUrlParameter[] = parsedParams.map(([name, value]) => ({
         name,
