@@ -38,7 +38,7 @@ const key = `${process.platform}_${process.env.YAAK_TARGET_ARCH ?? process.arch}
 console.log(`Vendoring protoc ${VERSION} for ${key}`);
 
 const url = URL_MAP[key];
-const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
+const tmpDir = path.join(__dirname, 'tmp-protoc');
 const binSrc = path.join(tmpDir, SRC_BIN_MAP[key]);
 const binDst = path.join(dstDir, DST_BIN_MAP[key]);
 
@@ -47,6 +47,7 @@ if (existsSync(binDst) && tryExecSync(`${binDst} --version`).trim().includes(VER
   return;
 }
 
+rmSync(tmpDir, { recursive: true, force: true });
 rmSync(dstDir, { recursive: true, force: true });
 mkdirSync(dstDir, { recursive: true });
 
@@ -64,7 +65,6 @@ mkdirSync(dstDir, { recursive: true });
   const includeSrc = path.join(tmpDir, 'include');
   const includeDst = path.join(dstDir, 'include');
   cpSync(includeSrc, includeDst, { recursive: true });
-
   rmSync(tmpDir, { recursive: true, force: true });
 
   console.log('Downloaded protoc to', binDst);

@@ -56,12 +56,12 @@
       "icons/release/icon.ico"
     ],
     "longDescription": "A cross-platform desktop app for interacting with REST, GraphQL, and gRPC",
-    "resources": {
-      "migrations": "migrations",
-      "vendored/protoc/include": "protoc-include",
-      "vendored/plugins": "plugins",
-      "../plugin-runtime/build": "plugin-runtime"
-    },
+    "resources": [
+      "migrations",
+      "vendored/protoc/include",
+      "vendored/plugins",
+      "vendored/plugin-runtime"
+    ],
     "shortDescription": "Play with APIs, intuitively",
     "targets": [
       "app",

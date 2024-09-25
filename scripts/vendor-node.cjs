@@ -47,10 +47,11 @@ if (existsSync(binDest) && tryExecSync(`${binDest} --version`).trim() === NODE_V
 rmSync(destDir, { recursive: true, force: true });
 mkdirSync(destDir, { recursive: true });
 
-(async function () {
-  const url = URL_MAP[key];
-  const tmpDir = path.join(__dirname, 'tmp', Date.now().toString());
+const url = URL_MAP[key];
+const tmpDir = path.join(__dirname, 'tmp-node');
+rmSync(tmpDir, { recursive: true, force: true });
 
+(async function () {
   // Download GitHub release artifact
   const { filePath } = await new Downloader({ url, directory: tmpDir }).download();
 
