@@ -419,8 +419,8 @@ export const RequestPane = memo(function RequestPane({
                 <GraphQLEditor
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  onChange={handleBodyTextChange}
+                  body={activeRequest.body}
+                  onChange={handleBodyChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
                 <FormUrlencodedEditor

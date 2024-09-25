@@ -225,7 +225,22 @@ pub async fn send_http_request<R: Runtime>(
 
     let request_body = rendered_request.body;
     if let Some(body_type) = &rendered_request.body_type {
-        if request_body.contains_key("text") {
+        if request_body.contains_key("query") && request_body.contains_key("variables") {
+            let query = get_str_h(&request_body, "query");
+            let variables = get_str_h(&request_body, "variables");
+            let body = if variables.trim().is_empty() {
+                format!(
+                    r#"{{"query":{}}}"#,
+                    serde_json::to_string(query).unwrap_or_default()
+                )
+            } else {
+                format!(
+                    r#"{{"query":{},"variables":{variables}}}"#,
+                    serde_json::to_string(query).unwrap_or_default()
+                )
+            };
+            request_builder = request_builder.body(body.to_owned());
+        } else if request_body.contains_key("text") {
             let body = get_str_h(&request_body, "text");
             request_builder = request_builder.body(body.to_owned());
         } else if body_type == "application/x-www-form-urlencoded"
@@ -498,7 +513,7 @@ fn replace_path_placeholder(p: &HttpUrlParameter, url: &str) -> String {
     if !p.enabled {
         return url.to_string();
     }
-    
+
     if !p.name.starts_with(":") {
         return url.to_string();
     }
