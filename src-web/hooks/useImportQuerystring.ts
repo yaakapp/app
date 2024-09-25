@@ -22,18 +22,11 @@ export function useImportQuerystring(requestId: string) {
 
       const querystring = rest.join('?');
       const parsedParams = Array.from(new URLSearchParams(querystring).entries());
-      const additionalUrlParameters: HttpUrlParameter[] = parsedParams.map(
-        ([name, value]): HttpUrlParameter => ({
-          name,
-          value,
-          enabled: true,
-        }),
-      );
-
-      const urlParameters: HttpUrlParameter[] = [];
-      for (const newParam of additionalUrlParameters) {
-        urlParameters.push(newParam);
-      }
+      const urlParameters: HttpUrlParameter[] = parsedParams.map(([name, value]) => ({
+        name,
+        value,
+        enabled: true,
+      }));
 
       await updateRequest.mutateAsync({
         id: requestId,
@@ -43,11 +36,11 @@ export function useImportQuerystring(requestId: string) {
         },
       });
 
-      if (additionalUrlParameters.length > 0) {
+      if (urlParameters.length > 0) {
         toast.show({
           id: 'querystring-imported',
           color: 'info',
-          message: `Imported ${additionalUrlParameters.length} ${pluralize('param', additionalUrlParameters.length)} from URL`,
+          message: `Extracted ${urlParameters.length} ${pluralize('parameter', urlParameters.length)} from URL`,
         });
       }
 
