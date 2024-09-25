@@ -27,7 +27,7 @@ export function SettingsDropdown() {
 
   const showSettings = async () => {
     if (!workspace) return;
-    await invokeCmd('cmd_new_nested_window', {
+    await invokeCmd('cmd_new_window', {
       url: routes.paths.workspaceSettings({ workspaceId: workspace.id }),
       label: 'settings',
       title: 'Yaak Settings',

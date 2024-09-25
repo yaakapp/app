@@ -2,7 +2,11 @@ use hex_color::HexColor;
 use log::warn;
 use objc::{msg_send, sel, sel_impl};
 use rand::{distributions::Alphanumeric, Rng};
-use tauri::{plugin::{Builder, TauriPlugin}, Manager, Runtime, Window, WindowEvent, Emitter, Listener};
+use tauri::{
+    plugin::{Builder, TauriPlugin},
+    Emitter, Listener, Manager, Runtime, Window, WindowEvent,
+};
+use crate::MAIN_WINDOW_PREFIX;
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
 const WINDOW_CONTROL_PAD_Y: f64 = 18.0;
@@ -127,7 +131,7 @@ fn update_window_theme<R: Runtime>(window: Window<R>, color: HexColor) {
 
 #[cfg(target_os = "macos")]
 fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64, label: String) {
-    if label.starts_with("nested_") {
+    if !label.starts_with(MAIN_WINDOW_PREFIX) {
         return;
     }
 

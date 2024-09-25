@@ -26,7 +26,7 @@ export function useOpenWorkspace() {
           requestId != null
             ? routes.paths.request({ ...baseArgs, requestId })
             : routes.paths.workspace({ ...baseArgs });
-        await invokeCmd('cmd_new_window', { url: path });
+        await invokeCmd('cmd_new_main_window', { url: path });
       } else {
         if (requestId != null) {
           routes.navigate('request', { ...baseArgs, requestId });

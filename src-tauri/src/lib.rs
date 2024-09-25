@@ -2,7 +2,7 @@ extern crate core;
 #[cfg(target_os = "macos")]
 extern crate objc;
 
-use std::collections::{BTreeMap};
+use std::collections::BTreeMap;
 use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
@@ -1649,19 +1649,25 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
-    create_window(&app_handle, url);
-    Ok(())
-}
-
-#[tauri::command]
-async fn cmd_new_nested_window(
-    window: WebviewWindow,
+async fn cmd_new_window(
+    app_handle: AppHandle,
     url: &str,
     label: &str,
     title: &str,
 ) -> Result<(), String> {
-    create_nested_window(&window, label, url, title);
+    let label = format!("simple_{label}");
+    let config = CreateWindowConfig {
+        label: label.as_str(),
+        title,
+        url,
+    };
+    create_window(&app_handle, config);
+    Ok(())
+}
+
+#[tauri::command]
+async fn cmd_new_main_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
+    create_main_window(&app_handle, url);
     Ok(())
 }
 
@@ -1810,8 +1816,8 @@ pub fn run() {
             cmd_list_plugins,
             cmd_list_workspaces,
             cmd_metadata,
-            cmd_new_nested_window,
             cmd_new_window,
+            cmd_new_main_window,
             cmd_parse_template,
             cmd_plugin_info,
             cmd_reload_plugins,
@@ -1844,7 +1850,7 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    let w = create_window(app_handle, "/");
+                    let w = create_main_window(app_handle, "/");
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&w).await;
                         debug!("Launched Yaak {:?}", info);
@@ -1866,7 +1872,9 @@ pub fn run() {
                     tauri::async_runtime::spawn(async move {
                         let val: State<'_, Mutex<YaakUpdater>> = h.state();
                         let update_mode = get_update_mode(&h).await;
-                        _ = val.lock().await.check(&h, update_mode).await;
+                        if let Err(e) = val.lock().await.check(&h, update_mode).await {
+                            warn!("Failed to check for updates {e:?}");
+                        };
                     });
 
                     let h = app_handle.clone();
@@ -1897,47 +1905,23 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_nested_window(
-    window: &WebviewWindow,
-    label: &str,
-    url: &str,
-    title: &str,
-) -> WebviewWindow {
-    info!("Create new nested window label={label}");
-    let mut win_builder = tauri::WebviewWindowBuilder::new(
-        window,
-        format!("nested_{}_{}", window.label(), label),
-        WebviewUrl::App(url.into()),
-    )
-    .resizable(true)
-    .fullscreen(false)
-    .disable_drag_drop_handler() // Required for frontend Dnd on windows
-    .title(title)
-    .parent(&window)
-    .unwrap()
-    .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
-    .inner_size(DEFAULT_WINDOW_WIDTH * 0.7, DEFAULT_WINDOW_HEIGHT * 0.9);
-
-    // Add macOS-only things
-    #[cfg(target_os = "macos")]
-    {
-        win_builder = win_builder
-            .hidden_title(true)
-            .title_bar_style(TitleBarStyle::Overlay);
-    }
-
-    // Add non-macOS things
-    #[cfg(not(target_os = "macos"))]
-    {
-        win_builder = win_builder.decorations(false);
-    }
-
-    let win = win_builder.build().expect("failed to build window");
-
-    win
+fn create_main_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+    let label = format!("{MAIN_WINDOW_PREFIX}{}", handle.webview_windows().len());
+    let config = CreateWindowConfig {
+        url,
+        label: label.as_str(),
+        title: "Yaak",
+    };
+    create_window(handle, config)
 }
 
-fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+struct CreateWindowConfig<'s> {
+    url: &'s str,
+    label: &'s str,
+    title: &'s str,
+}
+
+fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindow {
     #[allow(unused_variables)]
     let menu = app_menu(handle).unwrap();
 
@@ -1945,11 +1929,11 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     #[cfg(not(target_os = "linux"))]
     handle.set_menu(menu).expect("Failed to set app menu");
 
-    let window_num = handle.webview_windows().len();
-    let label = format!("{MAIN_WINDOW_PREFIX}{window_num}");
-    info!("Create new window label={label}");
+    info!("Create new window label={}", config.label);
+
     let mut win_builder =
-        tauri::WebviewWindowBuilder::new(handle, label, WebviewUrl::App(url.into()))
+        tauri::WebviewWindowBuilder::new(handle, config.label, WebviewUrl::App(config.url.into()))
+            .title(config.title)
             .resizable(true)
             .fullscreen(false)
             .disable_drag_drop_handler() // Required for frontend Dnd on windows
@@ -1977,7 +1961,14 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
         win_builder = win_builder.decorations(false);
     }
 
-    let win = win_builder.build().expect("failed to build window");
+    if let Some(w) = handle.webview_windows().get(config.label) {
+        info!("Webview with label {} already exists. Focusing existing", config.label);
+        w.set_focus().unwrap();
+        return w.to_owned();
+    }
+
+
+    let win = win_builder.build().unwrap();
 
     let webview_window = win.clone();
     win.on_menu_event(move |w, event| {
@@ -1994,10 +1985,13 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
             "zoom_out" => w.emit("zoom_out", true).unwrap(),
             "settings" => w.emit("settings", true).unwrap(),
             "open_feedback" => {
-                _ = webview_window
+                if let Err(e) = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.app/roadmap", None)
+                    .open("https://yaak.app/feedback", None)
+                {
+                    warn!("Failed to open feedback {e:?}")
+                }
             }
 
             // Commands for development
