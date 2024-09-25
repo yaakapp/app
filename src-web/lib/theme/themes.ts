@@ -1,4 +1,5 @@
 import type { Appearance } from './appearance';
+import { resolveAppearance } from './appearance';
 import { catppuccin } from './themes/catppuccin';
 import { github } from './themes/github';
 import { hotdogStand } from './themes/hotdog-stand';
@@ -11,7 +12,7 @@ import { isThemeDark } from './window';
 export const defaultDarkTheme = yaakDark;
 export const defaultLightTheme = yaakLight;
 
-export const yaakThemes = [
+const allThemes = [
   ...yaak,
   ...catppuccin,
   ...relaxing,
@@ -25,20 +26,12 @@ export function getThemes() {
   const dark = defaultDarkTheme;
   const light = defaultLightTheme;
 
-  const otherThemes = yaakThemes
+  const otherThemes = allThemes
     .filter((t) => t.id !== dark.id && t.id !== light.id)
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const themes = [dark, light, ...otherThemes];
   return { themes, fallback: { dark, light } };
-}
-
-export function resolveAppearance(
-  preferredAppearance: Appearance,
-  appearanceSetting: string,
-): Appearance {
-  const appearance = appearanceSetting === 'system' ? preferredAppearance : appearanceSetting;
-  return appearance === 'dark' ? 'dark' : 'light';
 }
 
 export function getResolvedTheme(

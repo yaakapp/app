@@ -1,4 +1,4 @@
-import { resolveAppearance } from '../lib/theme/themes';
+import { resolveAppearance } from '../lib/theme/appearance';
 import { usePreferredAppearance } from './usePreferredAppearance';
 import { useSettings } from './useSettings';
 

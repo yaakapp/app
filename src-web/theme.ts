@@ -1,15 +1,15 @@
 import { emit, listen } from '@tauri-apps/api/event';
 import type { ModelPayload } from './components/GlobalHooks';
 import { getSettings } from './lib/store';
-import type { Appearance } from './lib/theme/appearance';
-import { getCSSAppearance } from './lib/theme/appearance';
+import type {
+  Appearance} from './lib/theme/appearance';
+import {
+  getCSSAppearance,
+  subscribeToPreferredAppearance,
+} from './lib/theme/appearance';
 import { getResolvedTheme } from './lib/theme/themes';
 import type { YaakTheme } from './lib/theme/window';
-import {
-  addThemeStylesToDocument,
-  setThemeOnDocument,
-  subscribeToPreferredAppearance,
-} from './lib/theme/window';
+import { addThemeStylesToDocument, setThemeOnDocument } from './lib/theme/window';
 
 // NOTE: CSS appearance isn't as accurate as getting it async from the window (next step), but we want
 //  a good appearance guess so we're not waiting too long
