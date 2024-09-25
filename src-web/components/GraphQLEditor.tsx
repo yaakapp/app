@@ -20,17 +20,26 @@ type Props = Pick<EditorProps, 'heightMode' | 'className' | 'forceUpdateKey'> & 
 export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
   const { schema, isLoading, error, refetch } = useIntrospectGraphQL(baseRequest);
-  const [query, setQuery] = useState<string>(body.query ?? '');
-  const [variables, setVariables] = useState<string>(body.variables ?? '{}');
+  const [currentBody, setCurrentBody] = useState<{ query: string; variables: string }>(() => {
+    // Migrate text bodies to GraphQL format
+    // NOTE: This is how GraphQL used to be stored
+    if ('text' in body) {
+      const b = tryParseJson(body.text, {});
+      return { query: b.query ?? '', variables: JSON.stringify(b.variables ?? '', null, 2) };
+    }
+    return { query: body.query ?? '', variables: body.variables ?? '' };
+  });
 
   const handleChangeQuery = (query: string) => {
-    setQuery(query);
-    onChange({ text: undefined, query, variables });
+    const newBody = { query, variables: currentBody.variables };
+    setCurrentBody(newBody);
+    onChange(newBody);
   };
 
   const handleChangeVariables = (variables: string) => {
-    setVariables(variables);
-    onChange({ text: undefined, query, variables });
+    const newBody = { query: currentBody.query, variables };
+    setCurrentBody(newBody);
+    onChange(newBody);
   };
 
   // Refetch the schema when the URL changes
@@ -92,9 +101,9 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto]">
       <Editor
         language="graphql"
-        defaultValue={query}
-        format={formatGraphQL}
         heightMode="auto"
+        format={formatGraphQL}
+        defaultValue={currentBody.query}
         onChange={handleChangeQuery}
         placeholder="..."
         ref={editorViewRef}
@@ -108,8 +117,8 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
         <Editor
           format={tryFormatJson}
           language="json"
-          defaultValue={variables}
           heightMode="auto"
+          defaultValue={currentBody.variables}
           onChange={handleChangeVariables}
           placeholder="{}"
           useTemplating
@@ -119,4 +128,13 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
       </div>
     </div>
   );
+}
+
+function tryParseJson(text: string, fallback: unknown) {
+  try {
+    return JSON.parse(text);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return fallback;
+  }
 }
