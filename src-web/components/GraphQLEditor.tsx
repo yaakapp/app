@@ -1,77 +1,37 @@
+import type { HttpRequest } from '@yaakapp-internal/models';
+import { updateSchema } from 'cm6-graphql';
 import type { EditorView } from 'codemirror';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIntrospectGraphQL } from '../hooks/useIntrospectGraphQL';
 import { tryFormatJson } from '../lib/formatters';
-import type { HttpRequest } from '@yaakapp-internal/models';
 import { Button } from './core/Button';
 import type { EditorProps } from './core/Editor';
 import { Editor, formatGraphQL } from './core/Editor';
 import { FormattedError } from './core/FormattedError';
 import { Separator } from './core/Separator';
 import { useDialog } from './DialogContext';
-import { updateSchema } from 'cm6-graphql';
 
-type Props = Pick<
-  EditorProps,
-  'heightMode' | 'onChange' | 'defaultValue' | 'className' | 'forceUpdateKey'
-> & {
+type Props = Pick<EditorProps, 'heightMode' | 'className' | 'forceUpdateKey'> & {
   baseRequest: HttpRequest;
+  onChange: (body: HttpRequest['body']) => void;
+  body: HttpRequest['body'];
 };
 
-interface GraphQLBody {
-  query: string;
-  variables?: Record<string, string | number | boolean | null>;
-  operationName?: string;
-}
-
-export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEditorProps }: Props) {
+export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps }: Props) {
   const editorViewRef = useRef<EditorView>(null);
   const { schema, isLoading, error, refetch } = useIntrospectGraphQL(baseRequest);
-  const { query, variables } = useMemo<GraphQLBody>(() => {
-    if (defaultValue === undefined) {
-      return { query: '', variables: {} };
-    }
-    try {
-      const p = JSON.parse(defaultValue || '{}');
-      const query = p.query ?? '';
-      const variables = p.variables;
-      const operationName = p.operationName;
-      return { query, variables, operationName };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      return { query: '' };
-    }
-  }, [defaultValue]);
+  const [query, setQuery] = useState<string>(body.query ?? '');
+  const [variables, setVariables] = useState<string>(body.variables ?? '{}');
 
-  const handleChange = useCallback(
-    (b: GraphQLBody) => {
-      try {
-        onChange?.(JSON.stringify(b, null, 2));
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        // Meh, not much we can do here
-      }
-    },
-    [onChange],
-  );
+  const handleChangeQuery = (query: string) => {
+    setQuery(query);
+    onChange({ text: undefined, query, variables });
+  };
 
-  const handleChangeQuery = useCallback(
-    (query: string) => handleChange({ query, variables }),
-    [handleChange, variables],
-  );
-
-  const handleChangeVariables = useCallback(
-    (variables: string) => {
-      try {
-        handleChange({ query, variables: JSON.parse(variables || '{}') });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        // Don't do anything if invalid JSON. The user probably hasn't finished
-        // typing yet.
-      }
-    },
-    [handleChange, query],
-  );
+  const handleChangeVariables = (variables: string) => {
+    setVariables(variables);
+    onChange({ text: undefined, query, variables });
+  };
 
   // Refetch the schema when the URL changes
   useEffect(() => {
@@ -132,7 +92,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
     <div className="h-full w-full grid grid-cols-1 grid-rows-[minmax(0,100%)_auto]">
       <Editor
         language="graphql"
-        defaultValue={query ?? ''}
+        defaultValue={query}
         format={formatGraphQL}
         heightMode="auto"
         onChange={handleChangeQuery}
@@ -148,7 +108,7 @@ export function GraphQLEditor({ defaultValue, onChange, baseRequest, ...extraEdi
         <Editor
           format={tryFormatJson}
           language="json"
-          defaultValue={JSON.stringify(variables, null, 2)}
+          defaultValue={variables}
           heightMode="auto"
           onChange={handleChangeVariables}
           placeholder="{}"
