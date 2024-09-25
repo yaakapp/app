@@ -32,12 +32,7 @@ export function useImportQuerystring(requestId: string) {
 
       const urlParameters: HttpUrlParameter[] = [];
       for (const newParam of additionalUrlParameters) {
-        const index = urlParameters.findIndex((p) => p.name === newParam.name);
-        if (index >= 0) {
-          urlParameters[index]!.value = decodeURIComponent(newParam.value);
-        } else {
-          urlParameters.push(newParam);
-        }
+        urlParameters.push(newParam);
       }
 
       await updateRequest.mutateAsync({
