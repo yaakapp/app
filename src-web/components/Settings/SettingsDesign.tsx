@@ -1,9 +1,9 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import React, { useState } from 'react';
 import { useLocalStorage } from 'react-use';
-import { useThemes } from '../../hooks/useThemes';
 import { capitalize } from '../../lib/capitalize';
 import { invokeCmd } from '../../lib/tauri';
+import { getThemes } from '../../lib/theme/themes';
 import { yaakDark } from '../../lib/theme/themes/yaak';
 import { getThemeCSS } from '../../lib/theme/window';
 import { Banner } from '../core/Banner';
@@ -45,9 +45,9 @@ const icons: IconProps['icon'][] = [
   'send_horizontal',
 ];
 
-export function SettingsDesign() {
-  const themes = useThemes();
+const themes = getThemes();
 
+export function SettingsDesign() {
   const [exportDir, setExportDir] = useLocalStorage<string | null>('theme_export_dir', null);
   const [loadingExport, setLoadingExport] = useState<boolean>(false);
 

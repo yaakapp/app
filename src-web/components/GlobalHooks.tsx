@@ -25,7 +25,6 @@ import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { settingsAtom, useSettings } from '../hooks/useSettings';
-import { useSyncThemeToDocument } from '../hooks/useSyncThemeToDocument';
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 import { workspacesAtom } from '../hooks/useWorkspaces';
 import { useZoom } from '../hooks/useZoom';
@@ -39,6 +38,11 @@ import { rosePineDefault } from '../lib/theme/themes/rose-pine';
 import { yaakDark } from '../lib/theme/themes/yaak';
 import { getThemeCSS } from '../lib/theme/window';
 
+export interface ModelPayload {
+  model: AnyModel;
+  windowLabel: string;
+}
+
 export function GlobalHooks() {
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
@@ -47,7 +51,6 @@ export function GlobalHooks() {
   useRecentRequests();
 
   // Other useful things
-  useSyncThemeToDocument();
   useNotificationToast();
   useActiveWorkspaceChangedToast();
   useEnsureActiveCookieJar();
@@ -60,11 +63,6 @@ export function GlobalHooks() {
 
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
-
-  interface ModelPayload {
-    model: AnyModel;
-    windowLabel: string;
-  }
 
   const setSettings = useSetAtom(settingsAtom);
   const setWorkspaces = useSetAtom(workspacesAtom);

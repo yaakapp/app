@@ -1,3 +1,9 @@
+import type { Appearance } from './appearance';
+import {
+  getCSSAppearance,
+  getWindowAppearance,
+  subscribeToWindowAppearanceChange,
+} from './appearance';
 import { defaultDarkTheme, defaultLightTheme } from './themes';
 import { YaakColor } from './yaakColor';
 
@@ -377,4 +383,10 @@ export function deserializeTheme(theme: string, appearance: 'dark' | 'light'): Y
   }
 
   return next(JSON.parse(theme)) as YaakTheme;
+}
+
+export function subscribeToPreferredAppearance(cb: (a: Appearance) => void) {
+  cb(getCSSAppearance());
+  getWindowAppearance().then(cb);
+  subscribeToWindowAppearanceChange(cb);
 }

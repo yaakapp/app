@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import { motion } from 'framer-motion';
 import { Outlet } from 'react-router-dom';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { DialogProvider, Dialogs } from './DialogContext';
@@ -16,17 +15,14 @@ export function DefaultLayout() {
           <Toasts />
           <Dialogs />
         </>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.1, delay: 0.1 }}
+        <div
           className={classNames(
             'w-full h-full',
             osInfo?.osType === 'linux' && 'border border-border-subtle',
           )}
         >
           <Outlet />
-        </motion.div>
+        </div>
         <GlobalHooks />
       </ToastProvider>
     </DialogProvider>

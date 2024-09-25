@@ -1,5 +1,3 @@
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './components/App';
@@ -11,12 +9,6 @@ import('react-pdf').then(({ pdfjs }) => {
     import.meta.url,
   ).toString();
 });
-
-// Hide decorations here because it doesn't work in Rust for some reason (bug?)
-const osType = type();
-if (osType !== 'macos') {
-  await getCurrentWebviewWindow().setDecorations(false);
-}
 
 window.addEventListener('keydown', (e) => {
   // Hack to not go back in history on backspace. Check for document body
