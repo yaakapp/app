@@ -25,8 +25,10 @@ export function GraphQLEditor({ body, onChange, baseRequest, ...extraEditorProps
     // NOTE: This is how GraphQL used to be stored
     if ('text' in body) {
       const b = tryParseJson(body.text, {});
-      return { query: b.query ?? '', variables: JSON.stringify(b.variables ?? '', null, 2) };
+      const variables = JSON.stringify(b.variables ?? '', null, 2);
+      return { query: b.query ?? '', variables };
     }
+
     return { query: body.query ?? '', variables: body.variables ?? '' };
   });
 
