@@ -2014,6 +2014,7 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
         tauri::WebviewWindowBuilder::new(handle, config.label, WebviewUrl::App(config.url.into()))
             .title(config.title)
             .resizable(true)
+            .visible(false) // To prevent theme flashing, the frontend code calls show() immediately after configuring the theme
             .fullscreen(false)
             .disable_drag_drop_handler() // Required for frontend Dnd on windows
             .inner_size(config.inner_size.0, config.inner_size.1)
