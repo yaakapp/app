@@ -1,13 +1,11 @@
 import { open } from '@tauri-apps/plugin-shell';
 import { useRef } from 'react';
-import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useAppInfo } from '../hooks/useAppInfo';
-import { useAppRoutes } from '../hooks/useAppRoutes';
 import { useCheckForUpdates } from '../hooks/useCheckForUpdates';
 import { useExportData } from '../hooks/useExportData';
 import { useImportData } from '../hooks/useImportData';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
-import { invokeCmd } from '../lib/tauri';
+import { useOpenSettings } from '../hooks/useOpenSettings';
 import type { DropdownRef } from './core/Dropdown';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
@@ -22,19 +20,9 @@ export function SettingsDropdown() {
   const dropdownRef = useRef<DropdownRef>(null);
   const dialog = useDialog();
   const checkForUpdates = useCheckForUpdates();
-  const routes = useAppRoutes();
-  const workspace = useActiveWorkspace();
+  const openSettings = useOpenSettings();
 
-  const showSettings = async () => {
-    if (!workspace) return;
-    await invokeCmd('cmd_new_window', {
-      url: routes.paths.workspaceSettings({ workspaceId: workspace.id }),
-      label: 'settings',
-      title: 'Yaak Settings',
-    });
-  };
-
-  useListenToTauriEvent('settings', showSettings);
+  useListenToTauriEvent('settings', () => openSettings.mutate());
 
   return (
     <Dropdown
@@ -45,7 +33,7 @@ export function SettingsDropdown() {
           label: 'Settings',
           hotKeyAction: 'settings.show',
           leftSlot: <Icon icon="settings" />,
-          onSelect: showSettings,
+          onSelect: openSettings.mutate,
         },
         {
           key: 'hotkeys',

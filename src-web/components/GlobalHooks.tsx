@@ -160,9 +160,8 @@ export function GlobalHooks() {
       return;
     }
 
-    const { interfaceScale, interfaceFontSize, editorFontSize } = settings;
+    const { interfaceScale, editorFontSize } = settings;
     getCurrentWebviewWindow().setZoom(interfaceScale).catch(console.error);
-    document.documentElement.style.setProperty('font-size', `${interfaceFontSize}px`);
     document.documentElement.style.setProperty('--editor-font-size', `${editorFontSize}px`);
   }, [settings]);
 

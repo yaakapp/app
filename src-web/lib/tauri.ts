@@ -52,7 +52,7 @@ type TauriCmd =
   | 'cmd_list_workspaces'
   | 'cmd_metadata'
   | 'cmd_new_main_window'
-  | 'cmd_new_window'
+  | 'cmd_new_child_window'
   | 'cmd_parse_template'
   | 'cmd_plugin_info'
   | 'cmd_render_template'
