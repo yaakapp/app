@@ -42,10 +42,4 @@ export type Plugin = { model: "plugin", id: string, createdAt: string, updatedAt
 
 export type Settings = { model: "settings", id: string, createdAt: string, updatedAt: string, appearance: string, editorFontSize: number, editorSoftWrap: boolean, interfaceFontSize: number, interfaceScale: number, openWorkspaceNewWindow: boolean | null, telemetry: boolean, theme: string, themeDark: string, themeLight: string, updateChannel: string, };
 
-export type SyncCommit = { model: "sync_commit", id: string, createdAt: string, objectIds: Array<string>, };
-
-export type SyncModel = Workspace | Environment | Folder | HttpRequest | GrpcRequest;
-
-export type SyncObject = { model: "sync_object", createdAt: string, modelHash: string, modelId: string, data: Array<number>, };
-
 export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, variables: Array<EnvironmentVariable>, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, };

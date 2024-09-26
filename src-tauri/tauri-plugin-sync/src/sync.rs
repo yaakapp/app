@@ -1,7 +1,7 @@
 use hex;
 use serde_json::to_vec_pretty;
 use sha1::{Digest, Sha1};
-use yaak_models::models::SyncModel;
+use crate::SyncModel;
 
 pub fn model_hash(m: &SyncModel) -> String {
     let value = serde_json::to_value(&m).unwrap();
@@ -25,7 +25,8 @@ mod tests {
     use serde_json::json;
     use std::collections::BTreeMap;
     use std::ops::{Add, Sub};
-    use yaak_models::models::{HttpRequest, SyncModel};
+    use yaak_models::models::{HttpRequest};
+    use crate::SyncModel;
 
     fn debug_http_request() -> HttpRequest {
         let mut auth = BTreeMap::new();

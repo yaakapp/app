@@ -1,6 +1,6 @@
-import type { SyncDiff, SyncModel } from '@yaakapp-internal/sync';
 import classNames from 'classnames';
 import { Fragment, useMemo, useState } from 'react';
+import type { SyncModel, SyncDiff } from 'tauri-plugin-sync-api';
 import { useSyncDiff } from '../hooks/useSyncDiff';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import { Button } from './core/Button';
@@ -17,8 +17,12 @@ interface TreeNode {
   change: SyncDiff['type'];
 }
 
-export function SyncCommitDialog() {
-  const diffs = useSyncDiff();
+interface Props {
+  workspaceId: string;
+}
+
+export function SyncCommitDialog({ workspaceId }: Props) {
+  const diffs = useSyncDiff(workspaceId);
 
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>(() => {
     const s: Record<string, boolean> = {};

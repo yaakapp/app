@@ -5888,9 +5888,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin"
-version = "2.0.0-rc.11"
+version = "2.0.0-rc.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d82a2adea16b8a71b7a5ad23f720bb13f8d2830b820cc1c266512314ba99bf67"
+checksum = "5e3368e91a98aa55ea4e3e8ccff516bc1ed2f85872c335ec35e9b345469032e0"
 dependencies = [
  "anyhow",
  "glob",
@@ -6017,6 +6017,27 @@ dependencies = [
  "tauri-plugin",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "tauri-plugin-sync"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "hex",
+ "log",
+ "rusqlite",
+ "sea-query",
+ "sea-query-rusqlite",
+ "serde",
+ "serde_json",
+ "sha1",
+ "tauri",
+ "tauri-plugin",
+ "thiserror",
+ "ts-rs",
+ "yaak_models",
 ]
 
 [[package]]
@@ -7644,6 +7665,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-os",
  "tauri-plugin-shell",
+ "tauri-plugin-sync",
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
  "thiserror",
@@ -7654,7 +7676,6 @@ dependencies = [
  "yaak_grpc",
  "yaak_models",
  "yaak_plugin_runtime",
- "yaak_sync",
  "yaak_templates",
 ]
 
@@ -7723,22 +7744,6 @@ dependencies = [
  "tokio",
  "tonic 0.12.1",
  "tonic-build",
- "ts-rs",
- "yaak_models",
-]
-
-[[package]]
-name = "yaak_sync"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "chrono",
- "hex",
- "serde",
- "serde_json",
- "sha1",
- "tauri",
- "thiserror",
  "ts-rs",
  "yaak_models",
 ]

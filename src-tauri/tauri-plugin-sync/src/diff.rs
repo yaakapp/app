@@ -2,10 +2,10 @@ use crate::error::Result;
 use serde::Serialize;
 use tauri::{AppHandle, Runtime};
 use ts_rs::TS;
-use yaak_models::models::SyncModel;
 use yaak_models::queries::{
     get_workspace, list_environments, list_folders, list_grpc_requests, list_http_requests,
 };
+use crate::SyncModel;
 
 impl SyncDiff {
     pub fn new(prev: Option<SyncModel>, next: Option<SyncModel>) -> Option<Self> {

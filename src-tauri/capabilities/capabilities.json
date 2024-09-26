@@ -29,7 +29,8 @@
         }
       ]
     },
-    "shell:allow-open",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
     "core:webview:allow-set-webview-zoom",
     "core:window:allow-close",
     "core:window:allow-is-fullscreen",
@@ -42,7 +43,7 @@
     "core:window:allow-theme",
     "core:window:allow-toggle-maximize",
     "core:window:allow-unmaximize",
-    "clipboard-manager:allow-read-text",
-    "clipboard-manager:allow-write-text"
+    "shell:allow-open",
+    "sync:allow-diff"
   ]
 }

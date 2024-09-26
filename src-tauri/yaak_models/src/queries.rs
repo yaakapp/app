@@ -1,7 +1,12 @@
 use std::fs;
 
 use crate::error::Result;
-use crate::models::{CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection, GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden};
+use crate::models::{
+    CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
+    GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest,
+    HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
+    ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden,
+};
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
@@ -794,10 +799,7 @@ pub async fn update_settings<R: Runtime>(
                 SettingsIden::EditorSoftWrap,
                 settings.editor_soft_wrap.into(),
             ),
-            (
-                SettingsIden::Telemetry,
-                settings.telemetry.into(),
-            ),
+            (SettingsIden::Telemetry, settings.telemetry.into()),
             (
                 SettingsIden::OpenWorkspaceNewWindow,
                 settings.open_workspace_new_window.into(),
@@ -872,10 +874,7 @@ pub async fn get_environment<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Res
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn get_plugin<R: Runtime>(
-    mgr: &impl Manager<R>,
-    id: &str
-) -> Result<Plugin> {
+pub async fn get_plugin<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Plugin> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -888,9 +887,7 @@ pub async fn get_plugin<R: Runtime>(
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_plugins<R: Runtime>(
-    mgr: &impl Manager<R>,
-) -> Result<Vec<Plugin>> {
+pub async fn list_plugins<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Plugin>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -1243,8 +1240,6 @@ pub async fn create_http_response<R: Runtime>(
         .into_table(HttpResponseIden::Table)
         .columns([
             HttpResponseIden::Id,
-            HttpResponseIden::CreatedAt,
-            HttpResponseIden::UpdatedAt,
             HttpResponseIden::RequestId,
             HttpResponseIden::WorkspaceId,
             HttpResponseIden::Elapsed,
@@ -1260,8 +1255,6 @@ pub async fn create_http_response<R: Runtime>(
         ])
         .values_panic([
             id.as_str().into(),
-            CurrentTimestamp.into(),
-            CurrentTimestamp.into(),
             req.id.as_str().into(),
             req.workspace_id.as_str().into(),
             elapsed.into(),
@@ -1472,8 +1465,11 @@ pub async fn debug_pool<R: Runtime>(mgr: &impl Manager<R>) {
 }
 
 pub fn generate_model_id(model: ModelType) -> String {
-    let id = generate_id();
-    format!("{}_{}", model.id_prefix(), id)
+    generate_model_id_with_prefix(model.id_prefix().as_str())
+}
+
+pub fn generate_model_id_with_prefix(prefix: &str) -> String {
+    format!("{prefix}_{}", generate_id())
 }
 
 pub fn generate_id() -> String {
@@ -1487,7 +1483,10 @@ struct ModelPayload<M: Serialize + Clone> {
     pub window_label: String,
 }
 
-fn emit_upserted_model<M: Serialize + Clone, R: Runtime>(window: &WebviewWindow<R>, model: M) -> M {
+pub fn emit_upserted_model<M: Serialize + Clone, R: Runtime>(
+    window: &WebviewWindow<R>,
+    model: M,
+) -> M {
     let payload = ModelPayload {
         model: model.clone(),
         window_label: window.label().to_string(),
@@ -1497,7 +1496,7 @@ fn emit_upserted_model<M: Serialize + Clone, R: Runtime>(window: &WebviewWindow<
     model
 }
 
-fn emit_deleted_model<M: Serialize + Clone, R: Runtime>(
+pub fn emit_deleted_model<M: Serialize + Clone, R: Runtime>(
     window: &WebviewWindow<R>,
     model: M,
 ) -> Result<M> {

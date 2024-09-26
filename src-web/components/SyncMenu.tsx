@@ -1,3 +1,4 @@
+import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
@@ -8,6 +9,9 @@ import { useToast } from './ToastContext';
 export function SyncMenu() {
   const toast = useToast();
   const dialog = useDialog();
+  const workspace = useActiveWorkspace();
+  if (workspace == null) return null;
+
   return (
     <Dropdown
       fullWidth
@@ -36,7 +40,7 @@ export function SyncMenu() {
               size: 'full',
               className: '!max-h-[min(80vh,40rem)] !max-w-[min(50rem,90vw)]',
               title: 'Commit Changes',
-              render: () => <SyncCommitDialog />,
+              render: () => <SyncCommitDialog workspaceId={workspace.id} />,
             });
           },
         },

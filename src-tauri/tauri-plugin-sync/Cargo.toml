@@ -1,20 +1,28 @@
 [package]
-name = "yaak_models"
+name = "tauri-plugin-sync"
 version = "0.1.0"
+authors = [ "You" ]
+description = ""
 edition = "2021"
+rust-version = "1.71"
+exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
+links = "tauri-plugin-sync"
 
 [dependencies]
+yaak_models = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 rusqlite = { workspace = true, features = ["bundled", "chrono"] }
 sea-query = { workspace = true, features = ["with-chrono", "attr"] }
 sea-query-rusqlite = { workspace = true, features = ["with-chrono"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-thiserror = { workspace = true }
-ts-rs = { workspace = true, features = ["chrono-impl", "serde-json-impl"] }
 tauri = { workspace = true }
-sqlx = { version = "0.8.0", features = ["sqlite", "runtime-tokio-rustls"] }
+thiserror = { workspace = true }
+ts-rs = { workspace = true }
+sha1 = "0.10.6"
+hex = "0.4.3"
+base64 = "0.22.1"
 log = "0.4.22"
-rand = "0.8.5"
-r2d2 = "0.8.10"
-r2d2_sqlite = { version = "0.24.0" }
+
+[build-dependencies]
+tauri-plugin = { version = "2.0.0-rc.12", features = ["build"] }

@@ -64,7 +64,6 @@ use yaak_plugin_runtime::events::{
     ShowToastRequest,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
-use yaak_sync::diff::{calculate_sync_objects, SyncDiff};
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -1652,16 +1651,6 @@ async fn cmd_list_workspaces(w: WebviewWindow) -> Result<Vec<Workspace>, String>
 }
 
 #[tauri::command]
-async fn cmd_get_sync_stage(
-    window: WebviewWindow,
-    workspace_id: &str,
-) -> Result<Vec<SyncDiff>, String> {
-    calculate_sync_objects(&window.app_handle(), workspace_id)
-        .await
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 async fn cmd_new_child_window(
     parent_window: WebviewWindow,
     url: &str,
@@ -1815,8 +1804,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(yaak_models::plugin::Builder::default().build())
-        .plugin(yaak_plugin_runtime::plugin::init());
+        .plugin(yaak_models::plugin::Builder::new().build())
+        .plugin(yaak_plugin_runtime::plugin::init())
+        .plugin(tauri_plugin_sync::init());
 
     #[cfg(target_os = "macos")]
     {
@@ -1882,7 +1872,6 @@ pub fn run() {
             cmd_get_http_request,
             cmd_get_key_value,
             cmd_get_settings,
-            cmd_get_sync_stage,
             cmd_get_workspace,
             cmd_grpc_go,
             cmd_grpc_reflect,
@@ -2078,8 +2067,9 @@ fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindo
                 if let Err(e) = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.app/feedback", None) {
-                   warn!("Failed to open feedback {e:?}");
+                    .open("https://yaak.app/feedback", None)
+                {
+                    warn!("Failed to open feedback {e:?}");
                 }
             }
 
