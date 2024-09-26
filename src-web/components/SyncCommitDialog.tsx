@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { Fragment, useMemo, useState } from 'react';
-import type { SyncModel, SyncDiff } from 'tauri-plugin-sync-api';
-import { useSyncDiff } from '../hooks/useSyncDiff';
+import type { SyncDiff, SyncModel } from 'tauri-plugin-sync-api';
+import { useDiff } from 'tauri-plugin-sync-api';
 import { resolvedModelName } from '../lib/resolvedModelName';
 import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
@@ -22,7 +22,7 @@ interface Props {
 }
 
 export function SyncCommitDialog({ workspaceId }: Props) {
-  const diffs = useSyncDiff(workspaceId);
+  const diffs = useDiff(workspaceId);
 
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>(() => {
     const s: Record<string, boolean> = {};

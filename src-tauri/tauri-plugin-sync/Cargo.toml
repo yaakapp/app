@@ -1,12 +1,7 @@
 [package]
 name = "tauri-plugin-sync"
 version = "0.1.0"
-authors = [ "You" ]
-description = ""
 edition = "2021"
-rust-version = "1.71"
-exclude = ["/examples", "/webview-dist", "/webview-src", "/node_modules"]
-links = "tauri-plugin-sync"
 
 [dependencies]
 yaak_models = { workspace = true }
