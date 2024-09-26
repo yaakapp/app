@@ -434,6 +434,7 @@ function PairEditorRow({
             ref={nameInputRef}
             hideLabel
             useTemplating
+            wrapLines={false}
             readOnly={pairContainer.pair.readOnlyName}
             size="sm"
             require={!isLast && !!pairContainer.pair.enabled && !!pairContainer.pair.value}
@@ -475,6 +476,7 @@ function PairEditorRow({
               ref={valueInputRef}
               hideLabel
               useTemplating
+              wrapLines={false}
               size="sm"
               containerClassName={classNames(isLast && 'border-dashed')}
               validate={valueValidate}

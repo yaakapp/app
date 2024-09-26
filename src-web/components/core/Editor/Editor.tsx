@@ -99,13 +99,13 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }: EditorProps,
   ref,
 ) {
-  const s = useSettings();
+  const settings = useSettings();
   const templateFunctions = useTemplateFunctions();
   const allEnvironmentVariables = useActiveEnvironmentVariables();
   const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
 
-  if (s && wrapLines === undefined) {
-    wrapLines = s.editorSoftWrap;
+  if (settings && wrapLines === undefined) {
+    wrapLines = settings.editorSoftWrap;
   }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
