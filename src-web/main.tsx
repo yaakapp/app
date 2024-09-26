@@ -2,14 +2,15 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { type } from '@tauri-apps/plugin-os';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { pdfjs } from 'react-pdf';
 import { App } from './components/App';
 import './main.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+import('react-pdf').then(({ pdfjs }) => {
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+  ).toString();
+});
 
 // Hide decorations here because it doesn't work in Rust for some reason (bug?)
 const osType = type();

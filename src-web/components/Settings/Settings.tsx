@@ -20,7 +20,7 @@ enum Tab {
 
 const tabs = [Tab.General, Tab.Appearance, Tab.Plugins];
 
-export const Settings = () => {
+export default function Settings() {
   const osInfo = useOsInfo();
   const [tab, setTab] = useState<string>(Tab.General);
 
@@ -66,4 +66,4 @@ export const Settings = () => {
       </Tabs>
     </div>
   );
-};
+}

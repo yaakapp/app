@@ -3,10 +3,10 @@ import { useActiveWorkspace } from '../../hooks/useActiveWorkspace';
 import { useResolvedAppearance } from '../../hooks/useResolvedAppearance';
 import { useResolvedTheme } from '../../hooks/useResolvedTheme';
 import { useSettings } from '../../hooks/useSettings';
-import { useThemes } from '../../hooks/useThemes';
 import { useUpdateSettings } from '../../hooks/useUpdateSettings';
 import { trackEvent } from '../../lib/analytics';
 import { clamp } from '../../lib/clamp';
+import { getThemes } from '../../lib/theme/themes';
 import { isThemeDark } from '../../lib/theme/window';
 import type { ButtonProps } from '../core/Button';
 import { Checkbox } from '../core/Checkbox';
@@ -52,12 +52,13 @@ const icons: IconProps['icon'][] = [
   'send_horizontal',
 ];
 
+const { themes } = getThemes();
+
 export function SettingsAppearance() {
   const workspace = useActiveWorkspace();
   const settings = useSettings();
   const updateSettings = useUpdateSettings();
   const appearance = useResolvedAppearance();
-  const { themes } = useThemes();
   const activeTheme = useResolvedTheme();
 
   if (settings == null || workspace == null) {
@@ -161,9 +162,10 @@ export function SettingsAppearance() {
         space={3}
         className="mt-3 w-full bg-surface p-3 border border-dashed border-border-subtle rounded overflow-x-auto"
       >
-        <HStack className="text font-bold" space={2}>
-          Theme Preview{' '}
+        <HStack className="text" space={1.5}>
           <Icon icon={appearance === 'dark' ? 'moon' : 'sun'} className="text-text-subtle" />
+          <strong>{activeTheme.active.name}</strong>
+          <em>(preview)</em>
         </HStack>
         <HStack space={1.5} className="w-full">
           {buttonColors.map((c, i) => (

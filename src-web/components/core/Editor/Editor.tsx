@@ -55,6 +55,7 @@ export interface EditorProps {
   useTemplating?: boolean;
   onChange?: (value: string) => void;
   onPaste?: (value: string) => void;
+  onPasteOverwrite?: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   onKeyDown?: (e: KeyboardEvent) => void;
@@ -83,6 +84,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     forceUpdateKey,
     onChange,
     onPaste,
+    onPasteOverwrite,
     onFocus,
     onBlur,
     onKeyDown,
@@ -97,13 +99,13 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   }: EditorProps,
   ref,
 ) {
-  const s = useSettings();
+  const settings = useSettings();
   const templateFunctions = useTemplateFunctions();
   const allEnvironmentVariables = useActiveEnvironmentVariables();
   const environmentVariables = autocompleteVariables ? allEnvironmentVariables : emptyVariables;
 
-  if (s && wrapLines === undefined) {
-    wrapLines = s.editorSoftWrap;
+  if (settings && wrapLines === undefined) {
+    wrapLines = settings.editorSoftWrap;
   }
 
   const cm = useRef<{ view: EditorView; languageCompartment: Compartment } | null>(null);
@@ -120,6 +122,12 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
   useEffect(() => {
     handlePaste.current = onPaste;
   }, [onPaste]);
+
+  // Use ref so we can update the handler without re-initializing the editor
+  const handlePasteOverwrite = useRef<EditorProps['onPasteOverwrite']>(onPaste);
+  useEffect(() => {
+    handlePasteOverwrite.current = onPasteOverwrite;
+  }, [onPasteOverwrite]);
 
   // Use ref so we can update the handler without re-initializing the editor
   const handleFocus = useRef<EditorProps['onFocus']>(onFocus);
@@ -303,6 +311,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
               singleLine,
               onChange: handleChange,
               onPaste: handlePaste,
+              onPasteOverwrite: handlePasteOverwrite,
               onFocus: handleFocus,
               onBlur: handleBlur,
               onKeyDown: handleKeyDown,
@@ -420,6 +429,7 @@ function getExtensions({
   singleLine,
   onChange,
   onPaste,
+  onPasteOverwrite,
   onFocus,
   onBlur,
   onKeyDown,
@@ -427,6 +437,7 @@ function getExtensions({
   container: HTMLDivElement | null;
   onChange: MutableRefObject<EditorProps['onChange']>;
   onPaste: MutableRefObject<EditorProps['onPaste']>;
+  onPasteOverwrite: MutableRefObject<EditorProps['onPasteOverwrite']>;
   onFocus: MutableRefObject<EditorProps['onFocus']>;
   onBlur: MutableRefObject<EditorProps['onBlur']>;
   onKeyDown: MutableRefObject<EditorProps['onKeyDown']>;
@@ -449,8 +460,12 @@ function getExtensions({
       keydown: (e) => {
         onKeyDown.current?.(e);
       },
-      paste: (e) => {
-        onPaste.current?.(e.clipboardData?.getData('text/plain') ?? '');
+      paste: (e, v) => {
+        const textData = e.clipboardData?.getData('text/plain') ?? '';
+        onPaste.current?.(textData);
+        if (v.state.selection.main.from === 0 && v.state.selection.main.to === v.state.doc.length) {
+          onPasteOverwrite.current?.(textData);
+        }
       },
     }),
     tooltips({ parent }),

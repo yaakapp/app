@@ -323,10 +323,11 @@ export const RequestPane = memo(function RequestPane({
             url={activeRequest.url}
             method={activeRequest.method}
             placeholder="https://example.com"
-            onPaste={(text) => {
+            onPasteOverwrite={(text) => {
               if (text.startsWith('curl ')) {
                 importCurl.mutate({ overwriteRequestId: activeRequestId, command: text });
               } else {
+                // Only import query if pasted text contains entire querystring
                 importQuerystring.mutate(text);
               }
             }}
@@ -418,8 +419,8 @@ export const RequestPane = memo(function RequestPane({
                 <GraphQLEditor
                   forceUpdateKey={forceUpdateKey}
                   baseRequest={activeRequest}
-                  defaultValue={`${activeRequest.body?.text ?? ''}`}
-                  onChange={handleBodyTextChange}
+                  body={activeRequest.body}
+                  onChange={handleBodyChange}
                 />
               ) : activeRequest.bodyType === BODY_TYPE_FORM_URLENCODED ? (
                 <FormUrlencodedEditor

@@ -47,7 +47,10 @@ async fn render_tag<T: TemplateCallback>(
     match val {
         Val::Str { text } => text.into(),
         Val::Var { name } => match vars.get(name.as_str()) {
-            Some(v) => v.to_string(),
+            Some(v) => {
+                let r = Box::pin(parse_and_render(v, vars, cb)).await;
+                r.to_string()
+            },
             None => "".into(),
         },
         Val::Bool { value } => value.to_string(),
@@ -137,6 +140,22 @@ mod tests {
         let template = "${[ foo ]}";
         let vars = HashMap::from([("foo".to_string(), "bar".to_string())]);
         let result = "bar";
+        assert_eq!(
+            parse_and_render(template, &vars, &empty_cb).await,
+            result.to_string()
+        );
+    }
+
+    #[tokio::test]
+    async fn render_recursive_var() {
+        let empty_cb = EmptyCB {};
+        let template = "${[ foo ]}";
+        let mut vars = HashMap::new();
+        vars.insert("foo".to_string(), "foo: ${[ bar ]}".to_string());
+        vars.insert("bar".to_string(), "bar: ${[ baz ]}".to_string());
+        vars.insert("baz".to_string(), "baz".to_string());
+
+        let result = "foo: bar: baz";
         assert_eq!(
             parse_and_render(template, &vars, &empty_cb).await,
             result.to_string()

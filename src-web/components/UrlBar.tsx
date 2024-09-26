@@ -17,6 +17,7 @@ type Props = Pick<HttpRequest, 'url'> & {
   onSend: () => void;
   onUrlChange: (url: string) => void;
   onPaste?: (v: string) => void;
+  onPasteOverwrite?: (v: string) => void;
   onCancel: () => void;
   submitIcon?: IconProps['icon'] | null;
   onMethodChange?: (method: string) => void;
@@ -37,6 +38,7 @@ export const UrlBar = memo(function UrlBar({
   onCancel,
   onMethodChange,
   onPaste,
+  onPasteOverwrite,
   submitIcon = 'send_horizontal',
   autocomplete,
   rightSlot,
@@ -70,13 +72,14 @@ export const UrlBar = memo(function UrlBar({
         useTemplating
         language="url"
         className="pl-0 pr-1.5 py-0.5"
-        name="url"
         label="Enter URL"
+        name="url"
         autocomplete={autocomplete}
         forceUpdateKey={forceUpdateKey}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onPaste={onPaste}
+        onPasteOverwrite={onPasteOverwrite}
         onChange={onUrlChange}
         defaultValue={url}
         placeholder={placeholder}

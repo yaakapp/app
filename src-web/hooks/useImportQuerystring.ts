@@ -14,31 +14,20 @@ export function useImportQuerystring(requestId: string) {
   return useMutation({
     mutationKey: ['import_querystring'],
     mutationFn: async (url: string) => {
-      const [baseUrl, ...rest] = url.split('?');
-      if (rest.length === 0) return;
+      const split = url.split(/\?(.*)/s);
+      const baseUrl = split[0] ?? '';
+      const querystring = split[1] ?? '';
+      if (!querystring) return;
 
       const request = await getHttpRequest(requestId);
       if (request == null) return;
 
-      const querystring = rest.join('?');
       const parsedParams = Array.from(new URLSearchParams(querystring).entries());
-      const additionalUrlParameters: HttpUrlParameter[] = parsedParams.map(
-        ([name, value]): HttpUrlParameter => ({
-          name,
-          value,
-          enabled: true,
-        }),
-      );
-
-      const urlParameters: HttpUrlParameter[] = [...request.urlParameters];
-      for (const newParam of additionalUrlParameters) {
-        const index = urlParameters.findIndex((p) => p.name === newParam.name);
-        if (index >= 0) {
-          urlParameters[index]!.value = decodeURIComponent(newParam.value);
-        } else {
-          urlParameters.push(newParam);
-        }
-      }
+      const urlParameters: HttpUrlParameter[] = parsedParams.map(([name, value]) => ({
+        name,
+        value,
+        enabled: true,
+      }));
 
       await updateRequest.mutateAsync({
         id: requestId,
@@ -48,11 +37,11 @@ export function useImportQuerystring(requestId: string) {
         },
       });
 
-      if (additionalUrlParameters.length > 0) {
+      if (urlParameters.length > 0) {
         toast.show({
           id: 'querystring-imported',
           color: 'info',
-          message: `Imported ${additionalUrlParameters.length} ${pluralize('param', additionalUrlParameters.length)} from URL`,
+          message: `Extracted ${urlParameters.length} ${pluralize('parameter', urlParameters.length)} from URL`,
         });
       }
 

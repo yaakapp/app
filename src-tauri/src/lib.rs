@@ -3,12 +3,12 @@ extern crate core;
 extern crate objc;
 
 use std::collections::BTreeMap;
-use std::fs;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 use std::time::Duration;
+use std::{fs, panic};
 
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
@@ -84,7 +84,9 @@ const DEFAULT_WINDOW_HEIGHT: f64 = 600.0;
 
 const MIN_WINDOW_WIDTH: f64 = 300.0;
 const MIN_WINDOW_HEIGHT: f64 = 300.0;
+
 const MAIN_WINDOW_PREFIX: &str = "main_";
+const OTHER_WINDOW_PREFIX: &str = "other_";
 
 #[derive(serde::Serialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -1660,19 +1662,83 @@ async fn cmd_get_sync_stage(
 }
 
 #[tauri::command]
-async fn cmd_new_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
-    create_window(&app_handle, url);
+async fn cmd_new_child_window(
+    parent_window: WebviewWindow,
+    url: &str,
+    label: &str,
+    title: &str,
+    inner_size: (f64, f64),
+) -> Result<(), String> {
+    let app_handle = parent_window.app_handle();
+    let label = format!("{OTHER_WINDOW_PREFIX}_{label}");
+    let scale_factor = parent_window.scale_factor().unwrap();
+
+    let current_pos = parent_window
+        .inner_position()
+        .unwrap()
+        .to_logical::<f64>(scale_factor);
+    let current_size = parent_window
+        .inner_size()
+        .unwrap()
+        .to_logical::<f64>(scale_factor);
+
+    // Position the new window in the middle of the parent
+    let position = (
+        current_pos.x + current_size.width / 2.0 - inner_size.0 / 2.0,
+        current_pos.y + current_size.height / 2.0 - inner_size.1 / 2.0,
+    );
+
+    let config = CreateWindowConfig {
+        label: label.as_str(),
+        title,
+        url,
+        inner_size,
+        position,
+    };
+
+    let child_window = create_window(&app_handle, config);
+
+    // NOTE: These listeners will remain active even when the windows close. Unfortunately,
+    //   there's no way to unlisten to events for now, so we just have to be defensive.
+
+    {
+        let parent_window = parent_window.clone();
+        let child_window = child_window.clone();
+        child_window.clone().on_window_event(move |e| match e {
+            // When the new window is destroyed, bring the other up behind it
+            WindowEvent::Destroyed => {
+                if let Some(w) = parent_window.get_webview_window(child_window.label()) {
+                    w.set_focus().unwrap();
+                }
+            }
+            _ => {}
+        });
+    }
+
+    {
+        let parent_window = parent_window.clone();
+        let child_window = child_window.clone();
+        parent_window.clone().on_window_event(move |e| match e {
+            // When the parent window is closed, close the child
+            WindowEvent::CloseRequested { .. } => child_window.destroy().unwrap(),
+            // When the parent window is focused, bring the child above
+            WindowEvent::Focused(focus) => {
+                if *focus {
+                    if let Some(w) = parent_window.get_webview_window(child_window.label()) {
+                        w.set_focus().unwrap();
+                    };
+                }
+            }
+            _ => {}
+        });
+    }
+
     Ok(())
 }
 
 #[tauri::command]
-async fn cmd_new_nested_window(
-    window: WebviewWindow,
-    url: &str,
-    label: &str,
-    title: &str,
-) -> Result<(), String> {
-    create_nested_window(&window, label, url, title);
+async fn cmd_new_main_window(app_handle: AppHandle, url: &str) -> Result<(), String> {
+    create_main_window(&app_handle, url);
     Ok(())
 }
 
@@ -1732,7 +1798,18 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_denylist(&["ignored"])
+                .map_label(|label| {
+                    if label.starts_with(OTHER_WINDOW_PREFIX) {
+                        "ignored"
+                    } else {
+                        label
+                    }
+                })
+                .build(),
+        )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::default().build())
         .plugin(tauri_plugin_dialog::init())
@@ -1822,8 +1899,8 @@ pub fn run() {
             cmd_list_plugins,
             cmd_list_workspaces,
             cmd_metadata,
-            cmd_new_nested_window,
-            cmd_new_window,
+            cmd_new_child_window,
+            cmd_new_main_window,
             cmd_parse_template,
             cmd_plugin_info,
             cmd_reload_plugins,
@@ -1856,7 +1933,7 @@ pub fn run() {
         .run(|app_handle, event| {
             match event {
                 RunEvent::Ready => {
-                    let w = create_window(app_handle, "/");
+                    let w = create_main_window(app_handle, "/");
                     tauri::async_runtime::spawn(async move {
                         let info = analytics::track_launch_event(&w).await;
                         debug!("Launched Yaak {:?}", info);
@@ -1912,47 +1989,31 @@ fn is_dev() -> bool {
     }
 }
 
-fn create_nested_window(
-    window: &WebviewWindow,
-    label: &str,
-    url: &str,
-    title: &str,
-) -> WebviewWindow {
-    info!("Create new nested window label={label}");
-    let mut win_builder = tauri::WebviewWindowBuilder::new(
-        window,
-        format!("nested_{}_{}", window.label(), label),
-        WebviewUrl::App(url.into()),
-    )
-    .resizable(true)
-    .fullscreen(false)
-    .disable_drag_drop_handler() // Required for frontend Dnd on windows
-    .title(title)
-    .parent(&window)
-    .unwrap()
-    .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
-    .inner_size(DEFAULT_WINDOW_WIDTH * 0.7, DEFAULT_WINDOW_HEIGHT * 0.9);
-
-    // Add macOS-only things
-    #[cfg(target_os = "macos")]
-    {
-        win_builder = win_builder
-            .hidden_title(true)
-            .title_bar_style(TitleBarStyle::Overlay);
-    }
-
-    // Add non-macOS things
-    #[cfg(not(target_os = "macos"))]
-    {
-        win_builder = win_builder.decorations(false);
-    }
-
-    let win = win_builder.build().expect("failed to build window");
-
-    win
+fn create_main_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+    let label = format!("{MAIN_WINDOW_PREFIX}{}", handle.webview_windows().len());
+    let config = CreateWindowConfig {
+        url,
+        label: label.as_str(),
+        title: "Yaak",
+        inner_size: (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT),
+        position: (
+            // Offset by random amount so it's easier to differentiate
+            100.0 + random::<f64>() * 20.0,
+            100.0 + random::<f64>() * 20.0,
+        ),
+    };
+    create_window(handle, config)
 }
 
-fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
+struct CreateWindowConfig<'s> {
+    url: &'s str,
+    label: &'s str,
+    title: &'s str,
+    inner_size: (f64, f64),
+    position: (f64, f64),
+}
+
+fn create_window(handle: &AppHandle, config: CreateWindowConfig) -> WebviewWindow {
     #[allow(unused_variables)]
     let menu = app_menu(handle).unwrap();
 
@@ -1960,22 +2021,18 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
     #[cfg(not(target_os = "linux"))]
     handle.set_menu(menu).expect("Failed to set app menu");
 
-    let window_num = handle.webview_windows().len();
-    let label = format!("{MAIN_WINDOW_PREFIX}{window_num}");
-    info!("Create new window label={label}");
+    info!("Create new window label={}", config.label);
+
     let mut win_builder =
-        tauri::WebviewWindowBuilder::new(handle, label, WebviewUrl::App(url.into()))
+        tauri::WebviewWindowBuilder::new(handle, config.label, WebviewUrl::App(config.url.into()))
+            .title(config.title)
             .resizable(true)
+            .visible(false) // To prevent theme flashing, the frontend code calls show() immediately after configuring the theme
             .fullscreen(false)
             .disable_drag_drop_handler() // Required for frontend Dnd on windows
-            .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
-            .position(
-                // Randomly offset so windows don't stack exactly
-                100.0 + random::<f64>() * 30.0,
-                100.0 + random::<f64>() * 30.0,
-            )
-            .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
-            .title(handle.package_info().name.to_string());
+            .inner_size(config.inner_size.0, config.inner_size.1)
+            .position(config.position.0, config.position.1)
+            .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
 
     // Add macOS-only things
     #[cfg(target_os = "macos")]
@@ -1992,7 +2049,16 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
         win_builder = win_builder.decorations(false);
     }
 
-    let win = win_builder.build().expect("failed to build window");
+    if let Some(w) = handle.webview_windows().get(config.label) {
+        info!(
+            "Webview with label {} already exists. Focusing existing",
+            config.label
+        );
+        w.set_focus().unwrap();
+        return w.to_owned();
+    }
+
+    let win = win_builder.build().unwrap();
 
     let webview_window = win.clone();
     win.on_menu_event(move |w, event| {
@@ -2012,7 +2078,7 @@ fn create_window(handle: &AppHandle, url: &str) -> WebviewWindow {
                 if let Err(e) = webview_window
                     .app_handle()
                     .shell()
-                    .open("https://yaak.app/roadmap", None) {
+                    .open("https://yaak.app/feedback", None) {
                    warn!("Failed to open feedback {e:?}");
                 }
             }
