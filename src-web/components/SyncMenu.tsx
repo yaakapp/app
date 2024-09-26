@@ -2,7 +2,7 @@ import { Dropdown } from './core/Dropdown';
 import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { useDialog } from './DialogContext';
-import { SyncCheckpointDialog } from './SyncCheckpointDialog';
+import { SyncCommitDialog } from './SyncCommitDialog';
 import { useToast } from './ToastContext';
 
 export function SyncMenu() {
@@ -36,16 +36,14 @@ export function SyncMenu() {
               size: 'full',
               className: '!max-h-[min(80vh,40rem)] !max-w-[min(50rem,90vw)]',
               title: 'Commit Changes',
-              render: () => <SyncCheckpointDialog />,
+              render: () => <SyncCommitDialog />,
             });
           },
         },
       ]}
     >
       <button className="px-3 h-md border-t border-border flex items-center justify-between">
-        <span>
-          <InlineCode>master</InlineCode>
-        </span>
+        <InlineCode>master</InlineCode>
         <Icon icon="git_branch" size="sm" className="text-text-subtle" />
       </button>
     </Dropdown>

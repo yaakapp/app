@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import type { EditorView } from 'codemirror';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { useStateWithDeps } from '../../hooks/useStateWithDeps';
 import type { EditorProps } from './Editor';

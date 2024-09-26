@@ -748,10 +748,11 @@ impl<'s> TryFrom<&Row<'s>> for GrpcEvent {
 pub struct SyncCommit {
     #[ts(type = "\"sync_commit\"")]
     pub model: String,
+    /// ID in this model is the commit's hash
     pub id: String,
     pub created_at: NaiveDateTime,
 
-    pub object_ids: Vec<String>,
+    pub model_ids: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
@@ -760,9 +761,10 @@ pub struct SyncCommit {
 pub struct SyncObject {
     #[ts(type = "\"sync_object\"")]
     pub model: String,
+    /// ID in this model is the model hash
+    pub id: String,
     pub created_at: NaiveDateTime,
 
-    pub model_hash: String,
     pub model_id: String,
     pub data: Vec<u8>,
 }
@@ -916,6 +918,7 @@ pub enum AnyModel {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case", untagged)]
+#[ts(export, export_to = "models.ts")]
 pub enum SyncModel {
     Workspace(Workspace),
     Environment(Environment),

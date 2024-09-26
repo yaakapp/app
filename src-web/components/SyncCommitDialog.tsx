@@ -1,5 +1,4 @@
-import type { SyncDiff } from '@yaakapp-internal/sync';
-import type { SyncModel } from '@yaakapp-internal/sync/bindings/SyncModel';
+import type { SyncDiff, SyncModel } from '@yaakapp-internal/sync';
 import classNames from 'classnames';
 import { Fragment, useMemo, useState } from 'react';
 import { useSyncDiff } from '../hooks/useSyncDiff';
@@ -18,7 +17,7 @@ interface TreeNode {
   change: SyncDiff['type'];
 }
 
-export function SyncCheckpointDialog() {
+export function SyncCommitDialog() {
   const diffs = useSyncDiff();
 
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>(() => {

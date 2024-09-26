@@ -16,4 +16,6 @@ export type HttpRequestHeader = { enabled?: boolean, name: string, value: string
 
 export type HttpUrlParameter = { enabled?: boolean, name: string, value: string, };
 
+export type SyncModel = Workspace | Environment | Folder | HttpRequest | GrpcRequest;
+
 export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, variables: Array<EnvironmentVariable>, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, };
