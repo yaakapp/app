@@ -8,12 +8,13 @@ mod error;
 mod models;
 mod sync;
 mod diff;
+mod queries;
 
 pub use error::{Error, Result};
 
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("sync")
-        .invoke_handler(generate_handler![commit, diff])
+        .invoke_handler(generate_handler![commit, changes])
         .build()
 }

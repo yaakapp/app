@@ -1,5 +1,6 @@
 [package]
 name = "tauri-plugin-sync"
+links = "tauri-plugin-sync"
 version = "0.1.0"
 edition = "2021"
 

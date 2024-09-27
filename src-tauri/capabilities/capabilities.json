@@ -44,6 +44,6 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-unmaximize",
     "shell:allow-open",
-    "sync:allow-diff"
+    "sync:default"
   ]
 }

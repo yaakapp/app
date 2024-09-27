@@ -2,7 +2,8 @@
 
 Default permissions for the plugin
 
-- `allow-diff`
+- `allow-changes`
+- `allow-commit`
 
 ## Permission Table 
 
@@ -16,12 +17,12 @@ Default permissions for the plugin
 <tr>
 <td>
 
-`sync:allow-diff`
+`sync:allow-changes`
 
 </td>
 <td>
 
-Enables the diff command without any pre-configured scope.
+Enables the changes command without any pre-configured scope.
 
 </td>
 </tr>
@@ -29,12 +30,38 @@ Enables the diff command without any pre-configured scope.
 <tr>
 <td>
 
-`sync:deny-diff`
+`sync:deny-changes`
 
 </td>
 <td>
 
-Denies the diff command without any pre-configured scope.
+Denies the changes command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sync:allow-commit`
+
+</td>
+<td>
+
+Enables the commit command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sync:deny-commit`
+
+</td>
+<td>
+
+Denies the commit command without any pre-configured scope.
 
 </td>
 </tr>

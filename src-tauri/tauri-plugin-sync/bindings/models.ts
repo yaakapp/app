@@ -16,18 +16,12 @@ export type HttpRequestHeader = { enabled?: boolean, name: string, value: string
 
 export type HttpUrlParameter = { enabled?: boolean, name: string, value: string, };
 
-export type SyncCommit = { model: "sync_commit", 
-/**
- * ID in this model is the commit's hash
- */
-id: string, workspaceId: string, createdAt: string, branch: string, message: string | null, modelIds: Array<string>, };
+export type SyncBranch = { model: "sync_branch", id: string, workspaceId: string, createdAt: string, updatedAt: string, name: string, commitIds: Array<string>, };
 
-export type SyncModel = Workspace | Environment | Folder | HttpRequest | GrpcRequest;
+export type SyncCommit = { model: "sync_commit", id: string, workspaceId: string, createdAt: string, message: string | null, objectIds: Array<string>, };
 
-export type SyncObject = { model: "sync_object", 
-/**
- * ID in this model is the model hash
- */
-id: string, createdAt: string, workspaceId: string, data: Array<number>, modelId: string, };
+export type SyncModel = { "model_type": "workspace", "model": Workspace } | { "model_type": "environment", "model": Environment } | { "model_type": "folder", "model": Folder } | { "model_type": "http_request", "model": HttpRequest } | { "model_type": "grpc_request", "model": GrpcRequest };
+
+export type SyncObject = { model: "sync_object", id: string, createdAt: string, workspaceId: string, data: Array<number>, modelId: string, modelModel: string, };
 
 export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, variables: Array<EnvironmentVariable>, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, };

@@ -295,14 +295,24 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "Enables the diff command without any pre-configured scope.",
+          "description": "Enables the changes command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-diff"
+          "const": "allow-changes"
         },
         {
-          "description": "Denies the diff command without any pre-configured scope.",
+          "description": "Denies the changes command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-diff"
+          "const": "deny-changes"
+        },
+        {
+          "description": "Enables the commit command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-commit"
+        },
+        {
+          "description": "Denies the commit command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-commit"
         },
         {
           "description": "Default permissions for the plugin",

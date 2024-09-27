@@ -1,17 +1,24 @@
-use hex;
-use serde_json::to_vec_pretty;
-use sha1::{Digest, Sha1};
 use crate::SyncModel;
+use hex;
+use sha1::{Digest, Sha1};
 
 pub fn model_hash(m: &SyncModel) -> String {
-    let value = serde_json::to_value(&m).unwrap();
-    let mut value = value.as_object().unwrap().to_owned();
+    let mut value = serde_json::to_value(&m)
+        .unwrap()
+        .as_object()
+        .unwrap()
+        .get("model")
+        .unwrap()
+        .as_object()
+        .unwrap()
+        .to_owned();
 
     // Remove fields we don't want to be in the final model
     value.remove("createdAt");
     value.remove("updatedAt");
 
-    let model_bytes = to_vec_pretty(&value).unwrap();
+    // println!("PRETTY {}", serde_json::to_string_pretty(&value).unwrap());
+    let model_bytes = serde_json::to_vec(&value).unwrap();
 
     let mut hasher = Sha1::new();
     hasher.update(&model_bytes);
@@ -21,12 +28,12 @@ pub fn model_hash(m: &SyncModel) -> String {
 #[cfg(test)]
 mod tests {
     use crate::sync::model_hash;
+    use crate::SyncModel;
     use chrono::{TimeDelta, Utc};
     use serde_json::json;
     use std::collections::BTreeMap;
     use std::ops::{Add, Sub};
-    use yaak_models::models::{HttpRequest};
-    use crate::SyncModel;
+    use yaak_models::models::HttpRequest;
 
     fn debug_http_request() -> HttpRequest {
         let mut auth = BTreeMap::new();

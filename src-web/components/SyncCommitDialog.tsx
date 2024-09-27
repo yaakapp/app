@@ -1,8 +1,9 @@
 import classNames from 'classnames';
 import { Fragment, useMemo, useState } from 'react';
-import type { SyncDiff, SyncModel } from 'tauri-plugin-sync-api';
-import { useDiff } from 'tauri-plugin-sync-api';
+import type { CommitPayload, SyncChange, SyncChangeItem } from 'tauri-plugin-sync-api';
+import { useChanges, useCreateCommit } from 'tauri-plugin-sync-api';
 import { resolvedModelName } from '../lib/resolvedModelName';
+import { Banner } from './core/Banner';
 import { Button } from './core/Button';
 import type { CheckboxProps } from './core/Checkbox';
 import { Checkbox } from './core/Checkbox';
@@ -13,8 +14,8 @@ import { HStack } from './core/Stacks';
 
 interface TreeNode {
   children: TreeNode[];
-  model: SyncModel;
-  change: SyncDiff['type'];
+  change: SyncChange;
+  operation: 'added' | 'removed' | 'modified' | 'unmodified';
 }
 
 interface Props {
@@ -22,46 +23,47 @@ interface Props {
 }
 
 export function SyncCommitDialog({ workspaceId }: Props) {
-  const diffs = useDiff(workspaceId);
+  const [message, setMessage] = useState<string>('');
+  const changes = useChanges(workspaceId, 'master');
+  const createCommit = useCreateCommit(workspaceId);
 
-  const [addedIds, setAddedIds] = useState<Record<string, boolean>>(() => {
-    const s: Record<string, boolean> = {};
-    // By default, add all files that are already tracked
-    for (const o of diffs.data ?? []) {
-      if (o.type === 'modified' || o.type === 'removed') {
-        s[o.model.id] = true;
-      }
-    }
-    return s;
-  });
+  const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
   const tree: TreeNode | null = useMemo(() => {
-    const root = diffs.data?.find((d) => d.model.model === 'workspace');
+    console.log(changes.data);
+    const root = changes.data?.find(
+      (c) => changeItemFromChange(c, addedIds).model.model_type === 'workspace',
+    );
     if (root == null) {
       return null;
     }
 
-    const buildNode = (parent: SyncDiff): TreeNode => {
-      const children = (diffs.data ?? [])
-        .filter((d) => {
-          if (d.model.model === 'workspace') {
-            return false;
+    const buildNode = (parent: SyncChange): TreeNode => {
+      const parentItem = changeItemFromChange(parent, addedIds);
+      const children = (changes.data ?? [])
+        .filter((c) => {
+          const item = changeItemFromChange(c, addedIds);
+          if (item.model.model_type === 'workspace') {
+            return false; // Workspace will never be a child
           }
 
-          if ('folderId' in d.model && d.model.folderId != null) {
-            return d.model.folderId === parent.model.id;
+          if (item.model.model_type !== 'environment' && item.model.model.folderId != null) {
+            return item.model.model.folderId === parentItem.model.model.id;
           }
 
-          return d.model.workspaceId === parent.model.id;
+          return item.model.model.workspaceId === parentItem.model.model.id;
         })
-        .map((object) => {
-          return buildNode(object);
-        });
-      return { ...parent, change: parent.type, children };
+        .map((o) => buildNode(o));
+      return {
+        change: parent,
+        children,
+        operation: operationFromChange(parent),
+      };
     };
 
-    return buildNode(root);
-  }, [diffs]);
+    const tree = buildNode(root);
+    return tree;
+  }, [addedIds, changes.data]);
 
   const checkNode = (node: TreeNode, checked: boolean) => {
     setAddedIds((currentAddedIds) => {
@@ -69,6 +71,12 @@ export function SyncCommitDialog({ workspaceId }: Props) {
       setCheckedOnChildren(node, newAddedIds, checked);
       return newAddedIds;
     });
+  };
+
+  const handleCreateCommit = async () => {
+    if (tree == null) return;
+    const changeItems = diffItemsForCommit(tree, addedIds);
+    await createCommit.mutateAsync({ branch: 'master', message, changeItems });
   };
 
   if (tree == null) {
@@ -83,7 +91,7 @@ export function SyncCommitDialog({ workspaceId }: Props) {
         defaultRatio={0.3}
         firstSlot={({ style }) => (
           <div style={style} className="h-full overflow-y-auto -ml-1">
-            <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} state={addedIds} />
+            <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} addedIds={addedIds} />
           </div>
         )}
         secondSlot={({ style }) => (
@@ -92,10 +100,12 @@ export function SyncCommitDialog({ workspaceId }: Props) {
               <Editor
                 className="!text-base font-sans h-full rounded-md"
                 placeholder="Commit message..."
+                onChange={setMessage}
               />
             </div>
+            {createCommit.error && <Banner color="danger">{createCommit.error}</Banner>}
             <HStack justifyContent="end" space={2}>
-              <Button color="secondary" size="sm">
+              <Button color="secondary" size="sm" onClick={handleCreateCommit}>
                 Commit
               </Button>
               <Button color="secondary" size="sm">
@@ -112,17 +122,17 @@ export function SyncCommitDialog({ workspaceId }: Props) {
 function TreeNodeChildren({
   node,
   depth,
-  state,
+  addedIds,
   onCheck,
 }: {
   node: TreeNode | null;
   depth: number;
-  state: Record<string, boolean>;
+  addedIds: Record<string, boolean>;
   onCheck: (node: TreeNode, checked: boolean) => void;
 }) {
   if (node === null) return null;
 
-  const checked = nodeCheckedStatus(node, state);
+  const checked = nodeCheckedStatus(node, addedIds);
   return (
     <div
       className={classNames(
@@ -135,16 +145,19 @@ function TreeNodeChildren({
           checked={checked}
           title={
             <div className="flex items-center gap-1 w-full">
-              <div>{resolvedModelName(node.model)}</div>
+              <div>
+                {resolvedModelName(changeItemFromChange(node.change, addedIds).model.model)}
+              </div>
               <InlineCode
                 className={classNames(
                   'py-0 ml-auto !bg-surface',
-                  node.change === 'added' && 'text-success',
-                  node.change === 'modified' && 'text-info',
-                  node.change === 'removed' && 'text-danger',
+                  node.operation === 'unmodified' && 'text-secondary',
+                  node.operation === 'modified' && 'text-info',
+                  node.operation === 'added' && 'text-success',
+                  node.operation === 'removed' && 'text-danger',
                 )}
               >
-                {node.change}
+                {node.operation}
               </InlineCode>
             </div>
           }
@@ -154,8 +167,13 @@ function TreeNodeChildren({
 
       {node.children.map((childNode) => {
         return (
-          <Fragment key={childNode.model.id}>
-            <TreeNodeChildren node={childNode} depth={depth + 1} onCheck={onCheck} state={state} />
+          <Fragment key={idFromChange(childNode.change, addedIds)}>
+            <TreeNodeChildren
+              node={childNode}
+              depth={depth + 1}
+              onCheck={onCheck}
+              addedIds={addedIds}
+            />
           </Fragment>
         );
       })}
@@ -164,20 +182,19 @@ function TreeNodeChildren({
 }
 
 function nodeCheckedStatus(
-  node: TreeNode,
-  state: Record<string, boolean>,
+  root: TreeNode,
+  addedIds: Record<string, boolean>,
 ): CheckboxProps['checked'] {
   let leavesVisited = 0;
   let leavesChecked = 0;
-
-  if (node.children.length === 0) {
-    return state[node.model.id] ?? false;
+  if (root.children.length === 0) {
+    return addedIds[idFromChange(root, addedIds)] ?? false;
   }
 
   const visitChildren = (n: TreeNode) => {
     if (n.children.length === 0) {
       leavesVisited += 1;
-      const checked = state[n.model.id] ?? false;
+      const checked = addedIds[idFromChange(n, addedIds)] ?? false;
       if (checked) leavesChecked += 1;
     }
     for (const child of n.children) {
@@ -185,7 +202,7 @@ function nodeCheckedStatus(
     }
   };
 
-  visitChildren(node);
+  visitChildren(root);
 
   if (leavesVisited === leavesChecked) {
     return true;
@@ -197,11 +214,65 @@ function nodeCheckedStatus(
 }
 
 function setCheckedOnChildren(node: TreeNode, addedIds: Record<string, boolean>, checked: boolean) {
+  const id = idFromChange(node, addedIds);
+
   if (node.children.length === 0) {
-    addedIds[node.model.id] = checked;
+    addedIds[id] = checked;
   }
 
   for (const child of node.children) {
     setCheckedOnChildren(child, addedIds, checked);
   }
+}
+
+function diffItemsForCommit(
+  root: TreeNode,
+  addedIds: Record<string, boolean>,
+): CommitPayload['changeItems'] {
+  const changes: CommitPayload['changeItems'] = [];
+  for (const child of root.children) {
+    const wasAdded = !!addedIds[idFromChange(child, addedIds)];
+    if (wasAdded) {
+      changes.push(changeItemFromChange(child, addedIds));
+    }
+
+    changes.push(...diffItemsForCommit(child, addedIds));
+  }
+
+  // If children had IDs to commit, also add this node
+  if (changes.length > 0) changes.unshift(changeItemFromChange(root, addedIds));
+
+  return changes;
+}
+
+function changeItemFromChange(
+  c: SyncChange | TreeNode,
+  addedIds: Record<string, boolean>,
+): SyncChangeItem {
+  c = 'change' in c ? c.change : c;
+
+  const v = c.next ?? c.prev;
+  if (v == null) {
+    // Should never happen
+    throw new Error("Change didn't contain next or prev");
+  }
+
+  const isAdded = addedIds[v.model.model.id];
+  if (c.prev != null && c.next == null) return c.prev;
+  if (c.prev == null && c.next != null) return c.next;
+  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash)
+    return isAdded ? c.next : c.prev;
+
+  return v;
+}
+
+function idFromChange(c: SyncChange | TreeNode, addedIds: Record<string, boolean>): string {
+  return changeItemFromChange(c, addedIds).model.model.id;
+}
+
+function operationFromChange(c: SyncChange): TreeNode['operation'] {
+  if (c.prev != null && c.next == null) return 'removed';
+  if (c.prev == null && c.next != null) return 'added';
+  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash) return 'modified';
+  return 'unmodified';
 }

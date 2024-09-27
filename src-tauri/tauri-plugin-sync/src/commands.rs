@@ -1,45 +1,84 @@
-use crate::diff::{calculate_sync_objects, SyncDiff};
+use crate::diff::{compute_changes, SyncChange, SyncChangeItem};
 use crate::error::Result;
 use crate::models::*;
-use sea_query::{Query, SqliteQueryBuilder};
-use sea_query_rusqlite::RusqliteBinder;
+use crate::queries::{
+    insert_commit, insert_object, query_branch_by_name, query_object, upsert_branch,
+};
+use serde::{Deserialize, Serialize};
 use tauri::{command, Manager, Runtime, WebviewWindow};
-use yaak_models::plugin::SqliteConnection;
-use yaak_models::queries::emit_upserted_model;
+use ts_rs::TS;
 
-#[command]
-pub async fn diff<R: Runtime>(
-    window: WebviewWindow<R>,
-    workspace_id: &str,
-) -> Result<Vec<SyncDiff>> {
-    calculate_sync_objects(&window.app_handle(), workspace_id).await
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "commands.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct ChangesPayload {
+    workspace_id: String,
+    branch: String,
 }
 
 #[command]
-pub async fn commit<R: Runtime>(window: WebviewWindow<R>, sync_commit: SyncCommit) -> Result<()> {
-    let dbm = &*window.app_handle().state::<SqliteConnection>();
-    let db = dbm.0.lock().await.get().unwrap();
+pub async fn changes<R: Runtime>(
+    window: WebviewWindow<R>,
+    payload: ChangesPayload,
+) -> Result<Vec<SyncChange>> {
+    compute_changes(
+        &window,
+        payload.workspace_id.as_str(),
+        payload.branch.as_str(),
+    )
+    .await
+}
 
-    let (sql, params) = Query::insert()
-        .into_table(SyncCommitIden::Table)
-        .columns([
-            SyncCommitIden::Id,
-            SyncCommitIden::WorkspaceId,
-            SyncCommitIden::Branch,
-            SyncCommitIden::Message,
-            SyncCommitIden::ModelIds,
-        ])
-        .values_panic([
-            sync_commit.generate_id().into(),
-            sync_commit.workspace_id.into(),
-            sync_commit.branch.into(),
-            sync_commit.message.as_ref().map(|s| s.as_str()).into(),
-            serde_json::to_string(&sync_commit.model_ids)?.into(),
-        ])
-        .returning_all()
-        .build_rusqlite(SqliteQueryBuilder);
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "commands.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct CommitPayload {
+    workspace_id: String,
+    message: String,
+    branch: String,
+    change_items: Vec<SyncChangeItem>,
+}
 
-    let mut stmt = db.prepare(sql.as_str())?;
-    let m = stmt.query_row(&*params.as_params(), |row| row.try_into())?;
-    Ok(emit_upserted_model(&window, m))
+#[command]
+pub async fn commit<R: Runtime>(window: WebviewWindow<R>, payload: CommitPayload) -> Result<()> {
+    // Ensure all objects exist in the DB
+    let mut object_ids = Vec::new();
+    for i in payload.change_items {
+        let obj: SyncObject = i.model.into();
+        let obj_id = obj.id.clone();
+        object_ids.push(obj_id.clone());
+        if let Err(_) = query_object(window.app_handle(), obj_id.as_str()).await {
+            println!(
+                "INSERTING OBJECT {} {} {:?}",
+                obj.model_id,
+                obj.model_model,
+                serde_json::from_slice::<SyncModel>(obj.data.as_slice())?
+            );
+            insert_object(&window, obj).await?;
+        }
+    }
+
+    // Insert the commit
+    println!("INSERTING COMMIT {:?}", object_ids);
+    let commit = insert_commit(
+        &window,
+        SyncCommit {
+            workspace_id: payload.workspace_id.clone().into(),
+            message: payload.message.into(),
+            object_ids,
+            ..Default::default()
+        },
+    )
+    .await?;
+
+    let mut branch = query_branch_by_name(
+        window.app_handle(),
+        payload.workspace_id.as_str(),
+        payload.branch.as_str(),
+    )
+    .await?;
+    branch.commit_ids.push(commit.id);
+    upsert_branch(&window, branch).await?;
+
+    Ok(())
 }

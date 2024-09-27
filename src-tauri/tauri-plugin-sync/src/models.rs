@@ -1,3 +1,4 @@
+use crate::sync::model_hash;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
@@ -7,24 +8,64 @@ use yaak_models::models::{json_col, Environment, Folder, GrpcRequest, HttpReques
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
+pub struct SyncBranch {
+    #[ts(type = "\"sync_branch\"")]
+    pub model: String,
+    pub id: String, // Commit hash
+    pub workspace_id: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub name: String,
+    pub commit_ids: Vec<String>,
+}
+
+#[derive(sea_query::Iden)]
+pub enum SyncBranchIden {
+    #[iden = "sync_branches"]
+    Table,
+    Model,
+    Id,
+    CreatedAt,
+    UpdatedAt,
+    WorkspaceId,
+
+    CommitIds,
+    Name,
+}
+
+impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncBranch {
+    type Error = rusqlite::Error;
+
+    fn try_from(r: &rusqlite::Row<'_>) -> Result<Self, Self::Error> {
+        Ok(SyncBranch {
+            id: r.get("id")?,
+            model: r.get("model")?,
+            created_at: r.get("created_at")?,
+            updated_at: r.get("updated_at")?,
+            workspace_id: r.get("workspace_id")?,
+
+            commit_ids: json_col(r.get::<_, String>("commit_ids")?.as_str()),
+            name: r.get("name")?,
+        })
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
 pub struct SyncCommit {
     #[ts(type = "\"sync_commit\"")]
     pub model: String,
-    /// ID in this model is the commit's hash
-    pub id: String,
+    pub id: String, // Commit hash
     pub workspace_id: String,
     pub created_at: NaiveDateTime,
-
-    pub branch: String,
     pub message: Option<String>,
-    pub model_ids: Vec<String>,
+    pub object_ids: Vec<String>,
 }
 
 impl SyncCommit {
     pub fn generate_id(&self) -> String {
         let mut hasher = Sha1::new();
-        hasher.update(self.branch.as_bytes());
-        for id in self.model_ids.iter() {
+        for id in self.object_ids.iter() {
             hasher.update(id.as_bytes());
         }
         let id = hex::encode(hasher.finalize());
@@ -41,14 +82,13 @@ pub enum SyncCommitIden {
     CreatedAt,
     WorkspaceId,
 
-    Branch,
     Message,
-    ModelIds,
+    ObjectIds,
 }
 
 impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncCommit {
     type Error = rusqlite::Error;
-    
+
     fn try_from(r: &rusqlite::Row<'_>) -> Result<Self, Self::Error> {
         Ok(SyncCommit {
             id: r.get("id")?,
@@ -56,9 +96,8 @@ impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncCommit {
             created_at: r.get("created_at")?,
             workspace_id: r.get("workspace_id")?,
 
-            model_ids: json_col(r.get::<_, String>("model_ids")?.as_str()),
+            object_ids: json_col(r.get::<_, String>("object_ids")?.as_str()),
             message: r.get("message")?,
-            branch: r.get("branch")?,
         })
     }
 }
@@ -69,13 +108,12 @@ impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncCommit {
 pub struct SyncObject {
     #[ts(type = "\"sync_object\"")]
     pub model: String,
-    /// ID in this model is the model hash
-    pub id: String,
+    pub id: String, // Model hash
     pub created_at: NaiveDateTime,
     pub workspace_id: String,
-
     pub data: Vec<u8>,
     pub model_id: String,
+    pub model_model: String,
 }
 
 #[derive(sea_query::Iden)]
@@ -89,26 +127,28 @@ pub enum SyncObjectIden {
 
     Data,
     ModelId,
+    ModelModel,
 }
 
 impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncObject {
     type Error = rusqlite::Error;
 
     fn try_from(r: &rusqlite::Row<'s>) -> Result<Self, Self::Error> {
+        let data: Vec<u8> = r.get("data")?;
         Ok(SyncObject {
             id: r.get("id")?,
             model: r.get("model")?,
             created_at: r.get("created_at")?,
             workspace_id: r.get("workspace_id")?,
-
-            data: json_col(r.get::<_, String>("data")?.as_str()),
+            data: serde_json::from_slice(data.as_slice()).unwrap_or_default(),
             model_id: r.get("model_id")?,
+            model_model: r.get("model_model")?,
         })
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case", untagged)]
+#[serde(rename_all = "snake_case", tag = "model_type", content = "model")]
 #[ts(export, export_to = "models.ts")]
 pub enum SyncModel {
     Workspace(Workspace),
@@ -130,3 +170,54 @@ impl SyncModel {
     }
 }
 
+impl Into<SyncObject> for SyncModel {
+    fn into(self) -> SyncObject {
+        match self.clone() {
+            SyncModel::Workspace(m) => SyncObject {
+                model: "sync_object".into(),
+                created_at: Default::default(),
+                id: model_hash(&self),
+                workspace_id: m.id.clone(),
+                data: serde_json::to_vec(&self).unwrap(),
+                model_id: m.id.clone(),
+                model_model: m.model.clone(),
+            },
+            SyncModel::Environment(m) => SyncObject {
+                model: "sync_object".into(),
+                created_at: Default::default(),
+                id: model_hash(&self),
+                workspace_id: m.workspace_id.clone(),
+                data: serde_json::to_vec(&self).unwrap(),
+                model_id: m.id.clone(),
+                model_model: m.model.clone(),
+            },
+            SyncModel::Folder(m) => SyncObject {
+                model: "sync_object".into(),
+                created_at: Default::default(),
+                id: model_hash(&self),
+                workspace_id: m.workspace_id.clone(),
+                data: serde_json::to_vec(&self).unwrap(),
+                model_id: m.id.clone(),
+                model_model: m.model.clone(),
+            },
+            SyncModel::HttpRequest(m) => SyncObject {
+                model: "sync_object".into(),
+                created_at: Default::default(),
+                id: model_hash(&self),
+                workspace_id: m.workspace_id.clone(),
+                data: serde_json::to_vec(&self).unwrap(),
+                model_id: m.id.clone(),
+                model_model: m.model.clone(),
+            },
+            SyncModel::GrpcRequest(m) => SyncObject {
+                model: "sync_object".into(),
+                created_at: Default::default(),
+                id: model_hash(&self),
+                workspace_id: m.workspace_id.clone(),
+                data: serde_json::to_vec(&self).unwrap(),
+                model_id: m.id.clone(),
+                model_model: m.model.clone(),
+            },
+        }
+    }
+}
