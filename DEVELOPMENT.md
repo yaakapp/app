@@ -1,19 +1,67 @@
-## Developer Setup
+### Developer Setup
 
-Development requires the following tools
+#### Prerequisites
+
+Make sure you have the following tools installed:
 
 - [Node.js](https://nodejs.org/en/download/package-manager)
 - [Rust](https://www.rust-lang.org/tools/install)
 
-Then, you can run the app.
+Check the installations with the following commands:
+```bash
+node -v
+npm -v
+rustc --version
+```
 
-1. Checkout the [plugins](https://github.com/yaakapp/plugins) repository
-2. Run `YAAK_PLUGINS_DIR="..." npm run bootstrap` to fetch external binaries, build local dependencies, etc.
-3. Run the desktop app in dev mode `npm start`
+#### Steps
+
+1. **Clone the Plugins Repository**  
+   Clone the [plugins repository](https://github.com/yaakapp/plugins) to your local machine:
+   ```bash
+   git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
+   ```
+
+   For example:
+   ```bash
+   git clone https://github.com/yaakapp/plugins.git /Users/your-username/github/yaak/plugins
+   ```
+
+2. **Install Project Dependencies**  
+   Go to your project's root directory and set the environment variable for the plugins directory:
+   ```bash
+   cd /path/to/your/project
+   npm install
+   ```
+
+3. **Bootstrap the Project**  
+   Run the bootstrap command to fetch external binaries and build local dependencies:
+   ```bash
+   YAAK_PLUGINS_DIR="/path/to/your/plugins-directory" npm run bootstrap
+   ```
+
+4. **Run the Application in Development Mode**  
+   After bootstrapping, start the app in development mode:
+   ```bash
+   npm run app-dev
+   ```
+
+---
 
 ## SQLite Migrations
 
-1. From `src-tauri/`, run `sqlx migrate add migration-name`
-2. Migrate the DB by running the app (may need to `cargo clean` first)
+1. **Create a New Migration**  
+   From the `src-tauri/` directory, run:
+   ```bash
+   cd src-tauri
+   sqlx migrate add migration-name
+   ```
 
-_Note: Yaak development builds use a separate database location than production releases_
+2. **Apply the Migrations**  
+   Run the app to apply the migrations. If needed, run:
+   ```bash
+   cargo clean
+   npm run app-dev
+   ```
+
+_Note: Development builds use a separate database location from production builds._
