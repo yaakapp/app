@@ -465,7 +465,7 @@ impl PluginManager {
         };
 
         let plugin = self
-            .get_plugin_by_dir(plugin_name)
+            .get_plugin_by_name(plugin_name)
             .await
             .ok_or(PluginNotFoundErr(plugin_name.to_string()))?;
 
