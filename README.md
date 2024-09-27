@@ -7,10 +7,14 @@ requests. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
 
 ## Feedback and Bug Reports
 
-Please [Create an Issue](https://github.com/yaakapp/app/issues/new) for bug reports and
-submit all other feedback to the [Feedback Board](https://feedback.yaak.app).
+All feedback, bug reports, questions, and feature requests should be reported to
+[feedback.yaak.app](https://feedback.yaak.app). Issues will be duplicated
+in this repository if applicable.
 
 ## Contribution Policy
 
-Yaak open source, but currently only accepting contributions for bug fixes. See [
-`DEVELOPMENT.md`](DEVELOPMENT.md).
+Yaak open source, but only accepting contributions for bug fixes. See the
+[`good first issue`](https://github.com/yaakapp/app/labels/good%20first%20issue) label for
+issues that are more approachable for contribution.
+
+To get started, visit [`DEVELOPMENT.md`](DEVELOPMENT.md) for tips on setting up your environment.
