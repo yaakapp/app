@@ -13,7 +13,14 @@ use yaak_models::queries::{
 impl SyncChange {
     pub fn new(prev: Option<SyncObject>, next: Option<SyncModel>) -> Self {
         Self {
-            prev: prev.map(|o| serde_json::from_slice(o.data.as_slice()).unwrap()),
+            // TODO: This fails because it's not a sync model being stored?
+            prev: prev.map(|o| {
+                let model = serde_json::from_slice::<SyncModel>(o.data.as_slice()).unwrap();
+                SyncChangeItem{
+                    hash: o.id,
+                    model,
+                }
+            }),
             next: next.map(|m| SyncChangeItem {
                 hash: model_hash(&m),
                 model: m,
@@ -66,6 +73,8 @@ pub async fn compute_changes<R: Runtime>(
             query_objects(window.app_handle(), prev_commit.object_ids).await?
         }
     };
+
+    println!("PREV OBJECTS {prev_objects:?}");
 
     let mut curr_changes: Vec<SyncChange> = Vec::new();
     let mut append_models = |models: Vec<SyncModel>| {

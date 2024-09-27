@@ -16,7 +16,7 @@ pub async fn query_objects<R: Runtime>(
     let db = dbm.0.lock().await.get().unwrap();
     let (sql, params) = Query::select()
         .from(SyncObjectIden::Table)
-        .cond_where(Expr::col(SyncObjectIden::WorkspaceId).is_in(object_ids))
+        .cond_where(Expr::col(SyncObjectIden::Id).is_in(object_ids))
         .column(Asterisk)
         .order_by(SyncObjectIden::Id, Order::Asc)
         .build_rusqlite(SqliteQueryBuilder);

@@ -140,7 +140,7 @@ impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncObject {
             model: r.get("model")?,
             created_at: r.get("created_at")?,
             workspace_id: r.get("workspace_id")?,
-            data: serde_json::from_slice(data.as_slice()).unwrap_or_default(),
+            data,
             model_id: r.get("model_id")?,
             model_model: r.get("model_model")?,
         })
