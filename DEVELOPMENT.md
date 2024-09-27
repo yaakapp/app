@@ -1,6 +1,13 @@
-### Developer Setup
+# Developer Setup
 
-#### Prerequisites
+Yaak is a combined Node.js and Rust monorepo. It is a [Tauri](https://tauri.app) project, so 
+uses Rust and HTML/CSS/JS for the main application but there is also a plugin system powered
+by a Node.js sidecar that communicates to the app over gRPC.
+
+Because of the moving parts, there are a few setup steps required before development can 
+begin.
+
+## Prerequisites
 
 Make sure you have the following tools installed:
 
@@ -8,60 +15,50 @@ Make sure you have the following tools installed:
 - [Rust](https://www.rust-lang.org/tools/install)
 
 Check the installations with the following commands:
-```bash
+
+```shell
 node -v
 npm -v
 rustc --version
 ```
 
-#### Steps
+Clone the [plugins repository](https://github.com/yaakapp/plugins) to your machine:
 
-1. **Clone the Plugins Repository**  
-   Clone the [plugins repository](https://github.com/yaakapp/plugins) to your local machine:
-   ```bash
-   git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
-   ```
+```shell
+git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
+```
 
-   For example:
-   ```bash
-   git clone https://github.com/yaakapp/plugins.git /Users/your-username/github/yaak/plugins
-   ```
+Install the NPM dependencies:
 
-2. **Install Project Dependencies**  
-   Go to your project's root directory and set the environment variable for the plugins directory:
-   ```bash
-   cd /path/to/your/project
-   npm install
-   ```
+```shell
+npm install
+```
 
-3. **Bootstrap the Project**  
-   Run the bootstrap command to fetch external binaries and build local dependencies:
-   ```bash
-   YAAK_PLUGINS_DIR="/path/to/your/plugins-directory" npm run bootstrap
-   ```
+Run the `bootstrap` command to do some initial setup:
 
-4. **Run the Application in Development Mode**  
-   After bootstrapping, start the app in development mode:
-   ```bash
-   npm run app-dev
-   ```
+```shell
+npm run bootstrap
+```
 
----
+## Run the App
+
+After bootstrapping, start the app in development mode:
+
+```shell
+npm start
+```
 
 ## SQLite Migrations
 
-1. **Create a New Migration**  
-   From the `src-tauri/` directory, run:
-   ```bash
-   cd src-tauri
-   sqlx migrate add migration-name
-   ```
+New migrations can be created from the `src-tauri/` directory:
+   
+```shell
+cd src-tauri
+sqlx migrate add migration-name
+```
 
-2. **Apply the Migrations**  
-   Run the app to apply the migrations. If needed, run:
-   ```bash
-   cargo clean
-   npm run app-dev
-   ```
+Run the app to apply the migrations. 
+
+If nothing happens, try `cargo clean` and run the app again.
 
 _Note: Development builds use a separate database location from production builds._
