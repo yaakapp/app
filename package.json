@@ -16,7 +16,7 @@
     "src-web"
   ],
   "scripts": {
-    "start": "npm run app-build",
+    "start": "npm run app-dev",
     "app-build": "tauri build",
     "app-dev": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
     "bootstrap": "run-p bootstrap:* && npm run --workspace plugin-runtime build",
