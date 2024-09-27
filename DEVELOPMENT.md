@@ -31,7 +31,7 @@ rustc --version
    Go to your project's root directory and set the environment variable for the plugins directory:
    ```bash
    cd /path/to/your/project
-   YAAK_PLUGINS_DIR="/path/to/your/plugins-directory" npm install
+   npm install
    ```
 
 3. **Bootstrap the Project**  
