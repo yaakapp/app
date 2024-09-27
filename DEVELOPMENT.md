@@ -1,19 +1,64 @@
-## Developer Setup
+# Developer Setup
 
-Development requires the following tools
+Yaak is a combined Node.js and Rust monorepo. It is a [Tauri](https://tauri.app) project, so 
+uses Rust and HTML/CSS/JS for the main application but there is also a plugin system powered
+by a Node.js sidecar that communicates to the app over gRPC.
+
+Because of the moving parts, there are a few setup steps required before development can 
+begin.
+
+## Prerequisites
+
+Make sure you have the following tools installed:
 
 - [Node.js](https://nodejs.org/en/download/package-manager)
 - [Rust](https://www.rust-lang.org/tools/install)
 
-Then, you can run the app.
+Check the installations with the following commands:
 
-1. Checkout the [plugins](https://github.com/yaakapp/plugins) repository
-2. Run `YAAK_PLUGINS_DIR="..." npm run bootstrap` to fetch external binaries, build local dependencies, etc.
-3. Run the desktop app in dev mode `npm start`
+```shell
+node -v
+npm -v
+rustc --version
+```
+
+Clone the [plugins repository](https://github.com/yaakapp/plugins) to your machine:
+
+```shell
+git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
+```
+
+Install the NPM dependencies:
+
+```shell
+npm install
+```
+
+Run the `bootstrap` command to do some initial setup:
+
+```shell
+npm run bootstrap
+```
+
+## Run the App
+
+After bootstrapping, start the app in development mode:
+
+```shell
+npm start
+```
 
 ## SQLite Migrations
 
-1. From `src-tauri/`, run `sqlx migrate add migration-name`
-2. Migrate the DB by running the app (may need to `cargo clean` first)
+New migrations can be created from the `src-tauri/` directory:
+   
+```shell
+cd src-tauri
+sqlx migrate add migration-name
+```
 
-_Note: Yaak development builds use a separate database location than production releases_
+Run the app to apply the migrations. 
+
+If nothing happens, try `cargo clean` and run the app again.
+
+_Note: Development builds use a separate database location from production builds._
