@@ -11,6 +11,7 @@ import { Editor } from './core/Editor';
 import { InlineCode } from './core/InlineCode';
 import { SplitLayout } from './core/SplitLayout';
 import { HStack } from './core/Stacks';
+import { EmptyStateText } from './EmptyStateText';
 
 interface TreeNode {
   children: TreeNode[];
@@ -30,16 +31,14 @@ export function SyncCommitDialog({ workspaceId }: Props) {
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
   const tree: TreeNode | null = useMemo(() => {
-    console.log(changes.data);
     const root = changes.data?.find(
       (c) => changeItemFromChange(c).model.model_type === 'workspace',
     );
     if (root == null) {
       return null;
     }
-
-    const buildNode = (parent: SyncChange): TreeNode => {
-      const parentItem = changeItemFromChange(parent);
+    const buildNode = (change: SyncChange): TreeNode => {
+      const parentItem = changeItemFromChange(change);
       const children = (changes.data ?? [])
         .filter((c) => {
           const item = changeItemFromChange(c);
@@ -54,15 +53,10 @@ export function SyncCommitDialog({ workspaceId }: Props) {
           return item.model.model.workspaceId === parentItem.model.model.id;
         })
         .map((o) => buildNode(o));
-      return {
-        change: parent,
-        children,
-        operation: operationFromChange(parent),
-      };
+      const operation = operationFromChange(change);
+      return { change, children, operation };
     };
-
-    const tree = buildNode(root);
-    return tree;
+    return buildNode(root);
   }, [changes.data]);
 
   const checkNode = (node: TreeNode, checked: boolean) => {
@@ -79,7 +73,7 @@ export function SyncCommitDialog({ workspaceId }: Props) {
     await createCommit.mutateAsync({ branch: 'master', message, changeItems });
   };
 
-  if (tree == null) {
+  if (tree == null || changes.isFetching) {
     return null;
   }
 
@@ -89,11 +83,21 @@ export function SyncCommitDialog({ workspaceId }: Props) {
         name="commit"
         layout="vertical"
         defaultRatio={0.3}
-        firstSlot={({ style }) => (
-          <div style={style} className="h-full overflow-y-auto -ml-1">
-            <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} addedIds={addedIds} />
-          </div>
-        )}
+        firstSlot={({ style }) =>
+          !isNodeModified(tree, {}) ? (
+            <div className="pb-3">
+              <EmptyStateText>
+                No changes to commit.
+                <br />
+                Please check back once you have made changes.
+              </EmptyStateText>
+            </div>
+          ) : (
+            <div style={style} className="h-full overflow-y-auto -ml-1">
+              <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} addedIds={addedIds} />
+            </div>
+          )
+        }
         secondSlot={({ style }) => (
           <div style={style} className="grid grid-rows-[minmax(0,1fr)_auto] gap-3 pb-2">
             <div className="bg-surface-highlight border border-border rounded-md overflow-hidden">
@@ -131,6 +135,7 @@ function TreeNodeChildren({
   onCheck: (node: TreeNode, checked: boolean) => void;
 }) {
   if (node === null) return null;
+  if (!isNodeModified(node, addedIds)) return null;
 
   const checked = nodeCheckedStatus(node, addedIds);
   return (
@@ -149,7 +154,7 @@ function TreeNodeChildren({
               <InlineCode
                 className={classNames(
                   'py-0 ml-auto !bg-surface',
-                  node.operation === 'unmodified' && 'text-secondary',
+                  node.operation === 'unmodified' && 'text-text-subtle',
                   node.operation === 'modified' && 'text-info',
                   node.operation === 'added' && 'text-success',
                   node.operation === 'removed' && 'text-danger',
@@ -241,6 +246,15 @@ function diffItemsForCommit(
   if (changes.length > 0) changes.unshift(changeItemFromChange(root));
 
   return changes;
+}
+
+function isNodeModified(node: TreeNode, addedIds: Record<string, boolean>): boolean {
+  if (node.operation !== 'unmodified') {
+    return true;
+  }
+
+  // Recursively check children
+  return node.children.some((c) => isNodeModified(c, addedIds));
 }
 
 function changeItemFromChange(c: SyncChange | TreeNode): SyncChangeItem {
