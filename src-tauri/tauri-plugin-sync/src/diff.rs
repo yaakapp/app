@@ -7,49 +7,11 @@ use tauri::{Manager, Runtime, WebviewWindow};
 use ts_rs::TS;
 use yaak_models::queries::generate_model_id_with_prefix;
 
-impl SyncChange {
-    pub fn new(prev: Option<SyncObject>, next: Option<SyncModel>) -> Self {
-        Self {
-            // TODO: This fails because it's not a sync model being stored?
-            prev: prev.map(|o| {
-                let model = serde_json::from_slice::<SyncModel>(o.data.as_slice()).unwrap();
-                SyncChangeItem {
-                    object_id: o.id,
-                    model,
-                }
-            }),
-            next: next.map(|m| {
-                let o: SyncObject = m.to_owned().into();
-                SyncChangeItem {
-                    object_id: o.id,
-                    model: m,
-                }
-            }),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "sync.ts")]
-#[serde(rename_all = "camelCase")]
-pub struct SyncChange {
-    prev: Option<SyncChangeItem>,
-    next: Option<SyncChangeItem>,
-}
-
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "sync.ts")]
-#[serde(rename_all = "camelCase")]
-pub struct SyncChangeItem {
-    pub object_id: String,
-    pub model: SyncModel,
-}
-
 pub async fn compute_changes<R: Runtime>(
     window: &WebviewWindow<R>,
     workspace_id: &str,
     branch: &str,
-) -> Result<Vec<SyncChange>> {
+) -> Result<StageTreeNode> {
     let branch = match query_branch_by_name(window.app_handle(), workspace_id, branch).await {
         Ok(b) => b,
         Err(_) => {
@@ -71,47 +33,47 @@ pub async fn compute_changes<R: Runtime>(
         }
     };
 
-    let mut curr_changes: Vec<SyncChange> = Vec::new();
-
     let all_models = find_all_models(window.app_handle(), workspace_id).await?;
-
-    // 1. Add all new, modified, and unmodified objects
-    for m in all_models.clone() {
-        let prev_object = prev_objects.iter().find(|o| o.model_id == m.model_id());
-        curr_changes.push(SyncChange::new(prev_object.map(|o| o.to_owned()), Some(m)));
-    }
-
-    // 2. Add deleted objects
-    for prev in prev_objects {
-        let curr_model = all_models.iter().find(|m| m.model_id() == prev.model_id);
-        if curr_model.is_none() {
-            // Object from the last commit doesn't exist in all models, so it must have
-            // been deleted.
-            curr_changes.push(SyncChange::new(Some(prev), None));
-        }
-    }
-
-    Ok(curr_changes)
+    Ok(StageTreeNode::new(
+        &workspace_id,
+        &prev_objects,
+        &all_models,
+    ))
 }
 
-struct StageNode {
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "sync.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct StageTreeNode {
     pub model: SyncModel,
-    pub children: Vec<StageNode>,
+    pub children: Vec<StageTreeNode>,
     pub status: StageStatus,
     object_id: String,
+    prev_object: Option<SyncObject>,
+    next_object: Option<SyncObject>,
     depth: u8,
 }
 
-#[derive(Debug, Eq, PartialEq)]
-enum StageStatus {
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[ts(export, export_to = "sync.ts")]
+#[serde(rename_all = "snake_case")]
+pub enum StageStatus {
     Unmodified,
     Modified,
     Untracked,
     Removed,
 }
 
-impl StageNode {
-    fn new(
+impl StageTreeNode {
+    pub fn new(
+        model_id: &str,
+        prev_objects: &Vec<SyncObject>,
+        curr_models: &Vec<SyncModel>,
+    ) -> Self {
+        Self::new_with_depth(model_id, prev_objects, curr_models, 0)
+    }
+
+    fn new_with_depth(
         model_id: &str,
         prev_objects: &Vec<SyncObject>,
         curr_models: &Vec<SyncModel>,
@@ -121,8 +83,10 @@ impl StageNode {
         let next: Option<SyncObject> = curr_models
             .iter()
             .find_map(|o| (o.model_id() == model_id).then(|| o.to_owned().into()));
-        let (object, status) = match (prev, next) {
+        let (prev, next, object, status) = match (prev, next) {
             (Some(prev), Some(next)) => (
+                Some(prev.to_owned()),
+                Some(next.to_owned()),
                 next.clone(),
                 if prev.id == next.id {
                     StageStatus::Unmodified
@@ -130,8 +94,18 @@ impl StageNode {
                     StageStatus::Modified
                 },
             ),
-            (Some(prev), None) => (prev.to_owned(), StageStatus::Removed),
-            (None, Some(next)) => (next, StageStatus::Untracked),
+            (Some(prev), None) => (
+                Some(prev.to_owned()),
+                None,
+                prev.to_owned(),
+                StageStatus::Removed,
+            ),
+            (None, Some(next)) => (
+                None,
+                Some(next.to_owned()),
+                next.to_owned(),
+                StageStatus::Untracked,
+            ),
             (None, None) => panic!("Should never find prev/next == None"),
         };
 
@@ -167,17 +141,17 @@ impl StageNode {
             status,
             depth,
             object_id: object.id,
+            prev_object: prev,
+            next_object: next,
             children: all_children
                 .iter()
-                .map(|o| {
-                    StageNode::new(o.model_id.as_str(), &prev_objects, &curr_models, depth + 1)
-                })
+                .map(|o| StageTreeNode::new(o.model_id.as_str(), &prev_objects, &curr_models))
                 .collect(),
         }
     }
 }
 
-impl Display for StageNode {
+impl Display for StageTreeNode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let indent = std::iter::repeat("· ")
             .take(self.depth as usize)
@@ -195,9 +169,54 @@ impl Display for StageNode {
     }
 }
 
+pub fn objects_from_stage_tree(tree: StageTreeNode, added_ids: Vec<String>) -> Vec<SyncObject> {
+    let mut objects: Vec<SyncObject> = Vec::new();
+
+    // First, recurse the children to see if they added anything
+    for child in tree.children {
+        objects.append(&mut objects_from_stage_tree(child, added_ids.clone()));
+    }
+    
+    let is_implicitly_added = objects.len() > 0;
+
+    let is_explicitly_added = added_ids
+        .iter()
+        .find(|id| id.to_string() == tree.model.model_id())
+        .is_some();
+    
+    let is_added = is_implicitly_added || is_explicitly_added;
+
+    match tree.status {
+        StageStatus::Unmodified => objects.push(tree.next_object.unwrap()),
+        StageStatus::Modified => {
+            if is_added {
+                objects.push(tree.next_object.unwrap())
+            } else {
+                objects.push(tree.prev_object.unwrap())
+            }
+        }
+        StageStatus::Untracked => {
+            if is_added {
+                objects.push(tree.next_object.unwrap())
+            } else {
+                // If untracked not added, leave it be
+            }
+        }
+        StageStatus::Removed => {
+            if is_added {
+                // If add a removed change, don't add the object
+            } else {
+                objects.push(tree.prev_object.unwrap())
+            }
+        }
+    }
+
+    objects
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::diff::{StageNode, StageStatus};
+    use crate::diff::{StageStatus, StageTreeNode};
     use crate::{SyncModel, SyncObject};
     use yaak_models::models::{Folder, GrpcRequest, HttpRequest, Workspace};
 
@@ -292,7 +311,7 @@ mod tests {
             // SyncModel::GrpcRequest(model_gr_1.clone()),
         ];
 
-        let wk_1 = StageNode::new(workspace_id.as_str(), &prev_objects, &models, 0);
+        let wk_1 = StageTreeNode::new(workspace_id.as_str(), &prev_objects, &models);
         println!("TREE{}", wk_1);
         assert_eq!(wk_1.model.model_id(), workspace_id);
         assert_eq!(wk_1.status, StageStatus::Unmodified);

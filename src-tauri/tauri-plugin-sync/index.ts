@@ -1,14 +1,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { ChangesPayload, CommitPayload } from './bindings/commands';
-import { SyncChange } from './bindings/sync';
+import { StageTreeNode } from './bindings/sync';
 
 export * from './bindings/commands';
 export * from './bindings/models';
 export * from './bindings/sync';
 
 export function useChanges(workspaceId: string, branch: string) {
-  return useQuery<SyncChange[]>({
+  return useQuery<StageTreeNode>({
     queryKey: ['sync.changes', workspaceId, branch],
     queryFn: () => {
       const payload: ChangesPayload = {

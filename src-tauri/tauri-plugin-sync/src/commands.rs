@@ -1,9 +1,9 @@
-use crate::diff::{compute_changes, SyncChange, SyncChangeItem};
+use crate::diff::{compute_changes, objects_from_stage_tree, StageTreeNode};
 use crate::error::Result;
-use crate::models::*;
 use crate::queries::{
     insert_commit, insert_object, query_branch_by_name, query_object, upsert_branch,
 };
+use crate::SyncCommit;
 use serde::{Deserialize, Serialize};
 use tauri::{command, Manager, Runtime, WebviewWindow};
 use ts_rs::TS;
@@ -20,7 +20,7 @@ pub struct ChangesPayload {
 pub async fn changes<R: Runtime>(
     window: WebviewWindow<R>,
     payload: ChangesPayload,
-) -> Result<Vec<SyncChange>> {
+) -> Result<StageTreeNode> {
     compute_changes(
         &window,
         payload.workspace_id.as_str(),
@@ -36,21 +36,25 @@ pub struct CommitPayload {
     workspace_id: String,
     message: String,
     branch: String,
-    change_items: Vec<SyncChangeItem>,
+    added_ids: Vec<String>,
 }
 
 #[command]
 pub async fn commit<R: Runtime>(window: WebviewWindow<R>, payload: CommitPayload) -> Result<()> {
-    // Ensure all objects exist in the DB
-    let mut object_ids = Vec::new();
-    for i in payload.change_items {
-        let obj: SyncObject = i.model.into();
-        let obj_id = obj.id.clone();
-        object_ids.push(obj_id.clone());
-        if let Err(_) = query_object(window.app_handle(), obj_id.as_str()).await {
+    let tree = compute_changes(
+        &window,
+        payload.workspace_id.as_str(),
+        payload.branch.as_str(),
+    )
+    .await?;
+
+    let objects = objects_from_stage_tree(tree, payload.added_ids);
+    for obj in objects.clone() {
+        if let Err(_) = query_object(window.app_handle(), obj.id.as_str()).await {
             insert_object(&window, obj).await?;
         }
     }
+    let object_ids: Vec<String> = objects.iter().map(|o| o.id.clone()).collect();
 
     // Insert the commit
     let commit = insert_commit(

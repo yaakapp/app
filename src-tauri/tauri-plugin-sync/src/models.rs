@@ -1,7 +1,8 @@
 use crate::error::Result;
 use crate::sync::model_hash;
 use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
+use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize};
 use tauri::{AppHandle, Runtime};
 use ts_rs::TS;
 use yaak_models::models::{json_col, Environment, Folder, GrpcRequest, HttpRequest, Workspace};
@@ -146,8 +147,8 @@ impl Into<SyncModel> for SyncObject {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case", tag = "model_type", content = "model")]
+#[derive(Debug, Clone, Serialize, TS)]
+#[serde(rename_all = "snake_case", untagged)]
 #[ts(export, export_to = "models.ts")]
 pub enum SyncModel {
     Workspace(Workspace),
@@ -155,6 +156,44 @@ pub enum SyncModel {
     Folder(Folder),
     HttpRequest(HttpRequest),
     GrpcRequest(GrpcRequest),
+}
+
+impl<'de> Deserialize<'de> for SyncModel {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let json: serde_json::value::Value = serde_json::value::Value::deserialize(deserializer)?;
+        let obj = json.as_object().unwrap();
+        let model = obj.get("model").unwrap().as_str().unwrap_or("__UNKNOWN__");
+        match model {
+            "workspace" => Ok(SyncModel::Workspace(
+                serde_json::from_value(json).unwrap(),
+            )),
+            "environment" => Ok(SyncModel::Environment(
+                serde_json::from_value(json).unwrap(),
+            )),
+            "folder" => Ok(SyncModel::Folder(
+                serde_json::from_value(json).unwrap(),
+            )),
+            "http_request" => Ok(SyncModel::HttpRequest(
+                serde_json::from_value(json).unwrap(),
+            )),
+            "grpc_request" => Ok(SyncModel::GrpcRequest(
+                serde_json::from_value(json).unwrap(),
+            )),
+            model => Err(Error::unknown_variant(
+                model,
+                &[
+                    "workspace",
+                    "environment",
+                    "folder",
+                    "http_request",
+                    "grpc_request",
+                ],
+            )),
+        }
+    }
 }
 
 impl SyncModel {

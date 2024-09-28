@@ -871,7 +871,7 @@ impl ModelType {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase", untagged)]
 #[ts(export, export_to = "models.ts")]
 pub enum AnyModel {

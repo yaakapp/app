@@ -7,10 +7,6 @@ pub fn model_hash(m: &SyncModel) -> String {
         .unwrap()
         .as_object()
         .unwrap()
-        .get("model")
-        .unwrap()
-        .as_object()
-        .unwrap()
         .to_owned();
 
     // Remove fields we don't want to be in the final model
