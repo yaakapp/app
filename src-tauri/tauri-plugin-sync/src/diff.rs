@@ -74,8 +74,6 @@ pub async fn compute_changes<R: Runtime>(
         }
     };
 
-    println!("PREV OBJECTS {prev_objects:?}");
-
     let mut curr_changes: Vec<SyncChange> = Vec::new();
     let mut append_models = |models: Vec<SyncModel>| {
         for m in models {

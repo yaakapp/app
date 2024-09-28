@@ -32,17 +32,17 @@ export function SyncCommitDialog({ workspaceId }: Props) {
   const tree: TreeNode | null = useMemo(() => {
     console.log(changes.data);
     const root = changes.data?.find(
-      (c) => changeItemFromChange(c, addedIds).model.model_type === 'workspace',
+      (c) => changeItemFromChange(c).model.model_type === 'workspace',
     );
     if (root == null) {
       return null;
     }
 
     const buildNode = (parent: SyncChange): TreeNode => {
-      const parentItem = changeItemFromChange(parent, addedIds);
+      const parentItem = changeItemFromChange(parent);
       const children = (changes.data ?? [])
         .filter((c) => {
-          const item = changeItemFromChange(c, addedIds);
+          const item = changeItemFromChange(c);
           if (item.model.model_type === 'workspace') {
             return false; // Workspace will never be a child
           }
@@ -63,7 +63,7 @@ export function SyncCommitDialog({ workspaceId }: Props) {
 
     const tree = buildNode(root);
     return tree;
-  }, [addedIds, changes.data]);
+  }, [changes.data]);
 
   const checkNode = (node: TreeNode, checked: boolean) => {
     setAddedIds((currentAddedIds) => {
@@ -145,9 +145,7 @@ function TreeNodeChildren({
           checked={checked}
           title={
             <div className="flex items-center gap-1 w-full">
-              <div>
-                {resolvedModelName(changeItemFromChange(node.change, addedIds).model.model)}
-              </div>
+              <div>{resolvedModelName(changeItemFromChange(node.change).model.model)}</div>
               <InlineCode
                 className={classNames(
                   'py-0 ml-auto !bg-surface',
@@ -167,7 +165,7 @@ function TreeNodeChildren({
 
       {node.children.map((childNode) => {
         return (
-          <Fragment key={idFromChange(childNode.change, addedIds)}>
+          <Fragment key={idFromChange(childNode.change)}>
             <TreeNodeChildren
               node={childNode}
               depth={depth + 1}
@@ -188,13 +186,13 @@ function nodeCheckedStatus(
   let leavesVisited = 0;
   let leavesChecked = 0;
   if (root.children.length === 0) {
-    return addedIds[idFromChange(root, addedIds)] ?? false;
+    return addedIds[idFromChange(root)] ?? false;
   }
 
   const visitChildren = (n: TreeNode) => {
     if (n.children.length === 0) {
       leavesVisited += 1;
-      const checked = addedIds[idFromChange(n, addedIds)] ?? false;
+      const checked = addedIds[idFromChange(n)] ?? false;
       if (checked) leavesChecked += 1;
     }
     for (const child of n.children) {
@@ -214,7 +212,7 @@ function nodeCheckedStatus(
 }
 
 function setCheckedOnChildren(node: TreeNode, addedIds: Record<string, boolean>, checked: boolean) {
-  const id = idFromChange(node, addedIds);
+  const id = idFromChange(node);
 
   if (node.children.length === 0) {
     addedIds[id] = checked;
@@ -231,24 +229,21 @@ function diffItemsForCommit(
 ): CommitPayload['changeItems'] {
   const changes: CommitPayload['changeItems'] = [];
   for (const child of root.children) {
-    const wasAdded = !!addedIds[idFromChange(child, addedIds)];
+    const wasAdded = !!addedIds[idFromChange(child)];
     if (wasAdded) {
-      changes.push(changeItemFromChange(child, addedIds));
+      changes.push(changeItemFromChange(child));
     }
 
     changes.push(...diffItemsForCommit(child, addedIds));
   }
 
   // If children had IDs to commit, also add this node
-  if (changes.length > 0) changes.unshift(changeItemFromChange(root, addedIds));
+  if (changes.length > 0) changes.unshift(changeItemFromChange(root));
 
   return changes;
 }
 
-function changeItemFromChange(
-  c: SyncChange | TreeNode,
-  addedIds: Record<string, boolean>,
-): SyncChangeItem {
+function changeItemFromChange(c: SyncChange | TreeNode): SyncChangeItem {
   c = 'change' in c ? c.change : c;
 
   const v = c.next ?? c.prev;
@@ -257,17 +252,15 @@ function changeItemFromChange(
     throw new Error("Change didn't contain next or prev");
   }
 
-  const isAdded = addedIds[v.model.model.id];
   if (c.prev != null && c.next == null) return c.prev;
   if (c.prev == null && c.next != null) return c.next;
-  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash)
-    return isAdded ? c.next : c.prev;
+  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash) return c.next;
 
   return v;
 }
 
-function idFromChange(c: SyncChange | TreeNode, addedIds: Record<string, boolean>): string {
-  return changeItemFromChange(c, addedIds).model.model.id;
+function idFromChange(c: SyncChange | TreeNode): string {
+  return changeItemFromChange(c).model.model.id;
 }
 
 function operationFromChange(c: SyncChange): TreeNode['operation'] {

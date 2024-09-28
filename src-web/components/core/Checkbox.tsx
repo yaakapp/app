@@ -37,7 +37,7 @@ export function Checkbox({
           )}
           type="checkbox"
           disabled={disabled}
-          onChange={() => onChange(!checked)}
+          onChange={() => onChange(checked === 'indeterminate' ? true : !checked)}
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <Icon
