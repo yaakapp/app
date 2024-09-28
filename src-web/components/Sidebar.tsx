@@ -50,7 +50,7 @@ import { InlineCode } from './core/InlineCode';
 import { VStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
 import { DropMarker } from './DropMarker';
-import { SyncMenu } from './SyncMenu';
+import { SyncDropdown } from './SyncDropdown';
 
 interface Props {
   className?: string;
@@ -465,7 +465,7 @@ export function Sidebar({ className }: Props) {
           handleDragStart={handleDragStart}
         />
       </div>
-      <SyncMenu />
+      <SyncDropdown />
     </aside>
   );
 }

@@ -48,18 +48,11 @@ pub async fn commit<R: Runtime>(window: WebviewWindow<R>, payload: CommitPayload
         let obj_id = obj.id.clone();
         object_ids.push(obj_id.clone());
         if let Err(_) = query_object(window.app_handle(), obj_id.as_str()).await {
-            println!(
-                "INSERTING OBJECT {} {} {:?}",
-                obj.model_id,
-                obj.model_model,
-                serde_json::from_slice::<SyncModel>(obj.data.as_slice())?
-            );
             insert_object(&window, obj).await?;
         }
     }
 
     // Insert the commit
-    println!("INSERTING COMMIT {:?}", object_ids);
     let commit = insert_commit(
         &window,
         SyncCommit {

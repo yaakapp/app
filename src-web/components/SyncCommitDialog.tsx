@@ -21,25 +21,40 @@ interface TreeNode {
 
 interface Props {
   workspaceId: string;
+  hide: () => void;
 }
 
-export function SyncCommitDialog({ workspaceId }: Props) {
-  const [message, setMessage] = useState<string>('');
+export function SyncCommitDialog({ workspaceId, hide }: Props) {
   const changes = useChanges(workspaceId, 'master');
-  const createCommit = useCreateCommit(workspaceId);
 
+  if (changes.isFetching || changes.data == null) {
+    return null;
+  }
+
+  return <SyncCommitChanges changes={changes.data} workspaceId={workspaceId} onDone={hide} />;
+}
+
+function SyncCommitChanges({
+  changes,
+  workspaceId,
+  onDone,
+}: {
+  changes: SyncChange[];
+  workspaceId: string;
+  onDone: () => void;
+}) {
+  const [message, setMessage] = useState<string>('');
+  const createCommit = useCreateCommit(workspaceId);
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
   const tree: TreeNode | null = useMemo(() => {
-    const root = changes.data?.find(
-      (c) => changeItemFromChange(c).model.model_type === 'workspace',
-    );
+    const root = changes.find((c) => changeItemFromChange(c).model.model_type === 'workspace');
     if (root == null) {
       return null;
     }
     const buildNode = (change: SyncChange): TreeNode => {
       const parentItem = changeItemFromChange(change);
-      const children = (changes.data ?? [])
+      const children = changes
         .filter((c) => {
           const item = changeItemFromChange(c);
           if (item.model.model_type === 'workspace') {
@@ -57,7 +72,7 @@ export function SyncCommitDialog({ workspaceId }: Props) {
       return { change, children, operation };
     };
     return buildNode(root);
-  }, [changes.data]);
+  }, [changes]);
 
   const checkNode = (node: TreeNode, checked: boolean) => {
     setAddedIds((currentAddedIds) => {
@@ -70,11 +85,25 @@ export function SyncCommitDialog({ workspaceId }: Props) {
   const handleCreateCommit = async () => {
     if (tree == null) return;
     const changeItems = diffItemsForCommit(tree, addedIds);
+    console.log(changeItems.map((c) => c.model.model));
     await createCommit.mutateAsync({ branch: 'master', message, changeItems });
+    onDone();
   };
 
-  if (tree == null || changes.isFetching) {
+  const hasAddedAnything = Object.values(addedIds).some((a) => a);
+
+  if (tree == null) {
     return null;
+  }
+
+  if (!isNodeModified(tree)) {
+    return (
+      <EmptyStateText>
+        No changes to commit.
+        <br />
+        Please check back once you have made changes.
+      </EmptyStateText>
+    );
   }
 
   return (
@@ -83,21 +112,11 @@ export function SyncCommitDialog({ workspaceId }: Props) {
         name="commit"
         layout="vertical"
         defaultRatio={0.3}
-        firstSlot={({ style }) =>
-          !isNodeModified(tree, {}) ? (
-            <div className="pb-3">
-              <EmptyStateText>
-                No changes to commit.
-                <br />
-                Please check back once you have made changes.
-              </EmptyStateText>
-            </div>
-          ) : (
-            <div style={style} className="h-full overflow-y-auto -ml-1">
-              <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} addedIds={addedIds} />
-            </div>
-          )
-        }
+        firstSlot={({ style }) => (
+          <div style={style} className="h-full overflow-y-auto -ml-1">
+            <TreeNodeChildren node={tree} depth={0} onCheck={checkNode} addedIds={addedIds} />
+          </div>
+        )}
         secondSlot={({ style }) => (
           <div style={style} className="grid grid-rows-[minmax(0,1fr)_auto] gap-3 pb-2">
             <div className="bg-surface-highlight border border-border rounded-md overflow-hidden">
@@ -109,10 +128,15 @@ export function SyncCommitDialog({ workspaceId }: Props) {
             </div>
             {createCommit.error && <Banner color="danger">{createCommit.error}</Banner>}
             <HStack justifyContent="end" space={2}>
-              <Button color="secondary" size="sm" onClick={handleCreateCommit}>
+              <Button
+                color="secondary"
+                size="sm"
+                onClick={handleCreateCommit}
+                disabled={!hasAddedAnything}
+              >
                 Commit
               </Button>
-              <Button color="secondary" size="sm">
+              <Button color="secondary" size="sm" disabled={!hasAddedAnything}>
                 Commit and Push
               </Button>
             </HStack>
@@ -135,7 +159,7 @@ function TreeNodeChildren({
   onCheck: (node: TreeNode, checked: boolean) => void;
 }) {
   if (node === null) return null;
-  if (!isNodeModified(node, addedIds)) return null;
+  if (!isNodeModified(node)) return null;
 
   const checked = nodeCheckedStatus(node, addedIds);
   return (
@@ -151,17 +175,18 @@ function TreeNodeChildren({
           title={
             <div className="flex items-center gap-1 w-full">
               <div>{resolvedModelName(changeItemFromChange(node.change).model.model)}</div>
-              <InlineCode
-                className={classNames(
-                  'py-0 ml-auto !bg-surface',
-                  node.operation === 'unmodified' && 'text-text-subtle',
-                  node.operation === 'modified' && 'text-info',
-                  node.operation === 'added' && 'text-success',
-                  node.operation === 'removed' && 'text-danger',
-                )}
-              >
-                {node.operation}
-              </InlineCode>
+              {node.operation !== 'unmodified' && (
+                <InlineCode
+                  className={classNames(
+                    'py-0 ml-auto !bg-surface',
+                    node.operation === 'modified' && 'text-info',
+                    node.operation === 'added' && 'text-success',
+                    node.operation === 'removed' && 'text-danger',
+                  )}
+                >
+                  {node.operation}
+                </InlineCode>
+              )}
             </div>
           }
           onChange={(checked) => onCheck(node, checked)}
@@ -235,8 +260,12 @@ function diffItemsForCommit(
   const changes: CommitPayload['changeItems'] = [];
   for (const child of root.children) {
     const wasAdded = !!addedIds[idFromChange(child)];
-    if (wasAdded) {
+    if (wasAdded && (child.operation === 'added' || child.operation === 'modified')) {
       changes.push(changeItemFromChange(child));
+    } else if (!wasAdded && child.change.prev) {
+      // Add the previous version of any change that wasn't added. This includes unmodified
+      // objects and modified objects that weren't added
+      changes.push(child.change.prev);
     }
 
     changes.push(...diffItemsForCommit(child, addedIds));
@@ -248,29 +277,22 @@ function diffItemsForCommit(
   return changes;
 }
 
-function isNodeModified(node: TreeNode, addedIds: Record<string, boolean>): boolean {
+function isNodeModified(node: TreeNode): boolean {
   if (node.operation !== 'unmodified') {
     return true;
   }
 
   // Recursively check children
-  return node.children.some((c) => isNodeModified(c, addedIds));
+  return node.children.some((c) => isNodeModified(c));
 }
 
 function changeItemFromChange(c: SyncChange | TreeNode): SyncChangeItem {
   c = 'change' in c ? c.change : c;
-
-  const v = c.next ?? c.prev;
-  if (v == null) {
-    // Should never happen
-    throw new Error("Change didn't contain next or prev");
-  }
-
-  if (c.prev != null && c.next == null) return c.prev;
-  if (c.prev == null && c.next != null) return c.next;
-  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash) return c.next;
-
-  return v;
+  if (c.prev != null && c.next == null) return c.prev; // deleted
+  if (c.prev == null && c.next != null) return c.next; // added
+  if (c.prev != null && c.next != null && c.prev.objectId !== c.next.objectId) return c.next; // modified
+  if (c.prev != null && c.next != null && c.prev.objectId === c.next.objectId) return c.next; // unmodified
+  throw new Error('Got invalid change ' + JSON.stringify(c));
 }
 
 function idFromChange(c: SyncChange | TreeNode): string {
@@ -280,6 +302,6 @@ function idFromChange(c: SyncChange | TreeNode): string {
 function operationFromChange(c: SyncChange): TreeNode['operation'] {
   if (c.prev != null && c.next == null) return 'removed';
   if (c.prev == null && c.next != null) return 'added';
-  if (c.prev != null && c.next != null && c.prev.hash !== c.next.hash) return 'modified';
+  if (c.prev != null && c.next != null && c.prev.objectId !== c.next.objectId) return 'modified';
   return 'unmodified';
 }

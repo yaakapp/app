@@ -97,7 +97,7 @@ pub async fn insert_commit<R: Runtime>(
             SyncCommitIden::ObjectIds,
         ])
         .values_panic([
-            commit.generate_id().into(),
+            generate_model_id_with_prefix("sc").into(),
             commit.workspace_id.into(),
             commit.message.clone().into(),
             serde_json::to_string(&commit.object_ids)?.into(),

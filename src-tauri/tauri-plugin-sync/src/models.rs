@@ -1,7 +1,6 @@
 use crate::sync::model_hash;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use sha1::{Digest, Sha1};
 use ts_rs::TS;
 use yaak_models::models::{json_col, Environment, Folder, GrpcRequest, HttpRequest, Workspace};
 
@@ -28,7 +27,6 @@ pub enum SyncBranchIden {
     CreatedAt,
     UpdatedAt,
     WorkspaceId,
-
     CommitIds,
     Name,
 }
@@ -55,22 +53,11 @@ impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncBranch {
 pub struct SyncCommit {
     #[ts(type = "\"sync_commit\"")]
     pub model: String,
-    pub id: String, // Commit hash
+    pub id: String,
     pub workspace_id: String,
     pub created_at: NaiveDateTime,
     pub message: Option<String>,
     pub object_ids: Vec<String>,
-}
-
-impl SyncCommit {
-    pub fn generate_id(&self) -> String {
-        let mut hasher = Sha1::new();
-        for id in self.object_ids.iter() {
-            hasher.update(id.as_bytes());
-        }
-        let id = hex::encode(hasher.finalize());
-        format!("sc_{id}")
-    }
 }
 
 #[derive(sea_query::Iden)]
@@ -172,11 +159,13 @@ impl SyncModel {
 
 impl Into<SyncObject> for SyncModel {
     fn into(self) -> SyncObject {
+        let id = format!("so_{}", model_hash(&self));
+
         match self.clone() {
             SyncModel::Workspace(m) => SyncObject {
                 model: "sync_object".into(),
                 created_at: Default::default(),
-                id: model_hash(&self),
+                id,
                 workspace_id: m.id.clone(),
                 data: serde_json::to_vec(&self).unwrap(),
                 model_id: m.id.clone(),
@@ -185,7 +174,7 @@ impl Into<SyncObject> for SyncModel {
             SyncModel::Environment(m) => SyncObject {
                 model: "sync_object".into(),
                 created_at: Default::default(),
-                id: model_hash(&self),
+                id,
                 workspace_id: m.workspace_id.clone(),
                 data: serde_json::to_vec(&self).unwrap(),
                 model_id: m.id.clone(),
@@ -194,7 +183,7 @@ impl Into<SyncObject> for SyncModel {
             SyncModel::Folder(m) => SyncObject {
                 model: "sync_object".into(),
                 created_at: Default::default(),
-                id: model_hash(&self),
+                id,
                 workspace_id: m.workspace_id.clone(),
                 data: serde_json::to_vec(&self).unwrap(),
                 model_id: m.id.clone(),
@@ -203,7 +192,7 @@ impl Into<SyncObject> for SyncModel {
             SyncModel::HttpRequest(m) => SyncObject {
                 model: "sync_object".into(),
                 created_at: Default::default(),
-                id: model_hash(&self),
+                id,
                 workspace_id: m.workspace_id.clone(),
                 data: serde_json::to_vec(&self).unwrap(),
                 model_id: m.id.clone(),
@@ -212,7 +201,7 @@ impl Into<SyncObject> for SyncModel {
             SyncModel::GrpcRequest(m) => SyncObject {
                 model: "sync_object".into(),
                 created_at: Default::default(),
-                id: model_hash(&self),
+                id,
                 workspace_id: m.workspace_id.clone(),
                 data: serde_json::to_vec(&self).unwrap(),
                 model_id: m.id.clone(),

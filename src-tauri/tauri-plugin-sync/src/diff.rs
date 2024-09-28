@@ -1,6 +1,5 @@
 use crate::error::Result;
 use crate::queries::{query_branch_by_name, query_commit, query_objects, upsert_branch};
-use crate::sync::model_hash;
 use crate::{SyncBranch, SyncModel, SyncObject};
 use serde::{Deserialize, Serialize};
 use tauri::{Manager, Runtime, WebviewWindow};
@@ -16,14 +15,14 @@ impl SyncChange {
             // TODO: This fails because it's not a sync model being stored?
             prev: prev.map(|o| {
                 let model = serde_json::from_slice::<SyncModel>(o.data.as_slice()).unwrap();
-                SyncChangeItem{
-                    hash: o.id,
-                    model,
-                }
+                SyncChangeItem { object_id: o.id, model }
             }),
-            next: next.map(|m| SyncChangeItem {
-                hash: model_hash(&m),
-                model: m,
+            next: next.map(|m| {
+                let o: SyncObject = m.to_owned().into();
+                SyncChangeItem {
+                    object_id: o.id,
+                    model: m,
+                }
             }),
         }
     }
@@ -41,7 +40,7 @@ pub struct SyncChange {
 #[ts(export, export_to = "sync.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct SyncChangeItem {
-    pub hash: String,
+    pub object_id: String,
     pub model: SyncModel,
 }
 
@@ -53,16 +52,13 @@ pub async fn compute_changes<R: Runtime>(
     let branch = match query_branch_by_name(window.app_handle(), workspace_id, branch).await {
         Ok(b) => b,
         Err(_) => {
-            upsert_branch(
-                window,
-                SyncBranch {
-                    id: generate_model_id_with_prefix("sb"),
-                    name: branch.to_string(),
-                    workspace_id: workspace_id.to_string(),
-                    ..Default::default()
-                },
-            )
-            .await?
+            let b = SyncBranch {
+                id: generate_model_id_with_prefix("sb"),
+                name: branch.to_string(),
+                workspace_id: workspace_id.to_string(),
+                ..Default::default()
+            };
+            upsert_branch(window, b).await?
         }
     };
 

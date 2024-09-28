@@ -6,10 +6,11 @@ import { useDialog } from './DialogContext';
 import { SyncCommitDialog } from './SyncCommitDialog';
 import { useToast } from './ToastContext';
 
-export function SyncMenu() {
+export function SyncDropdown() {
   const toast = useToast();
   const dialog = useDialog();
   const workspace = useActiveWorkspace();
+
   if (workspace == null) return null;
 
   return (
@@ -40,7 +41,7 @@ export function SyncMenu() {
               size: 'full',
               className: '!max-h-[min(80vh,40rem)] !max-w-[min(50rem,90vw)]',
               title: 'Commit Changes',
-              render: () => <SyncCommitDialog workspaceId={workspace.id} />,
+              render: ({ hide }) => <SyncCommitDialog workspaceId={workspace.id} hide={hide} />,
             });
           },
         },
