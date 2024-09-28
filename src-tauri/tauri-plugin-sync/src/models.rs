@@ -1,8 +1,13 @@
+use crate::error::Result;
 use crate::sync::model_hash;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Runtime};
 use ts_rs::TS;
 use yaak_models::models::{json_col, Environment, Folder, GrpcRequest, HttpRequest, Workspace};
+use yaak_models::queries::{
+    get_workspace, list_environments, list_folders, list_grpc_requests, list_http_requests,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
@@ -34,7 +39,7 @@ pub enum SyncBranchIden {
 impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncBranch {
     type Error = rusqlite::Error;
 
-    fn try_from(r: &rusqlite::Row<'_>) -> Result<Self, Self::Error> {
+    fn try_from(r: &rusqlite::Row<'_>) -> std::result::Result<Self, Self::Error> {
         Ok(SyncBranch {
             id: r.get("id")?,
             model: r.get("model")?,
@@ -76,7 +81,7 @@ pub enum SyncCommitIden {
 impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncCommit {
     type Error = rusqlite::Error;
 
-    fn try_from(r: &rusqlite::Row<'_>) -> Result<Self, Self::Error> {
+    fn try_from(r: &rusqlite::Row<'_>) -> std::result::Result<Self, Self::Error> {
         Ok(SyncCommit {
             id: r.get("id")?,
             model: r.get("model")?,
@@ -120,7 +125,7 @@ pub enum SyncObjectIden {
 impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncObject {
     type Error = rusqlite::Error;
 
-    fn try_from(r: &rusqlite::Row<'s>) -> Result<Self, Self::Error> {
+    fn try_from(r: &rusqlite::Row<'s>) -> std::result::Result<Self, Self::Error> {
         let data: Vec<u8> = r.get("data")?;
         Ok(SyncObject {
             id: r.get("id")?,
@@ -131,6 +136,13 @@ impl<'s> TryFrom<&rusqlite::Row<'s>> for SyncObject {
             model_id: r.get("model_id")?,
             model_model: r.get("model_model")?,
         })
+    }
+}
+
+impl Into<SyncModel> for SyncObject {
+    fn into(self) -> SyncModel {
+        let model: SyncModel = serde_json::from_slice(&self.data.as_slice()).unwrap();
+        model
     }
 }
 
@@ -153,6 +165,26 @@ impl SyncModel {
             SyncModel::Folder(m) => m.to_owned().id,
             SyncModel::HttpRequest(m) => m.to_owned().id,
             SyncModel::GrpcRequest(m) => m.to_owned().id,
+        }
+    }
+
+    pub fn is_child_of(&self, parent: &Self) -> bool {
+        let parent_id = parent.model_id();
+        match self {
+            SyncModel::Workspace(_) => false,
+            SyncModel::Environment(m) => m.workspace_id == parent_id,
+            SyncModel::Folder(m) => match m.to_owned().folder_id {
+                None => m.workspace_id == parent_id,
+                Some(folder_id) => folder_id == parent_id,
+            },
+            SyncModel::HttpRequest(m) => match m.to_owned().folder_id {
+                None => m.workspace_id == parent_id,
+                Some(folder_id) => folder_id == parent_id,
+            },
+            SyncModel::GrpcRequest(m) => match m.to_owned().folder_id {
+                None => m.workspace_id == parent_id,
+                Some(folder_id) => folder_id == parent_id,
+            },
         }
     }
 }
@@ -209,4 +241,49 @@ impl Into<SyncObject> for SyncModel {
             },
         }
     }
+}
+
+pub async fn find_all_models<R: Runtime>(
+    app_handle: &AppHandle<R>,
+    workspace_id: &str,
+) -> Result<Vec<SyncModel>> {
+    let mut models = Vec::new();
+
+    models.push(SyncModel::Workspace(
+        get_workspace(app_handle, workspace_id).await?,
+    ));
+
+    models.append(
+        &mut list_environments(app_handle, workspace_id)
+            .await?
+            .iter()
+            .map(|m| SyncModel::Environment(m.to_owned()))
+            .collect(),
+    );
+
+    models.append(
+        &mut list_folders(app_handle, workspace_id)
+            .await?
+            .iter()
+            .map(|m| SyncModel::Folder(m.to_owned()))
+            .collect(),
+    );
+
+    models.append(
+        &mut list_http_requests(app_handle, workspace_id)
+            .await?
+            .iter()
+            .map(|m| SyncModel::HttpRequest(m.to_owned()))
+            .collect(),
+    );
+
+    models.append(
+        &mut list_grpc_requests(app_handle, workspace_id)
+            .await?
+            .iter()
+            .map(|m| SyncModel::GrpcRequest(m.to_owned()))
+            .collect(),
+    );
+
+    Ok(models)
 }

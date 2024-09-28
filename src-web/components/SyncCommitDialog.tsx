@@ -96,7 +96,7 @@ function SyncCommitChanges({
     return null;
   }
 
-  if (!isNodeModified(tree)) {
+  if (!isNodeIgnored(tree)) {
     return (
       <EmptyStateText>
         No changes to commit.
@@ -159,7 +159,7 @@ function TreeNodeChildren({
   onCheck: (node: TreeNode, checked: boolean) => void;
 }) {
   if (node === null) return null;
-  if (!isNodeModified(node)) return null;
+  if (!isNodeIgnored(node)) return null;
 
   const checked = nodeCheckedStatus(node, addedIds);
   return (
@@ -220,6 +220,8 @@ function nodeCheckedStatus(
   }
 
   const visitChildren = (n: TreeNode) => {
+    if (!isNodeIgnored(n)) return;
+
     if (n.children.length === 0) {
       leavesVisited += 1;
       const checked = addedIds[idFromChange(n)] ?? false;
@@ -277,13 +279,13 @@ function diffItemsForCommit(
   return changes;
 }
 
-function isNodeModified(node: TreeNode): boolean {
+function isNodeIgnored(node: TreeNode): boolean {
   if (node.operation !== 'unmodified') {
     return true;
   }
 
   // Recursively check children
-  return node.children.some((c) => isNodeModified(c));
+  return node.children.some((c) => isNodeIgnored(c));
 }
 
 function changeItemFromChange(c: SyncChange | TreeNode): SyncChangeItem {
