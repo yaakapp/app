@@ -4,6 +4,7 @@ import { Icon } from './core/Icon';
 import { InlineCode } from './core/InlineCode';
 import { useDialog } from './DialogContext';
 import { SyncCommitDialog } from './SyncCommitDialog';
+import { SyncHistoryDialog } from './SyncHistoryDialog';
 import { useToast } from './ToastContext';
 
 export function SyncDropdown() {
@@ -27,6 +28,20 @@ export function SyncDropdown() {
               icon: 'info',
               color: 'notice',
               message: 'TODO: Implement branch manager',
+            });
+          },
+        },
+        {
+          key: 'history',
+          label: 'History',
+          leftSlot: <Icon icon="clock" />,
+          onSelect() {
+            dialog.show({
+              id: 'branch-history',
+              size: 'full',
+              className: '!max-h-[min(80vh,40rem)] !max-w-[min(50rem,90vw)]',
+              title: 'Branch History',
+              render: ({ hide }) => <SyncHistoryDialog workspaceId={workspace.id} hide={hide} />,
             });
           },
         },

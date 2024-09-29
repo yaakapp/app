@@ -3,3 +3,5 @@
 export type ChangesPayload = { workspaceId: string, branch: string, };
 
 export type CommitPayload = { workspaceId: string, message: string, branch: string, addedIds: Array<string>, };
+
+export type CommitsPayload = { workspaceId: string, branch: string, };

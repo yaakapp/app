@@ -4,6 +4,7 @@ Default permissions for the plugin
 
 - `allow-changes`
 - `allow-commit`
+- `allow-commits`
 
 ## Permission Table 
 
@@ -62,6 +63,32 @@ Enables the commit command without any pre-configured scope.
 <td>
 
 Denies the commit command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sync:allow-commits`
+
+</td>
+<td>
+
+Enables the commits command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`sync:deny-commits`
+
+</td>
+<td>
+
+Denies the commits command without any pre-configured scope.
 
 </td>
 </tr>

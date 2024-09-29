@@ -15,6 +15,6 @@ pub use error::{Error, Result};
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("sync")
-        .invoke_handler(generate_handler![commit, changes])
+        .invoke_handler(generate_handler![commits, commit, changes])
         .build()
 }

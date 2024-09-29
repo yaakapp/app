@@ -315,6 +315,16 @@
           "const": "deny-commit"
         },
         {
+          "description": "Enables the commits command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-commits"
+        },
+        {
+          "description": "Denies the commits command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-commits"
+        },
+        {
           "description": "Default permissions for the plugin",
           "type": "string",
           "const": "default"

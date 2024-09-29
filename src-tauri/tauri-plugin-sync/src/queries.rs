@@ -68,6 +68,23 @@ pub async fn insert_object<R: Runtime>(
     Ok(emit_upserted_model(&window, m))
 }
 
+pub async fn query_commits<R: Runtime>(
+    mgr: &impl Manager<R>,
+    commit_ids: Vec<String>,
+) -> Result<Vec<SyncCommit>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(SyncCommitIden::Table)
+        .cond_where(Expr::col(SyncCommitIden::Id).is_in(commit_ids))
+        .column(Asterisk)
+        .order_by(SyncCommitIden::CreatedAt, Order::Desc)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
 pub async fn query_commit<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<SyncCommit> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();

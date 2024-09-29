@@ -1,7 +1,7 @@
 use crate::diff::{compute_changes, objects_from_stage_tree, StageTreeNode};
 use crate::error::Result;
 use crate::queries::{
-    insert_commit, insert_object, query_branch_by_name, query_object, upsert_branch,
+    insert_commit, insert_object, query_branch_by_name, query_commits, query_object, upsert_branch,
 };
 use crate::SyncCommit;
 use serde::{Deserialize, Serialize};
@@ -27,6 +27,28 @@ pub async fn changes<R: Runtime>(
         payload.branch.as_str(),
     )
     .await
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "commands.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct CommitsPayload {
+    workspace_id: String,
+    branch: String,
+}
+
+#[command]
+pub async fn commits<R: Runtime>(
+    window: WebviewWindow<R>,
+    payload: CommitsPayload,
+) -> Result<Vec<SyncCommit>> {
+    let branch = query_branch_by_name(
+        window.app_handle(),
+        payload.workspace_id.as_str(),
+        payload.branch.as_str(),
+    )
+    .await?;
+    query_commits(window.app_handle(), branch.commit_ids).await
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
