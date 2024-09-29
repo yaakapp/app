@@ -1183,7 +1183,7 @@ async fn cmd_install_plugin(
     w: WebviewWindow,
 ) -> Result<Plugin, String> {
     plugin_manager
-        .add_plugin_by_dir(&directory)
+        .add_plugin_by_dir(&directory, true)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -1511,13 +1511,12 @@ async fn cmd_plugin_info(
     plugin_manager: State<'_, PluginManager>,
 ) -> Result<BootResponse, String> {
     let plugin = get_plugin(&w, id).await.map_err(|e| e.to_string())?;
-    plugin_manager
+    Ok(plugin_manager
         .get_plugin_by_dir(plugin.directory.as_str())
         .await
-        .ok_or("Failed to find plugin info".to_string())?
+        .ok_or("Failed to find plugin for info".to_string())?
         .info()
-        .await
-        .ok_or("Failed to find plugin".to_string())
+        .await)
 }
 
 #[tauri::command]

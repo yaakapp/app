@@ -1,0 +1,17 @@
+{
+  "name": "filter-jsonpath",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "yaakcli build ./src/index.ts"
+  },
+  "dependencies": {
+    "jsonpath-plus": "^9.0.0",
+    "@yaakapp/api": "^0.2.9"
+  },
+  "devDependencies": {
+    "@yaakapp/cli": "^0.0.42",
+    "@types/node": "^20.14.9",
+    "typescript": "^5.5.2"
+  }
+}

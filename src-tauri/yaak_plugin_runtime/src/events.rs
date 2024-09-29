@@ -74,6 +74,7 @@ pub enum InternalEventPayload {
 #[ts(export, export_to="events.ts")]
 pub struct BootRequest {
     pub dir: String,
+    pub watch: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]

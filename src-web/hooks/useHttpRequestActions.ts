@@ -12,7 +12,6 @@ export function useHttpRequestActions() {
 
   const httpRequestActions = useQuery({
     queryKey: ['http_request_actions', pluginsKey],
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       const responses = (await invokeCmd(
         'cmd_http_request_actions',

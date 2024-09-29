@@ -1,4 +1,5 @@
 import {
+  BootRequest,
   Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
@@ -14,13 +15,21 @@ import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestAct
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
 import * as console from 'node:console';
-import { Stats, readFileSync, statSync, watch } from 'node:fs';
+import { readFileSync, Stats, statSync, watch } from 'node:fs';
 import path from 'node:path';
 import * as util from 'node:util';
 import { parentPort, workerData } from 'node:worker_threads';
 
+export interface PluginWorkerData {
+  bootRequest: BootRequest;
+  pluginRefId: string;
+}
+
 async function initialize() {
-  const { pluginDir, pluginRefId } = workerData;
+  const {
+    bootRequest: { dir: pluginDir, watch: enableWatch },
+    pluginRefId,
+  }: PluginWorkerData = workerData;
   const pathPkg = path.join(pluginDir, 'package.json');
 
   const pathMod = path.posix.join(pluginDir, 'build', 'index.js');
@@ -102,8 +111,10 @@ async function initialize() {
     return sendPayload({ type: 'reload_response' }, null);
   };
 
-  watchFile(pathMod, cb);
-  watchFile(pathPkg, cb);
+  if (enableWatch) {
+    watchFile(pathMod, cb);
+    watchFile(pathPkg, cb);
+  }
 
   const ctx: Context = {
     clipboard: {

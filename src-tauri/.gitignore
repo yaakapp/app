@@ -2,4 +2,5 @@
 # will have compiled files and executables
 target/
 
-vendored
+vendored/*
+!vendored/plugins

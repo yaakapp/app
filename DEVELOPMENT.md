@@ -22,12 +22,6 @@ npm -v
 rustc --version
 ```
 
-Clone the [plugins repository](https://github.com/yaakapp/plugins) to your machine:
-
-```shell
-git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
-```
-
 Install the NPM dependencies:
 
 ```shell

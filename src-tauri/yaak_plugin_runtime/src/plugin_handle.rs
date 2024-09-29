@@ -11,7 +11,7 @@ pub struct PluginHandle {
     pub ref_id: String,
     pub dir: String,
     pub(crate) to_plugin_tx: Arc<Mutex<mpsc::Sender<tonic::Result<EventStreamEvent>>>>,
-    pub(crate) boot_resp: Arc<Mutex<Option<BootResponse>>>,
+    pub(crate) boot_resp: Arc<Mutex<BootResponse>>,
 }
 
 impl PluginHandle {
@@ -22,11 +22,11 @@ impl PluginHandle {
             ref_id: ref_id.clone(),
             dir: dir.to_string(),
             to_plugin_tx: Arc::new(Mutex::new(tx)),
-            boot_resp: Arc::new(Mutex::new(None)),
+            boot_resp: Arc::new(Mutex::new(BootResponse::default())),
         }
     }
 
-    pub async fn info(&self) -> Option<BootResponse> {
+    pub async fn info(&self) -> BootResponse {
         let resp = &*self.boot_resp.lock().await;
         resp.clone()
     }
@@ -72,6 +72,6 @@ impl PluginHandle {
 
     pub async fn set_boot_response(&self, resp: &BootResponse) {
         let mut boot_resp = self.boot_resp.lock().await;
-        *boot_resp = Some(resp.clone());
+        *boot_resp = resp.clone();
     }
 }

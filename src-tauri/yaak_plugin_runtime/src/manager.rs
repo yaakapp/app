@@ -12,6 +12,7 @@ use crate::server::plugin_runtime::plugin_runtime_server::PluginRuntimeServer;
 use crate::server::PluginRuntimeServerImpl;
 use log::{info, warn};
 use std::collections::HashMap;
+use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -30,6 +31,12 @@ pub struct PluginManager {
     plugins: Arc<Mutex<Vec<PluginHandle>>>,
     kill_tx: tokio::sync::watch::Sender<bool>,
     server: Arc<PluginRuntimeServerImpl>,
+}
+
+#[derive(Clone)]
+struct PluginCandidate {
+    dir: String,
+    bundled: bool,
 }
 
 impl PluginManager {
@@ -123,24 +130,42 @@ impl PluginManager {
         plugin_manager
     }
 
-    pub async fn list_plugin_dirs<R: Runtime>(&self, app_handle: &AppHandle<R>) -> Vec<String> {
-        let plugins_dir = app_handle
+    async fn list_plugin_dirs<R: Runtime>(
+        &self,
+        app_handle: &AppHandle<R>,
+    ) -> Vec<PluginCandidate> {
+        let bundled_plugins_dir = &app_handle
             .path()
             .resolve("vendored/plugins", BaseDirectory::Resource)
             .expect("failed to resolve plugin directory resource");
 
-        let bundled_plugin_dirs = read_plugins_dir(&plugins_dir)
+        let plugins_dir = match env::var("YAAK_PLUGINS_DIR") {
+            Ok(d) => &PathBuf::from(d),
+            Err(_) => bundled_plugins_dir,
+        };
+
+        info!("Loading bundled plugins from {plugins_dir:?}");
+
+        let bundled_plugin_dirs: Vec<PluginCandidate> = read_plugins_dir(&plugins_dir)
             .await
-            .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str());
+            .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str())
+            .iter()
+            .map(|d| PluginCandidate {
+                dir: d.into(),
+                bundled: plugins_dir.starts_with(bundled_plugins_dir),
+            })
+            .collect();
 
         let plugins = list_plugins(app_handle).await.unwrap_or_default();
-        let installed_plugin_dirs = plugins
+        let installed_plugin_dirs: Vec<PluginCandidate> = plugins
             .iter()
-            .map(|p| p.directory.to_owned())
-            .collect::<Vec<String>>();
+            .map(|p| PluginCandidate {
+                dir: p.directory.to_owned(),
+                bundled: false,
+            })
+            .collect();
 
-        let plugin_dirs = [bundled_plugin_dirs, installed_plugin_dirs].concat();
-        plugin_dirs
+        [bundled_plugin_dirs, installed_plugin_dirs].concat()
     }
 
     pub async fn uninstall(&self, dir: &str) -> Result<()> {
@@ -152,12 +177,11 @@ impl PluginManager {
     }
 
     async fn remove_plugin(&self, plugin: &PluginHandle) -> Result<()> {
-        let mut plugins = self.plugins.lock().await;
-
         // Terminate the plugin
         plugin.terminate().await?;
 
         // Remove the plugin from the list
+        let mut plugins = self.plugins.lock().await;
         let pos = plugins.iter().position(|p| p.ref_id == plugin.ref_id);
         if let Some(pos) = pos {
             plugins.remove(pos);
@@ -166,26 +190,22 @@ impl PluginManager {
         Ok(())
     }
 
-    pub async fn add_plugin_by_dir(&self, dir: &str) -> Result<()> {
+    pub async fn add_plugin_by_dir(&self, dir: &str, watch: bool) -> Result<()> {
         info!("Adding plugin by dir {dir}");
         let maybe_tx = self.server.app_to_plugin_events_tx.lock().await;
         let tx = match &*maybe_tx {
             None => return Err(ClientNotInitializedErr),
             Some(tx) => tx,
         };
-        let ph = PluginHandle::new(dir, tx.clone());
-        self.plugins.lock().await.push(ph.clone());
-        let plugin = self
-            .get_plugin_by_dir(dir)
-            .await
-            .ok_or(PluginNotFoundErr(dir.to_string()))?;
+        let plugin_handle = PluginHandle::new(dir, tx.clone());
 
         // Boot the plugin
         let event = self
             .send_to_plugin_and_wait(
-                &plugin,
+                &plugin_handle,
                 &InternalEventPayload::BootRequest(BootRequest {
                     dir: dir.to_string(),
+                    watch,
                 }),
             )
             .await?;
@@ -195,7 +215,10 @@ impl PluginManager {
             _ => return Err(UnknownEventErr),
         };
 
-        plugin.set_boot_response(&resp).await;
+        plugin_handle.set_boot_response(&resp).await;
+
+        // Add the new plugin after it boots
+        self.plugins.lock().await.push(plugin_handle.clone());
 
         Ok(())
     }
@@ -204,17 +227,29 @@ impl PluginManager {
         &self,
         app_handle: &AppHandle<R>,
     ) -> Result<()> {
-        for dir in self.list_plugin_dirs(app_handle).await {
+        let dirs = self.list_plugin_dirs(app_handle).await;
+        for d in dirs.clone() {
             // First remove the plugin if it exists
-            if let Some(plugin) = self.get_plugin_by_dir(dir.as_str()).await {
+            if let Some(plugin) = self.get_plugin_by_dir(d.dir.as_str()).await {
                 if let Err(e) = self.remove_plugin(&plugin).await {
-                    warn!("Failed to remove plugin {dir} {e:?}");
+                    warn!("Failed to remove plugin {} {e:?}", d.dir);
                 }
             }
-            if let Err(e) = self.add_plugin_by_dir(dir.as_str()).await {
-                warn!("Failed to add plugin {dir} {e:?}");
+            if let Err(e) = self.add_plugin_by_dir(d.dir.as_str(), !d.bundled).await {
+                warn!("Failed to add plugin {} {e:?}", d.dir);
             }
         }
+
+        info!(
+            "Initialized all plugins:\n  - {}",
+            self.plugins
+                .lock()
+                .await
+                .iter()
+                .map(|p| p.dir.to_string())
+                .collect::<Vec<String>>()
+                .join("\n  - "),
+        );
 
         Ok(())
     }
@@ -271,7 +306,7 @@ impl PluginManager {
 
     pub async fn get_plugin_by_name(&self, name: &str) -> Option<PluginHandle> {
         for plugin in self.plugins.lock().await.iter().cloned() {
-            let info = plugin.info().await?;
+            let info = plugin.info().await;
             if info.name == name {
                 return Some(plugin);
             }
@@ -446,8 +481,7 @@ impl PluginManager {
                     .get_plugin_by_ref_id(ref_id.as_str())
                     .await
                     .ok_or(PluginNotFoundErr(ref_id))?;
-                let info = plugin.info().await.unwrap();
-                Ok((resp, info.name))
+                Ok((resp, plugin.info().await.name))
             }
         }
     }
