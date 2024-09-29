@@ -59,9 +59,8 @@ export function Toast({ children, open, onClose, timeout, action, icon, color }:
           `x-theme-toast x-theme-toast--${color}`,
           'pointer-events-auto overflow-hidden',
           'relative pointer-events-auto bg-surface text-text rounded-lg',
-          'border border-border shadow-lg',
+          'border border-border shadow-lg max-w-[30rem]',
           'grid grid-cols-[1fr_auto]',
-          'text',
         )}
       >
         <div className="px-3 py-3 flex items-center gap-2">
