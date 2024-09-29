@@ -36,7 +36,7 @@ pub struct PluginManager {
 #[derive(Clone)]
 struct PluginCandidate {
     dir: String,
-    bundled: bool,
+    watch: bool,
 }
 
 impl PluginManager {
@@ -150,9 +150,12 @@ impl PluginManager {
             .await
             .expect(format!("Failed to read plugins dir: {:?}", plugins_dir).as_str())
             .iter()
-            .map(|d| PluginCandidate {
-                dir: d.into(),
-                bundled: plugins_dir.starts_with(bundled_plugins_dir),
+            .map(|d| {
+                let is_vendored = plugins_dir.starts_with(bundled_plugins_dir);
+                PluginCandidate {
+                    dir: d.into(),
+                    watch: !is_vendored,
+                }
             })
             .collect();
 
@@ -161,7 +164,7 @@ impl PluginManager {
             .iter()
             .map(|p| PluginCandidate {
                 dir: p.directory.to_owned(),
-                bundled: false,
+                watch: true,
             })
             .collect();
 
@@ -235,7 +238,7 @@ impl PluginManager {
                     warn!("Failed to remove plugin {} {e:?}", d.dir);
                 }
             }
-            if let Err(e) = self.add_plugin_by_dir(d.dir.as_str(), !d.bundled).await {
+            if let Err(e) = self.add_plugin_by_dir(d.dir.as_str(), d.watch).await {
                 warn!("Failed to add plugin {} {e:?}", d.dir);
             }
         }
