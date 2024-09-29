@@ -6,7 +6,7 @@ import type { HttpRequest } from "./models";
 import type { HttpResponse } from "./models";
 import type { Workspace } from "./models";
 
-export type BootRequest = { dir: string, };
+export type BootRequest = { dir: string, watch: boolean, };
 
 export type BootResponse = { name: string, version: string, capabilities: Array<string>, };
 

@@ -38,7 +38,6 @@ impl Builder {
                 create_dir_all(app_path.clone()).expect("Problem creating App directory!");
 
                 let db_file_path = app_path.join("db.sqlite");
-                info!("Opening SQLite DB at {db_file_path:?}");
 
                 {
                     let db_file_path = db_file_path.clone();
