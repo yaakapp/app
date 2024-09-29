@@ -4958,6 +4958,11 @@
           "const": "sync:allow-commit"
         },
         {
+          "description": "Enables the commits command without any pre-configured scope.",
+          "type": "string",
+          "const": "sync:allow-commits"
+        },
+        {
           "description": "Denies the changes command without any pre-configured scope.",
           "type": "string",
           "const": "sync:deny-changes"
@@ -4966,6 +4971,11 @@
           "description": "Denies the commit command without any pre-configured scope.",
           "type": "string",
           "const": "sync:deny-commit"
+        },
+        {
+          "description": "Denies the commits command without any pre-configured scope.",
+          "type": "string",
+          "const": "sync:deny-commits"
         },
         {
           "description": "This permission set configures which kind of\nupdater functions are exposed to the frontend.\n\n#### Granted Permissions\n\nThe full workflow from checking for updates to installing them\nis enabled.\n\n",
