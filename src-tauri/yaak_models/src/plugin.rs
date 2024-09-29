@@ -39,7 +39,6 @@ impl Builder {
                 create_dir_all(app_path.clone()).expect("Problem creating App directory!");
 
                 let db_file_path = app_path.join("db.sqlite");
-                info!("Opening SQLite DB at {db_file_path:?}");
 
                 {
                     let db_file_path = db_file_path.clone();
@@ -66,7 +65,7 @@ impl Builder {
 async fn must_migrate_db<R: Runtime>(app_handle: &AppHandle<R>, path: &PathBuf) {
     let app_data_dir = app_handle.path().app_data_dir().unwrap();
     let sqlite_file_path = app_data_dir.join("db.sqlite");
-    
+
     info!("Creating database file at {:?}", sqlite_file_path);
     File::options()
         .write(true)
@@ -76,7 +75,7 @@ async fn must_migrate_db<R: Runtime>(app_handle: &AppHandle<R>, path: &PathBuf) 
 
     let p_string = sqlite_file_path.to_string_lossy().replace(' ', "%20");
     let url = format!("sqlite://{}?mode=rwc", p_string);
-    
+
     info!("Connecting to database at {}", url);
     let opts = SqliteConnectOptions::from_str(path.to_string_lossy().to_string().as_str()).unwrap();
     let pool = SqlitePool::connect_with(opts)
@@ -86,11 +85,11 @@ async fn must_migrate_db<R: Runtime>(app_handle: &AppHandle<R>, path: &PathBuf) 
         .path()
         .resolve("migrations", BaseDirectory::Resource)
         .expect("failed to resolve resource");
-    
+
     info!("Running database migrations from: {}", p.to_string_lossy());
     let mut m = Migrator::new(p).await.expect("Failed to load migrations");
     m.set_ignore_missing(true); // So we can roll back versions and not crash
     m.run(&pool).await.expect("Failed to run migrations");
-    
+
     info!("Database migrations complete");
 }

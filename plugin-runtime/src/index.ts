@@ -18,7 +18,7 @@ const plugins: Record<string, PluginHandle> = {};
       const pluginEvent: InternalEvent = JSON.parse(e.event);
       // Handle special event to bootstrap plugin
       if (pluginEvent.payload.type === 'boot_request') {
-        const plugin = new PluginHandle(pluginEvent.payload.dir, pluginEvent.pluginRefId, events);
+        const plugin = new PluginHandle(pluginEvent.pluginRefId, pluginEvent.payload, events);
         plugins[pluginEvent.pluginRefId] = plugin;
       }
 

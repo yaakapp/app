@@ -22,12 +22,6 @@ npm -v
 rustc --version
 ```
 
-Clone the [plugins repository](https://github.com/yaakapp/plugins) to your machine:
-
-```shell
-git clone https://github.com/yaakapp/plugins.git /path/to/your/plugins-directory
-```
-
 Install the NPM dependencies:
 
 ```shell
@@ -40,6 +34,8 @@ Run the `bootstrap` command to do some initial setup:
 npm run bootstrap
 ```
 
+_NOTE: Run with `YAAK_PLUGINS_DIR=<Path to yaakapp/plugins>` to re-build bundled plugins_
+
 ## Run the App
 
 After bootstrapping, start the app in development mode:
@@ -47,6 +43,8 @@ After bootstrapping, start the app in development mode:
 ```shell
 npm start
 ```
+
+_NOTE: If working on bundled plugins, run with `YAAK_PLUGINS_DIR=<Path to yaakapp/plugins>`_
 
 ## SQLite Migrations
 
