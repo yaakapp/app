@@ -3,15 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "build": "yaakcli build ./src/index.js"
-  },
-  "dependencies": {
-    "@yaakapp/api": "^0.2.9"
-  },
-  "devDependencies": {
-    "@yaakapp/cli": "^0.0.42",
-    "@types/node": "^20.14.9",
-    "esbuild": "^0.21.5",
-    "typescript": "^5.5.2"
+    "build": "yaakcli build ./src/index.js",
+    "dev": "yaakcli dev ./src/index.js"
   }
 }

@@ -4,16 +4,7 @@
   "version": "0.0.1",
   "main": "./build/index.js",
   "scripts": {
-    "build": "yaakcli build ./src/index.js"
-  },
-  "dependencies": {
-    "@yaakapp/api": "^0.2.9"
-  },
-  "devDependencies": {
-    "@yaakapp/cli": "^0.0.42",
-    "@types/node": "^20.14.9",
-    "esbuild": "^0.21.5",
-    "typescript": "^5.5.2",
-    "vitest": "^1.4.0"
+    "build": "yaakcli build ./src/index.js",
+    "dev": "yaakcli dev ./src/index.js"
   }
 }

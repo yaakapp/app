@@ -50,7 +50,7 @@ async fn render_tag<T: TemplateCallback>(
             Some(v) => {
                 let r = Box::pin(parse_and_render(v, vars, cb)).await;
                 r.to_string()
-            },
+            }
             None => "".into(),
         },
         Val::Bool { value } => value.to_string(),

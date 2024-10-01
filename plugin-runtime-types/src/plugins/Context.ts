@@ -1,3 +1,4 @@
+import { TemplateRenderRequest, TemplateRenderResponse } from '@yaakapp-internal/plugin';
 import {
   FindHttpResponsesRequest,
   FindHttpResponsesResponse,
@@ -24,5 +25,8 @@ export type Context = {
   };
   httpResponse: {
     find(args: FindHttpResponsesRequest): Promise<FindHttpResponsesResponse['httpResponses']>;
+  };
+  templates: {
+    render(args: TemplateRenderRequest): Promise<TemplateRenderResponse['data']>;
   };
 };
