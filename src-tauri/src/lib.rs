@@ -37,7 +37,7 @@ use crate::export_resources::{get_workspace_export_resources, WorkspaceExportRes
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
-use crate::render::{render_grpc_request, render_json_value, render_template};
+use crate::render::{render_grpc_request, render_http_request, render_json_value, render_template};
 use crate::template_callback::PluginTemplateCallback;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
@@ -61,8 +61,8 @@ use yaak_models::queries::{
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
-    InternalEvent, InternalEventPayload, RenderPurpose, SendHttpRequestResponse, ShowToastRequest,
-    TemplateRenderResponse, WindowContext,
+    InternalEvent, InternalEventPayload, RenderHttpRequestResponse, RenderPurpose,
+    SendHttpRequestResponse, ShowToastRequest, TemplateRenderResponse, WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
@@ -2200,6 +2200,21 @@ async fn handle_plugin_event<R: Runtime>(
             let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
             Some(InternalEventPayload::GetHttpRequestByIdResponse(
                 GetHttpRequestByIdResponse { http_request },
+            ))
+        }
+        InternalEventPayload::RenderHttpRequestRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for render http request");
+
+            let workspace = workspace_from_window(&window)
+                .await
+                .expect("Failed to get workspace_id from window URL");
+            let environment = environment_from_window(&window).await;
+            let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
+            let http_request =
+                render_http_request(&req.http_request, &workspace, environment.as_ref(), &cb).await;
+            Some(InternalEventPayload::RenderHttpRequestResponse(
+                RenderHttpRequestResponse { http_request },
             ))
         }
         InternalEventPayload::TemplateRenderRequest(req) => {
