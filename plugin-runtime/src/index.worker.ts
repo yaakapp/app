@@ -1,10 +1,13 @@
-import { TemplateRenderResponse, WindowContext } from '@yaakapp-internal/plugin';
+import {
+  RenderHttpRequestResponse,
+  TemplateRenderResponse,
+  WindowContext,
+} from '@yaakapp-internal/plugin';
 import {
   BootRequest,
   Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
-  HttpRequest,
   HttpRequestAction,
   ImportResponse,
   InternalEvent,
@@ -162,18 +165,13 @@ async function initialize() {
         );
         return httpResponse;
       },
-      /** @deprecated: please use ctx.templates.render */
       async render(args) {
-        const payload: InternalEventPayload = {
-          type: 'template_render_request',
-          data: args.httpRequest as any,
-          purpose: args.purpose,
-        };
-        const result = await sendAndWaitForReply<TemplateRenderResponse>(
+        const payload = { type: 'render_http_request_request', ...args } as const;
+        const { httpRequest } = await sendAndWaitForReply<RenderHttpRequestResponse>(
           event.windowContext,
           payload,
         );
-        return result.data as unknown as HttpRequest;
+        return httpRequest;
       },
     },
     templates: {

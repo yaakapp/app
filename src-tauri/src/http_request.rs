@@ -24,7 +24,7 @@ use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
 use yaak_models::models::{
-    Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader, HttpUrlParameter,
+    Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
 };
 use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
 use yaak_plugin_runtime::events::{RenderPurpose, WindowContext};
@@ -107,15 +107,7 @@ pub async fn send_http_request<R: Runtime>(
         if !p.enabled || p.name.is_empty() {
             continue;
         }
-
-        // Replace path parameters with values from URL parameters
-        let old_url_string = url_string.clone();
-        url_string = replace_path_placeholder(&p, url_string.as_str());
-
-        // Treat as regular param if wasn't used as path param
-        if old_url_string == url_string {
-            query_params.push((p.name, p.value));
-        }
+        query_params.push((p.name, p.value));
     }
 
     let uri = match http::Uri::from_str(url_string.as_str()) {
@@ -510,125 +502,5 @@ fn get_str_h<'a>(v: &'a BTreeMap<String, Value>, key: &str) -> &'a str {
     match v.get(key) {
         None => "",
         Some(v) => v.as_str().unwrap_or_default(),
-    }
-}
-
-fn replace_path_placeholder(p: &HttpUrlParameter, url: &str) -> String {
-    if !p.enabled {
-        return url.to_string();
-    }
-
-    if !p.name.starts_with(":") {
-        return url.to_string();
-    }
-
-    let re = regex::Regex::new(format!("(/){}([/?#]|$)", p.name).as_str()).unwrap();
-    let result = re
-        .replace_all(url, |cap: &regex::Captures| {
-            format!(
-                "{}{}{}",
-                cap[1].to_string(),
-                urlencoding::encode(p.value.as_str()),
-                cap[2].to_string()
-            )
-        })
-        .into_owned();
-    result
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::http_request::replace_path_placeholder;
-    use yaak_models::models::HttpUrlParameter;
-
-    #[test]
-    fn placeholder_middle() {
-        let p = HttpUrlParameter {
-            name: ":foo".into(),
-            value: "xxx".into(),
-            enabled: true,
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foo/bar"),
-            "https://example.com/xxx/bar",
-        );
-    }
-
-    #[test]
-    fn placeholder_end() {
-        let p = HttpUrlParameter {
-            name: ":foo".into(),
-            value: "xxx".into(),
-            enabled: true,
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foo"),
-            "https://example.com/xxx",
-        );
-    }
-
-    #[test]
-    fn placeholder_query() {
-        let p = HttpUrlParameter {
-            name: ":foo".into(),
-            value: "xxx".into(),
-            enabled: true,
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foo?:foo"),
-            "https://example.com/xxx?:foo",
-        );
-    }
-
-    #[test]
-    fn placeholder_missing() {
-        let p = HttpUrlParameter {
-            enabled: true,
-            name: "".to_string(),
-            value: "".to_string(),
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:missing"),
-            "https://example.com/:missing",
-        );
-    }
-
-    #[test]
-    fn placeholder_disabled() {
-        let p = HttpUrlParameter {
-            enabled: false,
-            name: ":foo".to_string(),
-            value: "xxx".to_string(),
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foo"),
-            "https://example.com/:foo",
-        );
-    }
-
-    #[test]
-    fn placeholder_prefix() {
-        let p = HttpUrlParameter {
-            name: ":foo".into(),
-            value: "xxx".into(),
-            enabled: true,
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foooo"),
-            "https://example.com/:foooo",
-        );
-    }
-
-    #[test]
-    fn placeholder_encode() {
-        let p = HttpUrlParameter {
-            name: ":foo".into(),
-            value: "Hello World".into(),
-            enabled: true,
-        };
-        assert_eq!(
-            replace_path_placeholder(&p, "https://example.com/:foo"),
-            "https://example.com/Hello%20World",
-        );
     }
 }
