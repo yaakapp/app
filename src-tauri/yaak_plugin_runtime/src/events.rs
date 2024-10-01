@@ -68,6 +68,9 @@ pub enum InternalEventPayload {
 
     CopyTextRequest(CopyTextRequest),
 
+    RenderHttpRequestRequest(RenderHttpRequestRequest),
+    RenderHttpRequestResponse(RenderHttpRequestResponse),
+
     TemplateRenderRequest(TemplateRenderRequest),
     TemplateRenderResponse(TemplateRenderResponse),
 

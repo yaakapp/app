@@ -33,7 +33,7 @@ export type FilterRequest = { content: string, filter: string, };
 
 export type FilterResponse = { content: string, };
 
-export type FindHttpResponsesRequest = { requestId: string, limit?: number | null, };
+export type FindHttpResponsesRequest = { requestId: string, limit: number | null, };
 
 export type FindHttpResponsesResponse = { httpResponses: Array<HttpResponse>, };
 
@@ -47,7 +47,7 @@ export type GetHttpRequestByIdResponse = { httpRequest: HttpRequest | null, };
 
 export type GetTemplateFunctionsResponse = { functions: Array<TemplateFunction>, pluginRefId: string, };
 
-export type HttpRequestAction = { key: string, label: string, icon?: Icon | null, };
+export type HttpRequestAction = { key: string, label: string, icon: string | null, };
 
 export type Icon = "copy" | "info" | "check_circle" | "alert_triangle";
 
@@ -59,9 +59,7 @@ export type ImportResponse = { resources: ImportResources, };
 
 export type InternalEvent = { id: string, pluginRefId: string, replyId: string | null, payload: InternalEventPayload, windowContext: WindowContext, };
 
-export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "template_render_request" } & TemplateRenderRequest | { "type": "template_render_response" } & TemplateRenderResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "show_prompt_request" } & ShowPromptRequest | { "type": "show_prompt_response" } & ShowPromptResponse | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
-
-export type OpenFileFilter = { name: string, extensions: Array<string>, };
+export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "render_http_request_request" } & RenderHttpRequestRequest | { "type": "render_http_request_response" } & RenderHttpRequestResponse | { "type": "template_render_request" } & TemplateRenderRequest | { "type": "template_render_response" } & TemplateRenderResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
 
 export type RenderHttpRequestRequest = { httpRequest: HttpRequest, purpose: RenderPurpose, };
 
@@ -73,33 +71,15 @@ export type SendHttpRequestRequest = { httpRequest: HttpRequest, };
 
 export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
-export type ShowPromptRequest = { title: string, label: string, description?: string | null, defaultValue?: string | null, placeholder?: string | null, 
-/**
- * Text to add to the confirmation button
- */
-confirmText?: string | null, 
-/**
- * Text to add to the cancel button
- */
-cancelText?: string | null, 
-/**
- * Require the user to enter a non-empty value
- */
-require?: boolean | null, };
-
-export type ShowPromptResponse = { value: string, };
-
 export type ShowToastRequest = { message: string, color?: Color | null, icon?: Icon | null, };
 
-export type TemplateFunction = { name: string, aliases?: Array<string> | null, args: Array<TemplateFunctionArg>, };
+export type TemplateFunction = { name: string, aliases: Array<string>, args: Array<TemplateFunctionArg>, };
 
-export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg | { "type": "file" } & TemplateFunctionFileArg;
+export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg;
 
 export type TemplateFunctionBaseArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
 export type TemplateFunctionCheckboxArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
-
-export type TemplateFunctionFileArg = { title: string, multiple?: boolean | null, directory?: boolean | null, defaultPath?: string | null, filters?: Array<OpenFileFilter> | null, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
 export type TemplateFunctionHttpRequestArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
