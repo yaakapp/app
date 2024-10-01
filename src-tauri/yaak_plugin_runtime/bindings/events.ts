@@ -4,6 +4,7 @@ import type { Folder } from "./models";
 import type { GrpcRequest } from "./models";
 import type { HttpRequest } from "./models";
 import type { HttpResponse } from "./models";
+import type { JsonValue } from "./serde_json/JsonValue";
 import type { Workspace } from "./models";
 
 export type BootRequest = { dir: string, watch: boolean, };
@@ -56,9 +57,9 @@ export type ImportResources = { workspaces: Array<Workspace>, environments: Arra
 
 export type ImportResponse = { resources: ImportResources, };
 
-export type InternalEvent = { id: string, pluginRefId: string, replyId: string | null, payload: InternalEventPayload, };
+export type InternalEvent = { id: string, pluginRefId: string, replyId: string | null, payload: InternalEventPayload, windowContext: WindowContext, };
 
-export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "render_http_request_request" } & RenderHttpRequestRequest | { "type": "render_http_request_response" } & RenderHttpRequestResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
+export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "template_render_request" } & TemplateRenderRequest | { "type": "template_render_response" } & TemplateRenderResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
 
 export type RenderHttpRequestRequest = { httpRequest: HttpRequest, purpose: RenderPurpose, };
 
@@ -87,3 +88,9 @@ export type TemplateFunctionSelectArg = { options: Array<TemplateFunctionSelectO
 export type TemplateFunctionSelectOption = { name: string, value: string, };
 
 export type TemplateFunctionTextArg = { placeholder?: string | null, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
+
+export type TemplateRenderRequest = { data: JsonValue, purpose: RenderPurpose, };
+
+export type TemplateRenderResponse = { data: JsonValue, };
+
+export type WindowContext = { "type": "none" } | { "type": "label", label: string, };

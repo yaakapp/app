@@ -27,6 +27,7 @@ use yaak_models::models::{
     Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader, HttpUrlParameter,
 };
 use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
+use yaak_plugin_runtime::events::{RenderPurpose, WindowContext};
 
 pub async fn send_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
@@ -39,8 +40,11 @@ pub async fn send_http_request<R: Runtime>(
     let workspace = get_workspace(window, &request.workspace_id)
         .await
         .expect("Failed to get Workspace");
-    let cb = &*window.app_handle().state::<PluginTemplateCallback>();
-    let cb = cb.for_send();
+    let cb = PluginTemplateCallback::new(
+        window.app_handle(),
+        &WindowContext::from_window(window),
+        RenderPurpose::Send,
+    );
     let rendered_request =
         render_http_request(&request, &workspace, environment.as_ref(), &cb).await;
 

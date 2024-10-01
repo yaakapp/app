@@ -1,13 +1,14 @@
+import { TemplateRenderResponse, WindowContext } from '@yaakapp-internal/plugin';
 import {
   BootRequest,
   Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
+  HttpRequest,
   HttpRequestAction,
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
-  RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
 } from '@yaakapp/api';
@@ -51,21 +52,26 @@ async function initialize() {
   if (typeof mod.pluginHookImport === 'function') capabilities.push('import');
   if (typeof mod.pluginHookResponseFilter === 'function') capabilities.push('filter');
 
-  console.log('Plugin initialized', pkg.name, capabilities, Object.keys(mod));
+  console.log('Plugin initialized', pkg.name, { capabilities, enableWatch });
 
   function buildEventToSend(
+    windowContext: WindowContext,
     payload: InternalEventPayload,
     replyId: string | null = null,
   ): InternalEvent {
-    return { pluginRefId, id: genId(), replyId, payload };
+    return { pluginRefId, id: genId(), replyId, payload, windowContext };
   }
 
-  function sendEmpty(replyId: string | null = null): string {
-    return sendPayload({ type: 'empty_response' }, replyId);
+  function sendEmpty(windowContext: WindowContext, replyId: string | null = null): string {
+    return sendPayload(windowContext, { type: 'empty_response' }, replyId);
   }
 
-  function sendPayload(payload: InternalEventPayload, replyId: string | null): string {
-    const event = buildEventToSend(payload, replyId);
+  function sendPayload(
+    windowContext: WindowContext,
+    payload: InternalEventPayload,
+    replyId: string | null,
+  ): string {
+    const event = buildEventToSend(windowContext, payload, replyId);
     sendEvent(event);
     return event.id;
   }
@@ -78,10 +84,11 @@ async function initialize() {
   }
 
   async function sendAndWaitForReply<T extends Omit<InternalEventPayload, 'type'>>(
+    windowContext: WindowContext,
     payload: InternalEventPayload,
   ): Promise<T> {
     // 1. Build event to send
-    const eventToSend = buildEventToSend(payload, null);
+    const eventToSend = buildEventToSend(windowContext, payload, null);
 
     // 2. Spawn listener in background
     const promise = new Promise<InternalEventPayload>(async (resolve) => {
@@ -106,9 +113,10 @@ async function initialize() {
   }
 
   // Reload plugin if JS or package.json changes
+  const windowContextNone: WindowContext = { type: 'none' };
   const cb = async () => {
     await reloadModule();
-    return sendPayload({ type: 'reload_response' }, null);
+    return sendPayload(windowContextNone, { type: 'reload_response' }, null);
   };
 
   if (enableWatch) {
@@ -116,45 +124,78 @@ async function initialize() {
     watchFile(pathPkg, cb);
   }
 
-  const ctx: Context = {
+  const newCtx = (event: InternalEvent): Context => ({
     clipboard: {
       async copyText(text) {
-        await sendAndWaitForReply({ type: 'copy_text_request', text });
+        await sendAndWaitForReply(event.windowContext, { type: 'copy_text_request', text });
       },
     },
     toast: {
       async show(args) {
-        await sendAndWaitForReply({ type: 'show_toast_request', ...args });
+        await sendAndWaitForReply(event.windowContext, { type: 'show_toast_request', ...args });
       },
     },
     httpResponse: {
       async find(args) {
         const payload = { type: 'find_http_responses_request', ...args } as const;
-        const { httpResponses } = await sendAndWaitForReply<FindHttpResponsesResponse>(payload);
+        const { httpResponses } = await sendAndWaitForReply<FindHttpResponsesResponse>(
+          event.windowContext,
+          payload,
+        );
         return httpResponses;
       },
     },
     httpRequest: {
       async getById(args) {
         const payload = { type: 'get_http_request_by_id_request', ...args } as const;
-        const { httpRequest } = await sendAndWaitForReply<GetHttpRequestByIdResponse>(payload);
+        const { httpRequest } = await sendAndWaitForReply<GetHttpRequestByIdResponse>(
+          event.windowContext,
+          payload,
+        );
         return httpRequest;
       },
       async send(args) {
         const payload = { type: 'send_http_request_request', ...args } as const;
-        const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(payload);
+        const { httpResponse } = await sendAndWaitForReply<SendHttpRequestResponse>(
+          event.windowContext,
+          payload,
+        );
         return httpResponse;
       },
+      /** @deprecated: please use ctx.templates.render */
       async render(args) {
-        const payload = { type: 'render_http_request_request', ...args } as const;
-        const result = await sendAndWaitForReply<RenderHttpRequestResponse>(payload);
-        return result.httpRequest;
+        const payload = {
+          type: 'template_render_request',
+          data: args.httpRequest,
+          purpose: args.purpose,
+        } as const;
+        const result = await sendAndWaitForReply<TemplateRenderResponse>(
+          event.windowContext,
+          payload,
+        );
+        return result.data as HttpRequest;
       },
     },
-  };
+    templates: {
+      /**
+       * Invoke Yaak's template engine to render a value. If the value is a nested type
+       * (eg. object), it will be recursively rendered.
+       * */
+      async render(args) {
+        const payload = { type: 'template_render_request', ...args } as const;
+        const result = await sendAndWaitForReply<TemplateRenderResponse>(
+          event.windowContext,
+          payload,
+        );
+        return result.data;
+      },
+    },
+  });
 
   // Message comes into the plugin to be processed
-  parentPort!.on('message', async ({ payload, id: replyId }: InternalEvent) => {
+  parentPort!.on('message', async (event: InternalEvent) => {
+    let { windowContext, payload, id: replyId } = event;
+    const ctx = newCtx(event);
     try {
       if (payload.type === 'boot_request') {
         const payload: InternalEventPayload = {
@@ -163,7 +204,7 @@ async function initialize() {
           version: pkg.version,
           capabilities,
         };
-        sendPayload(payload, replyId);
+        sendPayload(windowContext, payload, replyId);
         return;
       }
 
@@ -171,7 +212,7 @@ async function initialize() {
         const payload: InternalEventPayload = {
           type: 'terminate_response',
         };
-        sendPayload(payload, replyId);
+        sendPayload(windowContext, payload, replyId);
         return;
       }
 
@@ -182,7 +223,7 @@ async function initialize() {
             type: 'import_response',
             resources: reply?.resources,
           };
-          sendPayload(replyPayload, replyId);
+          sendPayload(windowContext, replyPayload, replyId);
           return;
         } else {
           // Continue, to send back an empty reply
@@ -198,7 +239,7 @@ async function initialize() {
           type: 'export_http_request_response',
           content: reply,
         };
-        sendPayload(replyPayload, replyId);
+        sendPayload(windowContext, replyPayload, replyId);
         return;
       }
 
@@ -211,7 +252,7 @@ async function initialize() {
           type: 'filter_response',
           content: reply,
         };
-        sendPayload(replyPayload, replyId);
+        sendPayload(windowContext, replyPayload, replyId);
         return;
       }
 
@@ -231,7 +272,7 @@ async function initialize() {
           pluginRefId,
           actions: reply,
         };
-        sendPayload(replyPayload, replyId);
+        sendPayload(windowContext, replyPayload, replyId);
         return;
       }
 
@@ -251,7 +292,7 @@ async function initialize() {
           pluginRefId,
           functions: reply,
         };
-        sendPayload(replyPayload, replyId);
+        sendPayload(windowContext, replyPayload, replyId);
         return;
       }
 
@@ -264,7 +305,7 @@ async function initialize() {
         );
         if (typeof action?.onSelect === 'function') {
           await action.onSelect(ctx, payload.args);
-          sendEmpty(replyId);
+          sendEmpty(windowContext, replyId);
           return;
         }
       }
@@ -278,7 +319,14 @@ async function initialize() {
         );
         if (typeof action?.onRender === 'function') {
           const result = await action.onRender(ctx, payload.args);
-          sendPayload({ type: 'call_template_function_response', value: result ?? null }, replyId);
+          sendPayload(
+            windowContext,
+            {
+              type: 'call_template_function_response',
+              value: result ?? null,
+            },
+            replyId,
+          );
           return;
         }
       }
@@ -292,7 +340,7 @@ async function initialize() {
     }
 
     // No matches, so send back an empty response so the caller doesn't block forever
-    sendEmpty(replyId);
+    sendEmpty(windowContext, replyId);
   });
 }
 
