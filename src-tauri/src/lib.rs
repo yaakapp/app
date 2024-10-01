@@ -62,10 +62,9 @@ use yaak_models::queries::{
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
-    InternalEvent, InternalEventPayload, RenderPurpose, SendHttpRequestResponse,
-    ShowPromptResponse, ShowToastRequest, TemplateRenderResponse, WindowContext,
     InternalEvent, InternalEventPayload, RenderHttpRequestResponse, RenderPurpose,
-    SendHttpRequestResponse, ShowToastRequest, TemplateRenderResponse, WindowContext,
+    SendHttpRequestResponse, ShowPromptResponse, ShowToastRequest, TemplateRenderResponse,
+    WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
