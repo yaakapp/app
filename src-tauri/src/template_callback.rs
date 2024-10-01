@@ -14,13 +14,13 @@ pub struct PluginTemplateCallback {
 impl PluginTemplateCallback {
     pub fn new<R: Runtime>(
         app_handle: &AppHandle<R>,
-        window_context: WindowContext,
+        window_context: &WindowContext,
         render_purpose: RenderPurpose,
     ) -> PluginTemplateCallback {
         let plugin_manager = &*app_handle.state::<PluginManager>();
         PluginTemplateCallback {
             plugin_manager: plugin_manager.to_owned(),
-            window_context,
+            window_context: window_context.to_owned(),
             render_purpose,
         }
     }

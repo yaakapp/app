@@ -42,7 +42,7 @@ pub async fn send_http_request<R: Runtime>(
         .expect("Failed to get Workspace");
     let cb = PluginTemplateCallback::new(
         window.app_handle(),
-        WindowContext::from_window(window),
+        &WindowContext::from_window(window),
         RenderPurpose::Send,
     );
     let rendered_request =

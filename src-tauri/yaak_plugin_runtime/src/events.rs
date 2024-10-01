@@ -30,13 +30,6 @@ impl WindowContext {
             label: window.label().to_string(),
         }
     }
-
-    pub fn from_optional_window<R: Runtime>(window: Option<&WebviewWindow<R>>) -> Self {
-        match window {
-            None => WindowContext::None,
-            Some(w) => Self::from_window(w),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

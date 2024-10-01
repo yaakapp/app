@@ -146,7 +146,7 @@ async fn cmd_render_template<R: Runtime>(
         environment.as_ref(),
         &PluginTemplateCallback::new(
             &app_handle,
-            WindowContext::from_window(&window),
+            &WindowContext::from_window(&window),
             RenderPurpose::Preview,
         ),
     )
@@ -222,7 +222,7 @@ async fn cmd_grpc_go<R: Runtime>(
         environment.as_ref(),
         &PluginTemplateCallback::new(
             window.app_handle(),
-            WindowContext::from_window(&window),
+            &WindowContext::from_window(&window),
             RenderPurpose::Send,
         ),
     )
@@ -2174,7 +2174,6 @@ async fn handle_plugin_event<R: Runtime>(
             None
         }
         InternalEventPayload::ShowToastRequest(req) => {
-            println!("SHOW TOAST {window_context:?}");
             match window_context {
                 WindowContext::Label { label } => app_handle
                     .emit_to(label, "show_toast", req)
@@ -2204,40 +2203,21 @@ async fn handle_plugin_event<R: Runtime>(
             ))
         }
         InternalEventPayload::TemplateRenderRequest(req) => {
-            let window = get_window_from_window_context(app_handle, window_context)
+            let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window");
 
-            let url = window.url().unwrap();
-            let mut query_pairs = url.query_pairs();
-
-            let re = Regex::new(r"/workspaces/(?<workspace_id>\w+)").unwrap();
-            let workspace_id = match re.captures(url.as_str()) {
-                None => panic!("Failed to get workspace_id from window URL {url}"),
-                Some(captures) => captures.name("workspace_id").unwrap().as_str(),
-            };
-            let environment_id = query_pairs
-                .find(|(k, _v)| k == "environment_id")
-                .map(|(_k, v)| v.to_string());
-
-            let workspace = get_workspace(app_handle, workspace_id)
+            let workspace = workspace_from_window(&window)
                 .await
-                .expect(format!("Failed to get workspace for request {workspace_id}").as_str());
-            let environment = match environment_id {
-                None => None,
-                Some(id) => get_environment(app_handle, id.as_str()).await.ok(),
-            };
-            let cb = PluginTemplateCallback::new(
-                app_handle,
-                WindowContext::from_window(&window),
-                req.purpose,
-            );
+                .expect("Failed to get workspace_id from window URL");
+            let environment = environment_from_window(&window).await;
+            let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
             let data = render_json_value(req.data, &workspace, environment.as_ref(), &cb).await;
             Some(InternalEventPayload::TemplateRenderResponse(
                 TemplateRenderResponse { data },
             ))
         }
         InternalEventPayload::ReloadResponse => {
-            let window = get_window_from_window_context(app_handle, window_context)
+            let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window");
             let plugins = list_plugins(app_handle).await.unwrap();
             for plugin in plugins {
@@ -2264,26 +2244,10 @@ async fn handle_plugin_event<R: Runtime>(
             None
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
-            let window = get_window_from_window_context(app_handle, window_context)
+            let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window");
-            let url = window.url().unwrap();
-            let mut query_pairs = url.query_pairs();
-
-            let cookie_jar_id = query_pairs
-                .find(|(k, _v)| k == "cookie_jar_id")
-                .map(|(_k, v)| v.to_string());
-            let cookie_jar = match cookie_jar_id {
-                None => None,
-                Some(id) => get_cookie_jar(app_handle, id.as_str()).await.ok(),
-            };
-
-            let environment_id = query_pairs
-                .find(|(k, _v)| k == "environment_id")
-                .map(|(_k, v)| v.to_string());
-            let environment = match environment_id {
-                None => None,
-                Some(id) => get_environment(app_handle, id.as_str()).await.ok(),
-            };
+            let cookie_jar = cookie_jar_from_window(&window).await;
+            let environment = environment_from_window(&window).await;
 
             let resp = create_default_http_response(&window, req.http_request.id.as_str())
                 .await
@@ -2321,7 +2285,7 @@ async fn handle_plugin_event<R: Runtime>(
 
 fn get_window_from_window_context<R: Runtime>(
     app_handle: &AppHandle<R>,
-    window_context: WindowContext,
+    window_context: &WindowContext,
 ) -> Option<WebviewWindow<R>> {
     let label = match window_context {
         WindowContext::None => return None,
@@ -2335,4 +2299,50 @@ fn get_window_from_window_context<R: Runtime>(
             None
         }
     })
+}
+
+fn workspace_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
+    let url = window.url().unwrap();
+    let re = Regex::new(r"/workspaces/(?<wid>\w+)").unwrap();
+    match re.captures(url.as_str()) {
+        None => None,
+        Some(captures) => captures.name("wid").map(|c| c.as_str().to_string()),
+    }
+}
+
+async fn workspace_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<Workspace> {
+    match workspace_id_from_window(&window) {
+        None => None,
+        Some(id) => get_workspace(window, id.as_str()).await.ok(),
+    }
+}
+
+fn environment_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
+    let url = window.url().unwrap();
+    let mut query_pairs = url.query_pairs();
+    query_pairs
+        .find(|(k, _v)| k == "environment_id")
+        .map(|(_k, v)| v.to_string())
+}
+
+async fn environment_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<Environment> {
+    match environment_id_from_window(&window) {
+        None => None,
+        Some(id) => get_environment(window, id.as_str()).await.ok(),
+    }
+}
+
+fn cookie_jar_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
+    let url = window.url().unwrap();
+    let mut query_pairs = url.query_pairs();
+    query_pairs
+        .find(|(k, _v)| k == "cookie_jar_id")
+        .map(|(_k, v)| v.to_string())
+}
+
+async fn cookie_jar_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<CookieJar> {
+    match cookie_jar_id_from_window(&window) {
+        None => None,
+        Some(id) => get_cookie_jar(window, id.as_str()).await.ok(),
+    }
 }

@@ -93,4 +93,4 @@ export type TemplateRenderRequest = { data: JsonValue, purpose: RenderPurpose, }
 
 export type TemplateRenderResponse = { data: JsonValue, };
 
-export type WindowContext = { "type": "none" } | { "type": "label" } & string;
+export type WindowContext = { "type": "none" } | { "type": "label", label: string, };
