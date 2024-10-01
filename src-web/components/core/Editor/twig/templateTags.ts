@@ -146,7 +146,9 @@ function templateTags(
             name = 'response';
           }
 
-          let option = options.find((v) => v.name === name);
+          let option = options.find(
+            (o) => o.name === name || (o.type === 'function' && o.aliases?.includes(name)),
+          );
           if (option == null) {
             option = {
               invalid: true,

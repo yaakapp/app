@@ -13,6 +13,7 @@ export type TwigCompletionOptionNamespace = {
 
 export type TwigCompletionOptionFunction = {
   args: { name: string }[];
+  aliases: string[];
   type: 'function';
 };
 
@@ -56,26 +57,30 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
     }
 
     const completions: Completion[] = options
-      .map((o): Completion => {
+      .flatMap((o): Completion[] => {
         const matchSegments = toStartOfName!.text.split('.');
         const optionSegments = o.name.split('.');
 
         // If not on the last segment, only complete the namespace
         if (matchSegments.length < optionSegments.length) {
-          return {
-            label: optionSegments.slice(0, matchSegments.length).join('.'),
-            apply: optionSegments.slice(0, matchSegments.length).join('.'),
-            type: 'namespace',
-          };
+          return [
+            {
+              label: optionSegments.slice(0, matchSegments.length).join('.'),
+              apply: optionSegments.slice(0, matchSegments.length).join('.'),
+              type: 'namespace',
+            },
+          ];
         }
 
         // If on the last segment, wrap the entire tag
         const inner = o.type === 'function' ? `${o.name}()` : o.name;
-        return {
-          label: o.name,
-          apply: openTag + inner + closeTag,
-          type: o.type === 'variable' ? 'variable' : 'function',
-        };
+        return [
+          {
+            label: o.name,
+            apply: openTag + inner + closeTag,
+            type: o.type === 'variable' ? 'variable' : 'function',
+          },
+        ];
       })
       .filter((v) => v != null);
 

@@ -50,6 +50,7 @@ export function twig({
           .join(', ') + (fn.args.length > NUM_ARGS ? ', …' : '');
       return {
         name: fn.name,
+        aliases: fn.aliases,
         type: 'function',
         args: fn.args.map((a) => ({ name: a.name })),
         value: null,

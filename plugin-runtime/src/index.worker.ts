@@ -164,16 +164,16 @@ async function initialize() {
       },
       /** @deprecated: please use ctx.templates.render */
       async render(args) {
-        const payload = {
+        const payload: InternalEventPayload = {
           type: 'template_render_request',
-          data: args.httpRequest,
+          data: args.httpRequest as any,
           purpose: args.purpose,
-        } as const;
+        };
         const result = await sendAndWaitForReply<TemplateRenderResponse>(
           event.windowContext,
           payload,
         );
-        return result.data as HttpRequest;
+        return result.data as unknown as HttpRequest;
       },
     },
     templates: {

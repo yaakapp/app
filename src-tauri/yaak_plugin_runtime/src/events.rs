@@ -250,6 +250,7 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunction {
     pub name: String,
+    pub aliases: Vec<String>,
     pub args: Vec<TemplateFunctionArg>,
 }
 
