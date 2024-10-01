@@ -73,7 +73,7 @@ export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
 export type ShowToastRequest = { message: string, color?: Color | null, icon?: Icon | null, };
 
-export type TemplateFunction = { name: string, args: Array<TemplateFunctionArg>, };
+export type TemplateFunction = { name: string, aliases: Array<string>, args: Array<TemplateFunctionArg>, };
 
 export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg;
 

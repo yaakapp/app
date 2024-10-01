@@ -2204,7 +2204,7 @@ async fn handle_plugin_event<R: Runtime>(
         }
         InternalEventPayload::TemplateRenderRequest(req) => {
             let window = get_window_from_window_context(app_handle, &window_context)
-                .expect("Failed to find window");
+                .expect("Failed to find window for render");
 
             let workspace = workspace_from_window(&window)
                 .await
@@ -2218,7 +2218,7 @@ async fn handle_plugin_event<R: Runtime>(
         }
         InternalEventPayload::ReloadResponse => {
             let window = get_window_from_window_context(app_handle, &window_context)
-                .expect("Failed to find window");
+                .expect("Failed to find window for plugin reload");
             let plugins = list_plugins(app_handle).await.unwrap();
             for plugin in plugins {
                 if plugin.directory != plugin_handle.dir {
@@ -2245,7 +2245,7 @@ async fn handle_plugin_event<R: Runtime>(
         }
         InternalEventPayload::SendHttpRequestRequest(req) => {
             let window = get_window_from_window_context(app_handle, &window_context)
-                .expect("Failed to find window");
+                .expect("Failed to find window for sending HTTP request");
             let cookie_jar = cookie_jar_from_window(&window).await;
             let environment = environment_from_window(&window).await;
 
@@ -2288,17 +2288,29 @@ fn get_window_from_window_context<R: Runtime>(
     window_context: &WindowContext,
 ) -> Option<WebviewWindow<R>> {
     let label = match window_context {
-        WindowContext::None => return None,
         WindowContext::Label { label } => label,
+        WindowContext::None => {
+            return app_handle
+                .webview_windows()
+                .iter()
+                .next()
+                .map(|(_, w)| w.to_owned());
+        }
     };
 
-    app_handle.webview_windows().iter().find_map(|(_, w)| {
+    let window = app_handle.webview_windows().iter().find_map(|(_, w)| {
         if w.label() == label {
             Some(w.to_owned())
         } else {
             None
         }
-    })
+    });
+
+    if window.is_none() {
+        error!("Failed to find window by {window_context:?}");
+    }
+
+    window
 }
 
 fn workspace_id_from_window<R: Runtime>(window: &WebviewWindow<R>) -> Option<String> {
