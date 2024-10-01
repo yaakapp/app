@@ -51,7 +51,7 @@ impl YaakNotifier {
         Ok(())
     }
 
-    pub async fn check<R: Runtime>(&mut self, w: &WebviewWindow<R>) -> Result<(), String> {
+    pub async fn check<R: Runtime>(&mut self, window: &WebviewWindow<R>) -> Result<(), String> {
         let ignore_check = self.last_check.elapsed().unwrap().as_secs() < MAX_UPDATE_CHECK_SECONDS;
 
         if ignore_check {
@@ -60,8 +60,8 @@ impl YaakNotifier {
 
         self.last_check = SystemTime::now();
 
-        let num_launches = get_num_launches(w).await;
-        let info = w.app_handle().package_info().clone();
+        let num_launches = get_num_launches(window).await;
+        let info = window.app_handle().package_info().clone();
         let req = reqwest::Client::default()
             .request(Method::GET, "https://notify.yaak.app/notifications")
             .query(&[
@@ -80,14 +80,14 @@ impl YaakNotifier {
             .map_err(|e| e.to_string())?;
 
         let age = notification.timestamp.signed_duration_since(Utc::now());
-        let seen = get_kv(w).await?;
+        let seen = get_kv(window).await?;
         if seen.contains(&notification.id) || (age > Duration::days(2)) {
             debug!("Already seen notification {}", notification.id);
             return Ok(());
         }
         debug!("Got notification {:?}", notification);
 
-        let _ = w.emit("notification", notification.clone());
+        let _ = window.emit_to(window.label(), "notification", notification.clone());
 
         Ok(())
     }

@@ -1,5 +1,5 @@
 {
-  "name": "filter-jsonpath",
+  "name": "template-function-request",
   "private": true,
   "version": "0.0.1",
   "scripts": {
@@ -7,7 +7,9 @@
     "dev": "yaakcli dev ./src/index.js"
   },
   "dependencies": {
-    "jsonpath-plus": "^9.0.0"
+    "jsonpath-plus": "^9.0.0",
+    "xpath": "^0.0.34",
+    "@xmldom/xmldom": "^0.8.10"
   },
   "devDependencies": {
     "@types/jsonpath": "^0.2.4"

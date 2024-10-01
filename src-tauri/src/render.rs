@@ -1,31 +1,38 @@
 use crate::template_callback::PluginTemplateCallback;
 use serde_json::{json, Map, Value};
 use std::collections::{BTreeMap, HashMap};
-use tauri::{AppHandle, Manager, Runtime};
 use yaak_models::models::{
     Environment, EnvironmentVariable, GrpcMetadataEntry, GrpcRequest, HttpRequest,
     HttpRequestHeader, HttpUrlParameter, Workspace,
 };
 use yaak_templates::{parse_and_render, TemplateCallback};
 
-pub async fn render_template<R: Runtime>(
-    app_handle: &AppHandle<R>,
+pub async fn render_template<T: TemplateCallback>(
     template: &str,
     w: &Workspace,
     e: Option<&Environment>,
+    cb: &T,
 ) -> String {
-    let cb = &*app_handle.state::<PluginTemplateCallback>();
     let vars = &make_vars_hashmap(w, e);
     render(template, vars, cb).await
 }
 
-pub async fn render_grpc_request<R: Runtime>(
-    app_handle: &AppHandle<R>,
+pub async fn render_json_value<T: TemplateCallback>(
+    value: Value,
+    w: &Workspace,
+    e: Option<&Environment>,
+    cb: &T,
+) -> Value {
+    let vars = &make_vars_hashmap(w, e);
+    render_json_value_raw(value, vars, cb).await
+}
+
+pub async fn render_grpc_request<T: TemplateCallback>(
     r: &GrpcRequest,
     w: &Workspace,
     e: Option<&Environment>,
+    cb: &T,
 ) -> GrpcRequest {
-    let cb = &*app_handle.state::<PluginTemplateCallback>();
     let vars = &make_vars_hashmap(w, e);
 
     let mut metadata = Vec::new();
@@ -39,7 +46,7 @@ pub async fn render_grpc_request<R: Runtime>(
 
     let mut authentication = BTreeMap::new();
     for (k, v) in r.authentication.clone() {
-        authentication.insert(k, render_json_value(v, vars, cb).await);
+        authentication.insert(k, render_json_value_raw(v, vars, cb).await);
     }
 
     let url = render(r.url.as_str(), vars, cb).await;
@@ -80,12 +87,12 @@ pub async fn render_http_request(
 
     let mut body = BTreeMap::new();
     for (k, v) in r.body.clone() {
-        body.insert(k, render_json_value(v, vars, cb).await);
+        body.insert(k, render_json_value_raw(v, vars, cb).await);
     }
 
     let mut authentication = BTreeMap::new();
     for (k, v) in r.authentication.clone() {
-        authentication.insert(k, render_json_value(v, vars, cb).await);
+        authentication.insert(k, render_json_value_raw(v, vars, cb).await);
     }
 
     let url = render(r.url.clone().as_str(), vars, cb).await;
@@ -138,7 +145,7 @@ fn add_variable_to_map(
     map
 }
 
-pub async fn render_json_value<T: TemplateCallback>(
+async fn render_json_value_raw<T: TemplateCallback>(
     v: Value,
     vars: &HashMap<String, String>,
     cb: &T,
@@ -148,7 +155,7 @@ pub async fn render_json_value<T: TemplateCallback>(
         Value::Array(a) => {
             let mut new_a = Vec::new();
             for v in a {
-                new_a.push(Box::pin(render_json_value(v, vars, cb)).await)
+                new_a.push(Box::pin(render_json_value_raw(v, vars, cb)).await)
             }
             json!(new_a)
         }
@@ -156,7 +163,7 @@ pub async fn render_json_value<T: TemplateCallback>(
             let mut new_o = Map::new();
             for (k, v) in o {
                 let key = Box::pin(render(k.as_str(), vars, cb)).await;
-                let value = Box::pin(render_json_value(v, vars, cb)).await;
+                let value = Box::pin(render_json_value_raw(v, vars, cb)).await;
                 new_o.insert(key, value);
             }
             json!(new_o)
@@ -189,7 +196,7 @@ mod tests {
         let mut vars = HashMap::new();
         vars.insert("a".to_string(), "aaa".to_string());
 
-        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        let result = super::render_json_value_raw(v, &vars, &EmptyCB {}).await;
         assert_eq!(result, json!("aaa"))
     }
 
@@ -199,7 +206,7 @@ mod tests {
         let mut vars = HashMap::new();
         vars.insert("a".to_string(), "aaa".to_string());
 
-        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        let result = super::render_json_value_raw(v, &vars, &EmptyCB {}).await;
         assert_eq!(result, json!(["aaa", "aaa"]))
     }
 
@@ -209,7 +216,7 @@ mod tests {
         let mut vars = HashMap::new();
         vars.insert("a".to_string(), "aaa".to_string());
 
-        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        let result = super::render_json_value_raw(v, &vars, &EmptyCB {}).await;
         assert_eq!(result, json!({"aaa": "aaa"}))
     }
 
@@ -226,7 +233,7 @@ mod tests {
         let mut vars = HashMap::new();
         vars.insert("a".to_string(), "aaa".to_string());
 
-        let result = super::render_json_value(v, &vars, &EmptyCB {}).await;
+        let result = super::render_json_value_raw(v, &vars, &EmptyCB {}).await;
         assert_eq!(
             result,
             json!([
