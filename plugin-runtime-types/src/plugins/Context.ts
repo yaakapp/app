@@ -3,8 +3,6 @@ import {
   ShowPromptResponse,
   TemplateRenderRequest,
   TemplateRenderResponse,
-} from '@yaakapp-internal/plugin';
-import {
   FindHttpResponsesRequest,
   FindHttpResponsesResponse,
   GetHttpRequestByIdRequest,
