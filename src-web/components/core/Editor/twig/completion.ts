@@ -13,7 +13,7 @@ export type TwigCompletionOptionNamespace = {
 
 export type TwigCompletionOptionFunction = {
   args: { name: string }[];
-  aliases: string[];
+  aliases?: string[];
   type: 'function';
 };
 
@@ -65,7 +65,7 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
         if (matchSegments.length < optionSegments.length) {
           return [
             {
-              label: optionSegments.slice(0, matchSegments.length).join('.'),
+              label: optionSegments.slice(0, matchSegments.length).join('.') + '…',
               apply: optionSegments.slice(0, matchSegments.length).join('.'),
               type: 'namespace',
             },

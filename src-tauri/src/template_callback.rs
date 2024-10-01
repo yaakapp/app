@@ -55,6 +55,7 @@ impl TemplateCallback for PluginTemplateCallback {
                 TemplateFunctionArg::Text(a) => a.base,
                 TemplateFunctionArg::Select(a) => a.base,
                 TemplateFunctionArg::Checkbox(a) => a.base,
+                TemplateFunctionArg::File(a) => a.base,
                 TemplateFunctionArg::HttpRequest(a) => a.base,
             };
             if let None = args_with_defaults.get(base.name.as_str()) {

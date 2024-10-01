@@ -12,12 +12,11 @@ export function useCreateWorkspace() {
     mutationFn: async () => {
       const name = await prompt({
         id: 'new-workspace',
-        name: 'name',
         label: 'Name',
         defaultValue: 'My Workspace',
         title: 'New Workspace',
-        confirmLabel: 'Create',
         placeholder: 'My Workspace',
+        confirmText: 'Create',
       });
       return invokeCmd('cmd_create_workspace', { name });
     },

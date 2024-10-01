@@ -59,8 +59,8 @@ export function CookieDropdown() {
                         Enter a new name for <InlineCode>{activeCookieJar?.name}</InlineCode>
                       </>
                     ),
-                    name: 'name',
                     label: 'Name',
+                    confirmText: 'Save',
                     placeholder: 'New name',
                     defaultValue: activeCookieJar?.name,
                   });

@@ -93,6 +93,7 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
 
   return (
     <VStack className="pb-3" space={4}>
+      <h1 className="font-mono !text-base">{templateFunction.name}(…)</h1>
       <VStack space={2}>
         {templateFunction.args.map((a: TemplateFunctionArg, i: number) => {
           switch (a.type) {

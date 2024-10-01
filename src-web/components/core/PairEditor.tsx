@@ -519,8 +519,7 @@ function PairEditorRow({
                   label: 'Content-Type',
                   placeholder: 'text/plain',
                   defaultValue: pairContainer.pair.contentType ?? '',
-                  name: 'content-type',
-                  confirmLabel: 'Set',
+                  confirmText: 'Set',
                   description: 'Leave blank to auto-detect',
                 });
                 handleChangeValueContentType(v);

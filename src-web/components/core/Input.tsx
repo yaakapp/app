@@ -24,7 +24,7 @@ export type InputProps = Omit<
     | 'onKeyDown'
     | 'readOnly'
   > & {
-    name: string;
+    name?: string;
     type?: 'text' | 'password';
     label: string;
     hideLabel?: boolean;
@@ -41,7 +41,7 @@ export type InputProps = Omit<
     rightSlot?: ReactNode;
     size?: 'xs' | 'sm' | 'md' | 'auto';
     className?: string;
-    placeholder: string;
+    placeholder?: string;
     validate?: boolean | ((v: string) => boolean);
     require?: boolean;
     wrapLines?: boolean;
