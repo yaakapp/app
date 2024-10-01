@@ -1,6 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { AnyModel } from '@yaakapp-internal/models';
+import type { ShowPromptRequest, ShowPromptResponse } from '@yaakapp-internal/plugin';
 import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useEnsureActiveCookieJar, useMigrateActiveCookieJarId } from '../hooks/useActiveCookieJar';
@@ -19,6 +21,7 @@ import { keyValueQueryKey } from '../hooks/useKeyValue';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useNotificationToast } from '../hooks/useNotificationToast';
 import { pluginsAtom } from '../hooks/usePlugins';
+import { usePrompt } from '../hooks/usePrompt';
 import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
@@ -175,6 +178,16 @@ export function GlobalHooks() {
   useListenToTauriEvent('zoom_out', zoom.zoomOut);
   useHotKey('app.zoom_reset', zoom.zoomReset);
   useListenToTauriEvent('zoom_reset', zoom.zoomReset);
+
+  const prompt = usePrompt();
+  useListenToTauriEvent<{ replyId: string; args: ShowPromptRequest }>(
+    'show_prompt',
+    async (event) => {
+      const value = await prompt(event.payload.args);
+      const result: ShowPromptResponse = { value };
+      await emit(event.payload.replyId, result);
+    },
+  );
 
   const copy = useCopy();
   useListenToTauriEvent('generate_theme_css', () => {

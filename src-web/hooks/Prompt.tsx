@@ -1,30 +1,25 @@
-import type { FormEvent } from 'react';
+import type { ShowPromptRequest } from '@yaakapp-internal/plugin';
+import type { FormEvent, ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { Button } from '../components/core/Button';
-import type { InputProps } from '../components/core/Input';
 import { PlainInput } from '../components/core/PlainInput';
 import { HStack } from '../components/core/Stacks';
 
-export interface PromptProps {
+export type PromptProps = Omit<ShowPromptRequest, 'id' | 'title' | 'description'> & {
+  description?: ReactNode;
   onHide: () => void;
   onResult: (value: string) => void;
-  label: InputProps['label'];
-  name: InputProps['name'];
-  defaultValue: InputProps['defaultValue'];
-  placeholder: InputProps['placeholder'];
-  require?: InputProps['require'];
-  confirmLabel?: string;
-}
+};
 
 export function Prompt({
   onHide,
   label,
-  name,
   defaultValue,
   placeholder,
   onResult,
-  require = true,
-  confirmLabel = 'Save',
+  require,
+  confirmText,
+  cancelText,
 }: PromptProps) {
   const [value, setValue] = useState<string>(defaultValue ?? '');
   const handleSubmit = useCallback(
@@ -45,18 +40,17 @@ export function Prompt({
         hideLabel
         autoSelect
         require={require}
-        placeholder={placeholder}
+        placeholder={placeholder ?? 'Enter text'}
         label={label}
-        name={name}
         defaultValue={defaultValue}
         onChange={setValue}
       />
       <HStack space={2} justifyContent="end">
         <Button onClick={onHide} variant="border" color="secondary">
-          Cancel
+          {cancelText || 'Cancel'}
         </Button>
         <Button type="submit" color="primary">
-          {confirmLabel}
+          {confirmText || 'Done'}
         </Button>
       </HStack>
     </form>

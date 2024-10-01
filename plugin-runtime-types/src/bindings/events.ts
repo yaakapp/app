@@ -33,7 +33,7 @@ export type FilterRequest = { content: string, filter: string, };
 
 export type FilterResponse = { content: string, };
 
-export type FindHttpResponsesRequest = { requestId: string, limit?: number, };
+export type FindHttpResponsesRequest = { requestId: string, limit?: number | null, };
 
 export type FindHttpResponsesResponse = { httpResponses: Array<HttpResponse>, };
 
@@ -47,9 +47,9 @@ export type GetHttpRequestByIdResponse = { httpRequest: HttpRequest | null, };
 
 export type GetTemplateFunctionsResponse = { functions: Array<TemplateFunction>, pluginRefId: string, };
 
-export type HttpRequestAction = { key: string, label: string, icon?: Icon, };
+export type HttpRequestAction = { key: string, label: string, icon?: Icon | null, };
 
-export type Icon = "copy" | "info" | "check_circle" | "alert_triangle" | "_unknown";
+export type Icon = "copy" | "info" | "check_circle" | "alert_triangle";
 
 export type ImportRequest = { content: string, };
 
@@ -73,41 +73,41 @@ export type SendHttpRequestRequest = { httpRequest: HttpRequest, };
 
 export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
-export type ShowPromptRequest = { id: string, title: string, label: string, description?: string, defaultValue?: string, placeholder?: string, 
+export type ShowPromptRequest = { title: string, label: string, description?: string | null, defaultValue?: string | null, placeholder?: string | null, 
 /**
  * Text to add to the confirmation button
  */
-confirmText?: string, 
+confirmText?: string | null, 
 /**
  * Text to add to the cancel button
  */
-cancelText?: string, 
+cancelText?: string | null, 
 /**
  * Require the user to enter a non-empty value
  */
-require?: boolean, };
+require?: boolean | null, };
 
 export type ShowPromptResponse = { value: string, };
 
-export type ShowToastRequest = { message: string, color?: Color, icon?: Icon, };
+export type ShowToastRequest = { message: string, color?: Color | null, icon?: Icon | null, };
 
-export type TemplateFunction = { name: string, aliases?: Array<string>, args: Array<TemplateFunctionArg>, };
+export type TemplateFunction = { name: string, aliases?: Array<string> | null, args: Array<TemplateFunctionArg>, };
 
 export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg | { "type": "file" } & TemplateFunctionFileArg;
 
-export type TemplateFunctionBaseArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionBaseArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
-export type TemplateFunctionCheckboxArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionCheckboxArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
-export type TemplateFunctionFileArg = { title: string, multiple?: boolean, directory?: boolean, defaultPath?: string, filters?: Array<OpenFileFilter>, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionFileArg = { title: string, multiple?: boolean | null, directory?: boolean | null, defaultPath?: string | null, filters?: Array<OpenFileFilter> | null, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
-export type TemplateFunctionHttpRequestArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionHttpRequestArg = { name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
-export type TemplateFunctionSelectArg = { options: Array<TemplateFunctionSelectOption>, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionSelectArg = { options: Array<TemplateFunctionSelectOption>, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
 export type TemplateFunctionSelectOption = { name: string, value: string, };
 
-export type TemplateFunctionTextArg = { placeholder?: string, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionTextArg = { placeholder?: string | null, name: string, optional?: boolean | null, label?: string | null, defaultValue?: string | null, };
 
 export type TemplateRenderRequest = { data: JsonValue, purpose: RenderPurpose, };
 

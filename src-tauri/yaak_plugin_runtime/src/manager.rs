@@ -212,7 +212,7 @@ impl PluginManager {
         };
         let plugin_handle = PluginHandle::new(dir, tx.clone());
 
-        // Add the new plugin 
+        // Add the new plugin
         self.plugins.lock().await.push(plugin_handle.clone());
 
         // Boot the plugin

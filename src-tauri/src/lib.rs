@@ -17,6 +17,7 @@ use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use regex::Regex;
+use serde::Serialize;
 use serde_json::{json, Value};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
@@ -61,8 +62,8 @@ use yaak_models::queries::{
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
-    InternalEvent, InternalEventPayload, RenderPurpose, SendHttpRequestResponse, ShowToastRequest,
-    TemplateRenderResponse, WindowContext,
+    InternalEvent, InternalEventPayload, RenderPurpose, SendHttpRequestResponse,
+    ShowPromptResponse, ShowToastRequest, TemplateRenderResponse, WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_templates::{Parser, Tokens};
@@ -2158,6 +2159,40 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
     });
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FrontendCall<T: Serialize + Clone> {
+    args: T,
+    reply_id: String,
+}
+
+async fn call_frontend<T: Serialize + Clone, R: Runtime>(
+    window: WebviewWindow<R>,
+    event_name: &str,
+    args: T,
+) -> ShowPromptResponse {
+    let reply_id = format!("{event_name}_reply");
+    let payload = FrontendCall {
+        args,
+        reply_id: reply_id.clone(),
+    };
+    window.emit_to(window.label(), event_name, payload).unwrap();
+    let (tx, mut rx) = tokio::sync::watch::channel(ShowPromptResponse::default());
+
+    let event_id = window.clone().listen(reply_id, move |ev| {
+        println!("GOT REPLY {ev:?}");
+        let resp: ShowPromptResponse = serde_json::from_str(ev.payload()).unwrap();
+        _ = tx.send(resp);
+    });
+
+    // When reply shows up, unlisten to events and return
+    _ = rx.changed().await;
+    window.unlisten(event_id);
+
+    let foo = rx.borrow();
+    foo.clone()
+}
+
 async fn handle_plugin_event<R: Runtime>(
     app_handle: &AppHandle<R>,
     event: &InternalEvent,
@@ -2183,6 +2218,12 @@ async fn handle_plugin_event<R: Runtime>(
                     .expect("Failed to emit show_toast"),
             };
             None
+        }
+        InternalEventPayload::ShowPromptRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for render");
+            let resp = call_frontend(window, "show_prompt", req).await;
+            Some(InternalEventPayload::ShowPromptResponse(resp))
         }
         InternalEventPayload::FindHttpResponsesRequest(req) => {
             let http_responses = list_http_responses(

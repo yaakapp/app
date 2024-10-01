@@ -762,7 +762,7 @@ function SidebarItem({
                   Enter a new name for <InlineCode>{itemName}</InlineCode>
                 </>
               ),
-              name: 'name',
+              confirmText: 'Save',
               label: 'Name',
               placeholder: 'New Name',
               defaultValue: itemName,

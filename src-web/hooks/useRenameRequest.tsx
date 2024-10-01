@@ -28,10 +28,10 @@ export function useRenameRequest(requestId: string | null) {
               Enter a new name for <InlineCode>{request.name}</InlineCode>
             </>
           ),
-        name: 'name',
         label: 'Name',
         placeholder: 'New Name',
         defaultValue: request.name,
+        confirmText: 'Save',
       });
       if (request.model === 'http_request') {
         updateHttpRequest.mutate({ id: request.id, update: (r: HttpRequest) => ({ ...r, name }) });

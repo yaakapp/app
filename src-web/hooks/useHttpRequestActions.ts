@@ -16,6 +16,7 @@ export function useHttpRequestActions() {
       const responses = (await invokeCmd(
         'cmd_http_request_actions',
       )) as GetHttpRequestActionsResponse[];
+      console.log('REQUEST ACTIONS', responses);
       return responses;
     },
   });

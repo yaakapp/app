@@ -16,12 +16,12 @@ export function useCreateEnvironment() {
     mutationFn: async () => {
       const name = await prompt({
         id: 'new-environment',
-        name: 'name',
         title: 'New Environment',
         description: 'Create multiple environments with different sets of variables',
         label: 'Name',
         placeholder: 'My Environment',
         defaultValue: 'My Environment',
+        confirmText: 'Create',
       });
       return invokeCmd('cmd_create_environment', {
         name,

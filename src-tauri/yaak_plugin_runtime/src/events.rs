@@ -73,6 +73,9 @@ pub enum InternalEventPayload {
 
     ShowToastRequest(ShowToastRequest),
 
+    ShowPromptRequest(ShowPromptRequest),
+    ShowPromptResponse(ShowPromptResponse),
+
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
 
@@ -200,10 +203,44 @@ pub struct TemplateRenderResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct ShowToastRequest {
     pub message: String,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub color: Option<Color>,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub icon: Option<Icon>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct ShowPromptRequest {
+    // A unique ID to identify the prompt (eg. "enter-password")
+    pub id: String,
+    // Title to show on the prompt dialog
+    pub title: String,
+    // Text to show on the label above the input
+    pub label: String,
+    #[ts(optional)]
+    pub description: Option<String>,
+    #[ts(optional)]
+    pub default_value: Option<String>,
+    #[ts(optional)]
+    pub placeholder: Option<String>,
+    /// Text to add to the confirmation button
+    #[ts(optional)]
+    pub confirm_text: Option<String>,
+    /// Text to add to the cancel button
+    #[ts(optional)]
+    pub cancel_text: Option<String>,
+    /// Require the user to enter a non-empty value
+    #[ts(optional)]
+    pub require: Option<bool>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct ShowPromptResponse {
+    pub value: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -235,6 +272,10 @@ pub enum Icon {
     Info,
     CheckCircle,
     AlertTriangle,
+
+    #[serde(untagged)]
+    #[ts(type = "\"_unknown\"")]
+    _Unknown(String),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -250,7 +291,8 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunction {
     pub name: String,
-    pub aliases: Vec<String>,
+    #[ts(optional)]
+    pub aliases: Option<Vec<String>>,
     pub args: Vec<TemplateFunctionArg>,
 }
 
@@ -262,6 +304,7 @@ pub enum TemplateFunctionArg {
     Select(TemplateFunctionSelectArg),
     Checkbox(TemplateFunctionCheckboxArg),
     HttpRequest(TemplateFunctionHttpRequestArg),
+    File(TemplateFunctionFileArg),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -269,11 +312,11 @@ pub enum TemplateFunctionArg {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionBaseArg {
     pub name: String,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub optional: Option<bool>,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub label: Option<String>,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub default_value: Option<String>,
 }
 
@@ -283,7 +326,7 @@ pub struct TemplateFunctionBaseArg {
 pub struct TemplateFunctionTextArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub placeholder: Option<String>,
 }
 
@@ -293,6 +336,31 @@ pub struct TemplateFunctionTextArg {
 pub struct TemplateFunctionHttpRequestArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct TemplateFunctionFileArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
+    pub title: String,
+    #[ts(optional)]
+    pub multiple: Option<bool>,
+    #[ts(optional)]
+    pub directory: Option<bool>,
+    #[ts(optional)]
+    pub default_path: Option<String>,
+    #[ts(optional)]
+    pub filters: Option<Vec<OpenFileFilter>>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct OpenFileFilter {
+    pub name: String,
+    pub extensions: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -376,7 +444,8 @@ pub struct GetHttpRequestActionsResponse {
 pub struct HttpRequestAction {
     pub key: String,
     pub label: String,
-    pub icon: Option<String>,
+    #[ts(optional)]
+    pub icon: Option<Icon>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -414,6 +483,7 @@ pub struct GetHttpRequestByIdResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct FindHttpResponsesRequest {
     pub request_id: String,
+    #[ts(optional)]
     pub limit: Option<i32>,
 }
 

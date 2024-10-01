@@ -10,6 +10,7 @@ import {
   InternalEvent,
   InternalEventPayload,
   SendHttpRequestResponse,
+  ShowPromptResponse,
   TemplateFunction,
 } from '@yaakapp/api';
 import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
@@ -133,6 +134,15 @@ async function initialize() {
     toast: {
       async show(args) {
         await sendAndWaitForReply(event.windowContext, { type: 'show_toast_request', ...args });
+      },
+    },
+    prompt: {
+      async show(args) {
+        const reply: ShowPromptResponse = await sendAndWaitForReply(event.windowContext, {
+          type: 'show_prompt_request',
+          ...args,
+        });
+        return reply.value;
       },
     },
     httpResponse: {

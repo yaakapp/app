@@ -19,11 +19,10 @@ export function useCreateFolder() {
         patch.name ||
         (await prompt({
           id: 'new-folder',
-          name: 'name',
           label: 'Name',
           defaultValue: 'Folder',
           title: 'New Folder',
-          confirmLabel: 'Create',
+          confirmText: 'Create',
           placeholder: 'Name',
         }));
       patch.sortPriority = patch.sortPriority || -Date.now();
