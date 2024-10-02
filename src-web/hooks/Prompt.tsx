@@ -7,12 +7,12 @@ import { HStack } from '../components/core/Stacks';
 
 export type PromptProps = Omit<PromptTextRequest, 'id' | 'title' | 'description'> & {
   description?: ReactNode;
-  onHide: () => void;
+  onCancel: () => void;
   onResult: (value: string | null) => void;
 };
 
 export function Prompt({
-  onHide,
+  onCancel,
   label,
   defaultValue,
   placeholder,
@@ -25,10 +25,9 @@ export function Prompt({
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      onHide();
       onResult(value);
     },
-    [onHide, onResult, value],
+    [onResult, value],
   );
 
   return (
@@ -46,7 +45,7 @@ export function Prompt({
         onChange={setValue}
       />
       <HStack space={2} justifyContent="end">
-        <Button onClick={onHide} variant="border" color="secondary">
+        <Button onClick={onCancel} variant="border" color="secondary">
           {cancelText || 'Cancel'}
         </Button>
         <Button type="submit" color="primary">

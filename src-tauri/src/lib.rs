@@ -46,19 +46,7 @@ use yaak_models::models::{
     CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
     GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin, Settings, Workspace,
 };
-use yaak_models::queries::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
-    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
-    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, generate_model_id, get_cookie_jar, get_environment, get_folder,
-    get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments,
-    list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
-    list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
-    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
-};
+use yaak_models::queries::{cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request, duplicate_http_request, generate_id, generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace};
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
@@ -2172,7 +2160,7 @@ async fn call_frontend<T: Serialize + Clone, R: Runtime>(
     event_name: &str,
     args: T,
 ) -> PromptTextResponse {
-    let reply_id = format!("{event_name}_reply");
+    let reply_id = format!("{event_name}_reply_{}", generate_id());
     let payload = FrontendCall {
         args,
         reply_id: reply_id.clone(),

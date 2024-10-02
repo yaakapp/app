@@ -75,6 +75,7 @@ export function GlobalHooks() {
   const setEnvironments = useSetAtom(environmentsAtom);
 
   useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
+    console.log('Upserted model', payload.model);
     const { model, windowLabel } = payload;
     const queryKey =
       model.model === 'http_response'
@@ -131,6 +132,8 @@ export function GlobalHooks() {
   useListenToTauriEvent<ModelPayload>('deleted_model', ({ payload }) => {
     const { model, windowLabel } = payload;
     if (shouldIgnoreModel(model, windowLabel)) return;
+
+    console.log('Delete model', payload.model);
 
     if (model.model === 'workspace') {
       setWorkspaces(removeById(model));

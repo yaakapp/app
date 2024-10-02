@@ -49,11 +49,18 @@ export const DialogProvider = ({ children }: { children: React.ReactNode }) => {
   return <DialogContext.Provider value={state}>{children}</DialogContext.Provider>;
 };
 
-function DialogInstance({ id, render, ...props }: DialogEntry) {
+function DialogInstance({ id, render, onClose, ...props }: DialogEntry) {
   const { actions } = useContext(DialogContext);
   const children = render({ hide: () => actions.hide(id) });
   return (
-    <Dialog open onClose={() => actions.hide(id)} {...props}>
+    <Dialog
+      open
+      onClose={() => {
+        onClose?.();
+        actions.hide(id);
+      }}
+      {...props}
+    >
       {children}
     </Dialog>
   );
