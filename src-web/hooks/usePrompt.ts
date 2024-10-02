@@ -27,7 +27,10 @@ export function usePrompt() {
               resolve(null);
               hide();
             },
-            onResult: resolve,
+            onResult: (v) => {
+              resolve(v);
+              hide();
+            },
             ...props,
           }),
       });
