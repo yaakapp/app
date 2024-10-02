@@ -229,16 +229,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     defaultSelectedIndex ?? null,
     [defaultSelectedIndex],
   );
-  const [menuStyles, setMenuStyles] = useState<CSSProperties>({});
   const [filter, setFilter] = useState<string>('');
-
-  // Calculate the max height so we can scroll
-  const initMenu = useCallback((el: HTMLDivElement | null) => {
-    if (el === null) return {};
-    const windowBox = document.documentElement.getBoundingClientRect();
-    const menuBox = el.getBoundingClientRect();
-    setMenuStyles({ maxHeight: windowBox.height - menuBox.top - 5 });
-  }, []);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -355,11 +346,12 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     [handleClose, handleNext, handlePrev, handleSelect, items, selectedIndex],
   );
 
-  const { containerStyles, triangleStyles } = useMemo<{
-    containerStyles: CSSProperties;
-    triangleStyles: CSSProperties | null;
+  const styles = useMemo<{
+    container: CSSProperties;
+    menu: CSSProperties;
+    triangle: CSSProperties;
   }>(() => {
-    if (triggerShape == null) return { containerStyles: {}, triangleStyles: null };
+    if (triggerShape == null) return { container: {}, triangle: {}, menu: {} };
 
     const menuMarginY = 5;
     const docRect = document.documentElement.getBoundingClientRect();
@@ -371,27 +363,31 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const onRight = horizontalSpaceRemaining < 200;
     const upsideDown = heightBelow < heightAbove && heightBelow < items.length * 25 + 20 + 200;
     const triggerWidth = triggerShape.right - triggerShape.left;
-    const containerStyles = {
-      top: !upsideDown ? top + menuMarginY : undefined,
-      bottom: upsideDown
-        ? docRect.height - top - (triggerShape.top - triggerShape.bottom) + menuMarginY
-        : undefined,
-      right: onRight ? docRect.width - triggerShape.right : undefined,
-      left: !onRight ? triggerShape.left : undefined,
-      minWidth: fullWidth ? triggerWidth : undefined,
-      maxWidth: '40rem',
+    return {
+      container: {
+        top: !upsideDown ? top + menuMarginY : undefined,
+        bottom: upsideDown
+          ? docRect.height - top - (triggerShape.top - triggerShape.bottom) + menuMarginY
+          : undefined,
+        right: onRight ? docRect.width - triggerShape.right : undefined,
+        left: !onRight ? triggerShape.left : undefined,
+        minWidth: fullWidth ? triggerWidth : undefined,
+        maxWidth: '40rem',
+      },
+      triangle: {
+        width: '0.4rem',
+        height: '0.4rem',
+        ...(onRight
+          ? { right: width / 2, marginRight: '-0.2rem' }
+          : { left: width / 2, marginLeft: '-0.2rem' }),
+        ...(upsideDown
+          ? { bottom: '-0.2rem', rotate: '225deg' }
+          : { top: '-0.2rem', rotate: '45deg' }),
+      },
+      menu: {
+        maxHeight: `${(upsideDown ? heightAbove : heightBelow) - 15}px`,
+      },
     };
-    const triangleStyles: CSSProperties = {
-      width: '0.4rem',
-      height: '0.4rem',
-      ...(onRight
-        ? { right: width / 2, marginRight: '-0.2rem' }
-        : { left: width / 2, marginLeft: '-0.2rem' }),
-      ...(upsideDown
-        ? { bottom: '-0.2rem', rotate: '225deg' }
-        : { top: '-0.2rem', rotate: '45deg' }),
-    };
-    return { containerStyles, triangleStyles };
   }, [fullWidth, items.length, triggerShape]);
 
   const filteredItems = useMemo(
@@ -435,61 +431,58 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
               role="menu"
               aria-orientation="vertical"
               dir="ltr"
-              style={containerStyles}
+              style={styles.container}
               className={classNames(className, 'outline-none my-1 pointer-events-auto fixed z-50')}
             >
-              {triangleStyles && showTriangle && (
+              {showTriangle && (
                 <span
                   aria-hidden
-                  style={triangleStyles}
+                  style={styles.triangle}
                   className="bg-surface absolute border-border-subtle border-t border-l"
                 />
               )}
-              {containerStyles && (
-                <VStack
-                  ref={initMenu}
-                  style={menuStyles}
-                  className={classNames(
-                    className,
-                    'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
-                    'border-border-subtle overflow-auto mx-0.5',
-                  )}
-                >
-                  {filter && (
-                    <HStack
-                      space={2}
-                      className="pb-0.5 px-1.5 mb-2 text-sm border border-border-subtle mx-2 rounded font-mono h-xs"
-                    >
-                      <Icon icon="search" size="xs" className="text-text-subtle" />
-                      <div className="text">{filter}</div>
-                    </HStack>
-                  )}
-                  {filteredItems.length === 0 && (
-                    <span className="text-text-subtlest text-center px-2 py-1">No matches</span>
-                  )}
-                  {filteredItems.map((item, i) => {
-                    if (item.hidden) {
-                      return null;
-                    }
-                    if (item.type === 'separator') {
-                      return (
-                        <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
-                          {item.label}
-                        </Separator>
-                      );
-                    }
+              <VStack
+                style={styles.menu}
+                className={classNames(
+                  className,
+                  'h-auto bg-surface rounded-md shadow-lg py-1.5 border',
+                  'border-border-subtle overflow-auto mx-0.5',
+                )}
+              >
+                {filter && (
+                  <HStack
+                    space={2}
+                    className="pb-0.5 px-1.5 mb-2 text-sm border border-border-subtle mx-2 rounded font-mono h-xs"
+                  >
+                    <Icon icon="search" size="xs" className="text-text-subtle" />
+                    <div className="text">{filter}</div>
+                  </HStack>
+                )}
+                {filteredItems.length === 0 && (
+                  <span className="text-text-subtlest text-center px-2 py-1">No matches</span>
+                )}
+                {filteredItems.map((item, i) => {
+                  if (item.hidden) {
+                    return null;
+                  }
+                  if (item.type === 'separator') {
                     return (
-                      <MenuItem
-                        focused={i === selectedIndex}
-                        onFocus={handleFocus}
-                        onSelect={handleSelect}
-                        key={item.key}
-                        item={item}
-                      />
+                      <Separator key={i} className={classNames('my-1.5', item.label && 'ml-2')}>
+                        {item.label}
+                      </Separator>
                     );
-                  })}
-                </VStack>
-              )}
+                  }
+                  return (
+                    <MenuItem
+                      focused={i === selectedIndex}
+                      onFocus={handleFocus}
+                      onSelect={handleSelect}
+                      key={item.key}
+                      item={item}
+                    />
+                  );
+                })}
+              </VStack>
             </motion.div>
           </div>
         </Overlay>
