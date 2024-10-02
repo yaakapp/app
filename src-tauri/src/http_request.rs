@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fs;
-use std::fs::{create_dir_all, File};
-use std::io::Write;
+use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -21,6 +20,8 @@ use reqwest::Method;
 use reqwest::{multipart, Url};
 use serde_json::Value;
 use tauri::{Manager, Runtime, WebviewWindow};
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
 use yaak_models::models::{
@@ -45,7 +46,7 @@ pub async fn send_http_request<R: Runtime>(
         &WindowContext::from_window(window),
         RenderPurpose::Send,
     );
-    
+
     let rendered_request =
         render_http_request(&request, &workspace, environment.as_ref(), &cb).await;
 
@@ -368,7 +369,7 @@ pub async fn send_http_request<R: Runtime>(
     };
 
     match raw_response {
-        Ok(v) => {
+        Ok(mut v) => {
             let mut response = response.clone();
             response.elapsed_headers = start.elapsed().as_millis() as i32;
             let response_headers = v.headers().clone();
@@ -393,14 +394,8 @@ pub async fn send_http_request<R: Runtime>(
             };
 
             let content_length = v.content_length();
-            let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
-            response.elapsed = start.elapsed().as_millis() as i32;
 
-            // Use content length if available, otherwise use body length
-            response.content_length = match content_length {
-                Some(l) => Some(l as i32),
-                None => Some(body_bytes.len() as i32),
-            };
+            let mut written_bytes: usize = 0;
 
             {
                 // Write body to FS
@@ -416,15 +411,38 @@ pub async fn send_http_request<R: Runtime>(
                     .truncate(true)
                     .write(true)
                     .open(&body_path)
+                    .await
                     .expect("Failed to open file");
-                f.write_all(body_bytes.as_slice())
-                    .expect("Failed to write to file");
                 response.body_path = Some(
                     body_path
                         .to_str()
                         .expect("Failed to get body path")
                         .to_string(),
                 );
+                loop {
+                    response.elapsed = start.elapsed().as_millis() as i32;
+                    // Use content length if available, otherwise use body length
+                    response.content_length = match content_length {
+                        Some(l) => Some(l as i32),
+                        None => Some(written_bytes as i32),
+                    };
+                    match v.chunk().await {
+                        Ok(Some(bytes)) => {
+                            f.write_all(&bytes).await.expect("Failed to write to file");
+                            f.flush().await.expect("Failed to flush file");
+                            written_bytes += bytes.len();
+                            response = update_response_if_id(window, &response)
+                                .await
+                                .expect("Failed to update response");
+                        }
+                        Ok(None) => {
+                            break;
+                        }
+                        Err(e) => {
+                            return response_err(&response, e.to_string(), window).await;
+                        }
+                    }
+                }
             }
 
             response = update_response_if_id(window, &response)

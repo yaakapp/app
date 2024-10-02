@@ -4,7 +4,10 @@ import { getResponseBodyText } from '../lib/responseBody';
 
 export function useResponseBodyText(response: HttpResponse) {
   return useQuery<string | null>({
-    queryKey: ['response-body-text', response.id, response?.updatedAt],
-    queryFn: () => getResponseBodyText(response),
+    placeholderData: (prev) => prev,
+    queryKey: ['response-body-text', response.id, response.updatedAt, response.elapsed],
+    queryFn: () => {
+      return getResponseBodyText(response);
+    },
   });
 }

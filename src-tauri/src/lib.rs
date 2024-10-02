@@ -1080,7 +1080,7 @@ async fn cmd_send_http_request(
             let _ = cancel_tx.send(true);
         },
     );
-    
+
     let environment = match environment_id {
         Some(id) => match get_environment(&window, id).await {
             Ok(env) => Some(env),
