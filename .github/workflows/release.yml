@@ -69,6 +69,7 @@ jobs:
       - name: Install NPM Dependencies
         run: |
           npm ci
+          npm install @yaakapp/cli
 
       - name: Install Protoc for plugin-runtime
         uses: arduino/setup-protoc@v3
