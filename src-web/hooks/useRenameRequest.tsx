@@ -33,6 +33,9 @@ export function useRenameRequest(requestId: string | null) {
         defaultValue: request.name,
         confirmText: 'Save',
       });
+
+      if (name == null) return;
+
       if (request.model === 'http_request') {
         updateHttpRequest.mutate({ id: request.id, update: (r: HttpRequest) => ({ ...r, name }) });
       } else {

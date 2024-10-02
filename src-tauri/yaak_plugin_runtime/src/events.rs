@@ -76,8 +76,8 @@ pub enum InternalEventPayload {
 
     ShowToastRequest(ShowToastRequest),
 
-    ShowPromptRequest(ShowPromptRequest),
-    ShowPromptResponse(ShowPromptResponse),
+    PromptTextRequest(PromptTextRequest),
+    PromptTextResponse(PromptTextResponse),
 
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
@@ -215,7 +215,7 @@ pub struct ShowToastRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct ShowPromptRequest {
+pub struct PromptTextRequest {
     // A unique ID to identify the prompt (eg. "enter-password")
     pub id: String,
     // Title to show on the prompt dialog
@@ -242,8 +242,8 @@ pub struct ShowPromptRequest {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct ShowPromptResponse {
-    pub value: String,
+pub struct PromptTextResponse {
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -294,6 +294,9 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunction {
     pub name: String,
+    
+    /// Also support alternative names. This is useful for not breaking existing
+    /// tags when changing the `name` property
     #[ts(optional)]
     pub aliases: Option<Vec<String>>,
     pub args: Vec<TemplateFunctionArg>,
@@ -314,11 +317,18 @@ pub enum TemplateFunctionArg {
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionBaseArg {
+    /// The name of the argument. Should be `camelCase` format
     pub name: String,
+    
+    /// Whether the user must fill in the argument
     #[ts(optional)]
     pub optional: Option<bool>,
+    
+    /// The label of the input 
     #[ts(optional)]
     pub label: Option<String>,
+    
+    /// The default value
     #[ts(optional)]
     pub default_value: Option<String>,
 }
@@ -329,6 +339,8 @@ pub struct TemplateFunctionBaseArg {
 pub struct TemplateFunctionTextArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
+    
+    /// Placeholder for the text input
     #[ts(optional)]
     pub placeholder: Option<String>,
 }
@@ -347,13 +359,23 @@ pub struct TemplateFunctionHttpRequestArg {
 pub struct TemplateFunctionFileArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
+    
+    /// The title of the file selection window
     pub title: String,
+    
+    /// Allow selecting multiple files
     #[ts(optional)]
     pub multiple: Option<bool>,
+    
+    // Select a directory, not a file
     #[ts(optional)]
     pub directory: Option<bool>,
+    
+    // Default file path for selection dialog
     #[ts(optional)]
     pub default_path: Option<String>,
+    
+    // Specify to only allow selection of certain file extensions
     #[ts(optional)]
     pub filters: Option<Vec<OpenFileFilter>>,
 }
@@ -363,6 +385,7 @@ pub struct TemplateFunctionFileArg {
 #[ts(export, export_to = "events.ts")]
 pub struct OpenFileFilter {
     pub name: String,
+    /// File extensions to require
     pub extensions: Vec<String>,
 }
 
@@ -372,6 +395,8 @@ pub struct OpenFileFilter {
 pub struct TemplateFunctionSelectArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
+    
+    /// The options that will be available in the select input
     pub options: Vec<TemplateFunctionSelectOption>,
 }
 
@@ -387,7 +412,7 @@ pub struct TemplateFunctionCheckboxArg {
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionSelectOption {
-    pub name: String,
+    pub label: String,
     pub value: String,
 }
 

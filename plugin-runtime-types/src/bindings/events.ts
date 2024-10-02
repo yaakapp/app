@@ -59,21 +59,15 @@ export type ImportResponse = { resources: ImportResources, };
 
 export type InternalEvent = { id: string, pluginRefId: string, replyId: string | null, payload: InternalEventPayload, windowContext: WindowContext, };
 
-export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "render_http_request_request" } & RenderHttpRequestRequest | { "type": "render_http_request_response" } & RenderHttpRequestResponse | { "type": "template_render_request" } & TemplateRenderRequest | { "type": "template_render_response" } & TemplateRenderResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "show_prompt_request" } & ShowPromptRequest | { "type": "show_prompt_response" } & ShowPromptResponse | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
+export type InternalEventPayload = { "type": "boot_request" } & BootRequest | { "type": "boot_response" } & BootResponse | { "type": "reload_request" } | { "type": "reload_response" } | { "type": "terminate_request" } | { "type": "terminate_response" } | { "type": "import_request" } & ImportRequest | { "type": "import_response" } & ImportResponse | { "type": "filter_request" } & FilterRequest | { "type": "filter_response" } & FilterResponse | { "type": "export_http_request_request" } & ExportHttpRequestRequest | { "type": "export_http_request_response" } & ExportHttpRequestResponse | { "type": "send_http_request_request" } & SendHttpRequestRequest | { "type": "send_http_request_response" } & SendHttpRequestResponse | { "type": "get_http_request_actions_request" } & GetHttpRequestActionsRequest | { "type": "get_http_request_actions_response" } & GetHttpRequestActionsResponse | { "type": "call_http_request_action_request" } & CallHttpRequestActionRequest | { "type": "get_template_functions_request" } | { "type": "get_template_functions_response" } & GetTemplateFunctionsResponse | { "type": "call_template_function_request" } & CallTemplateFunctionRequest | { "type": "call_template_function_response" } & CallTemplateFunctionResponse | { "type": "copy_text_request" } & CopyTextRequest | { "type": "render_http_request_request" } & RenderHttpRequestRequest | { "type": "render_http_request_response" } & RenderHttpRequestResponse | { "type": "template_render_request" } & TemplateRenderRequest | { "type": "template_render_response" } & TemplateRenderResponse | { "type": "show_toast_request" } & ShowToastRequest | { "type": "prompt_text_request" } & PromptTextRequest | { "type": "prompt_text_response" } & PromptTextResponse | { "type": "get_http_request_by_id_request" } & GetHttpRequestByIdRequest | { "type": "get_http_request_by_id_response" } & GetHttpRequestByIdResponse | { "type": "find_http_responses_request" } & FindHttpResponsesRequest | { "type": "find_http_responses_response" } & FindHttpResponsesResponse | { "type": "empty_response" };
 
-export type OpenFileFilter = { name: string, extensions: Array<string>, };
+export type OpenFileFilter = { name: string, 
+/**
+ * File extensions to require
+ */
+extensions: Array<string>, };
 
-export type RenderHttpRequestRequest = { httpRequest: HttpRequest, purpose: RenderPurpose, };
-
-export type RenderHttpRequestResponse = { httpRequest: HttpRequest, };
-
-export type RenderPurpose = "send" | "preview";
-
-export type SendHttpRequestRequest = { httpRequest: HttpRequest, };
-
-export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
-
-export type ShowPromptRequest = { id: string, title: string, label: string, description?: string, defaultValue?: string, placeholder?: string, 
+export type PromptTextRequest = { id: string, title: string, label: string, description?: string, defaultValue?: string, placeholder?: string, 
 /**
  * Text to add to the confirmation button
  */
@@ -87,7 +81,17 @@ cancelText?: string,
  */
 require?: boolean, };
 
-export type ShowPromptResponse = { value: string, };
+export type PromptTextResponse = { value: string | null, };
+
+export type RenderHttpRequestRequest = { httpRequest: HttpRequest, purpose: RenderPurpose, };
+
+export type RenderHttpRequestResponse = { httpRequest: HttpRequest, };
+
+export type RenderPurpose = "send" | "preview";
+
+export type SendHttpRequestRequest = { httpRequest: HttpRequest, };
+
+export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
 export type ShowToastRequest = { message: string, color?: Color, icon?: Icon, };
 
@@ -95,19 +99,131 @@ export type TemplateFunction = { name: string, aliases?: Array<string>, args: Ar
 
 export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg | { "type": "file" } & TemplateFunctionFileArg;
 
-export type TemplateFunctionBaseArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionBaseArg = { 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
-export type TemplateFunctionCheckboxArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionCheckboxArg = { 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
-export type TemplateFunctionFileArg = { title: string, multiple?: boolean, directory?: boolean, defaultPath?: string, filters?: Array<OpenFileFilter>, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionFileArg = { 
+/**
+ * The title of the file selection window
+ */
+title: string, 
+/**
+ * Allow selecting multiple files
+ */
+multiple?: boolean, directory?: boolean, defaultPath?: string, filters?: Array<OpenFileFilter>, 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
-export type TemplateFunctionHttpRequestArg = { name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionHttpRequestArg = { 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
-export type TemplateFunctionSelectArg = { options: Array<TemplateFunctionSelectOption>, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionSelectArg = { 
+/**
+ * The options that will be available in the select input
+ */
+options: Array<TemplateFunctionSelectOption>, 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
-export type TemplateFunctionSelectOption = { name: string, value: string, };
+export type TemplateFunctionSelectOption = { label: string, value: string, };
 
-export type TemplateFunctionTextArg = { placeholder?: string, name: string, optional?: boolean, label?: string, defaultValue?: string, };
+export type TemplateFunctionTextArg = { 
+/**
+ * Placeholder for the text input
+ */
+placeholder?: string, 
+/**
+ * The name of the argument. Should be `camelCase` format
+ */
+name: string, 
+/**
+ * Whether the user must fill in the argument
+ */
+optional?: boolean, 
+/**
+ * The label of the input 
+ */
+label?: string, 
+/**
+ * The default value
+ */
+defaultValue?: string, };
 
 export type TemplateRenderRequest = { data: JsonValue, purpose: RenderPurpose, };
 

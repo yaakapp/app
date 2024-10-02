@@ -1,21 +1,19 @@
 import {
-  RenderHttpRequestResponse,
-  TemplateRenderResponse,
-  WindowContext,
-} from '@yaakapp-internal/plugin';
-import {
   BootRequest,
-  Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
   HttpRequestAction,
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
+  PromptTextResponse,
+  RenderHttpRequestResponse,
   SendHttpRequestResponse,
-  ShowPromptResponse,
   TemplateFunction,
-} from '@yaakapp/api';
+  TemplateRenderResponse,
+  WindowContext,
+} from '@yaakapp-internal/plugin';
+import { Context } from '@yaakapp/api';
 import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
@@ -140,9 +138,9 @@ async function initialize() {
       },
     },
     prompt: {
-      async show(args) {
-        const reply: ShowPromptResponse = await sendAndWaitForReply(event.windowContext, {
-          type: 'show_prompt_request',
+      async text(args) {
+        const reply: PromptTextResponse = await sendAndWaitForReply(event.windowContext, {
+          type: 'prompt_text_request',
           ...args,
         });
         return reply.value;

@@ -26,7 +26,7 @@ export type InputProps = Omit<
   > & {
     name?: string;
     type?: 'text' | 'password';
-    label: string;
+    label: ReactNode;
     hideLabel?: boolean;
     labelPosition?: 'top' | 'left';
     labelClassName?: string;

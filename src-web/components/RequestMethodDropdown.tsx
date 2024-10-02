@@ -49,6 +49,7 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
             description: 'Enter a custom method name',
             placeholder: 'CUSTOM',
           });
+          if (newMethod == null) return;
           onChange(newMethod);
         },
       },

@@ -59,7 +59,7 @@ export function TemplateVariableDialog({ hide, onChange, initialTokens }: Props)
         />
       </VStack>
       <VStack>
-        <div className="text-sm text-text-subtle">Render Preview</div>
+        <div className="text-sm text-text-subtle">Preview</div>
         <InlineCode className="select-text cursor-text">{rendered.data}</InlineCode>
       </VStack>
       <Button color="primary" onClick={handleDone}>

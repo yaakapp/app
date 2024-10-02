@@ -6,7 +6,7 @@ import { Dialog } from './core/Dialog';
 type DialogEntry = {
   id: string;
   render: ({ hide }: { hide: () => void }) => React.ReactNode;
-} & Omit<DialogProps, 'onClose' | 'open' | 'children'>;
+} & Omit<DialogProps, 'open' | 'children'>;
 
 interface State {
   dialogs: DialogEntry[];

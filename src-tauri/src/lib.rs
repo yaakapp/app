@@ -63,7 +63,7 @@ use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
     InternalEvent, InternalEventPayload, RenderHttpRequestResponse, RenderPurpose,
-    SendHttpRequestResponse, ShowPromptResponse, ShowToastRequest, TemplateRenderResponse,
+    SendHttpRequestResponse, PromptTextResponse, ShowToastRequest, TemplateRenderResponse,
     WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
@@ -1081,6 +1081,18 @@ async fn cmd_send_http_request(
     //   that has not yet been saved in the DB.
     request: HttpRequest,
 ) -> Result<HttpResponse, String> {
+    let response = create_default_http_response(&window, &request.id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
+    window.listen_any(
+        format!("cancel_http_response_{}", response.id),
+        move |_event| {
+            let _ = cancel_tx.send(true);
+        },
+    );
+    
     let environment = match environment_id {
         Some(id) => match get_environment(&window, id).await {
             Ok(env) => Some(env),
@@ -1100,18 +1112,6 @@ async fn cmd_send_http_request(
         ),
         None => None,
     };
-
-    let response = create_default_http_response(&window, &request.id)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_any(
-        format!("cancel_http_response_{}", response.id),
-        move |_event| {
-            let _ = cancel_tx.send(true);
-        },
-    );
 
     send_http_request(
         &window,
@@ -2171,18 +2171,18 @@ async fn call_frontend<T: Serialize + Clone, R: Runtime>(
     window: WebviewWindow<R>,
     event_name: &str,
     args: T,
-) -> ShowPromptResponse {
+) -> PromptTextResponse {
     let reply_id = format!("{event_name}_reply");
     let payload = FrontendCall {
         args,
         reply_id: reply_id.clone(),
     };
     window.emit_to(window.label(), event_name, payload).unwrap();
-    let (tx, mut rx) = tokio::sync::watch::channel(ShowPromptResponse::default());
+    let (tx, mut rx) = tokio::sync::watch::channel(PromptTextResponse::default());
 
     let event_id = window.clone().listen(reply_id, move |ev| {
         println!("GOT REPLY {ev:?}");
-        let resp: ShowPromptResponse = serde_json::from_str(ev.payload()).unwrap();
+        let resp: PromptTextResponse = serde_json::from_str(ev.payload()).unwrap();
         _ = tx.send(resp);
     });
 
@@ -2220,11 +2220,11 @@ async fn handle_plugin_event<R: Runtime>(
             };
             None
         }
-        InternalEventPayload::ShowPromptRequest(req) => {
+        InternalEventPayload::PromptTextRequest(req) => {
             let window = get_window_from_window_context(app_handle, &window_context)
                 .expect("Failed to find window for render");
             let resp = call_frontend(window, "show_prompt", req).await;
-            Some(InternalEventPayload::ShowPromptResponse(resp))
+            Some(InternalEventPayload::PromptTextResponse(resp))
         }
         InternalEventPayload::FindHttpResponsesRequest(req) => {
             let http_responses = list_http_responses(

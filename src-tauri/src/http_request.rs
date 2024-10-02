@@ -45,6 +45,7 @@ pub async fn send_http_request<R: Runtime>(
         &WindowContext::from_window(window),
         RenderPurpose::Send,
     );
+    
     let rendered_request =
         render_http_request(&request, &workspace, environment.as_ref(), &cb).await;
 

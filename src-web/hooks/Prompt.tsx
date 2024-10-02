@@ -8,7 +8,7 @@ import { HStack } from '../components/core/Stacks';
 export type PromptProps = Omit<ShowPromptRequest, 'id' | 'title' | 'description'> & {
   description?: ReactNode;
   onHide: () => void;
-  onResult: (value: string) => void;
+  onResult: (value: string | null) => void;
 };
 
 export function Prompt({

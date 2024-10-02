@@ -767,6 +767,7 @@ function SidebarItem({
               placeholder: 'New Name',
               defaultValue: itemName,
             });
+            if (name == null) return;
             updateAnyFolder.mutate({ id: itemId, update: (f) => ({ ...f, name }) });
           },
         },

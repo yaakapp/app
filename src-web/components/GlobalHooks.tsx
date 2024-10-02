@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { AnyModel } from '@yaakapp-internal/models';
-import type { ShowPromptRequest, ShowPromptResponse } from '@yaakapp-internal/plugin';
+import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugin';
 import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 import { useEnsureActiveCookieJar, useMigrateActiveCookieJarId } from '../hooks/useActiveCookieJar';
@@ -180,11 +180,11 @@ export function GlobalHooks() {
   useListenToTauriEvent('zoom_reset', zoom.zoomReset);
 
   const prompt = usePrompt();
-  useListenToTauriEvent<{ replyId: string; args: ShowPromptRequest }>(
+  useListenToTauriEvent<{ replyId: string; args: PromptTextRequest }>(
     'show_prompt',
     async (event) => {
       const value = await prompt(event.payload.args);
-      const result: ShowPromptResponse = { value };
+      const result: PromptTextResponse = { value };
       await emit(event.payload.replyId, result);
     },
   );

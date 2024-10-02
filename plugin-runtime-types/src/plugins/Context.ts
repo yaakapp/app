@@ -1,17 +1,17 @@
 import {
-  ShowPromptRequest,
-  ShowPromptResponse,
-  TemplateRenderRequest,
-  TemplateRenderResponse,
   FindHttpResponsesRequest,
   FindHttpResponsesResponse,
   GetHttpRequestByIdRequest,
   GetHttpRequestByIdResponse,
+  PromptTextRequest,
+  PromptTextResponse,
   RenderHttpRequestRequest,
   RenderHttpRequestResponse,
   SendHttpRequestRequest,
   SendHttpRequestResponse,
   ShowToastRequest,
+  TemplateRenderRequest,
+  TemplateRenderResponse,
 } from '..';
 
 export type Context = {
@@ -22,7 +22,7 @@ export type Context = {
     show(args: ShowToastRequest): void;
   };
   prompt: {
-    show(args: ShowPromptRequest): Promise<ShowPromptResponse['value']>;
+    text(args: PromptTextRequest): Promise<PromptTextResponse['value']>;
   };
   httpRequest: {
     send(args: SendHttpRequestRequest): Promise<SendHttpRequestResponse['httpResponse']>;

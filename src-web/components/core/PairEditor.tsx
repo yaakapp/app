@@ -512,7 +512,7 @@ function PairEditorRow({
               leftSlot: <Icon icon="pencil" />,
               hidden: !pairContainer.pair.isFile,
               onSelect: async () => {
-                const v = await prompt({
+                const contentType = await prompt({
                   id: 'content-type',
                   require: false,
                   title: 'Override Content-Type',
@@ -522,7 +522,8 @@ function PairEditorRow({
                   confirmText: 'Set',
                   description: 'Leave blank to auto-detect',
                 });
-                handleChangeValueContentType(v);
+                if (contentType == null) return;
+                handleChangeValueContentType(contentType);
               },
             },
             {

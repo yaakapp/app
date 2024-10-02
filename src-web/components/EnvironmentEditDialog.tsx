@@ -279,6 +279,7 @@ function SidebarButton({
                   placeholder: 'New Name',
                   defaultValue: environment.name,
                 });
+                if (name == null) return;
                 updateEnvironment.mutate({ name });
               },
             },

@@ -66,6 +66,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
             placeholder: 'New Name',
             defaultValue: activeWorkspace?.name,
           });
+          if (name == null) return;
           updateWorkspace.mutate({ name });
         },
       },
