@@ -43,7 +43,7 @@ export function BulkPairEditor({
 }
 
 function lineToPair(line: string): PairEditorProps['pairs'][0] {
-  const [, name, value] = line.match(/^(:?[^:]+):\s+([^$]*)/) ?? [];
+  const [, name, value] = line.match(/^(:?[^:]+):\s+(.*)$/) ?? [];
 
   const pair: PairEditorProps['pairs'][0] = {
     enabled: true,
