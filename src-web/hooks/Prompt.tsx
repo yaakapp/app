@@ -1,11 +1,11 @@
-import type { ShowPromptRequest } from '@yaakapp-internal/plugin';
+import type { PromptTextRequest } from '@yaakapp-internal/plugin';
 import type { FormEvent, ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { Button } from '../components/core/Button';
 import { PlainInput } from '../components/core/PlainInput';
 import { HStack } from '../components/core/Stacks';
 
-export type PromptProps = Omit<ShowPromptRequest, 'id' | 'title' | 'description'> & {
+export type PromptProps = Omit<PromptTextRequest, 'id' | 'title' | 'description'> & {
   description?: ReactNode;
   onHide: () => void;
   onResult: (value: string | null) => void;

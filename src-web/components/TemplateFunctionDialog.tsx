@@ -218,7 +218,7 @@ function SelectArg({
       value={value}
       options={[
         ...arg.options.map((a) => ({
-          label: a.name + (arg.defaultValue === a.value ? ' (default)' : ''),
+          label: a.label + (arg.defaultValue === a.value ? ' (default)' : ''),
           value: a.value === arg.defaultValue ? NULL_ARG : a.value,
         })),
       ]}
