@@ -1,13 +1,13 @@
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 
-export function KeyValueRows({
-  children,
-}: {
+interface Props {
   children:
     | ReactElement<HTMLAttributes<HTMLTableColElement>>
     | ReactElement<HTMLAttributes<HTMLTableColElement>>[];
-}) {
+}
+
+export function KeyValueRows({ children }: Props) {
   children = Array.isArray(children) ? children : [children];
   return (
     <table className="text-xs font-mono min-w-0 w-full mb-auto">
@@ -20,19 +20,24 @@ export function KeyValueRows({
   );
 }
 
-interface Props {
+interface KeyValueRowProps {
   label: ReactNode;
   value: ReactNode;
   labelClassName?: string;
   labelColor?: 'secondary' | 'primary' | 'info';
 }
 
-export function KeyValueRow({ label, value, labelColor = 'secondary', labelClassName }: Props) {
+export function KeyValueRow({
+  label,
+  value,
+  labelColor = 'secondary',
+  labelClassName,
+}: KeyValueRowProps) {
   return (
     <>
       <td
         className={classNames(
-          'py-0.5 pr-2 select-text cursor-text',
+          'py-0.5 pr-2 select-text cursor-text whitespace-nowrap',
           labelClassName,
           labelColor === 'primary' && 'text-primary',
           labelColor === 'secondary' && 'text-text-subtle',
