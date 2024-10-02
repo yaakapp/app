@@ -30,6 +30,7 @@
   label,
   code,
   pre,
+  button,
   li {
     @apply select-none cursor-default;
   }

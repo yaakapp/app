@@ -119,7 +119,7 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
               <HStack
                 space={2}
                 className={classNames(
-                  'cursor-default select-none',
+                  'select-none cursor-default',
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >

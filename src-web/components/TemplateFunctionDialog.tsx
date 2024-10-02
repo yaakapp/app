@@ -15,7 +15,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { Button } from './core/Button';
 import { Checkbox } from './core/Checkbox';
 import { InlineCode } from './core/InlineCode';
@@ -263,7 +263,7 @@ function HttpRequestArg({
       value={value}
       options={[
         ...httpRequests.map((r) => ({
-          label: fallbackRequestName(r) + (activeRequest?.id === r.id ? ' (current)' : ''),
+          label: resolvedModelName(r) + (activeRequest?.id === r.id ? ' (current)' : ''),
           value: r.id,
         })),
       ]}
