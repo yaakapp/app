@@ -2,7 +2,7 @@ import type { HttpRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import { memo, useCallback, useMemo } from 'react';
-import { createGlobalState } from 'react-use';
+import { useLocalStorage } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
@@ -34,8 +34,6 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<Record<string, string>>({});
-
 const TAB_BODY = 'body';
 const TAB_HEADERS = 'headers';
 const TAB_INFO = 'info';
@@ -44,9 +42,12 @@ const DEFAULT_TAB = TAB_BODY;
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
   const { activeResponse, setPinnedResponseId, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
-  const [activeTabs, setActiveTabs] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
+    'responsePaneActiveTabs',
+    {},
+  );
   const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
-  const activeTab = activeTabs[activeRequest.id] ?? DEFAULT_TAB;
+  const activeTab = activeTabs?.[activeRequest.id] ?? DEFAULT_TAB;
   const setActiveTab = useCallback(
     (tab: string) => {
       setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
