@@ -3,9 +3,14 @@ import type { HttpRequest } from '@yaakapp-internal/models';
 import type {
   CallHttpRequestActionRequest,
   GetHttpRequestActionsResponse,
+  HttpRequestAction,
 } from '@yaakapp-internal/plugin';
 import { invokeCmd } from '../lib/tauri';
 import { usePluginsKey } from './usePlugins';
+
+export type CallableHttpRequestAction = Pick<HttpRequestAction, 'key' | 'label' | 'icon'> & {
+  call: (httpRequest: HttpRequest) => Promise<void>;
+};
 
 export function useHttpRequestActions() {
   const pluginsKey = usePluginsKey();
@@ -20,7 +25,7 @@ export function useHttpRequestActions() {
     },
   });
 
-  return (
+  const actions: CallableHttpRequestAction[] =
     httpRequestActions.data?.flatMap((r) =>
       r.actions.map((a) => ({
         key: a.key,
@@ -35,6 +40,7 @@ export function useHttpRequestActions() {
           await invokeCmd('cmd_call_http_request_action', { req: payload });
         },
       })),
-    ) ?? []
-  );
+    ) ?? [];
+
+  return actions;
 }

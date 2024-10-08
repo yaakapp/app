@@ -1,8 +1,10 @@
 import type {
   AnyModel,
   Folder,
+  GrpcConnection,
   GrpcRequest,
   HttpRequest,
+  HttpResponse,
   Workspace,
 } from '@yaakapp-internal/models';
 import classNames from 'classnames';
@@ -22,18 +24,19 @@ import { useDeleteRequest } from '../hooks/useDeleteRequest';
 import { useDuplicateGrpcRequest } from '../hooks/useDuplicateGrpcRequest';
 import { useDuplicateHttpRequest } from '../hooks/useDuplicateHttpRequest';
 import { useFolders } from '../hooks/useFolders';
+import { useGrpcConnections } from '../hooks/useGrpcConnections';
 import { useHotKey } from '../hooks/useHotKey';
+import type { CallableHttpRequestAction } from '../hooks/useHttpRequestActions';
 import { useHttpRequestActions } from '../hooks/useHttpRequestActions';
+import { useHttpResponses } from '../hooks/useHttpResponses';
 import { useKeyValue } from '../hooks/useKeyValue';
-import { useLatestGrpcConnection } from '../hooks/useLatestGrpcConnection';
-import { useLatestHttpResponse } from '../hooks/useLatestHttpResponse';
 import { useMoveToWorkspace } from '../hooks/useMoveToWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
 import { useRenameRequest } from '../hooks/useRenameRequest';
 import { useRequests } from '../hooks/useRequests';
 import { useScrollIntoView } from '../hooks/useScrollIntoView';
 import { useSendAnyHttpRequest } from '../hooks/useSendAnyHttpRequest';
-import { useSendManyRequests } from '../hooks/useSendFolder';
+import { useSendManyRequests } from '../hooks/useSendManyRequests';
 import { useSidebarHidden } from '../hooks/useSidebarHidden';
 import { useUpdateAnyFolder } from '../hooks/useUpdateAnyFolder';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
@@ -73,6 +76,9 @@ export function Sidebar({ className }: Props) {
   const folders = useFolders();
   const requests = useRequests();
   const activeWorkspace = useActiveWorkspace();
+  const httpRequestActions = useHttpRequestActions();
+  const httpResponses = useHttpResponses();
+  const grpcConnections = useGrpcConnections();
   const duplicateHttpRequest = useDuplicateHttpRequest({
     id: activeRequest?.id ?? null,
     navigateAfter: true,
@@ -453,6 +459,9 @@ export function Sidebar({ className }: Props) {
           selectedId={selectedId}
           selectedTree={selectedTree}
           isCollapsed={isCollapsed}
+          httpRequestActions={httpRequestActions}
+          httpResponses={httpResponses}
+          grpcConnections={grpcConnections}
           tree={tree}
           focused={hasFocus}
           draggingId={draggingId}
@@ -483,6 +492,9 @@ interface SidebarItemsProps {
   handleDragStart: (id: string) => void;
   onSelect: (requestId: string) => void;
   isCollapsed: (id: string) => boolean;
+  httpRequestActions: CallableHttpRequestAction[];
+  httpResponses: HttpResponse[];
+  grpcConnections: GrpcConnection[];
 }
 
 function SidebarItems({
@@ -500,6 +512,9 @@ function SidebarItems({
   handleEnd,
   handleMove,
   handleDragStart,
+  httpRequestActions,
+  httpResponses,
+  grpcConnections,
 }: SidebarItemsProps) {
   return (
     <VStack
@@ -537,6 +552,11 @@ function SidebarItems({
                   />
                 )
               }
+              httpRequestActions={httpRequestActions}
+              latestHttpResponse={httpResponses.find((r) => r.requestId === child.item.id) ?? null}
+              latestGrpcConnection={
+                grpcConnections.find((c) => c.requestId === child.item.id) ?? null
+              }
               onMove={handleMove}
               onEnd={handleEnd}
               onSelect={onSelect}
@@ -549,20 +569,23 @@ function SidebarItems({
                 !isCollapsed(child.item.id) &&
                 draggingId !== child.item.id && (
                   <SidebarItems
-                    treeParentMap={treeParentMap}
-                    tree={child}
-                    isCollapsed={isCollapsed}
-                    draggingId={draggingId}
-                    hoveredTree={hoveredTree}
-                    hoveredIndex={hoveredIndex}
-                    focused={focused}
                     activeId={activeId}
+                    draggingId={draggingId}
+                    focused={focused}
+                    handleDragStart={handleDragStart}
+                    handleEnd={handleEnd}
+                    handleMove={handleMove}
+                    hoveredIndex={hoveredIndex}
+                    hoveredTree={hoveredTree}
+                    httpRequestActions={httpRequestActions}
+                    httpResponses={httpResponses}
+                    grpcConnections={grpcConnections}
+                    isCollapsed={isCollapsed}
+                    onSelect={onSelect}
                     selectedId={selectedId}
                     selectedTree={selectedTree}
-                    onSelect={onSelect}
-                    handleMove={handleMove}
-                    handleEnd={handleEnd}
-                    handleDragStart={handleDragStart}
+                    tree={child}
+                    treeParentMap={treeParentMap}
                   />
                 )}
             </SidebarItem>
@@ -590,7 +613,9 @@ type SidebarItemProps = {
   onDragStart: (id: string) => void;
   children?: ReactNode;
   child: TreeNode;
-} & Pick<SidebarItemsProps, 'isCollapsed' | 'onSelect'>;
+  latestHttpResponse: HttpResponse | null;
+  latestGrpcConnection: GrpcConnection | null;
+} & Pick<SidebarItemsProps, 'isCollapsed' | 'onSelect' | 'httpRequestActions'>;
 
 type DragItem = {
   id: string;
@@ -612,6 +637,9 @@ function SidebarItem({
   selected,
   itemFallbackName,
   useProminentStyles,
+  latestHttpResponse,
+  latestGrpcConnection,
+  httpRequestActions,
   children,
 }: SidebarItemProps) {
   const ref = useRef<HTMLLIElement>(null);
@@ -659,14 +687,9 @@ function SidebarItem({
   const renameRequest = useRenameRequest(itemId);
   const duplicateHttpRequest = useDuplicateHttpRequest({ id: itemId, navigateAfter: true });
   const duplicateGrpcRequest = useDuplicateGrpcRequest({ id: itemId, navigateAfter: true });
-  const httpRequestActions = useHttpRequestActions();
   const sendRequest = useSendAnyHttpRequest();
   const moveToWorkspace = useMoveToWorkspace(itemId);
   const sendManyRequests = useSendManyRequests();
-  const latestHttpResponse = useLatestHttpResponse(itemModel === 'http_request' ? itemId : null);
-  const latestGrpcConnection = useLatestGrpcConnection(
-    itemModel === 'grpc_request' ? itemId : null,
-  );
   const updateHttpRequest = useUpdateAnyHttpRequest();
   const workspaces = useWorkspaces();
   const updateGrpcRequest = useUpdateAnyGrpcRequest();
