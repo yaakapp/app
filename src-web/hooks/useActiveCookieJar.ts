@@ -9,9 +9,8 @@ export function useActiveCookieJar() {
   const cookieJars = useCookieJars();
 
   const activeCookieJar = useMemo(() => {
-    if (cookieJars.data == null) return undefined;
-    return cookieJars.data.find((cookieJar) => cookieJar.id === activeCookieJarId) ?? null;
-  }, [activeCookieJarId, cookieJars.data]);
+    return cookieJars.find((cookieJar) => cookieJar.id === activeCookieJarId) ?? null;
+  }, [activeCookieJarId, cookieJars]);
 
   return [activeCookieJar ?? null, setActiveCookieJarId] as const;
 }
@@ -20,13 +19,11 @@ export function useEnsureActiveCookieJar() {
   const cookieJars = useCookieJars();
   const [activeCookieJarId, setActiveCookieJarId] = useActiveCookieJarId();
   useEffect(() => {
-    if (cookieJars.data == null) return;
-
-    if (cookieJars.data.find((j) => j.id === activeCookieJarId)) {
+    if (cookieJars.find((j) => j.id === activeCookieJarId)) {
       return; // There's an active jar
     }
 
-    const firstJar = cookieJars.data[0];
+    const firstJar = cookieJars[0];
     if (firstJar == null) {
       console.log("Workspace doesn't have any cookie jars to activate");
       return;
@@ -35,7 +32,7 @@ export function useEnsureActiveCookieJar() {
     // There's no active jar, so set it to the first one
     console.log('Setting active cookie jar to', firstJar.id);
     setActiveCookieJarId(firstJar.id);
-  }, [activeCookieJarId, cookieJars, cookieJars.data, setActiveCookieJarId]);
+  }, [activeCookieJarId, cookieJars, setActiveCookieJarId]);
 }
 
 function useActiveCookieJarId() {

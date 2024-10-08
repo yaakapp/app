@@ -7,7 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 
-const ENABLE_REACT_QUERY_DEVTOOLS = true;
+const ENABLE_REACT_QUERY_DEVTOOLS = false;
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -1,6 +1,6 @@
 import { emit, listen } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import type { ModelPayload } from './components/useGlobalThings';
+import type { ModelPayload } from './hooks/useSyncModelStores';
 import { getSettings } from './lib/store';
 import type { Appearance } from './lib/theme/appearance';
 import { getCSSAppearance, subscribeToPreferredAppearance } from './lib/theme/appearance';
