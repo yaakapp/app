@@ -23,12 +23,15 @@ export function useSyncWorkspaceChildModels() {
   const workspaceId = workspace?.id ?? 'n/a';
   useEffect(() => {
     (async function () {
-      setCookieJars(await invokeCmd('cmd_list_cookie_jars', { workspaceId }));
-      setFolders(await invokeCmd('cmd_list_folders', { workspaceId }));
+      // Set the things we need first, first
       setHttpRequests(await invokeCmd('cmd_list_http_requests', { workspaceId }));
+      setGrpcRequests(await invokeCmd('cmd_list_grpc_requests', { workspaceId }));
+      setFolders(await invokeCmd('cmd_list_folders', { workspaceId }));
+
+      // Then, set the rest
+      setCookieJars(await invokeCmd('cmd_list_cookie_jars', { workspaceId }));
       setHttpResponses(await invokeCmd('cmd_list_http_responses', { workspaceId }));
       setGrpcConnections(await invokeCmd('cmd_list_grpc_connections', { workspaceId }));
-      setGrpcRequests(await invokeCmd('cmd_list_grpc_requests', { workspaceId }));
       setEnvironments(await invokeCmd('cmd_list_environments', { workspaceId }));
     })().catch(console.error);
 
