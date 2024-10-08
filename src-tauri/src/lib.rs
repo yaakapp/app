@@ -43,15 +43,29 @@ use crate::template_callback::PluginTemplateCallback;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
-    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin, Settings, Workspace,
+    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
+    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin,
+    Settings, Workspace,
 };
-use yaak_models::queries::{cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response, delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request, duplicate_http_request, generate_id, generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace};
+use yaak_models::queries::{
+    cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
+    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
+    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
+    delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request,
+    duplicate_http_request, generate_id, generate_model_id, get_cookie_jar, get_environment,
+    get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response,
+    get_key_value_raw, get_or_create_settings, get_plugin, get_workspace, list_cookie_jars,
+    list_environments, list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests,
+    list_http_requests, list_http_responses, list_plugins, list_workspaces, set_key_value_raw,
+    update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder,
+    upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request,
+    upsert_plugin, upsert_workspace,
+};
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
-    InternalEvent, InternalEventPayload, RenderHttpRequestResponse, RenderPurpose,
-    SendHttpRequestResponse, PromptTextResponse, ShowToastRequest, TemplateRenderResponse,
+    InternalEvent, InternalEventPayload, PromptTextResponse, RenderHttpRequestResponse,
+    RenderPurpose, SendHttpRequestResponse, ShowToastRequest, TemplateRenderResponse,
     WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
@@ -267,6 +281,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 request_id: req.id,
                 status: -1,
                 elapsed: 0,
+                state: GrpcConnectionState::Initialized,
                 url: req.url.clone(),
                 ..Default::default()
             },
@@ -322,6 +337,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
+                    state: GrpcConnectionState::Initialized,
                     ..conn.clone()
                 },
             )
@@ -676,6 +692,7 @@ async fn cmd_grpc_go<R: Runtime>(
                         &GrpcConnection{
                             elapsed: start.elapsed().as_millis() as i32,
                             status: closed_status,
+                            state: GrpcConnectionState::Closed,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
                     ).await.unwrap();
@@ -695,6 +712,7 @@ async fn cmd_grpc_go<R: Runtime>(
                         &GrpcConnection {
                             elapsed: start.elapsed().as_millis() as i32,
                             status: Code::Cancelled as i32,
+                            state: GrpcConnectionState::Closed,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
                     )
@@ -1080,7 +1098,7 @@ async fn cmd_send_http_request(
             let _ = cancel_tx.send(true);
         },
     );
-    
+
     let environment = match environment_id {
         Some(id) => match get_environment(&window, id).await {
             Ok(env) => Some(env),

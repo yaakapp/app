@@ -23,9 +23,7 @@ use serde_json::Value;
 use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
-use yaak_models::models::{
-    Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
-};
+use yaak_models::models::{Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader, HttpResponseState};
 use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
 use yaak_plugin_runtime::events::{RenderPurpose, WindowContext};
 
@@ -45,7 +43,7 @@ pub async fn send_http_request<R: Runtime>(
         &WindowContext::from_window(window),
         RenderPurpose::Send,
     );
-    
+
     let rendered_request =
         render_http_request(&request, &workspace, environment.as_ref(), &cb).await;
 
@@ -395,6 +393,7 @@ pub async fn send_http_request<R: Runtime>(
             let content_length = v.content_length();
             let body_bytes = v.bytes().await.expect("Failed to get body").to_vec();
             response.elapsed = start.elapsed().as_millis() as i32;
+            response.state = HttpResponseState::Closed;
 
             // Use content length if available, otherwise use body length
             response.content_length = match content_length {

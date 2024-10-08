@@ -11,7 +11,6 @@ import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
 import { HotKeyList } from './core/HotKeyList';
-import { Icon } from './core/Icon';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -88,6 +87,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
+  const isLoading = isResponseLoading(activeResponse);
+
   return (
     <div
       style={style}
@@ -103,10 +104,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         <HotKeyList
           hotkeys={['http_request.send', 'http_request.create', 'sidebar.focus', 'urlBar.focus']}
         />
-      ) : isResponseLoading(activeResponse) ? (
-        <div className="h-full w-full flex items-center justify-center">
-          <Icon size="lg" className="opacity-disabled" spin icon="refresh" />
-        </div>
       ) : (
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
@@ -156,6 +153,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             <Banner color="danger" className="m-2">
               {activeResponse.error}
             </Banner>
+          ) : isLoading ? (
+            <EmptyStateText>Loading</EmptyStateText>
           ) : (
             <Tabs
               key={activeRequest.id} // Freshen tabs on request change
