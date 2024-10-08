@@ -1,13 +1,12 @@
 import classNames from 'classnames';
 import { Outlet } from 'react-router-dom';
-import { useGlobalThings } from '../hooks/useGlobalThings';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { DialogProvider, Dialogs } from './DialogContext';
 import { ToastProvider, Toasts } from './ToastContext';
+import { GlobalHooks } from './GlobalHooks';
 
 export function DefaultLayout() {
   const osInfo = useOsInfo();
-  useGlobalThings();
   return (
     <DialogProvider>
       <ToastProvider>
@@ -24,6 +23,7 @@ export function DefaultLayout() {
         >
           <Outlet />
         </div>
+        <GlobalHooks />
       </ToastProvider>
     </DialogProvider>
   );

@@ -1,19 +1,19 @@
 import { emit } from '@tauri-apps/api/event';
 import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugin';
-import { useEnsureActiveCookieJar } from './useActiveCookieJar';
-import { useActiveWorkspaceChangedToast } from './useActiveWorkspaceChangedToast';
-import { useHotKey } from './useHotKey';
-import { useListenToTauriEvent } from './useListenToTauriEvent';
-import { useNotificationToast } from './useNotificationToast';
-import { usePrompt } from './usePrompt';
-import { useRecentCookieJars } from './useRecentCookieJars';
-import { useRecentEnvironments } from './useRecentEnvironments';
-import { useRecentRequests } from './useRecentRequests';
-import { useRecentWorkspaces } from './useRecentWorkspaces';
-import { useSyncWorkspaceChildModels } from './useSyncWorkspaceChildModels';
-import { useToggleCommandPalette } from './useToggleCommandPalette';
+import { useEnsureActiveCookieJar } from '../hooks/useActiveCookieJar';
+import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
+import { useHotKey } from '../hooks/useHotKey';
+import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
+import { useNotificationToast } from '../hooks/useNotificationToast';
+import { usePrompt } from '../hooks/usePrompt';
+import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
+import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
+import { useRecentRequests } from '../hooks/useRecentRequests';
+import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
+import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModels';
+import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 
-export function useGlobalThings() {
+export function GlobalHooks() {
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();

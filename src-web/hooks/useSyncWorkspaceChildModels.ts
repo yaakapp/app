@@ -2,6 +2,7 @@ import { useSetAtom } from 'jotai/index';
 import { useEffect } from 'react';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveWorkspace } from './useActiveWorkspace';
+import { cookieJarsAtom } from './useCookieJars';
 import { environmentsAtom } from './useEnvironments';
 import { foldersAtom } from './useFolders';
 import { grpcConnectionsAtom } from './useGrpcConnections';
@@ -10,6 +11,7 @@ import { httpRequestsAtom } from './useHttpRequests';
 import { httpResponsesAtom } from './useHttpResponses';
 
 export function useSyncWorkspaceChildModels() {
+  const setCookieJars = useSetAtom(cookieJarsAtom);
   const setFolders = useSetAtom(foldersAtom);
   const setHttpRequests = useSetAtom(httpRequestsAtom);
   const setHttpResponses = useSetAtom(httpResponsesAtom);
@@ -21,6 +23,7 @@ export function useSyncWorkspaceChildModels() {
   const workspaceId = workspace?.id ?? 'n/a';
   useEffect(() => {
     (async function () {
+      setCookieJars(await invokeCmd('cmd_list_cookie_jars', { workspaceId }));
       setFolders(await invokeCmd('cmd_list_folders', { workspaceId }));
       setHttpRequests(await invokeCmd('cmd_list_http_requests', { workspaceId }));
       setHttpResponses(await invokeCmd('cmd_list_http_responses', { workspaceId }));
