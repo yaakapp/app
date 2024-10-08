@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useActiveWorkspace } from './useActiveWorkspace';
 import { useCookieJars } from './useCookieJars';
-import { useKeyValue } from './useKeyValue';
 
 export const QUERY_COOKIE_JAR_ID = 'cookie_jar_id';
 
@@ -38,34 +36,6 @@ export function useEnsureActiveCookieJar() {
     console.log('Setting active cookie jar to', firstJar.id);
     setActiveCookieJarId(firstJar.id);
   }, [activeCookieJarId, cookieJars, cookieJars.data, setActiveCookieJarId]);
-}
-
-export function useMigrateActiveCookieJarId() {
-  const workspace = useActiveWorkspace();
-  const [, setActiveCookieJarId] = useActiveCookieJarId();
-  const {
-    set: setLegacyActiveCookieJarId,
-    value: legacyActiveCookieJarId,
-    isLoading: isLoadingLegacyActiveCookieJarId,
-  } = useKeyValue<string | null>({
-    namespace: 'global',
-    key: ['activeCookieJar', workspace?.id ?? 'n/a'],
-    fallback: null,
-  });
-
-  useEffect(() => {
-    if (legacyActiveCookieJarId == null || isLoadingLegacyActiveCookieJarId) return;
-
-    console.log('Migrating active cookie jar ID to query param', legacyActiveCookieJarId);
-    setActiveCookieJarId(legacyActiveCookieJarId);
-    setLegacyActiveCookieJarId(null).catch(console.error);
-  }, [
-    workspace,
-    isLoadingLegacyActiveCookieJarId,
-    legacyActiveCookieJarId,
-    setActiveCookieJarId,
-    setLegacyActiveCookieJarId,
-  ]);
 }
 
 function useActiveCookieJarId() {

@@ -1,7 +1,12 @@
 use std::fs;
 
 use crate::error::Result;
-use crate::models::{CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection, GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden};
+use crate::models::{
+    CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
+    GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest,
+    HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
+    ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden,
+};
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
@@ -11,6 +16,9 @@ use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+
+const MAX_GRPC_CONNECTIONS_PER_REQUEST: usize = 20;
+const MAX_HTTP_RESPONSES_PER_REQUEST: usize = MAX_GRPC_CONNECTIONS_PER_REQUEST;
 
 pub async fn set_key_value_string<R: Runtime>(
     mgr: &WebviewWindow<R>,
@@ -423,6 +431,13 @@ pub async fn upsert_grpc_connection<R: Runtime>(
     window: &WebviewWindow<R>,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection> {
+    let connections =
+        list_http_responses_for_request(window, connection.request_id.as_str(), None).await?;
+    for c in connections.iter().skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1) {
+        debug!("Deleting old grpc connection {}", c.id);
+        delete_grpc_connection(window, c.id.as_str()).await?;
+    }
+
     let id = match connection.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcConnection),
         _ => connection.id.to_string(),
@@ -498,6 +513,24 @@ pub async fn get_grpc_connection<R: Runtime>(
 
 pub async fn list_grpc_connections<R: Runtime>(
     mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<GrpcConnection>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::select()
+        .from(GrpcConnectionIden::Table)
+        .cond_where(Expr::col(GrpcConnectionIden::WorkspaceId).eq(workspace_id))
+        .column(Asterisk)
+        .order_by(GrpcConnectionIden::CreatedAt, Order::Desc)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn list_grpc_connections_for_request<R: Runtime>(
+    mgr: &impl Manager<R>,
     request_id: &str,
 ) -> Result<Vec<GrpcConnection>> {
     let dbm = &*mgr.state::<SqliteConnection>();
@@ -536,7 +569,7 @@ pub async fn delete_all_grpc_connections<R: Runtime>(
     window: &WebviewWindow<R>,
     request_id: &str,
 ) -> Result<()> {
-    for r in list_grpc_connections(window, request_id).await? {
+    for r in list_grpc_connections_for_request(window, request_id).await? {
         delete_grpc_connection(window, &r.id).await?;
     }
     Ok(())
@@ -794,10 +827,7 @@ pub async fn update_settings<R: Runtime>(
                 SettingsIden::EditorSoftWrap,
                 settings.editor_soft_wrap.into(),
             ),
-            (
-                SettingsIden::Telemetry,
-                settings.telemetry.into(),
-            ),
+            (SettingsIden::Telemetry, settings.telemetry.into()),
             (
                 SettingsIden::OpenWorkspaceNewWindow,
                 settings.open_workspace_new_window.into(),
@@ -872,10 +902,7 @@ pub async fn get_environment<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Res
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn get_plugin<R: Runtime>(
-    mgr: &impl Manager<R>,
-    id: &str
-) -> Result<Plugin> {
+pub async fn get_plugin<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<Plugin> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -888,9 +915,7 @@ pub async fn get_plugin<R: Runtime>(
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_plugins<R: Runtime>(
-    mgr: &impl Manager<R>,
-) -> Result<Vec<Plugin>> {
+pub async fn list_plugins<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Plugin>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -1185,7 +1210,7 @@ pub async fn delete_http_request<R: Runtime>(
     let req = get_http_request(window, id).await?;
 
     // DB deletes will cascade but this will delete the files
-    delete_all_http_responses(window, id).await?;
+    delete_all_http_responses_for_request(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -1234,6 +1259,12 @@ pub async fn create_http_response<R: Runtime>(
     version: Option<&str>,
     remote_addr: Option<&str>,
 ) -> Result<HttpResponse> {
+    let responses = list_http_responses_for_request(window, request_id, None).await?;
+    for response in responses.iter().skip(MAX_HTTP_RESPONSES_PER_REQUEST - 1) {
+        debug!("Deleting old response {}", response.id);
+        delete_http_response(window, response.id.as_str()).await?;
+    }
+
     let req = get_http_request(window, request_id).await?;
     let id = generate_model_id(ModelType::TypeHttpResponse);
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -1418,17 +1449,37 @@ pub async fn delete_http_response<R: Runtime>(
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_http_responses<R: Runtime>(
+pub async fn delete_all_http_responses_for_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request_id: &str,
 ) -> Result<()> {
-    for r in list_http_responses(window, request_id, None).await? {
+    for r in list_http_responses_for_request(window, request_id, None).await? {
         delete_http_response(window, &r.id).await?;
     }
     Ok(())
 }
 
 pub async fn list_http_responses<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+    limit: Option<i64>,
+) -> Result<Vec<HttpResponse>> {
+    let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
+    let dbm = mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(HttpResponseIden::Table)
+        .cond_where(Expr::col(HttpResponseIden::WorkspaceId).eq(workspace_id))
+        .column(Asterisk)
+        .order_by(HttpResponseIden::CreatedAt, Order::Desc)
+        .limit(limit_unwrapped as u64)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn list_http_responses_for_request<R: Runtime>(
     mgr: &impl Manager<R>,
     request_id: &str,
     limit: Option<i64>,

@@ -7,14 +7,16 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 
-const ENABLE_REACT_QUERY_DEVTOOLS = false;
+const ENABLE_REACT_QUERY_DEVTOOLS = true;
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      refetchOnWindowFocus: true,
       networkMode: 'offlineFirst',
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: false,
+      refetchOnMount: false, // Don't refetch when a hook mounts
     },
   },
 });
