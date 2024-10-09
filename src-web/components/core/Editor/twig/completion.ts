@@ -24,6 +24,7 @@ export type TwigCompletionOption = (
 ) & {
   name: string;
   label: string;
+  description?: string;
   onClick: (rawTag: string, startPos: number) => void;
   value: string | null;
   invalid?: boolean;
@@ -63,10 +64,11 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
 
         // If not on the last segment, only complete the namespace
         if (matchSegments.length < optionSegments.length) {
+          const prefix = optionSegments.slice(0, matchSegments.length).join('.');
           return [
             {
-              label: optionSegments.slice(0, matchSegments.length).join('.') + '…',
-              apply: optionSegments.slice(0, matchSegments.length).join('.'),
+              label: prefix + '.*',
+              apply: prefix,
               type: 'namespace',
             },
           ];
@@ -78,6 +80,8 @@ export function twigCompletion({ options }: TwigCompletionConfig) {
           {
             label: o.name,
             apply: openTag + inner + closeTag,
+            info: o.description,
+            detail: o.type,
             type: o.type === 'variable' ? 'variable' : 'function',
           },
         ];

@@ -285,12 +285,8 @@
     }
   }
 
-  &.cm-completionInfo-right {
-    @apply ml-1 -mt-0.5 font-sans;
-  }
-
-  &.cm-completionInfo-right-narrow {
-    @apply ml-1;
+  &.cm-completionInfo {
+    @apply mx-0.5 -mt-0.5 font-sans;
   }
 
   * {

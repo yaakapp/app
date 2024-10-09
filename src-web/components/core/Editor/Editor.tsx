@@ -174,6 +174,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         id: 'template-function',
         size: 'sm',
         title: 'Configure Function',
+        description: fn.description || null,
         render: ({ hide }) => (
           <TemplateFunctionDialog
             templateFunction={fn}

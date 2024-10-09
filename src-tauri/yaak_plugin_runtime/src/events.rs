@@ -294,6 +294,8 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunction {
     pub name: String,
+    #[ts(optional)]
+    pub description: Option<String>,
     
     /// Also support alternative names. This is useful for not breaking existing
     /// tags when changing the `name` property

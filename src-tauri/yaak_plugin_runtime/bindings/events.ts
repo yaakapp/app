@@ -95,7 +95,12 @@ export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
 export type ShowToastRequest = { message: string, color?: Color, icon?: Icon, };
 
-export type TemplateFunction = { name: string, aliases?: Array<string>, args: Array<TemplateFunctionArg>, };
+export type TemplateFunction = { name: string, description?: string, 
+/**
+ * Also support alternative names. This is useful for not breaking existing
+ * tags when changing the `name` property
+ */
+aliases?: Array<string>, args: Array<TemplateFunctionArg>, };
 
 export type TemplateFunctionArg = { "type": "text" } & TemplateFunctionTextArg | { "type": "select" } & TemplateFunctionSelectArg | { "type": "checkbox" } & TemplateFunctionCheckboxArg | { "type": "http_request" } & TemplateFunctionHttpRequestArg | { "type": "file" } & TemplateFunctionFileArg;
 
