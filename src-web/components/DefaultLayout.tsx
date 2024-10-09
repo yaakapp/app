@@ -2,8 +2,8 @@ import classNames from 'classnames';
 import { Outlet } from 'react-router-dom';
 import { useOsInfo } from '../hooks/useOsInfo';
 import { DialogProvider, Dialogs } from './DialogContext';
-import { GlobalHooks } from './GlobalHooks';
 import { ToastProvider, Toasts } from './ToastContext';
+import { GlobalHooks } from './GlobalHooks';
 
 export function DefaultLayout() {
   const osInfo = useOsInfo();

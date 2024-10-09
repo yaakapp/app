@@ -31,7 +31,7 @@ export function useRecentCookieJars() {
   }, [activeCookieJarId]);
 
   const onlyValidIds = useMemo(
-    () => kv.value?.filter((id) => cookieJars.data?.some((e) => e.id === id)) ?? [],
+    () => kv.value?.filter((id) => cookieJars?.some((e) => e.id === id)) ?? [],
     [kv.value, cookieJars],
   );
 

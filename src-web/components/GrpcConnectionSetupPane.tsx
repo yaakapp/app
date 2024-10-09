@@ -1,4 +1,5 @@
 import useResizeObserver from '@react-hook/resize-observer';
+import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -6,7 +7,6 @@ import { createGlobalState } from 'react-use';
 import type { ReflectResponseService } from '../hooks/useGrpc';
 import { useRequestUpdateKey } from '../hooks/useRequestUpdateKey';
 import { useUpdateAnyGrpcRequest } from '../hooks/useUpdateAnyGrpcRequest';
-import type { GrpcMetadataEntry, GrpcRequest } from '@yaakapp-internal/models';
 import { AUTH_TYPE_BASIC, AUTH_TYPE_BEARER, AUTH_TYPE_NONE } from '../lib/model_util';
 import { BasicAuth } from './BasicAuth';
 import { BearerAuth } from './BearerAuth';

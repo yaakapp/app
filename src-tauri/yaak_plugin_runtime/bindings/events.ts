@@ -95,7 +95,7 @@ export type SendHttpRequestResponse = { httpResponse: HttpResponse, };
 
 export type ShowToastRequest = { message: string, color?: Color, icon?: Icon, };
 
-export type TemplateFunction = { name: string, 
+export type TemplateFunction = { name: string, description?: string, 
 /**
  * Also support alternative names. This is useful for not breaking existing
  * tags when changing the `name` property

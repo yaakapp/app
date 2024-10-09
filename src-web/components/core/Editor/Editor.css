@@ -63,7 +63,7 @@
 
     .template-tag {
       /* Colors */
-      @apply bg-surface text-text-subtle border-border-subtle;
+      @apply bg-surface text-text-subtle border-border-subtle whitespace-nowrap;
       @apply hover:border-border-subtle hover:text-text hover:bg-surface-highlight;
 
       @apply inline border px-1 mx-[0.5px] rounded cursor-default dark:shadow;
@@ -285,12 +285,8 @@
     }
   }
 
-  &.cm-completionInfo-right {
-    @apply ml-1 -mt-0.5 font-sans;
-  }
-
-  &.cm-completionInfo-right-narrow {
-    @apply ml-1;
+  &.cm-completionInfo {
+    @apply mx-0.5 -mt-0.5 font-sans;
   }
 
   * {
