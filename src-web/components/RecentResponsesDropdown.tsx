@@ -37,7 +37,7 @@ export const RecentResponsesDropdown = function ResponsePane({
           onSelect: saveResponse.mutate,
           leftSlot: <Icon icon="save" />,
           hidden: responses.length === 0,
-          disabled: responses.length === 0,
+          disabled: activeResponse.state !== 'closed' && activeResponse.status >= 100,
         },
         {
           key: 'copy',
@@ -45,14 +45,14 @@ export const RecentResponsesDropdown = function ResponsePane({
           onSelect: copyResponse.mutate,
           leftSlot: <Icon icon="copy" />,
           hidden: responses.length === 0,
-          disabled: responses.length === 0,
+          disabled: activeResponse.state !== 'closed' && activeResponse.status >= 100,
         },
         {
           key: 'clear-single',
           label: 'Delete',
           leftSlot: <Icon icon="trash" />,
           onSelect: deleteResponse.mutate,
-          disabled: responses.length === 0,
+          disabled: activeResponse.state !== 'closed',
         },
         {
           key: 'unpin',
