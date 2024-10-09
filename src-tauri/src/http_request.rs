@@ -447,11 +447,7 @@ pub async fn send_http_request<R: Runtime>(
                                 f.flush().await.expect("Failed to flush file");
                                 written_bytes += bytes.len();
                                 response.elapsed = start.elapsed().as_millis() as i32;
-                                // Use content length if available, otherwise use body length
-                                response.content_length = match content_length {
-                                    Some(l) => Some(l as i32),
-                                    None => Some(written_bytes as i32),
-                                };
+                                response.content_length = Some(written_bytes as i32);
                                 response = update_response_if_id(&window, &response)
                                     .await
                                     .expect("Failed to update response");
@@ -466,6 +462,11 @@ pub async fn send_http_request<R: Runtime>(
                         }
                     }
 
+                    // Set final content length
+                    response.content_length = match content_length {
+                        Some(l) => Some(l as i32),
+                        None => Some(written_bytes as i32),
+                    };
                     response.state = HttpResponseState::Closed;
                     response = update_response_if_id(&window, &response)
                         .await
