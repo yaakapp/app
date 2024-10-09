@@ -40,9 +40,6 @@ export function useSyncModelStores() {
   const setEnvironments = useSetAtom(environmentsAtom);
 
   useListenToTauriEvent<ModelPayload>('upserted_model', ({ payload }) => {
-    if (payload.model.model !== 'key_value') {
-      console.log('Upserted model', payload.model);
-    }
     const { model, windowLabel } = payload;
     const queryKey =
       model.model === 'grpc_event'
@@ -129,10 +126,10 @@ export function useSyncModelStores() {
 }
 
 function updateModelList<T extends AnyModel>(model: T, pushToFront: boolean) {
-  return (current: T[]): T[] => {
-    const index = current.findIndex((v) => modelsEq(v, model)) ?? -1;
+  return (current: T[] | undefined): T[] => {
+    const index = current?.findIndex((v) => modelsEq(v, model)) ?? -1;
     if (index >= 0) {
-      return [...current.slice(0, index), model, ...current.slice(index + 1)];
+      return [...(current ?? []).slice(0, index), model, ...(current ?? []).slice(index + 1)];
     } else {
       return pushToFront ? [model, ...(current ?? [])] : [...(current ?? []), model];
     }

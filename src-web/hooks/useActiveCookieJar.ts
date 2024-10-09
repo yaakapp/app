@@ -9,7 +9,7 @@ export function useActiveCookieJar() {
   const cookieJars = useCookieJars();
 
   const activeCookieJar = useMemo(() => {
-    return cookieJars.find((cookieJar) => cookieJar.id === activeCookieJarId) ?? null;
+    return cookieJars?.find((cookieJar) => cookieJar.id === activeCookieJarId) ?? null;
   }, [activeCookieJarId, cookieJars]);
 
   return [activeCookieJar ?? null, setActiveCookieJarId] as const;
@@ -19,6 +19,7 @@ export function useEnsureActiveCookieJar() {
   const cookieJars = useCookieJars();
   const [activeCookieJarId, setActiveCookieJarId] = useActiveCookieJarId();
   useEffect(() => {
+    if (cookieJars == null) return; // Hasn't loaded yet
     if (cookieJars.find((j) => j.id === activeCookieJarId)) {
       return; // There's an active jar
     }
