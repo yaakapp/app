@@ -2,15 +2,14 @@ import useResizeObserver from '@react-hook/resize-observer';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { convertFileSrc } from '@tauri-apps/api/core';
+import './PdfViewer.css';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import React, { useRef, useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { useDebouncedState } from '../../hooks/useDebouncedState';
-import type { HttpResponse } from '@yaakapp-internal/models';
-import './PdfViewer.css';
 
 interface Props {
-  response: HttpResponse;
+  bodyPath: string;
 }
 
 const options = {
@@ -18,7 +17,7 @@ const options = {
   standardFontDataUrl: '/standard_fonts/',
 };
 
-export function PdfViewer({ response }: Props) {
+export function PdfViewer({ bodyPath }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useDebouncedState<number>(0, 100);
   const [numPages, setNumPages] = useState<number>();
@@ -31,11 +30,7 @@ export function PdfViewer({ response }: Props) {
     setNumPages(nextNumPages);
   };
 
-  if (response.bodyPath === null) {
-    return <div>Empty response body</div>;
-  }
-
-  const src = convertFileSrc(response.bodyPath);
+  const src = convertFileSrc(bodyPath);
   return (
     <div ref={containerRef} className="w-full h-full overflow-y-auto">
       <Document

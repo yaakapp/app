@@ -430,6 +430,21 @@ pub struct HttpResponseHeader {
     pub value: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde( rename_all = "snake_case")]
+#[ts(export, export_to = "models.ts")]
+pub enum HttpResponseState {
+    Initialized,
+    Connected,
+    Closed,
+}
+
+impl Default for HttpResponseState {
+    fn default() -> Self {
+        Self::Initialized
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
@@ -451,6 +466,7 @@ pub struct HttpResponse {
     pub remote_addr: Option<String>,
     pub status: i32,
     pub status_reason: Option<String>,
+    pub state: HttpResponseState,
     pub url: String,
     pub version: Option<String>,
 }
@@ -475,6 +491,7 @@ pub enum HttpResponseIden {
     RemoteAddr,
     Status,
     StatusReason,
+    State,
     Url,
     Version,
 }
@@ -484,6 +501,7 @@ impl<'s> TryFrom<&Row<'s>> for HttpResponse {
 
     fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
         let headers: String = r.get("headers")?;
+        let state: String = r.get("state")?;
         Ok(HttpResponse {
             id: r.get("id")?,
             model: r.get("model")?,
@@ -500,6 +518,7 @@ impl<'s> TryFrom<&Row<'s>> for HttpResponse {
             remote_addr: r.get("remote_addr")?,
             status: r.get("status")?,
             status_reason: r.get("status_reason")?,
+            state: serde_json::from_str(format!(r#""{state}""#).as_str()).unwrap(),
             body_path: r.get("body_path")?,
             headers: serde_json::from_str(headers.as_str()).unwrap_or_default(),
         })
@@ -598,6 +617,21 @@ impl<'s> TryFrom<&Row<'s>> for GrpcRequest {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde( rename_all = "snake_case")]
+#[ts(export, export_to = "models.ts")]
+pub enum GrpcConnectionState {
+    Initialized,
+    Connected,
+    Closed,
+}
+
+impl Default for GrpcConnectionState{
+    fn default() -> Self {
+        Self::Initialized
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
@@ -615,6 +649,7 @@ pub struct GrpcConnection {
     pub method: String,
     pub service: String,
     pub status: i32,
+    pub state: GrpcConnectionState,
     pub trailers: BTreeMap<String, String>,
     pub url: String,
 }
@@ -634,6 +669,7 @@ pub enum GrpcConnectionIden {
     Error,
     Method,
     Service,
+    State,
     Status,
     Trailers,
     Url,
@@ -644,6 +680,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcConnection {
 
     fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
         let trailers: String = r.get("trailers")?;
+        let state: String = r.get("state")?;
         Ok(GrpcConnection {
             id: r.get("id")?,
             model: r.get("model")?,
@@ -654,6 +691,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcConnection {
             service: r.get("service")?,
             method: r.get("method")?,
             elapsed: r.get("elapsed")?,
+            state: serde_json::from_str(format!(r#""{state}""#).as_str()).unwrap(),
             status: r.get("status")?,
             url: r.get("url")?,
             error: r.get("error")?,

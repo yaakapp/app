@@ -1,7 +1,7 @@
-import type { HttpRequest } from '@yaakapp-internal/models';
+import type { HttpRequest, HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import type { CSSProperties } from 'react';
-import { memo, useCallback, useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useLocalStorage } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
@@ -88,6 +88,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
+  const isLoading = isResponseLoading(activeResponse);
+
   return (
     <div
       style={style}
@@ -103,10 +105,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         <HotKeyList
           hotkeys={['http_request.send', 'http_request.create', 'sidebar.focus', 'urlBar.focus']}
         />
-      ) : isResponseLoading(activeResponse) ? (
-        <div className="h-full w-full flex items-center justify-center">
-          <Icon size="lg" className="opacity-disabled" spin icon="refresh" />
-        </div>
       ) : (
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
@@ -119,27 +117,21 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             {activeResponse && (
               <HStack
                 space={2}
+                alignItems="center"
                 className={classNames(
                   'cursor-default select-none',
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >
+                {isLoading && <Icon size="sm" icon="refresh" spin />}
                 <StatusTag showReason response={activeResponse} />
-                {activeResponse.elapsed > 0 && (
-                  <>
-                    <span>&bull;</span>
-                    <DurationTag
-                      headers={activeResponse.elapsedHeaders}
-                      total={activeResponse.elapsed}
-                    />
-                  </>
-                )}
-                {!!activeResponse.contentLength && (
-                  <>
-                    <span>&bull;</span>
-                    <SizeTag contentLength={activeResponse.contentLength} />
-                  </>
-                )}
+                <span>&bull;</span>
+                <DurationTag
+                  headers={activeResponse.elapsedHeaders}
+                  total={activeResponse.elapsed}
+                />
+                <span>&bull;</span>
+                <SizeTag contentLength={activeResponse.contentLength ?? 0} />
 
                 <div className="ml-auto">
                   <RecentResponsesDropdown
@@ -172,13 +164,13 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                     <EmptyStateText>Empty Body</EmptyStateText>
                   </div>
                 ) : contentType?.startsWith('image') ? (
-                  <ImageViewer className="pb-2" response={activeResponse} />
+                  <EnsureCompleteResponse response={activeResponse} render={ImageViewer} />
                 ) : contentType?.startsWith('audio') ? (
-                  <AudioViewer response={activeResponse} />
+                  <EnsureCompleteResponse response={activeResponse} render={AudioViewer} />
                 ) : contentType?.startsWith('video') ? (
-                  <VideoViewer response={activeResponse} />
+                  <EnsureCompleteResponse response={activeResponse} render={VideoViewer} />
                 ) : contentType?.match(/pdf/) ? (
-                  <PdfViewer response={activeResponse} />
+                  <EnsureCompleteResponse response={activeResponse} render={PdfViewer} />
                 ) : contentType?.match(/csv|tab-separated/) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
                 ) : (
@@ -204,3 +196,26 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     </div>
   );
 });
+
+function EnsureCompleteResponse({
+  response,
+  render,
+}: {
+  response: HttpResponse;
+  render: (v: { bodyPath: string }) => ReactNode;
+}) {
+  if (response.bodyPath === null) {
+    return <div>Empty response body</div>;
+  }
+
+  // Wait until the response has been fully-downloaded
+  if (response.state !== 'closed') {
+    return (
+      <EmptyStateText>
+        <Icon icon="refresh" spin />
+      </EmptyStateText>
+    );
+  }
+
+  return render({ bodyPath: response.bodyPath });
+}

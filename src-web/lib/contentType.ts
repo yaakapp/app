@@ -1,26 +1,34 @@
 import type { EditorProps } from '../components/core/Editor';
 
-export function languageFromContentType(contentType: string | null): EditorProps['language'] {
+export function languageFromContentType(
+  contentType: string | null,
+  content: string | null = null,
+): EditorProps['language'] {
   const justContentType = contentType?.split(';')[0] ?? contentType ?? '';
   if (justContentType.includes('json')) {
     return 'json';
   } else if (justContentType.includes('xml')) {
     return 'xml';
   } else if (justContentType.includes('html')) {
-    return 'html';
+    return detectFromContent(content);
   } else if (justContentType.includes('javascript')) {
     return 'javascript';
-  } else {
-    return 'text';
   }
+
+  return detectFromContent(content);
 }
 
 export function isJSON(text: string): boolean {
-  try {
-    JSON.parse(text);
-    return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
-    return false;
+  return text.startsWith('{') || text.startsWith('[');
+}
+
+function detectFromContent(content: string | null): EditorProps['language'] {
+  if (content == null) return 'text';
+
+  if (content.startsWith('{') || content.startsWith('[')) {
+    return 'json';
+  } else if (content.startsWith('<!DOCTYPE') || content.startsWith('<html')) {
+    return 'html';
   }
+  return 'text';
 }

@@ -16,7 +16,9 @@ export type EnvironmentVariable = { enabled?: boolean, name: string, value: stri
 
 export type Folder = { model: "folder", id: string, createdAt: string, updatedAt: string, workspaceId: string, folderId: string | null, name: string, sortPriority: number, };
 
-export type GrpcConnection = { model: "grpc_connection", id: string, createdAt: string, updatedAt: string, workspaceId: string, requestId: string, elapsed: number, error: string | null, method: string, service: string, status: number, trailers: { [key in string]?: string }, url: string, };
+export type GrpcConnection = { model: "grpc_connection", id: string, createdAt: string, updatedAt: string, workspaceId: string, requestId: string, elapsed: number, error: string | null, method: string, service: string, status: number, state: GrpcConnectionState, trailers: { [key in string]?: string }, url: string, };
+
+export type GrpcConnectionState = "initialized" | "connected" | "closed";
 
 export type GrpcEvent = { model: "grpc_event", id: string, createdAt: string, updatedAt: string, workspaceId: string, requestId: string, connectionId: string, content: string, error: string | null, eventType: GrpcEventType, metadata: { [key in string]?: string }, status: number | null, };
 
@@ -30,9 +32,11 @@ export type HttpRequest = { model: "http_request", id: string, createdAt: string
 
 export type HttpRequestHeader = { enabled?: boolean, name: string, value: string, };
 
-export type HttpResponse = { model: "http_response", id: string, createdAt: string, updatedAt: string, workspaceId: string, requestId: string, bodyPath: string | null, contentLength: number | null, elapsed: number, elapsedHeaders: number, error: string | null, headers: Array<HttpResponseHeader>, remoteAddr: string | null, status: number, statusReason: string | null, url: string, version: string | null, };
+export type HttpResponse = { model: "http_response", id: string, createdAt: string, updatedAt: string, workspaceId: string, requestId: string, bodyPath: string | null, contentLength: number | null, elapsed: number, elapsedHeaders: number, error: string | null, headers: Array<HttpResponseHeader>, remoteAddr: string | null, status: number, statusReason: string | null, state: HttpResponseState, url: string, version: string | null, };
 
 export type HttpResponseHeader = { name: string, value: string, };
+
+export type HttpResponseState = "initialized" | "connected" | "closed";
 
 export type HttpUrlParameter = { enabled?: boolean, name: string, value: string, };
 
