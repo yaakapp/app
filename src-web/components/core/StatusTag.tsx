@@ -1,6 +1,5 @@
-import classNames from 'classnames';
 import type { HttpResponse } from '@yaakapp-internal/models';
-import { isResponseLoading } from '../../lib/model_util';
+import classNames from 'classnames';
 
 interface Props {
   response: HttpResponse;
@@ -9,25 +8,27 @@ interface Props {
 }
 
 export function StatusTag({ response, className, showReason }: Props) {
-  const { status } = response;
-  const isLoading = isResponseLoading(response);
-  const label = isLoading ? response.state.toUpperCase() : status < 100 ? 'ERR' : status;
+  const { status, state } = response;
+  const label = status < 100 ? 'ERROR' : status;
   const category = `${status}`[0];
+  const isInitializing = state === 'initialized';
+
   return (
     <span
       className={classNames(
         className,
         'font-mono',
-        !isLoading && category === '0' && 'text-danger',
-        !isLoading && category === '1' && 'text-info',
-        !isLoading && category === '2' && 'text-success',
-        !isLoading && category === '3' && 'text-primary',
-        !isLoading && category === '4' && 'text-warning',
-        !isLoading && category === '5' && 'text-danger',
-        isLoading && 'text-text-subtle',
+        !isInitializing && category === '0' && 'text-danger',
+        !isInitializing && category === '1' && 'text-info',
+        !isInitializing && category === '2' && 'text-success',
+        !isInitializing && category === '3' && 'text-primary',
+        !isInitializing && category === '4' && 'text-warning',
+        !isInitializing && category === '5' && 'text-danger',
+        isInitializing && 'text-text-subtle',
       )}
     >
-      {label} {showReason && response.statusReason && response.statusReason}
+      {isInitializing ? 'CONNECTING' : label}{' '}
+      {showReason && response.statusReason && response.statusReason}
     </span>
   );
 }

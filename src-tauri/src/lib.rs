@@ -44,8 +44,8 @@ use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
     CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
-    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin,
-    Settings, Workspace,
+    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
+    ModelType, Plugin, Settings, Workspace,
 };
 use yaak_models::queries::{
     cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
@@ -757,7 +757,9 @@ async fn cmd_send_ephemeral_request(
     window.listen_any(
         format!("cancel_http_response_{}", response.id),
         move |_event| {
-            let _ = cancel_tx.send(true);
+            if let Err(e) = cancel_tx.send(true) {
+                warn!("Failed to send cancel event for ephemeral request {e:?}");
+            }
         },
     );
 
@@ -1095,7 +1097,9 @@ async fn cmd_send_http_request(
     window.listen_any(
         format!("cancel_http_response_{}", response.id),
         move |_event| {
-            let _ = cancel_tx.send(true);
+            if let Err(e) = cancel_tx.send(true) {
+                warn!("Failed to send cancel event for request {e:?}");
+            }
         },
     );
 
@@ -1134,15 +1138,15 @@ async fn response_err<R: Runtime>(
     response: &HttpResponse,
     error: String,
     w: &WebviewWindow<R>,
-) -> Result<HttpResponse, String> {
+) -> HttpResponse {
     warn!("Failed to send request: {}", error);
     let mut response = response.clone();
-    response.elapsed = -1;
+    response.state = HttpResponseState::Closed;
     response.error = Some(error.clone());
     response = update_response_if_id(w, &response)
         .await
         .expect("Failed to update response");
-    Ok(response)
+    response
 }
 
 #[tauri::command]
@@ -2187,13 +2191,16 @@ async fn call_frontend<T: Serialize + Clone, R: Runtime>(
     let (tx, mut rx) = tokio::sync::watch::channel(PromptTextResponse::default());
 
     let event_id = window.clone().listen(reply_id, move |ev| {
-        println!("GOT REPLY {ev:?}");
         let resp: PromptTextResponse = serde_json::from_str(ev.payload()).unwrap();
-        _ = tx.send(resp);
+        if let Err(e) = tx.send(resp) {
+            warn!("Failed to prompt for text {e:?}");
+        }
     });
 
     // When reply shows up, unlisten to events and return
-    _ = rx.changed().await;
+    if let Err(e) = rx.changed().await {
+        warn!("Failed to check channel changed {e:?}");
+    }
     window.unlisten(event_id);
 
     let foo = rx.borrow();

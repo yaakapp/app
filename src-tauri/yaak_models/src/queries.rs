@@ -3,10 +3,10 @@ use std::fs;
 use crate::error::Result;
 use crate::models::{
     CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
-    GrpcConnectionIden, GrpcEvent, GrpcEventIden, GrpcRequest, GrpcRequestIden, HttpRequest,
-    HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, HttpResponseState,
-    KeyValue, KeyValueIden, ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace,
-    WorkspaceIden,
+    GrpcConnectionIden, GrpcConnectionState, GrpcEvent, GrpcEventIden, GrpcRequest,
+    GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader,
+    HttpResponseIden, HttpResponseState, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden,
+    Settings, SettingsIden, Workspace, WorkspaceIden,
 };
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
@@ -434,7 +434,10 @@ pub async fn upsert_grpc_connection<R: Runtime>(
 ) -> Result<GrpcConnection> {
     let connections =
         list_http_responses_for_request(window, connection.request_id.as_str(), None).await?;
-    for c in connections.iter().skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1) {
+    for c in connections
+        .iter()
+        .skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1)
+    {
         debug!("Deleting old grpc connection {}", c.id);
         delete_grpc_connection(window, c.id.as_str()).await?;
     }
@@ -1328,10 +1331,11 @@ pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
+    let closed = serde_json::to_value(&GrpcConnectionState::Closed)?;
     let (sql, params) = Query::update()
         .table(GrpcConnectionIden::Table)
-        .values([(GrpcConnectionIden::State, "closed".into())])
-        .cond_where(Expr::col(GrpcConnectionIden::State).ne("closed"))
+        .values([(GrpcConnectionIden::State, closed.as_str().into())])
+        .cond_where(Expr::col(GrpcConnectionIden::State).ne(closed.as_str()))
         .build_rusqlite(SqliteQueryBuilder);
 
     db.execute(sql.as_str(), &*params.as_params())?;
@@ -1342,13 +1346,14 @@ pub async fn cancel_pending_responses(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
+    let closed = serde_json::to_value(&GrpcConnectionState::Closed)?;
     let (sql, params) = Query::update()
         .table(HttpResponseIden::Table)
         .values([
-            (HttpResponseIden::State, "closed".into()),
+            (HttpResponseIden::State, closed.as_str().into()),
             (HttpResponseIden::StatusReason, "Cancelled".into()),
         ])
-        .cond_where(Expr::col(HttpResponseIden::State).ne("closed"))
+        .cond_where(Expr::col(HttpResponseIden::State).ne(closed.as_str()))
         .build_rusqlite(SqliteQueryBuilder);
 
     db.execute(sql.as_str(), &*params.as_params())?;

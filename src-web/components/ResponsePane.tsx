@@ -11,6 +11,7 @@ import { Banner } from './core/Banner';
 import { CountBadge } from './core/CountBadge';
 import { DurationTag } from './core/DurationTag';
 import { HotKeyList } from './core/HotKeyList';
+import { Icon } from './core/Icon';
 import { SizeTag } from './core/SizeTag';
 import { HStack } from './core/Stacks';
 import { StatusTag } from './core/StatusTag';
@@ -116,27 +117,21 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             {activeResponse && (
               <HStack
                 space={2}
+                alignItems="center"
                 className={classNames(
                   'cursor-default select-none',
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >
+                {isLoading && <Icon size="sm" icon="refresh" spin />}
                 <StatusTag showReason response={activeResponse} />
-                {activeResponse.elapsed > 0 && (
-                  <>
-                    <span>&bull;</span>
-                    <DurationTag
-                      headers={activeResponse.elapsedHeaders}
-                      total={activeResponse.elapsed}
-                    />
-                  </>
-                )}
-                {!!activeResponse.contentLength && (
-                  <>
-                    <span>&bull;</span>
-                    <SizeTag contentLength={activeResponse.contentLength} />
-                  </>
-                )}
+                <span>&bull;</span>
+                <DurationTag
+                  headers={activeResponse.elapsedHeaders}
+                  total={activeResponse.elapsed}
+                />
+                <span>&bull;</span>
+                <SizeTag contentLength={activeResponse.contentLength ?? 0} />
 
                 <div className="ml-auto">
                   <RecentResponsesDropdown
@@ -153,8 +148,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             <Banner color="danger" className="m-2">
               {activeResponse.error}
             </Banner>
-          ) : isLoading ? (
-            <EmptyStateText>Loading</EmptyStateText>
           ) : (
             <Tabs
               key={activeRequest.id} // Freshen tabs on request change
