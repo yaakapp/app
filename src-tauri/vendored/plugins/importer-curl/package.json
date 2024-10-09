@@ -1,5 +1,5 @@
 {
-  "name": "importer-curl",
+  "name": "@yaakapp/importer-curl",
   "private": true,
   "version": "0.0.1",
   "scripts": {
@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "shell-quote": "^1.8.1"
+  },
+  "devDependencies": {
+    "@types/shell-quote": "^1.7.5"
   }
 }

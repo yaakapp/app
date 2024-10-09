@@ -1,5 +1,5 @@
 {
-  "name": "filter-xpath",
+  "name": "@yaakapp/filter-xpath",
   "private": true,
   "version": "0.0.1",
   "scripts": {

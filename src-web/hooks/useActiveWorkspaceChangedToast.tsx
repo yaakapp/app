@@ -18,11 +18,12 @@ export function useActiveWorkspaceChangedToast() {
     if (id === null) return;
 
     toast.show({
-      id: 'workspace-changed',
+      id: `workspace-changed-${activeWorkspace.id}`,
       timeout: 3000,
       message: (
         <>
-          Switched workspace to <InlineCode>{activeWorkspace.name}</InlineCode>
+          Activated workspace{' '}
+          <InlineCode className="whitespace-nowrap">{activeWorkspace.name}</InlineCode>
         </>
       ),
     });
