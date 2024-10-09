@@ -243,7 +243,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const isSpecial = e.ctrlKey || e.metaKey || e.altKey;
     if (isCharacter && !isSpecial) {
       e.preventDefault();
-      setFilter((f) => (f + e.key).trim());
+      setFilter((f) => f + e.key);
       setSelectedIndex(0);
     } else if (e.key === 'Backspace' && !isSpecial) {
       e.preventDefault();
