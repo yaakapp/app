@@ -6,9 +6,7 @@ import {
   handleRefresh,
   jsonCompletion,
   jsonSchemaLinter,
-  // eslint-disable-next-line import/named
   stateExtensions,
-  // eslint-disable-next-line import/named
   updateSchema,
 } from 'codemirror-json-schema';
 import { useEffect, useMemo, useRef } from 'react';
