@@ -32,6 +32,7 @@
     "shell:allow-open",
     "core:webview:allow-set-webview-zoom",
     "core:window:allow-close",
+    "core:window:allow-internal-toggle-maximize",
     "core:window:allow-is-fullscreen",
     "core:window:allow-maximize",
     "core:window:allow-minimize",

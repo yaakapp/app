@@ -1,4 +1,3 @@
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
 import type { HTMLAttributes, ReactNode } from 'react';
 import React from 'react';
@@ -29,10 +28,6 @@ export function HeaderSize({
   return (
     <div
       data-tauri-drag-region
-      onDoubleClick={async () => {
-        // Maximize window on double-click
-        await getCurrentWebviewWindow().toggleMaximize();
-      }}
       style={{
         ...style,
         // Add padding for macOS stoplights, but keep it the same width (account for the interface scale)
