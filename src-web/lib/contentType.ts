@@ -10,19 +10,18 @@ export function languageFromContentType(
   } else if (justContentType.includes('xml')) {
     return 'xml';
   } else if (justContentType.includes('html')) {
-    return detectFromContent(content);
+    return detectFromContent(content, 'html');
   } else if (justContentType.includes('javascript')) {
     return 'javascript';
   }
 
-  return detectFromContent(content);
+  return detectFromContent(content, 'text');
 }
 
-export function isJSON(text: string): boolean {
-  return text.startsWith('{') || text.startsWith('[');
-}
-
-function detectFromContent(content: string | null): EditorProps['language'] {
+function detectFromContent(
+  content: string | null,
+  fallback: EditorProps['language'],
+): EditorProps['language'] {
   if (content == null) return 'text';
 
   if (content.startsWith('{') || content.startsWith('[')) {
@@ -30,5 +29,6 @@ function detectFromContent(content: string | null): EditorProps['language'] {
   } else if (content.startsWith('<!DOCTYPE') || content.startsWith('<html')) {
     return 'html';
   }
-  return 'text';
+
+  return fallback;
 }
