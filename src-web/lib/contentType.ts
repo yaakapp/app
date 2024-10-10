@@ -26,7 +26,10 @@ function detectFromContent(
 
   if (content.startsWith('{') || content.startsWith('[')) {
     return 'json';
-  } else if (content.startsWith('<!DOCTYPE') || content.startsWith('<html')) {
+  } else if (
+    content.toLowerCase().startsWith('<!doctype') ||
+    content.toLowerCase().startsWith('<html')
+  ) {
     return 'html';
   }
 
