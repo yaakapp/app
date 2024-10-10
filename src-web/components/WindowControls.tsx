@@ -1,7 +1,7 @@
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import classNames from 'classnames';
 import React, { useState } from 'react';
-import { useOsInfo } from '../hooks/useOsInfo';
+import { useStoplightsVisible } from '../hooks/useStoplightsVisible';
 import { Button } from './core/Button';
 import { HStack } from './core/Stacks';
 
@@ -10,16 +10,21 @@ interface Props {
   onlyX?: boolean;
 }
 
+export const WINDOW_CONTROLS_WIDTH = '10.5rem';
+
 export function WindowControls({ className, onlyX }: Props) {
   const [maximized, setMaximized] = useState<boolean>(false);
-  const osInfo = useOsInfo();
-  const shouldShow = osInfo?.osType === 'linux' || osInfo?.osType === 'windows';
-  if (!shouldShow) {
+  const stoplightsVisible = useStoplightsVisible();
+  if (stoplightsVisible) {
     return null;
   }
 
   return (
-    <HStack className={classNames(className, 'ml-4 h-full')}>
+    <HStack
+      className={classNames(className, 'ml-4 absolute right-0 top-0 bottom-0')}
+      justifyContent="end"
+      style={{ width: WINDOW_CONTROLS_WIDTH }}
+    >
       {!onlyX && (
         <>
           <Button
@@ -57,7 +62,7 @@ export function WindowControls({ className, onlyX }: Props) {
       )}
       <Button
         color="custom"
-        className="!h-full px-4 text-text-subtle rounded-none hocus:bg-danger hocus:text"
+        className="!h-full px-4 text-text-subtle rounded-none hocus:bg-danger hocus:text-text"
         onClick={() => getCurrentWebviewWindow().close()}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">

@@ -10,7 +10,6 @@ import { ImportCurlButton } from './ImportCurlButton';
 import { RecentRequestsDropdown } from './RecentRequestsDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { SidebarActions } from './SidebarActions';
-import { WindowControls } from './WindowControls';
 import { WorkspaceActionsDropdown } from './WorkspaceActionsDropdown';
 
 interface Props {
@@ -20,17 +19,22 @@ interface Props {
 export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Props) {
   const togglePalette = useToggleCommandPalette();
   return (
-    <HStack space={2} justifyContent="center" className={classNames(className, 'w-full h-full')}>
+    <div
+      className={classNames(
+        className,
+        'grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center w-full h-full',
+      )}
+    >
       <HStack space={0.5} className="flex-1 pointer-events-none">
         <SidebarActions />
         <CookieDropdown />
-        <HStack>
+        <HStack className="min-w-0">
           <WorkspaceActionsDropdown />
           <Icon icon="chevron_right" className="text-text-subtle" />
           <EnvironmentActionsDropdown className="w-auto pointer-events-auto" />
         </HStack>
       </HStack>
-      <div className="pointer-events-none">
+      <div className="pointer-events-none w-full max-w-[30vw] mx-auto">
         <RecentRequestsDropdown />
       </div>
       <div className="flex-1 flex gap-1 items-center h-full justify-end pointer-events-none pr-0.5">
@@ -42,8 +46,7 @@ export const WorkspaceHeader = memo(function WorkspaceHeader({ className }: Prop
           onClick={togglePalette}
         />
         <SettingsDropdown />
-        <WindowControls />
       </div>
-    </HStack>
+    </div>
   );
 });
