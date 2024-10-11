@@ -21,19 +21,21 @@ use tauri::{Manager, Runtime, WebviewWindow};
 use tokio::fs;
 use tokio::fs::{create_dir_all, File};
 use tokio::io::AsyncWriteExt;
-use tokio::sync::oneshot;
 use tokio::sync::watch::Receiver;
+use tokio::sync::{oneshot, Mutex};
 use yaak_models::models::{
     Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
     HttpResponseState,
 };
-use yaak_models::queries::{get_workspace, update_response_if_id, upsert_cookie_jar};
+use yaak_models::queries::{
+    get_http_response, get_workspace, update_response_if_id, upsert_cookie_jar,
+};
 use yaak_plugin_runtime::events::{RenderPurpose, WindowContext};
 
 pub async fn send_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request: &HttpRequest,
-    response: &HttpResponse,
+    og_response: &HttpResponse,
     environment: Option<Environment>,
     cookie_jar: Option<CookieJar>,
     cancelled_rx: &mut Receiver<bool>,
@@ -46,6 +48,9 @@ pub async fn send_http_request<R: Runtime>(
         &WindowContext::from_window(window),
         RenderPurpose::Send,
     );
+
+    let response_id = og_response.id.clone();
+    let response = Arc::new(Mutex::new(og_response.clone()));
 
     let rendered_request =
         render_http_request(&request, &workspace, environment.as_ref(), &cb).await;
@@ -116,7 +121,7 @@ pub async fn send_http_request<R: Runtime>(
         Ok(u) => u,
         Err(e) => {
             return Ok(response_err(
-                response,
+                &*response.lock().await,
                 format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
                 window,
             )
@@ -128,7 +133,7 @@ pub async fn send_http_request<R: Runtime>(
         Ok(u) => u,
         Err(e) => {
             return Ok(response_err(
-                response,
+                &*response.lock().await,
                 format!("Failed to parse URL \"{}\": {}", url_string, e.to_string()),
                 window,
             )
@@ -275,7 +280,7 @@ pub async fn send_http_request<R: Runtime>(
                     request_builder = request_builder.body(f);
                 }
                 Err(e) => {
-                    return Ok(response_err(response, e, window).await);
+                    return Ok(response_err(&*response.lock().await, e, window).await);
                 }
             }
         } else if body_type == "multipart/form-data" && request_body.contains_key("form") {
@@ -301,9 +306,12 @@ pub async fn send_http_request<R: Runtime>(
                                 match fs::read(file_path.clone()).await {
                                     Ok(f) => multipart::Part::bytes(f),
                                     Err(e) => {
-                                        return Ok(
-                                            response_err(response, e.to_string(), window).await
-                                        );
+                                        return Ok(response_err(
+                                            &*response.lock().await,
+                                            e.to_string(),
+                                            window,
+                                        )
+                                        .await);
                                     }
                                 }
                             };
@@ -351,7 +359,7 @@ pub async fn send_http_request<R: Runtime>(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
-            return Ok(response_err(response, e.to_string(), window).await);
+            return Ok(response_err(&*response.lock().await, e.to_string(), window).await);
         }
     };
 
@@ -368,62 +376,60 @@ pub async fn send_http_request<R: Runtime>(
         Ok(r) = resp_rx => r,
         _ = cancelled_rx.changed() => {
             debug!("Request cancelled");
-            return Ok(response_err(response, "Request was cancelled".to_string(), window).await);
+            return Ok(response_err(&*response.lock().await, "Request was cancelled".to_string(), window).await);
         }
     };
 
     {
         let window = window.clone();
-        let response = response.clone();
         let cancelled_rx = cancelled_rx.clone();
+        let response_id = response_id.clone();
+        let response = response.clone();
         tokio::spawn(async move {
-            let result = match raw_response {
+            match raw_response {
                 Ok(mut v) => {
-                    let mut response = response.clone();
+                    let content_length = v.content_length();
                     let response_headers = v.headers().clone();
-                    response.elapsed_headers = start.elapsed().as_millis() as i32;
-                    response.status = v.status().as_u16() as i32;
-                    response.status_reason = v.status().canonical_reason().map(|s| s.to_string());
-                    response.headers = response_headers
-                        .iter()
-                        .map(|(k, v)| HttpResponseHeader {
-                            name: k.as_str().to_string(),
-                            value: v.to_str().unwrap_or_default().to_string(),
-                        })
-                        .collect();
-                    response.url = v.url().to_string();
-                    response.remote_addr = v.remote_addr().map(|a| a.to_string());
-                    response.version = match v.version() {
-                        reqwest::Version::HTTP_09 => Some("HTTP/0.9".to_string()),
-                        reqwest::Version::HTTP_10 => Some("HTTP/1.0".to_string()),
-                        reqwest::Version::HTTP_11 => Some("HTTP/1.1".to_string()),
-                        reqwest::Version::HTTP_2 => Some("HTTP/2".to_string()),
-                        reqwest::Version::HTTP_3 => Some("HTTP/3".to_string()),
-                        _ => None,
-                    };
                     let dir = window.app_handle().path().app_data_dir().unwrap();
                     let base_dir = dir.join("responses");
                     create_dir_all(base_dir.clone())
                         .await
                         .expect("Failed to create responses dir");
-                    let body_path = if response.id.is_empty() {
-                        base_dir.join(response.id.clone())
+                    let body_path = if response_id.is_empty() {
+                        base_dir.join(response_id.clone())
                     } else {
                         base_dir.join(uuid::Uuid::new_v4().to_string())
                     };
 
-                    response.body_path = Some(
-                        body_path
-                            .to_str()
-                            .expect("Failed to get body path")
-                            .to_string(),
-                    );
+                    {
+                        let mut r = response.lock().await;
+                        r.body_path = Some(body_path.to_str().unwrap().to_string());
+                        r.elapsed_headers = start.elapsed().as_millis() as i32;
+                        r.status = v.status().as_u16() as i32;
+                        r.status_reason = v.status().canonical_reason().map(|s| s.to_string());
+                        r.headers = response_headers
+                            .iter()
+                            .map(|(k, v)| HttpResponseHeader {
+                                name: k.as_str().to_string(),
+                                value: v.to_str().unwrap_or_default().to_string(),
+                            })
+                            .collect();
+                        r.url = v.url().to_string();
+                        r.remote_addr = v.remote_addr().map(|a| a.to_string());
+                        r.version = match v.version() {
+                            reqwest::Version::HTTP_09 => Some("HTTP/0.9".to_string()),
+                            reqwest::Version::HTTP_10 => Some("HTTP/1.0".to_string()),
+                            reqwest::Version::HTTP_11 => Some("HTTP/1.1".to_string()),
+                            reqwest::Version::HTTP_2 => Some("HTTP/2".to_string()),
+                            reqwest::Version::HTTP_3 => Some("HTTP/3".to_string()),
+                            _ => None,
+                        };
 
-                    let content_length = v.content_length();
-                    response.state = HttpResponseState::Connected;
-                    response = update_response_if_id(&window, &response)
-                        .await
-                        .expect("Failed to update response after connected");
+                        r.state = HttpResponseState::Connected;
+                        update_response_if_id(&window, &r)
+                            .await
+                            .expect("Failed to update response after connected");
+                    }
 
                     // Write body to FS
                     let mut f = File::options()
@@ -446,9 +452,10 @@ pub async fn send_http_request<R: Runtime>(
                                 f.write_all(&bytes).await.expect("Failed to write to file");
                                 f.flush().await.expect("Failed to flush file");
                                 written_bytes += bytes.len();
-                                response.elapsed = start.elapsed().as_millis() as i32;
-                                response.content_length = Some(written_bytes as i32);
-                                response = update_response_if_id(&window, &response)
+                                let mut r = response.lock().await;
+                                r.elapsed = start.elapsed().as_millis() as i32;
+                                r.content_length = Some(written_bytes as i32);
+                                update_response_if_id(&window, &r)
                                     .await
                                     .expect("Failed to update response");
                             }
@@ -456,21 +463,24 @@ pub async fn send_http_request<R: Runtime>(
                                 break;
                             }
                             Err(e) => {
-                                response = response_err(&response, e.to_string(), &window).await;
+                                response_err(&*response.lock().await, e.to_string(), &window).await;
                                 break;
                             }
                         }
                     }
 
                     // Set final content length
-                    response.content_length = match content_length {
-                        Some(l) => Some(l as i32),
-                        None => Some(written_bytes as i32),
+                    {
+                        let mut r = response.lock().await;
+                        r.content_length = match content_length {
+                            Some(l) => Some(l as i32),
+                            None => Some(written_bytes as i32),
+                        };
+                        r.state = HttpResponseState::Closed;
+                        update_response_if_id(&window, &r)
+                            .await
+                            .expect("Failed to update response");
                     };
-                    response.state = HttpResponseState::Closed;
-                    response = update_response_if_id(&window, &response)
-                        .await
-                        .expect("Failed to update response");
 
                     // Add cookie store if specified
                     if let Some((cookie_store, mut cookie_jar)) = maybe_cookie_manager {
@@ -497,19 +507,29 @@ pub async fn send_http_request<R: Runtime>(
                             error!("Failed to update cookie jar: {}", e);
                         };
                     }
-                    response
                 }
-                Err(e) => response_err(&response, e.to_string(), &window).await,
+                Err(e) => {
+                    response_err(&*response.lock().await, e.to_string(), &window).await;
+                }
             };
 
-            done_tx.send(result.clone()).unwrap();
+            let r = response.lock().await.clone();
+            done_tx.send(r).unwrap();
         });
     };
 
     Ok(tokio::select! {
         Ok(r) = done_rx => r,
         _ = cancelled_rx.changed() => {
-            response_err(&response, "Request was cancelled".to_string(), &window).await
+            match get_http_response(window, response_id.as_str()).await {
+                Ok(mut r) => {
+                    r.state = HttpResponseState::Closed;
+                    update_response_if_id(&window, &r).await.expect("Failed to update response")
+                },
+                _ => {
+                    response_err(&*response.lock().await, "Ephemeral request was cancelled".to_string(), &window).await
+                }.clone(),
+            }
         }
     })
 }

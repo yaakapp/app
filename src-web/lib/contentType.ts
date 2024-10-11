@@ -35,3 +35,15 @@ function detectFromContent(
 
   return fallback;
 }
+
+export function isJSON(content: string | null | undefined): boolean {
+  if (typeof content !== 'string') return false;
+
+  try {
+    JSON.parse(content)
+    return true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return false;
+  }
+}

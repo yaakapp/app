@@ -23,6 +23,7 @@ import { ResponseHeaders } from './ResponseHeaders';
 import { ResponseInfo } from './ResponseInfo';
 import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
+import { EventStreamViewer } from './responseViewers/EventStreamViewer';
 import { HTMLOrTextViewer } from './responseViewers/HTMLOrTextViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
@@ -163,15 +164,17 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <div className="pb-2 h-full">
                     <EmptyStateText>Empty Body</EmptyStateText>
                   </div>
-                ) : contentType?.startsWith('image') ? (
+                ) : contentType?.match(/^text\/event-stream$/i) && viewMode === 'pretty' ? (
+                  <EventStreamViewer response={activeResponse} />
+                ) : contentType?.match(/^image/i) ? (
                   <EnsureCompleteResponse response={activeResponse} render={ImageViewer} />
-                ) : contentType?.startsWith('audio') ? (
+                ) : contentType?.match(/^audio/i) ? (
                   <EnsureCompleteResponse response={activeResponse} render={AudioViewer} />
-                ) : contentType?.startsWith('video') ? (
+                ) : contentType?.match(/^video/i) ? (
                   <EnsureCompleteResponse response={activeResponse} render={VideoViewer} />
-                ) : contentType?.match(/pdf/) ? (
+                ) : contentType?.match(/pdf/i) ? (
                   <EnsureCompleteResponse response={activeResponse} render={PdfViewer} />
-                ) : contentType?.match(/csv|tab-separated/) ? (
+                ) : contentType?.match(/csv|tab-separated/i) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
                 ) : (
                   // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
