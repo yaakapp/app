@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { useResponseBodyText } from '../../hooks/useResponseBodyText';
 import { isJSON } from '../../lib/contentType';
+import {tryFormatJson} from "../../lib/formatters";
 import { Button } from '../core/Button';
 import { Editor } from '../core/Editor';
 import { Icon } from '../core/Icon';
@@ -61,7 +62,7 @@ function _EventStreamViewer({ response }: Props) {
   }, [rawTextBody.data]);
 
   const language = useMemo<'text' | 'json'>(() => {
-    if (activeEvent?.event?.data) return 'text';
+    if (!activeEvent?.event?.data) return 'text';
     return isJSON(activeEvent?.event?.data) ? 'json' : 'text';
   }, [activeEvent?.event?.data]);
 
@@ -112,7 +113,7 @@ function _EventStreamViewer({ response }: Props) {
                     <Editor
                       readOnly
                       forceUpdateKey={activeEvent.event.data}
-                      defaultValue={activeEvent.event.data}
+                      defaultValue={tryFormatJson(activeEvent.event.data)}
                       language={language}
                     />
                   )}
