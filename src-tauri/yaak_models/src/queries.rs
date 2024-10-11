@@ -488,6 +488,7 @@ pub async fn upsert_grpc_connection<R: Runtime>(
                     GrpcConnectionIden::Method,
                     GrpcConnectionIden::Elapsed,
                     GrpcConnectionIden::Status,
+                    GrpcConnectionIden::State,
                     GrpcConnectionIden::Error,
                     GrpcConnectionIden::Trailers,
                     GrpcConnectionIden::Url,

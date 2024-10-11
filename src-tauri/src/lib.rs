@@ -3,7 +3,7 @@ extern crate core;
 extern crate objc;
 
 use std::collections::BTreeMap;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -13,6 +13,7 @@ use std::{fs, panic};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::Utc;
+use eventsource_client::{EventParser, SSE};
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
@@ -27,6 +28,7 @@ use tauri::{Manager, WindowEvent};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
+use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
@@ -69,6 +71,7 @@ use yaak_plugin_runtime::events::{
     WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
+use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -337,7 +340,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
-                    state: GrpcConnectionState::Initialized,
+                    state: GrpcConnectionState::Closed,
                     ..conn.clone()
                 },
             )
@@ -797,7 +800,7 @@ async fn cmd_filter_response<R: Runtime>(
         }
     }
 
-    let body = read_to_string(response.body_path.unwrap()).unwrap();
+    let body = read_to_string(response.body_path.unwrap()).await.unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
     plugin_manager
@@ -807,13 +810,35 @@ async fn cmd_filter_response<R: Runtime>(
 }
 
 #[tauri::command]
+async fn cmd_get_sse_events(file_path: &str) -> Result<Vec<ServerSentEvent>, String> {
+    let body = fs::read(file_path).map_err(|e| e.to_string())?;
+    let mut p = EventParser::new();
+    p.process_bytes(body.into()).map_err(|e| e.to_string())?;
+
+    let mut events = Vec::new();
+    while let Some(e) = p.get_event() {
+        if let SSE::Event(e) = e {
+            events.push(ServerSentEvent {
+                event_type: e.event_type,
+                data: e.data,
+                id: e.id,
+                retry: e.retry,
+            });
+        }
+    }
+
+    Ok(events)
+}
+
+#[tauri::command]
 async fn cmd_import_data<R: Runtime>(
     window: WebviewWindow<R>,
     plugin_manager: State<'_, PluginManager>,
     file_path: &str,
 ) -> Result<WorkspaceExportResources, String> {
-    let file =
-        read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
+    let file = read_to_string(file_path)
+        .await
+        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     let (import_result, plugin_name) = plugin_manager
         .import_data(&window, file_contents)
@@ -1801,6 +1826,7 @@ pub fn run() {
                 ])
                 .level_for("plugin_runtime", log::LevelFilter::Info)
                 .level_for("cookie_store", log::LevelFilter::Info)
+                .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
                 .level_for("hyper_util", log::LevelFilter::Info)
@@ -1901,6 +1927,7 @@ pub fn run() {
             cmd_get_folder,
             cmd_get_grpc_request,
             cmd_get_http_request,
+            cmd_get_sse_events,
             cmd_get_key_value,
             cmd_get_settings,
             cmd_get_workspace,
