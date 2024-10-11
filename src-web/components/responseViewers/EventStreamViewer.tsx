@@ -1,9 +1,9 @@
+import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HttpResponse } from '@yaakapp-internal/models';
 import type { ServerSentEvent } from '@yaakapp-internal/sse';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Virtuoso } from 'react-virtuoso';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useResponseBodyEventSource } from '../../hooks/useResponseBodyEventSource';
 import { isJSON } from '../../lib/contentType';
 import { tryFormatJson } from '../../lib/formatters';
@@ -14,6 +14,7 @@ import { InlineCode } from '../core/InlineCode';
 import { Separator } from '../core/Separator';
 import { SplitLayout } from '../core/SplitLayout';
 import { HStack, VStack } from '../core/Stacks';
+import { motion } from 'framer-motion';
 
 interface Props {
   response: HttpResponse;
@@ -33,7 +34,6 @@ function _EventStreamViewer({ response }: Props) {
   const [showingLarge, setShowingLarge] = useState<boolean>(false);
   const [activeEventIndex, setActiveEventIndex] = useState<number | null>(null);
   const events = useResponseBodyEventSource(response);
-  console.log("EVENTS", events.data);
   const activeEvent = useMemo(
     () => (activeEventIndex == null ? null : events.data?.[activeEventIndex]),
     [activeEventIndex, events],
@@ -113,21 +113,51 @@ function EventStreamEventsVirtual({
   activeEventIndex: number | null;
   setActiveEventIndex: (eventId: number | null) => void;
 }) {
+  // The scrollable element for your list
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // The virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: events.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 28, // react-virtual requires a height, so we'll give it one
+  });
+
   return (
-    <div className="pb-3 grid">
-      <Virtuoso
-        data={events}
-        itemContent={(index: number, event) => (
-          <EventStreamEvent
-            event={event}
-            isActive={index === activeEventIndex}
-            onClick={() => {
-              if (index === activeEventIndex) setActiveEventIndex(null);
-              else setActiveEventIndex(index);
-            }}
-          />
-        )}
-      />
+    <div ref={parentRef} className="pb-3 overflow-y-auto">
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+          const event = events[virtualItem.index]!;
+          return (
+            <div
+              key={virtualItem.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualItem.size}px`,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <EventStreamEvent
+                event={event}
+                isActive={virtualItem.index === activeEventIndex}
+                onClick={() => {
+                  if (virtualItem.index === activeEventIndex) setActiveEventIndex(null);
+                  else setActiveEventIndex(virtualItem.index);
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -144,7 +174,9 @@ function EventStreamEvent({
   className?: string;
 }) {
   return (
-    <button
+    <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       onClick={onClick}
       className={classNames(
         className,
@@ -168,7 +200,7 @@ function EventStreamEvent({
         )}
       </HStack>
       <div className={classNames('w-full truncate text-xs')}>{event.data.slice(0, 1000)}</div>
-    </button>
+    </motion.button>
   );
 }
 

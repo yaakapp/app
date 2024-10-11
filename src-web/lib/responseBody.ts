@@ -27,12 +27,8 @@ export async function getResponseBodyBlob(response: HttpResponse): Promise<Uint8
 export async function getResponseBodyEventSource(
   response: HttpResponse,
 ): Promise<ServerSentEvent[]> {
-  console.log("HELLO??", response.bodyPath);
   if (!response.bodyPath) return [];
-  console.log("HELLO?");
-  const e = await invokeCmd<ServerSentEvent[]>('cmd_get_sse_events', {
+  return invokeCmd<ServerSentEvent[]>('cmd_get_sse_events', {
     filePath: response.bodyPath,
   });
-  console.log("HELLO", e);
-  return e;
 }

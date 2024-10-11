@@ -340,7 +340,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
-                    state: GrpcConnectionState::Initialized,
+                    state: GrpcConnectionState::Closed,
                     ..conn.clone()
                 },
             )
