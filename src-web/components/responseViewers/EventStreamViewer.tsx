@@ -2,8 +2,8 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { HttpResponse } from '@yaakapp-internal/models';
 import type { ServerSentEvent } from '@yaakapp-internal/sse';
 import classNames from 'classnames';
-import type { ReactNode } from 'react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import React, { useMemo, useRef, useState } from 'react';
 import { useResponseBodyEventSource } from '../../hooks/useResponseBodyEventSource';
 import { isJSON } from '../../lib/contentType';
 import { tryFormatJson } from '../../lib/formatters';
@@ -14,7 +14,6 @@ import { InlineCode } from '../core/InlineCode';
 import { Separator } from '../core/Separator';
 import { SplitLayout } from '../core/SplitLayout';
 import { HStack, VStack } from '../core/Stacks';
-import { motion } from 'framer-motion';
 
 interface Props {
   response: HttpResponse;
@@ -22,14 +21,15 @@ interface Props {
 
 export function EventStreamViewer({ response }: Props) {
   return (
-    <Lazy // The initial parsing can be heavy, so lazily load the component
-      key={response.id}
-      render={() => <_EventStreamViewer response={response} />}
-    />
+    <div
+      key={response.id} // force a refresh when the response changes
+    >
+      <ActualEventStreamViewer response={response} />
+    </div>
   );
 }
 
-function _EventStreamViewer({ response }: Props) {
+function ActualEventStreamViewer({ response }: Props) {
   const [showLarge, setShowLarge] = useState<boolean>(false);
   const [showingLarge, setShowingLarge] = useState<boolean>(false);
   const [activeEventIndex, setActiveEventIndex] = useState<number | null>(null);
@@ -175,8 +175,8 @@ function EventStreamEvent({
 }) {
   return (
     <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       onClick={onClick}
       className={classNames(
         className,
@@ -202,15 +202,4 @@ function EventStreamEvent({
       <div className={classNames('w-full truncate text-xs')}>{event.data.slice(0, 1000)}</div>
     </motion.button>
   );
-}
-
-function Lazy({ render }: { render: () => ReactNode }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    setVisible(true);
-  }, []);
-
-  if (!visible) return false;
-
-  return <>{render()}</>;
 }
