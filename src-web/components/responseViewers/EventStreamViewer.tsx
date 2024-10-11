@@ -3,7 +3,7 @@ import type { HttpResponse } from '@yaakapp-internal/models';
 import type { ServerSentEvent } from '@yaakapp-internal/sse';
 import classNames from 'classnames';
 import { motion } from 'framer-motion';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { Fragment, useMemo, useRef, useState } from 'react';
 import { useResponseBodyEventSource } from '../../hooks/useResponseBodyEventSource';
 import { isJSON } from '../../lib/contentType';
 import { tryFormatJson } from '../../lib/formatters';
@@ -21,11 +21,11 @@ interface Props {
 
 export function EventStreamViewer({ response }: Props) {
   return (
-    <div
+    <Fragment
       key={response.id} // force a refresh when the response changes
     >
       <ActualEventStreamViewer response={response} />
-    </div>
+    </Fragment>
   );
 }
 
@@ -124,7 +124,7 @@ function EventStreamEventsVirtual({
   });
 
   return (
-    <div ref={parentRef} className="pb-3 overflow-y-auto">
+    <div ref={parentRef} className="overflow-y-auto">
       <div
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
