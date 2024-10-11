@@ -1624,6 +1624,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "eventsource-client"
+version = "0.13.0"
+source = "git+https://github.com/yaakapp/rust-eventsource-client#e9e1e52421f11f0409179389b997aa49275a8461"
+dependencies = [
+ "futures",
+ "hyper 0.14.30",
+ "hyper-rustls 0.24.2",
+ "hyper-timeout 0.4.1",
+ "log",
+ "pin-project",
+ "rand 0.8.5",
+ "tokio",
+]
+
+[[package]]
 name = "exr"
 version = "1.72.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1808,6 +1823,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "futures"
+version = "0.3.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "645c6916888f6cb6350d2550b80fb63e734897a8498abe35cfb732b6487804b0"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "futures-executor",
+ "futures-io",
+ "futures-sink",
+ "futures-task",
+ "futures-util",
+]
+
+[[package]]
 name = "futures-channel"
 version = "0.3.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1893,6 +1923,7 @@ version = "0.3.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d6401deb83407ab3da39eba7e33987a73c3df0c82b4bb5813ee871c19c41d48"
 dependencies = [
+ "futures-channel",
  "futures-core",
  "futures-io",
  "futures-macro",
@@ -7823,6 +7854,7 @@ dependencies = [
  "chrono",
  "cocoa 0.26.0",
  "datetime",
+ "eventsource-client",
  "hex_color",
  "http 1.1.0",
  "log",
@@ -7854,6 +7886,7 @@ dependencies = [
  "yaak_grpc",
  "yaak_models",
  "yaak_plugin_runtime",
+ "yaak_sse",
  "yaak_templates",
 ]
 
@@ -7924,6 +7957,15 @@ dependencies = [
  "tonic-build",
  "ts-rs",
  "yaak_models",
+]
+
+[[package]]
+name = "yaak_sse"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "ts-rs",
 ]
 
 [[package]]

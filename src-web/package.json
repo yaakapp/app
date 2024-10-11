@@ -35,7 +35,6 @@
     "codemirror-json-schema": "^0.6.1",
     "date-fns": "^3.6.0",
     "eventemitter3": "^5.0.1",
-    "eventsource-parser": "^2.0.1",
     "fast-fuzzy": "^1.12.0",
     "focus-trap-react": "^10.2.3",
     "format-graphql": "^1.5.0",
