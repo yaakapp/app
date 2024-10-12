@@ -14,7 +14,7 @@ use http::{HeaderMap, HeaderName, HeaderValue};
 use log::{debug, error, warn};
 use mime_guess::Mime;
 use reqwest::redirect::Policy;
-use reqwest::{multipart, Url};
+use reqwest::{multipart, Proxy, Url};
 use reqwest::{Method, Response};
 use serde_json::Value;
 use tauri::{Manager, Runtime, WebviewWindow};
@@ -25,10 +25,11 @@ use tokio::sync::watch::Receiver;
 use tokio::sync::{oneshot, Mutex};
 use yaak_models::models::{
     Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
-    HttpResponseState,
+    HttpResponseState, ProxySetting,
 };
 use yaak_models::queries::{
-    get_http_response, get_workspace, update_response_if_id, upsert_cookie_jar,
+    get_http_response, get_or_create_settings, get_workspace, update_response_if_id,
+    upsert_cookie_jar,
 };
 use yaak_plugin_runtime::events::{RenderPurpose, WindowContext};
 
@@ -40,9 +41,9 @@ pub async fn send_http_request<R: Runtime>(
     cookie_jar: Option<CookieJar>,
     cancelled_rx: &mut Receiver<bool>,
 ) -> Result<HttpResponse, String> {
-    let workspace = get_workspace(window, &request.workspace_id)
-        .await
-        .expect("Failed to get Workspace");
+    let workspace =
+        get_workspace(window, &request.workspace_id).await.expect("Failed to get Workspace");
+    let settings = get_or_create_settings(window).await;
     let cb = PluginTemplateCallback::new(
         window.app_handle(),
         &WindowContext::from_window(window),
@@ -61,6 +62,7 @@ pub async fn send_http_request<R: Runtime>(
     if !url_string.starts_with("http://") && !url_string.starts_with("https://") {
         url_string = format!("http://{}", url_string);
     }
+    debug!("Sending request to {url_string}");
 
     let mut client_builder = reqwest::Client::builder()
         .redirect(match workspace.setting_follow_redirects {
@@ -74,6 +76,29 @@ pub async fn send_http_request<R: Runtime>(
         .referer(false)
         .danger_accept_invalid_certs(!workspace.setting_validate_certificates)
         .tls_info(true);
+
+    match settings.proxy {
+        Some(ProxySetting::Disabled) => client_builder = client_builder.no_proxy(),
+        Some(ProxySetting::Enabled { http, https }) => {
+            client_builder = client_builder.proxy(Proxy::custom(move |url| {
+                let http = if http.is_empty() { None } else { Some(http.to_owned()) };
+                let https = if https.is_empty() { None } else { Some(https.to_owned()) };
+                let proxy_url = match (url.scheme(), http, https) {
+                    ("http", Some(proxy_url), _) => Some(proxy_url),
+                    ("https", _, Some(proxy_url)) => Some(proxy_url),
+                    _ => None,
+                };
+                match proxy_url.clone() {
+                    Some(proxy_url) => debug!("Using proxy {proxy_url} for {url}"),
+                    None => debug!("Using system proxy for {url}"),
+                };
+                proxy_url
+            }));
+        }
+        None => {
+            // Nothing to do for this one, as it is the default
+        }
+    }
 
     // Add cookie store if specified
     let maybe_cookie_manager = match cookie_jar.clone() {
@@ -196,16 +221,8 @@ pub async fn send_http_request<R: Runtime>(
         let a = rendered_request.authentication;
 
         if b == "basic" {
-            let username = a
-                .get("username")
-                .unwrap_or(empty_value)
-                .as_str()
-                .unwrap_or_default();
-            let password = a
-                .get("password")
-                .unwrap_or(empty_value)
-                .as_str()
-                .unwrap_or_default();
+            let username = a.get("username").unwrap_or(empty_value).as_str().unwrap_or_default();
+            let password = a.get("password").unwrap_or(empty_value).as_str().unwrap_or_default();
 
             let auth = format!("{username}:{password}");
             let encoded = BASE64_STANDARD.encode(auth);
@@ -214,11 +231,7 @@ pub async fn send_http_request<R: Runtime>(
                 HeaderValue::from_str(&format!("Basic {}", encoded)).unwrap(),
             );
         } else if b == "bearer" {
-            let token = a
-                .get("token")
-                .unwrap_or(empty_value)
-                .as_str()
-                .unwrap_or_default();
+            let token = a.get("token").unwrap_or(empty_value).as_str().unwrap_or_default();
             headers.insert(
                 "Authorization",
                 HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
@@ -232,10 +245,7 @@ pub async fn send_http_request<R: Runtime>(
             let query = get_str_h(&request_body, "query");
             let variables = get_str_h(&request_body, "variables");
             let body = if variables.trim().is_empty() {
-                format!(
-                    r#"{{"query":{}}}"#,
-                    serde_json::to_string(query).unwrap_or_default()
-                )
+                format!(r#"{{"query":{}}}"#, serde_json::to_string(query).unwrap_or_default())
             } else {
                 format!(
                     r#"{{"query":{},"variables":{variables}}}"#,
@@ -326,9 +336,8 @@ pub async fn send_http_request<R: Runtime>(
                                     Mime::from_str("application/octet-stream").unwrap();
                                 let mime =
                                     mime_guess::from_path(file_path.clone()).first_or(default_mime);
-                                part = part
-                                    .mime_str(mime.essence_str())
-                                    .map_err(|e| e.to_string())?;
+                                part =
+                                    part.mime_str(mime.essence_str()).map_err(|e| e.to_string())?;
                             }
 
                             // Set file path if not empty
@@ -359,6 +368,7 @@ pub async fn send_http_request<R: Runtime>(
     let sendable_req = match request_builder.build() {
         Ok(r) => r,
         Err(e) => {
+            warn!("Failed to build request builder {e:?}");
             return Ok(response_err(&*response.lock().await, e.to_string(), window).await);
         }
     };
@@ -392,9 +402,7 @@ pub async fn send_http_request<R: Runtime>(
                     let response_headers = v.headers().clone();
                     let dir = window.app_handle().path().app_data_dir().unwrap();
                     let base_dir = dir.join("responses");
-                    create_dir_all(base_dir.clone())
-                        .await
-                        .expect("Failed to create responses dir");
+                    create_dir_all(base_dir.clone()).await.expect("Failed to create responses dir");
                     let body_path = if response_id.is_empty() {
                         base_dir.join(response_id.clone())
                     } else {
@@ -509,7 +517,8 @@ pub async fn send_http_request<R: Runtime>(
                     }
                 }
                 Err(e) => {
-                    response_err(&*response.lock().await, e.to_string(), &window).await;
+                    warn!("Failed to execute request {e}");
+                    response_err(&*response.lock().await, format!("{e} → {e:?}"), &window).await;
                 }
             };
 

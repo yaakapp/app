@@ -6,6 +6,14 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 use ts_rs::TS;
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", tag = "type")]
+#[ts(export, export_to = "models.ts")]
+pub enum ProxySetting {
+    Enabled { http: String, https: String },
+    Disabled,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "models.ts")]
@@ -27,6 +35,8 @@ pub struct Settings {
     pub theme_dark: String,
     pub theme_light: String,
     pub update_channel: String,
+    #[ts(optional)]
+    pub proxy: Option<ProxySetting>,
 }
 
 #[derive(Iden)]
@@ -44,6 +54,7 @@ pub enum SettingsIden {
     InterfaceFontSize,
     InterfaceScale,
     OpenWorkspaceNewWindow,
+    Proxy,
     Telemetry,
     Theme,
     ThemeDark,
@@ -55,22 +66,24 @@ impl<'s> TryFrom<&Row<'s>> for Settings {
     type Error = rusqlite::Error;
 
     fn try_from(r: &Row<'s>) -> Result<Self, Self::Error> {
+        let proxy: Option<String> = r.get("proxy")?;
         Ok(Settings {
             id: r.get("id")?,
             model: r.get("model")?,
             created_at: r.get("created_at")?,
             updated_at: r.get("updated_at")?,
-            theme: r.get("theme")?,
             appearance: r.get("appearance")?,
+            editor_font_size: r.get("editor_font_size")?,
+            editor_soft_wrap: r.get("editor_soft_wrap")?,
+            interface_font_size: r.get("interface_font_size")?,
+            interface_scale: r.get("interface_scale")?,
+            open_workspace_new_window: r.get("open_workspace_new_window")?,
+            proxy: proxy.map(|p| -> ProxySetting { serde_json::from_str(p.as_str()).unwrap() }),
+            telemetry: r.get("telemetry")?,
+            theme: r.get("theme")?,
             theme_dark: r.get("theme_dark")?,
             theme_light: r.get("theme_light")?,
             update_channel: r.get("update_channel")?,
-            interface_font_size: r.get("interface_font_size")?,
-            interface_scale: r.get("interface_scale")?,
-            editor_font_size: r.get("editor_font_size")?,
-            editor_soft_wrap: r.get("editor_soft_wrap")?,
-            telemetry: r.get("telemetry")?,
-            open_workspace_new_window: r.get("open_workspace_new_window")?,
         })
     }
 }
@@ -431,7 +444,7 @@ pub struct HttpResponseHeader {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde( rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "models.ts")]
 pub enum HttpResponseState {
     Initialized,
@@ -618,7 +631,7 @@ impl<'s> TryFrom<&Row<'s>> for GrpcRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde( rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "models.ts")]
 pub enum GrpcConnectionState {
     Initialized,
@@ -626,7 +639,7 @@ pub enum GrpcConnectionState {
     Closed,
 }
 
-impl Default for GrpcConnectionState{
+impl Default for GrpcConnectionState {
     fn default() -> Self {
         Self::Initialized
     }
@@ -911,7 +924,7 @@ impl ModelType {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", untagged)]
-#[ts(export, export_to="models.ts")]
+#[ts(export, export_to = "models.ts")]
 pub enum AnyModel {
     CookieJar(CookieJar),
     Environment(Environment),

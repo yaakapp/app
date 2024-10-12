@@ -27,12 +27,13 @@ export function SettingsGeneral() {
   }
 
   return (
-    <VStack space={2} className="mb-4">
+    <VStack space={1.5} className="mb-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
         <Select
           name="updateChannel"
           label="Update Channel"
           labelPosition="left"
+          labelClassName="w-[12rem]"
           size="sm"
           value={settings.updateChannel}
           onChange={(updateChannel) => updateSettings.mutate({ updateChannel })}
@@ -54,22 +55,19 @@ export function SettingsGeneral() {
         name="openWorkspace"
         label="Open Workspace"
         labelPosition="left"
+        labelClassName="w-[12rem]"
         size="sm"
         value={
           settings.openWorkspaceNewWindow === true
             ? 'new'
             : settings.openWorkspaceNewWindow === false
-            ? 'current'
-            : 'ask'
+              ? 'current'
+              : 'ask'
         }
         onChange={(v) => {
-          if (v === 'current') {
-            updateSettings.mutate({ openWorkspaceNewWindow: false });
-          } else if (v === 'new') {
-            updateSettings.mutate({ openWorkspaceNewWindow: true });
-          } else {
-            updateSettings.mutate({ openWorkspaceNewWindow: null });
-          }
+          if (v === 'current') updateSettings.mutate({ openWorkspaceNewWindow: false });
+          else if (v === 'new') updateSettings.mutate({ openWorkspaceNewWindow: true });
+          else updateSettings.mutate({ openWorkspaceNewWindow: null });
         }}
         options={[
           { label: 'Always Ask', value: 'ask' },
@@ -77,7 +75,59 @@ export function SettingsGeneral() {
           { label: 'New Window', value: 'new' },
         ]}
       />
+      <Select
+        name="proxy"
+        label="Proxy"
+        labelPosition="left"
+        labelClassName="w-[12rem]"
+        size="sm"
+        value={settings.proxy?.type ?? 'automatic'}
+        onChange={(v) => {
+          if (v === 'automatic') {
+            updateSettings.mutate({ proxy: undefined });
+          } else if (v === 'enabled') {
+            updateSettings.mutate({ proxy: { type: 'enabled', http: '', https: '' } });
+          } else {
+            updateSettings.mutate({ proxy: { type: 'disabled' } });
+          }
+        }}
+        options={[
+          { label: 'Automatic', value: 'automatic' },
+          { label: 'Enabled', value: 'enabled' },
+          { label: 'Disabled', value: 'disabled' },
+        ]}
+      />
+      {settings.proxy?.type === 'enabled' && (
+        <VStack space={1.5} className="pl-[1rem] ml-[1rem] border-l border-border">
+          <PlainInput
+            size="sm"
+            labelPosition="left"
+            labelClassName="w-[10rem]"
+            label="HTTP"
+            placeholder="localhost:9090"
+            defaultValue={settings.proxy?.http}
+            onChange={(http) => {
+              const https = settings.proxy?.type === 'enabled' ? settings.proxy.https : '';
+              updateSettings.mutate({ proxy: { type: 'enabled', http, https } });
+            }}
+          />
+          <PlainInput
+            size="sm"
+            labelPosition="left"
+            labelClassName="w-[10rem]"
+            label="HTTPS"
+            placeholder="localhost:9090"
+            defaultValue={settings.proxy?.https}
+            onChange={(https) => {
+              const http = settings.proxy?.type === 'enabled' ? settings.proxy.http : '';
+              updateSettings.mutate({ proxy: { type: 'enabled', http, https } });
+            }}
+          />
+        </VStack>
+      )}
+
       <Checkbox
+        className="mt-3"
         checked={settings.telemetry}
         title="Send Usage Statistics"
         onChange={(telemetry) => updateSettings.mutate({ telemetry })}
