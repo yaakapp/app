@@ -1,16 +1,16 @@
-use anyhow::anyhow;
-use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
-use hyper_util::client::legacy::connect::HttpConnector;
-use hyper_util::client::legacy::Client;
-use hyper_util::rt::TokioExecutor;
-use log::{debug, warn};
-use prost::Message;
-use prost_reflect::{DescriptorPool, MethodDescriptor};
-use prost_types::{FileDescriptorProto, FileDescriptorSet};
 use std::env::temp_dir;
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::str::FromStr;
+
+use anyhow::anyhow;
+use hyper::client::HttpConnector;
+use hyper::Client;
+use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
+use log::{debug, warn};
+use prost::Message;
+use prost_reflect::{DescriptorPool, MethodDescriptor};
+use prost_types::{FileDescriptorProto, FileDescriptorSet};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_shell::ShellExt;
@@ -20,10 +20,10 @@ use tonic::body::BoxBody;
 use tonic::codegen::http::uri::PathAndQuery;
 use tonic::transport::Uri;
 use tonic::Request;
-use tonic_reflection::pb::v1::server_reflection_client::ServerReflectionClient;
-use tonic_reflection::pb::v1::server_reflection_request::MessageRequest;
-use tonic_reflection::pb::v1::server_reflection_response::MessageResponse;
-use tonic_reflection::pb::v1::ServerReflectionRequest;
+use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
+use tonic_reflection::pb::server_reflection_request::MessageRequest;
+use tonic_reflection::pb::server_reflection_response::MessageResponse;
+use tonic_reflection::pb::ServerReflectionRequest;
 
 pub async fn fill_pool_from_files(
     app_handle: &AppHandle,
@@ -38,8 +38,9 @@ pub async fn fill_pool_from_files(
         .expect("failed to resolve protoc include directory");
 
     // HACK: Remove UNC prefix for Windows paths
-    let global_import_dir =
-        dunce::simplified(global_import_dir.as_path()).to_string_lossy().to_string();
+    let global_import_dir = dunce::simplified(global_import_dir.as_path())
+        .to_string_lossy()
+        .to_string();
     let desc_path = dunce::simplified(desc_path.as_path());
 
     let mut args = vec![
@@ -88,9 +89,12 @@ pub async fn fill_pool_from_files(
 
     let bytes = fs::read(desc_path).await.map_err(|e| e.to_string())?;
     let fdp = FileDescriptorSet::decode(bytes.deref()).map_err(|e| e.to_string())?;
-    pool.add_file_descriptor_set(fdp).map_err(|e| e.to_string())?;
+    pool.add_file_descriptor_set(fdp)
+        .map_err(|e| e.to_string())?;
 
-    fs::remove_file(desc_path).await.map_err(|e| e.to_string())?;
+    fs::remove_file(desc_path)
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(pool)
 }
@@ -110,34 +114,16 @@ pub async fn fill_pool_from_reflection(uri: &Uri) -> Result<DescriptorPool, Stri
 }
 
 pub fn get_transport() -> Client<HttpsConnector<HttpConnector>, BoxBody> {
-    if let Err(_) = rustls::crypto::ring::default_provider().install_default() {
-        warn!("Default certs already installed");
-    }
-
-    let connector = HttpsConnectorBuilder::new()
-        .with_native_roots()
-        .unwrap()
-        .https_or_http()
-        .enable_http2()
-        .wrap_connector({
-            let mut http_connector = HttpConnector::new();
-            http_connector.enforce_http(false);
-            http_connector
-
-            // TODO: Figure out how to make proxy work. We'll need to run the following on every request:
-            //    if let Some(headers) = proxy.http_headers(&uri) {
-            //      req.headers_mut().extend(headers.clone().into_iter());
-            //    }
-            //  This means we need to move this connection logic next to where the req is built
-
-            // let proxy_uri = "http://localhost:9090".parse().unwrap();
-            // let proxy = Proxy::new(Intercept::All, proxy_uri);
-            // let mut proxy_connector = ProxyConnector::unsecured(http_connector);
-            // proxy_connector.add_proxy(proxy);
-            // proxy_connector
-        });
-
-    Client::builder(TokioExecutor::new()).http2_only(true).build(connector)
+    let connector = HttpsConnectorBuilder::new().with_native_roots();
+    let connector = connector.https_or_http().enable_http2().wrap_connector({
+        let mut http_connector = HttpConnector::new();
+        http_connector.enforce_http(false);
+        http_connector
+    });
+    Client::builder()
+        .pool_max_idle_per_host(0)
+        .http2_only(true)
+        .build(connector)
 }
 
 async fn list_services(
@@ -151,7 +137,11 @@ async fn list_services(
         _ => panic!("Expected a ListServicesResponse variant"),
     };
 
-    Ok(list_services_response.service.iter().map(|s| s.name.clone()).collect::<Vec<_>>())
+    Ok(list_services_response
+        .service
+        .iter()
+        .map(|s| s.name.clone())
+        .collect::<Vec<_>>())
 }
 
 async fn file_descriptor_set_from_service_name(
@@ -163,11 +153,14 @@ async fn file_descriptor_set_from_service_name(
         client,
         MessageRequest::FileContainingSymbol(service_name.into()),
     )
-    .await
+        .await
     {
         Ok(resp) => resp,
         Err(e) => {
-            warn!("Error fetching file descriptor for service {}: {}", service_name, e);
+            warn!(
+                "Error fetching file descriptor for service {}: {}",
+                service_name, e
+            );
             return;
         }
     };
@@ -185,7 +178,8 @@ async fn file_descriptor_set_from_service_name(
             file_descriptor_set_by_filename(&dep_name, pool, client).await;
         }
 
-        pool.add_file_descriptor_proto(fdp).expect("add file descriptor proto");
+        pool.add_file_descriptor_proto(fdp)
+            .expect("add file descriptor proto");
     }
 }
 
@@ -214,7 +208,8 @@ async fn file_descriptor_set_by_filename(
 
     for fd in file_descriptor_response.file_descriptor_proto {
         let fdp = FileDescriptorProto::decode(fd.deref()).unwrap();
-        pool.add_file_descriptor_proto(fdp).expect("add file descriptor proto");
+        pool.add_file_descriptor_proto(fdp)
+            .expect("add file descriptor proto");
     }
 }
 
