@@ -596,6 +596,7 @@ async fn cmd_grpc_go<R: Runtime>(
                     stream.into_inner()
                 }
                 Some(Err(e)) => {
+                    warn!("GRPC stream error {e:?}");
                     upsert_grpc_event(
                         &w,
                         &(match e.status {
@@ -648,7 +649,7 @@ async fn cmd_grpc_go<R: Runtime>(
                             &w,
                             &GrpcEvent {
                                 content: "Connection complete".to_string(),
-                                status: Some(Code::Unavailable as i32),
+                                status: Some(Code::Ok as i32),
                                 metadata: metadata_to_map(trailers),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -1164,7 +1165,7 @@ async fn response_err<R: Runtime>(
     error: String,
     w: &WebviewWindow<R>,
 ) -> HttpResponse {
-    warn!("Failed to send request: {}", error);
+    warn!("Failed to send request: {error:?}");
     let mut response = response.clone();
     response.state = HttpResponseState::Closed;
     response.error = Some(error.clone());

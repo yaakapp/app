@@ -11,6 +11,7 @@ use crate::models::{
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
+use rusqlite::OptionalExtension;
 use sea_query::ColumnRef::Asterisk;
 use sea_query::Keyword::CurrentTimestamp;
 use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
@@ -117,9 +118,7 @@ pub async fn set_key_value_raw<R: Runtime>(
         .returning_all()
         .build_rusqlite(SqliteQueryBuilder);
 
-    let mut stmt = db
-        .prepare(sql.as_str())
-        .expect("Failed to prepare KeyValue upsert");
+    let mut stmt = db.prepare(sql.as_str()).expect("Failed to prepare KeyValue upsert");
     let kv = stmt
         .query_row(&*params.as_params(), |row| row.try_into())
         .expect("Failed to upsert KeyValue");
@@ -143,8 +142,7 @@ pub async fn get_key_value_raw<R: Runtime>(
         )
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.query_row(sql.as_str(), &*params.as_params(), |row| row.try_into())
-        .ok()
+    db.query_row(sql.as_str(), &*params.as_params(), |row| row.try_into()).ok()
 }
 
 pub async fn list_workspaces<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Workspace>> {
@@ -365,11 +363,7 @@ pub async fn upsert_grpc_request<R: Runtime>(
             request.service.as_ref().map(|s| s.as_str()).into(),
             request.method.as_ref().map(|s| s.as_str()).into(),
             request.message.as_str().into(),
-            request
-                .authentication_type
-                .as_ref()
-                .map(|s| s.as_str())
-                .into(),
+            request.authentication_type.as_ref().map(|s| s.as_str()).into(),
             serde_json::to_string(&request.authentication)?.into(),
             serde_json::to_string(&request.metadata)?.into(),
         ])
@@ -434,10 +428,7 @@ pub async fn upsert_grpc_connection<R: Runtime>(
 ) -> Result<GrpcConnection> {
     let connections =
         list_http_responses_for_request(window, connection.request_id.as_str(), None).await?;
-    for c in connections
-        .iter()
-        .skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1)
-    {
+    for c in connections.iter().skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1) {
         debug!("Deleting old grpc connection {}", c.id);
         delete_grpc_connection(window, c.id.as_str()).await?;
     }
@@ -664,7 +655,7 @@ pub async fn list_grpc_events<R: Runtime>(
         .from(GrpcEventIden::Table)
         .cond_where(Expr::col(GrpcEventIden::ConnectionId).eq(connection_id))
         .column(Asterisk)
-        .order_by(GrpcEventIden::CreatedAt, Order::Desc)
+        .order_by(GrpcEventIden::CreatedAt, Order::Asc)
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
@@ -757,7 +748,7 @@ pub async fn delete_environment<R: Runtime>(
 
 const SETTINGS_ID: &str = "default";
 
-async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
+async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Option<Settings>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -767,13 +758,15 @@ async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
         .cond_where(Expr::col(SettingsIden::Id).eq(SETTINGS_ID))
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
-    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into()).optional()?)
 }
 
 pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settings {
-    if let Ok(settings) = get_settings(mgr).await {
-        return settings;
-    }
+    match get_settings(mgr).await {
+        Ok(Some(settings)) => return settings,
+        Ok(None) => (),
+        Err(e) => panic!("Failed to get settings {e:?}"),
+    };
 
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -785,11 +778,8 @@ pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settin
         .returning_all()
         .build_rusqlite(SqliteQueryBuilder);
 
-    let mut stmt = db
-        .prepare(sql.as_str())
-        .expect("Failed to prepare Settings insert");
-    stmt.query_row(&*params.as_params(), |row| row.try_into())
-        .expect("Failed to insert Settings")
+    let mut stmt = db.prepare(sql.as_str()).expect("Failed to prepare Settings insert");
+    stmt.query_row(&*params.as_params(), |row| row.try_into()).expect("Failed to insert Settings")
 }
 
 pub async fn update_settings<R: Runtime>(
@@ -805,39 +795,23 @@ pub async fn update_settings<R: Runtime>(
         .values([
             (SettingsIden::Id, "default".into()),
             (SettingsIden::CreatedAt, CurrentTimestamp.into()),
-            (
-                SettingsIden::Appearance,
-                settings.appearance.as_str().into(),
-            ),
+            (SettingsIden::Appearance, settings.appearance.as_str().into()),
             (SettingsIden::ThemeDark, settings.theme_dark.as_str().into()),
-            (
-                SettingsIden::ThemeLight,
-                settings.theme_light.as_str().into(),
-            ),
-            (
-                SettingsIden::UpdateChannel,
-                settings.update_channel.as_str().into(),
-            ),
-            (
-                SettingsIden::InterfaceFontSize,
-                settings.interface_font_size.into(),
-            ),
-            (
-                SettingsIden::InterfaceScale,
-                settings.interface_scale.into(),
-            ),
-            (
-                SettingsIden::EditorFontSize,
-                settings.editor_font_size.into(),
-            ),
-            (
-                SettingsIden::EditorSoftWrap,
-                settings.editor_soft_wrap.into(),
-            ),
+            (SettingsIden::ThemeLight, settings.theme_light.as_str().into()),
+            (SettingsIden::UpdateChannel, settings.update_channel.into()),
+            (SettingsIden::InterfaceFontSize, settings.interface_font_size.into()),
+            (SettingsIden::InterfaceScale, settings.interface_scale.into()),
+            (SettingsIden::EditorFontSize, settings.editor_font_size.into()),
+            (SettingsIden::EditorSoftWrap, settings.editor_soft_wrap.into()),
             (SettingsIden::Telemetry, settings.telemetry.into()),
+            (SettingsIden::OpenWorkspaceNewWindow, settings.open_workspace_new_window.into()),
             (
-                SettingsIden::OpenWorkspaceNewWindow,
-                settings.open_workspace_new_window.into(),
+                SettingsIden::Proxy,
+                (match settings.proxy {
+                    None => None,
+                    Some(p) => Some(serde_json::to_string(&p)?),
+                })
+                .into(),
             ),
         ])
         .returning_all()
@@ -1308,10 +1282,7 @@ pub async fn create_http_response<R: Runtime>(
             elapsed.into(),
             elapsed_headers.into(),
             url.into(),
-            serde_json::to_value(state)?
-                .as_str()
-                .unwrap_or_default()
-                .into(),
+            serde_json::to_value(state)?.as_str().unwrap_or_default().into(),
             status.into(),
             status_reason.into(),
             content_length.into(),
@@ -1391,32 +1362,15 @@ pub async fn update_http_response<R: Runtime>(
                 HttpResponseIden::StatusReason,
                 response.status_reason.as_ref().map(|s| s.as_str()).into(),
             ),
-            (
-                HttpResponseIden::ContentLength,
-                response.content_length.into(),
-            ),
-            (
-                HttpResponseIden::BodyPath,
-                response.body_path.as_ref().map(|s| s.as_str()).into(),
-            ),
-            (
-                HttpResponseIden::Error,
-                response.error.as_ref().map(|s| s.as_str()).into(),
-            ),
+            (HttpResponseIden::ContentLength, response.content_length.into()),
+            (HttpResponseIden::BodyPath, response.body_path.as_ref().map(|s| s.as_str()).into()),
+            (HttpResponseIden::Error, response.error.as_ref().map(|s| s.as_str()).into()),
             (
                 HttpResponseIden::Headers,
-                serde_json::to_string(&response.headers)
-                    .unwrap_or_default()
-                    .into(),
+                serde_json::to_string(&response.headers).unwrap_or_default().into(),
             ),
-            (
-                HttpResponseIden::Version,
-                response.version.as_ref().map(|s| s.as_str()).into(),
-            ),
-            (
-                HttpResponseIden::State,
-                serde_json::to_value(&response.state)?.as_str().into(),
-            ),
+            (HttpResponseIden::Version, response.version.as_ref().map(|s| s.as_str()).into()),
+            (HttpResponseIden::State, serde_json::to_value(&response.state)?.as_str().into()),
             (
                 HttpResponseIden::RemoteAddr,
                 response.remote_addr.as_ref().map(|s| s.as_str()).into(),

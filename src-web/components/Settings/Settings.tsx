@@ -10,6 +10,7 @@ import { HeaderSize } from '../HeaderSize';
 import { SettingsAppearance } from './SettingsAppearance';
 import { SettingsGeneral } from './SettingsGeneral';
 import { SettingsPlugins } from './SettingsPlugins';
+import {SettingsProxy} from "./SettingsProxy";
 
 interface Props {
   hide?: () => void;
@@ -17,11 +18,12 @@ interface Props {
 
 enum Tab {
   General = 'general',
+  Proxy = 'proxy',
   Appearance = 'appearance',
   Plugins = 'plugins',
 }
 
-const tabs = [Tab.General, Tab.Appearance, Tab.Plugins];
+const tabs = [Tab.General, Tab.Appearance, Tab.Proxy, Tab.Plugins];
 
 export default function Settings({ hide }: Props) {
   const osInfo = useOsInfo();
@@ -77,6 +79,9 @@ export default function Settings({ hide }: Props) {
         </TabContent>
         <TabContent value={Tab.Plugins} className="pt-3 overflow-y-auto h-full px-4">
           <SettingsPlugins />
+        </TabContent>
+        <TabContent value={Tab.Proxy} className="pt-3 overflow-y-auto h-full px-4">
+          <SettingsProxy />
         </TabContent>
       </Tabs>
     </div>

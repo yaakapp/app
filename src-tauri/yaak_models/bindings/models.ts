@@ -44,6 +44,10 @@ export type KeyValue = { model: "key_value", createdAt: string, updatedAt: strin
 
 export type Plugin = { model: "plugin", id: string, createdAt: string, updatedAt: string, checkedAt: string | null, directory: string, enabled: boolean, url: string | null, };
 
-export type Settings = { model: "settings", id: string, createdAt: string, updatedAt: string, appearance: string, editorFontSize: number, editorSoftWrap: boolean, interfaceFontSize: number, interfaceScale: number, openWorkspaceNewWindow: boolean | null, telemetry: boolean, theme: string, themeDark: string, themeLight: string, updateChannel: string, };
+export type ProxySetting = { "type": "enabled", http: string, https: string, auth: ProxySettingAuth | null, } | { "type": "disabled" };
+
+export type ProxySettingAuth = { user: string, password: string, };
+
+export type Settings = { model: "settings", id: string, createdAt: string, updatedAt: string, appearance: string, editorFontSize: number, editorSoftWrap: boolean, interfaceFontSize: number, interfaceScale: number, openWorkspaceNewWindow: boolean | null, telemetry: boolean, theme: string, themeDark: string, themeLight: string, updateChannel: string, proxy: ProxySetting | null, };
 
 export type Workspace = { model: "workspace", id: string, createdAt: string, updatedAt: string, name: string, description: string, variables: Array<EnvironmentVariable>, settingValidateCertificates: boolean, settingFollowRedirects: boolean, settingRequestTimeout: number, };
