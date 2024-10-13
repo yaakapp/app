@@ -66,4 +66,4 @@ eventsource-client = { git = "https://github.com/yaakapp/rust-eventsource-client
 yaak_models = { path = "yaak_models" }
 yaak_plugin_runtime = { path = "yaak_plugin_runtime" }
 tauri-plugin-shell = "2.0.1"
-tauri = { version = "2.0.2", features = ["devtools", "protocol-asset"] }
+tauri = { version = "2.0.3", features = ["devtools", "protocol-asset"] }
