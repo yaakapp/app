@@ -25,7 +25,7 @@ use tokio::sync::watch::Receiver;
 use tokio::sync::{oneshot, Mutex};
 use yaak_models::models::{
     Cookie, CookieJar, Environment, HttpRequest, HttpResponse, HttpResponseHeader,
-    HttpResponseState, ProxySetting,
+    HttpResponseState, ProxySetting, ProxySettingAuth,
 };
 use yaak_models::queries::{
     get_http_response, get_or_create_settings, get_workspace, update_response_if_id,
@@ -79,8 +79,9 @@ pub async fn send_http_request<R: Runtime>(
 
     match settings.proxy {
         Some(ProxySetting::Disabled) => client_builder = client_builder.no_proxy(),
-        Some(ProxySetting::Enabled { http, https }) => {
-            client_builder = client_builder.proxy(Proxy::custom(move |url| {
+        Some(ProxySetting::Enabled { http, https, auth }) => {
+            debug!("Using proxy http={http} https={https}");
+            let mut proxy = Proxy::custom(move |url| {
                 let http = if http.is_empty() { None } else { Some(http.to_owned()) };
                 let https = if https.is_empty() { None } else { Some(https.to_owned()) };
                 let proxy_url = match (url.scheme(), http, https) {
@@ -88,16 +89,17 @@ pub async fn send_http_request<R: Runtime>(
                     ("https", _, Some(proxy_url)) => Some(proxy_url),
                     _ => None,
                 };
-                match proxy_url.clone() {
-                    Some(proxy_url) => debug!("Using proxy {proxy_url} for {url}"),
-                    None => debug!("Using system proxy for {url}"),
-                };
                 proxy_url
-            }));
+            });
+
+            if let Some(ProxySettingAuth { user, password }) = auth {
+                debug!("Using proxy auth");
+                proxy = proxy.basic_auth(user.as_str(), password.as_str());
+            }
+
+            client_builder = client_builder.proxy(proxy);
         }
-        None => {
-            // Nothing to do for this one, as it is the default
-        }
+        None => {} // Nothing to do for this one, as it is the default
     }
 
     // Add cookie store if specified

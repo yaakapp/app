@@ -10,8 +10,20 @@ use ts_rs::TS;
 #[serde(rename_all = "camelCase", tag = "type")]
 #[ts(export, export_to = "models.ts")]
 pub enum ProxySetting {
-    Enabled { http: String, https: String },
+    Enabled {
+        http: String,
+        https: String,
+        auth: Option<ProxySettingAuth>,
+    },
     Disabled,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "models.ts")]
+pub struct ProxySettingAuth {
+    pub user: String,
+    pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
@@ -35,7 +47,6 @@ pub struct Settings {
     pub theme_dark: String,
     pub theme_light: String,
     pub update_channel: String,
-    #[ts(optional)]
     pub proxy: Option<ProxySetting>,
 }
 

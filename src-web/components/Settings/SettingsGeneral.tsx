@@ -75,56 +75,6 @@ export function SettingsGeneral() {
           { label: 'New Window', value: 'new' },
         ]}
       />
-      <Select
-        name="proxy"
-        label="Proxy"
-        labelPosition="left"
-        labelClassName="w-[12rem]"
-        size="sm"
-        value={settings.proxy?.type ?? 'automatic'}
-        onChange={(v) => {
-          if (v === 'automatic') {
-            updateSettings.mutate({ proxy: undefined });
-          } else if (v === 'enabled') {
-            updateSettings.mutate({ proxy: { type: 'enabled', http: '', https: '' } });
-          } else {
-            updateSettings.mutate({ proxy: { type: 'disabled' } });
-          }
-        }}
-        options={[
-          { label: 'Automatic', value: 'automatic' },
-          { label: 'Enabled', value: 'enabled' },
-          { label: 'Disabled', value: 'disabled' },
-        ]}
-      />
-      {settings.proxy?.type === 'enabled' && (
-        <VStack space={1.5} className="pl-[1rem] ml-[1rem] border-l border-border">
-          <PlainInput
-            size="sm"
-            labelPosition="left"
-            labelClassName="w-[10rem]"
-            label="HTTP"
-            placeholder="localhost:9090"
-            defaultValue={settings.proxy?.http}
-            onChange={(http) => {
-              const https = settings.proxy?.type === 'enabled' ? settings.proxy.https : '';
-              updateSettings.mutate({ proxy: { type: 'enabled', http, https } });
-            }}
-          />
-          <PlainInput
-            size="sm"
-            labelPosition="left"
-            labelClassName="w-[10rem]"
-            label="HTTPS"
-            placeholder="localhost:9090"
-            defaultValue={settings.proxy?.https}
-            onChange={(https) => {
-              const http = settings.proxy?.type === 'enabled' ? settings.proxy.http : '';
-              updateSettings.mutate({ proxy: { type: 'enabled', http, https } });
-            }}
-          />
-        </VStack>
-      )}
 
       <Checkbox
         className="mt-3"
