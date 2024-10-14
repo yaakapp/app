@@ -1,17 +1,19 @@
-import { TemplateRenderResponse, WindowContext } from '@yaakapp-internal/plugin';
 import {
   BootRequest,
-  Context,
   FindHttpResponsesResponse,
   GetHttpRequestByIdResponse,
-  HttpRequest,
   HttpRequestAction,
   ImportResponse,
   InternalEvent,
   InternalEventPayload,
+  PromptTextResponse,
+  RenderHttpRequestResponse,
   SendHttpRequestResponse,
   TemplateFunction,
-} from '@yaakapp/api';
+  TemplateRenderResponse,
+  WindowContext,
+} from '@yaakapp-internal/plugin';
+import { Context } from '@yaakapp/api';
 import { HttpRequestActionPlugin } from '@yaakapp/api/lib/plugins/HttpRequestActionPlugin';
 import { TemplateFunctionPlugin } from '@yaakapp/api/lib/plugins/TemplateFunctionPlugin';
 import interceptStdout from 'intercept-stdout';
@@ -135,6 +137,15 @@ async function initialize() {
         await sendAndWaitForReply(event.windowContext, { type: 'show_toast_request', ...args });
       },
     },
+    prompt: {
+      async text(args) {
+        const reply: PromptTextResponse = await sendAndWaitForReply(event.windowContext, {
+          type: 'prompt_text_request',
+          ...args,
+        });
+        return reply.value;
+      },
+    },
     httpResponse: {
       async find(args) {
         const payload = { type: 'find_http_responses_request', ...args } as const;
@@ -162,18 +173,13 @@ async function initialize() {
         );
         return httpResponse;
       },
-      /** @deprecated: please use ctx.templates.render */
       async render(args) {
-        const payload: InternalEventPayload = {
-          type: 'template_render_request',
-          data: args.httpRequest as any,
-          purpose: args.purpose,
-        };
-        const result = await sendAndWaitForReply<TemplateRenderResponse>(
+        const payload = { type: 'render_http_request_request', ...args } as const;
+        const { httpRequest } = await sendAndWaitForReply<RenderHttpRequestResponse>(
           event.windowContext,
           payload,
         );
-        return result.data as unknown as HttpRequest;
+        return httpRequest;
       },
     },
     templates: {

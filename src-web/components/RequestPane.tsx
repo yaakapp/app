@@ -2,12 +2,12 @@ import type { HttpRequest, HttpRequestHeader, HttpUrlParameter } from '@yaakapp-
 import classNames from 'classnames';
 import type { CSSProperties } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { createGlobalState } from 'react-use';
+import { useLocalStorage } from 'react-use';
 import { useCancelHttpResponse } from '../hooks/useCancelHttpResponse';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { useImportCurl } from '../hooks/useImportCurl';
-import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { useImportQuerystring } from '../hooks/useImportQuerystring';
+import { useIsResponseLoading } from '../hooks/useIsResponseLoading';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useRequestEditor, useRequestEditorEvent } from '../hooks/useRequestEditor';
 import { useRequests } from '../hooks/useRequests';
@@ -55,8 +55,6 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<Record<string, string>>({});
-
 const TAB_BODY = 'body';
 const TAB_PARAMS = 'params';
 const TAB_HEADERS = 'headers';
@@ -73,7 +71,10 @@ export const RequestPane = memo(function RequestPane({
   const requests = useRequests();
   const activeRequestId = activeRequest.id;
   const updateRequest = useUpdateAnyHttpRequest();
-  const [activeTabs, setActiveTabs] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
+    'requestPaneActiveTabs',
+    {},
+  );
   const [forceUpdateHeaderEditorKey, setForceUpdateHeaderEditorKey] = useState<number>(0);
   const { updateKey: forceUpdateKey } = useRequestUpdateKey(activeRequest.id ?? null);
   const [{ urlKey }] = useRequestEditor();
@@ -299,7 +300,7 @@ export const RequestPane = memo(function RequestPane({
   const importCurl = useImportCurl();
   const importQuerystring = useImportQuerystring(activeRequestId);
 
-  const activeTab = activeTabs[activeRequestId] ?? DEFAULT_TAB;
+  const activeTab = activeTabs?.[activeRequestId] ?? DEFAULT_TAB;
   const setActiveTab = useCallback(
     (tab: string) => {
       setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));

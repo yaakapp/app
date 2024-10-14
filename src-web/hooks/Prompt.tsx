@@ -1,39 +1,33 @@
-import type { FormEvent } from 'react';
+import type { PromptTextRequest } from '@yaakapp-internal/plugin';
+import type { FormEvent, ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { Button } from '../components/core/Button';
-import type { InputProps } from '../components/core/Input';
 import { PlainInput } from '../components/core/PlainInput';
 import { HStack } from '../components/core/Stacks';
 
-export interface PromptProps {
-  onHide: () => void;
-  onResult: (value: string) => void;
-  label: InputProps['label'];
-  name: InputProps['name'];
-  defaultValue: InputProps['defaultValue'];
-  placeholder: InputProps['placeholder'];
-  require?: InputProps['require'];
-  confirmLabel?: string;
-}
+export type PromptProps = Omit<PromptTextRequest, 'id' | 'title' | 'description'> & {
+  description?: ReactNode;
+  onCancel: () => void;
+  onResult: (value: string | null) => void;
+};
 
 export function Prompt({
-  onHide,
+  onCancel,
   label,
-  name,
   defaultValue,
   placeholder,
   onResult,
-  require = true,
-  confirmLabel = 'Save',
+  require,
+  confirmText,
+  cancelText,
 }: PromptProps) {
   const [value, setValue] = useState<string>(defaultValue ?? '');
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      onHide();
       onResult(value);
     },
-    [onHide, onResult, value],
+    [onResult, value],
   );
 
   return (
@@ -45,18 +39,17 @@ export function Prompt({
         hideLabel
         autoSelect
         require={require}
-        placeholder={placeholder}
+        placeholder={placeholder ?? 'Enter text'}
         label={label}
-        name={name}
         defaultValue={defaultValue}
         onChange={setValue}
       />
       <HStack space={2} justifyContent="end">
-        <Button onClick={onHide} variant="border" color="secondary">
-          Cancel
+        <Button onClick={onCancel} variant="border" color="secondary">
+          {cancelText || 'Cancel'}
         </Button>
         <Button type="submit" color="primary">
-          {confirmLabel}
+          {confirmText || 'Done'}
         </Button>
       </HStack>
     </form>

@@ -52,6 +52,7 @@ export function twig({
         name: fn.name,
         aliases: fn.aliases,
         type: 'function',
+        description: fn.description,
         args: fn.args.map((a) => ({ name: a.name })),
         value: null,
         label: `${fn.name}(${shortArgs})`,

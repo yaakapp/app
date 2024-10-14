@@ -3,7 +3,7 @@ extern crate core;
 extern crate objc;
 
 use std::collections::BTreeMap;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{create_dir_all, File};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -13,10 +13,12 @@ use std::{fs, panic};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::Utc;
+use eventsource_client::{EventParser, SSE};
 use fern::colors::ColoredLevelConfig;
 use log::{debug, error, info, warn};
 use rand::random;
 use regex::Regex;
+use serde::Serialize;
 use serde_json::{json, Value};
 #[cfg(target_os = "macos")]
 use tauri::TitleBarStyle;
@@ -26,6 +28,7 @@ use tauri::{Manager, WindowEvent};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_log::{fern, Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
+use tokio::fs::read_to_string;
 use tokio::sync::Mutex;
 
 use yaak_grpc::manager::{DynamicMessage, GrpcHandle};
@@ -37,34 +40,38 @@ use crate::export_resources::{get_workspace_export_resources, WorkspaceExportRes
 use crate::grpc::metadata_to_map;
 use crate::http_request::send_http_request;
 use crate::notifications::YaakNotifier;
-use crate::render::{render_grpc_request, render_json_value, render_template};
+use crate::render::{render_grpc_request, render_http_request, render_json_value, render_template};
 use crate::template_callback::PluginTemplateCallback;
 use crate::updates::{UpdateMode, YaakUpdater};
 use crate::window_menu::app_menu;
 use yaak_models::models::{
-    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcEvent, GrpcEventType,
-    GrpcRequest, HttpRequest, HttpResponse, KeyValue, ModelType, Plugin, Settings, Workspace,
+    CookieJar, Environment, EnvironmentVariable, Folder, GrpcConnection, GrpcConnectionState,
+    GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
+    ModelType, Plugin, Settings, Workspace,
 };
 use yaak_models::queries::{
     cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
-    delete_all_grpc_connections, delete_all_http_responses, delete_cookie_jar, delete_environment,
-    delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request,
-    delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request,
-    duplicate_http_request, generate_model_id, get_cookie_jar, get_environment, get_folder,
-    get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw,
-    get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments,
-    list_folders, list_grpc_connections, list_grpc_events, list_grpc_requests, list_http_requests,
-    list_http_responses, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id,
-    update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
+    delete_all_grpc_connections, delete_all_http_responses_for_request, delete_cookie_jar,
+    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
+    delete_http_request, delete_http_response, delete_plugin, delete_workspace,
+    duplicate_grpc_request, duplicate_http_request, generate_id, generate_model_id, get_cookie_jar,
+    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
+    get_http_response, get_key_value_raw, get_or_create_settings, get_plugin, get_workspace,
+    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events,
+    list_grpc_requests, list_http_requests, list_http_responses, list_http_responses_for_request,
+    list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
+    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
     upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
 };
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
-    InternalEvent, InternalEventPayload, RenderPurpose, SendHttpRequestResponse, ShowToastRequest,
-    TemplateRenderResponse, WindowContext,
+    InternalEvent, InternalEventPayload, PromptTextResponse, RenderHttpRequestResponse,
+    RenderPurpose, SendHttpRequestResponse, ShowToastRequest, TemplateRenderResponse,
+    WindowContext,
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
+use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::{Parser, Tokens};
 
 mod analytics;
@@ -277,6 +284,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 request_id: req.id,
                 status: -1,
                 elapsed: 0,
+                state: GrpcConnectionState::Initialized,
                 url: req.url.clone(),
                 ..Default::default()
             },
@@ -332,6 +340,7 @@ async fn cmd_grpc_go<R: Runtime>(
                 &GrpcConnection {
                     elapsed: start.elapsed().as_millis() as i32,
                     error: Some(err.clone()),
+                    state: GrpcConnectionState::Closed,
                     ..conn.clone()
                 },
             )
@@ -587,6 +596,7 @@ async fn cmd_grpc_go<R: Runtime>(
                     stream.into_inner()
                 }
                 Some(Err(e)) => {
+                    warn!("GRPC stream error {e:?}");
                     upsert_grpc_event(
                         &w,
                         &(match e.status {
@@ -639,7 +649,7 @@ async fn cmd_grpc_go<R: Runtime>(
                             &w,
                             &GrpcEvent {
                                 content: "Connection complete".to_string(),
-                                status: Some(Code::Unavailable as i32),
+                                status: Some(Code::Ok as i32),
                                 metadata: metadata_to_map(trailers),
                                 event_type: GrpcEventType::ConnectionEnd,
                                 ..base_event.clone()
@@ -686,6 +696,7 @@ async fn cmd_grpc_go<R: Runtime>(
                         &GrpcConnection{
                             elapsed: start.elapsed().as_millis() as i32,
                             status: closed_status,
+                            state: GrpcConnectionState::Closed,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
                     ).await.unwrap();
@@ -705,6 +716,7 @@ async fn cmd_grpc_go<R: Runtime>(
                         &GrpcConnection {
                             elapsed: start.elapsed().as_millis() as i32,
                             status: Code::Cancelled as i32,
+                            state: GrpcConnectionState::Closed,
                             ..get_grpc_connection(&w, &conn_id).await.unwrap().clone()
                         },
                     )
@@ -749,7 +761,9 @@ async fn cmd_send_ephemeral_request(
     window.listen_any(
         format!("cancel_http_response_{}", response.id),
         move |_event| {
-            let _ = cancel_tx.send(true);
+            if let Err(e) = cancel_tx.send(true) {
+                warn!("Failed to send cancel event for ephemeral request {e:?}");
+            }
         },
     );
 
@@ -787,7 +801,7 @@ async fn cmd_filter_response<R: Runtime>(
         }
     }
 
-    let body = read_to_string(response.body_path.unwrap()).unwrap();
+    let body = read_to_string(response.body_path.unwrap()).await.unwrap();
 
     // TODO: Have plugins register their own content type (regex?)
     plugin_manager
@@ -797,13 +811,35 @@ async fn cmd_filter_response<R: Runtime>(
 }
 
 #[tauri::command]
+async fn cmd_get_sse_events(file_path: &str) -> Result<Vec<ServerSentEvent>, String> {
+    let body = fs::read(file_path).map_err(|e| e.to_string())?;
+    let mut p = EventParser::new();
+    p.process_bytes(body.into()).map_err(|e| e.to_string())?;
+
+    let mut events = Vec::new();
+    while let Some(e) = p.get_event() {
+        if let SSE::Event(e) = e {
+            events.push(ServerSentEvent {
+                event_type: e.event_type,
+                data: e.data,
+                id: e.id,
+                retry: e.retry,
+            });
+        }
+    }
+
+    Ok(events)
+}
+
+#[tauri::command]
 async fn cmd_import_data<R: Runtime>(
     window: WebviewWindow<R>,
     plugin_manager: State<'_, PluginManager>,
     file_path: &str,
 ) -> Result<WorkspaceExportResources, String> {
-    let file =
-        read_to_string(file_path).unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
+    let file = read_to_string(file_path)
+        .await
+        .unwrap_or_else(|_| panic!("Unable to read file {}", file_path));
     let file_contents = file.as_str();
     let (import_result, plugin_name) = plugin_manager
         .import_data(&window, file_contents)
@@ -1079,6 +1115,20 @@ async fn cmd_send_http_request(
     //   that has not yet been saved in the DB.
     request: HttpRequest,
 ) -> Result<HttpResponse, String> {
+    let response = create_default_http_response(&window, &request.id)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
+    window.listen_any(
+        format!("cancel_http_response_{}", response.id),
+        move |_event| {
+            if let Err(e) = cancel_tx.send(true) {
+                warn!("Failed to send cancel event for request {e:?}");
+            }
+        },
+    );
+
     let environment = match environment_id {
         Some(id) => match get_environment(&window, id).await {
             Ok(env) => Some(env),
@@ -1099,18 +1149,6 @@ async fn cmd_send_http_request(
         None => None,
     };
 
-    let response = create_default_http_response(&window, &request.id)
-        .await
-        .map_err(|e| e.to_string())?;
-
-    let (cancel_tx, mut cancel_rx) = tokio::sync::watch::channel(false);
-    window.listen_any(
-        format!("cancel_http_response_{}", response.id),
-        move |_event| {
-            let _ = cancel_tx.send(true);
-        },
-    );
-
     send_http_request(
         &window,
         &request,
@@ -1126,15 +1164,15 @@ async fn response_err<R: Runtime>(
     response: &HttpResponse,
     error: String,
     w: &WebviewWindow<R>,
-) -> Result<HttpResponse, String> {
-    warn!("Failed to send request: {}", error);
+) -> HttpResponse {
+    warn!("Failed to send request: {error:?}");
     let mut response = response.clone();
-    response.elapsed = -1;
+    response.state = HttpResponseState::Closed;
     response.error = Some(error.clone());
     response = update_response_if_id(w, &response)
         .await
         .expect("Failed to update response");
-    Ok(response)
+    response
 }
 
 #[tauri::command]
@@ -1464,10 +1502,10 @@ async fn cmd_delete_environment(
 
 #[tauri::command]
 async fn cmd_list_grpc_connections(
-    request_id: &str,
+    workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<Vec<GrpcConnection>, String> {
-    list_grpc_connections(&w, request_id)
+    list_grpc_connections(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1614,11 +1652,11 @@ async fn cmd_get_workspace(id: &str, w: WebviewWindow) -> Result<Workspace, Stri
 
 #[tauri::command]
 async fn cmd_list_http_responses(
-    request_id: &str,
+    workspace_id: &str,
     limit: Option<i64>,
     w: WebviewWindow,
 ) -> Result<Vec<HttpResponse>, String> {
-    list_http_responses(&w, request_id, limit)
+    list_http_responses(&w, workspace_id, limit)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1646,7 +1684,7 @@ async fn cmd_delete_all_grpc_connections(request_id: &str, w: WebviewWindow) -> 
 
 #[tauri::command]
 async fn cmd_delete_all_http_responses(request_id: &str, w: WebviewWindow) -> Result<(), String> {
-    delete_all_http_responses(&w, request_id)
+    delete_all_http_responses_for_request(&w, request_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1789,6 +1827,7 @@ pub fn run() {
                 ])
                 .level_for("plugin_runtime", log::LevelFilter::Info)
                 .level_for("cookie_store", log::LevelFilter::Info)
+                .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
                 .level_for("h2", log::LevelFilter::Info)
                 .level_for("hyper", log::LevelFilter::Info)
                 .level_for("hyper_util", log::LevelFilter::Info)
@@ -1890,6 +1929,7 @@ pub fn run() {
             cmd_get_folder,
             cmd_get_grpc_request,
             cmd_get_http_request,
+            cmd_get_sse_events,
             cmd_get_key_value,
             cmd_get_settings,
             cmd_get_workspace,
@@ -2160,6 +2200,43 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
     });
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FrontendCall<T: Serialize + Clone> {
+    args: T,
+    reply_id: String,
+}
+
+async fn call_frontend<T: Serialize + Clone, R: Runtime>(
+    window: WebviewWindow<R>,
+    event_name: &str,
+    args: T,
+) -> PromptTextResponse {
+    let reply_id = format!("{event_name}_reply_{}", generate_id());
+    let payload = FrontendCall {
+        args,
+        reply_id: reply_id.clone(),
+    };
+    window.emit_to(window.label(), event_name, payload).unwrap();
+    let (tx, mut rx) = tokio::sync::watch::channel(PromptTextResponse::default());
+
+    let event_id = window.clone().listen(reply_id, move |ev| {
+        let resp: PromptTextResponse = serde_json::from_str(ev.payload()).unwrap();
+        if let Err(e) = tx.send(resp) {
+            warn!("Failed to prompt for text {e:?}");
+        }
+    });
+
+    // When reply shows up, unlisten to events and return
+    if let Err(e) = rx.changed().await {
+        warn!("Failed to check channel changed {e:?}");
+    }
+    window.unlisten(event_id);
+
+    let foo = rx.borrow();
+    foo.clone()
+}
+
 async fn handle_plugin_event<R: Runtime>(
     app_handle: &AppHandle<R>,
     event: &InternalEvent,
@@ -2186,8 +2263,14 @@ async fn handle_plugin_event<R: Runtime>(
             };
             None
         }
+        InternalEventPayload::PromptTextRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for render");
+            let resp = call_frontend(window, "show_prompt", req).await;
+            Some(InternalEventPayload::PromptTextResponse(resp))
+        }
         InternalEventPayload::FindHttpResponsesRequest(req) => {
-            let http_responses = list_http_responses(
+            let http_responses = list_http_responses_for_request(
                 app_handle,
                 req.request_id.as_str(),
                 req.limit.map(|l| l as i64),
@@ -2202,6 +2285,21 @@ async fn handle_plugin_event<R: Runtime>(
             let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
             Some(InternalEventPayload::GetHttpRequestByIdResponse(
                 GetHttpRequestByIdResponse { http_request },
+            ))
+        }
+        InternalEventPayload::RenderHttpRequestRequest(req) => {
+            let window = get_window_from_window_context(app_handle, &window_context)
+                .expect("Failed to find window for render http request");
+
+            let workspace = workspace_from_window(&window)
+                .await
+                .expect("Failed to get workspace_id from window URL");
+            let environment = environment_from_window(&window).await;
+            let cb = PluginTemplateCallback::new(app_handle, &window_context, req.purpose);
+            let http_request =
+                render_http_request(&req.http_request, &workspace, environment.as_ref(), &cb).await;
+            Some(InternalEventPayload::RenderHttpRequestResponse(
+                RenderHttpRequestResponse { http_request },
             ))
         }
         InternalEventPayload::TemplateRenderRequest(req) => {

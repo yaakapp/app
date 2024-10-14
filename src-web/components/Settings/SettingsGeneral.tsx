@@ -27,12 +27,13 @@ export function SettingsGeneral() {
   }
 
   return (
-    <VStack space={2} className="mb-4">
+    <VStack space={1.5} className="mb-4">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
         <Select
           name="updateChannel"
           label="Update Channel"
           labelPosition="left"
+          labelClassName="w-[12rem]"
           size="sm"
           value={settings.updateChannel}
           onChange={(updateChannel) => updateSettings.mutate({ updateChannel })}
@@ -54,22 +55,19 @@ export function SettingsGeneral() {
         name="openWorkspace"
         label="Open Workspace"
         labelPosition="left"
+        labelClassName="w-[12rem]"
         size="sm"
         value={
           settings.openWorkspaceNewWindow === true
             ? 'new'
             : settings.openWorkspaceNewWindow === false
-            ? 'current'
-            : 'ask'
+              ? 'current'
+              : 'ask'
         }
         onChange={(v) => {
-          if (v === 'current') {
-            updateSettings.mutate({ openWorkspaceNewWindow: false });
-          } else if (v === 'new') {
-            updateSettings.mutate({ openWorkspaceNewWindow: true });
-          } else {
-            updateSettings.mutate({ openWorkspaceNewWindow: null });
-          }
+          if (v === 'current') updateSettings.mutate({ openWorkspaceNewWindow: false });
+          else if (v === 'new') updateSettings.mutate({ openWorkspaceNewWindow: true });
+          else updateSettings.mutate({ openWorkspaceNewWindow: null });
         }}
         options={[
           { label: 'Always Ask', value: 'ask' },
@@ -77,7 +75,9 @@ export function SettingsGeneral() {
           { label: 'New Window', value: 'new' },
         ]}
       />
+
       <Checkbox
+        className="mt-3"
         checked={settings.telemetry}
         title="Send Usage Statistics"
         onChange={(telemetry) => updateSettings.mutate({ telemetry })}

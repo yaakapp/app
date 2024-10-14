@@ -1,5 +1,5 @@
 {
-  "name": "importer-postman",
+  "name": "@yaakapp/importer-postman",
   "private": true,
   "version": "0.0.1",
   "main": "./build/index.js",

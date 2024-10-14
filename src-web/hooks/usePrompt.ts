@@ -3,37 +3,35 @@ import { useDialog } from '../components/DialogContext';
 import type { PromptProps } from './Prompt';
 import { Prompt } from './Prompt';
 
+type Props = Pick<DialogProps, 'title' | 'description'> &
+  Omit<PromptProps, 'onClose' | 'onCancel' | 'onResult'> & { id: string };
+
 export function usePrompt() {
   const dialog = useDialog();
-  return ({
-    id,
-    title,
-    description,
-    name,
-    label,
-    defaultValue,
-    placeholder,
-    confirmLabel,
-    require,
-  }: Pick<DialogProps, 'title' | 'description'> &
-    Omit<PromptProps, 'onResult' | 'onHide'> & { id: string }) =>
-    new Promise((onResult: PromptProps['onResult']) => {
+  return ({ id, title, description, ...props }: Props) =>
+    new Promise((resolve: PromptProps['onResult']) => {
       dialog.show({
         id,
         title,
         description,
         hideX: true,
         size: 'sm',
+        onClose: () => {
+          // Click backdrop, close, or escape
+          resolve(null);
+        },
         render: ({ hide }) =>
           Prompt({
-            onHide: hide,
-            onResult,
-            name,
-            label,
-            defaultValue,
-            placeholder,
-            confirmLabel,
-            require,
+            onCancel: () => {
+              // Click cancel button within dialog
+              resolve(null);
+              hide();
+            },
+            onResult: (v) => {
+              resolve(v);
+              hide();
+            },
+            ...props,
           }),
       });
     });

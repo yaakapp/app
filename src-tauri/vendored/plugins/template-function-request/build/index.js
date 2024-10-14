@@ -27,12 +27,18 @@ var plugin = {
   templateFunctions: [
     {
       name: "request.body",
-      args: [],
+      args: [{
+        name: "requestId",
+        label: "Http Request",
+        type: "http_request"
+      }],
       async onRender(ctx, args) {
-        const httpRequest = await ctx.httpRequest.getById({ id: args.values.request ?? "n/a" });
+        const httpRequest = await ctx.httpRequest.getById({ id: args.values.requestId ?? "n/a" });
         if (httpRequest == null) return null;
-        const rendered = await ctx.httpRequest.render({ httpRequest, purpose: args.purpose });
-        return rendered.body.text ?? "";
+        return String(await ctx.templates.render({
+          data: httpRequest.body?.text ?? "",
+          purpose: args.purpose
+        }));
       }
     },
     {
@@ -52,8 +58,11 @@ var plugin = {
       async onRender(ctx, args) {
         const httpRequest = await ctx.httpRequest.getById({ id: args.values.requestId ?? "n/a" });
         if (httpRequest == null) return null;
-        const rendered = await ctx.httpRequest.render({ httpRequest, purpose: args.purpose });
-        return rendered.headers.find((h) => h.name.toLowerCase() === args.values.header?.toLowerCase())?.value ?? "";
+        const header = httpRequest.headers.find((h) => h.name.toLowerCase() === args.values.header?.toLowerCase());
+        return String(await ctx.templates.render({
+          data: header?.value ?? "",
+          purpose: args.purpose
+        }));
       }
     }
   ]

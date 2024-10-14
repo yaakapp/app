@@ -4,7 +4,7 @@ const Downloader = require('nodejs-file-downloader');
 const { rmSync, cpSync, mkdirSync, existsSync } = require('node:fs');
 const { execSync } = require('node:child_process');
 
-const NODE_VERSION = 'v22.5.1';
+const NODE_VERSION = 'v22.9.0';
 
 // `${process.platform}_${process.arch}`
 const MAC_ARM = 'darwin_arm64';
@@ -53,7 +53,12 @@ rmSync(tmpDir, { recursive: true, force: true });
 
 (async function () {
   // Download GitHub release artifact
-  const { filePath } = await new Downloader({ url, directory: tmpDir }).download();
+  console.log('Downloading NodeJS at', url);
+  const { filePath } = await new Downloader({
+    url,
+    directory: tmpDir,
+    timeout: 1000 * 60 * 2,
+  }).download();
 
   // Decompress to the same directory
   await decompress(filePath, tmpDir, {});

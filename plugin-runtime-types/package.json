@@ -1,12 +1,13 @@
 {
   "name": "@yaakapp/api",
-  "version": "0.2.7",
+  "version": "0.2.16",
   "main": "lib/index.js",
   "typings": "./lib/index.d.ts",
   "files": [
     "lib/**/*"
   ],
   "scripts": {
+    "bootstrap": "npm run build",
     "build": "run-s build:copy-types build:tsc",
     "build:tsc": "tsc",
     "build:copy-types": "run-p build:copy-types:*",

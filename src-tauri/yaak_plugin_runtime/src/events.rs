@@ -68,10 +68,16 @@ pub enum InternalEventPayload {
 
     CopyTextRequest(CopyTextRequest),
 
+    RenderHttpRequestRequest(RenderHttpRequestRequest),
+    RenderHttpRequestResponse(RenderHttpRequestResponse),
+
     TemplateRenderRequest(TemplateRenderRequest),
     TemplateRenderResponse(TemplateRenderResponse),
 
     ShowToastRequest(ShowToastRequest),
+
+    PromptTextRequest(PromptTextRequest),
+    PromptTextResponse(PromptTextResponse),
 
     GetHttpRequestByIdRequest(GetHttpRequestByIdRequest),
     GetHttpRequestByIdResponse(GetHttpRequestByIdResponse),
@@ -200,10 +206,44 @@ pub struct TemplateRenderResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct ShowToastRequest {
     pub message: String,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub color: Option<Color>,
-    #[ts(optional = nullable)]
+    #[ts(optional)]
     pub icon: Option<Icon>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct PromptTextRequest {
+    // A unique ID to identify the prompt (eg. "enter-password")
+    pub id: String,
+    // Title to show on the prompt dialog
+    pub title: String,
+    // Text to show on the label above the input
+    pub label: String,
+    #[ts(optional)]
+    pub description: Option<String>,
+    #[ts(optional)]
+    pub default_value: Option<String>,
+    #[ts(optional)]
+    pub placeholder: Option<String>,
+    /// Text to add to the confirmation button
+    #[ts(optional)]
+    pub confirm_text: Option<String>,
+    /// Text to add to the cancel button
+    #[ts(optional)]
+    pub cancel_text: Option<String>,
+    /// Require the user to enter a non-empty value
+    #[ts(optional)]
+    pub require: Option<bool>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct PromptTextResponse {
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -235,6 +275,10 @@ pub enum Icon {
     Info,
     CheckCircle,
     AlertTriangle,
+
+    #[serde(untagged)]
+    #[ts(type = "\"_unknown\"")]
+    _Unknown(String),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -250,7 +294,13 @@ pub struct GetTemplateFunctionsResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunction {
     pub name: String,
-    pub aliases: Vec<String>,
+    #[ts(optional)]
+    pub description: Option<String>,
+    
+    /// Also support alternative names. This is useful for not breaking existing
+    /// tags when changing the `name` property
+    #[ts(optional)]
+    pub aliases: Option<Vec<String>>,
     pub args: Vec<TemplateFunctionArg>,
 }
 
@@ -262,18 +312,26 @@ pub enum TemplateFunctionArg {
     Select(TemplateFunctionSelectArg),
     Checkbox(TemplateFunctionCheckboxArg),
     HttpRequest(TemplateFunctionHttpRequestArg),
+    File(TemplateFunctionFileArg),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionBaseArg {
+    /// The name of the argument. Should be `camelCase` format
     pub name: String,
-    #[ts(optional = nullable)]
+    
+    /// Whether the user must fill in the argument
+    #[ts(optional)]
     pub optional: Option<bool>,
-    #[ts(optional = nullable)]
+    
+    /// The label of the input 
+    #[ts(optional)]
     pub label: Option<String>,
-    #[ts(optional = nullable)]
+    
+    /// The default value
+    #[ts(optional)]
     pub default_value: Option<String>,
 }
 
@@ -283,7 +341,9 @@ pub struct TemplateFunctionBaseArg {
 pub struct TemplateFunctionTextArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
-    #[ts(optional = nullable)]
+    
+    /// Placeholder for the text input
+    #[ts(optional)]
     pub placeholder: Option<String>,
 }
 
@@ -298,9 +358,47 @@ pub struct TemplateFunctionHttpRequestArg {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
+pub struct TemplateFunctionFileArg {
+    #[serde(flatten)]
+    pub base: TemplateFunctionBaseArg,
+    
+    /// The title of the file selection window
+    pub title: String,
+    
+    /// Allow selecting multiple files
+    #[ts(optional)]
+    pub multiple: Option<bool>,
+    
+    // Select a directory, not a file
+    #[ts(optional)]
+    pub directory: Option<bool>,
+    
+    // Default file path for selection dialog
+    #[ts(optional)]
+    pub default_path: Option<String>,
+    
+    // Specify to only allow selection of certain file extensions
+    #[ts(optional)]
+    pub filters: Option<Vec<OpenFileFilter>>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
+pub struct OpenFileFilter {
+    pub name: String,
+    /// File extensions to require
+    pub extensions: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[serde(default, rename_all = "camelCase")]
+#[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionSelectArg {
     #[serde(flatten)]
     pub base: TemplateFunctionBaseArg,
+    
+    /// The options that will be available in the select input
     pub options: Vec<TemplateFunctionSelectOption>,
 }
 
@@ -316,7 +414,7 @@ pub struct TemplateFunctionCheckboxArg {
 #[serde(default, rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct TemplateFunctionSelectOption {
-    pub name: String,
+    pub label: String,
     pub value: String,
 }
 
@@ -376,7 +474,8 @@ pub struct GetHttpRequestActionsResponse {
 pub struct HttpRequestAction {
     pub key: String,
     pub label: String,
-    pub icon: Option<String>,
+    #[ts(optional)]
+    pub icon: Option<Icon>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -414,6 +513,7 @@ pub struct GetHttpRequestByIdResponse {
 #[ts(export, export_to = "events.ts")]
 pub struct FindHttpResponsesRequest {
     pub request_id: String,
+    #[ts(optional)]
     pub limit: Option<i32>,
 }
 

@@ -12,7 +12,7 @@ import { InlineCode } from './core/InlineCode';
 import { useDialog } from './DialogContext';
 
 export function CookieDropdown() {
-  const cookieJars = useCookieJars().data ?? [];
+  const cookieJars = useCookieJars() ?? [];
   const [activeCookieJar, setActiveCookieJarId] = useActiveCookieJar();
   const updateCookieJar = useUpdateCookieJar(activeCookieJar?.id ?? null);
   const deleteCookieJar = useDeleteCookieJar(activeCookieJar ?? null);
@@ -59,11 +59,12 @@ export function CookieDropdown() {
                         Enter a new name for <InlineCode>{activeCookieJar?.name}</InlineCode>
                       </>
                     ),
-                    name: 'name',
                     label: 'Name',
+                    confirmText: 'Save',
                     placeholder: 'New name',
                     defaultValue: activeCookieJar?.name,
                   });
+                  if (name == null) return;
                   updateCookieJar.mutate({ name });
                 },
               },

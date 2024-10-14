@@ -10,7 +10,7 @@ import { IconButton } from './IconButton';
 export interface DialogProps {
   children: ReactNode;
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   title?: ReactNode;
   description?: ReactNode;
   className?: string;
@@ -44,7 +44,7 @@ export function Dialog({
     'Escape',
     () => {
       if (!open) return;
-      onClose();
+      onClose?.();
     },
     {},
     [open],

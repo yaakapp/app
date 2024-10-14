@@ -14,13 +14,14 @@
     "src-tauri/yaak_sync",
     "src-tauri/yaak_templates",
     "src-tauri/tauri-plugin-sync",
+    "src-tauri/yaak_sse",
     "src-web"
   ],
   "scripts": {
     "start": "npm run app-dev",
     "app-build": "tauri build",
     "app-dev": "tauri dev --no-watch --config ./src-tauri/tauri-dev.conf.json",
-    "bootstrap": "run-p bootstrap:* && npm run --workspace plugin-runtime build",
+    "bootstrap": "run-p bootstrap:* && npm run --workspaces --if-present bootstrap",
     "bootstrap:vendor-node": "node scripts/vendor-node.cjs",
     "bootstrap:vendor-plugins": "node scripts/vendor-plugins.cjs",
     "bootstrap:vendor-protoc": "node scripts/vendor-protoc.cjs",
@@ -31,7 +32,7 @@
     "tauri-before-dev": "npm run --workspaces --if-present dev"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0-rc.16",
+    "@tauri-apps/cli": "^2.0.2",
     "@typescript-eslint/eslint-plugin": "^8.5.0",
     "@typescript-eslint/parser": "^8.5.0",
     "eslint": "^8",

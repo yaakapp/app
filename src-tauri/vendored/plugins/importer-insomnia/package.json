@@ -1,5 +1,5 @@
 {
-  "name": "importer-insomnia",
+  "name": "@yaakapp/importer-insomnia",
   "private": true,
   "version": "0.0.1",
   "scripts": {

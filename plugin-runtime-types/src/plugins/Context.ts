@@ -1,14 +1,17 @@
-import { TemplateRenderRequest, TemplateRenderResponse } from '@yaakapp-internal/plugin';
 import {
   FindHttpResponsesRequest,
   FindHttpResponsesResponse,
   GetHttpRequestByIdRequest,
   GetHttpRequestByIdResponse,
+  PromptTextRequest,
+  PromptTextResponse,
   RenderHttpRequestRequest,
   RenderHttpRequestResponse,
   SendHttpRequestRequest,
   SendHttpRequestResponse,
   ShowToastRequest,
+  TemplateRenderRequest,
+  TemplateRenderResponse,
 } from '..';
 
 export type Context = {
@@ -17,6 +20,9 @@ export type Context = {
   };
   toast: {
     show(args: ShowToastRequest): void;
+  };
+  prompt: {
+    text(args: PromptTextRequest): Promise<PromptTextResponse['value']>;
   };
   httpRequest: {
     send(args: SendHttpRequestRequest): Promise<SendHttpRequestResponse['httpResponse']>;

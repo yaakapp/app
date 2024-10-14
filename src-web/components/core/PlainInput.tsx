@@ -96,7 +96,7 @@ export function PlainInput({
         htmlFor={id}
         className={classNames(
           labelClassName,
-          'text-text-subtle whitespace-nowrap',
+          'text-text-subtle whitespace-nowrap flex-shrink-0',
           hideLabel && 'sr-only',
         )}
       >

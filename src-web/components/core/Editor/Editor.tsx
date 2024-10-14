@@ -8,12 +8,12 @@ import classNames from 'classnames';
 import { EditorView } from 'codemirror';
 import type { MutableRefObject, ReactNode } from 'react';
 import {
+  useEffect,
   Children,
   cloneElement,
   forwardRef,
   isValidElement,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -174,6 +174,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         id: 'template-function',
         size: 'sm',
         title: 'Configure Function',
+        description: fn.description,
         render: ({ hide }) => (
           <TemplateFunctionDialog
             templateFunction={fn}
@@ -341,6 +342,33 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [forceUpdateKey],
   );
+
+  // For read-only mode, update content when `defaultValue` changes
+  useEffect(() => {
+    if (!readOnly || cm.current?.view == null || defaultValue == null) return;
+
+    // Replace codemirror contents
+    const currentDoc = cm.current.view.state.doc.toString();
+    if (defaultValue.startsWith(currentDoc)) {
+      // If we're just appending, append only the changes. This preserves
+      // things like scroll position.
+      cm.current.view.dispatch({
+        changes: cm.current.view.state.changes({
+          from: currentDoc.length,
+          insert: defaultValue.slice(currentDoc.length),
+        }),
+      });
+    } else {
+      // If we're replacing everything, reset the entire content
+      cm.current.view.dispatch({
+        changes: cm.current.view.state.changes({
+          from: 0,
+          to: currentDoc.length,
+          insert: currentDoc,
+        }),
+      });
+    }
+  }, [defaultValue, readOnly]);
 
   // Add bg classes to actions, so they appear over the text
   const decoratedActions = useMemo(() => {

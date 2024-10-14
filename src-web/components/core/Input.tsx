@@ -26,7 +26,7 @@ export type InputProps = Omit<
   > & {
     name?: string;
     type?: 'text' | 'password';
-    label: string;
+    label: ReactNode;
     hideLabel?: boolean;
     labelPosition?: 'top' | 'left';
     labelClassName?: string;
@@ -41,7 +41,7 @@ export type InputProps = Omit<
     rightSlot?: ReactNode;
     size?: 'xs' | 'sm' | 'md' | 'auto';
     className?: string;
-    placeholder: string;
+    placeholder?: string;
     validate?: boolean | ((v: string) => boolean);
     require?: boolean;
     wrapLines?: boolean;

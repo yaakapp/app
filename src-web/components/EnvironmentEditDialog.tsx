@@ -274,11 +274,12 @@ function SidebarButton({
                       Enter a new name for <InlineCode>{environment.name}</InlineCode>
                     </>
                   ),
-                  name: 'name',
                   label: 'Name',
+                  confirmText: 'Save',
                   placeholder: 'New Name',
                   defaultValue: environment.name,
                 });
+                if (name == null) return;
                 updateEnvironment.mutate({ name });
               },
             },

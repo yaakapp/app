@@ -28,7 +28,7 @@ pub struct GrpcConnection {
     pub uri: Uri,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct StreamError {
     pub message: String,
     pub status: Option<Status>,
@@ -234,7 +234,7 @@ impl GrpcHandle {
                             &pool,
                             input_message,
                         ))
-                        .unwrap(),
+                            .unwrap(),
                     })
                 }
                 def

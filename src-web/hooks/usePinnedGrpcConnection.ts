@@ -11,7 +11,7 @@ export function usePinnedGrpcConnection(activeRequest: GrpcRequest) {
     fallback: null,
     namespace: 'global',
   });
-  const connections = useGrpcConnections(activeRequest.id);
+  const connections = useGrpcConnections().filter((c) => c.requestId === activeRequest.id);
   const activeConnection: GrpcConnection | null =
     connections.find((r) => r.id === pinnedConnectionId) ?? latestConnection;
 

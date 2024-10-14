@@ -4,7 +4,7 @@ import {
   closeBracketsKeymap,
   completionKeymap,
 } from '@codemirror/autocomplete';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
@@ -134,7 +134,7 @@ export const baseExtensions = [
   }),
   syntaxHighlighting(syntaxHighlightStyle),
   syntaxTheme,
-  EditorState.allowMultipleSelections.of(true),
+  keymap.of([...historyKeymap, ...completionKeymap]),
 ];
 
 export const multiLineExtensions = [
@@ -156,14 +156,5 @@ export const multiLineExtensions = [
   rectangularSelection(),
   crosshairCursor(),
   highlightActiveLineGutter(),
-  keymap.of([
-    indentWithTab,
-    ...closeBracketsKeymap,
-    ...defaultKeymap,
-    ...searchKeymap,
-    ...historyKeymap,
-    ...foldKeymap,
-    ...completionKeymap,
-    ...lintKeymap,
-  ]),
+  keymap.of([indentWithTab, ...closeBracketsKeymap, ...searchKeymap, ...foldKeymap, ...lintKeymap]),
 ];

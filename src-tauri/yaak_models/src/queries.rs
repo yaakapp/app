@@ -7,15 +7,26 @@ use crate::models::{
     HttpRequestIden, HttpResponse, HttpResponseHeader, HttpResponseIden, KeyValue, KeyValueIden,
     ModelType, Plugin, PluginIden, Settings, SettingsIden, Workspace, WorkspaceIden,
 };
+use crate::models::{
+    CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
+    GrpcConnectionIden, GrpcConnectionState, GrpcEvent, GrpcEventIden, GrpcRequest,
+    GrpcRequestIden, HttpRequest, HttpRequestIden, HttpResponse, HttpResponseHeader,
+    HttpResponseIden, HttpResponseState, KeyValue, KeyValueIden, ModelType, Plugin, PluginIden,
+    Settings, SettingsIden, Workspace, WorkspaceIden,
+};
 use crate::plugin::SqliteConnection;
 use log::{debug, error};
 use rand::distributions::{Alphanumeric, DistString};
+use rusqlite::OptionalExtension;
 use sea_query::ColumnRef::Asterisk;
 use sea_query::Keyword::CurrentTimestamp;
 use sea_query::{Cond, Expr, OnConflict, Order, Query, SqliteQueryBuilder};
 use sea_query_rusqlite::RusqliteBinder;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
+
+const MAX_GRPC_CONNECTIONS_PER_REQUEST: usize = 20;
+const MAX_HTTP_RESPONSES_PER_REQUEST: usize = MAX_GRPC_CONNECTIONS_PER_REQUEST;
 
 pub async fn set_key_value_string<R: Runtime>(
     mgr: &WebviewWindow<R>,
@@ -113,9 +124,7 @@ pub async fn set_key_value_raw<R: Runtime>(
         .returning_all()
         .build_rusqlite(SqliteQueryBuilder);
 
-    let mut stmt = db
-        .prepare(sql.as_str())
-        .expect("Failed to prepare KeyValue upsert");
+    let mut stmt = db.prepare(sql.as_str()).expect("Failed to prepare KeyValue upsert");
     let kv = stmt
         .query_row(&*params.as_params(), |row| row.try_into())
         .expect("Failed to upsert KeyValue");
@@ -139,8 +148,7 @@ pub async fn get_key_value_raw<R: Runtime>(
         )
         .build_rusqlite(SqliteQueryBuilder);
 
-    db.query_row(sql.as_str(), &*params.as_params(), |row| row.try_into())
-        .ok()
+    db.query_row(sql.as_str(), &*params.as_params(), |row| row.try_into()).ok()
 }
 
 pub async fn list_workspaces<R: Runtime>(mgr: &impl Manager<R>) -> Result<Vec<Workspace>> {
@@ -361,11 +369,7 @@ pub async fn upsert_grpc_request<R: Runtime>(
             request.service.as_ref().map(|s| s.as_str()).into(),
             request.method.as_ref().map(|s| s.as_str()).into(),
             request.message.as_str().into(),
-            request
-                .authentication_type
-                .as_ref()
-                .map(|s| s.as_str())
-                .into(),
+            request.authentication_type.as_ref().map(|s| s.as_str()).into(),
             serde_json::to_string(&request.authentication)?.into(),
             serde_json::to_string(&request.metadata)?.into(),
         ])
@@ -428,6 +432,13 @@ pub async fn upsert_grpc_connection<R: Runtime>(
     window: &WebviewWindow<R>,
     connection: &GrpcConnection,
 ) -> Result<GrpcConnection> {
+    let connections =
+        list_http_responses_for_request(window, connection.request_id.as_str(), None).await?;
+    for c in connections.iter().skip(MAX_GRPC_CONNECTIONS_PER_REQUEST - 1) {
+        debug!("Deleting old grpc connection {}", c.id);
+        delete_grpc_connection(window, c.id.as_str()).await?;
+    }
+
     let id = match connection.id.as_str() {
         "" => generate_model_id(ModelType::TypeGrpcConnection),
         _ => connection.id.to_string(),
@@ -445,6 +456,7 @@ pub async fn upsert_grpc_connection<R: Runtime>(
             GrpcConnectionIden::Service,
             GrpcConnectionIden::Method,
             GrpcConnectionIden::Elapsed,
+            GrpcConnectionIden::State,
             GrpcConnectionIden::Status,
             GrpcConnectionIden::Error,
             GrpcConnectionIden::Trailers,
@@ -459,6 +471,7 @@ pub async fn upsert_grpc_connection<R: Runtime>(
             connection.service.as_str().into(),
             connection.method.as_str().into(),
             connection.elapsed.into(),
+            serde_json::to_value(&connection.state)?.as_str().into(),
             connection.status.into(),
             connection.error.as_ref().map(|s| s.as_str()).into(),
             serde_json::to_string(&connection.trailers)?.into(),
@@ -472,6 +485,7 @@ pub async fn upsert_grpc_connection<R: Runtime>(
                     GrpcConnectionIden::Method,
                     GrpcConnectionIden::Elapsed,
                     GrpcConnectionIden::Status,
+                    GrpcConnectionIden::State,
                     GrpcConnectionIden::Error,
                     GrpcConnectionIden::Trailers,
                     GrpcConnectionIden::Url,
@@ -502,6 +516,24 @@ pub async fn get_grpc_connection<R: Runtime>(
 }
 
 pub async fn list_grpc_connections<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+) -> Result<Vec<GrpcConnection>> {
+    let dbm = &*mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+
+    let (sql, params) = Query::select()
+        .from(GrpcConnectionIden::Table)
+        .cond_where(Expr::col(GrpcConnectionIden::WorkspaceId).eq(workspace_id))
+        .column(Asterisk)
+        .order_by(GrpcConnectionIden::CreatedAt, Order::Desc)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn list_grpc_connections_for_request<R: Runtime>(
     mgr: &impl Manager<R>,
     request_id: &str,
 ) -> Result<Vec<GrpcConnection>> {
@@ -541,7 +573,7 @@ pub async fn delete_all_grpc_connections<R: Runtime>(
     window: &WebviewWindow<R>,
     request_id: &str,
 ) -> Result<()> {
-    for r in list_grpc_connections(window, request_id).await? {
+    for r in list_grpc_connections_for_request(window, request_id).await? {
         delete_grpc_connection(window, &r.id).await?;
     }
     Ok(())
@@ -629,7 +661,7 @@ pub async fn list_grpc_events<R: Runtime>(
         .from(GrpcEventIden::Table)
         .cond_where(Expr::col(GrpcEventIden::ConnectionId).eq(connection_id))
         .column(Asterisk)
-        .order_by(GrpcEventIden::CreatedAt, Order::Desc)
+        .order_by(GrpcEventIden::CreatedAt, Order::Asc)
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
     let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
@@ -722,7 +754,7 @@ pub async fn delete_environment<R: Runtime>(
 
 const SETTINGS_ID: &str = "default";
 
-async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
+async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Option<Settings>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -732,13 +764,15 @@ async fn get_settings<R: Runtime>(mgr: &impl Manager<R>) -> Result<Settings> {
         .cond_where(Expr::col(SettingsIden::Id).eq(SETTINGS_ID))
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
-    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into()).optional()?)
 }
 
 pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settings {
-    if let Ok(settings) = get_settings(mgr).await {
-        return settings;
-    }
+    match get_settings(mgr).await {
+        Ok(Some(settings)) => return settings,
+        Ok(None) => (),
+        Err(e) => panic!("Failed to get settings {e:?}"),
+    };
 
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -750,11 +784,8 @@ pub async fn get_or_create_settings<R: Runtime>(mgr: &impl Manager<R>) -> Settin
         .returning_all()
         .build_rusqlite(SqliteQueryBuilder);
 
-    let mut stmt = db
-        .prepare(sql.as_str())
-        .expect("Failed to prepare Settings insert");
-    stmt.query_row(&*params.as_params(), |row| row.try_into())
-        .expect("Failed to insert Settings")
+    let mut stmt = db.prepare(sql.as_str()).expect("Failed to prepare Settings insert");
+    stmt.query_row(&*params.as_params(), |row| row.try_into()).expect("Failed to insert Settings")
 }
 
 pub async fn update_settings<R: Runtime>(
@@ -770,39 +801,23 @@ pub async fn update_settings<R: Runtime>(
         .values([
             (SettingsIden::Id, "default".into()),
             (SettingsIden::CreatedAt, CurrentTimestamp.into()),
-            (
-                SettingsIden::Appearance,
-                settings.appearance.as_str().into(),
-            ),
+            (SettingsIden::Appearance, settings.appearance.as_str().into()),
             (SettingsIden::ThemeDark, settings.theme_dark.as_str().into()),
-            (
-                SettingsIden::ThemeLight,
-                settings.theme_light.as_str().into(),
-            ),
-            (
-                SettingsIden::UpdateChannel,
-                settings.update_channel.as_str().into(),
-            ),
-            (
-                SettingsIden::InterfaceFontSize,
-                settings.interface_font_size.into(),
-            ),
-            (
-                SettingsIden::InterfaceScale,
-                settings.interface_scale.into(),
-            ),
-            (
-                SettingsIden::EditorFontSize,
-                settings.editor_font_size.into(),
-            ),
-            (
-                SettingsIden::EditorSoftWrap,
-                settings.editor_soft_wrap.into(),
-            ),
+            (SettingsIden::ThemeLight, settings.theme_light.as_str().into()),
+            (SettingsIden::UpdateChannel, settings.update_channel.into()),
+            (SettingsIden::InterfaceFontSize, settings.interface_font_size.into()),
+            (SettingsIden::InterfaceScale, settings.interface_scale.into()),
+            (SettingsIden::EditorFontSize, settings.editor_font_size.into()),
+            (SettingsIden::EditorSoftWrap, settings.editor_soft_wrap.into()),
             (SettingsIden::Telemetry, settings.telemetry.into()),
+            (SettingsIden::OpenWorkspaceNewWindow, settings.open_workspace_new_window.into()),
             (
-                SettingsIden::OpenWorkspaceNewWindow,
-                settings.open_workspace_new_window.into(),
+                SettingsIden::Proxy,
+                (match settings.proxy {
+                    None => None,
+                    Some(p) => Some(serde_json::to_string(&p)?),
+                })
+                .into(),
             ),
         ])
         .returning_all()
@@ -1182,7 +1197,7 @@ pub async fn delete_http_request<R: Runtime>(
     let req = get_http_request(window, id).await?;
 
     // DB deletes will cascade but this will delete the files
-    delete_all_http_responses(window, id).await?;
+    delete_all_http_responses_for_request(window, id).await?;
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -1205,6 +1220,7 @@ pub async fn create_default_http_response<R: Runtime>(
         0,
         0,
         "",
+        HttpResponseState::Initialized,
         0,
         None,
         None,
@@ -1223,6 +1239,7 @@ pub async fn create_http_response<R: Runtime>(
     elapsed: i64,
     elapsed_headers: i64,
     url: &str,
+    state: HttpResponseState,
     status: i64,
     status_reason: Option<&str>,
     content_length: Option<i64>,
@@ -1231,6 +1248,12 @@ pub async fn create_http_response<R: Runtime>(
     version: Option<&str>,
     remote_addr: Option<&str>,
 ) -> Result<HttpResponse> {
+    let responses = list_http_responses_for_request(window, request_id, None).await?;
+    for response in responses.iter().skip(MAX_HTTP_RESPONSES_PER_REQUEST - 1) {
+        debug!("Deleting old response {}", response.id);
+        delete_http_response(window, response.id.as_str()).await?;
+    }
+
     let req = get_http_request(window, request_id).await?;
     let id = generate_model_id(ModelType::TypeHttpResponse);
     let dbm = &*window.app_handle().state::<SqliteConnection>();
@@ -1245,6 +1268,7 @@ pub async fn create_http_response<R: Runtime>(
             HttpResponseIden::Elapsed,
             HttpResponseIden::ElapsedHeaders,
             HttpResponseIden::Url,
+            HttpResponseIden::State,
             HttpResponseIden::Status,
             HttpResponseIden::StatusReason,
             HttpResponseIden::ContentLength,
@@ -1260,6 +1284,7 @@ pub async fn create_http_response<R: Runtime>(
             elapsed.into(),
             elapsed_headers.into(),
             url.into(),
+            serde_json::to_value(state)?.as_str().unwrap_or_default().into(),
             status.into(),
             status_reason.into(),
             content_length.into(),
@@ -1280,10 +1305,11 @@ pub async fn cancel_pending_grpc_connections(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
+    let closed = serde_json::to_value(&GrpcConnectionState::Closed)?;
     let (sql, params) = Query::update()
         .table(GrpcConnectionIden::Table)
-        .value(GrpcConnectionIden::Elapsed, -1)
-        .cond_where(Expr::col(GrpcConnectionIden::Elapsed).eq(0))
+        .values([(GrpcConnectionIden::State, closed.as_str().into())])
+        .cond_where(Expr::col(GrpcConnectionIden::State).ne(closed.as_str()))
         .build_rusqlite(SqliteQueryBuilder);
 
     db.execute(sql.as_str(), &*params.as_params())?;
@@ -1294,13 +1320,14 @@ pub async fn cancel_pending_responses(app: &AppHandle) -> Result<()> {
     let dbm = &*app.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
+    let closed = serde_json::to_value(&GrpcConnectionState::Closed)?;
     let (sql, params) = Query::update()
         .table(HttpResponseIden::Table)
         .values([
-            (HttpResponseIden::Elapsed, (-1i32).into()),
+            (HttpResponseIden::State, closed.as_str().into()),
             (HttpResponseIden::StatusReason, "Cancelled".into()),
         ])
-        .cond_where(Expr::col(HttpResponseIden::Elapsed).eq(0))
+        .cond_where(Expr::col(HttpResponseIden::State).ne(closed.as_str()))
         .build_rusqlite(SqliteQueryBuilder);
 
     db.execute(sql.as_str(), &*params.as_params())?;
@@ -1314,11 +1341,11 @@ pub async fn update_response_if_id<R: Runtime>(
     if response.id.is_empty() {
         Ok(response.clone())
     } else {
-        update_response(window, response).await
+        update_http_response(window, response).await
     }
 }
 
-pub async fn update_response<R: Runtime>(
+pub async fn update_http_response<R: Runtime>(
     window: &WebviewWindow<R>,
     response: &HttpResponse,
 ) -> Result<HttpResponse> {
@@ -1337,28 +1364,15 @@ pub async fn update_response<R: Runtime>(
                 HttpResponseIden::StatusReason,
                 response.status_reason.as_ref().map(|s| s.as_str()).into(),
             ),
-            (
-                HttpResponseIden::ContentLength,
-                response.content_length.into(),
-            ),
-            (
-                HttpResponseIden::BodyPath,
-                response.body_path.as_ref().map(|s| s.as_str()).into(),
-            ),
-            (
-                HttpResponseIden::Error,
-                response.error.as_ref().map(|s| s.as_str()).into(),
-            ),
+            (HttpResponseIden::ContentLength, response.content_length.into()),
+            (HttpResponseIden::BodyPath, response.body_path.as_ref().map(|s| s.as_str()).into()),
+            (HttpResponseIden::Error, response.error.as_ref().map(|s| s.as_str()).into()),
             (
                 HttpResponseIden::Headers,
-                serde_json::to_string(&response.headers)
-                    .unwrap_or_default()
-                    .into(),
+                serde_json::to_string(&response.headers).unwrap_or_default().into(),
             ),
-            (
-                HttpResponseIden::Version,
-                response.version.as_ref().map(|s| s.as_str()).into(),
-            ),
+            (HttpResponseIden::Version, response.version.as_ref().map(|s| s.as_str()).into()),
+            (HttpResponseIden::State, serde_json::to_value(&response.state)?.as_str().into()),
             (
                 HttpResponseIden::RemoteAddr,
                 response.remote_addr.as_ref().map(|s| s.as_str()).into(),
@@ -1411,17 +1425,37 @@ pub async fn delete_http_response<R: Runtime>(
     emit_deleted_model(window, resp)
 }
 
-pub async fn delete_all_http_responses<R: Runtime>(
+pub async fn delete_all_http_responses_for_request<R: Runtime>(
     window: &WebviewWindow<R>,
     request_id: &str,
 ) -> Result<()> {
-    for r in list_http_responses(window, request_id, None).await? {
+    for r in list_http_responses_for_request(window, request_id, None).await? {
         delete_http_response(window, &r.id).await?;
     }
     Ok(())
 }
 
 pub async fn list_http_responses<R: Runtime>(
+    mgr: &impl Manager<R>,
+    workspace_id: &str,
+    limit: Option<i64>,
+) -> Result<Vec<HttpResponse>> {
+    let limit_unwrapped = limit.unwrap_or_else(|| i64::MAX);
+    let dbm = mgr.state::<SqliteConnection>();
+    let db = dbm.0.lock().await.get().unwrap();
+    let (sql, params) = Query::select()
+        .from(HttpResponseIden::Table)
+        .cond_where(Expr::col(HttpResponseIden::WorkspaceId).eq(workspace_id))
+        .column(Asterisk)
+        .order_by(HttpResponseIden::CreatedAt, Order::Desc)
+        .limit(limit_unwrapped as u64)
+        .build_rusqlite(SqliteQueryBuilder);
+    let mut stmt = db.prepare(sql.as_str())?;
+    let items = stmt.query_map(&*params.as_params(), |row| row.try_into())?;
+    Ok(items.map(|v| v.unwrap()).collect())
+}
+
+pub async fn list_http_responses_for_request<R: Runtime>(
     mgr: &impl Manager<R>,
     request_id: &str,
     limit: Option<i64>,

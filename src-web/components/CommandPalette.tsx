@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { search } from 'fast-fuzzy';
+import { fuzzyFilter } from 'fuzzbunny';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useActiveCookieJar } from '../hooks/useActiveCookieJar';
@@ -328,15 +328,21 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   const { filteredGroups, filteredAllItems } = useMemo(() => {
     const result = command
-      ? search(command, allItems, {
-          threshold: 0.5,
-          keySelector: (v) => ('searchText' in v ? v.searchText : v.label),
-        })
+      ? fuzzyFilter(
+          allItems.map((i) => ({
+            ...i,
+            filterBy: 'searchText' in i ? i.searchText : i.label,
+          })),
+          command,
+          { fields: ['filterBy'] },
+        ).map((v) => v.item)
       : allItems;
 
     const filteredGroups = groups
       .map((g) => {
-        g.items = result.filter((i) => g.items.includes(i)).slice(0, MAX_PER_GROUP);
+        g.items = result
+          .filter((i) => g.items.find((i2) => i2.key === i.key))
+          .slice(0, MAX_PER_GROUP);
         return g;
       })
       .filter((g) => g.items.length > 0);

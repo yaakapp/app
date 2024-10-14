@@ -1,6 +1,10 @@
 import { lazy } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { routePaths, useAppRoutes } from '../hooks/useAppRoutes';
+import { useGenerateThemeCss } from '../hooks/useGenerateThemeCss';
+import { useSyncFontSizeSetting } from '../hooks/useSyncFontSizeSetting';
+import { useSyncModelStores } from '../hooks/useSyncModelStores';
+import { useSyncZoomSetting } from '../hooks/useSyncZoomSetting';
 import { DefaultLayout } from './DefaultLayout';
 import { RedirectToLatestWorkspace } from './RedirectToLatestWorkspace';
 import RouteError from './RouteError';
@@ -50,6 +54,12 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
+  // Add some global hooks that should remain persistent
+  useSyncModelStores();
+  useSyncZoomSetting();
+  useSyncFontSizeSetting();
+  useGenerateThemeCss();
+
   return <RouterProvider router={router} />;
 }
 

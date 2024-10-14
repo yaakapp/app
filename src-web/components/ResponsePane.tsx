@@ -1,8 +1,8 @@
-import type { HttpRequest } from '@yaakapp-internal/models';
+import type { HttpRequest, HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
-import type { CSSProperties } from 'react';
-import { memo, useCallback, useMemo } from 'react';
-import { createGlobalState } from 'react-use';
+import type { CSSProperties, ReactNode } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
+import { useLocalStorage } from 'react-use';
 import { useContentTypeFromHeaders } from '../hooks/useContentTypeFromHeaders';
 import { usePinnedHttpResponse } from '../hooks/usePinnedHttpResponse';
 import { useResponseViewMode } from '../hooks/useResponseViewMode';
@@ -23,6 +23,7 @@ import { ResponseHeaders } from './ResponseHeaders';
 import { ResponseInfo } from './ResponseInfo';
 import { AudioViewer } from './responseViewers/AudioViewer';
 import { CsvViewer } from './responseViewers/CsvViewer';
+import { EventStreamViewer } from './responseViewers/EventStreamViewer';
 import { HTMLOrTextViewer } from './responseViewers/HTMLOrTextViewer';
 import { ImageViewer } from './responseViewers/ImageViewer';
 import { PdfViewer } from './responseViewers/PdfViewer';
@@ -34,8 +35,6 @@ interface Props {
   activeRequest: HttpRequest;
 }
 
-const useActiveTab = createGlobalState<Record<string, string>>({});
-
 const TAB_BODY = 'body';
 const TAB_HEADERS = 'headers';
 const TAB_INFO = 'info';
@@ -44,9 +43,12 @@ const DEFAULT_TAB = TAB_BODY;
 export const ResponsePane = memo(function ResponsePane({ style, className, activeRequest }: Props) {
   const { activeResponse, setPinnedResponseId, responses } = usePinnedHttpResponse(activeRequest);
   const [viewMode, setViewMode] = useResponseViewMode(activeResponse?.requestId);
-  const [activeTabs, setActiveTabs] = useActiveTab();
+  const [activeTabs, setActiveTabs] = useLocalStorage<Record<string, string>>(
+    'responsePaneActiveTabs',
+    {},
+  );
   const contentType = useContentTypeFromHeaders(activeResponse?.headers ?? null);
-  const activeTab = activeTabs[activeRequest.id] ?? DEFAULT_TAB;
+  const activeTab = activeTabs?.[activeRequest.id] ?? DEFAULT_TAB;
   const setActiveTab = useCallback(
     (tab: string) => {
       setActiveTabs((r) => ({ ...r, [activeRequest.id]: tab }));
@@ -87,6 +89,8 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     [activeResponse?.headers, contentType, setViewMode, viewMode],
   );
 
+  const isLoading = isResponseLoading(activeResponse);
+
   return (
     <div
       style={style}
@@ -102,10 +106,6 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
         <HotKeyList
           hotkeys={['http_request.send', 'http_request.create', 'sidebar.focus', 'urlBar.focus']}
         />
-      ) : isResponseLoading(activeResponse) ? (
-        <div className="h-full w-full flex items-center justify-center">
-          <Icon size="lg" className="opacity-disabled" spin icon="refresh" />
-        </div>
       ) : (
         <div className="h-full w-full grid grid-rows-[auto_minmax(0,1fr)] grid-cols-1">
           <HStack
@@ -118,27 +118,21 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
             {activeResponse && (
               <HStack
                 space={2}
+                alignItems="center"
                 className={classNames(
                   'select-none cursor-default',
                   'whitespace-nowrap w-full pl-3 overflow-x-auto font-mono text-sm',
                 )}
               >
+                {isLoading && <Icon size="sm" icon="refresh" spin />}
                 <StatusTag showReason response={activeResponse} />
-                {activeResponse.elapsed > 0 && (
-                  <>
-                    <span>&bull;</span>
-                    <DurationTag
-                      headers={activeResponse.elapsedHeaders}
-                      total={activeResponse.elapsed}
-                    />
-                  </>
-                )}
-                {!!activeResponse.contentLength && (
-                  <>
-                    <span>&bull;</span>
-                    <SizeTag contentLength={activeResponse.contentLength} />
-                  </>
-                )}
+                <span>&bull;</span>
+                <DurationTag
+                  headers={activeResponse.elapsedHeaders}
+                  total={activeResponse.elapsed}
+                />
+                <span>&bull;</span>
+                <SizeTag contentLength={activeResponse.contentLength ?? 0} />
 
                 <div className="ml-auto">
                   <RecentResponsesDropdown
@@ -170,15 +164,17 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
                   <div className="pb-2 h-full">
                     <EmptyStateText>Empty Body</EmptyStateText>
                   </div>
-                ) : contentType?.startsWith('image') ? (
-                  <ImageViewer className="pb-2" response={activeResponse} />
-                ) : contentType?.startsWith('audio') ? (
-                  <AudioViewer response={activeResponse} />
-                ) : contentType?.startsWith('video') ? (
-                  <VideoViewer response={activeResponse} />
-                ) : contentType?.match(/pdf/) ? (
-                  <PdfViewer response={activeResponse} />
-                ) : contentType?.match(/csv|tab-separated/) ? (
+                ) : contentType?.match(/^text\/event-stream$/i) && viewMode === 'pretty' ? (
+                  <EventStreamViewer response={activeResponse} />
+                ) : contentType?.match(/^image/i) ? (
+                  <EnsureCompleteResponse response={activeResponse} render={ImageViewer} />
+                ) : contentType?.match(/^audio/i) ? (
+                  <EnsureCompleteResponse response={activeResponse} render={AudioViewer} />
+                ) : contentType?.match(/^video/i) ? (
+                  <EnsureCompleteResponse response={activeResponse} render={VideoViewer} />
+                ) : contentType?.match(/pdf/i) ? (
+                  <EnsureCompleteResponse response={activeResponse} render={PdfViewer} />
+                ) : contentType?.match(/csv|tab-separated/i) ? (
                   <CsvViewer className="pb-2" response={activeResponse} />
                 ) : (
                   // ) : viewMode === 'pretty' && contentType?.includes('json') ? (
@@ -203,3 +199,26 @@ export const ResponsePane = memo(function ResponsePane({ style, className, activ
     </div>
   );
 });
+
+function EnsureCompleteResponse({
+  response,
+  render,
+}: {
+  response: HttpResponse;
+  render: (v: { bodyPath: string }) => ReactNode;
+}) {
+  if (response.bodyPath === null) {
+    return <div>Empty response body</div>;
+  }
+
+  // Wait until the response has been fully-downloaded
+  if (response.state !== 'closed') {
+    return (
+      <EmptyStateText>
+        <Icon icon="refresh" spin />
+      </EmptyStateText>
+    );
+  }
+
+  return render({ bodyPath: response.bodyPath });
+}

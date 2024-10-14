@@ -2,11 +2,13 @@ import type {
   TemplateFunction,
   TemplateFunctionArg,
   TemplateFunctionCheckboxArg,
+  TemplateFunctionFileArg,
   TemplateFunctionHttpRequestArg,
   TemplateFunctionSelectArg,
   TemplateFunctionTextArg,
 } from '@yaakapp-internal/plugin';
 import type { FnArg, Tokens } from '@yaakapp-internal/template';
+import classNames from 'classnames';
 import { useCallback, useMemo, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
@@ -20,6 +22,7 @@ import { InlineCode } from './core/InlineCode';
 import { PlainInput } from './core/PlainInput';
 import { Select } from './core/Select';
 import { VStack } from './core/Stacks';
+import { SelectFile } from './SelectFile';
 
 const NULL_ARG = '__NULL__';
 
@@ -50,8 +53,8 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
     return initial;
   });
 
-  const setArgValue = useCallback((name: string, value: string | boolean) => {
-    setArgValues((v) => ({ ...v, [name]: value }));
+  const setArgValue = useCallback((name: string, value: string | boolean | null) => {
+    setArgValues((v) => ({ ...v, [name]: value == null ? '__NULL__' : value }));
   }, []);
 
   const tokens: Tokens = useMemo(() => {
@@ -90,9 +93,11 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
 
   const debouncedTagText = useDebouncedValue(tagText.data ?? '', 200);
   const rendered = useRenderTemplate(debouncedTagText);
+  const tooLarge = (rendered.data ?? '').length > 10000;
 
   return (
     <VStack className="pb-3" space={4}>
+      <h1 className="font-mono !text-base">{templateFunction.name}(…)</h1>
       <VStack space={2}>
         {templateFunction.args.map((a: TemplateFunctionArg, i: number) => {
           switch (a.type) {
@@ -132,10 +137,29 @@ export function TemplateFunctionDialog({ templateFunction, hide, initialTokens, 
                   value={argValues[a.name] ? String(argValues[a.name]) : '__ERROR__'}
                 />
               );
+            case 'file':
+              return (
+                <FileArg
+                  key={i}
+                  arg={a}
+                  onChange={(v) => setArgValue(a.name, v)}
+                  filePath={argValues[a.name] ? String(argValues[a.name]) : '__ERROR__'}
+                />
+              );
           }
         })}
       </VStack>
-      <InlineCode className="select-text cursor-text">{rendered.data || <>&nbsp;</>}</InlineCode>
+      <VStack className="w-full">
+        <div className="text-sm text-text-subtle">Preview</div>
+        <InlineCode
+          className={classNames(
+            'whitespace-pre select-text cursor-text max-h-[10rem] overflow-y-auto hide-scrollbars',
+            tooLarge && 'italic text-danger',
+          )}
+        >
+          {tooLarge ? 'too large to preview' : rendered.data || <>&nbsp;</>}
+        </InlineCode>
+      </VStack>
       <Button color="primary" onClick={handleDone}>
         Done
       </Button>
@@ -164,7 +188,13 @@ function TextArg({
       name={arg.name}
       onChange={handleChange}
       defaultValue={value === NULL_ARG ? '' : value}
-      label={arg.label ?? arg.name}
+      require={!arg.optional}
+      label={
+        <>
+          {arg.label ?? arg.name}
+          {arg.optional && <span> (optional)</span>}
+        </>
+      }
       hideLabel={arg.label == null}
       placeholder={arg.placeholder ?? arg.defaultValue ?? ''}
     />
@@ -188,10 +218,28 @@ function SelectArg({
       value={value}
       options={[
         ...arg.options.map((a) => ({
-          label: a.name + (arg.defaultValue === a.value ? ' (default)' : ''),
+          label: a.label + (arg.defaultValue === a.value ? ' (default)' : ''),
           value: a.value === arg.defaultValue ? NULL_ARG : a.value,
         })),
       ]}
+    />
+  );
+}
+
+function FileArg({
+  arg,
+  filePath,
+  onChange,
+}: {
+  arg: TemplateFunctionFileArg;
+  filePath: string;
+  onChange: (v: string | null) => void;
+}) {
+  return (
+    <SelectFile
+      onChange={({ filePath }) => onChange(filePath)}
+      filePath={filePath === '__NULL__' ? null : filePath}
+      directory={!!arg.directory}
     />
   );
 }

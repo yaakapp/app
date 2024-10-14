@@ -62,11 +62,11 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
                 Enter a new name for <InlineCode>{activeWorkspace?.name}</InlineCode>
               </>
             ),
-            name: 'name',
             label: 'Name',
             placeholder: 'New Name',
             defaultValue: activeWorkspace?.name,
           });
+          if (name == null) return;
           updateWorkspace.mutate({ name });
         },
       },

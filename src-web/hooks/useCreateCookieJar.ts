@@ -17,9 +17,9 @@ export function useCreateCookieJar() {
       }
       const name = await prompt({
         id: 'new-cookie-jar',
-        name: 'name',
         title: 'New CookieJar',
         placeholder: 'My Jar',
+        confirmText: 'Create',
         label: 'Name',
         defaultValue: 'My Jar',
       });

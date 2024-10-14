@@ -32,6 +32,7 @@ type TauriCmd =
   | 'cmd_get_folder'
   | 'cmd_get_grpc_request'
   | 'cmd_get_http_request'
+  | 'cmd_get_sse_events'
   | 'cmd_get_key_value'
   | 'cmd_get_settings'
   | 'cmd_get_sync_stage'

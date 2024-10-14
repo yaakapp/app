@@ -8818,73 +8818,91 @@ var SafeScript = import_vm.default.Script;
 // src/index.ts
 var import_node_fs = require("node:fs");
 var import_xpath = __toESM(require_xpath());
+var behaviorArg = {
+  type: "select",
+  name: "behavior",
+  label: "Sending Behavior",
+  defaultValue: "smart",
+  options: [
+    { label: "When no responses", value: "smart" },
+    { label: "Always", value: "always" }
+  ]
+};
+var requestArg = {
+  type: "http_request",
+  name: "request",
+  label: "Request"
+};
 var plugin = {
-  templateFunctions: [{
-    name: "response",
-    args: [
-      {
-        type: "http_request",
-        name: "request",
-        label: "Request"
-      },
-      {
-        type: "text",
-        name: "path",
-        label: "JSONPath or XPath",
-        placeholder: "$.books[0].id or /books[0]/id"
-      },
-      {
-        type: "select",
-        name: "behavior",
-        label: "Sending Behavior",
-        defaultValue: "smart",
-        options: [
-          { name: "When no responses", value: "smart" },
-          { name: "Always", value: "always" }
-        ]
+  templateFunctions: [
+    {
+      name: "response.header",
+      args: [
+        requestArg,
+        {
+          type: "text",
+          name: "header",
+          label: "Header Name",
+          placeholder: "Content-Type"
+        },
+        behaviorArg
+      ],
+      async onRender(ctx, args) {
+        if (!args.values.request || !args.values.header) return null;
+        const response = await getResponse(ctx, {
+          requestId: args.values.request,
+          purpose: args.purpose,
+          behavior: args.values.behavior ?? null
+        });
+        if (response == null) return null;
+        const header = response.headers.find(
+          (h) => h.name.toLowerCase() === String(args.values.header ?? "").toLowerCase()
+        );
+        return header?.value ?? null;
       }
-    ],
-    async onRender(ctx, args) {
-      if (!args.values.request || !args.values.path) {
+    },
+    {
+      name: "response.body.path",
+      aliases: ["response"],
+      args: [
+        requestArg,
+        {
+          type: "text",
+          name: "path",
+          label: "JSONPath or XPath",
+          placeholder: "$.books[0].id or /books[0]/id"
+        },
+        behaviorArg
+      ],
+      async onRender(ctx, args) {
+        if (!args.values.request || !args.values.path) return null;
+        const response = await getResponse(ctx, {
+          requestId: args.values.request,
+          purpose: args.purpose,
+          behavior: args.values.behavior ?? null
+        });
+        if (response == null) return null;
+        if (response.bodyPath == null) {
+          return null;
+        }
+        let body;
+        try {
+          body = (0, import_node_fs.readFileSync)(response.bodyPath, "utf-8");
+        } catch (_) {
+          return null;
+        }
+        try {
+          return filterJSONPath(body, args.values.path);
+        } catch (err) {
+        }
+        try {
+          return filterXPath(body, args.values.path);
+        } catch (err) {
+        }
         return null;
       }
-      const httpRequest = await ctx.httpRequest.getById({ id: args.values.request ?? "n/a" });
-      if (httpRequest == null) {
-        return null;
-      }
-      const responses = await ctx.httpResponse.find({ requestId: httpRequest.id, limit: 1 });
-      if (args.values.behavior === "never" && responses.length === 0) {
-        return null;
-      }
-      let response = responses[0] ?? null;
-      let behavior = args.values.behavior === "always" && args.purpose === "preview" ? "smart" : args.values.behavior;
-      if (behavior === "smart" && response == null || behavior === "always") {
-        const renderedHttpRequest = await ctx.httpRequest.render({ httpRequest, purpose: args.purpose });
-        response = await ctx.httpRequest.send({ httpRequest: renderedHttpRequest });
-      }
-      if (response == null) {
-        return null;
-      }
-      if (response.bodyPath == null) {
-        return null;
-      }
-      let body;
-      try {
-        body = (0, import_node_fs.readFileSync)(response.bodyPath, "utf-8");
-      } catch (_) {
-        return null;
-      }
-      try {
-        return filterJSONPath(body, args.values.path);
-      } catch (err) {
-      }
-      try {
-        return filterXPath(body, args.values.path);
-      } catch (err) {
-      }
-      return null;
     }
-  }]
+  ]
 };
 function filterJSONPath(body, path) {
   const parsed = JSON.parse(body);
@@ -8906,6 +8924,24 @@ function filterXPath(body, path) {
   } else {
     return String(items);
   }
+}
+async function getResponse(ctx, { requestId, behavior, purpose }) {
+  if (!requestId) return null;
+  const httpRequest = await ctx.httpRequest.getById({ id: requestId ?? "n/a" });
+  if (httpRequest == null) {
+    return null;
+  }
+  const responses = await ctx.httpResponse.find({ requestId: httpRequest.id, limit: 1 });
+  if (behavior === "never" && responses.length === 0) {
+    return null;
+  }
+  let response = responses[0] ?? null;
+  let finalBehavior = behavior === "always" && purpose === "preview" ? "smart" : behavior;
+  if (finalBehavior === "smart" && response == null || finalBehavior === "always") {
+    const renderedHttpRequest = await ctx.httpRequest.render({ httpRequest, purpose });
+    response = await ctx.httpRequest.send({ httpRequest: renderedHttpRequest });
+  }
+  return response;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

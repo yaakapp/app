@@ -19,19 +19,10 @@
   }
 
   /* Disable user selection to make it more "app-like" */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  blockquote,
-  label,
-  code,
-  pre,
-  button,
-  li {
+  :not(a),
+  :not(input):not(textarea),
+  :not(input):not(textarea)::after,
+  :not(input):not(textarea)::before {
     @apply select-none cursor-default;
   }
 

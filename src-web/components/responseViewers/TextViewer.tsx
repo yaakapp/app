@@ -1,19 +1,16 @@
-import type { HttpResponse } from '@yaakapp-internal/models';
 import classNames from 'classnames';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 import { createGlobalState } from 'react-use';
-import { useContentTypeFromHeaders } from '../../hooks/useContentTypeFromHeaders';
+import { useCopy } from '../../hooks/useCopy';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
-import { useResponseBodyText } from '../../hooks/useResponseBodyText';
-import { useSaveResponse } from '../../hooks/useSaveResponse';
 import { useToggle } from '../../hooks/useToggle';
-import { isJSON, languageFromContentType } from '../../lib/contentType';
 import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import { CopyButton } from '../CopyButton';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
+import type { EditorProps } from '../core/Editor';
 import { Editor } from '../core/Editor';
 import { hyperlink } from '../core/Editor/hyperlink/extension';
 import { IconButton } from '../core/IconButton';
@@ -21,46 +18,43 @@ import { InlineCode } from '../core/InlineCode';
 import { Input } from '../core/Input';
 import { SizeTag } from '../core/SizeTag';
 import { HStack } from '../core/Stacks';
-import { BinaryViewer } from './BinaryViewer';
 
 const extraExtensions = [hyperlink];
 const LARGE_RESPONSE_BYTES = 2 * 1000 * 1000;
 
 interface Props {
-  response: HttpResponse;
   pretty: boolean;
   className?: string;
+  text: string;
+  language: EditorProps['language'];
+  responseId: string;
+  onSaveResponse: () => void;
 }
 
 const useFilterText = createGlobalState<Record<string, string | null>>({});
 
-export function TextViewer({ response, pretty, className }: Props) {
+export function TextViewer({
+  language,
+  text,
+  responseId,
+  pretty,
+  className,
+  onSaveResponse,
+}: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
   const [showLargeResponse, toggleShowLargeResponse] = useToggle();
-  const filterText = filterTextMap[response.id] ?? null;
+  const filterText = filterTextMap[responseId] ?? null;
+  const copy = useCopy();
   const debouncedFilterText = useDebouncedValue(filterText, 200);
   const setFilterText = useCallback(
     (v: string | null) => {
-      setFilterTextMap((m) => ({ ...m, [response.id]: v }));
+      setFilterTextMap((m) => ({ ...m, [responseId]: v }));
     },
-    [setFilterTextMap, response],
+    [setFilterTextMap, responseId],
   );
 
-  const rawBody = useResponseBodyText(response);
-  const saveResponse = useSaveResponse(response);
-  let language = languageFromContentType(useContentTypeFromHeaders(response.headers));
-
-  // A lot of APIs return JSON with `text/html` content type, so interpret as JSON if so
-  if (language === 'html' && isJSON(rawBody.data ?? '')) {
-    language = 'json';
-  }
-
   const isSearching = filterText != null;
-
-  const filteredResponse = useFilterResponse({
-    filter: debouncedFilterText ?? '',
-    responseId: response.id,
-  });
+  const filteredResponse = useFilterResponse({ filter: debouncedFilterText ?? '', responseId });
 
   const toggleSearch = useCallback(() => {
     if (isSearching) {
@@ -81,7 +75,7 @@ export function TextViewer({ response, pretty, className }: Props) {
       nodes.push(
         <div key="input" className="w-full !opacity-100">
           <Input
-            key={response.id}
+            key={responseId}
             validate={!filteredResponse.error}
             hideLabel
             autoFocus
@@ -116,20 +110,12 @@ export function TextViewer({ response, pretty, className }: Props) {
     filteredResponse.error,
     isSearching,
     language,
-    response.id,
+    responseId,
     setFilterText,
     toggleSearch,
   ]);
 
-  if (rawBody.isLoading) {
-    return null;
-  }
-
-  if (rawBody.data == null) {
-    return <BinaryViewer response={response} />;
-  }
-
-  if (!showLargeResponse && (response.contentLength ?? 0) > LARGE_RESPONSE_BYTES) {
+  if (!showLargeResponse && text.length > LARGE_RESPONSE_BYTES) {
     return (
       <Banner color="primary" className="h-full flex flex-col gap-3">
         <p>
@@ -143,15 +129,10 @@ export function TextViewer({ response, pretty, className }: Props) {
           <Button color="primary" size="xs" onClick={toggleShowLargeResponse}>
             Reveal Response
           </Button>
-          <Button variant="border" size="xs" onClick={() => saveResponse.mutate()}>
+          <Button variant="border" size="xs" onClick={onSaveResponse}>
             Save to File
           </Button>
-          <CopyButton
-            variant="border"
-            size="xs"
-            onClick={() => saveResponse.mutate()}
-            text={rawBody.data}
-          />
+          <CopyButton variant="border" size="xs" onClick={() => copy(text)} text={text} />
         </HStack>
       </Banner>
     );
@@ -159,10 +140,10 @@ export function TextViewer({ response, pretty, className }: Props) {
 
   const formattedBody =
     pretty && language === 'json'
-      ? tryFormatJson(rawBody.data)
+      ? tryFormatJson(text)
       : pretty && (language === 'xml' || language === 'html')
-        ? tryFormatXml(rawBody.data)
-        : rawBody.data;
+        ? tryFormatXml(text)
+        : text;
 
   let body;
   if (isSearching && filterText?.length > 0) {
@@ -179,7 +160,6 @@ export function TextViewer({ response, pretty, className }: Props) {
     <Editor
       readOnly
       className={className}
-      forceUpdateKey={body}
       defaultValue={body}
       language={language}
       actions={actions}

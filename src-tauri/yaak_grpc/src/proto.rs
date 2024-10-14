@@ -153,7 +153,7 @@ async fn file_descriptor_set_from_service_name(
         client,
         MessageRequest::FileContainingSymbol(service_name.into()),
     )
-    .await
+        .await
     {
         Ok(resp) => resp,
         Err(e) => {

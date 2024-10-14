@@ -12,8 +12,8 @@ interface Props {
 
 export const CookieDialog = function ({ cookieJarId }: Props) {
   const updateCookieJar = useUpdateCookieJar(cookieJarId ?? null);
-  const cookieJars = useCookieJars().data ?? [];
-  const cookieJar = cookieJars.find((c) => c.id === cookieJarId);
+  const cookieJars = useCookieJars();
+  const cookieJar = cookieJars?.find((c) => c.id === cookieJarId);
 
   if (cookieJar == null) {
     return <div>No cookie jar selected</div>;

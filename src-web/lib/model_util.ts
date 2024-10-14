@@ -32,8 +32,11 @@ export function cookieDomain(cookie: Cookie): string {
   return 'unknown';
 }
 
-export function isResponseLoading(response: HttpResponse | GrpcConnection): boolean {
-  return response.elapsed === 0;
+export function isResponseLoading(
+  response: Pick<HttpResponse | GrpcConnection, 'state'> | null,
+): boolean {
+  if (response == null) return false;
+  return response.state !== 'closed';
 }
 
 export function modelsEq(a: AnyModel, b: AnyModel) {

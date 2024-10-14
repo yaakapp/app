@@ -3,7 +3,7 @@ use std::time::SystemTime;
 
 use log::info;
 use tauri::{AppHandle, Manager};
-use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use tauri_plugin_updater::UpdaterExt;
 use tokio::task::block_in_place;
 use yaak_plugin_runtime::manager::PluginManager;
@@ -92,8 +92,10 @@ impl YaakUpdater {
                         "{} is available. Would you like to download and install it now?",
                         update.version
                     ))
-                    .ok_button_label("Download")
-                    .cancel_button_label("Later")
+                    .buttons(MessageDialogButtons::OkCancelCustom(
+                        "Download".to_string(),
+                        "Later".to_string(),
+                    ))
                     .title("Update Available")
                     .show(|confirmed| {
                         if !confirmed {
@@ -105,8 +107,10 @@ impl YaakUpdater {
                                     if h.dialog()
                                         .message("Would you like to restart the app?")
                                         .title("Update Installed")
-                                        .ok_button_label("Restart")
-                                        .cancel_button_label("Later")
+                                        .buttons(MessageDialogButtons::OkCancelCustom(
+                                            "Restart".to_string(),
+                                            "Later".to_string(),
+                                        ))
                                         .blocking_show()
                                     {
                                         h.restart();

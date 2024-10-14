@@ -1704,72 +1704,122 @@
                 "properties": {
                   "allow": {
                     "items": {
-                      "title": "Entry",
-                      "description": "A command allowed to be executed by the webview API.",
-                      "type": "object",
-                      "required": [
-                        "args",
-                        "cmd",
-                        "name",
-                        "sidecar"
-                      ],
-                      "properties": {
-                        "args": {
-                          "description": "The allowed arguments for the command execution.",
-                          "allOf": [
-                            {
-                              "$ref": "#/definitions/ShellAllowedArgs"
+                      "title": "ShellScopeEntry",
+                      "description": "Shell scope entry.",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "cmd",
+                            "name"
+                          ],
+                          "properties": {
+                            "args": {
+                              "description": "The allowed arguments for the command execution.",
+                              "allOf": [
+                                {
+                                  "$ref": "#/definitions/ShellScopeEntryAllowedArgs"
+                                }
+                              ]
+                            },
+                            "cmd": {
+                              "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
+                              "type": "string"
+                            },
+                            "name": {
+                              "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
+                              "type": "string"
                             }
-                          ]
+                          },
+                          "additionalProperties": false
                         },
-                        "cmd": {
-                          "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
-                          "type": "string"
-                        },
-                        "name": {
-                          "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
-                          "type": "string"
-                        },
-                        "sidecar": {
-                          "description": "If this command is a sidecar command.",
-                          "type": "boolean"
+                        {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "sidecar"
+                          ],
+                          "properties": {
+                            "args": {
+                              "description": "The allowed arguments for the command execution.",
+                              "allOf": [
+                                {
+                                  "$ref": "#/definitions/ShellScopeEntryAllowedArgs"
+                                }
+                              ]
+                            },
+                            "name": {
+                              "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
+                              "type": "string"
+                            },
+                            "sidecar": {
+                              "description": "If this command is a sidecar command.",
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false
                         }
-                      }
+                      ]
                     }
                   },
                   "deny": {
                     "items": {
-                      "title": "Entry",
-                      "description": "A command allowed to be executed by the webview API.",
-                      "type": "object",
-                      "required": [
-                        "args",
-                        "cmd",
-                        "name",
-                        "sidecar"
-                      ],
-                      "properties": {
-                        "args": {
-                          "description": "The allowed arguments for the command execution.",
-                          "allOf": [
-                            {
-                              "$ref": "#/definitions/ShellAllowedArgs"
+                      "title": "ShellScopeEntry",
+                      "description": "Shell scope entry.",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "cmd",
+                            "name"
+                          ],
+                          "properties": {
+                            "args": {
+                              "description": "The allowed arguments for the command execution.",
+                              "allOf": [
+                                {
+                                  "$ref": "#/definitions/ShellScopeEntryAllowedArgs"
+                                }
+                              ]
+                            },
+                            "cmd": {
+                              "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
+                              "type": "string"
+                            },
+                            "name": {
+                              "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
+                              "type": "string"
                             }
-                          ]
+                          },
+                          "additionalProperties": false
                         },
-                        "cmd": {
-                          "description": "The command name. It can start with a variable that resolves to a system base directory. The variables are: `$AUDIO`, `$CACHE`, `$CONFIG`, `$DATA`, `$LOCALDATA`, `$DESKTOP`, `$DOCUMENT`, `$DOWNLOAD`, `$EXE`, `$FONT`, `$HOME`, `$PICTURE`, `$PUBLIC`, `$RUNTIME`, `$TEMPLATE`, `$VIDEO`, `$RESOURCE`, `$APP`, `$LOG`, `$TEMP`, `$APPCONFIG`, `$APPDATA`, `$APPLOCALDATA`, `$APPCACHE`, `$APPLOG`.",
-                          "type": "string"
-                        },
-                        "name": {
-                          "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
-                          "type": "string"
-                        },
-                        "sidecar": {
-                          "description": "If this command is a sidecar command.",
-                          "type": "boolean"
+                        {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "sidecar"
+                          ],
+                          "properties": {
+                            "args": {
+                              "description": "The allowed arguments for the command execution.",
+                              "allOf": [
+                                {
+                                  "$ref": "#/definitions/ShellScopeEntryAllowedArgs"
+                                }
+                              ]
+                            },
+                            "name": {
+                              "description": "The name for this allowed shell command configuration.\n\nThis name will be used inside of the webview API to call this command along with any specified arguments.",
+                              "type": "string"
+                            },
+                            "sidecar": {
+                              "description": "If this command is a sidecar command.",
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": false
                         }
-                      }
+                      ]
                     }
                   }
                 }
@@ -1923,6 +1973,11 @@
           "const": "core:app:allow-name"
         },
         {
+          "description": "Enables the set_app_theme command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:app:allow-set-app-theme"
+        },
+        {
           "description": "Enables the tauri_version command without any pre-configured scope.",
           "type": "string",
           "const": "core:app:allow-tauri-version"
@@ -1951,6 +2006,11 @@
           "description": "Denies the name command without any pre-configured scope.",
           "type": "string",
           "const": "core:app:deny-name"
+        },
+        {
+          "description": "Denies the set_app_theme command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:app:deny-set-app-theme"
         },
         {
           "description": "Denies the tauri_version command without any pre-configured scope.",
@@ -2508,6 +2568,11 @@
           "const": "core:webview:default"
         },
         {
+          "description": "Enables the clear_all_browsing_data command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:allow-clear-all-browsing-data"
+        },
+        {
           "description": "Enables the create_webview command without any pre-configured scope.",
           "type": "string",
           "const": "core:webview:allow-create-webview"
@@ -2563,14 +2628,29 @@
           "const": "core:webview:allow-webview-close"
         },
         {
+          "description": "Enables the webview_hide command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:allow-webview-hide"
+        },
+        {
           "description": "Enables the webview_position command without any pre-configured scope.",
           "type": "string",
           "const": "core:webview:allow-webview-position"
         },
         {
+          "description": "Enables the webview_show command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:allow-webview-show"
+        },
+        {
           "description": "Enables the webview_size command without any pre-configured scope.",
           "type": "string",
           "const": "core:webview:allow-webview-size"
+        },
+        {
+          "description": "Denies the clear_all_browsing_data command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:deny-clear-all-browsing-data"
         },
         {
           "description": "Denies the create_webview command without any pre-configured scope.",
@@ -2628,9 +2708,19 @@
           "const": "core:webview:deny-webview-close"
         },
         {
+          "description": "Denies the webview_hide command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:deny-webview-hide"
+        },
+        {
           "description": "Denies the webview_position command without any pre-configured scope.",
           "type": "string",
           "const": "core:webview:deny-webview-position"
+        },
+        {
+          "description": "Denies the webview_show command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:webview:deny-webview-show"
         },
         {
           "description": "Denies the webview_size command without any pre-configured scope.",
@@ -2711,6 +2801,11 @@
           "description": "Enables the is_decorated command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:allow-is-decorated"
+        },
+        {
+          "description": "Enables the is_enabled command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:allow-is-enabled"
         },
         {
           "description": "Enables the is_focused command without any pre-configured scope.",
@@ -2843,6 +2938,11 @@
           "const": "core:window:allow-set-effects"
         },
         {
+          "description": "Enables the set_enabled command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:allow-set-enabled"
+        },
+        {
           "description": "Enables the set_focus command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:allow-set-focus"
@@ -2916,6 +3016,11 @@
           "description": "Enables the set_skip_taskbar command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:allow-set-skip-taskbar"
+        },
+        {
+          "description": "Enables the set_theme command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:allow-set-theme"
         },
         {
           "description": "Enables the set_title command without any pre-configured scope.",
@@ -3041,6 +3146,11 @@
           "description": "Denies the is_decorated command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:deny-is-decorated"
+        },
+        {
+          "description": "Denies the is_enabled command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:deny-is-enabled"
         },
         {
           "description": "Denies the is_focused command without any pre-configured scope.",
@@ -3173,6 +3283,11 @@
           "const": "core:window:deny-set-effects"
         },
         {
+          "description": "Denies the set_enabled command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:deny-set-enabled"
+        },
+        {
           "description": "Denies the set_focus command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:deny-set-focus"
@@ -3246,6 +3361,11 @@
           "description": "Denies the set_skip_taskbar command without any pre-configured scope.",
           "type": "string",
           "const": "core:window:deny-set-skip-taskbar"
+        },
+        {
+          "description": "Denies the set_theme command without any pre-configured scope.",
+          "type": "string",
+          "const": "core:window:deny-set-theme"
         },
         {
           "description": "Denies the set_title command without any pre-configured scope.",
@@ -5153,7 +5273,7 @@
         }
       ]
     },
-    "ShellAllowedArg": {
+    "ShellScopeEntryAllowedArg": {
       "description": "A command argument allowed to be executed by the webview API.",
       "anyOf": [
         {
@@ -5181,18 +5301,18 @@
         }
       ]
     },
-    "ShellAllowedArgs": {
-      "description": "A set of command arguments allowed to be executed by the webview API.\n\nA value of `true` will allow any arguments to be passed to the command. `false` will disable all arguments. A list of [`ShellAllowedArg`] will set those arguments as the only valid arguments to be passed to the attached command configuration.",
+    "ShellScopeEntryAllowedArgs": {
+      "description": "A set of command arguments allowed to be executed by the webview API.\n\nA value of `true` will allow any arguments to be passed to the command. `false` will disable all arguments. A list of [`ShellScopeEntryAllowedArg`] will set those arguments as the only valid arguments to be passed to the attached command configuration.",
       "anyOf": [
         {
           "description": "Use a simple boolean to allow all or disable all arguments to this command configuration.",
           "type": "boolean"
         },
         {
-          "description": "A specific set of [`ShellAllowedArg`] that are valid to call for the command configuration.",
+          "description": "A specific set of [`ShellScopeEntryAllowedArg`] that are valid to call for the command configuration.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ShellAllowedArg"
+            "$ref": "#/definitions/ShellScopeEntryAllowedArg"
           }
         }
       ]

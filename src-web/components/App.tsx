@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { MotionConfig } from 'framer-motion';
 import React, { Suspense } from 'react';
@@ -7,17 +7,24 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppRouter } from './AppRouter';
 
-const ENABLE_REACT_QUERY_DEVTOOLS = false;
-
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (err, query) => {
+      console.log('Query client error', { err, query });
+    },
+  }),
   defaultOptions: {
     queries: {
       retry: false,
+      networkMode: 'always',
       refetchOnWindowFocus: true,
-      networkMode: 'offlineFirst',
+      refetchOnReconnect: false,
+      refetchOnMount: false, // Don't refetch when a hook mounts
     },
   },
 });
+
+const ENABLE_REACT_QUERY_DEVTOOLS = false;
 
 export function App() {
   return (

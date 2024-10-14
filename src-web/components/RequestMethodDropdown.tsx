@@ -43,12 +43,13 @@ export const RequestMethodDropdown = memo(function RequestMethodDropdown({
           const newMethod = await prompt({
             id: 'custom-method',
             label: 'Http Method',
-            name: 'httpMethod',
             defaultValue: '',
             title: 'Custom Method',
+            confirmText: 'Save',
             description: 'Enter a custom method name',
             placeholder: 'CUSTOM',
           });
+          if (newMethod == null) return;
           onChange(newMethod);
         },
       },
