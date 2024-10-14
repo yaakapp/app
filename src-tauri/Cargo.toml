@@ -1,5 +1,12 @@
 [workspace]
-members = ["yaak_grpc", "yaak_templates", "yaak_plugin_runtime", "yaak_models", "tauri-plugin-sync", "yaak_sse"]
+members = [
+    "tauri-plugin-sync",
+    "yaak_grpc",
+    "yaak_models",
+    "yaak_plugin_runtime",
+    "yaak_sse",
+    "yaak_templates",
+]
 
 [package]
 name = "yaak-app"
@@ -26,13 +33,12 @@ cocoa = "0.26.0"
 openssl-sys = { version = "0.9", features = ["vendored"] } # For Linux installation to work
 
 [dependencies]
-yaak_grpc = { path = "yaak_grpc" }
-yaak_templates = { path = "yaak_templates" }
-yaak_plugin_runtime = { workspace = true }
 yaak_models = { workspace = true }
+yaak_plugin_runtime = { workspace = true }
+yaak_grpc = { workspace = true }
+yaak_sse = { workspace = true }
+yaak_templates = { workspace = true }
 anyhow = "1.0.89"
-yaak_sse = { path = "yaak_sse" }
-anyhow = "1.0.86"
 base64 = "0.22.0"
 chrono = { workspace = true, features = ["serde"] }
 datetime = "0.5.2"
@@ -66,6 +72,9 @@ eventsource-client = { git = "https://github.com/yaakapp/rust-eventsource-client
 
 [workspace.dependencies]
 yaak_models = { path = "yaak_models" }
+yaak_grpc = { path = "yaak_grpc" }
+yaak_sse = { path = "yaak_sse" }
+yaak_templates = { path = "yaak_templates" }
 yaak_plugin_runtime = { path = "yaak_plugin_runtime" }
 tauri-plugin-sync = { path = "tauri-plugin-sync" }
 chrono = "0.4.38"

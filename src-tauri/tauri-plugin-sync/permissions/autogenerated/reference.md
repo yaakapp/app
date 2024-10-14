@@ -6,7 +6,7 @@ Default permissions for the plugin
 - `allow-commit`
 - `allow-commits`
 
-## Permission Table 
+## Permission Table
 
 <table>
 <tr>

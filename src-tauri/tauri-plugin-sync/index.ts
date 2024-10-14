@@ -9,8 +9,10 @@ export * from './bindings/models';
 export * from './bindings/sync';
 
 export function useChanges(workspaceId: string, branch: string) {
+  const commits = useCommits(workspaceId, branch);
+  const commitKey = commits.data?.join(',');
   return useQuery<StageTreeNode>({
-    queryKey: ['sync.changes', workspaceId, branch],
+    queryKey: ['sync.changes', workspaceId, branch, commitKey],
     queryFn: () => {
       const payload: ChangesPayload = { workspaceId, branch };
       return invoke('plugin:sync|changes', { payload });

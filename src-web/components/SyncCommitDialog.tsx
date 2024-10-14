@@ -37,8 +37,8 @@ function SyncCommitChanges({
   workspaceId: string;
   onDone: () => void;
 }) {
-  const [message, setMessage] = useState<string>('');
   const createCommit = useCreateCommit(workspaceId);
+  const [message, setMessage] = useState<string>('');
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
   const checkNode = (node: StageTreeNode, checked: boolean) => {
@@ -110,9 +110,9 @@ function SyncCommitChanges({
               >
                 Commit
               </Button>
-              <Button color="secondary" size="sm" disabled={!hasAddedAnything}>
-                Commit and Push
-              </Button>
+              {/*<Button color="secondary" size="sm" disabled={!hasAddedAnything}>*/}
+              {/*  Commit and Push*/}
+              {/*</Button>*/}
             </HStack>
           </div>
         )}
