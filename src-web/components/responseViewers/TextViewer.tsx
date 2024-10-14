@@ -160,7 +160,6 @@ export function TextViewer({
     <Editor
       readOnly
       className={className}
-      forceUpdateKey={body}
       defaultValue={body}
       language={language}
       actions={actions}

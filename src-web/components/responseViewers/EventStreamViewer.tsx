@@ -90,7 +90,6 @@ function ActualEventStreamViewer({ response }: Props) {
                   ) : (
                     <Editor
                       readOnly
-                      forceUpdateKey={activeEvent.id ?? activeEvent.data}
                       defaultValue={tryFormatJson(activeEvent.data)}
                       language={language}
                     />
