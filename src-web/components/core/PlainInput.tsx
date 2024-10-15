@@ -137,6 +137,9 @@ export function PlainInput({
             onFocus={handleFocus}
             onBlur={handleBlur}
             autoFocus={autoFocus}
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
             step={step}
             readOnly={readOnly}
           />
