@@ -76,7 +76,7 @@
       "developmentTeam": "7PU3P6ELJ8"
     },
     "macOS": {
-      "minimumSystemVersion": "15.0",
+      "minimumSystemVersion": "13.0",
       "exceptionDomain": "",
       "entitlements": "macos/entitlements.plist",
       "frameworks": []
