@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
@@ -23,25 +33,21 @@ __export(src_exports, {
   plugin: () => plugin
 });
 module.exports = __toCommonJS(src_exports);
-var import_node_crypto = require("node:crypto");
-var algorithms = ["md5", "sha1", "sha256", "sha512"];
+var import_node_fs = __toESM(require("node:fs"));
 var plugin = {
-  templateFunctions: algorithms.map((algorithm) => ({
-    name: `hash.${algorithm}`,
-    description: "Hash a value to its hexidecimal representation",
-    args: [
-      {
-        name: "input",
-        label: "Input",
-        placeholder: "input text",
-        type: "text"
-      }
-    ],
+  templateFunctions: [{
+    name: "fs.readFile",
+    description: "Read the contents of a file as utf-8",
+    args: [{ title: "Select File", type: "file", name: "path", label: "File" }],
     async onRender(_ctx, args) {
-      if (!args.values.input) return "";
-      return (0, import_node_crypto.createHash)(algorithm).update(args.values.input, "utf-8").digest("hex");
+      if (!args.values.path) return null;
+      try {
+        return import_node_fs.default.promises.readFile(args.values.path, "utf-8");
+      } catch (err) {
+        return null;
+      }
     }
-  }))
+  }]
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

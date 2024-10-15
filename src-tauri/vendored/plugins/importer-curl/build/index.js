@@ -288,7 +288,8 @@ var SUPPORTED_ARGS = [
   // Request method
   DATA_FLAGS
 ].flatMap((v) => v);
-function pluginHookImport(ctx, rawData) {
+var BOOL_FLAGS = ["G", "get", "digest"];
+function pluginHookImport(_ctx, rawData) {
   if (!rawData.match(/^\s*curl /)) {
     return null;
   }
@@ -359,10 +360,11 @@ function importCommand(parseEntries, workspaceId) {
       }
       let value;
       const nextEntry = parseEntries[i + 1];
+      const hasValue = !BOOL_FLAGS.includes(name);
       if (isSingleDash && name.length > 1) {
         value = name.slice(1);
         name = name.slice(0, 1);
-      } else if (typeof nextEntry === "string" && !nextEntry.startsWith("-")) {
+      } else if (typeof nextEntry === "string" && hasValue && !nextEntry.startsWith("-")) {
         value = nextEntry;
         i++;
       } else {
