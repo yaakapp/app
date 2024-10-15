@@ -2,6 +2,7 @@ import { emit } from '@tauri-apps/api/event';
 import type { PromptTextRequest, PromptTextResponse } from '@yaakapp-internal/plugin';
 import { useEnsureActiveCookieJar } from '../hooks/useActiveCookieJar';
 import { useActiveWorkspaceChangedToast } from '../hooks/useActiveWorkspaceChangedToast';
+import {useGenerateThemeCss} from "../hooks/useGenerateThemeCss";
 import { useHotKey } from '../hooks/useHotKey';
 import { useListenToTauriEvent } from '../hooks/useListenToTauriEvent';
 import { useNotificationToast } from '../hooks/useNotificationToast';
@@ -10,10 +11,18 @@ import { useRecentCookieJars } from '../hooks/useRecentCookieJars';
 import { useRecentEnvironments } from '../hooks/useRecentEnvironments';
 import { useRecentRequests } from '../hooks/useRecentRequests';
 import { useRecentWorkspaces } from '../hooks/useRecentWorkspaces';
+import {useSyncFontSizeSetting} from "../hooks/useSyncFontSizeSetting";
+import {useSyncModelStores} from "../hooks/useSyncModelStores";
 import { useSyncWorkspaceChildModels } from '../hooks/useSyncWorkspaceChildModels';
+import {useSyncZoomSetting} from "../hooks/useSyncZoomSetting";
 import { useToggleCommandPalette } from '../hooks/useToggleCommandPalette';
 
 export function GlobalHooks() {
+  useSyncModelStores();
+  useSyncZoomSetting();
+  useSyncFontSizeSetting();
+  useGenerateThemeCss();
+
   // Include here so they always update, even if no component references them
   useRecentWorkspaces();
   useRecentEnvironments();

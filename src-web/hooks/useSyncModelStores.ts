@@ -4,6 +4,7 @@ import type { AnyModel } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { extractKeyValue } from '../lib/keyValueStore';
 import { modelsEq } from '../lib/model_util';
+import {useActiveWorkspace} from "./useActiveWorkspace";
 import { cookieJarsAtom } from './useCookieJars';
 import { environmentsAtom } from './useEnvironments';
 import { foldersAtom } from './useFolders';
@@ -25,6 +26,7 @@ export interface ModelPayload {
 }
 
 export function useSyncModelStores() {
+  const activeWorkspace = useActiveWorkspace();
   const queryClient = useQueryClient();
   const { wasUpdatedExternally } = useRequestUpdateKey(null);
 
@@ -48,10 +50,17 @@ export function useSyncModelStores() {
           ? keyValueQueryKey(model)
           : null;
 
+    // TODO: Move this logic to useRequestEditor() hook
     if (model.model === 'http_request' && windowLabel !== getCurrentWebviewWindow().label) {
       wasUpdatedExternally(model.id);
     }
 
+    // Only sync models that belong to this workspace, if a workspace ID is present
+    if ('workspaceId' in model && model.workspaceId !== activeWorkspace?.id) {
+      return;
+    }
+
+    // Mark these models as DESC instead of ASC
     const pushToFront = (['http_response', 'grpc_connection'] as AnyModel['model'][]).includes(
       model.model,
     );
