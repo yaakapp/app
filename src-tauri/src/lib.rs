@@ -49,20 +49,7 @@ use yaak_models::models::{
     GrpcEvent, GrpcEventType, GrpcRequest, HttpRequest, HttpResponse, HttpResponseState, KeyValue,
     ModelType, Plugin, Settings, Workspace,
 };
-use yaak_models::queries::{
-    cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response,
-    delete_all_grpc_connections, delete_all_http_responses_for_request, delete_cookie_jar,
-    delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request,
-    delete_http_request, delete_http_response, delete_plugin, delete_workspace,
-    duplicate_grpc_request, duplicate_http_request, generate_id, generate_model_id, get_cookie_jar,
-    get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request,
-    get_http_response, get_key_value_raw, get_or_create_settings, get_plugin, get_workspace,
-    list_cookie_jars, list_environments, list_folders, list_grpc_connections, list_grpc_events,
-    list_grpc_requests, list_http_requests, list_http_responses, list_http_responses_for_request,
-    list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings,
-    upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection,
-    upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace,
-};
+use yaak_models::queries::{cancel_pending_grpc_connections, cancel_pending_responses, create_default_http_response, delete_all_grpc_connections, delete_all_grpc_connections_for_workspace, delete_all_http_responses_for_request, delete_all_http_responses_for_workspace, delete_cookie_jar, delete_environment, delete_folder, delete_grpc_connection, delete_grpc_request, delete_http_request, delete_http_response, delete_plugin, delete_workspace, duplicate_grpc_request, duplicate_http_request, generate_id, generate_model_id, get_cookie_jar, get_environment, get_folder, get_grpc_connection, get_grpc_request, get_http_request, get_http_response, get_key_value_raw, get_or_create_settings, get_plugin, get_workspace, list_cookie_jars, list_environments, list_folders, list_grpc_connections_for_workspace, list_grpc_events, list_grpc_requests, list_http_requests, list_http_responses_for_request, list_http_responses_for_workspace, list_plugins, list_workspaces, set_key_value_raw, update_response_if_id, update_settings, upsert_cookie_jar, upsert_environment, upsert_folder, upsert_grpc_connection, upsert_grpc_event, upsert_grpc_request, upsert_http_request, upsert_plugin, upsert_workspace};
 use yaak_plugin_runtime::events::{
     BootResponse, CallHttpRequestActionRequest, FilterResponse, FindHttpResponsesResponse,
     GetHttpRequestActionsResponse, GetHttpRequestByIdResponse, GetTemplateFunctionsResponse, Icon,
@@ -1505,7 +1492,7 @@ async fn cmd_list_grpc_connections(
     workspace_id: &str,
     w: WebviewWindow,
 ) -> Result<Vec<GrpcConnection>, String> {
-    list_grpc_connections(&w, workspace_id)
+    list_grpc_connections_for_workspace(&w, workspace_id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1656,7 +1643,7 @@ async fn cmd_list_http_responses(
     limit: Option<i64>,
     w: WebviewWindow,
 ) -> Result<Vec<HttpResponse>, String> {
-    list_http_responses(&w, workspace_id, limit)
+    list_http_responses_for_workspace(&w, workspace_id, limit)
         .await
         .map_err(|e| e.to_string())
 }
@@ -1680,6 +1667,17 @@ async fn cmd_delete_all_grpc_connections(request_id: &str, w: WebviewWindow) -> 
     delete_all_grpc_connections(&w, request_id)
         .await
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn cmd_delete_send_history(workspace_id: &str, w: WebviewWindow) -> Result<(), String> {
+    delete_all_http_responses_for_workspace(&w, workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    delete_all_grpc_connections_for_workspace(&w, workspace_id)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -1909,6 +1907,7 @@ pub fn run() {
             cmd_curl_to_request,
             cmd_delete_all_grpc_connections,
             cmd_delete_all_http_responses,
+            cmd_delete_send_history,
             cmd_delete_cookie_jar,
             cmd_delete_environment,
             cmd_delete_folder,
