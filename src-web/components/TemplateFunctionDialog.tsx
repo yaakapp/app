@@ -1,3 +1,4 @@
+import type { Folder, HttpRequest } from '@yaakapp-internal/models';
 import type {
   TemplateFunction,
   TemplateFunctionArg,
@@ -12,6 +13,7 @@ import classNames from 'classnames';
 import { useCallback, useMemo, useState } from 'react';
 import { useActiveRequest } from '../hooks/useActiveRequest';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { useFolders } from '../hooks/useFolders';
 import { useHttpRequests } from '../hooks/useHttpRequests';
 import { useRenderTemplate } from '../hooks/useRenderTemplate';
 import { useTemplateTokensToString } from '../hooks/useTemplateTokensToString';
@@ -253,6 +255,7 @@ function HttpRequestArg({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const folders = useFolders();
   const httpRequests = useHttpRequests();
   const activeRequest = useActiveRequest();
   return (
@@ -262,13 +265,33 @@ function HttpRequestArg({
       onChange={onChange}
       value={value}
       options={[
-        ...httpRequests.map((r) => ({
-          label: fallbackRequestName(r) + (activeRequest?.id === r.id ? ' (current)' : ''),
-          value: r.id,
-        })),
+        ...httpRequests.map((r) => {
+          return {
+            label: buildRequestBreadcrumbs(r, folders).join(' / ') + (r.id == activeRequest?.id ? ' (current)' : ''),
+            value: r.id,
+          };
+        }),
       ]}
     />
   );
+}
+
+function buildRequestBreadcrumbs(request: HttpRequest, folders: Folder[]): string[] {
+  const ancestors: (HttpRequest | Folder)[] = [request];
+
+  const next = () => {
+    const latest = ancestors[0];
+    if (latest == null) return [];
+
+    const parent = folders.find((f) => f.id === latest.folderId);
+    if (parent == null) return;
+
+    ancestors.unshift(parent);
+    next();
+  };
+  next();
+
+  return ancestors.map((a) => (a.model === 'folder' ? a.name : fallbackRequestName(a)));
 }
 
 function CheckboxArg({
