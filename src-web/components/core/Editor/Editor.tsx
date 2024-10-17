@@ -364,7 +364,7 @@ export const Editor = forwardRef<EditorView | undefined, EditorProps>(function E
         changes: cm.current.view.state.changes({
           from: 0,
           to: currentDoc.length,
-          insert: currentDoc,
+          insert: defaultValue,
         }),
       });
     }
