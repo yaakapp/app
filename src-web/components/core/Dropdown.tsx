@@ -350,8 +350,9 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     container: CSSProperties;
     menu: CSSProperties;
     triangle: CSSProperties;
+    upsideDown: boolean;
   }>(() => {
-    if (triggerShape == null) return { container: {}, triangle: {}, menu: {} };
+    if (triggerShape == null) return { container: {}, triangle: {}, menu: {}, upsideDown: false };
 
     const menuMarginY = 5;
     const docRect = document.documentElement.getBoundingClientRect();
@@ -364,6 +365,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
     const upsideDown = heightBelow < heightAbove && heightBelow < items.length * 25 + 20 + 200;
     const triggerWidth = triggerShape.right - triggerShape.left;
     return {
+      upsideDown,
       container: {
         top: !upsideDown ? top + menuMarginY : undefined,
         bottom: upsideDown
@@ -426,7 +428,7 @@ const Menu = forwardRef<Omit<DropdownRef, 'open' | 'isOpen' | 'toggle'>, MenuPro
             <motion.div
               tabIndex={0}
               onKeyDown={handleMenuKeyDown}
-              initial={{ opacity: 0, y: -5, scale: 0.98 }}
+              initial={{ opacity: 0, y: (styles.upsideDown ? 1 : -1) * 5, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               role="menu"
               aria-orientation="vertical"
