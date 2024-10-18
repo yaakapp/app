@@ -442,7 +442,6 @@ pub async fn send_http_request<R: Runtime>(
                     }
 
                     // Write body to FS
-                    println!("BODYPATH {body_path:?}");
                     let mut f = File::options()
                         .create(true)
                         .truncate(true)
