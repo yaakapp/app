@@ -273,9 +273,9 @@ impl PluginManager {
         Ok(())
     }
 
-    pub async fn subscribe(&self) -> (String, mpsc::Receiver<InternalEvent>) {
+    pub async fn subscribe(&self, label: &str) -> (String, mpsc::Receiver<InternalEvent>) {
         let (tx, rx) = mpsc::channel(128);
-        let rx_id = generate_id();
+        let rx_id = format!("{label}_{}", generate_id());
         self.subscribers.lock().await.insert(rx_id.clone(), tx);
         (rx_id, rx)
     }
@@ -362,7 +362,8 @@ impl PluginManager {
         payload: &InternalEventPayload,
         plugins: Vec<PluginHandle>,
     ) -> Result<Vec<InternalEvent>> {
-        let (rx_id, mut rx) = self.subscribe().await;
+        let label = format!("wait[{}]", plugins.len());
+        let (rx_id, mut rx) = self.subscribe(label.as_str()).await;
 
         // 1. Build the events with IDs and everything
         let events_to_send = plugins

@@ -1971,7 +1971,7 @@ fn monitor_plugin_events<R: Runtime>(app_handle: &AppHandle<R>) {
     let app_handle = app_handle.clone();
     tauri::async_runtime::spawn(async move {
         let plugin_manager: State<'_, PluginManager> = app_handle.state();
-        let (rx_id, mut rx) = plugin_manager.subscribe().await;
+        let (rx_id, mut rx) = plugin_manager.subscribe("app").await;
 
         while let Some(event) = rx.recv().await {
             let app_handle = app_handle.clone();
