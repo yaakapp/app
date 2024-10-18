@@ -14,6 +14,7 @@ type TauriCmd =
   | 'cmd_curl_to_request'
   | 'cmd_delete_all_grpc_connections'
   | 'cmd_delete_all_http_responses'
+  | 'cmd_delete_send_history'
   | 'cmd_delete_cookie_jar'
   | 'cmd_delete_environment'
   | 'cmd_delete_folder'

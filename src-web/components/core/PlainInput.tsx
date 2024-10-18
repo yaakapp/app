@@ -131,6 +131,9 @@ export function PlainInput({
             type={type === 'password' && !obscured ? 'text' : type}
             defaultValue={defaultValue}
             placeholder={placeholder}
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
             onChange={(e) => handleChange(e.target.value)}
             onPaste={(e) => onPaste?.(e.clipboardData.getData('Text'))}
             className={classNames(commonClassName, 'h-auto')}

@@ -704,11 +704,11 @@ function SidebarItem({
   useScrollIntoView(ref.current, isActive);
 
   const handleSubmitNameEdit = useCallback(
-    (el: HTMLInputElement) => {
+    async (el: HTMLInputElement) => {
       if (itemModel === 'http_request') {
-        updateHttpRequest.mutate({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
+        await updateHttpRequest.mutateAsync({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
       } else if (itemModel === 'grpc_request') {
-        updateGrpcRequest.mutate({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
+        await updateGrpcRequest.mutateAsync({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
       }
       setEditing(false);
     },

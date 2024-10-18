@@ -503,7 +503,7 @@ pub async fn get_grpc_connection<R: Runtime>(
     Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
 }
 
-pub async fn list_grpc_connections<R: Runtime>(
+pub async fn list_grpc_connections_for_workspace<R: Runtime>(
     mgr: &impl Manager<R>,
     workspace_id: &str,
 ) -> Result<Vec<GrpcConnection>> {
@@ -562,6 +562,16 @@ pub async fn delete_all_grpc_connections<R: Runtime>(
     request_id: &str,
 ) -> Result<()> {
     for r in list_grpc_connections_for_request(window, request_id).await? {
+        delete_grpc_connection(window, &r.id).await?;
+    }
+    Ok(())
+}
+
+pub async fn delete_all_grpc_connections_for_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace_id: &str,
+) -> Result<()> {
+    for r in list_grpc_connections_for_workspace(window, workspace_id).await? {
         delete_grpc_connection(window, &r.id).await?;
     }
     Ok(())
@@ -1423,7 +1433,17 @@ pub async fn delete_all_http_responses_for_request<R: Runtime>(
     Ok(())
 }
 
-pub async fn list_http_responses<R: Runtime>(
+pub async fn delete_all_http_responses_for_workspace<R: Runtime>(
+    window: &WebviewWindow<R>,
+    workspace_id: &str,
+) -> Result<()> {
+    for r in list_http_responses_for_workspace(window, workspace_id, None).await? {
+        delete_http_response(window, &r.id).await?;
+    }
+    Ok(())
+}
+
+pub async fn list_http_responses_for_workspace<R: Runtime>(
     mgr: &impl Manager<R>,
     workspace_id: &str,
     limit: Option<i64>,

@@ -8837,6 +8837,7 @@ var plugin = {
   templateFunctions: [
     {
       name: "response.header",
+      description: "Read the value of a response header, by name",
       args: [
         requestArg,
         {
@@ -8863,6 +8864,7 @@ var plugin = {
     },
     {
       name: "response.body.path",
+      description: "Access a field of the response body using JsonPath or XPath",
       aliases: ["response"],
       args: [
         requestArg,
@@ -8900,6 +8902,34 @@ var plugin = {
         } catch (err) {
         }
         return null;
+      }
+    },
+    {
+      name: "response.body.raw",
+      description: "Access the entire response body, as text",
+      aliases: ["response"],
+      args: [
+        requestArg,
+        behaviorArg
+      ],
+      async onRender(ctx, args) {
+        if (!args.values.request) return null;
+        const response = await getResponse(ctx, {
+          requestId: args.values.request,
+          purpose: args.purpose,
+          behavior: args.values.behavior ?? null
+        });
+        if (response == null) return null;
+        if (response.bodyPath == null) {
+          return null;
+        }
+        let body;
+        try {
+          body = (0, import_node_fs.readFileSync)(response.bodyPath, "utf-8");
+        } catch (_) {
+          return null;
+        }
+        return body;
       }
     }
   ]

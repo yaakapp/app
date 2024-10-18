@@ -65,7 +65,14 @@ function ActualEventStreamViewer({ response }: Props) {
                   <Separator />
                 </div>
                 <div className="pl-2 overflow-y-auto">
-                  <div className="mb-2 select-text cursor-text font-semibold">Message Received</div>
+                  <HStack space={1.5} className="mb-2 select-text cursor-text font-semibold">
+                    <EventLabels
+                      className="text-sm"
+                      event={activeEvent}
+                      index={activeEventIndex ?? 0}
+                    />
+                    Message Received
+                  </HStack>
                   {!showLarge && activeEvent.data.length > 1000 * 1000 ? (
                     <VStack space={2} className="italic text-text-subtlest">
                       Message previews larger than 1MB are hidden
@@ -148,6 +155,7 @@ function EventStreamEventsVirtual({
               <EventStreamEvent
                 event={event}
                 isActive={virtualItem.index === activeEventIndex}
+                index={virtualItem.index}
                 onClick={() => {
                   if (virtualItem.index === activeEventIndex) setActiveEventIndex(null);
                   else setActiveEventIndex(virtualItem.index);
@@ -166,11 +174,13 @@ function EventStreamEvent({
   isActive,
   event,
   className,
+  index,
 }: {
   onClick: () => void;
   isActive: boolean;
   event: ServerSentEvent;
   className?: string;
+  index: number;
 }) {
   return (
     <motion.button
@@ -186,19 +196,33 @@ function EventStreamEvent({
       )}
     >
       <Icon className={classNames('text-info')} title="Server Message" icon="arrow_big_down_dash" />
-      <HStack space={1.5} className="text-sm">
-        {event.eventType && (
-          <InlineCode className={classNames('py-0', isActive && 'bg-text-subtlest text-text')}>
-            {event.eventType}
-          </InlineCode>
-        )}
-        {event.id && (
-          <InlineCode className={classNames('py-0', isActive && 'bg-text-subtlest text-text')}>
-            {event.id}
-          </InlineCode>
-        )}
-      </HStack>
+      <EventLabels className="text-sm" event={event} isActive={isActive} index={index} />
       <div className={classNames('w-full truncate text-xs')}>{event.data.slice(0, 1000)}</div>
     </motion.button>
+  );
+}
+
+function EventLabels({
+  className,
+  event,
+  index,
+  isActive,
+}: {
+  event: ServerSentEvent;
+  index: number;
+  className: string;
+  isActive?: boolean;
+}) {
+  return (
+    <HStack space={1.5} alignItems="center" className={className}>
+      <InlineCode className={classNames('py-0', isActive && 'bg-text-subtlest text-text')}>
+        {event.id ?? index}
+      </InlineCode>
+      {event.eventType && (
+        <InlineCode className={classNames('py-0', isActive && 'bg-text-subtlest text-text')}>
+          {event.eventType}
+        </InlineCode>
+      )}
+    </HStack>
   );
 }

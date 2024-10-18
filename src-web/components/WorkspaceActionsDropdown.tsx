@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { memo, useCallback, useMemo } from 'react';
 import { useActiveWorkspace } from '../hooks/useActiveWorkspace';
 import { useCreateWorkspace } from '../hooks/useCreateWorkspace';
+import { useDeleteSendHistory } from '../hooks/useDeleteSendHistory';
 import { useDeleteWorkspace } from '../hooks/useDeleteWorkspace';
 import { useOpenWorkspace } from '../hooks/useOpenWorkspace';
 import { usePrompt } from '../hooks/usePrompt';
@@ -36,6 +37,7 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   const settings = useSettings();
   const openWorkspace = useOpenWorkspace();
   const openWorkspaceNewWindow = settings?.openWorkspaceNewWindow ?? null;
+  const deleteSendHistory = useDeleteSendHistory();
 
   const { workspaceItems, extraItems } = useMemo<{
     workspaceItems: RadioDropdownItem[];
@@ -71,8 +73,14 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
         },
       },
       {
+        key: 'delete-responses',
+        label: 'Clear Send History',
+        leftSlot: <Icon icon="history" />,
+        onSelect: deleteSendHistory.mutate,
+      },
+      {
         key: 'delete',
-        label: 'Delete',
+        label: 'Delete Workspace',
         leftSlot: <Icon icon="trash" />,
         onSelect: deleteWorkspace.mutate,
         variant: 'danger',
@@ -90,7 +98,8 @@ export const WorkspaceActionsDropdown = memo(function WorkspaceActionsDropdown({
   }, [
     activeWorkspace?.name,
     activeWorkspaceId,
-    createWorkspace,
+    createWorkspace.mutate,
+    deleteSendHistory.mutate,
     deleteWorkspace.mutate,
     prompt,
     updateWorkspace,

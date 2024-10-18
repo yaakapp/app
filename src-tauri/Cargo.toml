@@ -84,6 +84,6 @@ serde_json = "1.0.128"
 sea-query = "0.31.0"
 sea-query-rusqlite = "0.6.0"
 tauri-plugin-shell = "2.0.1"
-tauri = { version = "2.0.3", features = ["devtools", "protocol-asset"] }
+tauri = { version = "2.0.4", features = ["devtools", "protocol-asset"] }
 thiserror = "1.0.64"
 ts-rs = "10.0.0"

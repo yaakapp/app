@@ -4,20 +4,17 @@ import { useDialog } from '../components/DialogContext';
 import type { AlertProps } from './Alert';
 import { Alert } from './Alert';
 
+interface AlertArg {
+  id: string;
+  title: DialogProps['title'];
+  body: AlertProps['body'];
+  size?: DialogProps['size'];
+}
+
 export function useAlert() {
   const dialog = useDialog();
-  return useCallback(
-    ({
-      id,
-      title,
-      body,
-      size = 'sm',
-    }: {
-      id: string;
-      title: DialogProps['title'];
-      body: AlertProps['body'];
-      size?: DialogProps['size'];
-    }) =>
+  return useCallback<(a: AlertArg) => void>(
+    ({ id, title, body, size = 'sm' }: AlertArg) =>
       dialog.show({
         id,
         title,

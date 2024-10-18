@@ -49,6 +49,7 @@ const icons = {
   grip_vertical: lucide.GripVerticalIcon,
   hand: lucide.HandIcon,
   help: lucide.CircleHelpIcon,
+  history: lucide.HistoryIcon,
   house: lucide.HomeIcon,
   info: lucide.InfoIcon,
   keyboard: lucide.KeyboardIcon,

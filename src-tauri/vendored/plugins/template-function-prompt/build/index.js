@@ -26,24 +26,21 @@ module.exports = __toCommonJS(src_exports);
 var plugin = {
   templateFunctions: [{
     name: "prompt.text",
+    description: "Prompt the user for input when sending a request",
     args: [
       { type: "text", name: "title", label: "Title" },
-      { type: "text", name: "label", label: "Label", optional: true },
       { type: "text", name: "defaultValue", label: "Default Value", optional: true },
       { type: "text", name: "placeholder", label: "Placeholder", optional: true }
     ],
     async onRender(ctx, args) {
-      console.log("PROMPT", args);
       if (args.purpose !== "send") return null;
-      const value = await ctx.prompt.text({
+      return await ctx.prompt.text({
         id: `prompt-${args.values.label}`,
-        label: args.values.label ?? "",
+        label: args.values.title ?? "",
         title: args.values.title ?? "",
         defaultValue: args.values.defaultValue,
         placeholder: args.values.placeholder
       });
-      console.log("VALUE", value);
-      return value;
     }
   }]
 };
