@@ -459,11 +459,11 @@ pub async fn send_http_request<R: Runtime>(
                         }
                         match chunk {
                             Ok(Some(bytes)) => {
+                                let mut r = response.lock().await;
+                                r.elapsed = start.elapsed().as_millis() as i32;
                                 f.write_all(&bytes).await.expect("Failed to write to file");
                                 f.flush().await.expect("Failed to flush file");
                                 written_bytes += bytes.len();
-                                let mut r = response.lock().await;
-                                r.elapsed = start.elapsed().as_millis() as i32;
                                 r.content_length = Some(written_bytes as i32);
                                 update_response_if_id(&window, &r)
                                     .await
