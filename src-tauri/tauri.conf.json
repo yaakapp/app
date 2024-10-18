@@ -72,9 +72,6 @@
       "rpm"
     ],
     "createUpdaterArtifacts": "v1Compatible",
-    "iOS": {
-      "developmentTeam": "7PU3P6ELJ8"
-    },
     "macOS": {
       "minimumSystemVersion": "13.0",
       "exceptionDomain": "",
