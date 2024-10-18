@@ -1627,59 +1627,56 @@ async fn cmd_check_for_updates(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::default()
-                .targets([
-                    Target::new(TargetKind::Stdout),
-                    Target::new(TargetKind::LogDir { file_name: None }),
-                    Target::new(TargetKind::Webview),
-                ])
-                .level_for("plugin_runtime", log::LevelFilter::Info)
-                .level_for("cookie_store", log::LevelFilter::Info)
-                .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
-                .level_for("h2", log::LevelFilter::Info)
-                .level_for("hyper", log::LevelFilter::Info)
-                .level_for("hyper_util", log::LevelFilter::Info)
-                .level_for("hyper_rustls", log::LevelFilter::Info)
-                .level_for("reqwest", log::LevelFilter::Info)
-                .level_for("sqlx", log::LevelFilter::Warn)
-                .level_for("tao", log::LevelFilter::Info)
-                .level_for("tokio_util", log::LevelFilter::Info)
-                .level_for("tonic", log::LevelFilter::Info)
-                .level_for("tower", log::LevelFilter::Info)
-                .level_for("tracing", log::LevelFilter::Warn)
-                .level_for("swc_ecma_codegen", log::LevelFilter::Off)
-                .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
-                .with_colors(ColoredLevelConfig::default())
-                .level(if is_dev() {
-                    log::LevelFilter::Trace
-                } else {
-                    log::LevelFilter::Info
-                })
-                .build(),
-        )
-        .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(
-            tauri_plugin_window_state::Builder::default()
-                .with_denylist(&["ignored"])
-                .map_label(|label| {
-                    if label.starts_with(OTHER_WINDOW_PREFIX) {
-                        "ignored"
-                    } else {
-                        label
-                    }
-                })
-                .build(),
-        )
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_updater::Builder::default().build())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_fs::init())
-        .plugin(yaak_models::plugin::Builder::default().build())
-        .plugin(yaak_plugin_runtime::plugin::init())
-        .plugin(tauri_plugin_sync::init());
+    let mut builder =
+        tauri::Builder::default()
+            .plugin(
+                tauri_plugin_log::Builder::default()
+                    .targets([
+                        Target::new(TargetKind::Stdout),
+                        Target::new(TargetKind::LogDir { file_name: None }),
+                        Target::new(TargetKind::Webview),
+                    ])
+                    .level_for("plugin_runtime", log::LevelFilter::Info)
+                    .level_for("cookie_store", log::LevelFilter::Info)
+                    .level_for("eventsource_client::event_parser", log::LevelFilter::Info)
+                    .level_for("h2", log::LevelFilter::Info)
+                    .level_for("hyper", log::LevelFilter::Info)
+                    .level_for("hyper_util", log::LevelFilter::Info)
+                    .level_for("hyper_rustls", log::LevelFilter::Info)
+                    .level_for("reqwest", log::LevelFilter::Info)
+                    .level_for("sqlx", log::LevelFilter::Warn)
+                    .level_for("tao", log::LevelFilter::Info)
+                    .level_for("tokio_util", log::LevelFilter::Info)
+                    .level_for("tonic", log::LevelFilter::Info)
+                    .level_for("tower", log::LevelFilter::Info)
+                    .level_for("tracing", log::LevelFilter::Warn)
+                    .level_for("swc_ecma_codegen", log::LevelFilter::Off)
+                    .level_for("swc_ecma_transforms_base", log::LevelFilter::Off)
+                    .with_colors(ColoredLevelConfig::default())
+                    .level(if is_dev() { log::LevelFilter::Trace } else { log::LevelFilter::Info })
+                    .build(),
+            )
+            .plugin(tauri_plugin_clipboard_manager::init())
+            .plugin(
+                tauri_plugin_window_state::Builder::default()
+                    .with_denylist(&["ignored"])
+                    .map_label(|label| {
+                        if label.starts_with(OTHER_WINDOW_PREFIX) {
+                            "ignored"
+                        } else {
+                            label
+                        }
+                    })
+                    .build(),
+            )
+            .plugin(tauri_plugin_shell::init())
+            .plugin(tauri_plugin_updater::Builder::default().build())
+            .plugin(tauri_plugin_dialog::init())
+            .plugin(tauri_plugin_os::init())
+            .plugin(tauri_plugin_fs::init())
+            .plugin(yaak_models::plugin::Builder::default().build())
+            .plugin(yaak_plugin_runtime::plugin::init())
+            .plugin(tauri_plugin_sync::init());
 
     #[cfg(target_os = "macos")]
     {

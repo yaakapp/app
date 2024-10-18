@@ -9,10 +9,9 @@ export * from './bindings/models';
 export * from './bindings/sync';
 
 export function useChanges(workspaceId: string, branch: string) {
-  const commits = useCommits(workspaceId, branch);
-  const commitKey = commits.data?.join(',');
   return useQuery<StageTreeNode>({
-    queryKey: ['sync.changes', workspaceId, branch, commitKey],
+    refetchOnMount: true,
+    queryKey: ['sync.changes', workspaceId, branch],
     queryFn: () => {
       const payload: ChangesPayload = { workspaceId, branch };
       return invoke('plugin:sync|changes', { payload });
@@ -22,6 +21,7 @@ export function useChanges(workspaceId: string, branch: string) {
 
 export function useCommits(workspaceId: string, branch: string) {
   return useQuery<SyncCommit[]>({
+    refetchOnMount: true,
     queryKey: ['sync.commits', workspaceId, branch],
     queryFn: () => {
       const payload: CommitsPayload = { workspaceId, branch };

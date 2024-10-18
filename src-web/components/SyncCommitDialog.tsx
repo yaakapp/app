@@ -147,8 +147,8 @@ function TreeNodeChildren({
           className="w-full hover:bg-surface-highlight rounded px-1 group"
           checked={checked}
           title={
-            <div className="flex items-center gap-1 w-full">
-              <div>{resolvedModelName(node.model)}</div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1 w-full">
+              <div className="truncate">{resolvedModelName(node.model)}</div>
               {node.status !== 'unmodified' && (
                 <InlineCode
                   className={classNames(
@@ -230,30 +230,6 @@ function setCheckedOnChildren(
     setCheckedOnChildren(child, addedIds, checked);
   }
 }
-
-// function diffItemsForCommit(
-//   root: StageTreeNode,
-//   addedIds: Record<string, boolean>,
-// ): CommitPayload['changeItems'] {
-//   const changes: CommitPayload['changeItems'] = [];
-//   for (const child of root.children) {
-//     const wasAdded = !!addedIds[idFromChange(child)];
-//     if (wasAdded && (child.status === 'untracked' || child.status === 'modified')) {
-//       changes.push(changeItemFromChange(child));
-//     } else if (!wasAdded && child.change.prev) {
-//       // Add the previous version of any change that wasn't added. This includes unmodified
-//       // objects and modified objects that weren't added
-//       changes.push(child.change.prev);
-//     }
-//
-//     changes.push(...diffItemsForCommit(child, addedIds));
-//   }
-//
-//   // If children had IDs to commit, also add this node
-//   if (changes.length > 0) changes.unshift(changeItemFromChange(root));
-//
-//   return changes;
-// }
 
 function isNodeIgnored(node: StageTreeNode): boolean {
   if (node.status !== 'unmodified') {
