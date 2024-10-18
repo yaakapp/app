@@ -1,4 +1,4 @@
-# [Yaak API Client](https://yaak.app)
+# Yaak API Client
 
 Yaak is a desktop API client for organizing and executing REST, GraphQL, and gRPC
 requests. It's built using [Tauri](https://tauri.app), Rust, and ReactJS.
