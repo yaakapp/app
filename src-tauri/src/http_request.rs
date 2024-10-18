@@ -406,9 +406,9 @@ pub async fn send_http_request<R: Runtime>(
                     let base_dir = dir.join("responses");
                     create_dir_all(base_dir.clone()).await.expect("Failed to create responses dir");
                     let body_path = if response_id.is_empty() {
-                        base_dir.join(response_id.clone())
-                    } else {
                         base_dir.join(uuid::Uuid::new_v4().to_string())
+                    } else {
+                        base_dir.join(response_id.clone())
                     };
 
                     {
@@ -442,6 +442,7 @@ pub async fn send_http_request<R: Runtime>(
                     }
 
                     // Write body to FS
+                    println!("BODYPATH {body_path:?}");
                     let mut f = File::options()
                         .create(true)
                         .truncate(true)
