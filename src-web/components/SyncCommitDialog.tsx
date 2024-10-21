@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function SyncCommitDialog({ workspaceId, hide }: Props) {
-  const tree = useChanges(workspaceId, 'master');
+  const tree = useChanges({workspaceId, branch: 'master'});
 
   if (tree.isFetching || tree.data == null) {
     return null;
@@ -37,7 +37,7 @@ function SyncCommitChanges({
   workspaceId: string;
   onDone: () => void;
 }) {
-  const createCommit = useCreateCommit(workspaceId);
+  const createCommit = useCreateCommit({ workspaceId, branch: 'master' });
   const [message, setMessage] = useState<string>('');
   const [addedIds, setAddedIds] = useState<Record<string, boolean>>({});
 
@@ -55,7 +55,6 @@ function SyncCommitChanges({
     }
 
     await createCommit.mutateAsync({
-      branch: 'master',
       message,
       addedIds: Object.entries(addedIds)
         .map(([id, added]) => (added ? id : null))

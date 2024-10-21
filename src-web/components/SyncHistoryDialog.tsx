@@ -6,7 +6,7 @@ interface Props {
 }
 
 export function SyncHistoryDialog({ workspaceId }: Props) {
-  const commits = useCommits(workspaceId, 'master');
+  const commits = useCommits({ workspaceId, branch: 'master' });
 
   return (
     <table className="w-full text-sm mb-auto min-w-full max-w-full divide-y divide-surface-highlight">

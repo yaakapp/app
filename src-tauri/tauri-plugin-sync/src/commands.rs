@@ -101,3 +101,41 @@ pub async fn commit<R: Runtime>(window: WebviewWindow<R>, payload: CommitPayload
 
     Ok(())
 }
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "commands.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct PushPayload {
+    workspace_id: String,
+    message: String,
+}
+
+#[command]
+pub async fn push<R: Runtime>(window: WebviewWindow<R>, payload: PushPayload) -> Result<()> {
+    // # NOTES: 
+    // - You could be pushing multiple local commits
+    
+    // 1. Fetch branch history from remote
+    // 2. Figure out which commits haven't been pushed
+    // 3. Push the objects from these new commits
+    
+    todo!()
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "commands.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct PullPayload {
+    workspace_id: String,
+    message: String,
+}
+
+#[command]
+pub async fn pull<R: Runtime>(window: WebviewWindow<R>, payload: PushPayload) -> Result<()> {
+    // 1. Fetch branch history from remote
+    // 2. Figure out which commits are new
+    // 3. Check local DB to see which objects already exist
+    // 4. Pull down new objects
+
+    todo!()
+}

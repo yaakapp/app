@@ -8,31 +8,34 @@ export * from './bindings/commands';
 export * from './bindings/models';
 export * from './bindings/sync';
 
-export function useChanges(workspaceId: string, branch: string) {
+export function useChanges({ workspaceId, branch }: { workspaceId: string; branch: string }) {
   return useQuery<StageTreeNode>({
     refetchOnMount: true,
     queryKey: ['sync.changes', workspaceId, branch],
-    queryFn: () => {
-      const payload: ChangesPayload = { workspaceId, branch };
-      return invoke('plugin:sync|changes', { payload });
-    },
+    queryFn: () => invoke('plugin:sync|changes', { payload: { workspaceId, branch } }),
   });
 }
 
-export function useCommits(workspaceId: string, branch: string) {
+export function useCommits({ workspaceId, branch }: { workspaceId: string; branch: string }) {
   return useQuery<SyncCommit[]>({
     refetchOnMount: true,
     queryKey: ['sync.commits', workspaceId, branch],
-    queryFn: () => {
-      const payload: CommitsPayload = { workspaceId, branch };
-      return invoke('plugin:sync|commits', { payload });
-    },
+    queryFn: () => invoke('plugin:sync|commits', { payload: { workspaceId, branch } }),
   });
 }
 
-export function useCreateCommit(workspaceId: string) {
-  return useMutation<void, String, Omit<CommitPayload, 'workspaceId'>>({
-    mutationKey: ['sync.commit', workspaceId],
-    mutationFn: (payload) => invoke('plugin:sync|commit', { payload: { ...payload, workspaceId } }),
+export function useCreateCommit({ workspaceId, branch }: { workspaceId: string; branch: string }) {
+  return useMutation<void, String, Omit<CommitPayload, 'workspaceId' | 'branch'>>({
+    mutationKey: ['sync.commit', workspaceId, branch],
+    mutationFn: (payload) =>
+      invoke('plugin:sync|commit', { payload: { ...payload, branch, workspaceId } }),
+  });
+}
+
+export function usePush(workspaceId: string, branch: string) {
+  return useMutation<void, String, Omit<CommitPayload, 'workspaceId' | 'branch'>>({
+    mutationKey: ['sync.push', workspaceId, branch],
+    mutationFn: (payload) =>
+      invoke('plugin:sync|commit', { payload: { ...payload, branch, workspaceId } }),
   });
 }
