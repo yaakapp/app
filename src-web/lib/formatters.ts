@@ -1,20 +1,14 @@
 import xmlFormat from 'xml-formatter';
+import { invokeCmd } from './tauri';
 
 const INDENT = '  ';
 
-export function tryFormatJson(text: string, pretty = true): string {
+export async function tryFormatJson(text: string): Promise<string> {
   if (text === '') return text;
-
-  try {
-    if (pretty) return JSON.stringify(JSON.parse(text), null, INDENT);
-    else return JSON.stringify(JSON.parse(text));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
-    return text;
-  }
+  return invokeCmd('cmd_format_json', { text });
 }
 
-export function tryFormatXml(text: string): string {
+export async function tryFormatXml(text: string): Promise<string> {
   if (text === '') return text;
 
   try {

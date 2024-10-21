@@ -16,7 +16,7 @@ crate-type = ["staticlib", "cdylib", "lib"]
 strip = true  # Automatically strip symbols from the binary.
 
 [build-dependencies]
-tauri-build = { version = "2.0.1", features = [] }
+tauri-build = { version = "2.0.2", features = [] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
@@ -48,8 +48,8 @@ serde_yaml = "0.9.34"
 tauri = { workspace = true }
 tauri-plugin-shell = { workspace = true }
 tauri-plugin-clipboard-manager = "2.0.1"
-tauri-plugin-dialog = "2.0.1"
-tauri-plugin-fs = "2.0.1"
+tauri-plugin-dialog = "2.0.3"
+tauri-plugin-fs = "2.0.3"
 tauri-plugin-log = { version = "2.0.1", features = ["colored"] }
 tauri-plugin-os = "2.0.1"
 tauri-plugin-updater = "2.0.2"
@@ -65,5 +65,5 @@ eventsource-client = { git = "https://github.com/yaakapp/rust-eventsource-client
 [workspace.dependencies]
 yaak_models = { path = "yaak_models" }
 yaak_plugin_runtime = { path = "yaak_plugin_runtime" }
-tauri-plugin-shell = "2.0.1"
-tauri = { version = "2.0.4", features = ["devtools", "protocol-asset"] }
+tauri-plugin-shell = "2.0.2"
+tauri = { version = "2.0.6", features = ["devtools", "protocol-asset"] }

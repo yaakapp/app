@@ -23,6 +23,7 @@ export function useSyncWorkspaceChildModels() {
   const workspaceId = workspace?.id ?? 'n/a';
   useEffect(() => {
     (async function () {
+      console.log('Syncing model stores', { workspaceId });
       // Set the things we need first, first
       setHttpRequests(await invokeCmd('cmd_list_http_requests', { workspaceId }));
       setGrpcRequests(await invokeCmd('cmd_list_grpc_requests', { workspaceId }));
