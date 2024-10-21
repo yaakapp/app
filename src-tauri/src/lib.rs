@@ -75,6 +75,7 @@ use yaak_plugin_runtime::events::{
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_sse::sse::ServerSentEvent;
 use yaak_templates::{Parser, Tokens};
+use yaak_templates::format::format_json;
 
 mod analytics;
 mod export_resources;
@@ -735,6 +736,11 @@ async fn cmd_send_ephemeral_request(
     });
 
     send_http_request(&window, &request, &response, environment, cookie_jar, &mut cancel_rx).await
+}
+
+#[tauri::command]
+async fn cmd_format_json(text: &str) -> Result<String, String> {
+    Ok(format_json(text, "  "))
 }
 
 #[tauri::command]
@@ -1711,12 +1717,10 @@ pub fn run() {
             cmd_create_folder,
             cmd_create_grpc_request,
             cmd_create_http_request,
-            cmd_install_plugin,
             cmd_create_workspace,
             cmd_curl_to_request,
             cmd_delete_all_grpc_connections,
             cmd_delete_all_http_responses,
-            cmd_delete_send_history,
             cmd_delete_cookie_jar,
             cmd_delete_environment,
             cmd_delete_folder,
@@ -1724,26 +1728,28 @@ pub fn run() {
             cmd_delete_grpc_request,
             cmd_delete_http_request,
             cmd_delete_http_response,
-            cmd_uninstall_plugin,
+            cmd_delete_send_history,
             cmd_delete_workspace,
             cmd_dismiss_notification,
             cmd_duplicate_grpc_request,
             cmd_duplicate_http_request,
             cmd_export_data,
             cmd_filter_response,
+            cmd_format_json,
             cmd_get_cookie_jar,
             cmd_get_environment,
             cmd_get_folder,
             cmd_get_grpc_request,
             cmd_get_http_request,
-            cmd_get_sse_events,
             cmd_get_key_value,
             cmd_get_settings,
+            cmd_get_sse_events,
             cmd_get_workspace,
             cmd_grpc_go,
             cmd_grpc_reflect,
             cmd_http_request_actions,
             cmd_import_data,
+            cmd_install_plugin,
             cmd_list_cookie_jars,
             cmd_list_environments,
             cmd_list_folders,
@@ -1769,6 +1775,7 @@ pub fn run() {
             cmd_template_functions,
             cmd_template_tokens_to_string,
             cmd_track_event,
+            cmd_uninstall_plugin,
             cmd_update_cookie_jar,
             cmd_update_environment,
             cmd_update_folder,

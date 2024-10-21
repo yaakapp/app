@@ -5,8 +5,8 @@ import { createGlobalState } from 'react-use';
 import { useCopy } from '../../hooks/useCopy';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFilterResponse } from '../../hooks/useFilterResponse';
+import { useFormatText } from '../../hooks/useFormatText';
 import { useToggle } from '../../hooks/useToggle';
-import { tryFormatJson, tryFormatXml } from '../../lib/formatters';
 import { CopyButton } from '../CopyButton';
 import { Banner } from '../core/Banner';
 import { Button } from '../core/Button';
@@ -117,6 +117,8 @@ export function TextViewer({
     toggleSearch,
   ]);
 
+  const formattedBody = useFormatText({ text, language, pretty });
+
   if (!showLargeResponse && text.length > LARGE_RESPONSE_BYTES) {
     return (
       <Banner color="primary" className="h-full flex flex-col gap-3">
@@ -140,12 +142,9 @@ export function TextViewer({
     );
   }
 
-  const formattedBody =
-    pretty && language === 'json'
-      ? tryFormatJson(text)
-      : pretty && (language === 'xml' || language === 'html')
-        ? tryFormatXml(text)
-        : text;
+  if (formattedBody.isFetching) {
+    return null;
+  }
 
   let body;
   if (isSearching && filterText?.length > 0) {
@@ -155,7 +154,7 @@ export function TextViewer({
       body = filteredResponse.data != null ? filteredResponse.data : '';
     }
   } else {
-    body = formattedBody;
+    body = formattedBody.data;
   }
 
   return (

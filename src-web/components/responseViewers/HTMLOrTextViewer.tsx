@@ -31,7 +31,7 @@ export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Prop
   }
 
   if (language === 'html' && pretty) {
-    return <WebPageViewer response={response} />;
+    return <WebPageViewer response={response}/>;
   } else {
     return (
       <TextViewer
