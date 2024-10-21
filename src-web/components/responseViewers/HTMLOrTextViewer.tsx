@@ -41,6 +41,7 @@ export function HTMLOrTextViewer({ response, pretty, textViewerClassName }: Prop
         className={textViewerClassName}
         onSaveResponse={saveResponse.mutate}
         responseId={response.id}
+        requestId={response.requestId}
       />
     );
   }

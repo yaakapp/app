@@ -28,6 +28,7 @@ interface Props {
   text: string;
   language: EditorProps['language'];
   responseId: string;
+  requestId: string;
   onSaveResponse: () => void;
 }
 
@@ -37,20 +38,21 @@ export function TextViewer({
   language,
   text,
   responseId,
+  requestId,
   pretty,
   className,
   onSaveResponse,
 }: Props) {
   const [filterTextMap, setFilterTextMap] = useFilterText();
   const [showLargeResponse, toggleShowLargeResponse] = useToggle();
-  const filterText = filterTextMap[responseId] ?? null;
+  const filterText = filterTextMap[requestId] ?? null;
   const copy = useCopy();
   const debouncedFilterText = useDebouncedValue(filterText, 200);
   const setFilterText = useCallback(
     (v: string | null) => {
-      setFilterTextMap((m) => ({ ...m, [responseId]: v }));
+      setFilterTextMap((m) => ({ ...m, [requestId]: v }));
     },
-    [setFilterTextMap, responseId],
+    [setFilterTextMap, requestId],
   );
 
   const isSearching = filterText != null;
@@ -75,7 +77,7 @@ export function TextViewer({
       nodes.push(
         <div key="input" className="w-full !opacity-100">
           <Input
-            key={responseId}
+            key={requestId}
             validate={!filteredResponse.error}
             hideLabel
             autoFocus
@@ -110,7 +112,7 @@ export function TextViewer({
     filteredResponse.error,
     isSearching,
     language,
-    responseId,
+    requestId,
     setFilterText,
     toggleSearch,
   ]);
