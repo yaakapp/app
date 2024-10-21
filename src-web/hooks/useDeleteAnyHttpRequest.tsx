@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import type { HttpRequest } from '@yaakapp-internal/models';
 import { InlineCode } from '../components/core/InlineCode';
 import { trackEvent } from '../lib/analytics';
-import { fallbackRequestName } from '../lib/fallbackRequestName';
+import { resolvedModelName } from '../lib/resolvedModelName';
 import { getHttpRequest } from '../lib/store';
 import { invokeCmd } from '../lib/tauri';
 import { useConfirm } from './useConfirm';
@@ -22,7 +22,7 @@ export function useDeleteAnyHttpRequest() {
         variant: 'delete',
         description: (
           <>
-            Permanently delete <InlineCode>{fallbackRequestName(request)}</InlineCode>?
+            Permanently delete <InlineCode>{resolvedModelName(request)}</InlineCode>?
           </>
         ),
       });

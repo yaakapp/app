@@ -20,8 +20,10 @@ export function useSyncWorkspaceChildModels() {
   const setEnvironments = useSetAtom(environmentsAtom);
 
   const workspace = useActiveWorkspace();
-  const workspaceId = workspace?.id ?? 'n/a';
+  const workspaceId = workspace?.id;
   useEffect(() => {
+    if (workspaceId == null) return;
+
     (async function () {
       // Set the things we need first, first
       setHttpRequests(await invokeCmd('cmd_list_http_requests', { workspaceId }));
