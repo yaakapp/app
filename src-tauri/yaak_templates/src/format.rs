@@ -96,20 +96,12 @@ pub fn format_json(text: &str, tab: &str) -> String {
                 new_json.push('\n');
                 new_json.push_str(tab.to_string().repeat(depth).as_str());
                 new_json.push(current_char);
-                // Pad with space if the next char is not a comma
-                if let Some(',') = chars.peek() {
-                    new_json.push(' ');
-                }
             }
             ']' => {
                 depth -= 1;
                 new_json.push('\n');
                 new_json.push_str(tab.to_string().repeat(depth).as_str());
                 new_json.push(current_char);
-                // Pad with space if the next char is not a comma
-                if let Some(',') = chars.peek() {
-                    new_json.push(' ');
-                }
             }
             ':' => {
                 new_json.push(current_char);
@@ -225,6 +217,39 @@ mod test {
 }
 "#
             .trim()
+        );
+    }
+    
+    #[test]
+    fn test_graphql_response() {
+        assert_eq!(
+            format_json(r#"{"data":{"capsules":[{"landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null},{"id":"5e9e2c5bf3591882af3b2665","landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null}]}}"#, "  "),
+            r#"
+{
+  "data": {
+    "capsules": [
+      {
+        "landings": null,
+        "original_launch": null,
+        "reuse_count": 0,
+        "status": "retired",
+        "type": "Dragon 1.0",
+        "missions": null
+      },
+      {
+        "id": "5e9e2c5bf3591882af3b2665",
+        "landings": null,
+        "original_launch": null,
+        "reuse_count": 0,
+        "status": "retired",
+        "type": "Dragon 1.0",
+        "missions": null
+      }
+    ]
+  }
+}
+"#
+                .trim()
         );
     }
 }

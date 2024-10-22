@@ -142,7 +142,7 @@ export function TextViewer({
     );
   }
 
-  if (formattedBody.isFetching) {
+  if (formattedBody.data == null) {
     return null;
   }
 

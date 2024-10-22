@@ -12,7 +12,7 @@ export function useFormatText({
   pretty: boolean;
 }) {
   return useQuery({
-    queryKey: [text],
+    queryKey: [text, language, pretty],
     queryFn: async () => {
       if (text === '' || !pretty) {
         return text;
