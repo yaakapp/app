@@ -152,6 +152,19 @@ mod test {
     }
 
     #[test]
+    fn test_escaped() {
+        assert_eq!(
+            format_json(r#"{"foo":"Hi \"world!\""}"#, "  "),
+            r#"
+{
+  "foo": "Hi \"world!\""
+}
+"#
+                .trim()
+        );
+    }
+
+    #[test]
     fn test_simple_array() {
         assert_eq!(
             format_json(r#"["foo","bar","baz","qux"]"#, "  "),
@@ -219,7 +232,7 @@ mod test {
             .trim()
         );
     }
-    
+
     #[test]
     fn test_graphql_response() {
         assert_eq!(
