@@ -18,7 +18,12 @@ export function useCreateWorkspace() {
         placeholder: 'My Workspace',
         confirmText: 'Create',
       });
-      return invokeCmd('cmd_create_workspace', { name });
+      const workspace = await invokeCmd<Workspace>('cmd_create_workspace', { name });
+
+      // Give some time for the workspace to sync to the local store
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      return workspace;
     },
     onSuccess: async (workspace) => {
       routes.navigate('workspace', { workspaceId: workspace.id });

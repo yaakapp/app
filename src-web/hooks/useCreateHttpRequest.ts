@@ -15,7 +15,7 @@ export function useCreateHttpRequest() {
 
   return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
-    mutationFn: (patch = {}) => {
+    mutationFn: async (patch = {}) => {
       if (workspace === null) {
         throw new Error("Cannot create request when there's no active workspace");
       }
@@ -29,9 +29,14 @@ export function useCreateHttpRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invokeCmd('cmd_create_http_request', {
+      const request = await invokeCmd<HttpRequest>('cmd_create_http_request', {
         request: { workspaceId: workspace.id, ...patch },
       });
+
+      // Give some time for the workspace to sync to the local store
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      return request;
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {

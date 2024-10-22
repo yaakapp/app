@@ -19,7 +19,7 @@ export function useCreateGrpcRequest() {
     Partial<Pick<GrpcRequest, 'name' | 'sortPriority' | 'folderId'>>
   >({
     mutationKey: ['create_grpc_request'],
-    mutationFn: (patch) => {
+    mutationFn: async (patch) => {
       if (workspace === null) {
         throw new Error("Cannot create grpc request when there's no active workspace");
       }
@@ -33,11 +33,16 @@ export function useCreateGrpcRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      return invokeCmd('cmd_create_grpc_request', {
+      const request = await invokeCmd<GrpcRequest>('cmd_create_grpc_request', {
         workspaceId: workspace.id,
         name: '',
         ...patch,
       });
+
+      // Give some time for the workspace to sync to the local store
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      return request;
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
