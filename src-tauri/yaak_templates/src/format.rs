@@ -71,6 +71,7 @@ pub fn format_json(text: &str, tab: &str) -> String {
                 Some('}') => {
                     new_json.push(current_char);
                     new_json.push('}');
+                    chars.next(); // Skip }
                 }
                 _ => {
                     depth += 1;
@@ -83,6 +84,7 @@ pub fn format_json(text: &str, tab: &str) -> String {
                 Some(']') => {
                     new_json.push(current_char);
                     new_json.push(']');
+                    chars.next(); // Skip ]
                 }
                 _ => {
                     depth += 1;
@@ -92,13 +94,19 @@ pub fn format_json(text: &str, tab: &str) -> String {
                 }
             },
             '}' => {
-                depth -= 1;
+                // Guard just in case invalid JSON has more closes than opens
+                if depth > 0 {
+                    depth -= 1;
+                }
                 new_json.push('\n');
                 new_json.push_str(tab.to_string().repeat(depth).as_str());
                 new_json.push(current_char);
             }
             ']' => {
-                depth -= 1;
+                // Guard just in case invalid JSON has more closes than opens
+                if depth > 0 {
+                    depth -= 1;
+                }
                 new_json.push('\n');
                 new_json.push_str(tab.to_string().repeat(depth).as_str());
                 new_json.push(current_char);
@@ -160,7 +168,7 @@ mod test {
   "foo": "Hi \"world!\""
 }
 "#
-                .trim()
+            .trim()
         );
     }
 
@@ -236,7 +244,10 @@ mod test {
     #[test]
     fn test_graphql_response() {
         assert_eq!(
-            format_json(r#"{"data":{"capsules":[{"landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null},{"id":"5e9e2c5bf3591882af3b2665","landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null}]}}"#, "  "),
+            format_json(
+                r#"{"data":{"capsules":[{"landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null},{"id":"5e9e2c5bf3591882af3b2665","landings":null,"original_launch":null,"reuse_count":0,"status":"retired","type":"Dragon 1.0","missions":null}]}}"#,
+                "  "
+            ),
             r#"
 {
   "data": {
@@ -262,7 +273,32 @@ mod test {
   }
 }
 "#
-                .trim()
+            .trim()
+        );
+    }
+
+    #[test]
+    fn test_immediate_close() {
+        assert_eq!(
+            format_json(r#"{"bar":[]}"#, "  "),
+            r#"
+{
+  "bar": []
+}
+"#
+            .trim()
+        );
+    }
+
+    #[test]
+    fn test_more_closes() {
+        assert_eq!(
+            format_json(r#"{}}"#, "  "),
+            r#"
+{}
+}
+"#
+            .trim()
         );
     }
 }
