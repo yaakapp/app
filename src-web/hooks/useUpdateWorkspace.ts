@@ -8,7 +8,7 @@ import {workspacesAtom} from "./useWorkspaces";
 
 export function useUpdateWorkspace(id: string | null) {
   const setWorkspaces = useSetAtom(workspacesAtom);
-  return useMutation<void, unknown, Partial<Workspace> | ((w: Workspace) => Workspace)>({
+  return useMutation<Workspace, unknown, Partial<Workspace> | ((w: Workspace) => Workspace)>({
     mutationKey: ['update_workspace', id],
     mutationFn: async (v) => {
       const workspace = await getWorkspace(id);
@@ -17,7 +17,7 @@ export function useUpdateWorkspace(id: string | null) {
       }
 
       const newWorkspace = typeof v === 'function' ? v(workspace) : { ...workspace, ...v };
-      await invokeCmd('cmd_update_workspace', { workspace: newWorkspace });
+      return invokeCmd('cmd_update_workspace', { workspace: newWorkspace });
     },
     onSuccess: async (workspace) => {
       setWorkspaces(updateModelList(workspace));

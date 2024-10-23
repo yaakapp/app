@@ -8,7 +8,7 @@ import {updateModelList} from "./useSyncModelStores";
 
 export function useUpdateAnyFolder() {
   const setFolders = useSetAtom(foldersAtom);
-  return useMutation<void, unknown, { id: string; update: (r: Folder) => Folder }>({
+  return useMutation<Folder, unknown, { id: string; update: (r: Folder) => Folder }>({
     mutationKey: ['update_any_folder'],
     mutationFn: async ({ id, update }) => {
       const folder = await getFolder(id);
@@ -16,7 +16,7 @@ export function useUpdateAnyFolder() {
         throw new Error("Can't update a null folder");
       }
 
-      await invokeCmd('cmd_update_folder', { folder: update(folder) });
+      return invokeCmd<Folder>('cmd_update_folder', { folder: update(folder) });
     },
     onSuccess: async (folder) => {
       setFolders(updateModelList(folder));
