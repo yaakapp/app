@@ -1,17 +1,21 @@
 import { useMutation } from '@tanstack/react-query';
 import type { HttpRequest } from '@yaakapp-internal/models';
+import { useSetAtom } from 'jotai/index';
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
+import { httpRequestsAtom } from './useHttpRequests';
+import { updateModelList } from './useSyncModelStores';
 
 export function useCreateHttpRequest() {
   const workspace = useActiveWorkspace();
   const [activeEnvironment] = useActiveEnvironment();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
+  const setHttpRequests = useSetAtom(httpRequestsAtom);
 
   return useMutation<HttpRequest, unknown, Partial<HttpRequest>>({
     mutationKey: ['create_http_request'],
@@ -29,17 +33,15 @@ export function useCreateHttpRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      const request = await invokeCmd<HttpRequest>('cmd_create_http_request', {
+      return invokeCmd<HttpRequest>('cmd_create_http_request', {
         request: { workspaceId: workspace.id, ...patch },
       });
-
-      // Give some time for the workspace to sync to the local store
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      return request;
     },
     onSettled: () => trackEvent('http_request', 'create'),
     onSuccess: async (request) => {
+      // Optimistic update
+      setHttpRequests(updateModelList(request));
+
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,

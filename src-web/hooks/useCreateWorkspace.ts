@@ -1,13 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
 import type { Workspace } from '@yaakapp-internal/models';
+import { useSetAtom } from 'jotai/index';
 import { invokeCmd } from '../lib/tauri';
 import { useAppRoutes } from './useAppRoutes';
 import { usePrompt } from './usePrompt';
+import {updateModelList} from "./useSyncModelStores";
+import { workspacesAtom } from './useWorkspaces';
 
 export function useCreateWorkspace() {
   const routes = useAppRoutes();
   const prompt = usePrompt();
-  return useMutation<Workspace, void, void>({
+  const setWorkspaces = useSetAtom(workspacesAtom);
+
+  return useMutation<Workspace | null, void, void>({
     mutationKey: ['create_workspace'],
     mutationFn: async () => {
       const name = await prompt({
@@ -18,14 +23,17 @@ export function useCreateWorkspace() {
         placeholder: 'My Workspace',
         confirmText: 'Create',
       });
-      const workspace = await invokeCmd<Workspace>('cmd_create_workspace', { name });
-
-      // Give some time for the workspace to sync to the local store
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      return workspace;
+      if (name == null) {
+        return null;
+      }
+      return invokeCmd<Workspace>('cmd_create_workspace', { name });
     },
     onSuccess: async (workspace) => {
+      if (workspace == null) return;
+
+      // Optimistic update
+      setWorkspaces(updateModelList(workspace));
+
       routes.navigate('workspace', { workspaceId: workspace.id });
     },
   });
