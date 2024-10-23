@@ -704,9 +704,15 @@ function SidebarItem({
   const handleSubmitNameEdit = useCallback(
     async (el: HTMLInputElement) => {
       if (itemModel === 'http_request') {
-        await updateHttpRequest.mutateAsync({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
+        await updateHttpRequest.mutateAsync({
+          id: itemId,
+          update: (r) => ({ ...r, name: el.value }),
+        });
       } else if (itemModel === 'grpc_request') {
-        await updateGrpcRequest.mutateAsync({ id: itemId, update: (r) => ({ ...r, name: el.value }) });
+        await updateGrpcRequest.mutateAsync({
+          id: itemId,
+          update: (r) => ({ ...r, name: el.value }),
+        });
       }
       setEditing(false);
     },
@@ -903,8 +909,9 @@ function SidebarItem({
           className={classNames(
             'w-full flex gap-1.5 items-center h-xs px-1.5 rounded-md focus-visible:ring focus-visible:ring-border-focus outline-0',
             editing && 'ring-1 focus-within:ring-focus',
-            isActive && 'bg-surface-highlight text',
-            !isActive && 'text-text-subtle group-hover/item:text-text active:bg-surface-highlight',
+            isActive && 'bg-surface-highlight text-text',
+            !isActive && 'text-text-subtle group-hover/item:text-text',
+            showContextMenu && '!text-text', // Show as "active" when context menu is open
             selected && useProminentStyles && '!bg-surface-active',
           )}
         >
