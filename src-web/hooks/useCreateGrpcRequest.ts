@@ -1,17 +1,21 @@
 import { useMutation } from '@tanstack/react-query';
 import type { GrpcRequest } from '@yaakapp-internal/models';
+import {useSetAtom} from "jotai";
 import { trackEvent } from '../lib/analytics';
 import { invokeCmd } from '../lib/tauri';
 import { useActiveEnvironment } from './useActiveEnvironment';
 import { useActiveRequest } from './useActiveRequest';
 import { useActiveWorkspace } from './useActiveWorkspace';
 import { useAppRoutes } from './useAppRoutes';
+import {grpcRequestsAtom} from "./useGrpcRequests";
+import {updateModelList} from "./useSyncModelStores";
 
 export function useCreateGrpcRequest() {
   const workspace = useActiveWorkspace();
   const [activeEnvironment] = useActiveEnvironment();
   const activeRequest = useActiveRequest();
   const routes = useAppRoutes();
+  const setGrpcRequests = useSetAtom(grpcRequestsAtom);
 
   return useMutation<
     GrpcRequest,
@@ -33,19 +37,17 @@ export function useCreateGrpcRequest() {
         }
       }
       patch.folderId = patch.folderId || activeRequest?.folderId;
-      const request = await invokeCmd<GrpcRequest>('cmd_create_grpc_request', {
+      return invokeCmd<GrpcRequest>('cmd_create_grpc_request', {
         workspaceId: workspace.id,
         name: '',
         ...patch,
       });
-
-      // Give some time for the workspace to sync to the local store
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      return request;
     },
     onSettled: () => trackEvent('grpc_request', 'create'),
     onSuccess: async (request) => {
+      // Optimistic update
+      setGrpcRequests(updateModelList(request));
+
       routes.navigate('request', {
         workspaceId: request.workspaceId,
         requestId: request.id,

@@ -60,29 +60,26 @@ export function useSyncModelStores() {
       return;
     }
 
-    // Mark these models as DESC instead of ASC
-    const pushToFront = model.model === 'http_response' || model.model === 'grpc_connection';
-
     if (shouldIgnoreModel(model, windowLabel)) return;
 
     if (model.model === 'workspace') {
-      setWorkspaces(updateModelList(model, pushToFront));
+      setWorkspaces(updateModelList(model));
     } else if (model.model === 'plugin') {
-      setPlugins(updateModelList(model, pushToFront));
+      setPlugins(updateModelList(model));
     } else if (model.model === 'http_request') {
-      setHttpRequests(updateModelList(model, pushToFront));
+      setHttpRequests(updateModelList(model));
     } else if (model.model === 'folder') {
-      setFolders(updateModelList(model, pushToFront));
+      setFolders(updateModelList(model));
     } else if (model.model === 'http_response') {
-      setHttpResponses(updateModelList(model, pushToFront));
+      setHttpResponses(updateModelList(model));
     } else if (model.model === 'grpc_request') {
-      setGrpcRequests(updateModelList(model, pushToFront));
+      setGrpcRequests(updateModelList(model));
     } else if (model.model === 'grpc_connection') {
-      setGrpcConnections(updateModelList(model, pushToFront));
+      setGrpcConnections(updateModelList(model));
     } else if (model.model === 'environment') {
-      setEnvironments(updateModelList(model, pushToFront));
+      setEnvironments(updateModelList(model));
     } else if (model.model === 'cookie_jar') {
-      setCookieJars(updateModelList(model, pushToFront));
+      setCookieJars(updateModelList(model));
     } else if (model.model === 'settings') {
       setSettings(model);
     } else if (queryKey != null) {
@@ -94,7 +91,7 @@ export function useSyncModelStores() {
         }
 
         if (Array.isArray(current)) {
-          return updateModelList(model, pushToFront)(current);
+          return updateModelList(model)(current);
         }
       });
     }
@@ -107,32 +104,35 @@ export function useSyncModelStores() {
     console.log('Delete model', payload);
 
     if (model.model === 'workspace') {
-      setWorkspaces(removeById(model));
+      setWorkspaces(removeModelById(model));
     } else if (model.model === 'plugin') {
-      setPlugins(removeById(model));
+      setPlugins(removeModelById(model));
     } else if (model.model === 'http_request') {
-      setHttpRequests(removeById(model));
+      setHttpRequests(removeModelById(model));
     } else if (model.model === 'http_response') {
-      setHttpResponses(removeById(model));
+      setHttpResponses(removeModelById(model));
     } else if (model.model === 'folder') {
-      setFolders(removeById(model));
+      setFolders(removeModelById(model));
     } else if (model.model === 'environment') {
-      setEnvironments(removeById(model));
+      setEnvironments(removeModelById(model));
     } else if (model.model === 'grpc_request') {
-      setGrpcRequests(removeById(model));
+      setGrpcRequests(removeModelById(model));
     } else if (model.model === 'grpc_connection') {
-      setGrpcConnections(removeById(model));
+      setGrpcConnections(removeModelById(model));
     } else if (model.model === 'grpc_event') {
-      queryClient.setQueryData(grpcEventsQueryKey(model), removeById(model));
+      queryClient.setQueryData(grpcEventsQueryKey(model), removeModelById(model));
     } else if (model.model === 'key_value') {
       queryClient.setQueryData(keyValueQueryKey(model), undefined);
     } else if (model.model === 'cookie_jar') {
-      setCookieJars(removeById(model));
+      setCookieJars(removeModelById(model));
     }
   });
 }
 
-function updateModelList<T extends AnyModel>(model: T, pushToFront: boolean) {
+export function updateModelList<T extends AnyModel>(model: T) {
+  // Mark these models as DESC instead of ASC
+  const pushToFront = model.model === 'http_response' || model.model === 'grpc_connection';
+
   return (current: T[] | undefined): T[] => {
     const index = current?.findIndex((v) => modelsEq(v, model)) ?? -1;
     if (index >= 0) {
@@ -143,14 +143,15 @@ function updateModelList<T extends AnyModel>(model: T, pushToFront: boolean) {
   };
 }
 
-function removeById<T extends { id: string }>(model: T) {
+export function removeModelById<T extends { id: string }>(model: T) {
   return (entries: T[] | undefined) => entries?.filter((e) => e.id !== model.id) ?? [];
 }
 
 const shouldIgnoreModel = (payload: AnyModel, windowLabel: string) => {
   if (windowLabel === getCurrentWebviewWindow().label) {
-    // Never ignore same-window updates
-    return false;
+    // Always ignore updates from the same window. Updates should be handled
+    // within the mutations themselves
+    return true;
   }
   if (payload.model === 'key_value') {
     return payload.namespace === 'no_sync';
