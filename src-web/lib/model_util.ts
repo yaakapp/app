@@ -5,6 +5,7 @@ import type {
   HttpResponse,
   HttpResponseHeader,
 } from '@yaakapp-internal/models';
+import MimeType from 'whatwg-mimetype';
 
 export const BODY_TYPE_NONE = null;
 export const BODY_TYPE_GRAPHQL = 'graphql';
@@ -60,5 +61,6 @@ export function getCharsetFromContentType(headers: HttpResponseHeader[]): string
   const contentType = getContentTypeHeader(headers);
   if (contentType == null) return null;
 
-  return contentType.toLowerCase().match(/charset="?([^ ;"]+)"?/)?.[1] || null;
+  const mimeType = new MimeType(contentType);
+  return mimeType.parameters.get('charset') ?? null;
 }
