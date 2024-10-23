@@ -724,7 +724,7 @@ function SidebarItem({
       switch (e.key) {
         case 'Enter':
           e.preventDefault();
-          handleSubmitNameEdit(e.currentTarget);
+          await handleSubmitNameEdit(e.currentTarget);
           break;
         case 'Escape':
           e.preventDefault();

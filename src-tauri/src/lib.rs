@@ -74,8 +74,8 @@ use yaak_plugin_runtime::events::{
 };
 use yaak_plugin_runtime::plugin_handle::PluginHandle;
 use yaak_sse::sse::ServerSentEvent;
-use yaak_templates::{Parser, Tokens};
 use yaak_templates::format::format_json;
+use yaak_templates::{Parser, Tokens};
 
 mod analytics;
 mod export_resources;
@@ -174,7 +174,10 @@ async fn cmd_grpc_reflect<R: Runtime>(
     window: WebviewWindow<R>,
     grpc_handle: State<'_, Mutex<GrpcHandle>>,
 ) -> Result<Vec<ServiceDefinition>, String> {
-    let req = get_grpc_request(&window, request_id).await.map_err(|e| e.to_string())?;
+    let req = get_grpc_request(&window, request_id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to find GRPC request")?;
 
     let uri = safe_uri(&req.url);
 
@@ -201,7 +204,10 @@ async fn cmd_grpc_go<R: Runtime>(
         Some(id) => Some(get_environment(&window, id).await.map_err(|e| e.to_string())?),
         None => None,
     };
-    let req = get_grpc_request(&window, request_id).await.map_err(|e| e.to_string())?;
+    let req = get_grpc_request(&window, request_id)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or("Failed to find GRPC request")?;
     let workspace = get_workspace(&window, &req.workspace_id).await.map_err(|e| e.to_string())?;
     let req = render_grpc_request(
         &req,
@@ -1436,12 +1442,12 @@ async fn cmd_get_folder(id: &str, w: WebviewWindow) -> Result<Folder, String> {
 }
 
 #[tauri::command]
-async fn cmd_get_grpc_request(id: &str, w: WebviewWindow) -> Result<GrpcRequest, String> {
+async fn cmd_get_grpc_request(id: &str, w: WebviewWindow) -> Result<Option<GrpcRequest>, String> {
     get_grpc_request(&w, id).await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn cmd_get_http_request(id: &str, w: WebviewWindow) -> Result<HttpRequest, String> {
+async fn cmd_get_http_request(id: &str, w: WebviewWindow) -> Result<Option<HttpRequest>, String> {
     get_http_request(&w, id).await.map_err(|e| e.to_string())
 }
 
@@ -2079,7 +2085,7 @@ async fn handle_plugin_event<R: Runtime>(
             }))
         }
         InternalEventPayload::GetHttpRequestByIdRequest(req) => {
-            let http_request = get_http_request(app_handle, req.id.as_str()).await.ok();
+            let http_request = get_http_request(app_handle, req.id.as_str()).await.unwrap();
             Some(InternalEventPayload::GetHttpRequestByIdResponse(GetHttpRequestByIdResponse {
                 http_request,
             }))

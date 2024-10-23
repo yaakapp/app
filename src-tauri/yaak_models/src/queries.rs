@@ -1,5 +1,6 @@
 use std::fs;
 
+use crate::error::Error::ModelNotFound;
 use crate::error::Result;
 use crate::models::{
     CookieJar, CookieJarIden, Environment, EnvironmentIden, Folder, FolderIden, GrpcConnection,
@@ -299,7 +300,12 @@ pub async fn duplicate_grpc_request<R: Runtime>(
     window: &WebviewWindow<R>,
     id: &str,
 ) -> Result<GrpcRequest> {
-    let mut request = get_grpc_request(window, id).await?.clone();
+    let mut request = match get_grpc_request(window, id).await? {
+        Some(r) => r,
+        None => {
+            return Err(ModelNotFound(id.to_string()));
+        }
+    };
     request.id = "".to_string();
     upsert_grpc_request(window, &request).await
 }
@@ -308,7 +314,12 @@ pub async fn delete_grpc_request<R: Runtime>(
     window: &WebviewWindow<R>,
     id: &str,
 ) -> Result<GrpcRequest> {
-    let req = get_grpc_request(window, id).await?;
+    let req = match get_grpc_request(window, id).await? {
+        Some(r) => r,
+        None => {
+            return Err(ModelNotFound(id.to_string()));
+        }
+    };
 
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
@@ -393,7 +404,10 @@ pub async fn upsert_grpc_request<R: Runtime>(
     Ok(emit_upserted_model(window, m))
 }
 
-pub async fn get_grpc_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<GrpcRequest> {
+pub async fn get_grpc_request<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<Option<GrpcRequest>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -403,7 +417,7 @@ pub async fn get_grpc_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Re
         .cond_where(Expr::col(GrpcRequestIden::Id).eq(id))
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
-    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into()).optional()?)
 }
 
 pub async fn list_grpc_requests<R: Runtime>(
@@ -1083,7 +1097,10 @@ pub async fn duplicate_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
     id: &str,
 ) -> Result<HttpRequest> {
-    let mut request = get_http_request(window, id).await?.clone();
+    let mut request = match get_http_request(window, id).await? {
+        None => return Err(ModelNotFound(id.to_string())),
+        Some(r) => r,
+    };
     request.id = "".to_string();
     upsert_http_request(window, request).await
 }
@@ -1181,7 +1198,10 @@ pub async fn list_http_requests<R: Runtime>(
     Ok(items.map(|v| v.unwrap()).collect())
 }
 
-pub async fn get_http_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Result<HttpRequest> {
+pub async fn get_http_request<R: Runtime>(
+    mgr: &impl Manager<R>,
+    id: &str,
+) -> Result<Option<HttpRequest>> {
     let dbm = &*mgr.state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();
 
@@ -1191,14 +1211,17 @@ pub async fn get_http_request<R: Runtime>(mgr: &impl Manager<R>, id: &str) -> Re
         .cond_where(Expr::col(HttpRequestIden::Id).eq(id))
         .build_rusqlite(SqliteQueryBuilder);
     let mut stmt = db.prepare(sql.as_str())?;
-    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into())?)
+    Ok(stmt.query_row(&*params.as_params(), |row| row.try_into()).optional()?)
 }
 
 pub async fn delete_http_request<R: Runtime>(
     window: &WebviewWindow<R>,
     id: &str,
 ) -> Result<HttpRequest> {
-    let req = get_http_request(window, id).await?;
+    let req = match get_http_request(window, id).await? {
+        None => return Err(ModelNotFound(id.to_string())),
+        Some(r) => r,
+    };
 
     // DB deletes will cascade but this will delete the files
     delete_all_http_responses_for_request(window, id).await?;
@@ -1258,7 +1281,10 @@ pub async fn create_http_response<R: Runtime>(
         delete_http_response(window, response.id.as_str()).await?;
     }
 
-    let req = get_http_request(window, request_id).await?;
+    let req = match get_http_request(window, request_id).await? {
+        None => return Err(ModelNotFound(request_id.to_string())),
+        Some(r) => r,
+    };
     let id = generate_model_id(ModelType::TypeHttpResponse);
     let dbm = &*window.app_handle().state::<SqliteConnection>();
     let db = dbm.0.lock().await.get().unwrap();

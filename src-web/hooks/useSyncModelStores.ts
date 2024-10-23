@@ -4,7 +4,7 @@ import type { AnyModel } from '@yaakapp-internal/models';
 import { useSetAtom } from 'jotai/index';
 import { extractKeyValue } from '../lib/keyValueStore';
 import { modelsEq } from '../lib/model_util';
-import {useActiveWorkspace} from "./useActiveWorkspace";
+import { useActiveWorkspace } from './useActiveWorkspace';
 import { cookieJarsAtom } from './useCookieJars';
 import { environmentsAtom } from './useEnvironments';
 import { foldersAtom } from './useFolders';
@@ -61,9 +61,7 @@ export function useSyncModelStores() {
     }
 
     // Mark these models as DESC instead of ASC
-    const pushToFront = (['http_response', 'grpc_connection'] as AnyModel['model'][]).includes(
-      model.model,
-    );
+    const pushToFront = model.model === 'http_response' || model.model === 'grpc_connection';
 
     if (shouldIgnoreModel(model, windowLabel)) return;
 
@@ -106,7 +104,7 @@ export function useSyncModelStores() {
     const { model, windowLabel } = payload;
     if (shouldIgnoreModel(model, windowLabel)) return;
 
-    console.log('Delete model', payload.model);
+    console.log('Delete model', payload);
 
     if (model.model === 'workspace') {
       setWorkspaces(removeById(model));
