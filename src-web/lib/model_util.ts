@@ -58,5 +58,7 @@ export function getContentTypeHeader(headers: HttpResponseHeader[]): string | nu
 
 export function getCharsetFromContentType(headers: HttpResponseHeader[]): string | null {
   const contentType = getContentTypeHeader(headers);
-  return contentType?.match(/charset=([^ ;]+)/)?.[1] ?? null;
+  if (contentType == null) return null;
+
+  return contentType.toLowerCase().match(/charset="?([^ ;"]+)"?/)?.[1] || null;
 }
