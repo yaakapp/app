@@ -149,9 +149,8 @@ export function removeModelById<T extends { id: string }>(model: T) {
 
 const shouldIgnoreModel = (payload: AnyModel, windowLabel: string) => {
   if (windowLabel === getCurrentWebviewWindow().label) {
-    // Always ignore updates from the same window. Updates should be handled
-    // within the mutations themselves
-    return true;
+    // Never ignore same-window updates
+    return false;
   }
   if (payload.model === 'key_value') {
     return payload.namespace === 'no_sync';

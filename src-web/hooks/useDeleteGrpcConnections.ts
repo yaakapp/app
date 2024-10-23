@@ -13,7 +13,7 @@ export function useDeleteGrpcConnections(requestId?: string) {
       await invokeCmd('cmd_delete_all_grpc_connections', { requestId });
     },
     onSettled: () => trackEvent('grpc_connection', 'delete_many'),
-    onMutate: () => {
+    onSuccess: () => {
       setGrpcConnections((all) => all.filter((r) => r.requestId !== requestId));
     },
   });

@@ -12,7 +12,7 @@ export function useDeleteHttpResponses(requestId?: string) {
       if (requestId === undefined) return;
       await invokeCmd('cmd_delete_all_http_responses', { requestId });
     },
-    onMutate: () => {
+    onSuccess: () => {
       setHttpResponses((all) => all.filter((r) => r.requestId !== requestId));
     },
     onSettled: () => trackEvent('http_response', 'delete_many'),

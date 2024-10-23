@@ -38,10 +38,14 @@ export function useDeleteSendHistory() {
         variant: 'delete',
         description: <>Delete {labels.join(' and ')}?</>,
       });
-      if (!confirmed) return;
+      if (!confirmed) return false;
+
       await invokeCmd('cmd_delete_send_history', { workspaceId: activeWorkspace?.id ?? 'n/a' });
+      return true;
     },
-    onMutate: async () => {
+    onSuccess: async (confirmed) => {
+      if (!confirmed) return;
+
       setHttpResponses((all) => all.filter((r) => r.workspaceId !== activeWorkspace?.id));
     },
   });
