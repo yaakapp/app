@@ -8,11 +8,12 @@ export function useTemplateFunctions() {
 
   const result = useQuery({
     queryKey: ['template_functions', pluginsKey],
+    // NOTE: visibilitychange (refetchOnWindowFocus) does not work on Windows, so we'll rely on mount to
+    //  refetch template functions for us when. This should handle the case where the plugin system isn't
+    //  quite ready the first time this is invoked.
+    refetchOnMount: true,
     queryFn: async () => {
-      const responses = (await invokeCmd(
-        'cmd_template_functions',
-      )) as GetTemplateFunctionsResponse[];
-      return responses;
+      return invokeCmd<GetTemplateFunctionsResponse[]>('cmd_template_functions');
     },
   });
 
