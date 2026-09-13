@@ -25,6 +25,10 @@
 
 ![Yaak API Client](https://yaak.app/static/screenshot.png)
 
+## Install
+
+Download Yaak for macOS, Windows, or Linux from [yaak.app/download](https://yaak.app/download). Package managers and other install methods are in the [installation docs](https://yaak.app/docs/getting-started/installation).
+
 ## Features
 
 Yaak is an offline-first API client designed to stay out of your way while giving you everything you need when you need it.
@@ -54,16 +58,6 @@ Built with [Tauri](https://tauri.app), Rust, and React, it’s fast, lightweight
 - Pick from built-in themes or build your own.
 - Create plugins to extend authentication, template tags, or the UI.
 
-## Install
-
-Download Yaak for macOS, Windows, or Linux from [yaak.app/download](https://yaak.app/download). Package managers and other install methods are in the [installation docs](https://yaak.app/docs/getting-started/installation).
-
-## License
-
-The source is [MIT licensed](LICENSE) and can be built and run for free, for both personal and commercial use.
-
-The prebuilt binaries follow Yaak's [pricing terms](https://yaak.app/pricing): free for personal use, license required for commercial use.
-
 ## Contribution Policy
 
 > [!IMPORTANT]
@@ -78,3 +72,9 @@ The prebuilt binaries follow Yaak's [pricing terms](https://yaak.app/pricing): f
 - [Yaak vs Postman](https://yaak.app/alternatives/postman)
 - [Yaak vs Bruno](https://yaak.app/alternatives/bruno)
 - [Yaak vs Insomnia](https://yaak.app/alternatives/insomnia)
+
+## License
+
+The source is [MIT licensed](LICENSE) and can be built and run for free, for both personal and commercial use.
+
+The prebuilt binaries follow Yaak's [pricing terms](https://yaak.app/pricing): free for personal use, license required for commercial use.
