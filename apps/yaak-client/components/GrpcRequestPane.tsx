@@ -133,6 +133,8 @@ export function GrpcRequestPane({
     onSend({ message: activeRequest.message });
   }, [activeRequest, onSend]);
 
+  const hasDescription = activeRequest.description.trim().length > 0;
+
   const tabs: TabItem[] = useMemo(
     () => [
       { value: TAB_MESSAGE, label: "Message" },
@@ -146,10 +148,10 @@ export function GrpcRequestPane({
       {
         value: TAB_DESCRIPTION,
         label: "Info",
-        rightSlot: activeRequest.description && <CountBadge count={true} />,
+        rightSlot: hasDescription && <CountBadge count={true} />,
       },
     ],
-    [activeRequest.description, authTab, metadataTab, numSettingsOverrides],
+    [authTab, hasDescription, metadataTab, numSettingsOverrides],
   );
 
   const handleMetadataChange = useCallback(
