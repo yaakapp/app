@@ -205,6 +205,7 @@ export const PlainInput = forwardRef<{ focus: () => void }, PlainInputProps>(fun
             autoComplete="off"
             autoCapitalize="off"
             autoCorrect="off"
+            writingsuggestions="false"
             inputMode={inputMode}
             onChange={(e) => handleChange(e.target.value)}
             onPaste={(e) => onPaste?.(e.clipboardData.getData("Text"))}
