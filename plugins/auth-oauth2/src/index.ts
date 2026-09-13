@@ -470,61 +470,46 @@ export const plugin: PluginDefinition = {
             }),
           },
           {
-            type: "banner",
-            inputs: [
-              {
-                type: "markdown",
-                content:
-                  "**Custom Parameters** are sent in addition to the ones Yaak generates, and " +
-                  "replace a generated entry of the same name. Token request entries are also " +
-                  "sent when refreshing, unless a refresh entry uses the same name.",
-                dynamic: hiddenIfNot(["authorization_code", "password", "client_credentials"]),
-              },
-              {
-                type: "key_value",
-                name: "authorizationParams",
-                label: "Authorization Request Params",
-                description: "Query parameters appended to the authorization URL.",
-                optional: true,
-                dynamic: hiddenIfNot(["authorization_code", "implicit"]),
-              },
-              {
-                type: "key_value",
-                name: "tokenHeaders",
-                label: "Token Request Headers",
-                description:
-                  "Headers sent with the token request, and with the refresh request unless a " +
-                  "refresh header uses the same name.",
-                optional: true,
-                dynamic: hiddenIfNot(["authorization_code", "password", "client_credentials"]),
-              },
-              {
-                type: "key_value",
-                name: "tokenBodyParams",
-                label: "Token Request Body Params",
-                description:
-                  "Form fields sent with the token request, and with the refresh request unless " +
-                  "a refresh body param uses the same name.",
-                optional: true,
-                dynamic: hiddenIfNot(["authorization_code", "password", "client_credentials"]),
-              },
-              {
-                type: "key_value",
-                name: "refreshHeaders",
-                label: "Refresh Request Headers",
-                description: "Headers sent only when refreshing an expired token.",
-                optional: true,
-                dynamic: hiddenIfNot(["authorization_code", "password"]),
-              },
-              {
-                type: "key_value",
-                name: "refreshBodyParams",
-                label: "Refresh Request Body Params",
-                description: "Form fields sent only when refreshing an expired token.",
-                optional: true,
-                dynamic: hiddenIfNot(["authorization_code", "password"]),
-              },
-            ],
+            type: "key_value",
+            name: "authorizationParams",
+            label: "Authorization Params",
+            description: "Query params appended to the authorization URL.",
+            optional: true,
+            dynamic: hiddenIfNot(["authorization_code", "implicit"]),
+          },
+          {
+            type: "key_value",
+            name: "tokenHeaders",
+            label: "Token Headers",
+            description:
+              "Headers sent with the token request, and when refreshing unless overridden.",
+            optional: true,
+            dynamic: hiddenIfNot(["authorization_code", "password", "client_credentials"]),
+          },
+          {
+            type: "key_value",
+            name: "tokenBodyParams",
+            label: "Token Body Params",
+            description:
+              "Form params sent with the token request, and when refreshing unless overridden.",
+            optional: true,
+            dynamic: hiddenIfNot(["authorization_code", "password", "client_credentials"]),
+          },
+          {
+            type: "key_value",
+            name: "refreshHeaders",
+            label: "Refresh Headers",
+            description: "Headers sent only when refreshing the token.",
+            optional: true,
+            dynamic: hiddenIfNot(["authorization_code", "password"]),
+          },
+          {
+            type: "key_value",
+            name: "refreshBodyParams",
+            label: "Refresh Body Params",
+            description: "Form params sent only when refreshing the token.",
+            optional: true,
+            dynamic: hiddenIfNot(["authorization_code", "password"]),
           },
         ],
       },
