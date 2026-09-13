@@ -165,6 +165,8 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
       : 0;
   }
 
+  const hasDescription = activeRequest.description.trim().length > 0;
+
   const tabs = useMemo<TabItem[]>(
     () => [
       {
@@ -260,6 +262,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
       {
         value: TAB_DESCRIPTION,
         label: "Info",
+        rightSlot: hasDescription && <CountBadge count={true} />,
       },
     ],
     [
@@ -267,6 +270,7 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
       authTab,
       contentType,
       handleContentTypeChange,
+      hasDescription,
       headersTab,
       numParams,
       numSettingsOverrides,
