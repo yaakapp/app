@@ -19,6 +19,14 @@ function pathAt(doc: string, needle: string): string {
   return segmentsToJsonPath(segs);
 }
 
+/** JSONPath produced when the cursor sits just before the first occurrence of `needle`. */
+function pathBefore(doc: string, needle: string): string {
+  const pos = doc.indexOf(needle);
+  const segs = jsonPathSegmentsAt(stateFor(doc), pos);
+  if (segs == null) throw new Error("no JSON tree");
+  return segmentsToJsonPath(segs);
+}
+
 describe("jsonPathSegmentsAt", () => {
   test("nested object keys", () => {
     const doc = `{ "address": { "geo": { "lat": "-37" } } }`;
@@ -52,6 +60,29 @@ describe("jsonPathSegmentsAt", () => {
 
   test("root scalar yields the root path", () => {
     expect(pathAt(`"hello"`, `hello`)).toBe(`$`);
+  });
+
+  test("caret just before a key still resolves that key", () => {
+    // The character to the left is the object's whitespace, not the property.
+    const doc = `[\n  {\n    "userId": 1,\n    "body": "x"\n  }\n]`;
+    expect(pathBefore(doc, `"body"`)).toBe(`$[0].body`);
+  });
+
+  test("caret in a line's indentation resolves that line's member", () => {
+    // Caret in the blank indentation of the `title` line (structurally the
+    // object's whitespace) reads as being on `title`, not a neighbour.
+    const doc = `[\n  {\n    "userId": 1,\n    "id": 1,\n    "title": "x"\n  }\n]`;
+    const pos = doc.indexOf(`"title"`) - 2; // two spaces into the title line
+    const segs = jsonPathSegmentsAt(stateFor(doc), pos);
+    expect(segs == null ? null : segmentsToJsonPath(segs)).toBe(`$[0].title`);
+  });
+
+  test("caret at the end of an array element keeps the element index", () => {
+    // The caret sits after `}` where the left token is the object's close brace.
+    const doc = `[\n  { "id": 1 },\n  { "id": 2 }\n]`;
+    const pos = doc.indexOf(`},`) + 1;
+    const segs = jsonPathSegmentsAt(stateFor(doc), pos);
+    expect(segs == null ? null : segmentsToJsonPath(segs)).toBe(`$[0]`);
   });
 
   test("non-JSON documents return null", () => {

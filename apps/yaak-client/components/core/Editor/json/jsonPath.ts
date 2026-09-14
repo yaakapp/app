@@ -14,6 +14,9 @@ export type JsonPathSegment =
 // Lezer node names from the JSONC grammar (@shopify/lang-jsonc). A JSON value is
 // exactly one of these; everything else in the tree is punctuation or a comment.
 const VALUE_NODES = new Set(["Object", "Array", "String", "Number", "True", "False", "Null"]);
+// The nodes with children that a caret can land "between" — its whitespace and
+// punctuation belong to the container, not to any value inside it.
+const CONTAINER_NODES = new Set(["Object", "Array", "JsoncText"]);
 
 /** Read a `PropertyName` (a quoted JSON string) back to its raw key. */
 function keyFromPropertyName(node: SyntaxNode, state: EditorState): string {
@@ -27,55 +30,55 @@ function keyFromPropertyName(node: SyntaxNode, state: EditorState): string {
 }
 
 /** Index of `child` among the value elements of its parent `Array` node. */
-function indexInArray(array: SyntaxNode, child: SyntaxNode, pos: number): number {
-  const starts: number[] = [];
-  for (let c = array.firstChild; c != null; c = c.nextSibling) {
-    if (VALUE_NODES.has(c.name)) starts.push(c.from);
-  }
-  const exact = starts.indexOf(child.from);
-  if (exact >= 0) return exact;
-  // Cursor landed on punctuation (a comma, a bracket). Attribute it to the last
-  // element that begins at or before the cursor, or the first if none do yet.
+function indexInArray(array: SyntaxNode, child: SyntaxNode): number {
   let idx = 0;
-  for (const start of starts) {
-    if (start <= pos) idx = Math.max(idx, starts.indexOf(start));
-    else break;
+  for (let c = array.firstChild; c != null; c = c.nextSibling) {
+    if (c.from === child.from && c.to === child.to) return idx;
+    if (VALUE_NODES.has(c.name)) idx++;
   }
   return idx;
 }
 
 /**
- * The path from the document root to the node under `pos`, or `null` when the
- * document has no JSON tree (a different language, or empty). An empty array
- * means the cursor sits at the root value itself.
+ * The path from the document root to the member on the caret's line, or `null`
+ * when the document has no JSON tree (a different language, or empty). An empty
+ * array means the caret sits at the root value itself.
  *
- * The walk climbs parent links: crossing into a `Property` contributes its key,
- * crossing into an `Array` contributes the element index. That yields segments
- * deepest-last after the reversal.
+ * A caret exactly on a token uses that token. A caret in a line's whitespace
+ * resolves to the enclosing object or array, so it's re-anchored to the first
+ * non-whitespace character on that line — in pretty-printed JSON each member
+ * starts its own line, so that's the member's own token. This tracks "the line
+ * I'm on" without guessing between neighbouring keys.
+ *
+ * From the anchor, each ancestor contributes a segment: a `Property` its key, a
+ * value directly inside an `Array` its index. Collected deepest-first, reversed.
  */
 export function jsonPathSegmentsAt(state: EditorState, pos: number): JsonPathSegment[] | null {
   const tree = syntaxTree(state);
-  if (tree.type.name !== "JsoncText" && tree.topNode.name !== "JsoncText") return null;
+  if (tree.topNode.name !== "JsoncText") return null;
+
+  let node: SyntaxNode = tree.resolveInner(pos, -1);
+  if (CONTAINER_NODES.has(node.name)) {
+    const line = state.doc.lineAt(pos);
+    const indent = line.text.length - line.text.trimStart().length;
+    if (indent < line.text.length) {
+      node = tree.resolveInner(line.from + indent, 1);
+    }
+  }
 
   const segments: JsonPathSegment[] = [];
-  let node: SyntaxNode | null = tree.resolveInner(pos, -1);
-
-  while (node != null) {
-    const parent: SyntaxNode | null = node.parent;
-    if (parent == null) break;
-
-    if (parent.name === "Property") {
-      const nameNode = parent.getChild("PropertyName");
+  let cur: SyntaxNode | null = node;
+  while (cur != null) {
+    const parent: SyntaxNode | null = cur.parent;
+    if (cur.name === "Property") {
+      const nameNode = cur.getChild("PropertyName");
       if (nameNode != null) {
         segments.push({ kind: "key", key: keyFromPropertyName(nameNode, state) });
       }
-      node = parent;
-    } else if (parent.name === "Array") {
-      segments.push({ kind: "index", index: indexInArray(parent, node, pos) });
-      node = parent;
-    } else {
-      node = parent;
+    } else if (parent != null && parent.name === "Array" && VALUE_NODES.has(cur.name)) {
+      segments.push({ kind: "index", index: indexInArray(parent, cur) });
     }
+    cur = parent;
   }
 
   segments.reverse();
