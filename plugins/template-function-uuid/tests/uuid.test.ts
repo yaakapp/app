@@ -13,8 +13,9 @@ function v6Millis(uuid: string): number {
 describe("uuid.v6", () => {
   const v6 = plugin.templateFunctions?.find((f) => f.name === "uuid.v6");
 
-  it("uses the current time when no timestamp is given", async () => {
-    for (const values of [{}, { timestamp: "" }, { timestamp: null }]) {
+  it("uses the current time when no usable timestamp is given", async () => {
+    const inputs = [{}, { timestamp: "" }, { timestamp: null }, { timestamp: "not-a-date" }];
+    for (const values of inputs) {
       const before = Date.now();
       const result = await v6?.onRender({} as Context, { values, purpose: "send" });
       const after = Date.now();
