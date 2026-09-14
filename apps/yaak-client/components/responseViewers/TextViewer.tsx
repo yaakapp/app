@@ -57,10 +57,14 @@ export function TextViewer({
 
   const canFilter =
     filter != null && (language === "json" || language === "xml" || language === "html");
-  const showBreadcrumbs = language === "json" && filter != null && breadcrumbSegments.length > 0;
   const isSearching = filter?.isSearching ?? false;
   const appliedFilter = filter?.appliedFilter ?? null;
   const resultError = filterResult?.error ?? false;
+
+  // Shown for JSON whenever nothing is filtered. Once a filter is applied the
+  // AppliedFilterBar already says where you are, so the crumbs would just be a
+  // redundant second bar over the filtered subtree.
+  const showBreadcrumbs = language === "json" && filter != null && appliedFilter == null;
 
   const handleFilterKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -178,9 +182,19 @@ export function TextViewer({
         {showBreadcrumbs && (
           <JsonBreadcrumbBar
             segments={breadcrumbSegments}
-            onSelect={(count) =>
-              filter?.replaceFilter(segmentsToJsonPath(breadcrumbSegments, count))
-            }
+            onSelect={(count) => {
+              if (filter == null) return;
+              if (count === 0) {
+                // Root: show the whole response and leave the filter box closed,
+                // rather than opening an empty filter or applying `$` (which
+                // JSONPath would wrap in an array). Drop any applied filter, then
+                // null the text so the box collapses.
+                filter.applyFilter("");
+                filter.setFilterText(null);
+              } else {
+                filter.replaceFilter(segmentsToJsonPath(breadcrumbSegments, count));
+              }
+            }}
           />
         )}
         {appliedFilter && filter != null ? (

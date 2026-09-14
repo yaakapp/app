@@ -69,13 +69,17 @@ export function JsonBreadcrumbBar({ segments, onSelect }: Props) {
         onScroll={measure}
         className="flex items-center min-w-0 overflow-x-auto hide-scrollbars whitespace-nowrap"
       >
-        <Crumb label="$" title="Whole response" onClick={() => onSelect(0)} isRoot />
+        <Crumb label="Root" tooltip="Show the whole response" onClick={() => onSelect(0)} isRoot />
         {segments.map((segment, i) => (
           <div key={i} className="flex items-center shrink-0">
             <Icon icon="chevron_right" size="xs" className="text-text-subtlest mx-0.5 shrink-0" />
             <Crumb
               label={segment.kind === "index" ? String(segment.index) : segment.key}
-              title={segment.kind === "index" ? `Element ${segment.index}` : segment.key}
+              tooltip={
+                segment.kind === "index"
+                  ? `Filter to element ${segment.index}`
+                  : `Filter to ${segment.key}`
+              }
               isIndex={segment.kind === "index"}
               onClick={() => onSelect(i + 1)}
             />
@@ -98,13 +102,13 @@ export function JsonBreadcrumbBar({ segments, onSelect }: Props) {
 
 function Crumb({
   label,
-  title,
+  tooltip,
   onClick,
   isIndex,
   isRoot,
 }: {
   label: string;
-  title: string;
+  tooltip: string;
   onClick: () => void;
   isIndex?: boolean;
   isRoot?: boolean;
@@ -112,12 +116,12 @@ function Crumb({
   return (
     <button
       type="button"
-      title={`Filter to ${title}`}
+      title={tooltip}
       onClick={onClick}
       className={classNames(
         "shrink-0 px-1 rounded hover:text-text hover:bg-surface-highlight transition-colors",
         "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-focus",
-        isRoot && "font-mono text-text-subtlest",
+        isRoot && "text-text-subtle",
         isIndex && "font-mono text-info",
       )}
     >
