@@ -572,7 +572,12 @@ export type RenderHttpRequestResponse = { httpRequest: HttpRequest, };
 
 export type RenderPurpose = "send" | "preview";
 
-export type SendHttpRequestRequest = { httpRequest: Partial<HttpRequest>, };
+export type SendHttpRequestRequest = { httpRequest: Partial<HttpRequest>,
+/**
+ * Override the environment for this send without changing the active selection.
+ * When omitted, use the host's active environment.
+ */
+environmentId?: string, };
 
 export type SendHttpRequestResponse = { httpResponse: HttpResponse, 
 /**

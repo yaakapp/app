@@ -296,6 +296,36 @@ pub struct ExportHttpRequestResponse {
 pub struct SendHttpRequestRequest {
     #[ts(type = "Partial<HttpRequest>")]
     pub http_request: HttpRequest,
+    /// Override the environment for this send without changing the active selection.
+    /// When omitted, use the host's active environment.
+    #[ts(optional)]
+    pub environment_id: Option<String>,
+}
+
+#[cfg(test)]
+mod send_http_request_tests {
+    use super::SendHttpRequestRequest;
+    use serde_json::json;
+
+    #[test]
+    fn environment_override_survives_the_plugin_wire_format() {
+        let request: SendHttpRequestRequest = serde_json::from_value(json!({
+            "httpRequest": { "id": "rq_test" }, "environmentId": "ev_staging"
+        }))
+        .unwrap();
+        assert_eq!(request.environment_id.as_deref(), Some("ev_staging"));
+        assert_eq!(serde_json::to_value(request).unwrap()["environmentId"], "ev_staging");
+    }
+
+    #[test]
+    fn older_plugins_can_omit_the_environment_override() {
+        let request: SendHttpRequestRequest = serde_json::from_value(json!({
+            "httpRequest": { "id": "rq_test" }
+        }))
+        .unwrap();
+        assert_eq!(request.environment_id, None);
+        assert_eq!(request.http_request.id, "rq_test");
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
