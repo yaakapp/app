@@ -14,6 +14,7 @@ export const plugin: PluginDefinition = {
   templateFunctions: [
     {
       name: "request.body.raw",
+      description: "Access the entire request body, as text",
       aliases: ["request.body"],
       args: [
         {
@@ -36,6 +37,7 @@ export const plugin: PluginDefinition = {
     },
     {
       name: "request.body.path",
+      description: "Access a field of the request body using JSONPath or XPath",
       previewArgs: ["path"],
       args: [
         { name: "requestId", label: "Http Request", type: "http_request" },
@@ -188,6 +190,7 @@ export const plugin: PluginDefinition = {
     },
     {
       name: "request.param",
+      description: "Read the value of a query parameter, by name",
       args: [
         {
           name: "requestId",
@@ -230,6 +233,7 @@ export const plugin: PluginDefinition = {
     },
     {
       name: "request.name",
+      description: "Get the name of a request, or its URL if it has no name",
       args: [
         {
           name: "requestId",

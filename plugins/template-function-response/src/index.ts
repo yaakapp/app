@@ -111,7 +111,7 @@ export const plugin: PluginDefinition = {
     },
     {
       name: "response.body.path",
-      description: "Access a field of the response body using JsonPath or XPath",
+      description: "Access a field of the response body using JSONPath or XPath",
       aliases: ["response"],
       previewArgs: ["path"],
       args: [
