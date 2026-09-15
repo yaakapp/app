@@ -96,7 +96,7 @@ arguments; `--help` lists them all.
 
 ## Logging
 
-Default logs contain operational warnings and errors, not request URLs, client IPs,
+Default logs contain a startup message and operational warnings and errors, not request URLs, client IPs,
 DNS lookups, or per-request timing. To diagnose a self-hosted instance, opt in with
 `RUST_LOG=warn,yaak_http=error,yaak_web=debug`. This includes request URLs and IPs,
 so only enable it while debugging. Hosting infrastructure may maintain its own

@@ -41,7 +41,7 @@ use tower_http::services::{ServeDir, ServeFile};
 use wire::SendRequest;
 
 /// Minimal operational logging; request diagnostics require an explicit `RUST_LOG` setting.
-pub const DEFAULT_LOG_FILTER: &str = "warn,yaak_http=error";
+pub const DEFAULT_LOG_FILTER: &str = "warn,yaak_http=error,yaak_web::startup=info";
 
 #[derive(Clone)]
 struct AppState {

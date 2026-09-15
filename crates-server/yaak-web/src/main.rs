@@ -20,7 +20,7 @@ async fn main() {
         eprintln!("Failed to bind {bind}: {e}");
         std::process::exit(1);
     });
-    info!("yaak-web listening on http://{bind} (rate limit: {}/min)", rate_limit_per_minute,);
+    info!(target: "yaak_web::startup", "yaak-web listening on http://{bind} (rate limit: {}/min)", rate_limit_per_minute,);
 
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
         .with_graceful_shutdown(async {
