@@ -1,6 +1,5 @@
 import { platform } from "@yaakapp-internal/platform";
-import { Icon, InlineCode } from "@yaakapp-internal/ui";
-import { Tooltip } from "../components/core/Tooltip";
+import { InlineCode } from "@yaakapp-internal/ui";
 import { showConfirm } from "./confirm";
 
 const acceptedProxies = new Set<string>();
@@ -29,33 +28,24 @@ export function confirmWebProxy(): Promise<boolean> {
     description: (
       <div className="space-y-3">
         <p>
-          The proxy has access to your request, response, and credentials, but doesn’t store request
-          or response bodies.
+          The proxy can read your full request and response, including any secrets they contain.
+          Request and response bodies aren’t stored.
         </p>
-        <div className="flex items-center gap-2">
-          <InlineCode className="min-w-0 break-all">{proxyUrl}</InlineCode>
-          <Tooltip
-            content={
-              <div className="space-y-2">
-                <p className="font-semibold">How the proxy works</p>
-                <p>
-                  Requests are processed in memory. Server logs include URLs, client IP addresses,
-                  and timing. Open the guide for details.
-                </p>
-              </div>
-            }
+        <p>
+          <InlineCode className="break-all">{proxyUrl}</InlineCode>
+        </p>
+        <p>
+          Learn more about{" "}
+          <a
+            className="underline hover:no-underline"
+            href="https://yaak.app/docs/getting-started/web-proxy"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <a
-              className="inline-flex text-text-subtle hover:text-text"
-              aria-label="How the proxy works"
-              href="https://yaak.app/docs/getting-started/web-proxy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon icon="info" size="sm" />
-            </a>
-          </Tooltip>
-        </div>
+            how the Yaak proxy protects your data
+          </a>
+          .
+        </p>
       </div>
     ),
   })
