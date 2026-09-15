@@ -137,6 +137,7 @@ fn setup_window_menu<R: Runtime>(win: &WebviewWindow<R>) -> Result<()> {
             "dev.generate_theme_css" => {
                 w.emit("generate_theme_css", true).unwrap();
             }
+            "dev.show_home" => w.emit("show_home", true).unwrap(),
             "dev.toggle_devtools" => {
                 if webview_window.is_devtools_open() {
                     webview_window.close_devtools();

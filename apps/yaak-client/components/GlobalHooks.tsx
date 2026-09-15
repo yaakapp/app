@@ -5,10 +5,13 @@ import { useHotKey, useSubscribeHotKeys } from "../hooks/useHotKey";
 import { useSubscribeHttpAuthentication } from "../hooks/useHttpAuthentication";
 import { useSyncFontSizeSetting } from "../hooks/useSyncFontSizeSetting";
 import { useSyncWorkspaceChildModels } from "../hooks/useSyncWorkspaceChildModels";
+import { usePlatformEvent } from "../hooks/usePlatformEvent";
 import { useSyncZoomSetting } from "../hooks/useSyncZoomSetting";
 import { useSubscribeTemplateFunctions } from "../hooks/useTemplateFunctions";
+import { fireAndForget } from "../lib/fireAndForget";
 import { jotaiStore } from "../lib/jotai";
 import { renameModelWithPrompt } from "../lib/renameModelWithPrompt";
+import { router } from "../lib/router";
 
 export function GlobalHooks() {
   useSyncZoomSetting();
@@ -23,6 +26,10 @@ export function GlobalHooks() {
   // Other useful things
   useActiveWorkspaceChangedToast();
   useSubscribeHotKeys();
+
+  usePlatformEvent("show_home", () => {
+    fireAndForget(router.navigate({ to: "/", search: { home: true } }));
+  });
 
   useHotKey(
     "request.rename",
