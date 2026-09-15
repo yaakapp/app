@@ -186,6 +186,8 @@ export interface PlatformBlobs {
 
 export interface Platform {
   readonly capabilities: PlatformCapabilities;
+  /** Web request relay, or null when this host executes requests itself. */
+  readonly httpProxyUrl: string | null;
   readonly window: PlatformWindow;
   readonly clipboard: PlatformClipboard;
   readonly dialog: PlatformDialog;
