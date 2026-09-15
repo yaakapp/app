@@ -3,7 +3,7 @@ use crate::context::CliContext;
 use crate::utils::workspace::resolve_workspace_id;
 use std::fs;
 use std::io::ErrorKind;
-use yaak::export::{self, ExportDataParams};
+use yaak_models::export::{self, ExportDataParams};
 use yaak::import;
 use yaak_models::util::{
     BatchUpsertResult, ImportDestination, ImportOrigin, ImportPlanAction, ImportPlanItem,
@@ -127,6 +127,14 @@ fn format_skipped(items: &[ImportPlanItem]) -> Option<String> {
     if parts.is_empty() { None } else { Some(parts.join(", ")) }
 }
 
+/// Write a file and wait for the filesystem to have it, rather than for it to have been asked.
+fn write_durably(path: &std::path::Path, bytes: &[u8]) -> std::io::Result<()> {
+    use std::io::Write;
+    let mut file = std::fs::File::create(path)?;
+    file.write_all(bytes)?;
+    file.sync_all()
+}
+
 fn export(ctx: &CliContext, args: ExportArgs) -> CommandResult<usize> {
     let workspace_ids = resolve_export_workspace_ids(ctx, args.workspace_ids, args.all)?;
     let workspace_id_refs: Vec<&str> = workspace_ids.iter().map(String::as_str).collect();
@@ -137,7 +145,10 @@ fn export(ctx: &CliContext, args: ExportArgs) -> CommandResult<usize> {
         include_private_environments: args.include_private_environments,
     })
     .map_err(|e| format!("Failed to export data: {e}"))?;
-    std::fs::write(&args.file, document)
+    // Flushed before reporting success: an export is a backup, and a backup that the
+    // command called done while it was still only in the page cache is the one case
+    // where saying nothing went wrong is worst.
+    write_durably(&args.file, document.as_bytes())
         .map_err(|e| format!("Failed to write {}: {e}", args.file.display()))?;
 
     Ok(workspace_ids.len())
