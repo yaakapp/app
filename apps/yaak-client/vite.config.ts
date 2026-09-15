@@ -1,6 +1,7 @@
 // @ts-ignore
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { defineConfig, normalizePath } from "vite-plus";
@@ -43,6 +44,41 @@ function sendServerUrl(): string {
   const dialable =
     !host || host === "0.0.0.0" || host === "[::]" || host === "::" ? "127.0.0.1" : host;
   return `http://${dialable}:${port}`;
+}
+
+/**
+ * Fails the build when a copied asset is not where the app fetches it from.
+ *
+ * `PdfViewer` and the page head address these by URL, but nothing ties those
+ * URLs to the copy targets below, and a target that mirrors its source path
+ * instead of landing at the root still builds cleanly — the miss only shows up
+ * as a 404 once the app runs.
+ */
+function verifyServedAssets(expected: string[]) {
+  let outDir = "";
+  return {
+    name: "verify-served-assets",
+    apply: "build" as const,
+    configResolved(config: { root: string; build: { outDir: string } }) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    // After viteStaticCopy, which writes on `writeBundle`.
+    closeBundle() {
+      const missing = expected.filter((asset) => {
+        const full = path.join(outDir, asset);
+        if (!fs.existsSync(full)) return true;
+        const stat = fs.statSync(full);
+        return stat.isDirectory() && fs.readdirSync(full).length === 0;
+      });
+      if (missing.length > 0) {
+        throw new Error(
+          `Copied assets missing from ${outDir}: ${missing.join(", ")}. ` +
+            `Every viteStaticCopy target needs to strip its base path, or it lands ` +
+            `under a copy of the directories it came from instead.`,
+        );
+      }
+    },
+  };
 }
 
 // https://vitejs.dev/config/
@@ -105,6 +141,7 @@ export default defineConfig(async () => {
           },
         ],
       }),
+      verifyServedAssets(["cmaps", "standard_fonts", "favicon.ico", "icon-128.png"]),
     ],
     build: {
       target: "esnext",
