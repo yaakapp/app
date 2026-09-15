@@ -62,7 +62,7 @@ export function Confirm({
         />
       )}
       <HStack space={2} justifyContent="start" className="mt-2 mb-4 flex-row-reverse">
-        <Button type="submit" color={color} disabled={!didConfirm}>
+        <Button autoFocus={!requireTyping} type="submit" color={color} disabled={!didConfirm}>
           {confirmText ?? "Confirm"}
         </Button>
         <Button onClick={handleHide} variant="border">

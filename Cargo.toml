@@ -47,7 +47,14 @@ chrono = "0.4.42"
 hex = "0.4.3"
 keyring = "3.6.3"
 log = "0.4.29"
-reqwest = "0.12.20"
+reqwest = { version = "0.13.5", default-features = false, features = [
+  # reqwest 0.13 switched `default-tls` from native-tls to rustls; keep the
+  # rest of the old default set and stay on native-tls.
+  "charset",
+  "http2",
+  "system-proxy",
+  "native-tls",
+] }
 rustls = { version = "0.23.34", default-features = false }
 rustls-platform-verifier = "0.6.2"
 schemars = { version = "0.8.22", features = ["chrono"] }
