@@ -412,9 +412,10 @@ mod header_limit_tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
-    /// Accepts one connection and replies with a response carrying
-    /// `header_count` distinct `X-Test-N` headers.
-    async fn serve_one_response_with_headers(header_count: usize) -> String {
+    /// Accepts one connection and replies with a response head of exactly
+    /// `total_headers` fields. The trailing `Content-Length` is one of them,
+    /// because hyper counts every field against its limit.
+    async fn serve_response_with_header_count(total_headers: usize) -> String {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
 
@@ -431,13 +432,15 @@ mod header_limit_tests {
             }
 
             let mut response = String::from("HTTP/1.1 200 OK\r\n");
-            for i in 0..header_count {
+            for i in 0..total_headers - 1 {
                 response.push_str(&format!("X-Test-{i}: value-{i}\r\n"));
             }
             response.push_str("Content-Length: 0\r\n\r\n");
 
-            socket.write_all(response.as_bytes()).await.unwrap();
-            socket.flush().await.unwrap();
+            // A response the client rejects mid-parse closes the socket under
+            // us, so a failed write here is an expected outcome, not a fault
+            let _ = socket.write_all(response.as_bytes()).await;
+            let _ = socket.flush().await;
         });
 
         format!("http://{addr}/")
@@ -455,11 +458,11 @@ mod header_limit_tests {
         }
     }
 
-    /// hyper defaults to 100 headers per HTTP/1 response and fails the whole
-    /// request past that, which is what users hit in the field.
+    /// hyper defaults to 100 header fields per HTTP/1 response and fails the
+    /// whole request past that, which is what users hit in the field.
     #[tokio::test]
     async fn responses_with_more_than_100_headers_are_accepted() {
-        let url = serve_one_response_with_headers(150).await;
+        let url = serve_response_with_header_count(150).await;
         let (client, _resolver) = options().build_client().unwrap();
 
         let response = client
@@ -470,7 +473,8 @@ mod header_limit_tests {
             .expect("request with 150 response headers should succeed");
 
         assert_eq!(response.status(), 200);
-        for i in 0..150 {
+        assert_eq!(response.headers().len(), 150);
+        for i in 0..149 {
             assert_eq!(
                 response.headers().get(format!("x-test-{i}")).unwrap(),
                 format!("value-{i}").as_str(),
@@ -478,12 +482,23 @@ mod header_limit_tests {
         }
     }
 
-    /// The limit is configured, not merely raised past the test fixture.
+    /// Pins both sides of the boundary. The accepting half is the half that
+    /// matters: it fails if `http1_max_headers` ever stops being set, since
+    /// hyper would silently fall back to 100.
     #[tokio::test]
-    async fn the_configured_limit_is_the_one_we_set() {
-        let url = serve_one_response_with_headers(HTTP1_MAX_RESPONSE_HEADERS + 1).await;
+    async fn the_limit_is_exactly_the_configured_count() {
         let (client, _resolver) = options().build_client().unwrap();
 
-        assert!(client.inner().get(&url).send().await.is_err());
+        let at_limit = serve_response_with_header_count(HTTP1_MAX_RESPONSE_HEADERS).await;
+        let response = client
+            .inner()
+            .get(&at_limit)
+            .send()
+            .await
+            .expect("a response with exactly the configured header count should succeed");
+        assert_eq!(response.headers().len(), HTTP1_MAX_RESPONSE_HEADERS);
+
+        let over_limit = serve_response_with_header_count(HTTP1_MAX_RESPONSE_HEADERS + 1).await;
+        assert!(client.inner().get(&over_limit).send().await.is_err());
     }
 }
