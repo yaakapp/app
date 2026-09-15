@@ -20,9 +20,8 @@ log = { workspace = true }
 mime_guess = "2.0.5"
 native-tls = { version = "0.2", features = ["alpn"] }
 reqwest = { workspace = true, features = [
-  "rustls-tls-manual-roots-no-provider",
+  "rustls-no-provider",
   "native-tls",
-  "native-tls-alpn",
   "socks",
   "http2",
   "stream",
@@ -41,3 +40,4 @@ yaak-tls = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
+tokio = { workspace = true, features = ["net"] }
