@@ -11,6 +11,27 @@ impl<'a> ClientDb<'a> {
         self.find_one(EnvironmentIden::Id, id)
     }
 
+    /// Resolve an explicit execution environment, rejecting foreign and folder environments.
+    /// Folder variables are inherited from the request's folder, never selected globally.
+    pub fn get_environment_for_workspace(
+        &self,
+        workspace_id: &str,
+        environment_id: &str,
+    ) -> Result<Environment> {
+        let environment = self.get_environment(environment_id)?;
+        if environment.workspace_id != workspace_id {
+            return Err(crate::error::Error::InvalidEnvironment(format!(
+                "Environment {environment_id} does not belong to workspace {workspace_id}"
+            )));
+        }
+        if !matches!(environment.parent_model.as_str(), "workspace" | "environment") {
+            return Err(crate::error::Error::InvalidEnvironment(format!(
+                "Environment {environment_id} is not a workspace environment"
+            )));
+        }
+        Ok(environment)
+    }
+
     pub fn get_environment_by_folder_id(&self, folder_id: &str) -> Result<Option<Environment>> {
         let mut environments: Vec<Environment> =
             self.find_many(EnvironmentIden::ParentId, folder_id, None)?;
@@ -194,5 +215,144 @@ impl<'a> WriteDb<'a> {
             &Environment { name, variables: cleaned_variables, ..environment.clone() },
             source,
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::error::Error;
+    use crate::init_in_memory;
+    use crate::models::{Environment, EnvironmentVariable, Folder, Workspace};
+    use crate::query_manager::QueryManager;
+    use crate::render::make_vars_hashmap;
+    use crate::util::UpdateSource;
+
+    fn fixture() -> (QueryManager, Environment, Environment, Environment) {
+        let (manager, _blobs, _rx) = init_in_memory().unwrap();
+        let source = &UpdateSource::Background;
+        let (base, staging, folder) = manager
+            .with_tx(|db| {
+                let workspace = db.list_workspaces()?.remove(0);
+                let variable = |name: &str, value: &str| EnvironmentVariable {
+                    enabled: true,
+                    name: name.into(),
+                    value: value.into(),
+                    ..Default::default()
+                };
+                let base = db.ensure_base_environment(&workspace.id)?;
+                let base = db.upsert_environment(
+                    &Environment {
+                        variables: vec![
+                            variable("marker", "global"),
+                            variable("global_only", "inherited"),
+                        ],
+                        ..base
+                    },
+                    source,
+                )?;
+                let staging = db.upsert_environment(
+                    &Environment {
+                        workspace_id: workspace.id.clone(),
+                        parent_model: "environment".into(),
+                        parent_id: Some(base.id.clone()),
+                        name: "Staging".into(),
+                        variables: vec![variable("marker", "staging")],
+                        ..Default::default()
+                    },
+                    source,
+                )?;
+                let folder = db.upsert_folder(
+                    &Folder {
+                        workspace_id: workspace.id.clone(),
+                        name: "Folder".into(),
+                        ..Default::default()
+                    },
+                    source,
+                )?;
+                let folder = db.upsert_environment(
+                    &Environment {
+                        workspace_id: workspace.id,
+                        parent_model: "folder".into(),
+                        parent_id: Some(folder.id),
+                        variables: vec![variable("marker", "folder")],
+                        ..Default::default()
+                    },
+                    source,
+                )?;
+                Ok::<_, Error>((base, staging, folder))
+            })
+            .unwrap();
+        (manager, base, staging, folder)
+    }
+
+    #[test]
+    fn explicit_environment_preserves_global_and_folder_inheritance() {
+        let (manager, base, staging, folder) = fixture();
+        let db = manager.connect();
+        let selected = db.get_environment_for_workspace(&base.workspace_id, &staging.id).unwrap();
+        let vars = make_vars_hashmap(
+            db.resolve_environments(&base.workspace_id, None, Some(&selected.id)).unwrap(),
+        );
+        assert_eq!(vars["marker"], "staging");
+        assert_eq!(vars["global_only"], "inherited");
+
+        let vars = make_vars_hashmap(
+            db.resolve_environments(
+                &base.workspace_id,
+                folder.parent_id.as_deref(),
+                Some(&selected.id),
+            )
+            .unwrap(),
+        );
+        assert_eq!(vars["marker"], "folder");
+        assert_eq!(vars["global_only"], "inherited");
+    }
+
+    #[test]
+    fn base_environment_can_be_selected_explicitly() {
+        let (manager, base, _staging, _folder) = fixture();
+        let db = manager.connect();
+        let selected = db.get_environment_for_workspace(&base.workspace_id, &base.id).unwrap();
+        let vars = make_vars_hashmap(
+            db.resolve_environments(&base.workspace_id, None, Some(&selected.id)).unwrap(),
+        );
+        assert_eq!(vars["marker"], "global");
+    }
+
+    #[test]
+    fn explicit_environment_rejects_empty_and_missing_ids() {
+        let (manager, base, _staging, _folder) = fixture();
+        for id in ["", "ev_missing"] {
+            assert!(matches!(
+                manager.connect().get_environment_for_workspace(&base.workspace_id, id),
+                Err(Error::ModelNotFound(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn explicit_environment_rejects_another_workspace() {
+        let (manager, _base, staging, _folder) = fixture();
+        let other = manager
+            .with_tx(|db| {
+                db.upsert_workspace(
+                    &Workspace { name: "Other".into(), ..Default::default() },
+                    &UpdateSource::Background,
+                )
+            })
+            .unwrap();
+        assert!(matches!(
+            manager.connect().get_environment_for_workspace(&other.id, &staging.id),
+            Err(Error::InvalidEnvironment(_))
+        ));
+    }
+
+    #[test]
+    fn explicit_environment_rejects_folder_variables() {
+        let (manager, base, _staging, folder) = fixture();
+        assert!(matches!(
+            manager.connect().get_environment_for_workspace(&base.workspace_id, &folder.id),
+            Err(Error::InvalidEnvironment(_))
+        ));
     }
 }

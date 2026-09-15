@@ -284,11 +284,25 @@ async fn handle_host_plugin_request<R: Runtime>(
             let workspace =
                 workspace_from_window(&window).expect("Failed to get workspace_id from window URL");
             let cookie_jar = cookie_jar_from_window(&window);
-            let environment = environment_from_window(&window);
 
             if http_request.workspace_id.is_empty() {
-                http_request.workspace_id = workspace.id;
+                http_request.workspace_id = workspace.id.clone();
             }
+
+            let environment =
+                if let Some(environment_id) = req.environment_id.as_deref() {
+                    if http_request.workspace_id != workspace.id {
+                        return Err(crate::error::Error::GenericError(
+                            "HTTP request does not belong to the selected workspace".to_string(),
+                        ));
+                    }
+                    Some(window.db().get_environment_for_workspace(
+                        &http_request.workspace_id,
+                        environment_id,
+                    )?)
+                } else {
+                    environment_from_window(&window)
+                };
 
             let http_response = if http_request.id.is_empty() {
                 HttpResponse::default()
