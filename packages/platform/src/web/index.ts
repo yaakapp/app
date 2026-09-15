@@ -28,6 +28,7 @@ import type {
 import { commandSupport, runCommand } from "./commands";
 import { WorkerConnection } from "./connection";
 import { unsupported } from "./errors";
+import { serverBaseUrl } from "./server";
 import { requestPersistence } from "./storage";
 
 /** What this host can do, reported honestly. */
@@ -177,6 +178,7 @@ export function createWebPlatform(): Platform {
 
   return {
     capabilities,
+    httpProxyUrl: serverBaseUrl() || window.location.origin,
     window: createWindow(db),
 
     clipboard: {
