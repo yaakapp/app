@@ -94,6 +94,14 @@ arguments; `--help` lists them all.
 | `--max-concurrent` | 256 | Sends in flight at once. |
 | `--trust-forwarded-for` | off | Take the client IP from `X-Forwarded-For`. Only behind a load balancer that sets it. |
 
+## Logging
+
+Default logs contain a startup message and operational warnings and errors, not request URLs, client IPs,
+DNS lookups, or per-request timing. To diagnose a self-hosted instance, opt in with
+`RUST_LOG=warn,yaak_http=error,yaak_web=debug`. This includes request URLs and IPs,
+so only enable it while debugging. Hosting infrastructure may maintain its own
+access logs independently.
+
 ## Serving the app
 
 `--serve DIR` puts a file server behind the API routes: `/v1/*` is matched
@@ -150,8 +158,9 @@ caught, and so is a `Location:` header that points at one. It also refuses body
 types that would read files on its own disk (`binary`, multipart file
 fields), since no browser tab could legitimately mean those.
 
-Refusals are logged with the reason. On a public instance (`web.yaak.app`, or
-anything else strangers can reach) this must stay on: the machine's private
+Refusal reasons are included in debug logs when enabled. On a public instance
+(`web.yaak.app`, or anything else strangers can reach), private-network protection
+must stay on: the machine's private
 network is the host's, not the user's, so a `localhost` or LAN API is not the
 user's to reach through it — the desktop app is what reaches those. On an
 instance you run for yourself, that reasoning is inverted, and
@@ -162,7 +171,7 @@ other side is one the users are entitled to.
 There is no authentication either way: an instance is anonymous, protected by
 the per-client rate limit and the destination policy. Anything more (a shared
 token, per-user quotas) is a later slice and would sit in front of `send_http`
-in `main.rs`. Put TLS in front of a public instance.
+in `lib.rs`, or in middleware on the exported router. Put TLS in front of a public instance.
 
 ## The wire
 

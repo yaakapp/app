@@ -48,7 +48,8 @@ reqwest = { workspace = true, features = [
   "brotli",
   "deflate",
   "json",
-  "rustls-tls-manual-roots-no-provider",
+  "query",
+  "rustls-no-provider",
   "socks",
   "http2",
 ] }

@@ -124,6 +124,7 @@ export function createTauriPlatform(): Platform {
 
   return {
     capabilities: ALL_CAPABILITIES,
+    httpProxyUrl: null,
     window,
 
     clipboard: {
