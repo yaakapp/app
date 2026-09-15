@@ -223,6 +223,6 @@ production, so there is no address to learn and no CORS in the loop. A
 production build is served by the sender itself (`yaak-web --serve
 dist/apps/yaak-client`, which is what the `ghcr.io/mountain-loop/yaak-web`
 image runs). In development the Vite server passes `/v1` through to `yaak-web`
-instead, following `YAAK_WEB_BIND` to find it — `vp run web:dev` starts both.
+instead, following `PORT` to find it — `vp run web:dev` starts both.
 `VITE_YAAK_WEB_URL` overrides this, for a deployment that keeps the app and the
 server apart.

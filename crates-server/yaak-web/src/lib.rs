@@ -22,7 +22,7 @@ use axum::body::Body;
 use axum::extract::{ConnectInfo, DefaultBodyLimit, Request, State};
 use axum::http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 use axum::middleware::{self, Next};
-use axum::response::{IntoResponse, Json, Response};
+use axum::response::{IntoResponse, Json, Redirect, Response};
 use axum::routing::{get, post};
 pub use config::Config;
 use guard::DestinationPolicy;
@@ -55,7 +55,7 @@ struct AppState {
 ///
 /// The returned router owns its state and accepts normal Axum middleware via `.layer()`.
 /// Construction does not parse arguments, initialize logging, bind a socket, or install
-/// shutdown handlers. `config.bind` is used only by the standalone binary.
+/// shutdown handlers. `config.host` and `config.port` are used only by the standalone binary.
 ///
 /// Serve with `into_make_service_with_connect_info::<SocketAddr>()` so the send endpoint
 /// can extract the peer address for rate limiting.
@@ -97,7 +97,13 @@ pub fn router(config: Config) -> Router {
             info!("Serving the web client from {}", dir.display());
             api.merge(web_router(dir))
         }
-        None => api,
+        // Without `--serve` there is no app here, only `/v1`. Someone who opens this
+        // port in a browser guessed wrong about which of the two dev servers hosts the
+        // app, so send them to the right one when we have been told where it is.
+        None => {
+            let app_port = state.config.app_port;
+            api.fallback(move |headers: HeaderMap| async move { no_app_here(app_port, headers) })
+        }
     }
 }
 
@@ -138,6 +144,40 @@ async fn cache_control(req: Request, next: Next) -> Response {
         if hashed_name && !is_html { "public, max-age=31536000, immutable" } else { "no-cache" };
     res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static(value));
     res
+}
+
+/// The name in a `Host` header, without the port this server is reached on.
+///
+/// An IPv6 literal keeps its brackets and its own colons: the last colon only separates a
+/// port when what follows it isn't part of the address, which is what the `]` test decides.
+fn host_without_port(host: &str) -> &str {
+    match host.rfind(':') {
+        Some(i) if !host[i..].contains(']') => &host[..i],
+        _ => host,
+    }
+}
+
+/// What the send executor does with a browser that came looking for the app.
+///
+/// With an app port configured this is a redirect, built from the `Host` header so the
+/// hostname the browser already used is the one it keeps — this server has no idea which of
+/// its addresses someone typed, and does not need to.
+fn no_app_here(app_port: Option<u16>, headers: HeaderMap) -> Response {
+    if let Some(port) = app_port
+        && let Some(host) = headers.get(header::HOST).and_then(|v| v.to_str().ok())
+    {
+        return Redirect::temporary(&format!("http://{}:{port}/", host_without_port(host)))
+            .into_response();
+    }
+
+    (
+        StatusCode::NOT_FOUND,
+        [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],
+        "This is the Yaak send executor. It serves the API under /v1 and no app.\n\n\
+         To serve the app from here too, restart with --serve <DIR> pointing at a built\n\
+         web client.\n",
+    )
+        .into_response()
 }
 
 fn allowed_origins(origins: &[String]) -> AllowOrigin {
@@ -234,4 +274,22 @@ fn tokio_stream_from<T: Send + 'static>(
     mut rx: tokio::sync::mpsc::Receiver<T>,
 ) -> impl futures_util::Stream<Item = T> + Send + 'static {
     futures_util::stream::poll_fn(move |cx| rx.poll_recv(cx))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::host_without_port;
+
+    #[test]
+    fn strips_the_port_and_keeps_the_name() {
+        assert_eq!(host_without_port("home:9227"), "home");
+        assert_eq!(host_without_port("home"), "home");
+        assert_eq!(host_without_port("192.168.1.5:9227"), "192.168.1.5");
+        assert_eq!(host_without_port("192.168.1.5"), "192.168.1.5");
+        // An IPv6 literal is full of colons, and only the one outside the brackets is a port.
+        assert_eq!(host_without_port("[::1]:9227"), "[::1]");
+        assert_eq!(host_without_port("[::1]"), "[::1]");
+        assert_eq!(host_without_port("[2606:4700::1111]:8080"), "[2606:4700::1111]");
+        assert_eq!(host_without_port("[2606:4700::1111]"), "[2606:4700::1111]");
+    }
 }

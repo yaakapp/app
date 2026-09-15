@@ -9,7 +9,9 @@ use yaak_web::{Config, router};
 
 fn config(serve: Option<PathBuf>) -> Config {
     Config {
-        bind: "127.0.0.1:0".parse().unwrap(),
+        host: "127.0.0.1".to_string(),
+        port: 0,
+        app_port: None,
         serve,
         allow_private_networks: false,
         allowed_origins: vec!["*".into()],

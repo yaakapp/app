@@ -12,7 +12,10 @@ async fn main() {
     )
     .init();
     let config = Config::parse();
-    let bind = config.bind;
+    let bind = config.listen_addr().unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    });
     let rate_limit_per_minute = config.rate_limit_per_minute;
     let app = router(config);
 

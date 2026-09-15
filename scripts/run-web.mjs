@@ -94,7 +94,11 @@ switch (mode) {
 
   // The send executor behind the dev server, on the port a dev build looks for.
   case "proxy":
-    serve(buildServer(), []);
+    serve(buildServer(), [], {
+      // So opening the send server's port in a browser lands on the app instead
+      // of an explanation of why the app is not there.
+      YAAK_WEB_APP_PORT: process.env.YAAK_CLIENT_DEV_PORT ?? process.env.YAAK_DEV_PORT ?? "1420",
+    });
     break;
 
   case "build":
