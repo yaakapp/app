@@ -27,7 +27,7 @@ use axum::routing::{get, post};
 pub use config::Config;
 use guard::DestinationPolicy;
 use limits::RateLimiter;
-use log::{info, warn};
+use log::{debug, info, warn};
 use send::{Refusal, SendLimits};
 use serde_json::json;
 use std::net::{IpAddr, SocketAddr};
@@ -39,6 +39,9 @@ use tower_http::compression::CompressionLayer;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use wire::SendRequest;
+
+/// Minimal operational logging; request diagnostics require an explicit `RUST_LOG` setting.
+pub const DEFAULT_LOG_FILTER: &str = "warn,yaak_http=error";
 
 #[derive(Clone)]
 struct AppState {
@@ -181,7 +184,7 @@ async fn send_http(
 ) -> Response {
     let ip = client_ip(&state.config, &headers, peer);
     if let Err(wait) = state.rate_limiter.check(ip) {
-        warn!("Rate limited {ip}");
+        debug!("Rate limited {ip}");
         let mut res = error_response(
             StatusCode::TOO_MANY_REQUESTS,
             format!("Rate limit reached; try again in {}s", wait.as_secs().max(1)),
@@ -191,7 +194,7 @@ async fn send_http(
     }
 
     let Ok(permit) = state.in_flight.clone().try_acquire_owned() else {
-        warn!("At capacity; refusing {ip}");
+        debug!("At capacity; refusing {ip}");
         return error_response(StatusCode::SERVICE_UNAVAILABLE, "This server is at capacity");
     };
 
@@ -200,13 +203,13 @@ async fn send_http(
         Err(Refusal::Unsupported(m)) => return error_response(StatusCode::BAD_REQUEST, m),
         Err(Refusal::Invalid(m)) => return error_response(StatusCode::BAD_REQUEST, m),
         Err(Refusal::Destination(m)) => {
-            warn!("Refused send from {ip}: {m}");
+            debug!("Refused send from {ip}: {m}");
             return error_response(StatusCode::FORBIDDEN, m);
         }
     };
 
     let description = prepared.describe();
-    info!("{ip} -> {description}");
+    debug!("{ip} -> {description}");
     let started = Instant::now();
 
     let (tx, rx) = tokio::sync::mpsc::channel(send::FRAME_CHANNEL_CAPACITY);

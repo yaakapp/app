@@ -7,7 +7,10 @@ use yaak_web::{Config, router};
 
 #[tokio::main]
 async fn main() {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    env_logger::Builder::from_env(
+        env_logger::Env::default().default_filter_or(yaak_web::DEFAULT_LOG_FILTER),
+    )
+    .init();
     let config = Config::parse();
     let bind = config.bind;
     let rate_limit_per_minute = config.rate_limit_per_minute;
