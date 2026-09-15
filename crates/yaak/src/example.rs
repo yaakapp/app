@@ -27,6 +27,8 @@ const REQUEST_IDS: &[&str] = &[
     "RQ_LIST_USERS",
     "RQ_POSTS_BY_FIRST_USER",
     "RQ_TODOS",
+    "RQ_LOG_IN",
+    "RQ_ME",
 ];
 
 pub fn create_example_workspace(
