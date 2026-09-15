@@ -38,8 +38,12 @@ const DIST = "dist/apps/yaak-client";
 
 const [mode] = process.argv.slice(2);
 
-/** The vite binary, invoked through node so Windows needs no shell. */
-const vp = path.join(rootDir, "node_modules", ".bin", "vp");
+// Invoke the Vite+ CLI JS entry point directly via node, the way run-dev.mjs invokes
+// the Tauri CLI. The `.bin/vp` shim is a POSIX script that npm pairs with `vp.cmd` and
+// `vp.ps1` on Windows, so spawning it without a shell only works on one platform.
+const vp = path.join(rootDir, "node_modules", "vite-plus", "bin", "vp");
+
+const runVite = (args) => [process.execPath, [vp, ...args]];
 
 const env = (extra = {}) => ({ ...process.env, YAAK_TARGET: "web", ...extra });
 
@@ -85,7 +89,7 @@ switch (mode) {
   // the server `web:dev` starts alongside it. Nothing to build first and one
   // address to open.
   case "dev":
-    serve(vp, ["-C", "apps/yaak-client", "dev", "--force"]);
+    serve(...runVite(["-C", "apps/yaak-client", "dev", "--force"]));
     break;
 
   // The send executor behind the dev server, on the port a dev build looks for.
@@ -94,14 +98,14 @@ switch (mode) {
     break;
 
   case "build":
-    run(vp, ["-C", "apps/yaak-client", "build"]);
+    run(...runVite(["-C", "apps/yaak-client", "build"]));
     break;
 
   // One process serving both, the shape the Docker image runs. The build comes
   // first because serving a stale `dist` silently tests the last change but one.
   case "serve": {
     const server = buildServer();
-    run(vp, ["-C", "apps/yaak-client", "build"]);
+    run(...runVite(["-C", "apps/yaak-client", "build"]));
     serve(server, ["--serve", DIST]);
     break;
   }
