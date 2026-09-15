@@ -30,20 +30,17 @@ const iconsDir = normalizePath(
 const yaakTarget = process.env.YAAK_TARGET === "web" ? "web" : "desktop";
 
 /**
- * Where `yaak-web` is listening, taken from the same variable that put it there.
+ * Where `yaak-web` is listening, taken from the same variables that put it there.
  *
- * A wildcard bind is an instruction about what the server accepts, not an address
- * to dial, so it becomes loopback here — the dev server and the send server share
- * a machine.
+ * `HOST` is an instruction about what the server accepts rather than an address to
+ * dial, so a wildcard becomes loopback: the dev server and the send server share a
+ * machine.
  */
 function sendServerUrl(): string {
-  const bind = process.env.YAAK_WEB_BIND?.trim();
-  if (!bind) return "http://127.0.0.1:9227";
-  const port = bind.slice(bind.lastIndexOf(":") + 1);
-  const host = bind.slice(0, bind.lastIndexOf(":"));
-  const dialable =
-    !host || host === "0.0.0.0" || host === "[::]" || host === "::" ? "127.0.0.1" : host;
-  return `http://${dialable}:${port}`;
+  const host = process.env.HOST?.trim();
+  const port = process.env.PORT?.trim() || "9227";
+  const wildcard = !host || host === "0.0.0.0" || host === "::" || host === "[::]";
+  return `http://${wildcard ? "127.0.0.1" : host}:${port}`;
 }
 
 // https://vitejs.dev/config/

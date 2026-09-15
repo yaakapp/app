@@ -74,9 +74,9 @@ YAAK_TARGET=web npm run dev --workspace @yaakapp/yaak-client
 
 The dev server passes `/v1` through to this binary, so a dev build sends to its
 own origin exactly like a production build does — one address to open, and no
-CORS in the loop. `YAAK_WEB_BIND` moves this server and the dev server follows
-it. A production build also sends to its own origin, unless `VITE_YAAK_WEB_URL`
-was set when it was built.
+CORS in the loop. `PORT` moves this server and the dev server follows it. A
+production build also sends to its own origin, unless `VITE_YAAK_WEB_URL` was
+set when it was built.
 
 Reaching the dev server from another machine is `HOST=0.0.0.0`. Vite allows
 addresses but not names, so opening it as a hostname also needs
@@ -84,21 +84,24 @@ addresses but not names, so opening it as a hostname also needs
 
 ## Configuration
 
-Every flag has a `YAAK_WEB_*` environment variable, so a container needs no
-arguments; `--help` lists them all.
+Every flag has an environment variable, so a container needs no arguments;
+`--help` lists them all. The listen address uses the platform conventions —
+`HOST` and `PORT` — so the published image runs unchanged on a
+platform-as-a-service that assigns a port. Everything else is `YAAK_WEB_*`.
 
-| Flag                       | Default          | What                                                                                          |
-| -------------------------- | ---------------- | --------------------------------------------------------------------------------------------- |
-| `--serve`                  | off              | Also serve a built web client from this directory, on the same origin.                        |
-| `--bind`                   | `127.0.0.1:9227` | Listen address. The image sets `0.0.0.0:8080`.                                                |
-| `--allow-private-networks` | off              | Allow sends to loopback, private and link-local addresses.                                    |
-| `--allowed-origins`        | `*`              | CORS origins, comma-separated. Unused when the app is served from here: same origin, no CORS. |
-| `--max-request-bytes`      | 16 MiB           | Largest rendered request accepted from the tab.                                               |
-| `--max-response-bytes`     | 64 MiB           | Largest upstream body relayed before the send is cut off.                                     |
-| `--max-timeout-secs`       | 60               | Ceiling on a send's timeout; a request asking for more (or none) gets this.                   |
-| `--rate-limit-per-minute`  | 120              | Sends per client IP per minute; 0 disables.                                                   |
-| `--max-concurrent`         | 256              | Sends in flight at once.                                                                      |
-| `--trust-forwarded-for`    | off              | Take the client IP from `X-Forwarded-For`. Only behind a load balancer that sets it.          |
+| Flag                       | Default     | What                                                                                          |
+| -------------------------- | ----------- | --------------------------------------------------------------------------------------------- |
+| `--serve`                  | off         | Also serve a built web client from this directory, on the same origin.                        |
+| `--host`                   | `127.0.0.1` | Interface to listen on. The image sets `0.0.0.0`. May be a name; `localhost` resolves.        |
+| `--port`                   | `9227`      | Port to listen on. The image sets `8080`.                                                     |
+| `--allow-private-networks` | off         | Allow sends to loopback, private and link-local addresses.                                    |
+| `--allowed-origins`        | `*`         | CORS origins, comma-separated. Unused when the app is served from here: same origin, no CORS. |
+| `--max-request-bytes`      | 16 MiB      | Largest rendered request accepted from the tab.                                               |
+| `--max-response-bytes`     | 64 MiB      | Largest upstream body relayed before the send is cut off.                                     |
+| `--max-timeout-secs`       | 60          | Ceiling on a send's timeout; a request asking for more (or none) gets this.                   |
+| `--rate-limit-per-minute`  | 120         | Sends per client IP per minute; 0 disables.                                                   |
+| `--max-concurrent`         | 256         | Sends in flight at once.                                                                      |
+| `--trust-forwarded-for`    | off         | Take the client IP from `X-Forwarded-For`. Only behind a load balancer that sets it.          |
 
 ## Logging
 
