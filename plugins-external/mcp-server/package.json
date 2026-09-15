@@ -21,7 +21,7 @@
     "zod": "^4.6.2"
   },
   "devDependencies": {
-    "@types/node": "^25.0.3",
+    "@types/node": "^22.20.2",
     "typescript": "^5.9.3"
   },
   "minYaakVersion": "2026.1.0"
