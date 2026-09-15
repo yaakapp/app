@@ -154,6 +154,35 @@ describe("importer-postman", () => {
     ]);
   });
 
+  test("Leaves {{constructor}} alone instead of reaching Object.prototype", () => {
+    const result = convertPostman(
+      JSON.stringify({
+        info: {
+          name: "Prototype Key",
+          schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        },
+        item: [
+          {
+            name: "Request",
+            request: {
+              method: "GET",
+              url: "https://yaak.app",
+              header: [
+                { key: "X-A", value: "{{constructor}}" },
+                { key: "X-B", value: "{{toString}}" },
+              ],
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(result?.resources.httpRequests[0]?.headers).toEqual([
+      { name: "X-A", value: "${[constructor]}", enabled: true },
+      { name: "X-B", value: "${[toString]}", enabled: true },
+    ]);
+  });
+
   test("Omits keys for items the collection never identified", () => {
     const result = convertPostman(
       JSON.stringify({
