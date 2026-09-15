@@ -18,7 +18,7 @@
     "@hono/node-server": "^2.0.10",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "hono": "^4.13.5",
-    "zod": "^3.25.76"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
