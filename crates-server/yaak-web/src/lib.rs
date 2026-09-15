@@ -146,6 +146,17 @@ async fn cache_control(req: Request, next: Next) -> Response {
     res
 }
 
+/// The name in a `Host` header, without the port this server is reached on.
+///
+/// An IPv6 literal keeps its brackets and its own colons: the last colon only separates a
+/// port when what follows it isn't part of the address, which is what the `]` test decides.
+fn host_without_port(host: &str) -> &str {
+    match host.rfind(':') {
+        Some(i) if !host[i..].contains(']') => &host[..i],
+        _ => host,
+    }
+}
+
 /// What the send executor does with a browser that came looking for the app.
 ///
 /// With an app port configured this is a redirect, built from the `Host` header so the
@@ -155,12 +166,8 @@ fn no_app_here(app_port: Option<u16>, headers: HeaderMap) -> Response {
     if let Some(port) = app_port
         && let Some(host) = headers.get(header::HOST).and_then(|v| v.to_str().ok())
     {
-        // Strip this server's port, keep the name. An IPv6 literal keeps its brackets.
-        let name = match host.rfind(':') {
-            Some(i) if !host[i..].contains(']') => &host[..i],
-            _ => host,
-        };
-        return Redirect::temporary(&format!("http://{name}:{port}/")).into_response();
+        return Redirect::temporary(&format!("http://{}:{port}/", host_without_port(host)))
+            .into_response();
     }
 
     (
@@ -267,4 +274,22 @@ fn tokio_stream_from<T: Send + 'static>(
     mut rx: tokio::sync::mpsc::Receiver<T>,
 ) -> impl futures_util::Stream<Item = T> + Send + 'static {
     futures_util::stream::poll_fn(move |cx| rx.poll_recv(cx))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::host_without_port;
+
+    #[test]
+    fn strips_the_port_and_keeps_the_name() {
+        assert_eq!(host_without_port("home:9227"), "home");
+        assert_eq!(host_without_port("home"), "home");
+        assert_eq!(host_without_port("192.168.1.5:9227"), "192.168.1.5");
+        assert_eq!(host_without_port("192.168.1.5"), "192.168.1.5");
+        // An IPv6 literal is full of colons, and only the one outside the brackets is a port.
+        assert_eq!(host_without_port("[::1]:9227"), "[::1]");
+        assert_eq!(host_without_port("[::1]"), "[::1]");
+        assert_eq!(host_without_port("[2606:4700::1111]:8080"), "[2606:4700::1111]");
+        assert_eq!(host_without_port("[2606:4700::1111]"), "[2606:4700::1111]");
+    }
 }
