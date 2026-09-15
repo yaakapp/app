@@ -16,6 +16,12 @@ const standardFontsDir = normalizePath(
   path.join(path.dirname(require.resolve("pdfjs-dist/package.json")), "standard_fonts"),
 );
 
+// The app's own icons, served as the page icon rather than copied into the client:
+// the bundled app and the tab should not be able to disagree about what Yaak looks like.
+const iconsDir = normalizePath(
+  path.join(import.meta.dirname, "../../crates-tauri/yaak-app-client/icons/release"),
+);
+
 /**
  * Which host the platform package installs. `web` builds Yaak to run in a plain
  * browser tab, with its own IndexedDB store instead of the Rust engine; anything
@@ -62,6 +68,10 @@ export default defineConfig(async () => {
         targets: [
           { src: cMapsDir, dest: "" },
           { src: standardFontsDir, dest: "" },
+          // `/favicon.ico` is requested by browsers whether or not anything links to it,
+          // so it is served under that name to keep a 404 out of every console.
+          { src: `${iconsDir}/icon.ico`, dest: "", rename: "favicon.ico" },
+          { src: `${iconsDir}/128x128.png`, dest: "", rename: "icon-128.png" },
         ],
       }),
     ],
