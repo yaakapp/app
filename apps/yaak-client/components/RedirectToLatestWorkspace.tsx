@@ -31,6 +31,10 @@ export function RedirectToLatestWorkspace() {
           request_id: requestId,
         };
 
+        // Whatever created the first workspace may have already navigated into it
+        const currentId = router.history.location.pathname.match(/^\/workspaces\/([^/]+)/)?.[1];
+        if (workspaces.some((w) => w.id === currentId)) return;
+
         console.log("Redirecting to workspace", params, search);
         await router.navigate({ to: "/workspaces/$workspaceId", params, search });
       })(),

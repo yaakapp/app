@@ -231,6 +231,9 @@ const HANDLERS: Partial<Record<AppCmd, Handler>> = {
   // which is the one thing each host answers differently.
   cmd_export_data: (payload, db) => db.rpc("cmd_export_data", payload),
 
+  // The same example the desktop creates, built by the model layer in the worker.
+  cmd_create_example_workspace: (payload, db) => db.rpc("cmd_create_example_workspace", payload),
+
   async cmd_get_sse_events() {
     return [];
   },
@@ -289,7 +292,6 @@ const DECLINED: Partial<Record<AppCmd, [reason: string, capability: CapabilityNa
   cmd_commit_import: ["Importing needs a plugin, which this host doesn't run", null],
   cmd_list_import_sources: ["Importing isn't available in the browser yet", null],
   cmd_import_sources_for_origin: ["Importing isn't available in the browser yet", null],
-  cmd_create_example_workspace: ["The example workspace isn't available in the browser yet", null],
   cmd_save_response: ["Saving a response to disk isn't available in the browser", "localFiles"],
   cmd_save_base64_to_binary: ["Saving to disk isn't available in the browser", "localFiles"],
   cmd_format_graphql: ["Formatting GraphQL needs a plugin, which this host doesn't run", null],

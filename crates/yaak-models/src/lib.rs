@@ -13,6 +13,7 @@ pub mod client_db;
 mod connection_or_tx;
 pub mod cookies;
 pub mod error;
+pub mod example;
 pub mod export;
 pub mod migrate;
 pub mod models;

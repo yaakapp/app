@@ -4,10 +4,10 @@
 //! other (the chaining example names another request by id). Every placeholder
 //! gets a fresh id per creation, so the example can be created more than once.
 
-use crate::Result;
-use yaak_models::models::{Environment, Folder, HttpRequest, UpsertModelInfo, Workspace};
-use yaak_models::query_manager::QueryManager;
-use yaak_models::util::{BatchUpsertResult, UpdateSource};
+use crate::error::Result;
+use crate::models::{Environment, Folder, HttpRequest, UpsertModelInfo, Workspace};
+use crate::query_manager::QueryManager;
+use crate::util::{BatchUpsertResult, UpdateSource};
 
 const EXAMPLE_JSON: &str = include_str!("example_workspace.json");
 
@@ -67,7 +67,7 @@ fn example_resources() -> Result<BatchUpsertResult> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use yaak_models::init_in_memory;
+    use crate::init_in_memory;
 
     #[test]
     fn every_placeholder_is_mapped() {

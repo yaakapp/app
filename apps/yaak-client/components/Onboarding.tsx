@@ -21,6 +21,9 @@ import { Button } from "./core/Button";
 /** Shown instead of a workspace when there are none. */
 export function Onboarding() {
   const settings = useAtomValue(settingsAtom);
+  const { capabilities } = platform;
+  const canImport = capabilities.plugins;
+  const showAlreadyUsing = capabilities.localFiles || capabilities.git || canImport;
   const [busy, setBusy] = useState<OnboardingChoice | null>(null);
 
   const choose = (choice: OnboardingChoice, run: () => Promise<void> | void) => async () => {
@@ -55,20 +58,24 @@ export function Onboarding() {
           <div className="flex flex-col gap-1.5">
             <Heading>How would you like to get started?</Heading>
             <p className="text-text-subtle">
-              Bring over existing work, try a real API, or start fresh.
+              {canImport
+                ? "Bring over existing work, try a real API, or start fresh."
+                : "Try a real API, or start fresh."}
             </p>
           </div>
 
           <div className="flex flex-col gap-2">
-            <StartOption
-              color="primary"
-              icon="folder_input"
-              title="Migrate from another tool"
-              description="Postman, Insomnia, OpenAPI, or curl"
-              busy={busy === "import"}
-              disabled={busy != null}
-              onClick={choose("import", () => importData.mutateAsync())}
-            />
+            {canImport && (
+              <StartOption
+                color="primary"
+                icon="folder_input"
+                title="Migrate from another tool"
+                description="Postman, Insomnia, OpenAPI, or curl"
+                busy={busy === "import"}
+                disabled={busy != null}
+                onClick={choose("import", () => importData.mutateAsync())}
+              />
+            )}
             <StartOption
               color="info"
               icon="flask"
@@ -89,56 +96,64 @@ export function Onboarding() {
             />
           </div>
 
-          <div className="pt-5 border-t border-dashed border-border-subtle flex flex-col items-start gap-2.5">
-            <span className="text-sm text-text-subtle">Already using Yaak?</span>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="xs"
-                variant="border"
-                color="secondary"
-                leftSlot={<Icon icon="folder_open" size="sm" />}
-                disabled={busy != null}
-                onClick={choose("open_folder", async () => {
-                  const dir = await platform.dialog.open({
-                    title: "Select Workspace Directory",
-                    directory: true,
-                    multiple: false,
-                  });
-                  if (dir == null) return;
-                  await openWorkspaceFromSyncDir.mutateAsync(dir);
-                })}
-              >
-                Open folder
-              </Button>
-              <Button
-                size="xs"
-                variant="border"
-                color="secondary"
-                leftSlot={<Icon icon="git_branch" size="sm" />}
-                disabled={busy != null}
-                onClick={choose("clone_git", () => {
-                  showDialog({
-                    id: "clone-git-repository",
-                    size: "md",
-                    title: "Clone Git Repository",
-                    render: ({ hide }) => <CloneGitRepositoryDialog hide={hide} />,
-                  });
-                })}
-              >
-                Clone repository
-              </Button>
-              <Button
-                size="xs"
-                variant="border"
-                color="secondary"
-                leftSlot={<Icon icon="import" size="sm" />}
-                disabled={busy != null}
-                onClick={choose("import_yaak", () => importData.mutateAsync())}
-              >
-                Import
-              </Button>
+          {showAlreadyUsing && (
+            <div className="pt-5 border-t border-dashed border-border-subtle flex flex-col items-start gap-2.5">
+              <span className="text-sm text-text-subtle">Already using Yaak?</span>
+              <div className="flex flex-wrap gap-2">
+                {capabilities.localFiles && (
+                  <Button
+                    size="xs"
+                    variant="border"
+                    color="secondary"
+                    leftSlot={<Icon icon="folder_open" size="sm" />}
+                    disabled={busy != null}
+                    onClick={choose("open_folder", async () => {
+                      const dir = await platform.dialog.open({
+                        title: "Select Workspace Directory",
+                        directory: true,
+                        multiple: false,
+                      });
+                      if (dir == null) return;
+                      await openWorkspaceFromSyncDir.mutateAsync(dir);
+                    })}
+                  >
+                    Open folder
+                  </Button>
+                )}
+                {capabilities.git && (
+                  <Button
+                    size="xs"
+                    variant="border"
+                    color="secondary"
+                    leftSlot={<Icon icon="git_branch" size="sm" />}
+                    disabled={busy != null}
+                    onClick={choose("clone_git", () => {
+                      showDialog({
+                        id: "clone-git-repository",
+                        size: "md",
+                        title: "Clone Git Repository",
+                        render: ({ hide }) => <CloneGitRepositoryDialog hide={hide} />,
+                      });
+                    })}
+                  >
+                    Clone repository
+                  </Button>
+                )}
+                {canImport && (
+                  <Button
+                    size="xs"
+                    variant="border"
+                    color="secondary"
+                    leftSlot={<Icon icon="import" size="sm" />}
+                    disabled={busy != null}
+                    onClick={choose("import_yaak", () => importData.mutateAsync())}
+                  >
+                    Import
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

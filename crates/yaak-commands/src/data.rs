@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::host::Host;
-use yaak::example::create_example_workspace;
+use yaak_models::example::create_example_workspace;
 use yaak_models::export::{self, ExportDataParams};
 use yaak_models::util::BatchUpsertResult;
 use yaak_rpc_schema::*;

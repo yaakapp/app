@@ -432,6 +432,11 @@ fn dispatch(
             )
         }
 
+        "cmd_create_example_workspace" => to_json(
+            yaak_models::example::create_example_workspace(&host.queries, source)
+                .map_err(js_error)?,
+        ),
+
         "cmd_get_workspace_meta" => {
             let req: WorkspaceIdReq = from_js(payload)?;
             let workspace =
