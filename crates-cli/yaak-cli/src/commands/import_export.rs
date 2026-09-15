@@ -127,12 +127,44 @@ fn format_skipped(items: &[ImportPlanItem]) -> Option<String> {
     if parts.is_empty() { None } else { Some(parts.join(", ")) }
 }
 
-/// Write a file and wait for the filesystem to have it, rather than for it to have been asked.
+/// Write a file so that afterwards it is either the old one or the whole new one.
+///
+/// Writing in place would truncate the previous export before the new one existed, so an
+/// interrupted run loses both. Instead the bytes go to a neighbouring file, are flushed, and
+/// take the target's name in one step. The directory is flushed too: `sync_all` on a file
+/// promises its contents, not that the name it just gained will survive a power cut.
 fn write_durably(path: &std::path::Path, bytes: &[u8]) -> std::io::Result<()> {
     use std::io::Write;
-    let mut file = std::fs::File::create(path)?;
-    file.write_all(bytes)?;
-    file.sync_all()
+
+    let dir = match path.parent() {
+        Some(p) if !p.as_os_str().is_empty() => p,
+        _ => std::path::Path::new("."),
+    };
+    // Alongside the target, because a rename is only atomic within one filesystem.
+    let mut name = path.file_name().unwrap_or_default().to_os_string();
+    name.push(format!(".tmp{}", std::process::id()));
+    let tmp = dir.join(name);
+
+    let write = |tmp: &std::path::Path| -> std::io::Result<()> {
+        let mut file = std::fs::File::create(tmp)?;
+        file.write_all(bytes)?;
+        file.sync_all()
+    };
+    if let Err(e) = write(&tmp) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    if let Err(e) = std::fs::rename(&tmp, path) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+
+    // Only Unix lets a directory be opened for this. Elsewhere the rename is as much as
+    // the platform offers, and the file itself is already flushed.
+    #[cfg(unix)]
+    std::fs::File::open(dir)?.sync_all()?;
+
+    Ok(())
 }
 
 fn export(ctx: &CliContext, args: ExportArgs) -> CommandResult<usize> {
