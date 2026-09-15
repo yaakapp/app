@@ -94,8 +94,26 @@ export default defineConfig(async () => {
     },
     clearScreen: false,
     server: {
+      // `HOST` names the interface, as it does most places: unset leaves Vite on
+      // loopback, `0.0.0.0` exposes it for reaching the dev server from another
+      // device.
+      host: process.env.HOST,
+      // Vite refuses a `Host` it does not recognise, which is the right default for a
+      // server on loopback that only a browser on this machine should reach. Setting
+      // `HOST` is the decision to expose it, and a dev server reached across a network
+      // is reached by a name — so the guard has already been answered by then, and
+      // keeping it would only reject the hostname the user deliberately came in on.
+      allowedHosts: process.env.HOST ? true : undefined,
       port: parseInt(process.env.YAAK_CLIENT_DEV_PORT ?? process.env.YAAK_DEV_PORT ?? "1420", 10),
       strictPort: true,
+      // A web dev server is one origin, the way the built app is: `/v1` is passed
+      // through to `yaak-web` rather than the tab being told to call it directly.
+      // That is one address to open instead of two, no CORS in the loop, and a
+      // dev build that sends exactly the way a production build does.
+      proxy:
+        yaakTarget === "web"
+          ? { "/v1": { target: "http://127.0.0.1:9227", changeOrigin: true } }
+          : undefined,
     },
     envPrefix: ["VITE_", "TAURI_"],
   };

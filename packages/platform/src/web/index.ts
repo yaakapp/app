@@ -28,6 +28,7 @@ import type {
 import { commandSupport, runCommand } from "./commands";
 import { WorkerConnection } from "./connection";
 import { unsupported } from "./errors";
+import { randomId } from "./ids";
 import { serverBaseUrl } from "./server";
 import { requestPersistence } from "./storage";
 
@@ -184,10 +185,18 @@ export function createWebPlatform(): Platform {
     clipboard: {
       writeText: (text) => navigator.clipboard.writeText(text),
       readText: async () => {
-        throw unsupported("clipboard.readText", "Paste instead — Yaak in a browser can't read the clipboard on its own", "clipboardRead");
+        throw unsupported(
+          "clipboard.readText",
+          "Paste instead — Yaak in a browser can't read the clipboard on its own",
+          "clipboardRead",
+        );
       },
       clear: async () => {
-        throw unsupported("clipboard.clear", "Yaak in a browser can't modify the clipboard", "clipboardRead");
+        throw unsupported(
+          "clipboard.clear",
+          "Yaak in a browser can't modify the clipboard",
+          "clipboardRead",
+        );
       },
     },
 
@@ -200,7 +209,11 @@ export function createWebPlatform(): Platform {
 
     files: {
       readDir: async () => {
-        throw unsupported("files.readDir", "A browser tab can't browse your filesystem", "localFiles");
+        throw unsupported(
+          "files.readDir",
+          "A browser tab can't browse your filesystem",
+          "localFiles",
+        );
       },
       readText: async () => {
         throw unsupported("files.readText", "A browser tab can't read local files", "localFiles");
@@ -243,7 +256,7 @@ export function createWebPlatform(): Platform {
     ): Promise<RpcStreamHandle<T>> {
       // Same shape as the desktop — subscribe first, then dispatch — so that a
       // command which grows the ability to stream here needs no caller changes.
-      const streamId = crypto.randomUUID();
+      const streamId = randomId();
       const unlisten = db.listen(`stream_${streamId}`, (p) => onMessage(p as M));
       try {
         const result = (await runCommand(cmd, { ...payload, streamId }, db)) as T;
@@ -268,7 +281,11 @@ export function createWebPlatform(): Platform {
     },
 
     revealItemInDir: async () => {
-      throw unsupported("revealItemInDir", "A browser tab can't open your file manager", "localFiles");
+      throw unsupported(
+        "revealItemInDir",
+        "A browser tab can't open your file manager",
+        "localFiles",
+      );
     },
 
     osType: detectOsType,
