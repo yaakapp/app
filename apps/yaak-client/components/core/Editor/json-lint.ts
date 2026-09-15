@@ -32,6 +32,8 @@ interface JsonLintOptions {
 export function jsonParseLinter(options?: JsonLintOptions) {
   return (view: EditorView): Diagnostic[] => {
     const doc = view.state.doc.toString();
+    if (doc.trim() === "") return [];
+
     // We need lint to not break on stuff like {"foo:" ${[ ... ]}} so we'll replace all template
     // syntax with repeating `1` characters, so it's valid JSON and the position is still correct.
     const escapedDoc = doc.replace(TEMPLATE_SYNTAX_REGEX, (m) => "1".repeat(m.length));
