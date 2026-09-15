@@ -24,6 +24,9 @@ log = { workspace = true }
 rand = "0.8"
 reqwest = { workspace = true, features = ["form"] }
 rolldown = "0.1.0"
+# Pinned exactly: rolldown_resolver takes `oxc_resolver = "^11"`, so cargo
+# drifts it forward and breaks on 11.11 (TsconfigOptions became
+# TsconfigDiscovery). This dep exists only to hold that resolution.
 oxc_resolver = "=11.10.0"
 schemars = { workspace = true }
 serde = { workspace = true }

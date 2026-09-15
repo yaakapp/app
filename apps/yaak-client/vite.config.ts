@@ -1,11 +1,11 @@
 // @ts-ignore
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { defineConfig, normalizePath } from "vite-plus";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import svgr from "vite-plugin-svgr";
 import wasm from "vite-plugin-wasm";
 
 const require = createRequire(import.meta.url);
@@ -46,6 +46,41 @@ function sendServerUrl(): string {
   return `http://${dialable}:${port}`;
 }
 
+/**
+ * Fails the build when a copied asset is not where the app fetches it from.
+ *
+ * `PdfViewer` and the page head address these by URL, but nothing ties those
+ * URLs to the copy targets below, and a target that mirrors its source path
+ * instead of landing at the root still builds cleanly — the miss only shows up
+ * as a 404 once the app runs.
+ */
+function verifyServedAssets(expected: string[]) {
+  let outDir = "";
+  return {
+    name: "verify-served-assets",
+    apply: "build" as const,
+    configResolved(config: { root: string; build: { outDir: string } }) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    // After viteStaticCopy, which writes on `writeBundle`.
+    closeBundle() {
+      const missing = expected.filter((asset) => {
+        const full = path.join(outDir, asset);
+        if (!fs.existsSync(full)) return true;
+        const stat = fs.statSync(full);
+        return stat.isDirectory() && fs.readdirSync(full).length === 0;
+      });
+      if (missing.length > 0) {
+        throw new Error(
+          `Copied assets missing from ${outDir}: ${missing.join(", ")}. ` +
+            `Every viteStaticCopy target needs to strip its base path, or it lands ` +
+            `under a copy of the directories it came from instead.`,
+        );
+      }
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
   return {
@@ -79,18 +114,34 @@ export default defineConfig(async () => {
         generatedRouteTree: "./routeTree.gen.ts",
         autoCodeSplitting: true,
       }),
-      svgr(),
       react(),
       viteStaticCopy({
+        // v4 matches only files and always mirrors the source tree into the
+        // output, so every target here needs stripBase to land where it is
+        // actually served from — without it these end up under a copy of the
+        // path they came from, and nothing fails until the request 404s.
         targets: [
-          { src: cMapsDir, dest: "" },
-          { src: standardFontsDir, dest: "" },
+          { src: `${cMapsDir}/*`, dest: "cmaps", rename: { stripBase: true } },
+          {
+            src: `${standardFontsDir}/*`,
+            dest: "standard_fonts",
+            rename: { stripBase: true },
+          },
           // `/favicon.ico` is requested by browsers whether or not anything links to it,
           // so it is served under that name to keep a 404 out of every console.
-          { src: `${iconsDir}/icon.ico`, dest: "", rename: "favicon.ico" },
-          { src: `${iconsDir}/128x128.png`, dest: "", rename: "icon-128.png" },
+          {
+            src: `${iconsDir}/icon.ico`,
+            dest: "",
+            rename: { name: "favicon.ico", stripBase: true },
+          },
+          {
+            src: `${iconsDir}/128x128.png`,
+            dest: "",
+            rename: { name: "icon-128.png", stripBase: true },
+          },
         ],
       }),
+      verifyServedAssets(["cmaps", "standard_fonts", "favicon.ico", "icon-128.png"]),
     ],
     build: {
       target: "esnext",
