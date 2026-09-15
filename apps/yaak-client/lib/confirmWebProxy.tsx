@@ -23,13 +23,13 @@ export function confirmWebProxy(): Promise<boolean> {
 
   const confirmation = showConfirm({
     id: "web-proxy-consent",
-    title: "Send through the Yaak proxy?",
+    title: "Requests in Yaak Web use a proxy",
     confirmText: "Send via Proxy",
     description: (
       <div className="space-y-3">
         <p>
-          The proxy can read your full request and response, including any secrets they contain.
-          Request and response bodies aren’t stored.
+          Yaak Web sends requests through a hosted proxy. Request and response data, including
+          credentials, passes through Yaak’s servers.
         </p>
         <p>
           <InlineCode className="break-all">{proxyUrl}</InlineCode>
@@ -42,7 +42,7 @@ export function confirmWebProxy(): Promise<boolean> {
             target="_blank"
             rel="noopener noreferrer"
           >
-            how the Yaak proxy protects your data
+            how the proxy works
           </a>
           .
         </p>
