@@ -52,6 +52,7 @@ import { JsonBodyEditor } from "./JsonBodyEditor";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { RequestMethodDropdown } from "./RequestMethodDropdown";
 import { countOverriddenSettings, ModelSettingsEditor } from "./ModelSettingsEditor";
+import { SharedOriginHint } from "./hints/SharedOriginHint";
 import { UrlBar } from "./UrlBar";
 import { UrlParametersEditor } from "./UrlParameterEditor";
 
@@ -344,24 +345,27 @@ export function HttpRequestPane({ style, fullHeight, className, activeRequest }:
     >
       {activeRequest && (
         <>
-          <UrlBar
-            stateKey={`url.${activeRequest.id}`}
-            key={forceUpdateKey + urlKey}
-            url={activeRequest.url}
-            placeholder="https://example.com"
-            onPasteOverwrite={handlePaste}
-            autocomplete={autocomplete}
-            onSend={handleSend}
-            onCancel={cancelResponse}
-            onUrlChange={handleUrlChange}
-            leftSlot={
-              <div className="py-0.5">
-                <RequestMethodDropdown request={activeRequest} className="ml-0.5 h-full!" />
-              </div>
-            }
-            forceUpdateKey={updateKey}
-            isLoading={activeResponse != null && activeResponse.state !== "closed"}
-          />
+          <div>
+            <UrlBar
+              stateKey={`url.${activeRequest.id}`}
+              key={forceUpdateKey + urlKey}
+              url={activeRequest.url}
+              placeholder="https://example.com"
+              onPasteOverwrite={handlePaste}
+              autocomplete={autocomplete}
+              onSend={handleSend}
+              onCancel={cancelResponse}
+              onUrlChange={handleUrlChange}
+              leftSlot={
+                <div className="py-0.5">
+                  <RequestMethodDropdown request={activeRequest} className="ml-0.5 h-full!" />
+                </div>
+              }
+              forceUpdateKey={updateKey}
+              isLoading={activeResponse != null && activeResponse.state !== "closed"}
+            />
+            <SharedOriginHint />
+          </div>
           <Tabs
             ref={tabsRef}
             label="Request"

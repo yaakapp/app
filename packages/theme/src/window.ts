@@ -175,8 +175,11 @@ function bannerColorVariables(theme: Theme, color: YaakColor): CSSVariables {
     textSubtle: color.desaturate(0.58).lift(0.04).translucify(0.04).css(),
     textSubtlest: color.desaturate(0.65).translucify(0.18).css(),
     surface: color.translucify(0.95).css(),
-    surfaceHighlight: color.translucify(0.85).css(),
+    surfaceHighlight: color.translucify(0.9).css(),
     border: color.lift(0.3).translucify(0.8).css(),
+    // Left unset, this is derived from the surface at full opacity, which outlines inline code
+    // in a saturated color that belongs to nothing else in the banner
+    borderSubtle: color.lift(0.3).translucify(0.86).css(),
   });
 }
 

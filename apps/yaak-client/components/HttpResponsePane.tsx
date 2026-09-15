@@ -28,6 +28,7 @@ import { TabContent, Tabs } from "./core/Tabs/Tabs";
 import { Tooltip } from "./core/Tooltip";
 import { EmptyStateText } from "./EmptyStateText";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { ChainingHint } from "./hints/ChainingHint";
 import { HttpResponseTimeline } from "./HttpResponseTimeline";
 import { RecentHttpResponsesDropdown } from "./RecentHttpResponsesDropdown";
 import { RequestBodyViewer } from "./RequestBodyViewer";
@@ -280,6 +281,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
                 {activeResponse.error}
               </Banner>
             )}
+            {activeResponse && <ChainingHint response={activeResponse} mimeType={mimeType} />}
             {/* Show tabs if we have any data (headers, body, etc.) even if there's an error */}
             <Tabs
               tabs={tabs}

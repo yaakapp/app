@@ -57,6 +57,7 @@
   --color-warning: var(--warning);
 
   --animate-blinkRing: blinkRing 150ms step-start 400ms infinite;
+  --animate-settingHighlight: settingHighlight 2.4s ease-out 1 both;
 
   --opacity-disabled: 30%;
 
@@ -89,6 +90,18 @@
   --leading-md: calc(2.5rem - 2px);
 
   --transition-property-grid: grid;
+
+  @keyframes settingHighlight {
+    0%,
+    50% {
+      background-color: color-mix(in srgb, var(--primary) 9%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: inset 0 0 0 1px transparent;
+    }
+  }
 
   @keyframes blinkRing {
     0%,

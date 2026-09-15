@@ -15,6 +15,7 @@ import {
   withEncryptionEnabled,
 } from "../lib/setupOrConfigureEncryption";
 import { DismissibleBanner } from "./core/DismissibleBanner";
+import { FeatureHint } from "./core/FeatureHint";
 import type { GenericCompletionConfig } from "./core/Editor/genericCompletion";
 import type { PairEditorHandle, PairWithId } from "./core/PairEditor";
 import { ensurePairId } from "./core/PairEditor.util";
@@ -152,6 +153,17 @@ export function EnvironmentEditor({ environment, hideName, className, setRef }: 
             This sharable environment contains plain-text secrets
           </DismissibleBanner>
         )}
+        {!environment.public && !isEncryptionEnabled && hasSecretLookingVariable(environment) && (
+          <FeatureHint
+            id="encrypt-secrets"
+            className="mr-3"
+            docsUrl="https://yaak.app/docs/collaboration/secrets-encryption"
+            action={{ label: "Enable Encryption", onClick: setupOrConfigureEncryption }}
+          >
+            Some of these look like secrets. Encrypt them so the workspace is safe to sync to a
+            folder or share with a team.
+          </FeatureHint>
+        )}
       </div>
       <PairOrBulkEditor
         setRef={setRef}
@@ -172,4 +184,10 @@ export function EnvironmentEditor({ environment, hideName, className, setRef }: 
       />
     </div>
   );
+}
+
+const SECRET_NAME = /token|secret|password|passwd|api[_-]?key|private[_-]?key|credential/i;
+
+function hasSecretLookingVariable(environment: Environment) {
+  return environment.variables.some((v) => v.value.trim() !== "" && SECRET_NAME.test(v.name));
 }

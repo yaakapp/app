@@ -25,7 +25,11 @@ interface Props {
   workspaceId: string;
   hide: () => void;
   tab?: WorkspaceSettingsTab;
+  highlight?: WorkspaceSettingsHighlight;
 }
+
+/** Settings rows that can be pointed out when the dialog opens */
+export type WorkspaceSettingsHighlight = "sync_dir";
 
 const TAB_AUTH = "auth";
 const TAB_DNS = "dns";
@@ -42,7 +46,7 @@ export type WorkspaceSettingsTab =
 
 const DEFAULT_TAB: WorkspaceSettingsTab = TAB_GENERAL;
 
-export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
+export function WorkspaceSettingsDialog({ workspaceId, hide, tab, highlight }: Props) {
   const workspace = useAtomValue(workspacesAtom).find((w) => w.id === workspaceId);
   const workspaceMeta = useAtomValue(workspaceMetasAtom).find((m) => m.workspaceId === workspaceId);
   const authTab = useAuthTab(TAB_AUTH, workspace ?? null);
@@ -104,7 +108,7 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
         />
       </TabContent>
       <TabContent value={TAB_SETTINGS} className="overflow-y-auto h-full px-4">
-        <SettingsList className="space-y-8 pb-3">
+        <SettingsList className="space-y-8 pb-3" highlight={highlight}>
           <SettingsSection title={null}>
             <SyncToFilesystemSetting
               layout="settings"
@@ -178,14 +182,23 @@ export function WorkspaceSettingsDialog({ workspaceId, hide, tab }: Props) {
   );
 }
 
-WorkspaceSettingsDialog.show = (workspaceId: string, tab?: WorkspaceSettingsTab) => {
+WorkspaceSettingsDialog.show = (
+  workspaceId: string,
+  tab?: WorkspaceSettingsTab,
+  highlight?: WorkspaceSettingsHighlight,
+) => {
   showDialog({
     id: "workspace-settings",
     size: "lg",
     className: "h-[calc(100vh-5rem)] max-h-200!",
     noPadding: true,
     render: ({ hide }) => (
-      <WorkspaceSettingsDialog workspaceId={workspaceId} hide={hide} tab={tab} />
+      <WorkspaceSettingsDialog
+        workspaceId={workspaceId}
+        hide={hide}
+        tab={tab}
+        highlight={highlight}
+      />
     ),
   });
 };

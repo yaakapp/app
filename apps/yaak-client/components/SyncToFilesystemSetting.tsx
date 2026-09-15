@@ -59,6 +59,7 @@ export function SyncToFilesystemSetting({
         )}
 
         <SettingRowDirectory
+          highlightKey="sync_dir"
           title="Local directory sync"
           description="Sync data to a folder for backup and Git integration."
           filePath={value.filePath}
