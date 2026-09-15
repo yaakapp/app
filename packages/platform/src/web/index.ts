@@ -16,6 +16,7 @@
  */
 
 import type {
+  DialogFilter,
   DragDropEvent,
   OsType,
   Platform,
@@ -23,6 +24,7 @@ import type {
   PlatformWindow,
   RpcPayload,
   RpcStreamHandle,
+  SaveContent,
   Unsubscribe,
 } from "../types";
 import { commandSupport, runCommand } from "./commands";
@@ -106,6 +108,91 @@ async function hostPluginCommand<T>(cmd: string, payload?: RpcPayload): Promise<
     default:
       throw unsupported(cmd, `\`${cmd}\` isn't available when Yaak runs in a browser`);
   }
+}
+
+/**
+ * The File System Access API, where the browser has it. Chromium does; Firefox
+ * and Safari do not, and fall through to a download below.
+ */
+interface SaveFilePicker {
+  (options: {
+    suggestedName?: string;
+    types?: { description: string; accept: Record<string, string[]> }[];
+  }): Promise<{
+    name: string;
+    createWritable(): Promise<{ write(data: Uint8Array): Promise<void>; close(): Promise<void> }>;
+  }>;
+}
+
+/**
+ * Saving, the only way a page can: a real save dialog where the browser offers
+ * one, and a download everywhere else.
+ *
+ * The return value is a name rather than a path because a name is all a tab
+ * ever learns. Callers show it back to the user and nothing more, which is why
+ * the interface promises "where they went" rather than a path.
+ */
+function toBytes(content: SaveContent): Uint8Array {
+  if (content instanceof Uint8Array) return content;
+  const binary = atob(content.base64);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
+async function saveBytes(
+  suggestedName: string,
+  content: SaveContent,
+  filters?: DialogFilter[],
+): Promise<string | null> {
+  const picker = (window as unknown as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
+  const bytes = toBytes(content);
+
+  if (picker != null) {
+    let handle;
+    try {
+      handle = await picker({
+        suggestedName,
+        types: filters?.map((f) => ({
+          description: f.name,
+          // The API keys accepted extensions by MIME type. Nothing here knows
+          // the real one, and it only labels the dialog's filter, so the
+          // catch-all is honest enough.
+          accept: { "application/octet-stream": f.extensions.map((e) => `.${e}`) },
+        })),
+      });
+    } catch (err) {
+      // Only choosing a file is allowed to fall back. Backing out is not a
+      // failure and must not become a download nobody asked for; anything else
+      // here is a browser that won't show the dialog, which a download covers.
+      if ((err as { name?: string } | null)?.name === "AbortError") return null;
+      console.warn("Save dialog unavailable, falling back to a download", err);
+    }
+
+    // Past the dialog, the user has named a destination. A write that fails
+    // there is a failed save, and saying so beats quietly putting the file
+    // somewhere else and reporting success.
+    if (handle != null) {
+      const writable = await handle.createWritable();
+      await writable.write(bytes);
+      await writable.close();
+      return handle.name;
+    }
+  }
+
+  // No dialog: the file lands wherever the browser puts downloads, under the
+  // name we suggested. The user is not asked, so there is nothing to cancel.
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart]));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = suggestedName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  // Revoked on a later turn: revoking while the browser is still reading the
+  // blob cancels the download in some of them.
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  return suggestedName;
 }
 
 function createWindow(db: WorkerConnection): PlatformWindow {
@@ -222,6 +309,8 @@ export function createWebPlatform(): Platform {
       url: (path) => path,
       basename: async (path) => path.split(/[/\\]/).pop() ?? path,
       resolveResource: async (path) => path,
+
+      save: saveBytes,
     },
 
     /**
