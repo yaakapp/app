@@ -26,10 +26,7 @@ export function confirmWebProxy(): Promise<boolean> {
     confirmText: "Send via Proxy",
     description: (
       <div className="space-y-3">
-        <p>
-          Requests from the web app go through the Yaak proxy. The proxy can read your request and
-          response, including headers, credentials, body content, and the selected cookie jar.
-        </p>
+        <p>The proxy can read your request and response, including any credentials.</p>
         <p className="break-all">
           Proxy: <strong>{proxyUrl}</strong>
         </p>
@@ -40,10 +37,9 @@ export function confirmWebProxy(): Promise<boolean> {
             target="_blank"
             rel="noopener noreferrer"
           >
-            How the proxy works and protects your data
+            How it works
           </a>
         </p>
-        <p>We’ll remember your choice in this browser after you continue.</p>
       </div>
     ),
   })
