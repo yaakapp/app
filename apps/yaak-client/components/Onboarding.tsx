@@ -5,7 +5,6 @@ import { HeaderSize, Heading, Icon, type IconProps, LoadingIcon } from "@yaakapp
 import classNames from "classnames";
 import { useAtomValue } from "jotai";
 import { useState } from "react";
-import yaakIcon from "../assets/yaak-icon.png";
 import { openWorkspaceFromSyncDir } from "../commands/openWorkspaceFromSyncDir";
 import { showDialog } from "../lib/dialog";
 import { importData } from "../lib/importData";
@@ -54,12 +53,6 @@ export function Onboarding() {
       <div className="overflow-auto px-6 py-10 grid">
         <div className="m-auto w-full max-w-lg flex flex-col gap-7">
           <div className="flex flex-col gap-1.5">
-            <img
-              src={yaakIcon}
-              alt="Yaak"
-              draggable={false}
-              className="size-12 mb-2.5 select-none"
-            />
             <Heading>How would you like to get started?</Heading>
             <p className="text-text-subtle">
               Bring over existing work, try a real API, or start fresh.
