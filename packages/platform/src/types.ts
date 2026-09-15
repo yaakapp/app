@@ -157,6 +157,21 @@ export interface PlatformFiles {
 
   /** Resolve a path bundled with the app itself, rather than one from the backend. */
   resolveResource(path: string): Promise<string>;
+
+  /**
+   * Put bytes somewhere the user chooses. Returns where they went — a path, a
+   * filename, whatever this host can say — or null if the user backed out.
+   *
+   * The caller supplies the bytes, which is the whole point: the alternative
+   * shape, where a dialog mints a path and a separate backend command writes to
+   * it, can only work on a host that has both a filesystem and a backend. A tab
+   * has neither, so every one of those call sites was a dead control. Whoever
+   * produces the bytes already knows what they are; the host only has to know
+   * where they go.
+   *
+   * `suggestedName` is what the save dialog opens with, extension included.
+   */
+  save(suggestedName: string, bytes: Uint8Array, filters?: DialogFilter[]): Promise<string | null>;
 }
 
 /**
