@@ -29,6 +29,7 @@ members = [
   "crates-proxy/yaak-proxy-lib",
   # Server crates (the browser tier's hosted send executor)
   "crates-server/yaak-web",
+  "crates-server/yaak-playground",
   # CLI crates
   "crates-cli/yaak-cli",
   # Tauri-specific crates
