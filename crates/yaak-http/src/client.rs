@@ -10,8 +10,14 @@ use yaak_tls::{
 
 pub const HTTP2_MAX_RESPONSE_HEADER_LIST_SIZE: u32 = 1024 * 1024;
 
+/// hyper caps HTTP/1 responses at 100 headers, which real servers exceed.
+/// https://yaak.app/feedback/posts/when-response-headers-exceed-a-certain-count-hyper-throws-error
+pub const HTTP1_MAX_RESPONSE_HEADERS: usize = 1024;
+
 fn client_builder() -> ClientBuilder {
-    Client::builder().http2_max_header_list_size(HTTP2_MAX_RESPONSE_HEADER_LIST_SIZE)
+    Client::builder()
+        .http2_max_header_list_size(HTTP2_MAX_RESPONSE_HEADER_LIST_SIZE)
+        .http1_max_headers(HTTP1_MAX_RESPONSE_HEADERS)
 }
 
 #[derive(Clone)]
@@ -397,5 +403,87 @@ UFNAXPsoutUompC1Z57bKA6OKM2hRANCAATCYYKhzgHEaRaGsYVjJSoXvoroL8qe
             passphrase: None,
         };
         assert!(build_native_tls_identity(Some(empty)).unwrap().is_none());
+    }
+}
+
+#[cfg(test)]
+mod header_limit_tests {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
+
+    /// Accepts one connection and replies with a response carrying
+    /// `header_count` distinct `X-Test-N` headers.
+    async fn serve_one_response_with_headers(header_count: usize) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+
+            // Read the request head so the client is not writing into a closed socket
+            let mut buf = [0u8; 4096];
+            loop {
+                let n = socket.read(&mut buf).await.unwrap();
+                if n == 0 || buf[..n].windows(4).any(|w| w == b"\r\n\r\n") {
+                    break;
+                }
+            }
+
+            let mut response = String::from("HTTP/1.1 200 OK\r\n");
+            for i in 0..header_count {
+                response.push_str(&format!("X-Test-{i}: value-{i}\r\n"));
+            }
+            response.push_str("Content-Length: 0\r\n\r\n");
+
+            socket.write_all(response.as_bytes()).await.unwrap();
+            socket.flush().await.unwrap();
+        });
+
+        format!("http://{addr}/")
+    }
+
+    fn options() -> HttpConnectionOptions {
+        HttpConnectionOptions {
+            id: "test".to_string(),
+            validate_certificates: true,
+            http_version: HttpVersion::Http1,
+            proxy: HttpConnectionProxySetting::Disabled,
+            client_certificate: None,
+            dns_overrides: Vec::new(),
+            address_filter: None,
+        }
+    }
+
+    /// hyper defaults to 100 headers per HTTP/1 response and fails the whole
+    /// request past that, which is what users hit in the field.
+    #[tokio::test]
+    async fn responses_with_more_than_100_headers_are_accepted() {
+        let url = serve_one_response_with_headers(150).await;
+        let (client, _resolver) = options().build_client().unwrap();
+
+        let response = client
+            .inner()
+            .get(&url)
+            .send()
+            .await
+            .expect("request with 150 response headers should succeed");
+
+        assert_eq!(response.status(), 200);
+        for i in 0..150 {
+            assert_eq!(
+                response.headers().get(format!("x-test-{i}")).unwrap(),
+                format!("value-{i}").as_str(),
+            );
+        }
+    }
+
+    /// The limit is configured, not merely raised past the test fixture.
+    #[tokio::test]
+    async fn the_configured_limit_is_the_one_we_set() {
+        let url = serve_one_response_with_headers(HTTP1_MAX_RESPONSE_HEADERS + 1).await;
+        let (client, _resolver) = options().build_client().unwrap();
+
+        assert!(client.inner().get(&url).send().await.is_err());
     }
 }
