@@ -30,6 +30,19 @@ const OAUTH1_SIGNATURE_METHODS: Record<string, string> = {
 };
 const DEFAULT_OAUTH1_SIGNATURE_METHOD = "HMAC-SHA1";
 
+// Postman's dynamic variables that a Yaak template function reproduces exactly.
+// The faker-backed ones ({{$randomFirstName}} and friends) have no equivalent and
+// are left alone. Arguments have to be single-quoted; the template parser reads a
+// double-quoted call as raw text.
+const POSTMAN_DYNAMIC_VARIABLES: Record<string, string> = {
+  $guid: "uuid.v4()",
+  $randomUUID: "uuid.v4()",
+  $timestamp: "timestamp.unix()",
+  $isoTimestamp: "timestamp.iso8601()",
+  // Postman's $randomInt is an integer from 0 to 1000
+  $randomInt: "random.range(min='0',max='1000',decimals='0')",
+};
+
 type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
 interface ExportResources {
@@ -604,10 +617,14 @@ function importDescription(rawDescription: unknown): string | undefined {
 /** Recursively render all nested object properties */
 function convertTemplateSyntax<T>(obj: T): T {
   if (typeof obj === "string") {
-    return obj.replace(
-      /{{\s*(_\.)?([^}]*)\s*}}/g,
-      (_m, _dot, expr) => `\${[${expr.trim().replace(/^vault:/, "")}]}`,
-    ) as T;
+    return obj.replace(/{{\s*(_\.)?([^}]*)\s*}}/g, (_m, _dot, expr) => {
+      const name = String(expr).trim();
+      // hasOwn, so a collection using {{constructor}} doesn't reach Object.prototype
+      if (Object.hasOwn(POSTMAN_DYNAMIC_VARIABLES, name)) {
+        return `\${[${POSTMAN_DYNAMIC_VARIABLES[name]}]}`;
+      }
+      return `\${[${name.replace(/^vault:/, "")}]}`;
+    }) as T;
   }
   if (Array.isArray(obj) && obj != null) {
     return obj.map(convertTemplateSyntax) as T;
