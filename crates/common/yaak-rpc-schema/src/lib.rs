@@ -367,6 +367,10 @@ pub struct CmdCurlToRequestReq {
 }
 
 #[derive(Debug, Deserialize, TS)]
+#[ts(export, export_to = "gen_rpc.ts")]
+pub struct CmdCreateExampleWorkspaceReq {}
+
+#[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "gen_rpc.ts")]
 pub struct CmdExportDataReq {
@@ -957,6 +961,7 @@ macro_rules! with_commands {
     cmd_call_http_authentication_action(CmdCallHttpAuthenticationActionReq) -> (),
     cmd_curl_to_request(CmdCurlToRequestReq) -> HttpRequest,
     cmd_export_data(CmdExportDataReq) -> (),
+    cmd_create_example_workspace(CmdCreateExampleWorkspaceReq) -> BatchUpsertResult,
     cmd_save_base64_to_binary(CmdSaveBase64ToBinaryReq) -> (),
     cmd_save_response(CmdSaveResponseReq) -> (),
     cmd_send_http_request(CmdSendHttpRequestReq) -> HttpResponse,

@@ -447,7 +447,7 @@ function LoadedImportDataDialog({
           )}
         </div>
         <div className="text-xs text-text-subtlest">
-          Supports OpenAPI, Swagger, Postman, Insomnia, and curl
+          Supports OpenAPI, Swagger, Postman, Insomnia, curl, and Yaak exports
         </div>
       </button>
 
@@ -460,7 +460,7 @@ function LoadedImportDataDialog({
         onChange={setSource}
       />
 
-      <VStack space={2}>
+      <VStack space={2} className={classNames(workspaces.length === 0 && "hidden")}>
         <Select
           name="import-destination-kind"
           label="Import location"

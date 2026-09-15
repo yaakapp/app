@@ -247,8 +247,8 @@ fn dispatch(
     source: &UpdateSource,
 ) -> Result<serde_json::Value> {
     match cmd {
-        // The one big read. Same list, same order, and the same four lazy
-        // creates (settings, first workspace, cookie jar, base environment) as
+        // The one big read. Same list, same order, and the same lazy
+        // creates (settings, cookie jar, base environment) as
         // `models_workspace_models` on the desktop — this call is where an
         // empty database becomes a usable one. Returned as a JSON *string*
         // because that is what the desktop returns and what the store parses.

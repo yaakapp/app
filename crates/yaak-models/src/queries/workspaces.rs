@@ -79,18 +79,6 @@ impl<'a> ClientDb<'a> {
 }
 
 impl<'a> WriteDb<'a> {
-    /// There is always at least one workspace. Called at startup and after a
-    /// workspace is deleted.
-    pub fn ensure_default_workspace(&self) -> Result<()> {
-        if self.find_all::<Workspace>()?.is_empty() {
-            self.upsert_workspace(
-                &Workspace { name: "Yaak".to_string(), ..Default::default() },
-                &UpdateSource::Background,
-            )?;
-        }
-        Ok(())
-    }
-
     /// Delete a workspace and everything in it.
     ///
     /// Children are bulk-deleted with one statement per table and are NOT
@@ -138,7 +126,6 @@ impl<'a> WriteDb<'a> {
         self.delete_many_untracked::<SyncState>(SyncStateIden::WorkspaceId, wid)?;
         self.delete_many_untracked::<WorkspaceMeta>(WorkspaceMetaIden::WorkspaceId, wid)?;
         let deleted = self.delete(workspace, source)?;
-        self.ensure_default_workspace()?;
 
         // Best-effort cleanup of response bodies (disk files and blob chunks).
         // Failures only orphan unreferenced data, and are logged.
@@ -193,18 +180,32 @@ pub fn default_headers() -> Vec<HttpRequestHeader> {
 #[cfg(test)]
 mod tests {
     use crate::init_in_memory;
+    use crate::models::Workspace;
+    use crate::util::UpdateSource;
 
     #[test]
-    fn bootstraps_first_workspace_with_real_defaults() {
+    fn fresh_install_has_no_workspaces() {
         let (query_manager, _blob_manager, _rx) = init_in_memory().expect("Failed to init DB");
-        let db = query_manager.connect();
+        let workspaces = query_manager.connect().list_workspaces().expect("Failed to list");
+        assert!(workspaces.is_empty());
+    }
 
-        let workspaces = db.list_workspaces().expect("Failed to list workspaces");
-        let workspace = workspaces.first().expect("No workspace was bootstrapped");
+    #[test]
+    fn default_workspace_carries_real_defaults() {
+        let (query_manager, _blob_manager, _rx) = init_in_memory().expect("Failed to init DB");
+        let created = query_manager
+            .with_tx(|tx| {
+                tx.upsert_workspace(
+                    &Workspace { name: "Yaak".to_string(), ..Default::default() },
+                    &UpdateSource::Background,
+                )
+            })
+            .expect("Failed to create workspace");
+        let workspace = query_manager.connect().get_workspace(&created.id).expect("get");
 
-        // This workspace is built in Rust and never deserialized, so it only gets
-        // these values if `Workspace::default()` carries them. Asserted through the
-        // DB round trip, since the column values are what a fresh install lives with.
+        // A workspace built in Rust and never deserialized only gets these values
+        // if `Workspace::default()` carries them. Asserted through the DB round
+        // trip, since the column values are what the user lives with.
         assert!(workspace.setting_send_cookies, "setting_send_cookies");
         assert!(workspace.setting_store_cookies, "setting_store_cookies");
         assert!(workspace.setting_follow_redirects, "setting_follow_redirects");

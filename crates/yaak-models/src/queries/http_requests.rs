@@ -192,8 +192,10 @@ mod tests {
     #[test]
     fn request_resolution_preserves_duplicate_request_headers() {
         let (query_manager, _blob_manager, _rx) = init_in_memory().expect("Failed to init DB");
+        let workspace = query_manager
+            .with_tx(|tx| tx.upsert_workspace(&Workspace::default(), &UpdateSource::Background))
+            .expect("Failed to create workspace");
         let db = query_manager.connect();
-        let workspace = db.list_workspaces().expect("Failed to list workspaces").remove(0);
         let request = HttpRequest {
             workspace_id: workspace.id,
             headers: vec![

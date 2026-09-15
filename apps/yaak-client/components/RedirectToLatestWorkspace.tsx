@@ -7,6 +7,7 @@ import { getRecentRequests } from "../hooks/useRecentRequests";
 import { useRecentWorkspaces } from "../hooks/useRecentWorkspaces";
 import { fireAndForget } from "../lib/fireAndForget";
 import { router } from "../lib/router";
+import { Onboarding } from "./Onboarding";
 
 export function RedirectToLatestWorkspace() {
   const workspaces = useAtomValue(workspacesAtom);
@@ -14,10 +15,6 @@ export function RedirectToLatestWorkspace() {
 
   useEffect(() => {
     if (workspaces.length === 0 || recentWorkspaces == null) {
-      console.log("No workspaces found to redirect to. Skipping.", {
-        workspaces,
-        recentWorkspaces,
-      });
       return;
     }
 
@@ -39,6 +36,12 @@ export function RedirectToLatestWorkspace() {
       })(),
     );
   }, [recentWorkspaces, workspaces, workspaces.length]);
+
+  // The global models are loaded before the router mounts, so an empty list is a real
+  // first launch (or the last workspace was just deleted), not a store still loading
+  if (workspaces.length === 0) {
+    return <Onboarding />;
+  }
 
   return null;
 }

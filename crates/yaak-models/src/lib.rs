@@ -171,11 +171,11 @@ pub fn init_in_memory() -> Result<(QueryManager, BlobManager, mpsc::Receiver<Mod
     Ok((query_manager, blob_manager, rx))
 }
 
-/// The rows every client assumes exist: settings and at least one workspace.
+/// The rows every client assumes exist. Workspaces are not among them: a fresh
+/// install has none, and the client shows onboarding until the user makes one.
 fn bootstrap(query_manager: &QueryManager) -> Result<()> {
     query_manager.with_tx(|tx| {
         tx.ensure_settings()?;
-        tx.ensure_default_workspace()?;
         Ok(())
     })
 }
