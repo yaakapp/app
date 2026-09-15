@@ -80,13 +80,29 @@ export default defineConfig(async () => {
       }),
       react(),
       viteStaticCopy({
+        // v4 matches only files and always mirrors the source tree into the
+        // output, so every target here needs stripBase to land where it is
+        // actually served from — without it these end up under a copy of the
+        // path they came from, and nothing fails until the request 404s.
         targets: [
-          { src: cMapsDir, dest: "" },
-          { src: standardFontsDir, dest: "" },
+          { src: `${cMapsDir}/*`, dest: "cmaps", rename: { stripBase: true } },
+          {
+            src: `${standardFontsDir}/*`,
+            dest: "standard_fonts",
+            rename: { stripBase: true },
+          },
           // `/favicon.ico` is requested by browsers whether or not anything links to it,
           // so it is served under that name to keep a 404 out of every console.
-          { src: `${iconsDir}/icon.ico`, dest: "", rename: "favicon.ico" },
-          { src: `${iconsDir}/128x128.png`, dest: "", rename: "icon-128.png" },
+          {
+            src: `${iconsDir}/icon.ico`,
+            dest: "",
+            rename: { name: "favicon.ico", stripBase: true },
+          },
+          {
+            src: `${iconsDir}/128x128.png`,
+            dest: "",
+            rename: { name: "icon-128.png", stripBase: true },
+          },
         ],
       }),
     ],

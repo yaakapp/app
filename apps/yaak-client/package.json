@@ -95,7 +95,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "rollup": "^4.60.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@^0.2.9",
-    "vite-plugin-static-copy": "^3.3.0",
+    "vite-plugin-static-copy": "^4.1.1",
     "vite-plugin-wasm": "^3.5.0",
     "vite-plus": "^0.3.0"
   }
