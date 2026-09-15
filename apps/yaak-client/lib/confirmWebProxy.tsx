@@ -1,4 +1,6 @@
 import { platform } from "@yaakapp-internal/platform";
+import { Icon, InlineCode } from "@yaakapp-internal/ui";
+import { Tooltip } from "../components/core/Tooltip";
 import { showConfirm } from "./confirm";
 
 const acceptedProxies = new Set<string>();
@@ -26,20 +28,34 @@ export function confirmWebProxy(): Promise<boolean> {
     confirmText: "Send via Proxy",
     description: (
       <div className="space-y-3">
-        <p>The proxy can read your request and response, including any credentials.</p>
-        <p className="break-all">
-          Proxy: <strong>{proxyUrl}</strong>
-        </p>
         <p>
-          <a
-            className="underline hover:no-underline"
-            href="https://yaak.app/docs/getting-started/web-proxy"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            How it works
-          </a>
+          The proxy has access to your request, response, and credentials, but doesn’t store request
+          or response bodies.
         </p>
+        <div className="flex items-center gap-2">
+          <InlineCode className="min-w-0 break-all">{proxyUrl}</InlineCode>
+          <Tooltip
+            content={
+              <div className="space-y-2">
+                <p className="font-semibold">How the proxy works</p>
+                <p>
+                  Requests are processed in memory. Server logs include URLs, client IP addresses,
+                  and timing. Open the guide for details.
+                </p>
+              </div>
+            }
+          >
+            <a
+              className="inline-flex text-text-subtle hover:text-text"
+              aria-label="How the proxy works"
+              href="https://yaak.app/docs/getting-started/web-proxy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon icon="info" size="sm" />
+            </a>
+          </Tooltip>
+        </div>
       </div>
     ),
   })
