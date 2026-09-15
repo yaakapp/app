@@ -27,4 +27,4 @@ yaak-common = { workspace = true }
 yaak-crypto = { workspace = true }
 yaak-models = { workspace = true }
 yaak-templates = { workspace = true }
-zip-extract = "0.4.0"
+zip = "7"

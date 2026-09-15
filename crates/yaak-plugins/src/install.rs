@@ -65,7 +65,8 @@ pub async fn download_and_install(
     let _ = remove_dir_all(&plugin_dir);
     create_dir_all(&plugin_dir)?;
 
-    zip_extract::extract(Cursor::new(&bytes), &plugin_dir, true)?;
+    zip::ZipArchive::new(Cursor::new(&bytes))?
+        .extract_unwrapped_root_dir(&plugin_dir, zip::read::root_dir_common_filter)?;
     info!("Extracted plugin {} to {}", plugin_version.id, plugin_dir_str);
 
     let plugin = query_manager.with_tx(|db| {
