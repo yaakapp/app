@@ -29,7 +29,7 @@
     "@shopify/lang-jsonc": "^1.0.1",
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-router": "^1.133.13",
-    "@tanstack/react-virtual": "^3.14.9",
+    "@tanstack/react-virtual": "^3.14.12",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-dialog": "^2.7.1",
@@ -74,7 +74,7 @@
     "uuid": "^14.0.0",
     "vkbeautify": "^0.99.3",
     "whatwg-mimetype": "^4.0.0",
-    "yaml": "^2.8.3"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@lezer/generator": "^1.8.0",
