@@ -18,7 +18,7 @@ tokio = { workspace = true, features = [
   "time",
   "io-util",
 ] }
-rcgen = "0.13"
+rcgen = "0.14"
 rustls = { workspace = true, features = ["ring"] }
 rustls-native-certs = "0.8"
 tokio-rustls = "0.26"
