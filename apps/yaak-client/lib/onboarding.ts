@@ -4,7 +4,13 @@ import { router } from "./router";
 import { rpc } from "./rpc";
 import { setKeyValue } from "./keyValueStore";
 
-export type OnboardingChoice = "import" | "example" | "fresh" | "open_folder" | "clone_git";
+export type OnboardingChoice =
+  | "import"
+  | "import_yaak"
+  | "example"
+  | "fresh"
+  | "open_folder"
+  | "clone_git";
 
 const NEW_WORKSPACE_NAME = "My Workspace";
 

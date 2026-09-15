@@ -447,7 +447,7 @@ function LoadedImportDataDialog({
           )}
         </div>
         <div className="text-xs text-text-subtlest">
-          Supports OpenAPI, Swagger, Postman, Insomnia, and curl
+          Supports OpenAPI, Swagger, Postman, Insomnia, curl, and Yaak exports
         </div>
       </button>
 

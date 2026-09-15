@@ -1,9 +1,11 @@
+import type { Color } from "@yaakapp-internal/plugins";
 import { platform } from "@yaakapp-internal/platform";
 import { settingsAtom } from "@yaakapp-internal/models";
-import { HeaderSize, Heading, Icon, type IconProps } from "@yaakapp-internal/ui";
+import { HeaderSize, Heading, Icon, type IconProps, LoadingIcon } from "@yaakapp-internal/ui";
 import classNames from "classnames";
 import { useAtomValue } from "jotai";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
+import yaakIcon from "../assets/yaak-icon.png";
 import { openWorkspaceFromSyncDir } from "../commands/openWorkspaceFromSyncDir";
 import { showDialog } from "../lib/dialog";
 import { importData } from "../lib/importData";
@@ -42,83 +44,107 @@ export function Onboarding() {
     <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full w-full">
       <HeaderSize
         data-tauri-drag-region
-        size="md"
+        size="lg"
         className="x-theme-appHeader bg-surface"
         osType={platform.osType()}
         hideWindowControls={settings.hideWindowControls}
         useNativeTitlebar={settings.useNativeTitlebar}
         interfaceScale={settings.interfaceScale}
       />
-      <div className="overflow-auto px-6 py-10">
-        <div className="mx-auto max-w-2xl flex flex-col gap-8">
-          <div className="text-center flex flex-col gap-2">
-            <Heading>Welcome to Yaak</Heading>
+      <div className="overflow-auto px-6 py-10 grid">
+        <div className="m-auto w-full max-w-lg flex flex-col gap-7">
+          <div className="flex flex-col gap-1.5">
+            <img
+              src={yaakIcon}
+              alt="Yaak"
+              draggable={false}
+              className="size-12 mb-2.5 select-none"
+            />
+            <Heading>How would you like to get started?</Heading>
             <p className="text-text-subtle">
-              Requests live in workspaces. How do you want to start your first one?
+              Bring over existing work, try a real API, or start fresh.
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Choice
+          <div className="flex flex-col gap-2">
+            <StartOption
+              color="primary"
               icon="folder_input"
-              title="Import"
-              description="Bring in a Postman, Insomnia, OpenAPI, Swagger, or curl export"
+              title="Migrate from another tool"
+              description="Postman, Insomnia, OpenAPI, or curl"
               busy={busy === "import"}
               disabled={busy != null}
               onClick={choose("import", () => importData.mutateAsync())}
             />
-            <Choice
+            <StartOption
+              color="info"
               icon="flask"
-              title="Try an example"
-              description="A small workspace that shows requests, variables, and chaining"
+              title="Try Yaak with a real API"
+              description="Ready-made requests you can send right away"
               busy={busy === "example"}
               disabled={busy != null}
               onClick={choose("example", createExampleWorkspace)}
             />
-            <Choice
-              icon="plus_circle"
+            <StartOption
+              color="success"
+              icon="plus"
               title="Start fresh"
-              description="An empty workspace ready for your first request"
+              description="An empty workspace for your first request"
               busy={busy === "fresh"}
               disabled={busy != null}
               onClick={choose("fresh", createFreshWorkspace)}
             />
           </div>
 
-          <div className="text-center text-sm text-text-subtle flex flex-wrap items-center justify-center gap-x-1">
-            <span>Already have a Yaak workspace?</span>
-            <Button
-              variant="border"
-              size="2xs"
-              disabled={busy != null}
-              onClick={choose("open_folder", async () => {
-                const dir = await platform.dialog.open({
-                  title: "Select Workspace Directory",
-                  directory: true,
-                  multiple: false,
-                });
-                if (dir == null) return;
-                await openWorkspaceFromSyncDir.mutateAsync(dir);
-              })}
-            >
-              Open a folder
-            </Button>
-            <span>or</span>
-            <Button
-              variant="border"
-              size="2xs"
-              disabled={busy != null}
-              onClick={choose("clone_git", () => {
-                showDialog({
-                  id: "clone-git-repository",
-                  size: "md",
-                  title: "Clone Git Repository",
-                  render: ({ hide }) => <CloneGitRepositoryDialog hide={hide} />,
-                });
-              })}
-            >
-              Clone a Git repository
-            </Button>
+          <div className="pt-5 border-t border-dashed border-border-subtle flex flex-col items-start gap-2.5">
+            <span className="text-sm text-text-subtle">Already using Yaak?</span>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="xs"
+                variant="border"
+                color="secondary"
+                leftSlot={<Icon icon="folder_open" size="sm" />}
+                disabled={busy != null}
+                onClick={choose("open_folder", async () => {
+                  const dir = await platform.dialog.open({
+                    title: "Select Workspace Directory",
+                    directory: true,
+                    multiple: false,
+                  });
+                  if (dir == null) return;
+                  await openWorkspaceFromSyncDir.mutateAsync(dir);
+                })}
+              >
+                Open folder
+              </Button>
+              <Button
+                size="xs"
+                variant="border"
+                color="secondary"
+                leftSlot={<Icon icon="git_branch" size="sm" />}
+                disabled={busy != null}
+                onClick={choose("clone_git", () => {
+                  showDialog({
+                    id: "clone-git-repository",
+                    size: "md",
+                    title: "Clone Git Repository",
+                    render: ({ hide }) => <CloneGitRepositoryDialog hide={hide} />,
+                  });
+                })}
+              >
+                Clone repository
+              </Button>
+              <Button
+                size="xs"
+                variant="border"
+                color="secondary"
+                leftSlot={<Icon icon="import" size="sm" />}
+                disabled={busy != null}
+                onClick={choose("import_yaak", () => importData.mutateAsync())}
+              >
+                Import
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -126,7 +152,8 @@ export function Onboarding() {
   );
 }
 
-function Choice({
+function StartOption({
+  color,
   icon,
   title,
   description,
@@ -134,9 +161,10 @@ function Choice({
   busy,
   disabled,
 }: {
+  color: Color;
   icon: IconProps["icon"];
   title: string;
-  description: ReactNode;
+  description: string;
   onClick: () => void;
   busy: boolean;
   disabled: boolean;
@@ -147,15 +175,30 @@ function Choice({
       disabled={disabled}
       onClick={onClick}
       className={classNames(
-        "text-left rounded-lg border border-border-subtle bg-surface p-4",
-        "flex flex-col gap-2 transition-colors",
-        "hocus:border-border hocus:bg-surface-highlight focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-info",
-        disabled && !busy && "opacity-60",
+        "group w-full text-left rounded-lg px-3 py-2.5 border border-border-subtle",
+        "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3.5",
+        "enabled:hocus:bg-surface-highlight/50 enabled:hocus:border-border",
+        "outline-border-focus focus-visible:outline-2",
+        disabled && !busy && "opacity-disabled",
       )}
     >
-      <Icon icon={busy ? "refresh" : icon} spin={busy} size="lg" className="text-text-subtle" />
-      <div className="font-semibold text-text">{title}</div>
-      <div className="text-sm text-text-subtle">{description}</div>
+      {/* The banner theme tints this tile from the theme's own color for each option */}
+      <div
+        className={classNames(
+          `x-theme-banner--${color}`,
+          "size-10 rounded-md bg-surface-highlight grid place-items-center",
+        )}
+      >
+        {busy ? <LoadingIcon size="sm" /> : <Icon icon={icon} color={color} size="md" />}
+      </div>
+      <div className="min-w-0">
+        <div className="font-semibold text-text">{title}</div>
+        <div className="text-sm text-text-subtle">{description}</div>
+      </div>
+      <Icon
+        icon="chevron_right"
+        className="text-text-subtlest group-enabled:group-hover:text-text-subtle group-enabled:group-focus-visible:text-text-subtle"
+      />
     </button>
   );
 }
