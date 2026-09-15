@@ -3,7 +3,7 @@
     {
       "id": "{{WORKSPACE}}",
       "name": "Example Workspace",
-      "description": "A small tour of Yaak using the free [JSONPlaceholder](https://jsonplaceholder.typicode.com) API. Nothing here needs an account.\n\n1. Open **Getting Started / List posts** and press Send\n2. Open **Variables / Get the current user**, then switch the environment in the top-left to change which user it fetches\n3. Open **Chaining / Posts by the first user** to see how one request reads a value out of another request's response\n\nDelete this workspace whenever you're done with it."
+      "description": "A small tour of Yaak using the [Yaak Playground](https://yaak.run) API. Nothing here needs an account.\n\n1. Open **Getting Started / List posts** and press Send\n2. Open **Variables / Get the current user**, then switch the environment in the top-left to change which user it fetches\n3. Open **Chaining / Posts by the first user** to see how one request reads a value out of another request's response\n4. Open **Authentication / Get my profile** to see a login token used for you\n\nDelete this workspace whenever you're done with it."
     }
   ],
   "environments": [
@@ -14,9 +14,10 @@
       "parentModel": "workspace",
       "public": true,
       "variables": [
-        { "name": "base_url", "value": "https://jsonplaceholder.typicode.com", "enabled": true },
+        { "name": "base_url", "value": "https://yaak.run", "enabled": true },
         { "name": "user_id", "value": "1", "enabled": true },
-        { "name": "api_token", "value": "example-token", "enabled": true }
+        { "name": "username", "value": "ada", "enabled": true },
+        { "name": "password", "value": "yaak", "enabled": true }
       ]
     },
     {
@@ -26,7 +27,10 @@
       "parentModel": "environment",
       "public": true,
       "color": "#c084fc",
-      "variables": [{ "name": "user_id", "value": "2", "enabled": true }]
+      "variables": [
+        { "name": "user_id", "value": "2", "enabled": true },
+        { "name": "username", "value": "grace", "enabled": true }
+      ]
     }
   ],
   "folders": [
@@ -56,9 +60,11 @@
       "workspaceId": "{{WORKSPACE}}",
       "name": "Authentication",
       "sortPriority": 4,
-      "description": "This folder sets Bearer auth from the `api_token` variable. Every request inside inherits it, so the token lives in one place. JSONPlaceholder ignores the header, so these still succeed.",
+      "description": "This folder sets Bearer auth to the token from the **Log in** response. Every request inside inherits it, so the token lives in one place. When the last login is more than 50 minutes old, Yaak logs in again before sending.",
       "authenticationType": "bearer",
-      "authentication": { "token": "${[ api_token ]}" }
+      "authentication": {
+        "token": "${[ response.body.path(request='{{RQ_LOG_IN}}', path='$.accessToken', behavior='ttl', ttl='3000') ]}"
+      }
     }
   ],
   "httpRequests": [
@@ -70,8 +76,8 @@
       "method": "GET",
       "url": "${[ base_url ]}/posts",
       "sortPriority": 1,
-      "urlParameters": [{ "name": "_limit", "value": "5", "enabled": true }],
-      "description": "Query parameters live in the Params tab. Try raising `_limit`."
+      "urlParameters": [{ "name": "limit", "value": "5", "enabled": true }],
+      "description": "Query parameters live in the Params tab. Try raising `limit`."
     },
     {
       "id": "{{RQ_GET_POST}}",
@@ -96,7 +102,7 @@
         "text": "{\n  \"title\": \"Hello from Yaak\",\n  \"body\": \"Templates work inside bodies too\",\n  \"userId\": ${[ user_id ]}\n}"
       },
       "headers": [{ "name": "Content-Type", "value": "application/json", "enabled": true }],
-      "description": "JSONPlaceholder pretends to create the post and echoes it back with a new ID."
+      "description": "Posts you create are only visible to you, and go back to the sample data after an hour. Put the new ID into **Get a post** to read it back."
     },
     {
       "id": "{{RQ_CURRENT_USER}}",
@@ -107,6 +113,17 @@
       "url": "${[ base_url ]}/users/${[ user_id ]}",
       "sortPriority": 1,
       "description": "Switch to the **Another User** environment in the top-left and send again. Hover a template in the URL to see what it resolves to."
+    },
+    {
+      "id": "{{RQ_TODOS}}",
+      "workspaceId": "{{WORKSPACE}}",
+      "folderId": "{{FOLDER_VARIABLES}}",
+      "name": "List the user's todos",
+      "method": "GET",
+      "url": "${[ base_url ]}/users/${[ user_id ]}/todos",
+      "sortPriority": 2,
+      "urlParameters": [{ "name": "completed", "value": "false", "enabled": true }],
+      "description": "The same `user_id` variable, used in a different request. Disable the `completed` parameter to see finished todos too."
     },
     {
       "id": "{{RQ_LIST_USERS}}",
@@ -135,15 +152,30 @@
       "description": "The `userId` parameter is pulled from the **List users** response with the JSONPath `$[0].id`. If that request hasn't been sent yet, Yaak sends it first."
     },
     {
-      "id": "{{RQ_TODOS}}",
+      "id": "{{RQ_LOG_IN}}",
       "workspaceId": "{{WORKSPACE}}",
       "folderId": "{{FOLDER_AUTH}}",
-      "name": "List the user's todos",
-      "method": "GET",
-      "url": "${[ base_url ]}/users/${[ user_id ]}/todos",
+      "name": "Log in",
+      "method": "POST",
+      "url": "${[ base_url ]}/auth/token",
       "sortPriority": 1,
-      "urlParameters": [{ "name": "_limit", "value": "5", "enabled": true }],
-      "description": "Open the Auth tab: it's set to inherit from the folder. Check the Timeline tab after sending to see the Authorization header that was sent."
+      "authenticationType": "none",
+      "bodyType": "application/json",
+      "body": {
+        "text": "{\n  \"username\": \"${[ username ]}\",\n  \"password\": \"${[ password ]}\"\n}"
+      },
+      "headers": [{ "name": "Content-Type", "value": "application/json", "enabled": true }],
+      "description": "Sends the username and password from the environment and returns a token. Its Auth tab is set to No Auth, so it doesn't try to use the token it's fetching."
+    },
+    {
+      "id": "{{RQ_ME}}",
+      "workspaceId": "{{WORKSPACE}}",
+      "folderId": "{{FOLDER_AUTH}}",
+      "name": "Get my profile",
+      "method": "GET",
+      "url": "${[ base_url ]}/auth/me",
+      "sortPriority": 2,
+      "description": "Open the Auth tab: it inherits Bearer auth from the folder, and there's nothing to copy and paste. Check the Timeline tab after sending to see the Authorization header that was sent. To try it as someone else, switch to **Another User** and send **Log in** again."
     }
   ]
 }
