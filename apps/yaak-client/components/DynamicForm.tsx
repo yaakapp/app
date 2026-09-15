@@ -31,6 +31,7 @@ import type { Pair } from "./core/PairEditor";
 import { PairEditor } from "./core/PairEditor";
 import { PlainInput } from "./core/PlainInput";
 import { Select } from "./core/Select";
+import { SecretVariableHint } from "./hints/SecretVariableHint";
 import { Markdown } from "./Markdown";
 import { SelectFile } from "./SelectFile";
 
@@ -46,6 +47,8 @@ interface Props<T> {
   stateKey: string;
   className?: string;
   disabled?: boolean;
+  /** Offer to move literal secrets typed into password fields into a variable */
+  suggestVariables?: boolean;
 }
 
 export function DynamicForm<T extends Record<string, JsonPrimitive>>({
@@ -57,6 +60,7 @@ export function DynamicForm<T extends Record<string, JsonPrimitive>>({
   stateKey,
   className,
   disabled,
+  suggestVariables,
 }: Props<T>) {
   const setDataAttr = useCallback(
     (name: string, value: JsonPrimitive) => {
@@ -73,6 +77,7 @@ export function DynamicForm<T extends Record<string, JsonPrimitive>>({
       stateKey={stateKey}
       autocompleteFunctions={autocompleteFunctions}
       autocompleteVariables={autocompleteVariables}
+      suggestVariables={suggestVariables}
       data={data}
       className={classNames(className, "pb-4")} // Pad the bottom to look nice
     />
@@ -103,6 +108,7 @@ type FormInputsProps<T> = Pick<
 > & {
   setDataAttr: (name: string, value: JsonPrimitive) => void;
   disabled?: boolean;
+  suggestVariables?: boolean;
 };
 
 function FormInputs<T extends Record<string, JsonPrimitive>>({
@@ -113,6 +119,7 @@ function FormInputs<T extends Record<string, JsonPrimitive>>({
   setDataAttr,
   data,
   disabled,
+  suggestVariables,
 }: FormInputsProps<T>) {
   return (
     <>
@@ -147,6 +154,7 @@ function FormInputs<T extends Record<string, JsonPrimitive>>({
                 arg={input}
                 autocompleteFunctions={autocompleteFunctions || false}
                 autocompleteVariables={autocompleteVariables || false}
+                suggestVariables={suggestVariables || false}
                 onChange={(v) => setDataAttr(input.name, v)}
                 value={
                   data[input.name] != null ? String(data[input.name]) : (input.defaultValue ?? "")
@@ -287,6 +295,7 @@ function TextArg({
   value,
   autocompleteFunctions,
   autocompleteVariables,
+  suggestVariables,
   stateKey,
 }: {
   arg: FormInputText;
@@ -294,6 +303,7 @@ function TextArg({
   onChange: (v: string) => void;
   autocompleteFunctions: boolean;
   autocompleteVariables: boolean;
+  suggestVariables: boolean;
   stateKey: string;
 }) {
   const props: InputProps = {
@@ -316,10 +326,19 @@ function TextArg({
     autocompleteFunctions,
     autocompleteVariables,
   };
-  if (autocompleteVariables || autocompleteFunctions || arg.completionOptions) {
-    return <Input {...props} />;
-  }
-  return <PlainInput {...props} />;
+  const input =
+    autocompleteVariables || autocompleteFunctions || arg.completionOptions ? (
+      <Input {...props} />
+    ) : (
+      <PlainInput {...props} />
+    );
+  if (!suggestVariables || !arg.password) return input;
+  return (
+    <div className="flex flex-col gap-2">
+      {input}
+      <SecretVariableHint name={arg.name} value={value} onReplace={onChange} />
+    </div>
+  );
 }
 
 function EditorArg({

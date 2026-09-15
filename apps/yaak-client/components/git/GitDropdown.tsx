@@ -1,10 +1,8 @@
 import { useGitBranchInfo, useGitMutations } from "@yaakapp-internal/git";
-import type { WorkspaceMeta } from "@yaakapp-internal/models";
 import classNames from "classnames";
 import { useAtomValue } from "jotai";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useMemo } from "react";
-import { openWorkspaceSettings } from "../../commands/openWorkspaceSettings";
 import { activeWorkspaceAtom, activeWorkspaceMetaAtom } from "../../hooks/useActiveWorkspace";
 import { useKeyValue } from "../../hooks/useKeyValue";
 import { useRandomKey } from "../../hooks/useRandomKey";
@@ -18,6 +16,7 @@ import { showErrorToast, showToast } from "../../lib/toast";
 import type { DropdownItem } from "../core/Dropdown";
 import { Dropdown } from "../core/Dropdown";
 import { Banner, Icon, InlineCode } from "@yaakapp-internal/ui";
+import { SyncWorkspaceHint } from "../hints/SyncWorkspaceHint";
 import { useGitCallbacks } from "./callbacks";
 import { GitCommitDialog } from "./GitCommitDialog";
 import { GitRemotesDialog } from "./GitRemotesDialog";
@@ -31,7 +30,7 @@ export function GitDropdown() {
   if (workspaceMeta == null) return null;
 
   if (workspaceMeta.settingSyncDir == null) {
-    return <SetupSyncDropdown workspaceMeta={workspaceMeta} />;
+    return <SyncWorkspaceHint workspaceId={workspaceMeta.workspaceId} />;
   }
 
   return <SyncDropdownWithSyncDir syncDir={workspaceMeta.settingSyncDir} />;
@@ -566,64 +565,6 @@ const GitMenuButton = forwardRef<HTMLButtonElement, HTMLAttributes<HTMLButtonEle
     );
   },
 );
-
-function SetupSyncDropdown({ workspaceMeta }: { workspaceMeta: WorkspaceMeta }) {
-  const { value: hidden, set: setHidden } = useKeyValue<Record<string, boolean>>({
-    key: "setup_sync",
-    fallback: {},
-  });
-
-  if (hidden == null || hidden[workspaceMeta.workspaceId]) {
-    return null;
-  }
-
-  const banner = (
-    <Banner color="info">
-      When enabled, workspace data syncs to the chosen folder as text files, ideal for backup and
-      Git collaboration.
-    </Banner>
-  );
-
-  return (
-    <Dropdown
-      fullWidth
-      items={[
-        {
-          type: "content",
-          label: banner,
-        },
-        {
-          color: "success",
-          label: "Open Workspace Settings",
-          leftSlot: <Icon icon="settings" />,
-          onSelect: () => openWorkspaceSettings("settings"),
-        },
-        { type: "separator" },
-        {
-          label: "Hide This Message",
-          leftSlot: <Icon icon="eye_closed" />,
-          async onSelect() {
-            const confirmed = await showConfirm({
-              id: "hide-sync-menu-prompt",
-              title: "Hide Setup Message",
-              description: "You can configure filesystem sync or Git it in the workspace settings",
-            });
-            if (confirmed) {
-              await setHidden((prev) => ({ ...prev, [workspaceMeta.workspaceId]: true }));
-            }
-          },
-        },
-      ]}
-    >
-      <GitMenuButton>
-        <div className="text-sm text-text-subtle grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
-          <Icon icon="wrench" />
-          <div className="truncate">Setup FS Sync or Git</div>
-        </div>
-      </GitMenuButton>
-    </Dropdown>
-  );
-}
 
 function SetupGitDropdown({
   workspaceId,

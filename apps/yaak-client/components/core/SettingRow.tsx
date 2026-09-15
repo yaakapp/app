@@ -2,6 +2,7 @@ import type { AnyModel } from "@yaakapp-internal/models";
 import { patchModel } from "@yaakapp-internal/models";
 import classNames from "classnames";
 import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { CopyIconButton } from "../CopyIconButton";
 import { Checkbox } from "./Checkbox";
 import { IconButton, type IconButtonProps } from "./IconButton";
@@ -19,11 +20,31 @@ type SettingRowBaseProps = {
   controlClassName?: string;
   description?: ReactNode;
   disabled?: boolean;
+  /** Matched against the surrounding `SettingsList` highlight to point this row out when it opens */
+  highlightKey?: string;
   title: ReactNode;
 };
 
-export function SettingsList({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={classNames("w-full", className)}>{children}</div>;
+const SettingsHighlightContext = createContext<string | null>(null);
+
+const FOCUSABLE =
+  "button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+
+export function SettingsList({
+  children,
+  className,
+  highlight = null,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** The `highlightKey` of a row to scroll to, focus, and briefly highlight */
+  highlight?: string | null;
+}) {
+  return (
+    <SettingsHighlightContext.Provider value={highlight}>
+      <div className={classNames("w-full", className)}>{children}</div>
+    </SettingsHighlightContext.Provider>
+  );
 }
 
 export function SettingsSection({
@@ -58,17 +79,37 @@ export function SettingRow({
   controlClassName,
   description,
   disabled,
+  highlightKey,
   title,
 }: {
   children: ReactNode;
 } & SettingRowBaseProps) {
+  const highlight = useContext(SettingsHighlightContext);
+  const isHighlighted = highlightKey != null && highlightKey === highlight;
+  const [flashing, setFlashing] = useState(isHighlighted);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const controlRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isHighlighted) return;
+    rowRef.current?.scrollIntoView({ block: "nearest" });
+    controlRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  }, [isHighlighted]);
+
   return (
     <div
+      ref={rowRef}
       aria-disabled={disabled || undefined}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget) setFlashing(false);
+      }}
       className={classNames(
         className,
         "@container border-b border-border-subtle py-4",
         disabled && "opacity-disabled",
+        // Drawn on a layer so the tint gets even padding and stops short of the row's border
+        flashing &&
+          "relative isolate before:absolute before:-inset-x-3 before:inset-y-1 before:-z-10 before:rounded-lg before:animate-settingHighlight",
       )}
     >
       <div
@@ -84,6 +125,7 @@ export function SettingRow({
           )}
         </div>
         <div
+          ref={controlRef}
           className={classNames(
             "flex min-w-0 items-center justify-start @[40rem]:justify-end",
             controlClassName,

@@ -178,6 +178,7 @@ export function HttpAuthenticationEditor({ model }: Props) {
         disabled={model.authentication.disabled === true}
         autocompleteVariables
         autocompleteFunctions
+        suggestVariables
         stateKey={`auth.${model.id}.${model.authenticationType}`}
         inputs={authConfig.data?.args ?? []}
         data={model.authentication}
