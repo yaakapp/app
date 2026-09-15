@@ -30,7 +30,7 @@ export function confirmWebProxy(): Promise<boolean> {
       <div className="space-y-3">
         <p>
           Yaak Web sends requests through a hosted proxy. Request and response data, including
-          credentials, pass through Yaak’s servers.
+          credentials, pass through the server shown below.
         </p>
         <p>
           <InlineCode className="break-all">{proxyUrl}</InlineCode>
