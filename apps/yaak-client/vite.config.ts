@@ -29,6 +29,23 @@ const iconsDir = normalizePath(
  */
 const yaakTarget = process.env.YAAK_TARGET === "web" ? "web" : "desktop";
 
+/**
+ * Where `yaak-web` is listening, taken from the same variable that put it there.
+ *
+ * A wildcard bind is an instruction about what the server accepts, not an address
+ * to dial, so it becomes loopback here — the dev server and the send server share
+ * a machine.
+ */
+function sendServerUrl(): string {
+  const bind = process.env.YAAK_WEB_BIND?.trim();
+  if (!bind) return "http://127.0.0.1:9227";
+  const port = bind.slice(bind.lastIndexOf(":") + 1);
+  const host = bind.slice(0, bind.lastIndexOf(":"));
+  const dialable =
+    !host || host === "0.0.0.0" || host === "[::]" || host === "::" ? "127.0.0.1" : host;
+  return `http://${dialable}:${port}`;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
   return {
@@ -98,12 +115,14 @@ export default defineConfig(async () => {
       // loopback, `0.0.0.0` exposes it for reaching the dev server from another
       // device.
       host: process.env.HOST,
-      // Vite refuses a `Host` it does not recognise, which is the right default for a
-      // server on loopback that only a browser on this machine should reach. Setting
-      // `HOST` is the decision to expose it, and a dev server reached across a network
-      // is reached by a name — so the guard has already been answered by then, and
-      // keeping it would only reject the hostname the user deliberately came in on.
-      allowedHosts: process.env.HOST ? true : undefined,
+      // Vite refuses a `Host` it does not recognise, which stops a page on a name the
+      // attacker controls from rebinding that name here and driving `/v1` as its own
+      // origin. Addresses are allowed already; only names need listing, so reaching
+      // this as `dev-box.example` means naming it. Deliberately not widened to "any
+      // host when exposed": the proxy below leads to an unauthenticated sender.
+      allowedHosts: process.env.ALLOWED_HOSTS?.split(",")
+        .map((h) => h.trim())
+        .filter(Boolean),
       port: parseInt(process.env.YAAK_CLIENT_DEV_PORT ?? process.env.YAAK_DEV_PORT ?? "1420", 10),
       strictPort: true,
       // A web dev server is one origin, the way the built app is: `/v1` is passed
@@ -112,7 +131,7 @@ export default defineConfig(async () => {
       // dev build that sends exactly the way a production build does.
       proxy:
         yaakTarget === "web"
-          ? { "/v1": { target: "http://127.0.0.1:9227", changeOrigin: true } }
+          ? { "/v1": { target: sendServerUrl(), changeOrigin: true } }
           : undefined,
     },
     envPrefix: ["VITE_", "TAURI_"],
