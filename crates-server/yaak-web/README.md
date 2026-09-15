@@ -76,6 +76,50 @@ A dev build looks for the server at `http://127.0.0.1:9227` (the Vite server is 
 different origin and serves no `/v1`); a production build sends to its own
 origin unless `VITE_YAAK_WEB_URL` was set when it was built.
 
+## Embedding in your own server
+
+The crate also exposes `yaak_web::router(Config) -> axum::Router`. It builds the
+same API and optional static-file server as the binary, with its state already
+attached. Your server owns logging, the listener, shutdown, and any additional
+middleware. Deployment-specific integrations can live entirely in that server.
+
+Use Axum 0.7, matching this crate. For example:
+
+```rust,no_run
+use axum::{extract::Request, middleware::{self, Next}, response::Response};
+use clap::Parser;
+use std::net::SocketAddr;
+use yaak_web::Config;
+
+async fn hosted_middleware(request: Request, next: Next) -> Response {
+    // Add your hosted server's request/response handling here.
+    next.run(request).await
+}
+
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    let config = Config::parse();
+    let listener = tokio::net::TcpListener::bind(config.bind).await?;
+    let app = yaak_web::router(config)
+        .layer(middleware::from_fn(hosted_middleware));
+
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(async { tokio::signal::ctrl_c().await.ok(); })
+    .await
+}
+```
+
+You can also construct `Config` directly; the library does not read arguments or
+environment variables itself. Its `bind` field is only a convenience for callers
+that create a listener. Keep `into_make_service_with_connect_info` when serving:
+the send endpoint requires the socket peer address for rate limiting.
+
+Use `.layer()` to wrap both the API and static-file fallback. `.route_layer()`
+does not wrap the fallback, which serves the HTML pages and assets.
+
 ## Configuration
 
 Every flag has a `YAAK_WEB_*` environment variable, so a container needs no
@@ -162,7 +206,7 @@ other side is one the users are entitled to.
 There is no authentication either way: an instance is anonymous, protected by
 the per-client rate limit and the destination policy. Anything more (a shared
 token, per-user quotas) is a later slice and would sit in front of `send_http`
-in `main.rs`. Put TLS in front of a public instance.
+in `lib.rs`, or in middleware on the exported router. Put TLS in front of a public instance.
 
 ## The wire
 
