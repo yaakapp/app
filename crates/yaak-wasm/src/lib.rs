@@ -416,20 +416,20 @@ fn dispatch(
             to_json(())
         }
 
-        // The export document, built by the same `yaak-models` helper the desktop and the CLI
-        // build it with. Nothing about what an export *is* is decided here — this host only
-        // differs in what happens to the bytes afterwards, which is the tab's business.
+        // The same `export_data` the desktop and the CLI call, not a second copy of its
+        // steps. Nothing about what an export *is* is decided here; this host differs only
+        // in what happens to the bytes afterwards, which is the tab's business.
         "cmd_export_data" => {
             let req: ExportDataReq = from_js(payload)?;
-            let db = host.queries.connect();
-            let export = yaak_models::util::get_workspace_export_resources(
-                &db,
-                EXPORT_VERSION,
-                req.workspace_ids.iter().map(|s| s.as_str()).collect(),
-                req.include_private_environments,
+            to_json(
+                yaak_models::export::export_data(yaak_models::export::ExportDataParams {
+                    query_manager: &host.queries,
+                    yaak_version: EXPORT_VERSION,
+                    workspace_ids: req.workspace_ids.iter().map(|s| s.as_str()).collect(),
+                    include_private_environments: req.include_private_environments,
+                })
+                .map_err(js_error)?,
             )
-            .map_err(js_error)?;
-            to_json(serde_json::to_string_pretty(&export).map_err(js_error)?)
         }
 
         "cmd_get_workspace_meta" => {
