@@ -1,17 +1,19 @@
 import type { ReactNode } from "react";
-import { Children, useCallback, useMemo } from "react";
+import { Children, useCallback, useMemo, useState } from "react";
 import { Banner, HStack, Icon, InlineCode } from "@yaakapp-internal/ui";
 import { useFormatText } from "../../hooks/useFormatText";
 import type { ResponseFilterApi } from "../../hooks/useResponseFilter";
 import { Button } from "../core/Button";
 import type { EditorProps } from "../core/Editor/Editor";
+import { jsonBreadcrumbExtension } from "../core/Editor/json/breadcrumbExtension";
+import type { JsonPathSegment } from "../core/Editor/json/jsonPath";
+import { segmentsToJsonPath } from "../core/Editor/json/jsonPath";
 import { hyperlink } from "../core/Editor/hyperlink/extension";
 import { Editor } from "../core/Editor/LazyEditor";
 import { IconButton } from "../core/IconButton";
 import { Input } from "../core/Input";
+import { JsonBreadcrumbBar } from "./JsonBreadcrumbBar";
 import { RecentFiltersDropdown } from "./RecentFiltersDropdown";
-
-const extraExtensions = [hyperlink];
 
 interface Props {
   text: string;
@@ -38,11 +40,31 @@ export function TextViewer({
   filter,
   filterResult,
 }: Props) {
+  // Track the JSON path under the cursor to drive the breadcrumb bar. Selection
+  // works even in this read-only editor, so it updates as the user clicks around.
+  const [breadcrumbSegments, setBreadcrumbSegments] = useState<JsonPathSegment[]>([]);
+  const handleBreadcrumbUpdate = useCallback(
+    ({ segments }: { segments: JsonPathSegment[] | null }) => setBreadcrumbSegments(segments ?? []),
+    [],
+  );
+  const extraExtensions = useMemo(
+    () =>
+      language === "json"
+        ? [hyperlink, jsonBreadcrumbExtension(handleBreadcrumbUpdate)]
+        : [hyperlink],
+    [language, handleBreadcrumbUpdate],
+  );
+
   const canFilter =
     filter != null && (language === "json" || language === "xml" || language === "html");
   const isSearching = filter?.isSearching ?? false;
   const appliedFilter = filter?.appliedFilter ?? null;
   const resultError = filterResult?.error ?? false;
+
+  // Shown for JSON whenever nothing is filtered. Once a filter is applied the
+  // AppliedFilterBar already says where you are, so the crumbs would just be a
+  // redundant second bar over the filtered subtree.
+  const showBreadcrumbs = language === "json" && filter != null && appliedFilter == null;
 
   const handleFilterKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -156,15 +178,33 @@ export function TextViewer({
 
   return (
     <div className="grid grid-rows-[auto_minmax(0,1fr)] h-full w-full">
-      {appliedFilter && filter != null ? (
-        <AppliedFilterBar
-          filter={appliedFilter}
-          error={resultError}
-          onClear={() => filter.replaceFilter("")}
-        />
-      ) : (
-        <span />
-      )}
+      <div className="min-w-0">
+        {showBreadcrumbs && (
+          <JsonBreadcrumbBar
+            segments={breadcrumbSegments}
+            onSelect={(count) => {
+              if (filter == null) return;
+              if (count === 0) {
+                // Root: show the whole response and leave the filter box closed,
+                // rather than opening an empty filter or applying `$` (which
+                // JSONPath would wrap in an array). Drop any applied filter, then
+                // null the text so the box collapses.
+                filter.applyFilter("");
+                filter.setFilterText(null);
+              } else {
+                filter.replaceFilter(segmentsToJsonPath(breadcrumbSegments, count));
+              }
+            }}
+          />
+        )}
+        {appliedFilter && filter != null ? (
+          <AppliedFilterBar
+            filter={appliedFilter}
+            error={resultError}
+            onClear={() => filter.replaceFilter("")}
+          />
+        ) : null}
+      </div>
       <Editor
         readOnly
         className={className}
