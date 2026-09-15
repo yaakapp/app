@@ -11601,6 +11601,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "yaak-playground"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "bytes",
+ "clap",
+ "env_logger",
+ "log 0.4.34",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
+ "tower-http",
+ "uuid",
+]
+
+[[package]]
 name = "yaak-plugins"
 version = "0.1.0"
 dependencies = [
