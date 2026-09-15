@@ -1,5 +1,6 @@
 import { platform } from "@yaakapp-internal/platform";
 import { InlineCode } from "@yaakapp-internal/ui";
+import { Link } from "../components/core/Link";
 import { showConfirm } from "./confirm";
 
 const acceptedProxies = new Set<string>();
@@ -29,22 +30,14 @@ export function confirmWebProxy(): Promise<boolean> {
       <div className="space-y-3">
         <p>
           Yaak Web sends requests through a hosted proxy. Request and response data, including
-          credentials, passes through Yaak’s servers.
+          credentials, pass through Yaak’s servers.
         </p>
         <p>
           <InlineCode className="break-all">{proxyUrl}</InlineCode>
         </p>
         <p>
           Learn more about{" "}
-          <a
-            className="underline hover:no-underline"
-            href="https://yaak.app/docs/getting-started/web-proxy"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            how the proxy works
-          </a>
-          .
+          <Link href="https://yaak.app/docs/getting-started/web-proxy">how the proxy works</Link>.
         </p>
       </div>
     ),

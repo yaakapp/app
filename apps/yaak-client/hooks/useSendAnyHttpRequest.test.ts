@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@yaakapp-internal/platform", () => ({ platform: mocks.platform }));
 vi.mock("@yaakapp-internal/models", () => ({ flushAllModelWrites: mocks.flushAllModelWrites }));
 vi.mock("../lib/confirm", () => ({ showConfirm: mocks.showConfirm }));
+vi.mock("../lib/appInfo", () => ({ appInfo: { identifier: "app.yaak.web" } }));
 vi.mock("../lib/rpc", () => ({ rpc: mocks.rpc }));
 vi.mock("../lib/toast", () => ({ showToast: vi.fn() }));
 vi.mock("./useActiveCookieJar", () => ({ getActiveCookieJar: () => ({ id: "cj_test" }) }));
