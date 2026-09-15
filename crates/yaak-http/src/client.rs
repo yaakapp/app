@@ -482,23 +482,23 @@ mod header_limit_tests {
         }
     }
 
-    /// Pins both sides of the boundary. The accepting half is the half that
-    /// matters: it fails if `http1_max_headers` ever stops being set, since
-    /// hyper would silently fall back to 100.
+    /// Pins both sides of the boundary. The sizes are written out rather than
+    /// derived from `HTTP1_MAX_RESPONSE_HEADERS`, so retuning the limit trips
+    /// this test instead of silently moving with it.
     #[tokio::test]
-    async fn the_limit_is_exactly_the_configured_count() {
+    async fn the_limit_is_exactly_1024_header_fields() {
         let (client, _resolver) = options().build_client().unwrap();
 
-        let at_limit = serve_response_with_header_count(HTTP1_MAX_RESPONSE_HEADERS).await;
+        let at_limit = serve_response_with_header_count(1024).await;
         let response = client
             .inner()
             .get(&at_limit)
             .send()
             .await
-            .expect("a response with exactly the configured header count should succeed");
-        assert_eq!(response.headers().len(), HTTP1_MAX_RESPONSE_HEADERS);
+            .expect("a response with 1024 header fields should succeed");
+        assert_eq!(response.headers().len(), 1024);
 
-        let over_limit = serve_response_with_header_count(HTTP1_MAX_RESPONSE_HEADERS + 1).await;
+        let over_limit = serve_response_with_header_count(1025).await;
         assert!(client.inner().get(&over_limit).send().await.is_err());
     }
 }
