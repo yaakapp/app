@@ -671,6 +671,13 @@ async fn cmd_export_data<R: Runtime>(ctx: ClientCtx<R>, req: CmdExportDataReq) -
     Ok(yaak_commands::data::cmd_export_data(ctx, req).await?)
 }
 
+async fn cmd_create_example_workspace<R: Runtime>(
+    ctx: ClientCtx<R>,
+    req: CmdCreateExampleWorkspaceReq,
+) -> Result<BatchUpsertResult> {
+    Ok(yaak_commands::data::cmd_create_example_workspace(ctx, req).await?)
+}
+
 async fn cmd_save_base64_to_binary<R: Runtime>(
     ctx: ClientCtx<R>,
     req: CmdSaveBase64ToBinaryReq,

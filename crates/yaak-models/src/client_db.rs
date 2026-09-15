@@ -6,7 +6,6 @@ use sea_query::{IntoColumnRef, IntoIden, SimpleExpr};
 use std::cell::RefCell;
 use std::fmt::Debug;
 use std::ops::Deref;
-use std::sync::mpsc;
 use yaak_database::DbContext;
 
 /// A read handle. Comes from the reader pool and can only query.
@@ -80,7 +79,6 @@ impl<'a> ClientDb<'a> {
 /// discards them along with the rows.
 pub struct WriteDb<'a> {
     db: ClientDb<'a>,
-    events_tx: mpsc::Sender<ModelPayload>,
     pending_events: RefCell<Vec<ModelPayload>>,
 }
 
@@ -93,8 +91,8 @@ impl<'a> Deref for WriteDb<'a> {
 }
 
 impl<'a> WriteDb<'a> {
-    pub fn new(ctx: DbContext<'a>, events_tx: mpsc::Sender<ModelPayload>) -> Self {
-        Self { db: ClientDb::new(ctx), events_tx, pending_events: RefCell::new(Vec::new()) }
+    pub fn new(ctx: DbContext<'a>) -> Self {
+        Self { db: ClientDb::new(ctx), pending_events: RefCell::new(Vec::new()) }
     }
 
     /// The events for everything written so far, to send once the

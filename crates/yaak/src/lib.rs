@@ -1,4 +1,5 @@
 pub mod error;
+pub mod example;
 pub mod export;
 pub mod import;
 pub mod plugin_events;

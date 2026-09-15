@@ -62,8 +62,7 @@ impl QueryManager {
         let tx = Transaction::new_unchecked(&conn, TransactionBehavior::Immediate)
             .map_err(crate::error::Error::SqlError)?;
 
-        let db =
-            WriteDb::new(DbContext::new(ConnectionOrTx::Transaction(&tx)), self.events_tx.clone());
+        let db = WriteDb::new(DbContext::new(ConnectionOrTx::Transaction(&tx)));
 
         match func(&db) {
             Ok(val) => {

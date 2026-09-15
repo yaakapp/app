@@ -460,7 +460,7 @@ function LoadedImportDataDialog({
         onChange={setSource}
       />
 
-      <VStack space={2}>
+      <VStack space={2} className={classNames(workspaces.length === 0 && "hidden")}>
         <Select
           name="import-destination-kind"
           label="Import location"
