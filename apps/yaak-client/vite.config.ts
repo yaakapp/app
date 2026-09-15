@@ -5,7 +5,6 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { defineConfig, normalizePath } from "vite-plus";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import svgr from "vite-plugin-svgr";
 import wasm from "vite-plugin-wasm";
 
 const require = createRequire(import.meta.url);
@@ -79,7 +78,6 @@ export default defineConfig(async () => {
         generatedRouteTree: "./routeTree.gen.ts",
         autoCodeSplitting: true,
       }),
-      svgr(),
       react(),
       viteStaticCopy({
         targets: [
