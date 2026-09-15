@@ -232,7 +232,11 @@ mod tests {
         let source = &UpdateSource::Background;
         let (base, staging, folder) = manager
             .with_tx(|db| {
-                let workspace = db.list_workspaces()?.remove(0);
+                // Fresh databases no longer come with a workspace, so make one
+                let workspace = db.upsert_workspace(
+                    &Workspace { name: "Test".into(), ..Default::default() },
+                    source,
+                )?;
                 let variable = |name: &str, value: &str| EnvironmentVariable {
                     enabled: true,
                     name: name.into(),

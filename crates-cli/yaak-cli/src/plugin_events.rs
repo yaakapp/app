@@ -1037,7 +1037,7 @@ mod environment_tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
     use tokio::time::{Duration, timeout};
-    use yaak_models::models::{EnvironmentVariable, HttpRequest, HttpRequestHeader};
+    use yaak_models::models::{EnvironmentVariable, HttpRequest, HttpRequestHeader, Workspace};
 
     #[tokio::test]
     async fn plugin_send_uses_override_and_fallback_and_rejects_invalid_ids_before_sending() {
@@ -1079,7 +1079,11 @@ mod environment_tests {
         let (base, a, b, request) = query_manager
             .with_tx(|db| {
                 let source = &UpdateSource::Background;
-                let workspace = db.list_workspaces()?.remove(0);
+                // Fresh databases no longer come with a workspace, so make one
+                let workspace = db.upsert_workspace(
+                    &Workspace { name: "Test".into(), ..Default::default() },
+                    source,
+                )?;
                 let vars = |value: &str| {
                     vec![EnvironmentVariable {
                         enabled: true,
