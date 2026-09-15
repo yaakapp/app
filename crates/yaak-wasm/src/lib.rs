@@ -46,6 +46,11 @@ const DB_NAME: &str = "yaak.db";
 const BLOB_DB_NAME: &str = "yaak-blobs.db";
 const VFS_NAME: &str = "yaak-idb";
 
+/// What an export made here records as the version that wrote it. The desktop stamps its own
+/// app version; this host has none, and the field is provenance rather than something read
+/// back, so it says what it is.
+const EXPORT_VERSION: &str = "web";
+
 struct Host {
     queries: QueryManager,
     blobs: BlobManager,
@@ -216,6 +221,13 @@ struct UpsertIntrospectionReq {
     workspace_id: String,
     request_id: String,
     content: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ExportDataReq {
+    workspace_ids: Vec<String>,
+    include_private_environments: bool,
 }
 
 #[derive(Deserialize)]
@@ -402,6 +414,22 @@ fn dispatch(
                 })
                 .map_err(js_error)?;
             to_json(())
+        }
+
+        // The export document, built by the same `yaak-models` helper the desktop and the CLI
+        // build it with. Nothing about what an export *is* is decided here — this host only
+        // differs in what happens to the bytes afterwards, which is the tab's business.
+        "cmd_export_data" => {
+            let req: ExportDataReq = from_js(payload)?;
+            let db = host.queries.connect();
+            let export = yaak_models::util::get_workspace_export_resources(
+                &db,
+                EXPORT_VERSION,
+                req.workspace_ids.iter().map(|s| s.as_str()).collect(),
+                req.include_private_environments,
+            )
+            .map_err(js_error)?;
+            to_json(serde_json::to_string_pretty(&export).map_err(js_error)?)
         }
 
         "cmd_get_workspace_meta" => {

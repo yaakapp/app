@@ -65,21 +65,22 @@ function ExportDataDialogContent({
     const ids = Object.keys(selectedWorkspaces).filter((k) => selectedWorkspaces[k]);
     const workspace = ids.length === 1 ? workspaces.find((w) => w.id === ids[0]) : undefined;
     const slug = workspace ? slugify(workspace.name, { lower: true }) : "workspaces";
-    const exportPath = await platform.dialog.save({
-      title: "Export Data",
-      defaultPath: `yaak.${slug}.json`,
-    });
-    if (exportPath == null) {
-      return;
-    }
-
-    await rpc("cmd_export_data", {
+    const document = await rpc<string>("cmd_export_data", {
       workspaceIds: ids,
-      exportPath,
       includePrivateEnvironments: includePrivateEnvironments,
     });
+
+    const savedTo = await platform.files.save(
+      `yaak.${slug}.json`,
+      new TextEncoder().encode(document),
+      [{ name: "JSON", extensions: ["json"] }],
+    );
+    if (savedTo == null) {
+      return; // Cancelled
+    }
+
     onHide();
-    onSuccess(exportPath);
+    onSuccess(savedTo);
   }, [includePrivateEnvironments, onHide, onSuccess, selectedWorkspaces, workspaces]);
 
   const allSelected = workspaces.every((w) => selectedWorkspaces[w.id]);
