@@ -40,6 +40,17 @@ export interface RpcStreamHandle<T> {
   unlisten: Unsubscribe;
 }
 
+/**
+ * What to save: the bytes, or base64 of them for a caller that already has it
+ * that way.
+ *
+ * Both forms exist because both hosts want a different one, and a value that
+ * arrives base64 should not be decoded and re-encoded to get back where it
+ * started. Whichever a caller has is the one to pass; each host converts only
+ * when it has to.
+ */
+export type SaveContent = Uint8Array | { base64: string };
+
 export interface DialogFilter {
   name: string;
   extensions: string[];
@@ -171,7 +182,11 @@ export interface PlatformFiles {
    *
    * `suggestedName` is what the save dialog opens with, extension included.
    */
-  save(suggestedName: string, bytes: Uint8Array, filters?: DialogFilter[]): Promise<string | null>;
+  save(
+    suggestedName: string,
+    content: SaveContent,
+    filters?: DialogFilter[],
+  ): Promise<string | null>;
 }
 
 /**

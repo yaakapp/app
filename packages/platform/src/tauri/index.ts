@@ -159,13 +159,15 @@ export function createTauriPlatform(): Platform {
       basename: (path) => basename(path),
       resolveResource: (path) => resolveResource(path),
 
-      async save(suggestedName, bytes, filters) {
+      async save(suggestedName, content, filters) {
         const path = await saveDialog({ defaultPath: suggestedName, filters });
         if (path == null) return null;
         // Not the fs plugin: its ACL is read-only and scoped to the app's own
         // directories, and a path the user just picked is neither. The engine
-        // writes it, which is where the desktop has always written it.
-        await rpc("cmd_save_base64_to_binary", { filepath: path, data: toBase64(bytes) });
+        // writes it, which is where the desktop has always written it — and it
+        // speaks base64, so content that is already base64 goes straight over.
+        const data = content instanceof Uint8Array ? toBase64(content) : content.base64;
+        await rpc("cmd_save_base64_to_binary", { filepath: path, data });
         return path;
       },
     },

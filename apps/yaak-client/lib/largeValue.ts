@@ -211,12 +211,23 @@ export function copyImage(text: string, sniffed: SniffedValue, fallback: string)
     });
 }
 
-/** Writes a collapsed value to a file the user picks. */
+/**
+ * Writes a collapsed value to a file the user picks.
+ *
+ * A value that is already base64 is handed over as base64. These are the values
+ * the editor collapsed for being large, so decoding one here only for a host to
+ * encode it again would walk megabytes twice for nothing.
+ */
 export async function saveValue(text: string, sniffed: SniffedValue | null, name: string) {
   const ext = sniffed == null ? "txt" : (mime.getExtension(sniffed.mime) ?? "bin");
-  const bytes = sniffed == null ? new TextEncoder().encode(text) : decodeValue(text, sniffed);
+  const content =
+    sniffed == null
+      ? new TextEncoder().encode(text)
+      : sniffed.encoding === "base64"
+        ? { base64: normalizeBase64(payloadOf(text, sniffed)) }
+        : decodeValue(text, sniffed);
 
-  const savedTo = await platform.files.save(`${name}.${ext}`, bytes);
+  const savedTo = await platform.files.save(`${name}.${ext}`, content);
   if (savedTo == null) {
     return; // Cancelled
   }

@@ -24,6 +24,7 @@ import type {
   PlatformWindow,
   RpcPayload,
   RpcStreamHandle,
+  SaveContent,
   Unsubscribe,
 } from "../types";
 import { commandSupport, runCommand } from "./commands";
@@ -131,16 +132,26 @@ interface SaveFilePicker {
  * ever learns. Callers show it back to the user and nothing more, which is why
  * the interface promises "where they went" rather than a path.
  */
+function toBytes(content: SaveContent): Uint8Array {
+  if (content instanceof Uint8Array) return content;
+  const binary = atob(content.base64);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
 async function saveBytes(
   suggestedName: string,
-  bytes: Uint8Array,
+  content: SaveContent,
   filters?: DialogFilter[],
 ): Promise<string | null> {
   const picker = (window as unknown as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
+  const bytes = toBytes(content);
 
   if (picker != null) {
+    let handle;
     try {
-      const handle = await picker({
+      handle = await picker({
         suggestedName,
         types: filters?.map((f) => ({
           description: f.name,
@@ -150,15 +161,22 @@ async function saveBytes(
           accept: { "application/octet-stream": f.extensions.map((e) => `.${e}`) },
         })),
       });
+    } catch (err) {
+      // Only choosing a file is allowed to fall back. Backing out is not a
+      // failure and must not become a download nobody asked for; anything else
+      // here is a browser that won't show the dialog, which a download covers.
+      if ((err as { name?: string } | null)?.name === "AbortError") return null;
+      console.warn("Save dialog unavailable, falling back to a download", err);
+    }
+
+    // Past the dialog, the user has named a destination. A write that fails
+    // there is a failed save, and saying so beats quietly putting the file
+    // somewhere else and reporting success.
+    if (handle != null) {
       const writable = await handle.createWritable();
       await writable.write(bytes);
       await writable.close();
       return handle.name;
-    } catch (err) {
-      // Backing out of the dialog is not a failure, and is the one case that
-      // must not fall through to a download the user didn't ask for.
-      if ((err as { name?: string } | null)?.name === "AbortError") return null;
-      console.warn("Save dialog failed, falling back to a download", err);
     }
   }
 
