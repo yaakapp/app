@@ -130,14 +130,15 @@ fn format_skipped(items: &[ImportPlanItem]) -> Option<String> {
 fn export(ctx: &CliContext, args: ExportArgs) -> CommandResult<usize> {
     let workspace_ids = resolve_export_workspace_ids(ctx, args.workspace_ids, args.all)?;
     let workspace_id_refs: Vec<&str> = workspace_ids.iter().map(String::as_str).collect();
-    export::export_data(ExportDataParams {
+    let document = export::export_data(ExportDataParams {
         query_manager: ctx.query_manager(),
         yaak_version: env!("CARGO_PKG_VERSION"),
-        export_path: &args.file,
         workspace_ids: workspace_id_refs,
         include_private_environments: args.include_private_environments,
     })
     .map_err(|e| format!("Failed to export data: {e}"))?;
+    std::fs::write(&args.file, document)
+        .map_err(|e| format!("Failed to write {}: {e}", args.file.display()))?;
 
     Ok(workspace_ids.len())
 }

@@ -374,7 +374,6 @@ pub struct CmdCreateExampleWorkspaceReq {}
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "gen_rpc.ts")]
 pub struct CmdExportDataReq {
-    pub export_path: String,
     pub workspace_ids: Vec<String>,
     pub include_private_environments: bool,
 }
@@ -960,7 +959,7 @@ macro_rules! with_commands {
     cmd_call_grpc_request_action(CmdCallGrpcRequestActionReq) -> (),
     cmd_call_http_authentication_action(CmdCallHttpAuthenticationActionReq) -> (),
     cmd_curl_to_request(CmdCurlToRequestReq) -> HttpRequest,
-    cmd_export_data(CmdExportDataReq) -> (),
+    cmd_export_data(CmdExportDataReq) -> String,
     cmd_create_example_workspace(CmdCreateExampleWorkspaceReq) -> BatchUpsertResult,
     cmd_save_base64_to_binary(CmdSaveBase64ToBinaryReq) -> (),
     cmd_save_response(CmdSaveResponseReq) -> (),

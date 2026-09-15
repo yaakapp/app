@@ -224,6 +224,13 @@ const HANDLERS: Partial<Record<AppCmd, Handler>> = {
   // The rows the sender wrote for that response, same table as the desktop.
   cmd_get_http_response_events: (payload, db) => db.rpc("cmd_get_http_response_events", payload),
 
+  /* ------------------------------- export -------------------------------- */
+
+  // Built by the model layer, exactly as the desktop and the CLI build it. Where
+  // the document goes is not decided here: the caller hands it to `files.save`,
+  // which is the one thing each host answers differently.
+  cmd_export_data: (payload, db) => db.rpc("cmd_export_data", payload),
+
   async cmd_get_sse_events() {
     return [];
   },
@@ -282,7 +289,6 @@ const DECLINED: Partial<Record<AppCmd, [reason: string, capability: CapabilityNa
   cmd_commit_import: ["Importing needs a plugin, which this host doesn't run", null],
   cmd_list_import_sources: ["Importing isn't available in the browser yet", null],
   cmd_import_sources_for_origin: ["Importing isn't available in the browser yet", null],
-  cmd_export_data: ["Exporting to a file isn't available in the browser yet", "localFiles"],
   cmd_create_example_workspace: ["The example workspace isn't available in the browser yet", null],
   cmd_save_response: ["Saving a response to disk isn't available in the browser", "localFiles"],
   cmd_save_base64_to_binary: ["Saving to disk isn't available in the browser", "localFiles"],

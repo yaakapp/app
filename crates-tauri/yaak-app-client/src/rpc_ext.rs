@@ -667,7 +667,7 @@ async fn cmd_curl_to_request<R: Runtime>(
     Ok(yaak_commands::actions::cmd_curl_to_request(ctx, req).await?)
 }
 
-async fn cmd_export_data<R: Runtime>(ctx: ClientCtx<R>, req: CmdExportDataReq) -> Result<()> {
+async fn cmd_export_data<R: Runtime>(ctx: ClientCtx<R>, req: CmdExportDataReq) -> Result<String> {
     Ok(yaak_commands::data::cmd_export_data(ctx, req).await?)
 }
 
